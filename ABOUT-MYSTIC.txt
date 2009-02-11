@@ -70,7 +70,7 @@ Mystic's Interface:  (see MYSTIC-EXAMPLE.txt) -> uses example_getCost.py
 
 
 -------------------------------------------------------------
-== Example 1: simple parabola == (mystic/example_getCost.py) == 
+== Example 1: simple parabola == (examples/example_getCost.py) == 
 - very simple forward model
 - highlights several configuration options (esp. SetStrictRanges)
 - highlights use of cost function generator
@@ -123,8 +123,8 @@ Questions?
 =============================================================
 = Where can I get the code? =
 Mystic is available in DANSE repository:
- - development version  [svn://svn@danse.us/mystic]
- - parallel version branch  [svn://svn@danse.us/mystic/branches/pyina]
+ - development version  [svn://svn@danse.us/mystic/mystic]
+ - parallel version branch  [svn://svn@danse.us/mystic/pyina]
  - release version  [TBA: late Feb or early March]
 
 Pybvk is available in the DANSE repository:
