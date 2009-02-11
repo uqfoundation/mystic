@@ -1,0 +1,12 @@
+DIRECT:
+* Standardize the interfaces, also organize imports better
+* Add more python optimizers: scipy, OpenOpt, PARK (snobfit)
+* Genertate python bindings to DAKOTA; add DAKOTA optimizers
+* Modify Sow to accept n-inputs, instead of just two inputs
+* Allow for derivative and gradient capture
+* Update the parallel branch (pyina), get "handler" to work in parallel (ipd?)
+* Add "constraints" to models (design similar to pyre.inventory and validators)
+
+INDIRECT:
+* Build a failure test suite, and a proper test suite
+* Try one of the VTF apps... or Sean's "cain" library

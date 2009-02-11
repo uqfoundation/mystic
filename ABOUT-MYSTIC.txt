@@ -1,0 +1,143 @@
+=============================================================
+
+MYSTIC
+=============================================================
+= What is mystic, and why is it useful? =
+ * Mystic is a model-independent optimization framework.
+ * Mystic is a collection of optimization algorithms and tools that allows the user
+   to more readily (and robustly) solve optimization problems.
+ * Mystic provides workflow at the fitting layer, not just access to optimization algorithms.
+
+Benefits of using mystic?
+  - allows the user to focus on building physics code, not hacking an interface to an optimizer
+  - robust selection of configuration options, and [soon] optimization algorithms & constraints
+  - ease in altering optimization algorithms and constraints, with minimal to zero code rewrite
+  - ease in monitoring progress and controlling optimization jobs
+  - ease in extending model to optimization in parallel (some, more coming soon)
+
+
+
+
+
+
+
+-------------------------------------------------------------
+= What are mystic's major features? =
+Mystic requires:
+  - user-provided forward (physics) model
+  - forward model must have a python programmatic (function call) interface
+  - user-provided cost function (measure of goodness of fit)
+
+Mystic allows/provides:
+  - (box-constrained) global or local fitting
+  - parallel (and soon distributed) job submission
+  - runtime selection/configuration of optimizer, cost function, constraints, etc...
+  - user selection of optimization algorithms
+  - user selection of optimization constraints
+  - user selection of optimization monitors
+  - user-driven optimization job control and steering
+
+
+
+
+
+
+
+
+-------------------------------------------------------------
+= Using mystic =
+Mystic Design:
+  < deployment model: slide #4 >
+  < optimizer interface: slide #10 >
+
+Mystic's Interface:  (see MYSTIC-EXAMPLE.txt) -> uses example_getCost.py
+ * Model Factory Interface
+ * Cost Function Generation
+ * Standard "Solver" Configuration
+ * Monitors
+ * Callback Function
+
+
+
+
+
+
+
+
+
+
+
+
+
+-------------------------------------------------------------
+== Example 1: simple parabola == (mystic/example_getCost.py) == 
+- very simple forward model
+- highlights several configuration options (esp. SetStrictRanges)
+- highlights use of cost function generator
+- uses signal handler   [too fast to demonstrate]
+- highlights use of step monitor  [DEMO]
+
+== Example 2: 'mogi' peak fitter == (examples/test_mogi2.py) ==
+- forward model:  four-parameter fit per peak, simultaneously over two peaks
+- highlights use of "hand-written" cost function
+- highlights use of signal handler  [DEMO]
+
+== Example 3: global solution across 3-D space == (examples/test_fosc3d.py) ==
+- highlights global DE solver vs Nelder-Mead Simplex  [DEMO]
+
+== Example 4: BvK lattice dynamics ==
+- real USER code [SEE BELOW]
+
+
+
+
+
+
+
+=============================================================
+
+PYBVK
+=============================================================
+= What is pybvk, and why is it useful? =
+ * pybvk is a package for Born von Karman lattice dynamics
+ * provides forward model to calculate DOS from force constants
+ * uses mystic to fit force costants to experimental DOS
+
+Benefits of pybvk?
+ * automates the inverse modeling procedure
+ * takes advantage of mystic's workflow features (more soon)
+ * (soon) allows generation of basis and bonds from structure (unit cell, symmetry, etc) info
+ * allows extension to alternate calculations of DOS (i.e. w/ gulp)
+
+= What is the status of pybvk? =
+ * forward model in C++, callable from python
+ * inverse modeling with mystic, using global or local optimizer
+ * built extensible python DOS object
+ * (soon) will integrate extensible/configurable 'structure' object 
+ * (soon) will enable parallel inverse modeling    [need to remove dependence on 'system' file]
+
+
+=============================================================
+
+Questions?
+=============================================================
+= Where can I get the code? =
+Mystic is available in DANSE repository:
+ - development version  [svn://svn@danse.us/mystic]
+ - parallel version branch  [svn://svn@danse.us/mystic/branches/pyina]
+ - release version  [TBA: late Feb or early March]
+
+Pybvk is available in the DANSE repository:
+ - BvK forward version [svn://svn@danse.us/pybvk/branches/DynModels/optv0_raw/module]
+ - BvK fitting version [svn://svn@danse.us/pybvk/branches/DynModels/optv0_raw/optimize]
+ - release version [TBA: mid or late March]
+ - parallel version [TBA: mid or late March]
+
+
+
+
+
+
+
+
+# DONE

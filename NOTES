@@ -1,0 +1,51 @@
+Model-independent optimization framework
+ - optimizer utilizes a 'function' interface (i.e. scipy.optimize.fmin())
+ - optimizer can be selected at runtime
+ - cost function can be provided at runtime
+ - results monitoring
+ - job interrupt & steering
+ - allow 'configuration' modification (i.e. constraints, optimizers, etc)
+ - parallel/distributed job submission
+
+Examples: (o = Demo; * = Code-only)
+ o Model study: test_ffit and/or test_fosc3d
+
+ o mystic.derun => an optimization framework pyre application [NEEDS WORK!]
+ * mystic.example => Chebyshev8 cost function
+
+ * mystic.differential_evolution => Price & Storn's DE solver
+   - solver.Solution()
+   - solver.Solve(...)
+     . extra args (i.e. constants, constraints?)
+     . monitors
+     . callback
+     . handler
+ o Handler example: test_mogi2 and/or test_ffit 
+ * mystic.detools => mutation strategies (liga ?) & termination conditions
+ * mystic.tools
+   - Sow()
+   - wrap_function() (adds monitor.  similarly add constraints?)
+
+ * mystic.nelder_mead => adapted from scipy, now has mystic 'solver interface'
+ o Comparison study: (branches/ooe-tests) test_circle and/or test_mogi
+
+ * mystic.forward_model => tools to build cost function "on-the-fly"
+   - builder.CostFactory()
+     . factory.addModel()
+     . factory.getCostFunction[Slow]()
+ o mystic.example_getCost => example usage of CostFactory [NEEDS WORK!]
+   - SIMPLE example: User-prepared cost function
+   - SIMPLE example: CostFactory-built cost function
+   def f(p):
+     a,b,c = p
+     def g(x):
+       return a*x*x + b*x + c*x
+     return g
+
+
+ o Parallel example: test_lorentzian2
+   REMEMBER: mpd &
+
+   mpi_differential_evolution.py or parallel_desolve.py => mpi job manager
+   parallel_map2.py => parallel mapping using mpi directives
+
