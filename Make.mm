@@ -6,7 +6,7 @@ BUILD_DIRS = \
     mystic \
     models \
 
-OTHER_DIRS =
+OTHER_DIRS = \
     examples \
     examples_other \
     tests \
