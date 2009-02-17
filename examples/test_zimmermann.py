@@ -21,21 +21,8 @@ from mystic.detools import Best1Exp, Rand1Exp, ChangeOverGeneration, VTR
 import random
 random.seed(123)
 
-def CostFunction(coeffs):
-    """
-Eq. (24-26) of [2].
-    """
-    x0, x1 = coeffs
-    f8 = 9 - x0 - x1
-    c0,c1,c2,c3 = 0,0,0,0
-    if x0 < 0: c0 = -100 * x0
-    if x1 < 0: c1 = -100 * x1
-    xx =  (x0-3.)*(x0-3) + (x1-2.)*(x1-2)
-    if xx > 16: c2 = 100 * (xx-16)
-    if x0 * x1 > 14: c3 = 100 * (x0*x1-14.)
-    return max(f8,c0,c1,c2,c3)
-
-
+# Eq. (24-26) of [2].
+from mystic.models import zimmermann as CostFunction
 
 ND = 2
 NP = 20

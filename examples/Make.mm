@@ -40,12 +40,13 @@ EXPORT_BINS = \
 #   sam_corana2.py \
     mpl_corana.py \
     test_rosenbrock.py \
+    test_rosenbrock2.py \
 #   sam_rosenbrock.py \
     cg_rosenbrock.py \
 #   sam_cg_rosenbrock.py \
     test_zimmermann.py \
 #   sam_zimmermann.py \
-    cg_zimmermann.py \
+#   sam_cg_zimmermann.py \
     test_lorentzian.py \
     test_lorentzian2.py \
 #   sam_mogi.py \

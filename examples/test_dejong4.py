@@ -16,20 +16,10 @@ try: http://www.icsi.berkeley.edu/~storn/deshort1.ps
 
 from mystic.differential_evolution import DifferentialEvolutionSolver
 from mystic.detools import Best1Exp, Rand1Exp, ChangeOverGeneration, VTR
+from mystic.models.dejong import quartic as DeJong4
 
 import random
 random.seed(123)
-
-def DeJong4(coeffs):
-    """
-Modified fourth De Jong quartic. Eq. (9) of [1]
-    """
-    import random
-    from math import pow
-    f = 0.
-    for j, c in enumerate(coeffs):
-        f += pow(c,4) * (j+1.0) + random.random()
-    return f
 
 ND = 30
 NP = 10
@@ -51,7 +41,6 @@ def main():
 
 if __name__ == '__main__':
     from timeit import Timer
-    import random
 
     # optimize with DESolver
     t = Timer("main()", "from __main__ import main")

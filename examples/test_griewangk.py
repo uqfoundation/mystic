@@ -18,17 +18,8 @@ from mystic.detools import Best1Exp, Rand1Exp, ChangeOverGeneration, VTR
 import random
 random.seed(123)
 
-def Griewangk_cost(coeffs):
-    """
-The costfunction for Griewangk's Function, Eq. (23) of [1].
-    """
-    from math import cos, sqrt
-    term1 = sum([c*c for c in coeffs])/4000
-    term2 = 1
-    for i in range(10):
-        term2 = term2 * cos( coeffs[i] / sqrt(i+1.0) )
-    return term1 - term2 + 1
-
+# The costfunction for Griewangk's Function, Eq. (23) of [1].
+from mystic.models import griewangk as Griewangk_cost
 
 
 ND = 10

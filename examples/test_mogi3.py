@@ -6,12 +6,9 @@ CostFactory objects
 
 """
 
-import test_mogi, forward_mogi
-
 from test_mogi import *
 
 from mystic.forward_model import CostFactory
-from forward_mogi import ForwardMogiFactory
 from mystic.filters import PickComponent
 
 def de_solve(CF):
@@ -39,8 +36,8 @@ if __name__ == '__main__':
     print "new Cost Function : %s " % myCostFunction(rp)
     print "orig Cost Function: %s " % cost_function(rp)
 
-    f1 = test_mogi.ForwardMogiFactory(rp)
-    f2 = test_mogi.ForwardMogiFactory(rp)
+    f1 = ForwardMogiFactory(rp)
+    f2 = ForwardMogiFactory(rp)
 
     print 'start cf'
     for i in range(3000):

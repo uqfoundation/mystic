@@ -1,13 +1,15 @@
 #!/usr/bin/env python
 
 """
-Testing the Corana parabola in 1D. Requires matplotlib and scipy.
+Testing the Corana parabola in 1D. Requires matplotlib.
 """
 
 import pylab, numpy, mystic
-from test_corana import *
-from scipy.optimize import fmin
+#from test_corana import *
+from mystic.scipy_optimize_fmin import fmin
 from mystic import getch
+
+from mystic.models.corana import corana1d as Corana1
 
 x = numpy.arange(-2., 2., 0.01)
 y = [Corana1([c]) for c in x]

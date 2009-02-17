@@ -17,12 +17,17 @@ update: clean
 
 EXPORT_PYTHON_MODULES = \
     __init__.py \
-    chebyshev8.py \
-    poly2.py \
+    dejong.py \
+    griewangk.py \
+    zimmermann.py \
+    corana.py \
+    fosc3d.py \
+    wavy.py \
+    poly.py \
     mogi.py \
-#   br8.py \
+    br8.py \
+    lorentzian.py \
 #   circle.py \
-#   corana.py \
 
 export:: export-package-python-modules
 

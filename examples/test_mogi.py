@@ -3,7 +3,7 @@
 """
 Tests a single mogi fitting. 
 
-Script is pertty crude right now.
+Script is pretty crude right now.
 
 Requirement: 
    numpy  --- for data-structures and "vectorized" ops on them, like sqrt, pow
@@ -30,7 +30,7 @@ import numpy
 
 random_seed(123)
 
-from forward_mogi import ForwardMogiFactory
+from mystic.models import mogi; ForwardMogiFactory = mogi.ForwardFactory
 
 # Let the "actual parameters" be :
 actual_params = [1234.,-500., 10., .1]
@@ -45,15 +45,15 @@ data = actual_forward(stations)
 # noisy data, gaussian distribution with mean 0, sig 0.1e-3
 noise =  array([[random.normal(0,0.1e-3) for i in range(data.shape[1])] for j in range(data.shape[0])])
 
-def plot_noisy_data():
-    import pylab
-    pylab.plot(stations[0,:],-data[2,:]+noise[2,:],'k.')
-
 # Here is the "observed data"
 data_z = -data[2,:] + noise[2,:]
 # the stations are still at : stations
-# we need a filter for the forward model
 
+def plot_noisy_data():
+    import pylab
+    pylab.plot(stations[0,:],data_z,'k.')
+
+# we need a filter for the forward model
 def filter_for_zdisp(input):
     return -input[2,:]
 

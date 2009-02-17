@@ -12,42 +12,22 @@ Optimization 11: 341-359, 1997.
 
 from mystic.differential_evolution import DifferentialEvolutionSolver
 from mystic.detools import Best1Exp, Best1Bin, Rand1Exp, Best2Bin, Best2Exp, ChangeOverGeneration, VTR
-from mystic.polytools import polyeval
-from mystic.polytools import coefficients_to_polynomial as poly1d
+from mystic.models.poly import poly1d
 from mystic import VerboseSow
 
 import random
 random.seed(123)
 
-# These are the target coefficients
-Chebyshev16 = [32768., 0., -131072., 0., 212992., 0., -180224., 0., 84480., 0., -21504., 0., 2688., 0., -128., 0., 1]
+# get the target coefficients
+from mystic.models.poly import chebyshev16coeffs as Chebyshev16
 
 def ChebyshevCost(trial):
     """
 The costfunction for the fitting problem.
-
-100 evaluation points between [-1, 1] and two end points
+70 evaluation points between [-1, 1] with two end points
     """
-    M=70 # number of evaluation points between [-1, 1]
-
-    result=0.0
-
-    x=-1.0
-    dx = 2.0 / (M-1)
-    for i in range(M):
-        px = polyeval(trial, x)
-        if px<-1 or px>1:
-            result += (1 - px) * (1 - px)
-        x += dx
-
-    px = polyeval(trial, 1.2) - 10558.1450229
-    if px<0: result += px*px
-
-    px = polyeval(trial, -1.2) - 10558.1450229
-    if px<0: result += px*px
-
-    return result*100
-
+    from mystic.models.poly import chebyshev16cost
+    return chebyshev16cost(trial,M=70)*100
 
 
 ND = 17

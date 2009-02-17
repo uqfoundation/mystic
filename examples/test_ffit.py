@@ -16,42 +16,15 @@ Optimization 11: 341-359, 1997.
 
 from mystic.differential_evolution import DifferentialEvolutionSolver2 as DifferentialEvolutionSolver
 from mystic.detools import Best1Exp, Best1Bin, Rand1Exp, ChangeOverGeneration, VTR
-from mystic.polytools import polyeval
-from mystic.polytools import coefficients_to_polynomial as poly1d
+from mystic.models.poly import poly1d
 from mystic import getch, VerboseSow
 
 import random
 random.seed(123)
 
-Chebyshev8 = [128., 0., -256., 0., 160., 0., -32., 0., 1.]
-
-def ChebyshevCost(trial):
-    """
-The costfunction for the fitting problem.
-
-Note that there are 61 evaluation points between [-1, 1], 
-not 60 as specified in the paper.  (As adapted from DETest.py)
-    """
-    M=60 # number of evaluation points between [-1, 1]
-
-    result=0.0
-
-    x=-1.0
-    dx = 2.0 / (M)
-    for i in range(M+1):
-        px = polyeval(trial, x)
-        if px<-1 or px>1:
-            result += (1 - px) * (1 - px)
-        x += dx
-
-    px = polyeval(trial, 1.2) - 72.661
-    if px<0: result += px*px
-
-    px = polyeval(trial, -1.2) - 72.661
-    if px<0: result += px*px
-
-    return result
-
+# get the target coefficients and cost function
+from mystic.models.poly import chebyshev8coeffs as Chebyshev8
+from mystic.models.poly import chebyshev8cost as ChebyshevCost
 
 def print_solution(func):
     print poly1d(func)

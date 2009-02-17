@@ -18,25 +18,8 @@ from mystic.detools import Best1Exp, Rand1Exp, ChangeOverGeneration, VTR
 import random
 random.seed(123)
 
-d = [1., 1000., 10., 100.]
-
-def Corana(x):
-    """
-The costfunction for Corana's parabola. Eq. (11) of [1]
-    """
-    from math import pow
-    from numpy import sign, floor
-    r = 0
-    for j in range(4):
-        zj =  floor( abs(x[j]/0.2) + 0.49999 ) * sign(x[j]) * 0.2
-        if abs(x[j]-zj) < 0.05:
-            r += 0.15 * pow(zj - 0.05*sign(zj), 2) * d[j]
-        else:
-            r += d[j] * x[j] * x[j]
-    return r
-
-def Corana1(x):
-    return Corana([x[0], 0, 0, 0])
+from mystic.models import corana as Corana
+from mystic.models.corana import corana1d as Corana1
 
 ND = 4
 NP = 10

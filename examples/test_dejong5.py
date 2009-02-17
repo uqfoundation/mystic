@@ -14,25 +14,10 @@ Optimization 11: 341-359, 1997.
 
 from mystic.differential_evolution import DifferentialEvolutionSolver
 from mystic.detools import Best1Exp, Rand1Exp, ChangeOverGeneration, VTR
+from mystic.models.dejong import shekel as DeJong5
 
 import random
 random.seed(123)
-
-A = [-32., -16., 0., 16., 32.] 
-a1 = A * 5
-a2 = reduce(lambda x1,x2: x1+x2, [[c] * 5 for c in A])
-
-def DeJong5(coeffs):
-    """
-The costfunction for the Modified third De Jong function Eq. (8) of [1].
-    """
-    from math import pow
-    x,y=coeffs
-    r = 0.0
-    for i in range(25):
-        r += 1.0/ (1.0*i + pow(x-a1[i],6) + pow(y-a2[i],6) + 1e-15)
-    return 1.0/(0.002 + r)
-
 
 ND = 2
 NP = 15

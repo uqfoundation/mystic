@@ -1,27 +1,19 @@
 #!/usr/bin/env python
 
 """
-|x + 3 sin[x]|
+test some simple multi-minima functions, such as |x + 3 sin[x]|
 """
 
 from mystic.differential_evolution import DifferentialEvolutionSolver2 as DifferentialEvolutionSolver
 from mystic.detools import Best1Exp, Best1Bin, Rand1Exp, ChangeOverGeneration, VTR
-from mystic.polytools import polyeval
 from mystic import getch, VerboseSow
-from numpy import *
+from numpy import arange
 import scipy.optimize
 
 import random
 random.seed(123)
 
-def wavy1(x):
-    x = array(x)
-    return abs(x+3.*sin(x+pi)+pi)
-
-def wavy2(x):
-    x = array(x)
-    return 4 *sin(x)+sin(4*x) + sin(8*x)+sin(16*x)+sin(32*x)+sin(64*x)
-
+from mystic.models import wavy1, wavy2
 wavy = wavy1
 
 def show():

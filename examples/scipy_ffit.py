@@ -10,9 +10,7 @@ Heuristic for Global Optimization over Continuous Spaces. Journal of Global
 Optimization 11: 341-359, 1997.
 """
 
-Chebyshev8 = [128., 0., -256., 0., 160., 0., -32., 0., 1.]
-
-from test_ffit import ChebyshevCost, plot_solution, print_solution
+from test_ffit import Chebyshev8, ChebyshevCost, plot_solution, print_solution
 
 if __name__ == '__main__':
     import scipy.optimize

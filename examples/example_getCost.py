@@ -4,10 +4,11 @@ example_getCost.py
 Example to demonstrate use of CostFactory
 """
 
-from mystic.polytools import polyeval
 from mystic.detools import *
 from forward_model import *
 
+from mystic.models.poly import poly1d as ForwardPolyFactory
+from mystic.models import poly; PolyCostFactory = poly.CostFactory
 from mystic.differential_evolution import DifferentialEvolutionSolver
 from mystic.tools import VerboseSow, getch
 
@@ -17,18 +18,10 @@ MAX_GENERATIONS = ND*NP
 
 from numpy import array
 
-def ForwardPolyFactory(params):
-    a,b,c = params
-    def forward_poly(x):
-        """ x should be a 1D (1 by N) numpy array """
-        return array((a*x*x + b*x + c))
-    return forward_poly
-
 def data(params):
     fwd = ForwardPolyFactory(params)
     x = (array([range(101)])-50.)[0]
     return x,fwd(x)
-
 
 def de_solve(CF):
     solver = DifferentialEvolutionSolver(ND, NP)
@@ -65,8 +58,9 @@ if __name__ == '__main__':
     x,datapts = data(target)
 
    #myCost = cost_function
+  ##myCost = PolyCostFactory(target,x)
     F = CostFactory()
-    F.addModel(ForwardPolyFactory,'poly',3)
+    F.addModel(ForwardPolyFactory,'poly',len(target))
     myCost = F.getCostFunction(evalpts=x, observations=datapts)    
 
     import pylab

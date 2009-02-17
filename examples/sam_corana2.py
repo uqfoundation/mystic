@@ -9,13 +9,12 @@ Corana's parabola in 2D.
 """
 
 import sam
-from test_corana import *
+#from test_corana import *
 from mystic.scipy_optimize_fmin import NelderMeadSimplexSolver as fmin
 from mystic.nmtools import IterationRelativeError as IRE
 from mystic import getch, Sow
 
-def Corana2(x):
-    return Corana([x[0], 0, x[1], 0])
+from mystic.models.corana import corana2d as Corana2
 
 def draw_contour():
     import numpy

@@ -116,11 +116,10 @@ if __name__ == '__main__':
     app.run()
 
     # Chebyshev8 polynomial (used with "example.py")
-    target_coef = [128., 0., -256., 0., 160., 0., -32., 0., 1.]
-
-    from mystic.polytools import coefficients_to_polynomial as poly1d
-    print "target:\n", poly1d(target_coef)
-    print "DE Solution:\n", poly1d(app.solution)
+    from mystic.models.poly import chebyshev8coeffs as target_coeffs
+    from mystic.models.poly import poly1d
+    print "target:\n", poly1d(target_coeffs)
+    print "\nDE Solution:\n", poly1d(app.solution)
 
 
 # End of file

@@ -15,7 +15,7 @@ from mystic.forward_model import *
 
 
 if __name__=='__main__':
-    from forward_mogi import ForwardMogiFactory
+    from mystic.models import mogi; ForwardMogiFactory = mogi.ForwardFactory
     import random
     from numpy import *
     xstations = array([random.uniform(-500,500) for i in range(300)])+1250.

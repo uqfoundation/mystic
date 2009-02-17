@@ -12,19 +12,7 @@ from mystic.detools import Best1Exp, Best1Bin, Rand1Exp, ChangeOverGeneration, V
 import random
 random.seed(123)
 
-def fOsc3D(trial):
-    """
-This is the Mathematica function from the guidebook.
-fOsc3D[x_, y_] := -4 Exp[(-x^2 - y^2)] + Sin[6 x] Sin[5 y]
-
-needs to enforce y > 0, will use a penalty for y
-    """
-    from math import sin, exp
-    x,y = trial
-    func =  -4. * exp( -x*x - y*y ) + sin(6. * x) * sin(5. *y)
-    penalty = 0
-    if y < 0: penalty = 100.*y*y
-    return func + penalty
+from mystic.models import fosc3d as fOsc3D
 
 def draw_contour():
     import pylab, numpy, Image

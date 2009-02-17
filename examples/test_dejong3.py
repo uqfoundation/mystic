@@ -17,24 +17,10 @@ try: http://www.icsi.berkeley.edu/~storn/deshort1.ps
 
 from mystic.differential_evolution import DifferentialEvolutionSolver
 from mystic.detools import Best1Exp, Rand1Exp, ChangeOverGeneration, VTR
+from mystic.models.dejong import step as DeJong3
 
 import random
 random.seed(123)
-
-def DeJong3(coeffs):
-    """
-The costfunction for the third De Jong function Eq. (8) of [1] / Eq. (19) of [2].
-    """
-    from math import floor
-    f = 30.
-    for c in coeffs:
-        if abs(c) <= 5.12: 
-            f += floor(c)
-        elif c > 5.12:
-            f += 30 * (c - 5.12)
-        else:
-            f += 30 * (5.12 - c)
-    return f
 
 ND = 5
 NP = 25
@@ -56,7 +42,6 @@ def main():
 
 if __name__ == '__main__':
     from timeit import Timer
-    import random
 
     # optimize with DESolver
     t = Timer("main()", "from __main__ import main")

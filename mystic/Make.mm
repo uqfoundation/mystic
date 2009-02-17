@@ -31,7 +31,6 @@ EXPORT_PYTHON_MODULES = \
     nmtools.py \
     detools.py \
     tools.py \
-    polytools.py \
     helputil.py \
     forward_model.py \
     filters.py \
