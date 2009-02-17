@@ -8,33 +8,9 @@ These strategies are to be passed into DifferentialEvolutionSolver's Solve metho
 
 import random
 
-# a module level singleton.
-EARLYEXIT = 0
-
-
-def NullChecker(params, evalpts, *args):
-    return None
-
 def get_random_candidates(NP, exclude, N):
     return random.sample(range(exclude)+range(exclude+1,NP), N)
 
-#################### #################### #################### ####################
-#  These are factories that give termination conditions
-#################### #################### #################### ####################
-
-def ChangeOverGeneration(tolerance = 1e-6, generations = 30):
-    def _(inst):
-         hist = inst.energy_history
-         lg = len(hist)
-         return lg > generations and (hist[-generations]-hist[-1]) < tolerance
-    return _
-
-def VTR(tolerance = 0.005):
-    def _(inst):
-         hist = inst.energy_history
-         return hist[-1] < tolerance
-    return _
-              
 
 #################### #################### #################### ####################
 #  Code below are the different crossovers/mutation strategies
