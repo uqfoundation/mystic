@@ -13,8 +13,6 @@ RECURSE_DIRS = $(BUILD_DIRS)
 all: export
 	BLD_ACTION="all" $(MM) recurse
 
-update: $(BUILD_DIRS)
-
 release: tidy
 	cvs release .
 

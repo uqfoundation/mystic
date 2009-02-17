@@ -5,8 +5,6 @@ PACKAGE = models
 
 all: export
 
-update: $(BUILD_DIRS)
-
 release: tidy
 	cvs release .
 

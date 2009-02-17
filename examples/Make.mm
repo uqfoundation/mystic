@@ -12,8 +12,6 @@ PROJ_CLEAN =
 #all: export
 all: clean
 
-update: $(BUILD_DIRS)
-
 release: tidy
 	cvs release .
 
