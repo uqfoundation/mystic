@@ -11,10 +11,11 @@ Run optimize.py in scipy.optimize to see a comparison of Nelder-Mead and a few o
 """
 
 from mystic.differential_evolution import DifferentialEvolutionSolver
-from mystic.detools import Best1Exp, Rand1Exp, Best2Bin, ChangeOverGeneration, VTR
+from mystic.termination import ChangeOverGeneration, VTR
+from mystic.strategy import Best1Exp, Rand1Exp, Best2Bin
 from mystic.models import rosen
 from mystic.scipy_optimize_fmin import NelderMeadSimplexSolver as fmin
-from mystic.nmtools import IterationRelativeError as IRE
+from mystic.termination import IterationRelativeTolerance as IRT
 from mystic import Sow
 
 import random
@@ -50,7 +51,7 @@ if __name__ == '__main__':
 
     solver = fmin(len(xinit))
     solver.SetInitialPoints(xinit)
-    solver.Solve(rosen, IRE(), EvaluationMonitor = esow, StepMonitor = ssow)
+    solver.Solve(rosen, IRT(), EvaluationMonitor = esow, StepMonitor = ssow)
     sol = solver.Solution()
     print sol
  

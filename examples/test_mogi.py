@@ -21,7 +21,8 @@ Bull. Earthquake. Res. Inst., 36, 99-134, 1958.
 
 import pylab
 from mystic.differential_evolution import DifferentialEvolutionSolver
-from mystic.detools import Best1Exp, Rand1Exp, ChangeOverGeneration, VTR, Best2Exp, Best2Exp
+from mystic.termination import ChangeOverGeneration, VTR
+from mystic.strategy import Best1Exp, Rand1Exp, Best2Exp, Best2Exp
 from mystic import getch, Sow, random_seed, VerboseSow
 
 from numpy import pi, sqrt, array, mgrid, random, real, conjugate, arange
@@ -109,7 +110,7 @@ def plot_sol(params, linestyle = 'b-'):
 if __name__ == '__main__':
 
     from mystic.scipy_optimize_fmin import NelderMeadSimplexSolver as fmin
-    from mystic.nmtools import IterationRelativeError as IRE
+    from mystic.termination import IterationRelativeTolerance as IRT
     from scipy.optimize import leastsq, fmin_cg
     #
     desol, dstepmon = de_solve()
@@ -126,7 +127,7 @@ if __name__ == '__main__':
     simplex, esow = Sow(), Sow()
     solver = fmin(len(point))
     solver.SetInitialPoints(point)
-    solver.Solve(cost_function, IRE(), EvaluationMonitor = esow, StepMonitor = simplex)
+    solver.Solve(cost_function, IRT(), EvaluationMonitor = esow, StepMonitor = simplex)
     sol = solver.Solution()
 
     print "\nsimplex solution: ", sol

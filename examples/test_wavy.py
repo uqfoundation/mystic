@@ -5,7 +5,8 @@ test some simple multi-minima functions, such as |x + 3 sin[x]|
 """
 
 from mystic.differential_evolution import DifferentialEvolutionSolver2 as DifferentialEvolutionSolver
-from mystic.detools import Best1Exp, Best1Bin, Rand1Exp, ChangeOverGeneration, VTR
+from mystic.termination import ChangeOverGeneration, VTR
+from mystic.strategy import Best1Exp, Best1Bin, Rand1Exp
 from mystic import getch, VerboseSow
 from numpy import arange
 import scipy.optimize

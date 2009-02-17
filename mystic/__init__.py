@@ -17,7 +17,8 @@ A Simple Model-Independent Inversion Framework.
 import differential_evolution, scipy_optimize_fmin
 
 # strategies, termination conditions
-import detools, nmtools
+import termination
+import strategy
 
 # monitors, function wrappers, and other tools
 from tools import *

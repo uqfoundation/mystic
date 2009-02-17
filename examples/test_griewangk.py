@@ -13,7 +13,8 @@ Optimization 11: 341-359, 1997.
 """
 
 from mystic.differential_evolution import DifferentialEvolutionSolver
-from mystic.detools import Best1Exp, Rand1Exp, ChangeOverGeneration, VTR
+from mystic.termination import ChangeOverGeneration, VTR
+from mystic.strategy import Best1Exp, Rand1Exp
 
 import random
 random.seed(123)

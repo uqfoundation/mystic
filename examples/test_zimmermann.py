@@ -16,7 +16,8 @@ try: http://www.icsi.berkeley.edu/~storn/deshort1.ps
 """
 
 from mystic.differential_evolution import DifferentialEvolutionSolver
-from mystic.detools import Best1Exp, Rand1Exp, ChangeOverGeneration, VTR
+from mystic.termination import ChangeOverGeneration, VTR
+from mystic.strategy import Best1Exp, Rand1Exp
 
 import random
 random.seed(123)
@@ -50,7 +51,7 @@ if __name__ == '__main__':
 
     from mystic import Sow
     from mystic.scipy_optimize_fmin import NelderMeadSimplexSolver as fmin
-    from mystic.nmtools import IterationRelativeError as IRE
+    from mystic.termination import IterationRelativeTolerance as IRT
 
     simplex = Sow()
     esow = Sow()
@@ -58,7 +59,7 @@ if __name__ == '__main__':
 
     solver = fmin(len(xinit))
     solver.SetInitialPoints(xinit)
-    solver.Solve(CostFunction, IRE(), EvaluationMonitor = esow, StepMonitor = simplex)
+    solver.Solve(CostFunction, IRT(), EvaluationMonitor = esow, StepMonitor = simplex)
     sol = solver.Solution()
     print "fmin solution: ", sol
 

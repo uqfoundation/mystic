@@ -13,7 +13,8 @@ The pylab output will draw
 """
 
 from mystic.differential_evolution import DifferentialEvolutionSolver2 as DifferentialEvolutionSolver
-from mystic.detools import Best1Exp, Best1Bin, Rand1Exp, ChangeOverGeneration, VTR
+from mystic.termination import ChangeOverGeneration, VTR
+from mystic.strategy import Best1Exp, Best1Bin, Rand1Exp
 from mystic import getch
 from numpy import random, array, pi, arange, sin, cos, sqrt
 import pylab

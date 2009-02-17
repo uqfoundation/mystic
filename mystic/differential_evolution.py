@@ -159,7 +159,7 @@ class DifferentialEvolutionSolver(object):
     def Solve(self, costfunction, strategy, termination, maxiter, CrossProbability = 0.5, ScalingFactor = 0.7, sigint_callback = None,
               EvaluationMonitor=Null, StepMonitor=Null, ExtraArgs=()):
         import signal
-        import mystic.detools as detools
+        import mystic.termination as detools
         detools.EARLYEXIT = False
 
         fcalls, costfunction = wrap_function(costfunction, ExtraArgs, EvaluationMonitor)
@@ -251,7 +251,7 @@ class DifferentialEvolutionSolver2(DifferentialEvolutionSolver):
     def Solve(self, costfunction, strategy, termination, maxiter, CrossProbability = 0.5, ScalingFactor = 0.7, sigint_callback = None,
               EvaluationMonitor=Null, StepMonitor=Null, ExtraArgs=()):
         import signal
-        import mystic.detools as detools
+        import mystic.termination as detools
         detools.EARLYEXIT = False
 
         fcalls, costfunction = wrap_function(costfunction, ExtraArgs, EvaluationMonitor)

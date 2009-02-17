@@ -16,7 +16,8 @@ try: http://www.icsi.berkeley.edu/~storn/deshort1.ps
 """
 
 from mystic.differential_evolution import DifferentialEvolutionSolver
-from mystic.detools import Best1Exp, Rand1Exp, ChangeOverGeneration, VTR
+from mystic.termination import ChangeOverGeneration, VTR
+from mystic.strategy import Best1Exp, Rand1Exp
 from mystic.models.dejong import step as DeJong3
 
 import random

@@ -11,7 +11,7 @@ Corana's parabola in 2D.
 import sam
 #from test_corana import *
 from mystic.scipy_optimize_fmin import NelderMeadSimplexSolver as fmin
-from mystic.nmtools import IterationRelativeError as IRE
+from mystic.termination import IterationRelativeTolerance as IRT
 from mystic import getch, Sow
 
 from mystic.models.corana import corana2d as Corana2
@@ -43,7 +43,7 @@ def run_once():
     simplex = Sow()
     solver = fmin(2)
     solver.SetRandomInitialPoints([0,0],[2,2])
-    solver.Solve(Corana2, termination=IRE(), StepMonitor = simplex)
+    solver.Solve(Corana2, termination=IRT(), StepMonitor = simplex)
     sol = solver.Solution()
     
     for x in simplex.x:

@@ -21,7 +21,8 @@ Examples: (o = Demo; * = Code-only)
      . callback
      . handler
  o Handler example: test_mogi2 and/or test_ffit 
- * mystic.detools => mutation strategies (liga ?) & termination conditions
+ * mystic.termination => termination conditions
+ * mystic.strategy => mutation strategies (liga ?)
  * mystic.tools
    - Sow()
    - wrap_function() (adds monitor.  similarly add constraints?)

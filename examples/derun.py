@@ -73,7 +73,7 @@ class DerunApp(Script):
 
 
     def _configure(self):
-        from mystic import detools
+        from mystic import strategy as detools
         Script._configure(self)
         mod = __import__(self.inventory.costfunc)
         self.mod = mod

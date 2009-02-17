@@ -28,8 +28,8 @@ EXPORT_PYTHON_MODULES = \
     const.py \
     differential_evolution.py \
     scipy_optimize_fmin.py \
-    nmtools.py \
-    detools.py \
+    termination.py \
+    strategy.py \
     tools.py \
     helputil.py \
     forward_model.py \

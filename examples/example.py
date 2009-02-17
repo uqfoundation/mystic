@@ -13,7 +13,8 @@ example.py
 """
 
 from mystic.models.poly import chebyshev8cost as cost
-from mystic.detools import *
+from mystic.termination import *
+from mystic.strategy import *
 
 ND = 9
 NP = 80

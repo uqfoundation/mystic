@@ -10,7 +10,8 @@ longer has to do an "integral" as an intermediate step
 import pylab, matplotlib, Image
 from numpy import *
 from mystic.differential_evolution import DifferentialEvolutionSolver
-from mystic.detools import Best1Exp, Rand1Exp, ChangeOverGeneration, VTR, Best2Exp, Best2Exp
+from mystic.termination import ChangeOverGeneration, VTR
+from mystic.strategy import Best1Exp, Rand1Exp, Best2Exp, Best2Exp
 from mystic import getch, Sow, random_seed
 
 random.seed(123)

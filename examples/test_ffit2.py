@@ -11,7 +11,8 @@ Optimization 11: 341-359, 1997.
 """
 
 from mystic.differential_evolution import DifferentialEvolutionSolver
-from mystic.detools import Best1Exp, Best1Bin, Rand1Exp, Best2Bin, Best2Exp, ChangeOverGeneration, VTR
+from mystic.termination import ChangeOverGeneration, VTR
+from mystic.strategy import Best1Exp, Best1Bin, Rand1Exp, Best2Bin, Best2Exp
 from mystic.models.poly import poly1d
 from mystic import VerboseSow
 

@@ -175,7 +175,7 @@ class NelderMeadSimplexSolver(object):
         #-------------------------------------------------------------
 
         import signal
-        import mystic.detools as detools
+        import mystic.termination as detools
         detools.EARLYEXIT = False
 
         fcalls, func = wrap_function(func, args, EvaluationMonitor)
@@ -370,12 +370,12 @@ def fmin(func, x0, args=(), xtol=1e-4, ftol=1e-4, maxiter=None, maxfun=None,
     from mystic.tools import Sow
     stepmon = Sow()
     evalmon = Sow()
-    from mystic.nmtools import IterationRelativeError as IRE
+    from mystic.termination import IterationRelativeTolerance as IRT
 
     solver = NelderMeadSimplexSolver(len(x0))
     solver.SetInitialPoints(x0)
    #solver.enable_signal_handler()
-    solver.Solve(func,termination=IRE(xtol,ftol),\
+    solver.Solve(func,termination=IRT(xtol,ftol),\
                  maxiter=maxiter,maxfun=maxfun,\
                  EvaluationMonitor=evalmon,StepMonitor=stepmon,\
                  disp=disp)

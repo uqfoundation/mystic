@@ -12,6 +12,7 @@
 Input/output 'filters'
 """
 
+# 'filters'
 def Identity(x): return x
 
 def PickComponent(n, multiplier = 1.):
@@ -19,5 +20,8 @@ def PickComponent(n, multiplier = 1.):
         return multiplier * x[n,:]
     return _
 
+# 'checkers'
+def NullChecker(params, evalpts, *args):
+    return None
 
 # End of file

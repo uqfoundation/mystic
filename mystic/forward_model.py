@@ -16,7 +16,7 @@ A set of classes that aids in constructing cost functions.
 """
 
 from mystic.filters import Identity, PickComponent
-from mystic.detools import NullChecker
+from mystic.filters import NullChecker
 
 from inspect import getargspec
 from numpy import pi, sqrt, array, mgrid, random, real, conjugate, arange, sum

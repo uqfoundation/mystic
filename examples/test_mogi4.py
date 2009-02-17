@@ -6,7 +6,8 @@ Similar to test_mogi2 (two sources) (See that one first)
 
 from test_mogi2 import params0, params1, stations, data, data_z, ND, NP, plot_sol, plot_noisy_data, MAX_GENERATIONS, ForwardMogiFactory
 from mystic.differential_evolution import DifferentialEvolutionSolver
-from mystic.detools import Best1Exp, Rand1Exp, ChangeOverGeneration, VTR, Best2Exp, Best2Exp
+from mystic.termination import ChangeOverGeneration, VTR
+from mystic.strategy import Best1Exp, Rand1Exp, Best2Exp, Best2Exp
 from mystic import getch, Sow, random_seed
 
 from mystic.forward_model import CostFactory

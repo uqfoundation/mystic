@@ -4,7 +4,8 @@ example_getCost.py
 Example to demonstrate use of CostFactory
 """
 
-from mystic.detools import *
+from mystic.termination import *
+from mystic.strategy import *
 from forward_model import *
 
 from mystic.models.poly import poly1d as ForwardPolyFactory

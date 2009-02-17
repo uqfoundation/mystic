@@ -12,7 +12,7 @@ the search.
 import sam
 from test_rosenbrock import *
 from mystic.scipy_optimize_fmin import NelderMeadSimplexSolver as fmin
-from mystic.nmtools import IterationRelativeError as IRE
+from mystic.termination import IterationRelativeTolerance as IRT
 from mystic import getch, Sow
 
 def draw_contour():
@@ -44,7 +44,7 @@ def run_once(x0,x1):
 
     solver = fmin(len(xinit))
     solver.SetInitialPoints(xinit)
-    solver.Solve(rosen, termination=IRE(), StepMonitor = simplex)
+    solver.Solve(rosen, termination=IRT(), StepMonitor = simplex)
     sol = solver.Solution()
     
     for x in simplex.x:
