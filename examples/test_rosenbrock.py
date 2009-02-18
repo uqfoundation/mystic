@@ -14,7 +14,7 @@ from mystic.differential_evolution import DifferentialEvolutionSolver
 from mystic.termination import ChangeOverGeneration, VTR
 from mystic.strategy import Best1Exp, Rand1Exp, Best2Bin
 from mystic.models import rosen
-from mystic.scipy_optimize_fmin import NelderMeadSimplexSolver as fmin
+from mystic.scipy_optimize import NelderMeadSimplexSolver as fmin
 from mystic.termination import IterationRelativeTolerance as IRT
 from mystic import Sow
 

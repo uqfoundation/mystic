@@ -52,23 +52,22 @@ EXPORT_BINS = \
 #   sam_mogi.py \
     test_mogi.py \
     test_mogi2.py \
-#   test_mogi3.py \
-#   test_mogi4.py \
+##  test_mogi3.py \
+##  test_mogi4.py \
     test_mogi_anneal.py \
-#   test_mogi_leastsq.py \
+    test_mogi_leastsq.py \
 #   sam_circle_matlab.py \
     test_circle.py \
 #   qld_circle_dual.py \
-#   metropolis.py \
-#   test_twistedgaussian.py \
-#   test_twistedgaussian2.py \
-#   test_twistedgaussian3.py \
+##  metropolis.py \
+##  test_twistedgaussian.py \
+##  test_twistedgaussian2.py \
+##  test_twistedgaussian3.py \
     test_wavy.py \
-#   derun.py \
-#   example.py \
+##  derun.py \
+##  example.py \
     example_getCost.py \
-#   forward_model.py \
-    forward_mogi.py \
+    forward_model.py \
 
 
 # export:: export-package-python-modules

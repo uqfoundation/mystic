@@ -8,7 +8,7 @@ This uses Nelder-Mead and StepMonitor
 
 import sam
 from test_mogi import *
-from mystic.scipy_optimize_fmin import NelderMeadSimplexSolver as fmin
+from mystic.scipy_optimize import NelderMeadSimplexSolver as fmin
 from mystic.termination import IterationRelativeTolerance as IRT
 from mystic import getch, Sow
 

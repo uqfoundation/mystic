@@ -50,7 +50,7 @@ if __name__ == '__main__':
     print "CPU Time: %s\n" % timetaken
 
     # optimize with fmin
-    from mystic.scipy_optimize_fmin import fmin
+    from mystic.scipy_optimize import fmin
     print fmin(DeJong3, [0 for i in range(ND)])
 
 # end of file

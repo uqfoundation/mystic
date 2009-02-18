@@ -11,7 +11,7 @@ the search.
 
 import sam
 from test_zimmermann import *
-from mystic.scipy_optimize_fmin import NelderMeadSimplexSolver as fmin
+from mystic.scipy_optimize import NelderMeadSimplexSolver as fmin
 from mystic.termination import IterationRelativeTolerance as IRT
 from mystic import getch, Sow
 

@@ -14,7 +14,7 @@ A Simple Model-Independent Inversion Framework.
 """
 
 # solvers
-import differential_evolution, scipy_optimize_fmin
+import differential_evolution, scipy_optimize
 
 # strategies, termination conditions
 import termination

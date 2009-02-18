@@ -50,7 +50,7 @@ if __name__ == '__main__':
     print "CPU Time: %s" % timetaken
 
     from mystic import Sow
-    from mystic.scipy_optimize_fmin import NelderMeadSimplexSolver as fmin
+    from mystic.scipy_optimize import NelderMeadSimplexSolver as fmin
     from mystic.termination import IterationRelativeTolerance as IRT
 
     simplex = Sow()

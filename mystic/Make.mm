@@ -27,7 +27,7 @@ EXPORT_PYTHON_MODULES = \
     __init__.py \
     const.py \
     differential_evolution.py \
-    scipy_optimize_fmin.py \
+    scipy_optimize.py \
     termination.py \
     strategy.py \
     tools.py \

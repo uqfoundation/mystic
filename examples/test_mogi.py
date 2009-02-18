@@ -109,7 +109,7 @@ def plot_sol(params, linestyle = 'b-'):
 
 if __name__ == '__main__':
 
-    from mystic.scipy_optimize_fmin import NelderMeadSimplexSolver as fmin
+    from mystic.scipy_optimize import NelderMeadSimplexSolver as fmin
     from mystic.termination import IterationRelativeTolerance as IRT
     from scipy.optimize import leastsq, fmin_cg
     #

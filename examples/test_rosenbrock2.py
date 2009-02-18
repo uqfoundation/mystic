@@ -27,7 +27,7 @@ if __name__=='__main__':
     stepmon = VerboseSow(10)
     from mystic.termination import IterationRelativeTolerance as IRT
 
-    from mystic.scipy_optimize_fmin import fmin, NelderMeadSimplexSolver
+    from mystic.scipy_optimize import fmin, NelderMeadSimplexSolver
    #print fmin(rosen,x0,retall=0,full_output=0)
     solver = NelderMeadSimplexSolver(len(x0))
     solver.SetInitialPoints(x0)

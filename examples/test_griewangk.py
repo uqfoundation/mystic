@@ -42,7 +42,7 @@ def main():
 
 
 if __name__ == '__main__':
-    from mystic.scipy_optimize_fmin import fmin
+    from mystic.scipy_optimize import fmin
     from timeit import Timer
     t = Timer("main()", "from __main__ import main")
     timetaken =  t.timeit(number=1)
