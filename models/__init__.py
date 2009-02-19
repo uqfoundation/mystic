@@ -19,4 +19,12 @@ from griewangk import griewangk
 from zimmermann import zimmermann
 from wavy import wavy1, wavy2
 
+#shortcuts
+#from poly import polyeval, poly1d
+#from poly import chebyshev8cost, chebyshev16cost
+#from br8 import data as br8data
+#from br8 import cost as br8cost
+#from corana import corana1d, corana2d, corana3d
+#from lorentzian import gendata, histogram
+
 # end of file

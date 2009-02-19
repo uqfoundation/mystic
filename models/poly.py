@@ -16,6 +16,25 @@ from numpy import asarray
 from mystic.forward_model import CostFactory as CF
 from numpy import poly1d as npoly1d
 
+def polyeval(coeffs, x):
+    """takes lists of coefficients & evaluation points, returns f(x)
+thus, [a3, a2, a1, a0] yields  a3 x^3 + a2 x^2 + a1 x^1 + a0"""
+    # The effect is this:
+    #    return reduce(lambda x1, x2: x1 * x + x2, coeffs, 0)
+    # However, the for loop used below is faster by about 50%.
+#   x = asarray(x) #FIXME: converting to numpy.array slows by 10x
+    val = 0*x
+    for c in coeffs:
+       val = c + val*x #FIXME: requires x to be a numpy.array
+    return val
+
+def poly1d(coeff):
+    """generates a 1-D polynomial instance from a list of coefficients
+i.e. numpy.poly1d(coeffs)"""
+    return npoly1d(coeff)
+
+#########################################
+
 class AbstractModel(object):
     """abstract Model"""
 
@@ -75,14 +94,7 @@ class Polynomial(AbstractModel):
     def evaluate(self,coeffs,x):
         """takes lists of coefficients & evaluation points, returns f(x)
 thus, [a3, a2, a1, a0] yields  a3 x^3 + a2 x^2 + a1 x^1 + a0"""
-        # The effect is this:
-        #    return reduce(lambda x1, x2: x1 * x + x2, coeffs, 0)
-        # However, the for loop used below is faster by about 50%.
-        x = asarray(x)
-        val = 0*x
-        for c in coeffs:
-           val = c + val*x
-        return val
+        return polyeval(coeffs,x)
 
     def ForwardFactory(self,coeffs):
         """generates a 1-D polynomial instance from a list of coefficients
@@ -168,8 +180,6 @@ poly = Polynomial()
 chebyshev8 = Chebyshev(8)
 chebyshev16 = Chebyshev(16)
 
-polyeval = poly.evaluate
-poly1d = poly.ForwardFactory
 chebyshev8cost = chebyshev8.cost
 chebyshev16cost = chebyshev16.cost
 

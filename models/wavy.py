@@ -22,12 +22,12 @@ a simple multi-minima function"""
     def function(self,coeffs):
         """evaluates the Wavy1 function for a list of coeffs
 minimum is f(x)=0.0 at xi=0.0"""
-        x = asarray(coeffs)
+        x = asarray(coeffs) #XXX: must be numpy.array
         return abs(x+3.*sin(x+pi)+pi)
 
-    def forward(self,pts):
-        """n-D Wavy; returns f(xi,yi,...) for pts=(x,y,...)"""
-        return AbstractFunction.forward(self,pts)
+#   def forward(self,pts):
+#       """n-D Wavy; returns f(xi,yi,...) for pts=(x,y,...)"""
+#       return AbstractFunction.forward(self,pts)
 
     pass
 
@@ -43,7 +43,7 @@ a simple multi-minima function"""
     def function(self,coeffs):
         """evaluates the Wavy2 function for a list of coeffs
 minimum is f(x)=0.0 at xi=0.0"""
-        x = asarray(coeffs)
+        x = asarray(coeffs) #XXX: must be a numpy.array
         return 4 *sin(x)+sin(4*x) + sin(8*x)+sin(16*x)+sin(32*x)+sin(64*x)
 
     pass

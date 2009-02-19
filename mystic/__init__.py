@@ -23,5 +23,4 @@ import strategy
 # monitors, function wrappers, and other tools
 from tools import *
 
-
 # end of file

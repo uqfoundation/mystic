@@ -7,7 +7,7 @@ References:
 """
 from dejong import AbstractFunction
 
-from numpy import sin, exp
+from math import sin, exp
 
 class fOsc3D(AbstractFunction):
     """fOsc3D Mathematica function:
@@ -26,9 +26,9 @@ minimum is f(x)=? at x=(?,?)"""
         if y < 0: penalty = 100.*y*y
         return func + penalty
 
-    def forward(self,pts):
-        """2-D fOsc3D; returns f(xi,yi) for pts=(x,y)"""
-        return AbstractFunction.forward(self,pts)
+#   def forward(self,pts):
+#       """2-D fOsc3D; returns f(xi,yi) for pts=(x,y)"""
+#       return AbstractFunction.forward(self,pts)
 
     pass
 

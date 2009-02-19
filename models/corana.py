@@ -12,7 +12,6 @@ http://www.icsi.berkeley.edu/~storn/deshort1.ps
 """
 from dejong import AbstractFunction
 
-from numpy import absolute as abs
 from numpy import asarray
 from math import pow
 from numpy import sign, floor
@@ -29,7 +28,8 @@ a multi-minima function, Eq. (22) of [2]"""
         """evaluates the Corana function for a list of coeffs
 minimum is f(x)=0.0 at xi=0.0"""
         d = [1., 1000., 10., 100.]
-        x = asarray(coeffs)
+       #x = asarray(coeffs) #XXX: converting to numpy.array slows by 10x
+        x = coeffs
         r = 0
         for j in range(4):
             zj =  floor( abs(x[j]/0.2) + 0.49999 ) * sign(x[j]) * 0.2
@@ -39,9 +39,9 @@ minimum is f(x)=0.0 at xi=0.0"""
                 r += d[j] * x[j] * x[j]
         return r
 
-    def forward(self,pts):
-        """n-dimensional Corana; returns f(xi,yi,...) for pts=(x,y,...)"""
-        return AbstractFunction.forward(self,pts)
+#   def forward(self,pts):
+#       """n-dimensional Corana; returns f(xi) for each xi in pts"""
+#       return AbstractFunction.forward(self,pts)
 
     pass
 

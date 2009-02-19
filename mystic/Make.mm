@@ -39,7 +39,6 @@ EXPORT_PYTHON_MODULES = \
     metropolis.py \
     scemtools.py \
 
-
 export:: export-python-modules
 
 # End of file

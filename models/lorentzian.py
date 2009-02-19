@@ -24,7 +24,7 @@ Computes lorentzian
         """evaluate lorentzian with given coeffs over given evalpts
 coeffs = (a1,a2,a3,A0,E0,G0,n)"""
         a1,a2,a3,A0,E0,G0,n = coeffs
-        x = asarray(evalpts)
+        x = asarray(evalpts) #XXX: requires a numpy.array
         return (a1 + a2*x + a3*x*x + A0 * ( G0/(2*pi) )/( (x-E0)*(x-E0)+(G0/2)*(G0/2) ))/n
 
     def ForwardFactory(self,coeffs):

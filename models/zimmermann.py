@@ -33,9 +33,9 @@ minimum is f(x)=0.0 at x=(7.0,2.0)"""
         if x0 * x1 > 14: c3 = 100 * (x0*x1-14.)
         return max(f8,c0,c1,c2,c3)
 
-    def forward(self,pts):
-        """2-D Zimmermann; returns f(xi,yi) for pts=(x,y)"""
-        return AbstractFunction.forward(self,pts)
+#   def forward(self,pts):
+#       """2-D Zimmermann; returns f(xi,yi) for pts=(x,y)"""
+#       return AbstractFunction.forward(self,pts)
 
     pass
 

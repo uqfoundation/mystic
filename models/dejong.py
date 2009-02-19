@@ -12,9 +12,8 @@ http://www.icsi.berkeley.edu/~storn/deshort1.ps
 """
 
 from numpy import sum as numpysum
-from numpy import absolute as abs
 from numpy import asarray, transpose
-from numpy import floor
+from math import floor
 import random
 from math import pow
 
@@ -31,10 +30,10 @@ class AbstractFunction(object):
         """takes a list of coefficients x, returns f(x)"""
         raise NotImplementedError, "overwrite for each derived class"
 
-    def forward(self,pts):
-        """takes points p=(x,y,...), returns f(xi,yi,...)"""
-        pts = asarray(pts)
-        return [self.function(i) for i in pts.transpose()]
+#   def forward(self,pts):
+#       """takes points p=(x,y,...), returns f(xi,yi,...)"""
+#       pts = asarray(pts) #XXX: converting to numpy.array slows by 10x
+#       return [self.function(i) for i in pts.transpose()] #FIXME: requires pts is a numpy.array
     pass
 
 
@@ -52,12 +51,12 @@ minimum is f(x)=0.0 at xi=1.0"""
         #ensure that there are 2 coefficients
         x = [1]*2
         x[:len(coeffs)]=coeffs
-        x = asarray(x)
+        x = asarray(x) #XXX: must be a numpy.array
         return numpysum(100.0*(x[1:]-x[:-1]**2.0)**2.0 + (1-x[:-1])**2.0)
 
-    def forward(self,pts):
-        """n-dimensional Rosenbrock; returns f(xi,yi,...) for pts=(x,y,...)"""
-        return AbstractFunction.forward(self,pts)
+#   def forward(self,pts):
+#       """n-dimensional Rosenbrock; returns f(xi,yi,...) for pts=(x,y,...)"""
+#       return AbstractFunction.forward(self,pts)
 
     pass
  
@@ -83,9 +82,9 @@ minimum is f(x)=0.0 at xi=-5-n where n=[0.0,0.12]"""
                 f += 30 * (5.12 - c)
         return f
 
-    def forward(self,pts):
-        """n-dimensional De Jong step; returns f(xi,yi,...) for pts=(x,y,...)"""
-        return AbstractFunction.forward(self,pts)
+#   def forward(self,pts):
+#       """n-dimensional De Jong step; returns f(xi,yi,...) for pts=(x,y,...)"""
+#       return AbstractFunction.forward(self,pts)
 
     pass
 
@@ -106,9 +105,9 @@ minimum is f(x)=random, but statistically at xi=0"""
             f += pow(c,4) * (j+1.0) + random.random()
         return f
 
-    def forward(self,pts):
-        """n-dimensional De Jong quartic; returns f(xi,yi,...) for pts=(x,y,...)"""
-        return AbstractFunction.forward(self,pts)
+#   def forward(self,pts):
+#       """n-dimensional De Jong quartic; returns f(xi,yi,...) for pts=(x,y,...)"""
+#       return AbstractFunction.forward(self,pts)
 
     pass
 
@@ -134,9 +133,9 @@ minimum is f(x)=0.0 at x(-32,-32)"""
             r += 1.0/ (1.0*i + pow(x-a1[i],6) + pow(y-a2[i],6) + 1e-15)
         return 1.0/(0.002 + r)
 
-    def forward(self,pts):
-        """2-D Shekel; returns f(xi,yi) for pts=(x,y)"""
-        return AbstractFunction.forward(self,pts)
+#   def forward(self,pts):
+#       """2-D Shekel; returns f(xi,yi) for pts=(x,y)"""
+#       return AbstractFunction.forward(self,pts)
 
     pass
 

@@ -34,7 +34,7 @@ coeffs = (x0,y0,z0,dV)"""
         # where a = sphere radius, dP = delta Pressure
         r2 = dx*dx + dy*dy + dz*dz
         C = c / pow(r2, 1.5)
-        return array((C*dx,C*dy,C*dz))
+        return array((C*dx,C*dy,C*dz)) #XXX: requires a numpy.array
 
     def ForwardFactory(self,coeffs):
         """generates a mogi source instance from a list of coefficients"""

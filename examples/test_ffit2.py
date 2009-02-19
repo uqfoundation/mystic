@@ -15,6 +15,7 @@ from mystic.termination import ChangeOverGeneration, VTR
 from mystic.strategy import Best1Exp, Best1Bin, Rand1Exp, Best2Bin, Best2Exp
 from mystic.models.poly import poly1d
 from mystic import VerboseSow
+from mystic.models.poly import chebyshev16cost
 
 import random
 random.seed(123)
@@ -27,7 +28,6 @@ def ChebyshevCost(trial):
 The costfunction for the fitting problem.
 70 evaluation points between [-1, 1] with two end points
     """
-    from mystic.models.poly import chebyshev16cost
     return chebyshev16cost(trial,M=70)*100
 
 

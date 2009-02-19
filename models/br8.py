@@ -7,9 +7,9 @@ References:
 """
 from poly import AbstractModel
 
-from numpy import array, asarray, sqrt
+from numpy import array, asarray
 from numpy import sum as numpysum
-from numpy import exp
+from numpy import exp, sqrt
 from mystic.forward_model import CostFactory as CF
 
 class BevingtonDecay(AbstractModel):
@@ -26,7 +26,7 @@ y = a1 + a2 Exp[-t / a4] + a3 Exp[-t/a5]
         """evaluate dual exponential decay with given coeffs over given evalpts
 coeffs = (a1,a2,a3,a4,a5)"""
         a1,a2,a3,a4,a5 = coeffs
-        t = asarray(evalpts)
+        t = asarray(evalpts) #XXX: requires a numpy.array
         return a1 + a2*exp(-t/a4) + a3*exp(-t/a5)
 
     def ForwardFactory(self,coeffs):
