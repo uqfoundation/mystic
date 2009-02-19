@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 
 ## Nelder Mead Simplex Solver Class
+# (derives from optimize.py module by Travis E. Oliphant)
 #
-# adapted from scipy.optimize, scipy version 0.4.8
+# adapted from scipy.optimize.fmin, scipy version 0.4.8
 # by Patrick Hung, Caltech.
+#
 # adapted to class (& added bounds)
 # by mmckerns@caltech.edu
 
