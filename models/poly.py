@@ -141,47 +141,46 @@ NOTE: default is T8(z)"""
         """generates a cost function instance from datapoints & evaluation points"""
         raise NotImplementedError, "use Polynomial.CostFactory2(pts,datapts,nparams)"
 
-    def __CostFactory(self,target,M):
-        """target is a list of order-n Chebyshev polynomial coefficients
-M is the desired number of evaluation points between [-1,1]"""
-        def cost(trial):
-            """Costfunction for Chebyshev order-%s polynomial.
-Uses %s evaluation points between [-1, 1] w/ two end points""" % (len(target)-1,M)
-            result=0.0
-            x=-1.0
-            dx = 2.0 / (M-1)
-            for i in range(M):
-                px = self.evaluate(trial, x)
-                if px<-1 or px>1:
-                    result += (1 - px) * (1 - px)
-                x += dx
-
-            px = self.evaluate(trial, 1.2) - self.evaluate(target, 1.2)
-            if px<0: result += px*px
-
-            px = self.evaluate(trial, -1.2) - self.evaluate(target, -1.2)
-            if px<0: result += px*px
-
-            return result
-        return cost
-
     def cost(self,trial,M=61):
         """The costfunction for order-n Chebyshev fitting.
 M evaluation points between [-1, 1], and two end points"""# % (len(self.coeffs)-1)
         #XXX: throw error when len(trial) != len(self.coeffs) ?
-        myCost = self.__CostFactory(self.coeffs,M)
-        return myCost(trial)
+        myCost = chebyshevcostfactory(self.coeffs)
+        return myCost(trial,M)
 
     pass
  
+# faster implementation
+def chebyshevcostfactory(target):
+    def chebyshevcost(trial,M=61):
+        """The costfunction for order-n Chebyshev fitting.
+M evaluation points between [-1, 1], and two end points"""
+
+        result=0.0
+        x=-1.0
+        dx = 2.0 / (M-1)
+        for i in range(M):
+            px = polyeval(trial, x)
+            if px<-1 or px>1:
+                result += (1 - px) * (1 - px)
+            x += dx
+
+        px = polyeval(trial, 1.2) - polyeval(target, 1.2)
+        if px<0: result += px*px
+
+        px = polyeval(trial, -1.2) - polyeval(target, -1.2)
+        if px<0: result += px*px
+
+        return result
+    return chebyshevcost
 
 # prepared instances
 poly = Polynomial()
 chebyshev8 = Chebyshev(8)
 chebyshev16 = Chebyshev(16)
 
-chebyshev8cost = chebyshev8.cost
-chebyshev16cost = chebyshev16.cost
+chebyshev8cost = chebyshevcostfactory(chebyshev8coeffs)
+chebyshev16cost = chebyshevcostfactory(chebyshev16coeffs)
 
 
 # End of file
