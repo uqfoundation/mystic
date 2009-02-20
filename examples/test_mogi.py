@@ -110,7 +110,7 @@ def plot_sol(params, linestyle = 'b-'):
 if __name__ == '__main__':
 
     from mystic.scipy_optimize import NelderMeadSimplexSolver as fmin
-    from mystic.termination import IterationRelativeTolerance as IRT
+    from mystic.termination import CandidateRelativeTolerance as CRT
     from scipy.optimize import leastsq, fmin_cg
     #
     desol, dstepmon = de_solve()
@@ -127,7 +127,7 @@ if __name__ == '__main__':
     simplex, esow = Sow(), Sow()
     solver = fmin(len(point))
     solver.SetInitialPoints(point)
-    solver.Solve(cost_function, IRT(), EvaluationMonitor = esow, StepMonitor = simplex)
+    solver.Solve(cost_function, CRT(), EvaluationMonitor = esow, StepMonitor = simplex)
     sol = solver.Solution()
 
     print "\nsimplex solution: ", sol

@@ -51,7 +51,7 @@ if __name__ == '__main__':
 
     from mystic import Sow
     from mystic.scipy_optimize import NelderMeadSimplexSolver as fmin
-    from mystic.termination import IterationRelativeTolerance as IRT
+    from mystic.termination import CandidateRelativeTolerance as CRT
 
     simplex = Sow()
     esow = Sow()
@@ -59,7 +59,7 @@ if __name__ == '__main__':
 
     solver = fmin(len(xinit))
     solver.SetInitialPoints(xinit)
-    solver.Solve(CostFunction, IRT(), EvaluationMonitor = esow, StepMonitor = simplex)
+    solver.Solve(CostFunction, CRT(), EvaluationMonitor = esow, StepMonitor = simplex)
     sol = solver.Solution()
     print "fmin solution: ", sol
 

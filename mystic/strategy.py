@@ -32,7 +32,7 @@ def Best1Exp(inst, candidate):
         n = (n + 1) % inst.nDim
         i += 1
 
-    inst.scaleSolutionWithRangeBoundary(inst.bestSolution)
+    inst._keepSolutionWithinRangeBoundary(inst.bestSolution)
     return
 
 def Best1Bin(inst, candidate):
@@ -55,7 +55,7 @@ But the logic of Best1Bin is different from [1]. Reimplementing here.
                                     inst.scale * (inst.population[r1][i] - \
                                                   inst.population[r2][i])
 
-    inst.scaleSolutionWithRangeBoundary(inst.bestSolution)
+    inst._keepSolutionWithinRangeBoundary(inst.bestSolution)
     return
 
 def Rand1Exp(inst, candidate):
@@ -74,7 +74,7 @@ def Rand1Exp(inst, candidate):
         n = (n + 1) % inst.nDim
         i += 1
 
-    inst.scaleSolutionWithRangeBoundary(inst.population[r1])
+    inst._keepSolutionWithinRangeBoundary(inst.population[r1])
     return
 
 # WARNING, stuff below are not debugged
@@ -95,7 +95,7 @@ def RandToBest1Exp(inst, candidate):
         n = (n + 1) % inst.nDim
         i += 1
 
-    inst.scaleSolutionWithRangeBoundary(inst.trialSolution)
+    inst._keepSolutionWithinRangeBoundary(inst.trialSolution)
     return
 
 def Best2Exp(inst, candidate):
@@ -115,7 +115,7 @@ def Best2Exp(inst, candidate):
         n = (n + 1) % inst.nDim
         i += 1
 
-    inst.scaleSolutionWithRangeBoundary(inst.bestSolution)
+    inst._keepSolutionWithinRangeBoundary(inst.bestSolution)
     return
 
 def Rand2Exp(inst, candidate):
@@ -135,7 +135,7 @@ def Rand2Exp(inst, candidate):
         n = (n + 1) % inst.nDim
         i += 1
 
-    inst.scaleSolutionWithRangeBoundary(inst.population[r1])
+    inst._keepSolutionWithinRangeBoundary(inst.population[r1])
     return
 
 def Rand1Bin(inst, candidate):
@@ -153,7 +153,7 @@ def Rand1Bin(inst, candidate):
         n = (n + 1) % inst.nDim
         i += 1
 
-    inst.scaleSolutionWithRangeBoundary(inst.population[r1])
+    inst._keepSolutionWithinRangeBoundary(inst.population[r1])
     return
 
 def RandToBest1Bin(inst, candidate):
@@ -172,7 +172,7 @@ def RandToBest1Bin(inst, candidate):
         n = (n + 1) % inst.nDim
         i += 1
 
-    inst.scaleSolutionWithRangeBoundary(inst.trialSolution)
+    inst._keepSolutionWithinRangeBoundary(inst.trialSolution)
     return
 
 def Best2Bin(inst, candidate):
@@ -192,7 +192,7 @@ def Best2Bin(inst, candidate):
         n = (n + 1) % inst.nDim
         i += 1
 
-    inst.scaleSolutionWithRangeBoundary(inst.bestSolution)
+    inst._keepSolutionWithinRangeBoundary(inst.bestSolution)
     return
 
 def Rand2Bin(inst, candidate):
@@ -212,7 +212,7 @@ def Rand2Bin(inst, candidate):
         n = (n + 1) % inst.nDim
         i += 1
 
-    inst.scaleSolutionWithRangeBoundary(inst.population[r1])
+    inst._keepSolutionWithinRangeBoundary(inst.population[r1])
     return
     
 # end of file

@@ -25,7 +25,7 @@ if __name__=='__main__':
     start = time.time()
     from mystic.tools import VerboseSow
     stepmon = VerboseSow(10)
-    from mystic.termination import IterationRelativeTolerance as IRT
+    from mystic.termination import CandidateRelativeTolerance as CRT
 
     from mystic.scipy_optimize import fmin, NelderMeadSimplexSolver
    #print fmin(rosen,x0,retall=0,full_output=0)
@@ -33,7 +33,7 @@ if __name__=='__main__':
     solver.SetInitialPoints(x0)
     solver.SetStrictRanges(min,max)
     solver.enable_signal_handler()
-    solver.Solve(rosen,termination=IRT(xtol=1e-5),StepMonitor=stepmon)
+    solver.Solve(rosen,termination=CRT(xtol=1e-5),StepMonitor=stepmon)
     print solver.Solution()
 
     times.append(time.time() - start)

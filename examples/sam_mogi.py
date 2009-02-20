@@ -9,7 +9,7 @@ This uses Nelder-Mead and StepMonitor
 import sam
 from test_mogi import *
 from mystic.scipy_optimize import NelderMeadSimplexSolver as fmin
-from mystic.termination import IterationRelativeTolerance as IRT
+from mystic.termination import CandidateRelativeTolerance as CRT
 from mystic import getch, Sow
 
 x0,y0,z0,v0 = actual_params
@@ -65,7 +65,7 @@ def run_once_xy():
 
     solver = fmin(len(xinit))
     solver.SetInitialPoints(xinit)
-    solver.Solve(cost_function, termination=IRT(), StepMonitor = simplex)
+    solver.Solve(cost_function, termination=CRT(), StepMonitor = simplex)
     sol = solver.Solution()
     print sol
     
@@ -83,7 +83,7 @@ def run_once_xv():
 
     solver = fmin(len(xinit))
     solver.SetInitialPoints(xinit)
-    solver.Solve(cost_function, termination=IRT(), StepMonitor = simplex)
+    solver.Solve(cost_function, termination=CRT(), StepMonitor = simplex)
     sol = solver.Solution()
     print sol
 

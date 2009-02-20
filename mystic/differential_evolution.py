@@ -15,6 +15,8 @@
 ## Ported To Python By: James R. Phillips
 ##                      Birmingham, Alabama USA
 ##                      zunzun@zunzun.com
+##
+## bounds added by mmckerns@caltech.edu
 
 """
 Differential Evolution Solver of Storn and Price
@@ -81,20 +83,21 @@ class DifferentialEvolutionSolver(object):
         self._strictMax = max
         return
 
-    def truncateSolutionAtRangeBoundary(self):
-        """truncate trialSolution at range boundary"""
-        if not self._useStrictRange:
-            return
-        min = self._strictMin
-        max = self._strictMax
-        for i in range(self.nDim):
-            if self.trialSolution[i] < min[i]:
-                self.trialSolution[i] = min[i]
-            elif self.trialSolution[i] > max[i]:
-                self.trialSolution[i] = max[i]
-        return
+#   def _truncateSolutionAtRangeBoundary(self):
+#       """truncate trialSolution at range boundary"""
+#       if not self._useStrictRange:
+#           return
+#       min = self._strictMin
+#       max = self._strictMax
+#       for i in range(self.nDim):
+#           if self.trialSolution[i] < min[i]:
+#               self.trialSolution[i] = min[i]
+#           elif self.trialSolution[i] > max[i]:
+#               self.trialSolution[i] = max[i]
+#       return
             
-    def scaleSolutionWithRangeBoundary(self, base):
+    def _keepSolutionWithinRangeBoundary(self, base): #XXX: could be smarter?
+   #def scaleSolutionWithRangeBoundary(self, base):
         """scale trialSolution to be between base value and range boundary"""
         if not self._useStrictRange:
             return

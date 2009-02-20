@@ -15,7 +15,7 @@ from mystic.termination import ChangeOverGeneration, VTR
 from mystic.strategy import Best1Exp, Rand1Exp, Best2Bin
 from mystic.models import rosen
 from mystic.scipy_optimize import NelderMeadSimplexSolver as fmin
-from mystic.termination import IterationRelativeTolerance as IRT
+from mystic.termination import CandidateRelativeTolerance as CRT
 from mystic import Sow
 
 import random
@@ -51,7 +51,7 @@ if __name__ == '__main__':
 
     solver = fmin(len(xinit))
     solver.SetInitialPoints(xinit)
-    solver.Solve(rosen, IRT(), EvaluationMonitor = esow, StepMonitor = ssow)
+    solver.Solve(rosen, CRT(), EvaluationMonitor = esow, StepMonitor = ssow)
     sol = solver.Solution()
     print sol
  

@@ -69,7 +69,17 @@ class NelderMeadSimplexSolver(object):
         self._strictMax = max
         return
 
-    def setSimplexWithinRangeBoundary(self, x0, radius):
+    def _setGuessWithinRangeBoundary(self, x0):
+        """ensure that initial guess is set within bounds"""
+        if self._useStrictRange:
+            lo = asarray(self._strictMin)
+            hi = asarray(self._strictMax)
+            # crop x0 at bounds
+            x0[x0<lo] = lo[x0<lo]
+            x0[x0>hi] = hi[x0>hi]
+        return x0
+
+    def _setSimplexWithinRangeBoundary(self, x0, radius):
         """ensure that initial simplex is set within bounds"""
         #code modified from park-1.2/park/simplex.py (version 1257)
         if self._useStrictRange:
@@ -185,6 +195,7 @@ class NelderMeadSimplexSolver(object):
 
         fcalls, func = wrap_function(func, args, EvaluationMonitor)
         if self._useStrictRange:
+            x0 = self._setGuessWithinRangeBoundary(x0)
             func = wrap_bounds(func, self._strictMin, self._strictMax)
 
         def handler(signum, frame):
@@ -247,7 +258,7 @@ class NelderMeadSimplexSolver(object):
         fsim[0] = func(x0)
 
         #--- ensure initial simplex is within bounds ---
-        x0,val = self.setSimplexWithinRangeBoundary(x0,radius)
+        x0,val = self._setSimplexWithinRangeBoundary(x0,radius)
         #--- end bounds code ---
         for k in range(0,N):
             y = numpy.array(x0,copy=True)
@@ -264,6 +275,7 @@ class NelderMeadSimplexSolver(object):
         self.bestEnergy = min(fsim)
         self.population = sim
         self.popEnergy = fsim
+        self.energy_history.append(self.bestEnergy)
 
         iterations = 1
 
@@ -377,12 +389,12 @@ def fmin(func, x0, args=(), xtol=1e-4, ftol=1e-4, maxiter=None, maxfun=None,
     from mystic.tools import Sow
     stepmon = Sow()
     evalmon = Sow()
-    from mystic.termination import IterationRelativeTolerance as IRT
+    from mystic.termination import CandidateRelativeTolerance as CRT
 
     solver = NelderMeadSimplexSolver(len(x0))
     solver.SetInitialPoints(x0)
    #solver.enable_signal_handler()
-    solver.Solve(func,termination=IRT(xtol,ftol),\
+    solver.Solve(func,termination=CRT(xtol,ftol),\
                  maxiter=maxiter,maxfun=maxfun,\
                  EvaluationMonitor=evalmon,StepMonitor=stepmon,\
                  disp=disp, callback=callback)
