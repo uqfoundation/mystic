@@ -7,6 +7,7 @@
 # by Patrick Hung, Caltech.
 #
 # adapted to class (& added bounds)
+# updated to scipy version 0.6.0
 # by mmckerns@caltech.edu
 
 """
@@ -170,10 +171,12 @@ class NelderMeadSimplexSolver(object):
         args = ExtraArgs
         full_output=1  #non-zero if fval and warnflag outputs are desired.
         disp=0         #non-zero to print convergence messages.
-        retall=0
+        retall=0       #non-zero to return all steps
+        callback=None  #user-supplied function, called after each step
         radius=0.05    #percentage change for initial simplex values
         if kwds.has_key('disp'): disp = kwds['disp']
         if kwds.has_key('radius'): radius = kwds['radius']
+        if kwds.has_key('callback'): callback = kwds['callback']
         #-------------------------------------------------------------
 
         import signal
@@ -220,7 +223,7 @@ class NelderMeadSimplexSolver(object):
         if self._handle_sigint: signal.signal(signal.SIGINT, self.signal_handler)
         #-------------------------------------------------------------
 
-        x0 = asfarray(x0)
+        x0 = asfarray(x0).flatten()
         N = len(x0) #XXX: this should be equal to self.nDim
         rank = len(x0.shape)
         if not -1 < rank < 2:
@@ -234,10 +237,10 @@ class NelderMeadSimplexSolver(object):
         one2np1 = range(1,N+1)
 
         if rank == 0:
-            sim = numpy.zeros((N+1,),x0.dtype.char)
+            sim = numpy.zeros((N+1,), dtype=x0.dtype)
         else:
-            sim = numpy.zeros((N+1,N),x0.dtype.char)
-        fsim = numpy.zeros((N+1,),'d')
+            sim = numpy.zeros((N+1,N), dtype=x0.dtype)
+        fsim = numpy.zeros((N+1,), float)
         sim[0] = x0
         if retall:
             allvecs = [sim[0]]
@@ -254,7 +257,7 @@ class NelderMeadSimplexSolver(object):
             fsim[k+1] = f
     
         ind = numpy.argsort(fsim)
-        fsim = numpy.take(fsim,ind)
+        fsim = numpy.take(fsim,ind,0)
         # sort so sim[0,:] has the lowest function value
         sim = numpy.take(sim,ind,0)
         self.bestSolution = sim[0]
@@ -317,7 +320,9 @@ class NelderMeadSimplexSolver(object):
 
             ind = numpy.argsort(fsim)
             sim = numpy.take(sim,ind,0)
-            fsim = numpy.take(fsim,ind)
+            fsim = numpy.take(fsim,ind,0)
+            if callback is not None:
+                callback(sim[0])
             iterations = iterations + 1
             if retall:
                 allvecs.append(sim[0])
@@ -366,7 +371,7 @@ class NelderMeadSimplexSolver(object):
 
 
 def fmin(func, x0, args=(), xtol=1e-4, ftol=1e-4, maxiter=None, maxfun=None,
-         full_output=0, disp=1, retall=0):
+         full_output=0, disp=1, retall=0, callback=None):
     """fmin using the 'original' scipy.optimize.fmin interface"""
 
     from mystic.tools import Sow
@@ -380,7 +385,7 @@ def fmin(func, x0, args=(), xtol=1e-4, ftol=1e-4, maxiter=None, maxfun=None,
     solver.Solve(func,termination=IRT(xtol,ftol),\
                  maxiter=maxiter,maxfun=maxfun,\
                  EvaluationMonitor=evalmon,StepMonitor=stepmon,\
-                 disp=disp)
+                 disp=disp, callback=callback)
     solution = solver.Solution()
 
     # code below here pushes output to scipy.optimize.fmin interface
