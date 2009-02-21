@@ -15,7 +15,6 @@ A Simple Model-Independent Inversion Framework.
 
 # solvers
 import differential_evolution, scipy_optimize
-import fmin_powell #FIXME: move to scipy_optimize after remove scipy dependency
 
 # strategies, termination conditions
 import termination

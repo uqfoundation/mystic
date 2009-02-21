@@ -41,6 +41,7 @@ Optimization 11: 341-359, 1997.
 Approach to Global Optimization. Springer, 1st Edition, 2005
 
 """
+__all__ = ['DifferentialEvolutionSolver','DifferentialEvolutionSolver2']
 
 from mystic.tools import Null, wrap_function
 
