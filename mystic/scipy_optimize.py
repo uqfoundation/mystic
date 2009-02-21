@@ -243,6 +243,8 @@ class NelderMeadSimplexSolver(object):
             maxiter = N * 200
         if maxfun is None:
             maxfun = N * 200
+        self._maxiter = maxiter #XXX: better to just copy the code?
+        self._maxfun = maxfun   #XXX: better to just copy the code?
 
         rho = 1; chi = 2; psi = 0.5; sigma = 0.5;
         one2np1 = range(1,N+1)
@@ -401,18 +403,20 @@ def fmin(func, x0, args=(), xtol=1e-4, ftol=1e-4, maxiter=None, maxfun=None,
     solution = solver.Solution()
 
     # code below here pushes output to scipy.optimize.fmin interface
-    x = list(solver.bestSolution)
+   #x = list(solver.bestSolution)
+    x = solver.bestSolution
     fval = solver.bestEnergy
     warnflag = 0
     fcalls = len(evalmon.x)
     iterations = len(stepmon.x)
     allvecs = []
     for i in range(iterations):
-        allvecs.append(list(stepmon.x[i][0]))
+       #allvecs.append(list(stepmon.x[i][0]))
+        allvecs.append(stepmon.x[i][0])
 
-    if fcalls >= maxfun:
+    if fcalls >= solver._maxfun:
         warnflag = 1
-    elif iterations >= maxiter:
+    elif iterations >= solver._maxiter:
         warnflag = 2
 
     if full_output:

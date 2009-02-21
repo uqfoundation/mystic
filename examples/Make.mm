@@ -41,6 +41,7 @@ EXPORT_BINS = \
     mpl_corana.py \
     test_rosenbrock.py \
     test_rosenbrock2.py \
+    test_rosenbrock3.py \
 #   sam_rosenbrock.py \
     cg_rosenbrock.py \
 #   sam_cg_rosenbrock.py \
