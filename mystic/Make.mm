@@ -26,6 +26,7 @@ update: clean
 EXPORT_PYTHON_MODULES = \
     __init__.py \
     const.py \
+    abstract_solver.py \
     differential_evolution.py \
     scipy_optimize.py \
     _scipy060optimize.py \

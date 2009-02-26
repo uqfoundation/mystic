@@ -45,7 +45,9 @@ __all__ = ['DifferentialEvolutionSolver','DifferentialEvolutionSolver2']
 
 from mystic.tools import Null, wrap_function
 
-class DifferentialEvolutionSolver(object):
+from abstract_solver import AbstractSolver
+
+class DifferentialEvolutionSolver(AbstractSolver):
     """
     Differential Evolution optimization of Storn and Price.
     """
@@ -56,49 +58,13 @@ class DifferentialEvolutionSolver(object):
    dim      -- dimensionality of the problem
    NP       -- size of the population (> 4)
         """
-        self.nDim          = dim
-        self.nPop          = NP
-        self.generations   = 0
+        #XXX: raise Error if npop <= 4?
+        AbstractSolver.__init__(self,dim,npop=NP)
+        self.genealogy     = [ [] for j in range(NP)]
         self.scale         = 0.7
         self.probability   = 0.5
-        self.bestEnergy    = 0.0
-        self.trialSolution = [0.0] * self.nDim
-        self.bestSolution  = [0.0] * self.nDim
-        self.popEnergy	   = [0.0] * self.nPop
-        self.population	   = [[0.0 for i in range(dim)] for j in range(NP)]
-        self.genealogy     = [ [] for j in range(NP)]
-        self.energy_history = []
-        self.signal_handler = None
-        self._handle_sigint = False
-        self._useStrictRange = False
-        self._strictMin = [] #XXX: or None?
-        self._strictMax = [] #XXX: or None?
         
-        
-    def Solution(self):
-        return self.bestSolution
-
-    def SetStrictRanges(self, min, max):
-        self._useStrictRange = True
-        self._strictMin = min
-        self._strictMax = max
-        return
-
-#   def _truncateSolutionAtRangeBoundary(self):
-#       """truncate trialSolution at range boundary"""
-#       if not self._useStrictRange:
-#           return
-#       min = self._strictMin
-#       max = self._strictMax
-#       for i in range(self.nDim):
-#           if self.trialSolution[i] < min[i]:
-#               self.trialSolution[i] = min[i]
-#           elif self.trialSolution[i] > max[i]:
-#               self.trialSolution[i] = max[i]
-#       return
-            
     def _keepSolutionWithinRangeBoundary(self, base): #XXX: could be smarter?
-   #def scaleSolutionWithRangeBoundary(self, base):
         """scale trialSolution to be between base value and range boundary"""
         if not self._useStrictRange:
             return
@@ -121,47 +87,30 @@ class DifferentialEvolutionSolver(object):
         self.genealogy[id].append(newchild)
         return
 
-    def SetRandomInitialPoints(self, min, max):
-        import random
-        for i in range(self.nPop):
-            for j in range(self.nDim):
-                self.population[i][j] = random.uniform(min[j],max[j])
-            self.popEnergy[i] = 1.0E20
-
-    def SetMultinormalInitialPoints(self, mean, var = None):
-        """ Initial Population from Multivariate Normal.
-        - mean must be a sequence of length self.nDim
-        - var can be None: -> it becomes the identity
-                   scalar: -> var becomes scalar * I
-                   matrix: -> the variance matrix. better be the right size !
-        """
-        from numpy.random import multivariate_normal
-        import numpy
-        assert(len(mean) == self.nDim)
-        if var == None:
-            var = numpy.eye(self.nDim)
-        else:
-            try:
-                # scalar ?
-                float(var)
-            except:
-                # nope. var better be matrix of the right size (no check)
-                pass
-            else:
-                var = var * numpy.eye(self.nDim)
-        for i in range(self.nPop):
-            self.population[i] = multivariate_normal(mean, var).tolist()
-            self.popEnergy[i] = 1.0E20
-        return
-
-    def enable_signal_handler(self):
-        self._handle_sigint = True
-
-    def disable_signal_handler(self):
-        self._handle_sigint = False
-
-    def Solve(self, costfunction, strategy, termination, maxiter, CrossProbability = 0.5, ScalingFactor = 0.7, sigint_callback = None,
+    def Solve(self, costfunction, strategy, termination,
+              maxiter, CrossProbability = 0.5, ScalingFactor = 0.7,
+              sigint_callback = None,
               EvaluationMonitor=Null, StepMonitor=Null, ExtraArgs=()):
+        """Minimize a function using differential evolution.
+
+    Description:
+
+      <doc here>
+
+    Inputs:
+
+      <doc here>
+
+    Additional Inputs:
+
+      <doc here>
+
+    Further Inputs:
+
+      <doc here>
+
+        """
+        #FIXME: Solve() interface does not conform to AbstractSolver interface
         import signal
         import mystic.termination as detools
         detools.EARLYEXIT = False
@@ -248,12 +197,37 @@ class DifferentialEvolutionSolver(object):
 
 class DifferentialEvolutionSolver2(DifferentialEvolutionSolver):
     """
-    Almost exactly the same as the base, except this version is functionally equivalent to the MPIDifferentialEvolutionSolver.
-    The difference between this and its parent is that a current generation, and a next generation is kept, and the current is 
-    invariant during the main DE logic.
+    Differential Evolution optimization of Storn and Price.
+
+    Alternate implementaiton: 
+      - functionally equivalent to MPIDifferentialEvolutionSolver.
+      - both a current and a next generation are kept, while the current
+        generation is invariant during the main DE logic.
     """
-    def Solve(self, costfunction, strategy, termination, maxiter, CrossProbability = 0.5, ScalingFactor = 0.7, sigint_callback = None,
+    def Solve(self, costfunction, strategy, termination,
+              maxiter, CrossProbability = 0.5, ScalingFactor = 0.7,
+              sigint_callback = None,
               EvaluationMonitor=Null, StepMonitor=Null, ExtraArgs=()):
+        """Minimize a function using differential evolution.
+
+    Description:
+
+      <doc here>
+
+    Inputs:
+
+      <doc here>
+
+    Additional Inputs:
+
+      <doc here>
+
+    Further Inputs:
+
+      <doc here>
+
+        """
+        #FIXME: Solve() interface does not conform to AbstractSolver interface
         import signal
         import mystic.termination as detools
         detools.EARLYEXIT = False

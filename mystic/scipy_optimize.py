@@ -33,16 +33,16 @@ from mystic.tools import Null, wrap_function
 from mystic.tools import wrap_bounds
 
 import numpy
-from numpy import atleast_1d, eye, zeros, shape, \
-     asarray, absolute, sqrt, Inf, asfarray
+from numpy import eye, zeros, shape, asarray, absolute, asfarray
 from numpy import clip, squeeze
 
 abs = absolute
 
 from _scipy060optimize import brent #XXX: local copy to avoid dependency!
 
+from abstract_solver import AbstractSolver
 
-class NelderMeadSimplexSolver(object):
+class NelderMeadSimplexSolver(AbstractSolver):
     """
     Nelder Mead Simplex optimization adapted from scipy.optimize.fmin.
     """
@@ -52,60 +52,27 @@ class NelderMeadSimplexSolver(object):
  Takes one initial input: 
    dim      -- dimensionality of the problem
         """
-        NP = 1
         simplex = dim+1
-        self.nDim          = dim
-        self.nPop          = NP
-        self.generations   = 0
-        self.scale         = None
-        self.probability   = None
-        self.bestEnergy    = 0.0
-       #self.trialSolution = [0.0] * self.nDim  #XXX: algorithm doesn't use...?
-        self.bestSolution  = [0.0] * self.nDim
+        #XXX: cleaner to set npop=simplex, and use 'population' as simplex
+        AbstractSolver.__init__(self,dim) #,npop=simplex)
         self.popEnergy	   = [0.0] * simplex
         self.population	   = [[0.0 for i in range(dim)] for j in range(simplex)]
-       #self.genealogy     = [ [] for j in range(NP)]  #XXX: log of...?
-        self.energy_history = []
-        self.signal_handler = None
-        self._handle_sigint = False
-        self._useStrictRange = False
-        self._strictMin = []
-        self._strictMax = []
 
-    def Solution(self):
-        return self.bestSolution
-
-    def SetStrictRanges(self, min, max):
-        self._useStrictRange = True
-        self._strictMin = min
-        self._strictMax = max
-        return
-
-    def _setGuessWithinRangeBoundary(self, x0):
-        """ensure that initial guess is set within bounds"""
-        if self._useStrictRange:
-            lo = asarray(self._strictMin)
-            hi = asarray(self._strictMax)
-            # crop x0 at bounds
-            x0[x0<lo] = lo[x0<lo]
-            x0[x0>hi] = hi[x0>hi]
-        return x0
-
-    def _setSimplexWithinRangeBoundary(self, x0, radius):
-        """ensure that initial simplex is set within bounds"""
+    def _setSimplexWithinRangeBoundary(self, x0, radius): #XXX: use population?
+        """ensure that initial simplex is set within bounds
+        - x0: must be a sequence of length self.nDim
+        - radius: size of the initial simplex"""
         #code modified from park-1.2/park/simplex.py (version 1257)
         if self._useStrictRange:
-            lo = asarray(self._strictMin)
-            hi = asarray(self._strictMax)
-            # crop x0 at bounds
-            x0[x0<lo] = lo[x0<lo]
-            x0[x0>hi] = hi[x0>hi]
+            x0 = self._clipGuessWithinRangeBoundary(x0)
 
         val = x0*(1+radius)
         val[val==0] = radius
         if not self._useStrictRange:
             return x0, val
 
+        lo = self._strictMin
+        hi = self._strictMax
         radius = clip(radius,0,0.5)
         # rescale val by bounded range...
         # (increases fit for tight bounds; makes worse[?] for large bounds)
@@ -126,40 +93,6 @@ class NelderMeadSimplexSolver(object):
      #  tol[bounded] = (hi[bounded]-lo[bounded])*xtol
      #  xtol = tol
         return x0, val
-
-    def UpdateGenealogyRecords(self, id, newchild):
-        raise NotImplementedError, "genealogy records not implemented"
-
-    def SetInitialPoints(self, x0):
-        x0 = asfarray(x0)
-        rank = len(x0.shape)
-        if rank is 0:
-            x0 = asfarray([x0])
-            rank = 1
-        if not -1 < rank < 2:
-            raise ValueError, "Initial guess must be a scalar or rank-1 sequence."
-        if len(x0) != self.nDim:
-            raise ValueError, "Initial guess must be length %s" % self.nDim
-
-        #stick initial values in first pop
-        self.population[0] = x0
-        self.popEnergy[0] = 1.0E20
-    
-    def SetRandomInitialPoints(self, min, max):
-        import random
-        #generate initial values in first pop
-        for i in range(self.nDim):
-            self.population[0][i] = random.uniform(min[i],max[i])
-        self.popEnergy[0] = 1.0E20
-
-    def SetMultinormalInitialPoints(self, mean, var = None):
-        raise NotImplementedError, "multinormal initial points not implemented"
-
-    def enable_signal_handler(self):
-        self._handle_sigint = True
-
-    def disable_signal_handler(self):
-        self._handle_sigint = False
 
     def Solve(self, func, termination,
               maxiter=None, maxfun=None, sigint_callback=None,
@@ -215,7 +148,7 @@ class NelderMeadSimplexSolver(object):
 
         fcalls, func = wrap_function(func, args, EvaluationMonitor)
         if self._useStrictRange:
-            x0 = self._setGuessWithinRangeBoundary(x0)
+            x0 = self._clipGuessWithinRangeBoundary(x0)
             func = wrap_bounds(func, self._strictMin, self._strictMax)
 
         def handler(signum, frame):
@@ -463,7 +396,7 @@ def _linesearch_powell(func, p, xi, tol=1e-3):
     return squeeze(fret), p+xi, xi
 
 
-class PowellDirectionalSolver(NelderMeadSimplexSolver): #FIXME: not a simplex solver
+class PowellDirectionalSolver(AbstractSolver):
     """
     Powell Direction Search optimization adapted from scipy.optimize.fmin_powell.
     """
@@ -473,9 +406,8 @@ class PowellDirectionalSolver(NelderMeadSimplexSolver): #FIXME: not a simplex so
  Takes one initial input: 
    dim      -- dimensionality of the problem
         """
-        NelderMeadSimplexSolver.__init__(self,dim)
+        AbstractSolver.__init__(self,dim)
         self._direc = None #FIXME: this is the easy way to return 'direc'...
-       #FIXME: NO SIMPLEX, so maybe best not to inherit __init__?
 
 
     def Solve(self, func, termination,
@@ -536,7 +468,7 @@ class PowellDirectionalSolver(NelderMeadSimplexSolver): #FIXME: not a simplex so
 
         fcalls, func = wrap_function(func, args, EvaluationMonitor)
         if self._useStrictRange:
-            x0 = self._setGuessWithinRangeBoundary(x0)
+            x0 = self._clipGuessWithinRangeBoundary(x0)
             func = wrap_bounds(func, self._strictMin, self._strictMax)
 
         def handler(signum, frame):
@@ -599,8 +531,8 @@ class PowellDirectionalSolver(NelderMeadSimplexSolver): #FIXME: not a simplex so
         self._direc = direc #XXX: instead, use a monitor?
         self.bestSolution = x
         self.bestEnergy = fval
-        self.population = [x]    #XXX: pointless, if simplex not used
-        self.popEnergy = [fval]  #XXX: pointless, if simplex not used
+        self.population[0] = x    #XXX: pointless?
+        self.popEnergy[0] = fval  #XXX: pointless?
         self.energy_history.append(self.bestEnergy)
         StepMonitor(x,fval) # get initial values
 
@@ -653,8 +585,8 @@ class PowellDirectionalSolver(NelderMeadSimplexSolver): #FIXME: not a simplex so
             self._direc = direc #XXX: instead, use a monitor?
             self.bestSolution = x
             self.bestEnergy = fval
-            self.population = [x]    #XXX: pointless, if simplex not used
-            self.popEnergy = [fval]  #XXX: pointless, if simplex not used
+            self.population[0] = x    #XXX: pointless
+            self.popEnergy[0] = fval  #XXX: pointless
             StepMonitor(x,fval) # get ith values; #XXX: should be [x],[fval] ?
     
         self.generations = iter
