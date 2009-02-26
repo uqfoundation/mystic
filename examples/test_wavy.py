@@ -9,7 +9,8 @@ from mystic.termination import ChangeOverGeneration, VTR
 from mystic.strategy import Best1Exp, Best1Bin, Rand1Exp
 from mystic import getch, VerboseSow
 from numpy import arange
-import scipy.optimize
+from mystic.scipy_optimize import fmin
+#from scipy.optimize import fmin
 
 import random
 random.seed(123)
@@ -65,7 +66,7 @@ def main():
 
 if __name__ == '__main__':
     #solution = main()
-    scipysol = scipy.optimize.fmin(wavy, [0.1])
+    scipysol = fmin(wavy, [0.1])
     desol, solver = main()
     #plot_solution(scipysol)
     #plot_solution(desol)

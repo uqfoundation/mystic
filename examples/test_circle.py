@@ -93,11 +93,12 @@ if __name__ == '__main__':
     pylab.plot(sr * cos(theta)+sx, sr*sin(theta)+sy, 'b-',linewidth=2)
     # try scipy as well
     try: 
-        import scipy.optimize
+        from mystic.scipy_optimize import fmin
+       #from scipy.optimize import fmin
         xx = [1,1,1] # bad initial guess
         xx = [5,5,1] # ok guess
         xx = [10,15,5] # good initial guess
-        sol = scipy.optimize.fmin(cost, xx)
+        sol = fmin(cost, xx)
         ax, ay, ar = sol
         pylab.plot(ar * cos(theta)+ax, ar*sin(theta)+ay, 'g-',linewidth=2)
         legend.append('Nelder-Mead : %f' % ar)

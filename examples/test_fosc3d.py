@@ -47,7 +47,8 @@ def main():
 
 if __name__ == '__main__':
     import pylab, Image
-    import scipy.optimize
+    from mystic.scipy_optimize import fmin
+   #from scipy.optimize import fmin
     draw_contour()
     solution = main()
     print "solution: ", solution
@@ -56,19 +57,19 @@ if __name__ == '__main__':
 
     print "\nTrying scipy.optimize.fmin (Nelder-Mead Simplex)..."
 
-    m = scipy.optimize.fmin(fOsc3D, [0.1, 0.1])
+    m = fmin(fOsc3D, [0.1, 0.1])
     pylab.plot([m[0]],[m[1]],'ro',markersize=5)
     print "solution w/ initial conditions (0.1,0.1): %s\n" % m
 
-    m = scipy.optimize.fmin(fOsc3D, [1, 1])
+    m = fmin(fOsc3D, [1, 1])
     pylab.plot([m[0]],[m[1]],'ro',markersize=5)
     print "solution w/ initial conditions (1,1): %s\n" % m
 
-    m = scipy.optimize.fmin(fOsc3D, [-1, 1])
+    m = fmin(fOsc3D, [-1, 1])
     print "solution w/ initial conditions (-1,1): %s\n" % m
     pylab.plot([m[0]],[m[1]],'ro',markersize=5)
 
-#   m = scipy.optimize.fmin(fOsc3D, [0, 2])
+#   m = fmin(fOsc3D, [0, 2])
 #   print "solution w/ initial conditions (0,2): %s\n" % m
 #   pylab.plot([m[0]],[m[1]],'ro',markersize=5)
 

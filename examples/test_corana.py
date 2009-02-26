@@ -47,12 +47,14 @@ if __name__ == '__main__':
     print "CPU Time: %s" % timetaken
 
     try:
-        import scipy.optimize, random
+        from mystic.scipy_optimize import fmin
+       #from scipy.optimize import fmin
+        import random
         print  "\nScipy: "
-        sol = scipy.optimize.fmin(Corana, [random.random() for j in range(4)], full_output=0, retall=1)
+        sol = fmin(Corana, [random.random() for j in range(4)], full_output=0, retall=1)
         print "solution: ", sol[-1][0]
         print "\nCorana 1 with Scipy"
-        sol = scipy.optimize.fmin(Corana1, [random.random()], full_output=1, retall=1)
+        sol = fmin(Corana1, [random.random()], full_output=1, retall=1)
         print "solution: ", sol[-1][0]
     except:
         pass
