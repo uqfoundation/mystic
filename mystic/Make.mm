@@ -32,6 +32,7 @@ EXPORT_PYTHON_MODULES = \
     _scipy060optimize.py \
     termination.py \
     strategy.py \
+    _genSow.py \
     tools.py \
     helputil.py \
     forward_model.py \

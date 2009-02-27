@@ -23,11 +23,15 @@ Main function exported are:
 
  -- Sow : Class whose instances are callable (compatible with EvaluationMonitor).
 
- -- VerboseSow : A verbose version of Sow
+ -- VerboseSow : A verbose version of the basic Sow
+
+ -- CustomSow : A customizable 'n-variable' version of the basic Sow
 
  -- random_seed : sets the seeds for python's random and numpy's random to seed value
 
- -- wrap_function : modified from numpy/scipy.
+ -- wrap_function : modified numpy's wrap_funciton to accept EvaluationMonitor
+
+ -- wrap_bounds : impose bounds on a funciton object
 
 """
 
@@ -135,6 +139,7 @@ sow.y
 
     x = property(get_x, doc = "Params")
     y = property(get_y, doc = "Costs")
+    pass
 
 class VerboseSow(Sow):
     import numpy
@@ -159,6 +164,30 @@ class VerboseSow(Sow):
             print "Generation %d has bet fit parameters: %s" % (self._step, x)
         return
     pass
+
+def CustomSow(*args,**kwds):
+    """
+    generate a custom Sow
+
+    takes *args & **kwds, where args will be required inputs for the Sow
+      - args: property name strings (i.e. 'x')
+      - kwds: must be in the form: property="doc" (i.e. x='Params')
+
+    example usage...
+      >>> sow = CustomSow('x','y',x="Params",y="Costs",e="Error",d="Deriv")
+      >>> sow(1,1)
+      >>> sow(2,4,e=0)
+      >>> sow.x
+      [1,2]
+      >>> sow.y
+      [1,4]
+      >>> sow.e
+      [0]
+      >>> sow.d
+      []
+    """
+    from _genSow import genSow
+    return genSow(**kwds)(*args)
 
 def random_seed(s):
     import random
