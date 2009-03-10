@@ -27,7 +27,7 @@ EXPORT_PYTHON_MODULES = \
     mogi.py \
     br8.py \
     lorentzian.py \
-#   circle.py \
+    circle.py \
 
 export:: export-package-python-modules
 

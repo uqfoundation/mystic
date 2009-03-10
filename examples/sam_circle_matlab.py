@@ -8,7 +8,7 @@ Solve the dual form of test_circle.py with matlab's quadprog (via sam)
 
 from numpy import *
 import pylab
-from test_circle import get_circle, cost, sv, solver, npt, xy, x0, y0, R0
+from test_circle import sv, xy, x0, y0, R0
 import sam
 
 # The dual problem verification begins here.

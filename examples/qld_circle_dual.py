@@ -12,7 +12,8 @@ restrictions.)
 
 from numpy import *
 import pylab
-from test_circle import get_circle, cost, sv, solver, npt, x0, y0, R0
+from test_circle import sparse_circle, sv, x0, y0, R0
+getpoints = sparse_circle.forward
 import qld
 
 def getobjective(H,f, x):
@@ -40,18 +41,13 @@ def plot(xy, sv, x0, y0, R0, center, R):
     pylab.axis('equal')
     pylab.show()
 
-def getpoints(npt):
-    xy = array(list(get_circle(npt)))*R0
-    xy[:,0] += x0
-    xy[:,1] += y0
-    return xy
 
 if __name__ == '__main__':
     npt = 20
     from test_circle import xy
     npt1 = xy.shape[0]
     if npt is not npt1:
-        xy = getpoints(npt)
+        xy = getpoints((x0,y0,R0),npt)
     else:
         pass
     Q = dot(xy, transpose(xy))

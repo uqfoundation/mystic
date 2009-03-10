@@ -39,7 +39,7 @@ with (a1,a2,a3,a4,a5) = (%s,%s,%s,%s,%s)""" % (a1,a2,a3,a4,a5)
         return forward_decay
 
     def CostFactory(self,target,pts):
-        """generates a cost function instance from lists of coefficients & evaluation points"""
+        """generates a cost function instance from list of coefficients & evaluation points"""
         datapts = self.evaluate(target,pts)
         F = CF()
         F.addModel(self.ForwardFactory,self.__name__,len(target))

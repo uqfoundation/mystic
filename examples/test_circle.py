@@ -1,67 +1,27 @@
 #!/usr/bin/env python
-# 
-# Patrick Hung.
 
 """
 Given a set of points in the plane, find the smallest circle
-that contains them. (brute force via DE)
+that contains them. (using DE and scipy.fmin)
+
+Requires:
+  -- numpy, pylab
 
 The pylab output will draw 
   -- a set of points inside a circle defined by x0,y0,R0 
   -- the circle (x0,y0) with rad R0
-  -- the DE optimized circle with minimum R enclosing the points
+  -- the optimized circle with minimum R enclosing the points
 """
 
-from mystic.differential_evolution import DifferentialEvolutionSolver2 as DifferentialEvolutionSolver
-from mystic.termination import ChangeOverGeneration, VTR
-from mystic.strategy import Best1Exp, Best1Bin, Rand1Exp
-from mystic import getch
-from numpy import random, array, pi, arange, sin, cos, sqrt
+from mystic.models import circle, sparse_circle
 import pylab
 
-random.seed(123)
-
-# x0, y0, R0
-x0, y0, R0 = [10., 20., 3];
-
-def get_circle(N):
-    # generate N random points in a unit circle
-    n = 0
-    while n < N:
-        x = random.random()*2.-1.
-        y = random.random()*2.-1.
-        if x*x + y*y <= 1:
-            n = n+1
-            yield [x,y]
-
-# generating training set
-npt = 20
-xy = array(list(get_circle(npt)))*R0
-xy[:,0] += x0
-xy[:,1] += y0
-theta = arange(0, 2*pi, 0.02)
-
-# define cost function.
-def cost(params):
-    x,y,r = params
-    if r<0:
-        return -999. * r
-    penalty = 0
-    for xx,yy in xy:
-       # compute distance to origin
-       d = sqrt((xx-x)*(xx-x) + (yy-y)*(yy-y))
-       if d > r:
-           # each violation adds 1 to the cost plus amount of violation
-           penalty += 1+d-r
-    return r+penalty
-       
-MAX_GENERATIONS = 2000
-ND, NP = 3, 30
-solver = DifferentialEvolutionSolver(ND, NP)
-solver.enable_signal_handler()
-minrange = [0., 0., 0.]
-maxrange = [50., 50., 10.]
-solver.SetRandomInitialPoints(min=minrange,max=maxrange)
+# generate training set & define cost function
+# CostFactory2 allows costfunction to reuse datapoints from training set
+x0, y0, R0 = [10., 20., 3]
+npts = 20
+xy = sparse_circle(x0, y0, R0, npts)
+cost = sparse_circle.CostFactory2(xy)
 
 # function to find the 'support vectors' given R
 # SV in quotes because they are found by optimizing the primal,
@@ -74,40 +34,80 @@ def sv(data, xx,yy,rr):
            svl.append(i)
     return svl
 
+# DEsolver inputs
+MAX_GENERATIONS = 2000
+ND, NP = 3, 30    # dimension, population size
+minrange = [0., 0., 0.]
+maxrange = [50., 50., 10.]
+
+# prepare DESolver
+from mystic.differential_evolution import DifferentialEvolutionSolver2 \
+      as DifferentialEvolutionSolver
+from mystic.strategy import Best1Exp, Best1Bin, Rand1Exp
+from mystic.termination import ChangeOverGeneration, VTR
+solver = DifferentialEvolutionSolver(ND, NP)
+solver.enable_signal_handler()
+solver.SetRandomInitialPoints(min=minrange,max=maxrange)
+solver.Solve(cost, Best1Exp, \
+             termination=ChangeOverGeneration(generations=100), \
+             maxiter=MAX_GENERATIONS)
+
+
 if __name__ == '__main__':     
 
-    solver.Solve(cost, Best1Exp, termination=ChangeOverGeneration(generations=100), \
-                 maxiter = MAX_GENERATIONS)
-    solution = solver.Solution()
-    sx, sy, sr = solution
-    svl = sv(xy, sx,sy,sr)
-    print "support vectors: ", svl
-    print "DEsol : (%f, %f) @ R = %f" % (sx, sy, sr)
+    # x0, y0, R0
+    #guess = [1,1,1] # bad initial guess
+    #guess = [5,5,1] # ok guess
+    guess = [10,15,5] # good initial guess
 
+    # plot training set & training set boundary
     pylab.plot(xy[:,0],xy[:,1],'k+',markersize=6)
-    pylab.plot(R0 * cos(theta)+x0, R0*sin(theta)+y0, 'r-',linewidth=2)
-
-    legend = ['random points','generating circle : %f' % R0,'DE optimal : %f' % sr]
+    c = circle(x0, y0, R0)
+    pylab.plot(c[:,0],c[:,1],'r-',linewidth=2)
+    legend = ['random points','generating circle : %f' % R0]
     pylab.axis('equal')
 
-    pylab.plot(sr * cos(theta)+sx, sr*sin(theta)+sy, 'b-',linewidth=2)
-    # try scipy as well
-    try: 
-        from mystic.scipy_optimize import fmin
-       #from scipy.optimize import fmin
-        xx = [1,1,1] # bad initial guess
-        xx = [5,5,1] # ok guess
-        xx = [10,15,5] # good initial guess
-        sol = fmin(cost, xx)
-        ax, ay, ar = sol
-        pylab.plot(ar * cos(theta)+ax, ar*sin(theta)+ay, 'g-',linewidth=2)
-        legend.append('Nelder-Mead : %f' % ar)
-        print "scipy sol: ", sol
-    except ImportError:
-        print "Install scipy for more"
+    # solve with mystic.differential_evolution
+    solution = solver.Solution()
+    sx, sy, sr = solution
+    print "DEsol : (%f, %f) @ R = %f" % (sx, sy, sr)
 
-    # draw the support vectors found from DE
-    pylab.plot(xy[svl,0],xy[svl,1],'ro',markersize=6)
+    # plot DEsolver solution
+    c = circle(sx, sy, sr)
+    pylab.plot(c[:,0],c[:,1],'b-',linewidth=2)
+    legend.append('DE optimal : %f' % sr)
+
+    # solve with scipy.fmin
+    from mystic.scipy_optimize import fmin
+    sol = fmin(cost, guess)
+    print "scipy.fmin sol: ", sol
+    ax, ay, ar = sol
+
+    # plot scipy.fmin solution
+    c = circle(ax, ay, ar)
+    pylab.plot(c[:,0],c[:,1],'g-',linewidth=2)
+    legend.append('Nelder-Mead : %f' % ar)
+
+    # solve with scipy.brute
+   #ranges = tuple(zip(minrange,maxrange))
+   #sol = scipy.optimize.brute(cost, ranges, Ns=NP)
+   #print "scipy.brute sol: ", sol
+   #bx, by, br = sol
+
+    # plot scipy.brute solution
+   #c = circle(bx, by, br)
+   #pylab.plot(c[:,0],c[:,1],'y-',linewidth=2)
+   #legend.append('Brute : %f' % br)
+
+    # find & draw the support vectors from DE
+    svl = sv(xy, sx,sy,sr)
+    print "DE support vectors: ", svl
+    pylab.plot(xy[svl,0],xy[svl,1],'bo',markersize=6)
+
+    # find & draw the support vectors from scipy.brute
+   #svl = sv(xy, bx,by,br)
+   #print "Brute support vectors: ", svl
+   #pylab.plot(xy[svl,0],xy[svl,1],'yo',markersize=6)
 
     pylab.legend(legend)
     pylab.show()

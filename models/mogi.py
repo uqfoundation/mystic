@@ -47,7 +47,7 @@ with (x0,y0,z0,dV) = (%s,%s,%s,%s)""" % (x0,y0,z0,dV)
 
     #FIXME: continue refactoring from test_mogi*.py...
     def CostFactory(self,target,pts):
-        """generates a cost function instance from lists of coefficients & evaluation points"""
+        """generates a cost function instance from list of coefficients & evaluation points"""
         raise NotImplementedError, "cost function not implemented"
 
     #FIXME: continue refactoring from test_mogi*.py...

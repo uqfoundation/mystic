@@ -3,13 +3,16 @@
 """
 models and functions used in testing & examples
 """
+# base classes
+from poly import AbstractModel
+from dejong import AbstractFunction
 
 # models
 from poly import poly, chebyshev8, chebyshev16
 from mogi import mogi
 from br8 import decay
 from lorentzian import lorentzian
-#from circle import circle
+from circle import circle, dense_circle, sparse_circle, minimal_circle
 
 # functions
 from dejong import rosen, step, quartic, shekel

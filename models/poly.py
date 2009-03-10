@@ -17,7 +17,7 @@ from mystic.forward_model import CostFactory as CF
 from numpy import poly1d as npoly1d
 
 def polyeval(coeffs, x):
-    """takes lists of coefficients & evaluation points, returns f(x)
+    """takes list of coefficients & evaluation points, returns f(x)
 thus, [a3, a2, a1, a0] yields  a3 x^3 + a2 x^2 + a1 x^1 + a0"""
     # The effect is this:
     #    return reduce(lambda x1, x2: x1 * x + x2, coeffs, 0)
@@ -59,7 +59,7 @@ class AbstractModel(object):
 #       return self.__cost__(coeffs)
 
     def evaluate(self,coeffs,x):
-        """takes lists of coefficients & evaluation points, returns f(x)"""
+        """takes list of coefficients & evaluation points, returns f(x)"""
         raise NotImplementedError, "overwrite for each derived class"
 
     def ForwardFactory(self,coeffs):
@@ -67,7 +67,7 @@ class AbstractModel(object):
         raise NotImplementedError, "overwrite for each derived class"
 
     def CostFactory(self,target,pts):
-        """generates a cost function instance from lists of coefficients & evaluation points"""
+        """generates a cost function instance from list of coefficients & evaluation points"""
         datapts = self.evaluate(target,pts)
         F = CF()
         F.addModel(self.ForwardFactory,self.__name__,len(target))
@@ -92,7 +92,7 @@ class Polynomial(AbstractModel):
         return
 
     def evaluate(self,coeffs,x):
-        """takes lists of coefficients & evaluation points, returns f(x)
+        """takes list of coefficients & evaluation points, returns f(x)
 thus, [a3, a2, a1, a0] yields  a3 x^3 + a2 x^2 + a1 x^1 + a0"""
         return polyeval(coeffs,x)
 
@@ -134,7 +134,7 @@ NOTE: default is T8(z)"""
         raise NotImplementedError, "use Polynomial.ForwardFactory(coeffs)"
 
     def CostFactory(self,target,pts):
-        """generates a cost function instance from lists of coefficients & evaluation points"""
+        """generates a cost function instance from list of coefficients & evaluation points"""
         raise NotImplementedError, "use Polynomial.CostFactory(targets,pts)"
 
     def CostFactory2(self,pts,datapts,nparams):
