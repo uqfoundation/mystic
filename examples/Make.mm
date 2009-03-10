@@ -29,6 +29,8 @@ EXPORT_BINS = \
     test_ffit.py \
     test_ffit2.py \
     test_ffitB.py \
+    test_ffitC.py \
+    test_ffitD.py \
     scipy_ffit.py \
     test_fosc3d.py \
     test_griewangk.py \

@@ -2,7 +2,6 @@
 
 """
 Same as test_ffit.py
-
 but uses DifferentialEvolutionSolver2 instead.
 
 Note:

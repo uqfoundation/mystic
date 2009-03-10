@@ -16,7 +16,7 @@
 ##                      Birmingham, Alabama USA
 ##                      zunzun@zunzun.com
 ##
-## bounds added by mmckerns@caltech.edu
+## bounds (and minimal interface) added by mmckerns@caltech.edu
 
 """
 Differential Evolution Solver of Storn and Price
@@ -41,7 +41,8 @@ Optimization 11: 341-359, 1997.
 Approach to Global Optimization. Springer, 1st Edition, 2005
 
 """
-__all__ = ['DifferentialEvolutionSolver','DifferentialEvolutionSolver2']
+__all__ = ['DifferentialEvolutionSolver','DifferentialEvolutionSolver2',\
+           'diffev']
 
 from mystic.tools import Null, wrap_function
 
@@ -308,6 +309,92 @@ class DifferentialEvolutionSolver2(DifferentialEvolutionSolver):
         signal.signal(signal.SIGINT,signal.default_int_handler)
 
         return 
+
+
+def diffev(func,x0,npop,args=(),bounds=None,ftol=5e-3,gtol=None,
+           maxiter=None,cross=1.0,scale=0.9, #maxfun=None,
+           full_output=0,disp=1,retall=0):   #,callback=None):
+    """interface for differential evolution that mimics scipy.optimize.fmin"""
+
+    from mystic.tools import Sow
+    stepmon = Sow()
+    evalmon = Sow()
+    from mystic.strategy import Best1Exp #, Best1Bin, Rand1Exp
+    strategy = Best1Exp
+    if gtol:
+        from mystic.termination import ChangeOverGeneration
+        termination = ChangeOverGeneration(ftol,gtol)
+    else:
+        from mystic.termination import VTR
+        termination = VTR(ftol)
+
+    def unroll(bounds): #TODO: move to tools?
+        from numpy import asarray
+        boundsT = asarray(bounds).transpose()
+        return [i.tolist() for i in boundsT]
+
+    ND = len(x0)
+    solver = DifferentialEvolutionSolver2(ND,npop)
+    if bounds:
+        minb,maxb = unroll(bounds)
+        solver.SetStrictRanges(minb,maxb)
+    try:
+        minb,maxb = unroll(x0)
+        solver.SetRandomInitialPoints(minb,maxb)
+    except:
+        solver.SetInitialPoints(x0)
+
+   #solver.enable_signal_handler()
+    #TODO: add maxfun & disp to DESolve
+    #TODO: add scipy's (end-of-iteration) callback to DESolve
+    #TODO: enable signal handlers & sigint_callbacks? for all minimal interfaces
+    #FIXME: DESolve can't handle bounds of numpy.inf
+    solver.Solve(func,strategy=strategy,termination=termination,\
+                 maxiter=maxiter,\
+                #maxfun=maxfun,\
+                 CrossProbability=cross,ScalingFactor=scale,\
+                 EvaluationMonitor=evalmon,StepMonitor=stepmon,\
+                #sigint_callback=callback,\
+                 ExtraArgs=args)
+    solution = solver.Solution()
+
+    # code below here pushes output to scipy.optimize.fmin interface
+   #x = list(solver.bestSolution)
+    x = solver.bestSolution
+    fval = solver.bestEnergy
+    warnflag = 0
+    fcalls = len(evalmon.x)
+    iterations = len(stepmon.x)
+    allvecs = stepmon.x
+
+    from numpy import inf
+    maxfun=inf #XXX: maxfun not implemented for DESolvers
+    if fcalls >= maxfun:
+        warnflag = 1
+        if disp:
+            print "Warning: Maximum number of function evaluations has "\
+                  "been exceeded."
+    elif iterations >= maxiter:
+        warnflag = 2
+        if disp:
+            print "Warning: Maximum number of iterations has been exceeded"
+    else:
+        if disp:
+            print "Optimization terminated successfully."
+            print "         Current function value: %f" % fval
+            print "         Iterations: %d" % iterations
+            print "         Function evaluations: %d" % fcalls
+
+    if full_output:
+        retlist = x, fval, iterations, fcalls, warnflag
+        if retall:
+            retlist += (allvecs,)
+    else:
+        retlist = x
+        if retall:
+            retlist = (x, allvecs)
+
+    return retlist
 
 
 if __name__=='__main__':

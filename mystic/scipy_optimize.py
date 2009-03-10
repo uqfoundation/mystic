@@ -352,7 +352,7 @@ def fmin(func, x0, args=(), xtol=1e-4, ftol=1e-4, maxiter=None, maxfun=None,
     solver.Solve(func,termination=CRT(xtol,ftol),\
                  maxiter=maxiter,maxfun=maxfun,\
                  EvaluationMonitor=evalmon,StepMonitor=stepmon,\
-                 disp=disp, callback=callback)
+                 disp=disp, ExtraArgs=args, callback=callback)
     solution = solver.Solution()
 
     # code below here pushes output to scipy.optimize.fmin interface
@@ -644,7 +644,7 @@ def fmin_powell(func, x0, args=(), xtol=1e-4, ftol=1e-4, maxiter=None,
     solver.Solve(func,termination=NCOG(ftol),\
                  maxiter=maxiter,maxfun=maxfun,\
                  EvaluationMonitor=evalmon,StepMonitor=stepmon,\
-                 xtol=xtol, callback=callback, \
+                 xtol=xtol, ExtraArgs=args, callback=callback, \
                  disp=disp, direc=direc)   #XXX: last two lines use **kwds
     solution = solver.Solution()
 

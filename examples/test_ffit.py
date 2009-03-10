@@ -14,7 +14,7 @@ Heuristic for Global Optimization over Continuous Spaces. Journal of Global
 Optimization 11: 341-359, 1997.
 """
 
-from mystic.differential_evolution import DifferentialEvolutionSolver2 as DifferentialEvolutionSolver
+from mystic.differential_evolution import DifferentialEvolutionSolver
 from mystic.termination import ChangeOverGeneration, VTR
 from mystic.strategy import Best1Exp, Best1Bin, Rand1Exp
 from mystic.models.poly import poly1d
