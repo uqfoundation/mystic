@@ -88,8 +88,7 @@ class DifferentialEvolutionSolver(AbstractSolver):
         self.genealogy[id].append(newchild)
         return
 
-    def Solve(self, costfunction, strategy, termination,
-              maxiter=None, maxfun=None, sigint_callback=None,
+    def Solve(self, costfunction, strategy, termination, sigint_callback=None,
               CrossProbability = 0.5, ScalingFactor = 0.7,
               EvaluationMonitor=Null, StepMonitor=Null, ExtraArgs=(), **kwds):
         """Minimize a function using differential evolution.
@@ -162,17 +161,15 @@ class DifferentialEvolutionSolver(AbstractSolver):
 
         self.bestEnergy = 1.0E20
          
-        if maxiter is None:
-            maxiter = self.nDim * self.nPop * 10  #XXX: set better defaults?
-        if maxfun is None:
-            maxfun = self.nDim * self.nPop * 1000 #XXX: set better defaults?
-        self._maxiter = maxiter
-        self._maxfun = maxfun
+        if self._maxiter is None:
+            self._maxiter = self.nDim * self.nPop * 10  #XXX: set better defaults?
+        if self._maxfun is None:
+            self._maxfun = self.nDim * self.nPop * 1000 #XXX: set better defaults?
 
         generation = 0
-        for generation in range(maxiter):
+        for generation in range(self._maxiter):
             StepMonitor(self.bestSolution[:], self.bestEnergy)
-            if fcalls[0] >= maxfun: break
+            if fcalls[0] >= self._maxfun: break
             for candidate in range(self.nPop):
                 # generate trialSolution (within valid range)
                 strategy(self, candidate)
@@ -220,8 +217,7 @@ class DifferentialEvolutionSolver2(DifferentialEvolutionSolver):
       - both a current and a next generation are kept, while the current
         generation is invariant during the main DE logic.
     """
-    def Solve(self, costfunction, strategy, termination,
-              maxiter=None, maxfun=None, sigint_callback=None,
+    def Solve(self, costfunction, strategy, termination, sigint_callback=None,
               CrossProbability = 0.5, ScalingFactor = 0.7,
               EvaluationMonitor=Null, StepMonitor=Null, ExtraArgs=(), **kwds):
         """Minimize a function using differential evolution.
@@ -292,19 +288,16 @@ class DifferentialEvolutionSolver2(DifferentialEvolutionSolver):
 
         self.bestEnergy = 1.0E20
          
-        if maxiter is None:
-            maxiter = self.nDim * self.nPop * 10  #XXX: set better defaults?
-        if maxfun is None:
-            maxfun = self.nDim * self.nPop * 1000 #XXX: set better defaults?
-        self._maxiter = maxiter
-        self._maxfun = maxfun
-
+        if self._maxiter is None:
+            self._maxiter = self.nDim * self.nPop * 10  #XXX: set better defaults?
+        if self._maxfun is None:
+            self._maxfun = self.nDim * self.nPop * 1000 #XXX: set better defaults?
         trialPop = [[0.0 for i in range(self.nDim)] for j in range(self.nPop)]
 
         generation = 0
-        for generation in range(maxiter):
+        for generation in range(self._maxiter):
             StepMonitor(self.bestSolution[:], self.bestEnergy)
-            if fcalls[0] >= maxfun: break
+            if fcalls[0] >= self._maxfun: break
             for candidate in range(self.nPop):
                 # generate trialSolution (within valid range)
                 strategy(self, candidate)
@@ -360,6 +353,7 @@ def diffev(func,x0,npop,args=(),bounds=None,ftol=5e-3,gtol=None,
 
     ND = len(x0)
     solver = DifferentialEvolutionSolver2(ND,npop)
+    solver.SetEvaluationLimits(maxiter,maxfun)
     if bounds:
         minb,maxb = unpair(bounds)
         solver.SetStrictRanges(minb,maxb)
@@ -371,14 +365,12 @@ def diffev(func,x0,npop,args=(),bounds=None,ftol=5e-3,gtol=None,
         solver.SetInitialPoints(x0)
 
    #solver.enable_signal_handler()
-    #XXX: move maxiter & maxfun kwds from Solve() to solver.SetLimits() ?
     #TODO: enable signal handlers & sigint_callbacks? for all minimal interfaces
     #FIXME: DESolve can't handle bounds of numpy.inf
     solver.Solve(func,strategy=strategy,termination=termination,\
-                 maxiter=maxiter,maxfun=maxfun,\
+                #sigint_callback=other_callback,\
                  CrossProbability=cross,ScalingFactor=scale,\
                  EvaluationMonitor=evalmon,StepMonitor=stepmon,\
-                #sigint_callback=other_callback,\
                  ExtraArgs=args,callback=callback)
     solution = solver.Solution()
 

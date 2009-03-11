@@ -48,6 +48,8 @@ class AbstractSolver(object):
         self._useStrictRange  = False
         self._strictMin       = []
         self._strictMax       = []
+        self._maxiter         = None
+        self._maxfun          = None
 
 
     def Solution(self):
@@ -151,8 +153,19 @@ class AbstractSolver(object):
         """disable workflow interrupt handler while solver is running"""
         self._handle_sigint = False
 
-    def Solve(self, func, termination,
-              maxiter=None, maxfun=None, sigint_callback=None,
+    def SetEvaluationLimits(self,*args,**kwds):
+        """set limits for maxiter and/or maxfun
+  - maxiter = maximum number of solver iterations (i.e. steps)
+  - maxfun  = maximum number of function evaluations"""
+       #self._maxiter,self._maxfun = None,None
+        if len(args) == 2:
+            self._maxiter,self._maxfun = args[0],args[1]
+        elif len(args) == 1:
+            self._maxiter = args[0]
+        if kwds.has_key('maxiter'): self._maxiter = kwds['maxiter']
+        if kwds.has_key('maxfun'): self._maxfun = kwds['maxfun']
+
+    def Solve(self, func, termination, sigint_callback=None,
               EvaluationMonitor=Null, StepMonitor=Null, ExtraArgs=(), **kwds):
         """solve function 'func' with given termination conditions
         *** this method must be overwritten ***"""

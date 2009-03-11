@@ -29,11 +29,11 @@ MAX_GENERATIONS = 2500
 
 def main():
     solver = DifferentialEvolutionSolver(ND, NP)
-
     solver.SetRandomInitialPoints(min = [-400.0]*ND, max = [400.0]*ND)
+    solver.SetEvaluationLimits(maxiter=MAX_GENERATIONS)
 
     solver.Solve(Griewangk_cost, Rand1Exp, termination = VTR(0.00001) , \
-                 maxiter= MAX_GENERATIONS, CrossProbability=0.3, ScalingFactor=1.0)
+                 CrossProbability=0.3, ScalingFactor=1.0)
 
     solution = solver.Solution()
   

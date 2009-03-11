@@ -130,10 +130,11 @@ def de_solve(CF):
     minrange = [-100., -100., -100.]; maxrange = [100., 100., 100.];
     solver.SetRandomInitialPoints(min = minrange, max = maxrange)
     solver.SetStrictRanges(min = minrange, max = maxrange)
+    solver.SetEvaluationLimits(maxiter=MAX_GENERATIONS)
 
     solver.Solve(CF,Best1Exp,termination=ChangeOverGeneration(generations=300),\
-                maxiter=MAX_GENERATIONS,CrossProbability=0.5,ScalingFactor=0.5,\
-                StepMonitor=stepmon,sigint_callback=plot_sol)
+                 CrossProbability=0.5,ScalingFactor=0.5,\
+                 StepMonitor=stepmon,sigint_callback=plot_sol)
 
     solution = solver.Solution()
     return solution, stepmon

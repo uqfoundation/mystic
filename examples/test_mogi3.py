@@ -18,9 +18,11 @@ def de_solve(CF):
     minrange = [-1000., -1000., -100., -10.];
     maxrange = [1000., 1000., 100., 10.];
     solver.SetRandomInitialPoints(min = minrange, max = maxrange)
+    solver.SetEvaluationLimits(maxiter=MAX_GENERATIONS)
 
-    solver.Solve(CF, Best1Exp, termination = ChangeOverGeneration(generations=100) , \
-                 maxiter= MAX_GENERATIONS, CrossProbability=0.5, ScalingFactor=0.5, \
+    solver.Solve(CF, Best1Exp,\
+                 termination = ChangeOverGeneration(generations=100) , \
+                 CrossProbability=0.5, ScalingFactor=0.5, \
                  StepMonitor = stepmon)
 
     solution = solver.Solution()

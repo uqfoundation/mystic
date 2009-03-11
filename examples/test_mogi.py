@@ -86,13 +86,13 @@ def de_solve():
     minrange = [-1000., -1000., -100., -10.];
     maxrange = [1000., 1000., 100., 10.];
     solver.SetRandomInitialPoints(min = minrange, max = maxrange)
+    solver.SetEvaluationLimits(maxiter=MAX_GENERATIONS)
 
    #termination = VTR(0.0000029)
     termination = ChangeOverGeneration(generations=100)
 
     solver.Solve(cost_function, Best1Exp, termination=termination, \
-                 maxiter=MAX_GENERATIONS, CrossProbability=0.5, \
-                 ScalingFactor=0.5, StepMonitor = stepmon)
+                 CrossProbability=0.5, ScalingFactor=0.5, StepMonitor=stepmon)
 
     solution = solver.Solution()
   

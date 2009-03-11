@@ -66,8 +66,9 @@ def de_solve(CF, a4=None, a5=None):
     stepmon = MySow(interval)
     solver.SetRandomInitialPoints(min=minrange,max=maxrange)
     solver.SetStrictRanges(min=minrange, max=maxrange)
+    solver.SetEvaluationLimits(maxiter=MAX_GENERATIONS)
     solver.Solve(CF,Best1Exp,termination=ChangeOverGeneration(generations=50),\
-                 maxiter=MAX_GENERATIONS,StepMonitor=stepmon)
+                 StepMonitor=stepmon)
     solution = solver.Solution()
     return solution, stepmon
 

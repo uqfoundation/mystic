@@ -54,9 +54,10 @@ def de_solve(CF):
     stepmon = Sow()
     solver.SetRandomInitialPoints(min=minrange,max=maxrange)
     solver.SetStrictRanges(min=minrange,max=maxrange)
+    solver.SetEvaluationLimits(maxiter=MAX_GENERATIONS)
     termination=ChangeOverGeneration(generations=generations)
     solver.Solve(CF, Rand1Exp, termination=termination, \
-                 maxiter=MAX_GENERATIONS, StepMonitor=stepmon, sigint_callback = plot_sol(solver))
+                 StepMonitor=stepmon, sigint_callback = plot_sol(solver))
     solution = solver.Solution()
     return solution, stepmon
 

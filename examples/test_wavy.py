@@ -45,18 +45,17 @@ MAX_GENERATIONS = 100
 
 def main():
     solver = DifferentialEvolutionSolver(ND, NP)
-
     solver.SetRandomInitialPoints(min = [-100.0]*ND, max = [100.0]*ND)
+    solver.SetEvaluationLimits(maxiter=MAX_GENERATIONS)
 
     solver.enable_signal_handler()
-  
-    strategy = Best1Bin
 
+    strategy = Best1Bin
     stepmon = VerboseSow(1)
-    solver.Solve(wavy, strategy, termination = ChangeOverGeneration(generations=50) , \
-                 maxiter= MAX_GENERATIONS, CrossProbability=1.0, ScalingFactor=0.9 , \
-                 StepMonitor = stepmon,  sigint_callback = plot_solution \
-                 )
+    solver.Solve(wavy, strategy,\
+                 termination = ChangeOverGeneration(generations=50) , \
+                 CrossProbability=1.0, ScalingFactor=0.9 , \
+                 StepMonitor = stepmon,  sigint_callback = plot_solution)
 
     solution = solver.Solution()
 

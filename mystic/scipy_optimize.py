@@ -94,8 +94,7 @@ class NelderMeadSimplexSolver(AbstractSolver):
      #  xtol = tol
         return x0, val
 
-    def Solve(self, func, termination,
-              maxiter=None, maxfun=None, sigint_callback=None,
+    def Solve(self, func, termination, sigint_callback=None,
               EvaluationMonitor=Null, StepMonitor=Null, ExtraArgs=(), **kwds):
         """Minimize a function using the downhill simplex algorithm.
 
@@ -111,8 +110,6 @@ class NelderMeadSimplexSolver(AbstractSolver):
 
     Additional Inputs:
 
-      maxiter -- the maximum number of iterations to perform.
-      maxfun -- the maximum number of function evaluations.
       sigint_callback -- callback function for signal handler.
       EvaluationMonitor -- a callable object that will be passed x, fval
            whenever the cost function is evaluated.
@@ -192,12 +189,10 @@ class NelderMeadSimplexSolver(AbstractSolver):
         rank = len(x0.shape)
         if not -1 < rank < 2:
             raise ValueError, "Initial guess must be a scalar or rank-1 sequence."
-        if maxiter is None:
-            maxiter = N * 200
-        if maxfun is None:
-            maxfun = N * 200
-        self._maxiter = maxiter #XXX: better to just copy the code?
-        self._maxfun = maxfun   #XXX: better to just copy the code?
+        if self._maxiter is None:
+            self._maxiter = N * 200
+        if self._maxfun is None:
+            self._maxfun = N * 200
 
         rho = 1; chi = 2; psi = 0.5; sigma = 0.5;
         one2np1 = range(1,N+1)
@@ -234,7 +229,7 @@ class NelderMeadSimplexSolver(AbstractSolver):
 
         iterations = 1
 
-        while (fcalls[0] < maxfun and iterations < maxiter):
+        while (fcalls[0] < self._maxfun and iterations < self._maxiter):
             StepMonitor(sim, fsim) # get all values; "best" is sim[0]
             if detools.EARLYEXIT or termination(self):
                 break
@@ -308,12 +303,12 @@ class NelderMeadSimplexSolver(AbstractSolver):
         fval = min(fsim)
         warnflag = 0
 
-        if fcalls[0] >= maxfun:
+        if fcalls[0] >= self._maxfun:
             warnflag = 1
             if disp:
                 print "Warning: Maximum number of function evaluations has "\
                   "been exceeded."
-        elif iterations >= maxiter:
+        elif iterations >= self._maxiter:
             warnflag = 2
             if disp:
                 print "Warning: Maximum number of iterations has been exceeded"
@@ -349,8 +344,8 @@ def fmin(func, x0, args=(), xtol=1e-4, ftol=1e-4, maxiter=None, maxfun=None,
     solver = NelderMeadSimplexSolver(len(x0))
     solver.SetInitialPoints(x0)
    #solver.enable_signal_handler()
+    solver.SetEvaluationLimits(maxiter,maxfun)
     solver.Solve(func,termination=CRT(xtol,ftol),\
-                 maxiter=maxiter,maxfun=maxfun,\
                  EvaluationMonitor=evalmon,StepMonitor=stepmon,\
                  disp=disp, ExtraArgs=args, callback=callback)
     solution = solver.Solution()
@@ -410,8 +405,7 @@ class PowellDirectionalSolver(AbstractSolver):
         self._direc = None #FIXME: this is the easy way to return 'direc'...
 
 
-    def Solve(self, func, termination,
-              maxiter=None, maxfun=None, sigint_callback=None,
+    def Solve(self, func, termination, sigint_callback=None,
               EvaluationMonitor=Null, StepMonitor=Null, ExtraArgs=(), **kwds):
         """Minimize a function using modified Powell's method.
 
@@ -427,8 +421,6 @@ class PowellDirectionalSolver(AbstractSolver):
 
     Additional Inputs:
 
-      maxiter -- the maximum number of iterations to perform.
-      maxfun -- the maximum number of function evaluations.
       sigint_callback -- callback function for signal handler.
       EvaluationMonitor -- a callable object that will be passed x, fval
            whenever the cost function is evaluated.
@@ -514,12 +506,10 @@ class PowellDirectionalSolver(AbstractSolver):
         rank = len(x.shape)
         if not -1 < rank < 2:
             raise ValueError, "Initial guess must be a scalar or rank-1 sequence."
-        if maxiter is None:
-            maxiter = N * 1000
-        if maxfun is None:
-            maxfun = N * 1000
-        self._maxiter = maxiter #XXX: better to just copy the code?
-        self._maxfun = maxfun   #XXX: better to just copy the code?
+        if self._maxiter is None:
+            self._maxiter = N * 1000
+        if self._maxfun is None:
+            self._maxfun = N * 1000
 
         if direc is None:
             direc = eye(N, dtype=float)
@@ -560,8 +550,8 @@ class PowellDirectionalSolver(AbstractSolver):
 
             self.energy_history.append(fval) #XXX: the 'best' for now...
             if detools.EARLYEXIT or termination(self): CONTINUE = False #break
-            elif fcalls[0] >= maxfun: CONTINUE = False #break
-            elif iter >= maxiter: CONTINUE = False #break
+            elif fcalls[0] >= self._maxfun: CONTINUE = False #break
+            elif iter >= self._maxiter: CONTINUE = False #break
 
             else: # Construct the extrapolated point
                 direc1 = x - x1
@@ -595,12 +585,12 @@ class PowellDirectionalSolver(AbstractSolver):
         # code below here is dead, unless disp!=0
         warnflag = 0
 
-        if fcalls[0] >= maxfun:
+        if fcalls[0] >= self._maxfun:
             warnflag = 1
             if disp:
                 print "Warning: Maximum number of function evaluations has "\
                       "been exceeded."
-        elif iter >= maxiter:
+        elif iter >= self._maxiter:
             warnflag = 2
             if disp:
                 print "Warning: Maximum number of iterations has been exceeded"
@@ -641,8 +631,8 @@ def fmin_powell(func, x0, args=(), xtol=1e-4, ftol=1e-4, maxiter=None,
     solver = PowellDirectionalSolver(len(x0))
     solver.SetInitialPoints(x0)
    #solver.enable_signal_handler()
+    solver.SetEvaluationLimits(maxiter,maxfun)
     solver.Solve(func,termination=NCOG(ftol),\
-                 maxiter=maxiter,maxfun=maxfun,\
                  EvaluationMonitor=evalmon,StepMonitor=stepmon,\
                  xtol=xtol, ExtraArgs=args, callback=callback, \
                  disp=disp, direc=direc)   #XXX: last two lines use **kwds

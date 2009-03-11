@@ -32,14 +32,14 @@ MAX_GENERATIONS = 2000
 
 def main():
     solver = DifferentialEvolutionSolver(ND, NP)
-
     solver.SetRandomInitialPoints(min = [-2.0]*ND, max = [2.0]*ND)
+    solver.SetEvaluationLimits(maxiter=MAX_GENERATIONS)
   
     strategy = Best1Exp
     #strategy = Best1Bin
 
     solver.Solve(fOsc3D,strategy,termination=ChangeOverGeneration(1e-5, 30), \
-                 maxiter=MAX_GENERATIONS,CrossProbability=1.0,ScalingFactor=0.9)
+                 CrossProbability=1.0,ScalingFactor=0.9)
 
     return solver.Solution()
   

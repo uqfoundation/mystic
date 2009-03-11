@@ -29,9 +29,10 @@ def main():
     solver = DifferentialEvolutionSolver(ND, NP)
 
     solver.SetRandomInitialPoints(min = [0]*ND, max = [2]*ND)
+    solver.SetEvaluationLimits(maxiter=MAX_GENERATIONS)
 
     solver.Solve(rosen, Best1Exp, termination = VTR(0.0001) , \
-                 maxiter= MAX_GENERATIONS, CrossProbability=0.5, ScalingFactor=0.6)
+                 CrossProbability=0.5, ScalingFactor=0.6)
 
     solution = solver.Solution()
   
