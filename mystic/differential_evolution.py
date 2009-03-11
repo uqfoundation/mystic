@@ -186,8 +186,6 @@ class DifferentialEvolutionSolver(AbstractSolver):
                         self.bestEnergy = trialEnergy
                         self.bestSolution[:] = self.trialSolution[:]
                             
-            #To print this line, use StepMonitor instead
-            #print "Generation %d has best cost function : %f" % (generation, self.bestEnergy)
             self.energy_history.append(self.bestEnergy)
 
             if callback is not None:
@@ -317,8 +315,6 @@ class DifferentialEvolutionSolver2(DifferentialEvolutionSolver):
                         self.bestEnergy = trialEnergy[candidate]
                         self.bestSolution[:] = trialPop[candidate][:]
                             
-            #To print this line, use StepMonitor instead
-            #print "Generation %d has best cost function : %f" % (generation, self.bestEnergy)
             self.energy_history.append(self.bestEnergy)
 
             if callback is not None:
@@ -364,8 +360,9 @@ def diffev(func,x0,npop,args=(),bounds=None,ftol=5e-3,gtol=None,
     except: #x0 passed as 1D array of initial parameter values
         solver.SetInitialPoints(x0)
 
-   #solver.enable_signal_handler()
-    #TODO: enable signal handlers & sigint_callbacks? for all minimal interfaces
+    solver.enable_signal_handler()
+    #TODO: allow sigint_callbacks for all minimal interfaces ?
+    #TODO: fix Solve() interface to strategy, CrossProbability, & ScalingFactor 
     #FIXME: DESolve can't handle bounds of numpy.inf
     solver.Solve(func,strategy=strategy,termination=termination,\
                 #sigint_callback=other_callback,\

@@ -343,7 +343,7 @@ def fmin(func, x0, args=(), xtol=1e-4, ftol=1e-4, maxiter=None, maxfun=None,
 
     solver = NelderMeadSimplexSolver(len(x0))
     solver.SetInitialPoints(x0)
-   #solver.enable_signal_handler()
+    solver.enable_signal_handler()
     solver.SetEvaluationLimits(maxiter,maxfun)
     solver.Solve(func,termination=CRT(xtol,ftol),\
                  EvaluationMonitor=evalmon,StepMonitor=stepmon,\
@@ -630,7 +630,7 @@ def fmin_powell(func, x0, args=(), xtol=1e-4, ftol=1e-4, maxiter=None,
 
     solver = PowellDirectionalSolver(len(x0))
     solver.SetInitialPoints(x0)
-   #solver.enable_signal_handler()
+    solver.enable_signal_handler()
     solver.SetEvaluationLimits(maxiter,maxfun)
     solver.Solve(func,termination=NCOG(ftol),\
                  EvaluationMonitor=evalmon,StepMonitor=stepmon,\
