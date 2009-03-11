@@ -27,7 +27,7 @@ def main():
 
     solver.Solve(ChebyshevCost, strategy, termination = VTR(0.01) , \
                  maxiter= MAX_GENERATIONS, CrossProbability=1.0, ScalingFactor=0.9 , \
-                 sigint_callback = plot_solution \
+                 StepMonitor=VerboseSow(30), sigint_callback = plot_solution \
                  )
 
     solution = solver.Solution()

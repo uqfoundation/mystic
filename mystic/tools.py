@@ -33,6 +33,8 @@ Main function exported are:
 
  -- wrap_bounds : impose bounds on a funciton object
 
+ -- unpair : convert a 1D array of N pairs to two 1D arrays of N values
+
 """
 
 def list_or_tuple(x):
@@ -240,6 +242,16 @@ def wrap_cf(CF, REG=None, cfmult = 1.0, regmult = 0.0):
          else:
              return cfmult * CF(*args, **kwargs)
     return _
+
+
+def unpair(pairs):
+    '''convert a 1D array of N pairs to two 1D arrays of N values
+For example:
+    [a0,a1,a2],[b0,b1,b2] = unpair([(a0,b0),(a1,b1),(a2,b2)])'''
+    from numpy import asarray
+    pairsT = asarray(pairs).transpose()
+    return [i.tolist() for i in pairsT]
+
 
 if __name__=='__main__':
     import doctest

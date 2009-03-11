@@ -44,7 +44,7 @@ Approach to Global Optimization. Springer, 1st Edition, 2005
 __all__ = ['DifferentialEvolutionSolver','DifferentialEvolutionSolver2',\
            'diffev']
 
-from mystic.tools import Null, wrap_function
+from mystic.tools import Null, wrap_function, unpair
 
 from abstract_solver import AbstractSolver
 
@@ -89,9 +89,9 @@ class DifferentialEvolutionSolver(AbstractSolver):
         return
 
     def Solve(self, costfunction, strategy, termination,
-              maxiter, CrossProbability = 0.5, ScalingFactor = 0.7,
-              sigint_callback = None,
-              EvaluationMonitor=Null, StepMonitor=Null, ExtraArgs=()):
+              maxiter=None, maxfun=None, sigint_callback=None,
+              CrossProbability = 0.5, ScalingFactor = 0.7,
+              EvaluationMonitor=Null, StepMonitor=Null, ExtraArgs=(), **kwds):
         """Minimize a function using differential evolution.
 
     Description:
@@ -112,6 +112,10 @@ class DifferentialEvolutionSolver(AbstractSolver):
 
         """
         #FIXME: Solve() interface does not conform to AbstractSolver interface
+        callback=None  #user-supplied function, called after each step
+        if kwds.has_key('callback'): callback = kwds['callback']
+        #-------------------------------------------------------------
+
         import signal
         import mystic.termination as detools
         detools.EARLYEXIT = False
@@ -158,9 +162,17 @@ class DifferentialEvolutionSolver(AbstractSolver):
 
         self.bestEnergy = 1.0E20
          
+        if maxiter is None:
+            maxiter = self.nDim * self.nPop * 10  #XXX: set better defaults?
+        if maxfun is None:
+            maxfun = self.nDim * self.nPop * 1000 #XXX: set better defaults?
+        self._maxiter = maxiter
+        self._maxfun = maxfun
+
         generation = 0
         for generation in range(maxiter):
             StepMonitor(self.bestSolution[:], self.bestEnergy)
+            if fcalls[0] >= maxfun: break
             for candidate in range(self.nPop):
                 # generate trialSolution (within valid range)
                 strategy(self, candidate)
@@ -180,6 +192,9 @@ class DifferentialEvolutionSolver(AbstractSolver):
             #To print this line, use StepMonitor instead
             #print "Generation %d has best cost function : %f" % (generation, self.bestEnergy)
             self.energy_history.append(self.bestEnergy)
+
+            if callback is not None:
+                callback(self.bestSolution)
             
             if detools.EARLYEXIT or termination(self):
                 break
@@ -206,9 +221,9 @@ class DifferentialEvolutionSolver2(DifferentialEvolutionSolver):
         generation is invariant during the main DE logic.
     """
     def Solve(self, costfunction, strategy, termination,
-              maxiter, CrossProbability = 0.5, ScalingFactor = 0.7,
-              sigint_callback = None,
-              EvaluationMonitor=Null, StepMonitor=Null, ExtraArgs=()):
+              maxiter=None, maxfun=None, sigint_callback=None,
+              CrossProbability = 0.5, ScalingFactor = 0.7,
+              EvaluationMonitor=Null, StepMonitor=Null, ExtraArgs=(), **kwds):
         """Minimize a function using differential evolution.
 
     Description:
@@ -229,6 +244,10 @@ class DifferentialEvolutionSolver2(DifferentialEvolutionSolver):
 
         """
         #FIXME: Solve() interface does not conform to AbstractSolver interface
+        callback=None  #user-supplied function, called after each step
+        if kwds.has_key('callback'): callback = kwds['callback']
+        #-------------------------------------------------------------
+
         import signal
         import mystic.termination as detools
         detools.EARLYEXIT = False
@@ -273,11 +292,19 @@ class DifferentialEvolutionSolver2(DifferentialEvolutionSolver):
 
         self.bestEnergy = 1.0E20
          
+        if maxiter is None:
+            maxiter = self.nDim * self.nPop * 10  #XXX: set better defaults?
+        if maxfun is None:
+            maxfun = self.nDim * self.nPop * 1000 #XXX: set better defaults?
+        self._maxiter = maxiter
+        self._maxfun = maxfun
+
         trialPop = [[0.0 for i in range(self.nDim)] for j in range(self.nPop)]
 
         generation = 0
         for generation in range(maxiter):
             StepMonitor(self.bestSolution[:], self.bestEnergy)
+            if fcalls[0] >= maxfun: break
             for candidate in range(self.nPop):
                 # generate trialSolution (within valid range)
                 strategy(self, candidate)
@@ -300,6 +327,9 @@ class DifferentialEvolutionSolver2(DifferentialEvolutionSolver):
             #To print this line, use StepMonitor instead
             #print "Generation %d has best cost function : %f" % (generation, self.bestEnergy)
             self.energy_history.append(self.bestEnergy)
+
+            if callback is not None:
+                callback(self.bestSolution)
             
             if detools.EARLYEXIT or termination(self):
                 break
@@ -312,8 +342,8 @@ class DifferentialEvolutionSolver2(DifferentialEvolutionSolver):
 
 
 def diffev(func,x0,npop,args=(),bounds=None,ftol=5e-3,gtol=None,
-           maxiter=None,cross=1.0,scale=0.9, #maxfun=None,
-           full_output=0,disp=1,retall=0):   #,callback=None):
+           maxiter=None,maxfun=None,cross=1.0,scale=0.9,
+           full_output=0,disp=1,retall=0,callback=None):
     """interface for differential evolution that mimics scipy.optimize.fmin"""
 
     from mystic.tools import Sow
@@ -321,41 +351,35 @@ def diffev(func,x0,npop,args=(),bounds=None,ftol=5e-3,gtol=None,
     evalmon = Sow()
     from mystic.strategy import Best1Exp #, Best1Bin, Rand1Exp
     strategy = Best1Exp
-    if gtol:
+    if gtol: #if number of generations provided, use ChangeOverGeneration 
         from mystic.termination import ChangeOverGeneration
         termination = ChangeOverGeneration(ftol,gtol)
     else:
         from mystic.termination import VTR
         termination = VTR(ftol)
 
-    def unroll(bounds): #TODO: move to tools?
-        from numpy import asarray
-        boundsT = asarray(bounds).transpose()
-        return [i.tolist() for i in boundsT]
-
     ND = len(x0)
     solver = DifferentialEvolutionSolver2(ND,npop)
     if bounds:
-        minb,maxb = unroll(bounds)
+        minb,maxb = unpair(bounds)
         solver.SetStrictRanges(minb,maxb)
-    try:
-        minb,maxb = unroll(x0)
+
+    try: #x0 passed as 1D array of (min,max) pairs
+        minb,maxb = unpair(x0)
         solver.SetRandomInitialPoints(minb,maxb)
-    except:
+    except: #x0 passed as 1D array of initial parameter values
         solver.SetInitialPoints(x0)
 
    #solver.enable_signal_handler()
-    #TODO: add maxfun & disp to DESolve
-    #TODO: add scipy's (end-of-iteration) callback to DESolve
+    #XXX: move maxiter & maxfun kwds from Solve() to solver.SetLimits() ?
     #TODO: enable signal handlers & sigint_callbacks? for all minimal interfaces
     #FIXME: DESolve can't handle bounds of numpy.inf
     solver.Solve(func,strategy=strategy,termination=termination,\
-                 maxiter=maxiter,\
-                #maxfun=maxfun,\
+                 maxiter=maxiter,maxfun=maxfun,\
                  CrossProbability=cross,ScalingFactor=scale,\
                  EvaluationMonitor=evalmon,StepMonitor=stepmon,\
-                #sigint_callback=callback,\
-                 ExtraArgs=args)
+                #sigint_callback=other_callback,\
+                 ExtraArgs=args,callback=callback)
     solution = solver.Solution()
 
     # code below here pushes output to scipy.optimize.fmin interface
@@ -367,14 +391,12 @@ def diffev(func,x0,npop,args=(),bounds=None,ftol=5e-3,gtol=None,
     iterations = len(stepmon.x)
     allvecs = stepmon.x
 
-    from numpy import inf
-    maxfun=inf #XXX: maxfun not implemented for DESolvers
-    if fcalls >= maxfun:
+    if fcalls >= solver._maxfun:
         warnflag = 1
         if disp:
             print "Warning: Maximum number of function evaluations has "\
                   "been exceeded."
-    elif iterations >= maxiter:
+    elif iterations >= solver._maxiter:
         warnflag = 2
         if disp:
             print "Warning: Maximum number of iterations has been exceeded"
