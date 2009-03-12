@@ -71,6 +71,8 @@ EXPORT_BINS = \
 ##  example.py \
     example_getCost.py \
     forward_model.py \
+    rosetta_parabola_example.py \
+    rosetta_mogi_example.py \
 
 
 # export:: export-package-python-modules

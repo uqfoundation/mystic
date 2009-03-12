@@ -1,11 +1,15 @@
 == Notes on mystic and pyina examples ==
 
 Dependencies:
- - All modules with prefix "test_" should run without new dependencies.
- - All modules with prefix "scipy_" requires scipy to be installed. (tested on version 0.4.8).
- - All modules with prefix "sam_" requires "sam" and "scipy" to be installed. 
- - All modules with prefix "cg_" requires "sam" and "scipy" to be installed. It tries a few of the test problems with conjugate gradient method (which finds local minima).
- - All modules with prefix "gplot_" requres gnuplot-py to be installed.
+ - All examples with prefix "test_" should run without new dependencies.
+ - All examples with prefix "scipy_" requires scipy to be installed. (tested on version 0.4.8).
+ - All examples with prefix "sam_" requires "sam" and "scipy" to be installed. 
+ - All examples with prefix "cg_" requires "sam" and "scipy" to be installed. It tries a few of the test problems with conjugate gradient method (which finds local minima).
+ - All examples with prefix "gplot_" requres gnuplot-py to be installed.
+
+Special examples:
+ - All examples with prefix "rosetta_" require park to be installed. (tests on version park-1.2).  Run with "--park" to execute with park. See "--help" for more options.
+
 
 Additional egg for Mathematica Users:
  - mystic.nb: The mathematica notebook with most of the test functions used.
