@@ -87,7 +87,7 @@ class Null(object):
     #
     def __new__(cls, *args, **kwargs):
         if '_inst' not in vars(cls):
-            cls._inst = object.__new__(cls, *args, **kwargs)
+            cls._inst = object.__new__(cls) #, *args, **kwargs)
         return cls._inst
     def __init__(self, *args, **kwargs): pass
     def __call__(self, *args, **kwargs): return self
