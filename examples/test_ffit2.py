@@ -39,7 +39,7 @@ from test_ffit import plot_solution
 
 def main():
     solver = DifferentialEvolutionSolver(ND, NP)
-    solver.SetRandomInitialPoints(min = [-1000.0]*ND, max = [1000.0]*ND)
+    solver.SetRandomInitialPoints()
     solver.SetEvaluationLimits(maxiter=MAX_GENERATIONS)
   
     #strategy = Best1Exp
@@ -48,7 +48,7 @@ def main():
     strategy = Best2Exp
 
     solver.Solve(ChebyshevCost, strategy, termination = VTR(0.0001) , \
-                 StepMonitor=VerboseSow(1), CrossProbability=1.0, ScalingFactor=0.6)
+                 StepMonitor=VerboseSow(10), CrossProbability=1.0, ScalingFactor=0.6)
 
     solution = solver.Solution()
   

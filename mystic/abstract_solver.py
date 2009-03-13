@@ -107,13 +107,15 @@ class AbstractSolver(object):
         #stick initial values in population[i], i=0
         self.population[0] = x0
     
-    def SetRandomInitialPoints(self, min, max):
+    def SetRandomInitialPoints(self, min=None, max=None):
         """Generate Random Initial Points within given Bounds
         - min, max: must be a sequence of length self.nDim
         - each min[i] should be <= the corresponding max[i]"""
+        if min == None: min = [-1e3]*self.nDim #XXX: good default range?
+        if max == None: max = [1e3]*self.nDim
        #if numpy.any(( asarray(min) > asarray(max) ),0):
        #    raise ValueError, "each min[i] must be <= the corresponding max[i]"
-        if len(min) != self.nDim:
+        if len(min) != self.nDim or len(max) != self.nDim:
             raise ValueError, "bounds array must be length %s" % self.nDim
         import random
         #generate random initial values
