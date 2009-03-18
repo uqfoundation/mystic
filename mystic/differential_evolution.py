@@ -45,6 +45,7 @@ __all__ = ['DifferentialEvolutionSolver','DifferentialEvolutionSolver2',\
            'diffev']
 
 from mystic.tools import Null, wrap_function, unpair
+from mystic.tools import wrap_bounds
 
 from abstract_solver import AbstractSolver
 
@@ -65,21 +66,22 @@ class DifferentialEvolutionSolver(AbstractSolver):
         self.scale         = 0.7
         self.probability   = 0.5
         
-    def _keepSolutionWithinRangeBoundary(self, base): #XXX: could be smarter?
-        """scale trialSolution to be between base value and range boundary"""
-        if not self._useStrictRange:
-            return
-        min = self._strictMin
-        max = self._strictMax
-        import random
-        for i in range(self.nDim):
-            if base[i] < min[i] or base[i] > max[i]:
-                self.trialSolution[i] = random.uniform(min[i],max[i])
-            elif self.trialSolution[i] < min[i]:
-                self.trialSolution[i] = random.uniform(min[i],base[i])
-            elif self.trialSolution[i] > max[i]:
-                self.trialSolution[i] = random.uniform(base[i],max[i])
-        return
+### XXX: OBSOLETED by wrap_bounds ###
+#   def _keepSolutionWithinRangeBoundary(self, base):
+#       """scale trialSolution to be between base value and range boundary"""
+#       if not self._useStrictRange:
+#           return
+#       min = self._strictMin
+#       max = self._strictMax
+#       import random
+#       for i in range(self.nDim):
+#           if base[i] < min[i] or base[i] > max[i]:
+#               self.trialSolution[i] = random.uniform(min[i],max[i])
+#           elif self.trialSolution[i] < min[i]:
+#               self.trialSolution[i] = random.uniform(min[i],base[i])
+#           elif self.trialSolution[i] > max[i]:
+#               self.trialSolution[i] = random.uniform(base[i],max[i])
+#       return
 
     def UpdateGenealogyRecords(self, id, newchild):
         """
@@ -120,6 +122,10 @@ class DifferentialEvolutionSolver(AbstractSolver):
         detools.EARLYEXIT = False
 
         fcalls, costfunction = wrap_function(costfunction, ExtraArgs, EvaluationMonitor)
+        if self._useStrictRange:
+            for i in range(self.nPop):
+                self.population[i] = self._clipGuessWithinRangeBoundary(self.population[i])
+            costfunction = wrap_bounds(costfunction, self._strictMin, self._strictMax)
 
         def handler(signum, frame):
             import inspect
@@ -247,6 +253,10 @@ class DifferentialEvolutionSolver2(DifferentialEvolutionSolver):
         detools.EARLYEXIT = False
 
         fcalls, costfunction = wrap_function(costfunction, ExtraArgs, EvaluationMonitor)
+        if self._useStrictRange:
+            for i in range(self.nPop):
+                self.population[i] = self._clipGuessWithinRangeBoundary(self.population[i])
+            costfunction = wrap_bounds(costfunction, self._strictMin, self._strictMax)
 
         def handler(signum, frame):
             import inspect
@@ -363,7 +373,6 @@ def diffev(func,x0,npop,args=(),bounds=None,ftol=5e-3,gtol=None,
     solver.enable_signal_handler()
     #TODO: allow sigint_callbacks for all minimal interfaces ?
     #TODO: fix Solve() interface to strategy, CrossProbability, & ScalingFactor 
-    #FIXME: DESolve can't handle bounds of numpy.inf
     solver.Solve(func,strategy=strategy,termination=termination,\
                 #sigint_callback=other_callback,\
                  CrossProbability=cross,ScalingFactor=scale,\

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-example of using NelderMeadSimplexSolver on the rosenbrock function
+example of using PowellDirectionalSolver on the rosenbrock function
 """
 
 from mystic.models import rosen

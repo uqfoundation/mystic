@@ -41,21 +41,47 @@ def main():
 
 
 if __name__ == '__main__':
+    from numpy import inf
+    print "without bounds..."
     from timeit import Timer
     t = Timer("main()", "from __main__ import main")
     timetaken =  t.timeit(number=1)
     print "CPU Time: %s\n" % timetaken
 
+    print "with bounds..."
+    import time
+    times = []
+    algor = []
+
+    print "Differential Evolution"
+    print "======================"
+    start = time.time()
     esow= Sow()
     ssow= Sow()
-    xinit = [random.random() for j in range(ND)]
+
+#   xinit = [random.random() for j in range(ND)]
+    xinit = [0.8,1.2,0.7]*2
+   #xinit = [0.8,1.2,1.7]*2             #... better when using "bad" range
+    min = [-0.999, -0.999, 0.999]*2     #XXX: behaves badly when large range
+    max = [200.001, 100.001, inf]*2     #... for >=1 x0 out of bounds; (up xtol)
+  # min = [-0.999, -0.999, -0.999]*2
+  # max = [200.001, 100.001, inf]*2
+ #  min = [-0.999, -0.999, 0.999]*2
+ #  max = [2.001, 1.001, 1.001]*2
 
     solver = fmin(len(xinit))
     solver.SetInitialPoints(xinit)
+    solver.SetStrictRanges(min,max)
     solver.Solve(rosen, CRT(), EvaluationMonitor = esow, StepMonitor = ssow)
     sol = solver.Solution()
     print sol
  
+    times.append(time.time() - start)
+    algor.append('Differential Evolution\t')
+
+    for k in range(len(algor)):
+        print algor[k], "\t -- took", times[k]
+
    #print len(esow.x)
    #print len(ssow.x)
     print "\nstep x:\n", ssow.x[1:10][0]
