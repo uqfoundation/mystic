@@ -52,9 +52,9 @@ def main():
 
     strategy = Best1Bin
     stepmon = VerboseSow(1)
-    solver.Solve(wavy, strategy,\
-                 termination = ChangeOverGeneration(generations=50) , \
-                 CrossProbability=1.0, ScalingFactor=0.9 , \
+    solver.Solve(wavy,
+                 termination = ChangeOverGeneration(generations=50), \
+                 strategy=strategy, CrossProbability=1.0, ScalingFactor=0.9, \
                  StepMonitor = stepmon,  sigint_callback = plot_solution)
 
     solution = solver.Solution()

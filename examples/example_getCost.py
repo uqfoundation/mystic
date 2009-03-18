@@ -35,7 +35,7 @@ def de_solve(CF):
     solver.SetStrictRanges(min = minrange, max = maxrange)
     solver.SetEvaluationLimits(maxiter=MAX_GENERATIONS)
 
-    solver.Solve(CF,Best1Exp,termination=ChangeOverGeneration(generations=300),\
+    solver.Solve(CF,termination=ChangeOverGeneration(generations=300),\
                 CrossProbability=0.5,ScalingFactor=0.5,\
                 StepMonitor=stepmon,sigint_callback=plot_sol)
 

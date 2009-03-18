@@ -22,7 +22,6 @@ Bull. Earthquake. Res. Inst., 36, 99-134, 1958.
 import pylab
 from mystic.differential_evolution import DifferentialEvolutionSolver
 from mystic.termination import ChangeOverGeneration, VTR
-from mystic.strategy import Best1Exp, Rand1Exp, Best2Exp, Best2Exp
 from mystic import getch, Sow, random_seed, VerboseSow
 
 from numpy import pi, sqrt, array, mgrid, random, real, conjugate, arange
@@ -91,7 +90,7 @@ def de_solve():
    #termination = VTR(0.0000029)
     termination = ChangeOverGeneration(generations=100)
 
-    solver.Solve(cost_function, Best1Exp, termination=termination, \
+    solver.Solve(cost_function, termination=termination, \
                  CrossProbability=0.5, ScalingFactor=0.5, StepMonitor=stepmon)
 
     solution = solver.Solution()

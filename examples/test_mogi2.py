@@ -76,8 +76,8 @@ def de_solve():
     solver.SetRandomInitialPoints(min = minrange, max = maxrange)
     solver.SetEvaluationLimits(maxiter=MAX_GENERATIONS)
 
-    solver.Solve(cost_function, Best1Exp,\
-                 termination = ChangeOverGeneration(generations=300) , \
+    solver.Solve(cost_function, \
+                 termination=ChangeOverGeneration(generations=300), \
                  CrossProbability=0.5, ScalingFactor=0.5, \
                  StepMonitor = stepmon, sigint_callback = plot_sol)
 

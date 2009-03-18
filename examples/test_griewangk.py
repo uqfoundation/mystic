@@ -32,7 +32,7 @@ def main():
     solver.SetRandomInitialPoints(min = [-400.0]*ND, max = [400.0]*ND)
     solver.SetEvaluationLimits(maxiter=MAX_GENERATIONS)
 
-    solver.Solve(Griewangk_cost, Rand1Exp, termination = VTR(0.00001) , \
+    solver.Solve(Griewangk_cost, termination=VTR(0.00001), strategy=Rand1Exp,\
                  CrossProbability=0.3, ScalingFactor=1.0)
 
     solution = solver.Solution()

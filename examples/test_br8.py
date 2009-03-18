@@ -11,7 +11,6 @@ from numpy import *
 from scipy.integrate import romberg
 from mystic.differential_evolution import DifferentialEvolutionSolver2 as DifferentialEvolutionSolver
 from mystic.termination import ChangeOverGeneration, VTR
-from mystic.strategy import Best1Exp, Rand1Exp, Best1Bin, Best2Exp, Best2Exp
 from mystic import getch, random_seed
 from mystic import VerboseSow as MySow
 
@@ -67,7 +66,7 @@ def de_solve(CF, a4=None, a5=None):
     solver.SetRandomInitialPoints(min=minrange,max=maxrange)
     solver.SetStrictRanges(min=minrange, max=maxrange)
     solver.SetEvaluationLimits(maxiter=MAX_GENERATIONS)
-    solver.Solve(CF,Best1Exp,termination=ChangeOverGeneration(generations=50),\
+    solver.Solve(CF,termination=ChangeOverGeneration(generations=50),\
                  StepMonitor=stepmon)
     solution = solver.Solution()
     return solution, stepmon

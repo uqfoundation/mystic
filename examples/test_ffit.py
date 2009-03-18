@@ -69,7 +69,7 @@ def main():
     strategy = Best1Exp
     #strategy = Best1Bin
 
-    solver.Solve(ChebyshevCost, strategy, termination = VTR(0.01) , \
+    solver.Solve(ChebyshevCost, termination=VTR(0.01), strategy=strategy, \
                  CrossProbability=1.0, ScalingFactor=0.9 , \
                  StepMonitor=VerboseSow(30), sigint_callback=plot_solution)
 

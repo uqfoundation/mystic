@@ -12,7 +12,6 @@ Run optimize.py in scipy.optimize to see a comparison of Nelder-Mead and a few o
 
 from mystic.differential_evolution import DifferentialEvolutionSolver
 from mystic.termination import ChangeOverGeneration, VTR
-from mystic.strategy import Best1Exp, Rand1Exp, Best2Bin
 from mystic.models import rosen
 from mystic.scipy_optimize import NelderMeadSimplexSolver as fmin
 from mystic.termination import CandidateRelativeTolerance as CRT
@@ -31,7 +30,7 @@ def main():
     solver.SetRandomInitialPoints(min = [0]*ND, max = [2]*ND)
     solver.SetEvaluationLimits(maxiter=MAX_GENERATIONS)
 
-    solver.Solve(rosen, Best1Exp, termination = VTR(0.0001) , \
+    solver.Solve(rosen, termination = VTR(0.0001), \
                  CrossProbability=0.5, ScalingFactor=0.6)
 
     solution = solver.Solution()

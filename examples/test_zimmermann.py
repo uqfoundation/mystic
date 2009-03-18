@@ -35,7 +35,7 @@ def main():
     solver.SetRandomInitialPoints(min = [0.]*ND, max = [5.]*ND)
     solver.SetEvaluationLimits(maxiter=MAX_GENERATIONS)
 
-    solver.Solve(CostFunction, Rand1Exp, termination = VTR(0.0000001) , \
+    solver.Solve(CostFunction, termination=VTR(0.0000001), strategy=Rand1Exp, \
                  CrossProbability=0.3, ScalingFactor=1.0)
 
     solution = solver.Solution()

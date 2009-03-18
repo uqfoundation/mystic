@@ -20,8 +20,8 @@ def de_solve(CF):
     solver.SetRandomInitialPoints(min = minrange, max = maxrange)
     solver.SetEvaluationLimits(maxiter=MAX_GENERATIONS)
 
-    solver.Solve(CF, Best1Exp,\
-                 termination = ChangeOverGeneration(generations=100) , \
+    solver.Solve(CF, \
+                 termination = ChangeOverGeneration(generations=100), \
                  CrossProbability=0.5, ScalingFactor=0.5, \
                  StepMonitor = stepmon)
 

@@ -47,7 +47,7 @@ def main():
     #strategy = Best2Bin
     strategy = Best2Exp
 
-    solver.Solve(ChebyshevCost, strategy, termination = VTR(0.0001) , \
+    solver.Solve(ChebyshevCost, termination=VTR(0.0001), strategy=strategy, \
                  StepMonitor=VerboseSow(10), CrossProbability=1.0, ScalingFactor=0.6)
 
     solution = solver.Solution()

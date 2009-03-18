@@ -30,7 +30,7 @@ def main():
     solver.SetRandomInitialPoints(min = [-65.536]*ND, max = [65.536]*ND)
     solver.SetEvaluationLimits(maxiter=MAX_GENERATIONS)
 
-    solver.Solve(DeJong5, Rand1Exp, termination = VTR(0.0000001) , \
+    solver.Solve(DeJong5, termination=VTR(0.0000001), strategy=Rand1Exp, \
                  CrossProbability=0.5, ScalingFactor=0.9)
 
     solution = solver.Solution()

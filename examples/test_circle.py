@@ -43,13 +43,12 @@ maxrange = [50., 50., 10.]
 # prepare DESolver
 from mystic.differential_evolution import DifferentialEvolutionSolver2 \
       as DifferentialEvolutionSolver
-from mystic.strategy import Best1Exp, Best1Bin, Rand1Exp
 from mystic.termination import ChangeOverGeneration, VTR
 solver = DifferentialEvolutionSolver(ND, NP)
 solver.enable_signal_handler()
 solver.SetRandomInitialPoints(min=minrange,max=maxrange)
 solver.SetEvaluationLimits(maxiter=MAX_GENERATIONS)
-solver.Solve(cost, Best1Exp, termination=ChangeOverGeneration(generations=100))
+solver.Solve(cost, termination=ChangeOverGeneration(generations=100))
 
 
 if __name__ == '__main__':     

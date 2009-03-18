@@ -32,7 +32,7 @@ def main():
     solver.SetRandomInitialPoints(min = [-1000]*ND, max = [1000]*ND)
     solver.SetEvaluationLimits(maxiter=MAX_GENERATIONS)
 
-    solver.Solve(Corana, Rand1Exp, termination = VTR(0.00000001) , \
+    solver.Solve(Corana, termination=VTR(0.00000001), strategy=Rand1Exp,\
                  CrossProbability=0.5, ScalingFactor=0.9)
 
     solution = solver.Solution()

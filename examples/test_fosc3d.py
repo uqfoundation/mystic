@@ -38,8 +38,8 @@ def main():
     strategy = Best1Exp
     #strategy = Best1Bin
 
-    solver.Solve(fOsc3D,strategy,termination=ChangeOverGeneration(1e-5, 30), \
-                 CrossProbability=1.0,ScalingFactor=0.9)
+    solver.Solve(fOsc3D,termination=ChangeOverGeneration(1e-5, 30), \
+                 strategy=strategy,CrossProbability=1.0,ScalingFactor=0.9)
 
     return solver.Solution()
   

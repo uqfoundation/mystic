@@ -92,13 +92,12 @@ def mystic_optimize2(point):
     from mystic import getch, Sow, random_seed, VerboseSow
     random_seed(123)
     from mystic.differential_evolution import DifferentialEvolutionSolver as de
-    from mystic.strategy import Best1Exp
     from mystic.termination import ChangeOverGeneration as COG
     NPOP = 50
     simplex, esow = VerboseSow(50), Sow()
     solver = de(len(point),NPOP)
     solver.SetInitialPoints(point)
-    solver.Solve(cost_function, Best1Exp, COG(generations=100), \
+    solver.Solve(cost_function, COG(generations=100), \
                  CrossProbability=0.5, ScalingFactor=0.5, \
                  EvaluationMonitor = esow, StepMonitor = simplex)
     solution = solver.Solution()

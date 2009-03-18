@@ -90,8 +90,7 @@ class DifferentialEvolutionSolver(AbstractSolver):
         self.genealogy[id].append(newchild)
         return
 
-    def Solve(self, costfunction, strategy, termination, sigint_callback=None,
-              CrossProbability = 0.5, ScalingFactor = 0.7,
+    def Solve(self, costfunction, termination, sigint_callback=None,
               EvaluationMonitor=Null, StepMonitor=Null, ExtraArgs=(), **kwds):
         """Minimize a function using differential evolution.
 
@@ -112,8 +111,16 @@ class DifferentialEvolutionSolver(AbstractSolver):
       <doc here>
 
         """
-        #FIXME: Solve() interface does not conform to AbstractSolver interface
-        callback=None  #user-supplied function, called after each step
+        #allow for inputs that don't conform to AbstractSolver interface
+        from mystic.strategy import Best1Exp
+        strategy=Best1Exp    #mutation strategy (see mystic.strategy)
+        CrossProbability=0.5 #potential for parameter cross-mutation
+        ScalingFactor=0.7    #multiplier for mutation impact
+        callback=None        #user-supplied function, called after each step
+        if kwds.has_key('strategy'): strategy = kwds['strategy']
+        if kwds.has_key('CrossProbability'): \
+           CrossProbability = kwds['CrossProbability']
+        if kwds.has_key('ScalingFactor'): ScalingFactor = kwds['ScalingFactor']
         if kwds.has_key('callback'): callback = kwds['callback']
         #-------------------------------------------------------------
 
@@ -221,8 +228,7 @@ class DifferentialEvolutionSolver2(DifferentialEvolutionSolver):
       - both a current and a next generation are kept, while the current
         generation is invariant during the main DE logic.
     """
-    def Solve(self, costfunction, strategy, termination, sigint_callback=None,
-              CrossProbability = 0.5, ScalingFactor = 0.7,
+    def Solve(self, costfunction, termination, sigint_callback=None,
               EvaluationMonitor=Null, StepMonitor=Null, ExtraArgs=(), **kwds):
         """Minimize a function using differential evolution.
 
@@ -243,8 +249,16 @@ class DifferentialEvolutionSolver2(DifferentialEvolutionSolver):
       <doc here>
 
         """
-        #FIXME: Solve() interface does not conform to AbstractSolver interface
-        callback=None  #user-supplied function, called after each step
+        #allow for inputs that don't conform to AbstractSolver interface
+        from mystic.strategy import Best1Exp
+        strategy=Best1Exp    #mutation strategy (see mystic.strategy)
+        CrossProbability=0.5 #potential for parameter cross-mutation
+        ScalingFactor=0.7    #multiplier for mutation impact
+        callback=None        #user-supplied function, called after each step
+        if kwds.has_key('strategy'): strategy = kwds['strategy']
+        if kwds.has_key('CrossProbability'): \
+           CrossProbability = kwds['CrossProbability']
+        if kwds.has_key('ScalingFactor'): ScalingFactor = kwds['ScalingFactor']
         if kwds.has_key('callback'): callback = kwds['callback']
         #-------------------------------------------------------------
 
@@ -342,14 +356,14 @@ class DifferentialEvolutionSolver2(DifferentialEvolutionSolver):
 
 def diffev(func,x0,npop,args=(),bounds=None,ftol=5e-3,gtol=None,
            maxiter=None,maxfun=None,cross=1.0,scale=0.9,
-           full_output=0,disp=1,retall=0,callback=None):
+           full_output=0,disp=1,retall=0,callback=None,invariant_current=True):
     """interface for differential evolution that mimics scipy.optimize.fmin"""
 
     from mystic.tools import Sow
     stepmon = Sow()
     evalmon = Sow()
-    from mystic.strategy import Best1Exp #, Best1Bin, Rand1Exp
-    strategy = Best1Exp
+   #from mystic.strategy import Best1Exp #, Best1Bin, Rand1Exp
+   #strategy = Best1Exp
     if gtol: #if number of generations provided, use ChangeOverGeneration 
         from mystic.termination import ChangeOverGeneration
         termination = ChangeOverGeneration(ftol,gtol)
@@ -358,7 +372,10 @@ def diffev(func,x0,npop,args=(),bounds=None,ftol=5e-3,gtol=None,
         termination = VTR(ftol)
 
     ND = len(x0)
-    solver = DifferentialEvolutionSolver2(ND,npop)
+    if invariant_current: #use Solver2, not Solver1
+        solver = DifferentialEvolutionSolver2(ND,npop)
+    else:
+        solver = DifferentialEvolutionSolver(ND,npop)
     solver.SetEvaluationLimits(maxiter,maxfun)
     if bounds:
         minb,maxb = unpair(bounds)
@@ -372,9 +389,8 @@ def diffev(func,x0,npop,args=(),bounds=None,ftol=5e-3,gtol=None,
 
     solver.enable_signal_handler()
     #TODO: allow sigint_callbacks for all minimal interfaces ?
-    #TODO: fix Solve() interface to strategy, CrossProbability, & ScalingFactor 
-    solver.Solve(func,strategy=strategy,termination=termination,\
-                #sigint_callback=other_callback,\
+    solver.Solve(func,termination=termination,\
+                #strategy=strategy,sigint_callback=other_callback,\
                  CrossProbability=cross,ScalingFactor=scale,\
                  EvaluationMonitor=evalmon,StepMonitor=stepmon,\
                  ExtraArgs=args,callback=callback)

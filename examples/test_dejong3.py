@@ -17,7 +17,6 @@ try: http://www.icsi.berkeley.edu/~storn/deshort1.ps
 
 from mystic.differential_evolution import DifferentialEvolutionSolver
 from mystic.termination import ChangeOverGeneration, VTR
-from mystic.strategy import Best1Exp, Rand1Exp
 from mystic.models.dejong import step as DeJong3
 
 import random
@@ -33,7 +32,7 @@ def main():
     solver.SetRandomInitialPoints(min = [-5.12]*ND, max = [5.12]*ND)
     solver.SetEvaluationLimits(maxiter=MAX_GENERATIONS)
 
-    solver.Solve(DeJong3, Best1Exp, termination = VTR(0.00001) , \
+    solver.Solve(DeJong3, termination=VTR(0.00001), \
                  CrossProbability=0.3, ScalingFactor=1.0)
 
     solution = solver.Solution()
