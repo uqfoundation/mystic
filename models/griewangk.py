@@ -10,7 +10,7 @@ Optimization 11: 341-359, 1997.
 [2] Storn, R. and Price, K. (Same title as above, but as a technical report.)
 http://www.icsi.berkeley.edu/~storn/deshort1.ps
 """
-from dejong import AbstractFunction
+from abstract_model import AbstractFunction
 
 from numpy import asarray
 from math import cos, sqrt

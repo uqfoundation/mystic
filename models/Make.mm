@@ -17,6 +17,7 @@ update: clean
 
 EXPORT_PYTHON_MODULES = \
     __init__.py \
+    abstract_model.py \
     dejong.py \
     griewangk.py \
     zimmermann.py \

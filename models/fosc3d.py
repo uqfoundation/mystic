@@ -5,7 +5,7 @@ References:
 
 [4] Mathematica guidebook
 """
-from dejong import AbstractFunction
+from abstract_model import AbstractFunction
 
 from math import sin, exp
 

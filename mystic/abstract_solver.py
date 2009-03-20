@@ -75,6 +75,7 @@ class AbstractSolver(object):
         - x0: must be a sequence of length self.nDim"""
        #if len(x0) != self.nDim: #XXX: unnecessary w/ self.trialSolution
        #    raise ValueError, "initial guess must be length %s" % self.nDim
+        x0 = asarray(x0)
         lo = self._strictMin
         hi = self._strictMax
         # crop x0 at bounds

@@ -10,32 +10,13 @@ Optimization 11: 341-359, 1997.
 [2] Storn, R. and Price, K. (Same title as above, but as a technical report.)
 http://www.icsi.berkeley.edu/~storn/deshort1.ps
 """
+from abstract_model import AbstractFunction
 
 from numpy import sum as numpysum
 from numpy import asarray, transpose
 from math import floor
 import random
 from math import pow
-
-class AbstractFunction(object):
-    """abstract Function"""
-
-    def __init__(self):
-        return
-
-    def __call__(self,*args,**kwds):
-        return self.function(*args,**kwds)
-
-    def function(self,coeffs):
-        """takes a list of coefficients x, returns f(x)"""
-        raise NotImplementedError, "overwrite for each derived class"
-
-#   def forward(self,pts):
-#       """takes points p=(x,y,...), returns f(xi,yi,...)"""
-#       pts = asarray(pts) #XXX: converting to numpy.array slows by 10x
-#       return [self.function(i) for i in pts.transpose()] #FIXME: requires pts is a numpy.array
-    pass
-
 
 class Rosenbrock(AbstractFunction):
     """Rosenbrock function:

@@ -4,24 +4,24 @@
 Testing Rosenbrock's Function.
 
 This is a very popular function for testing minimization algorithm.
+The following provides tests for both bounded and unbounded minimization
+of the Rosenbrock function with Differential Evolution.
 
 For direct searches, Nelder-Mead does very well on this problem. 
-
-Run optimize.py in scipy.optimize to see a comparison of Nelder-Mead and a few other solvers
+For a direct comparison between DE and steepest-descent solvers, run
+test_rosenbrock*.py (or optimize.py in scipy.optimize).
 """
 
-from mystic.differential_evolution import DifferentialEvolutionSolver
+from mystic.differential_evolution import DifferentialEvolutionSolver, diffev
 from mystic.termination import ChangeOverGeneration, VTR
 from mystic.models import rosen
-from mystic.scipy_optimize import NelderMeadSimplexSolver as fmin
-from mystic.termination import CandidateRelativeTolerance as CRT
 from mystic import Sow
 
 import random
 random.seed(123)
 
-ND = 6
-NP = 60
+ND = 3
+NP = 30
 MAX_GENERATIONS = 99999
 
 def main():
@@ -58,20 +58,23 @@ if __name__ == '__main__':
     esow= Sow()
     ssow= Sow()
 
-#   xinit = [random.random() for j in range(ND)]
-    xinit = [0.8,1.2,0.7]*2
-   #xinit = [0.8,1.2,1.7]*2             #... better when using "bad" range
-    min = [-0.999, -0.999, 0.999]*2     #XXX: behaves badly when large range
-    max = [200.001, 100.001, inf]*2     #... for >=1 x0 out of bounds; (up xtol)
-  # min = [-0.999, -0.999, -0.999]*2
-  # max = [200.001, 100.001, inf]*2
- #  min = [-0.999, -0.999, 0.999]*2
- #  max = [2.001, 1.001, 1.001]*2
+ #  xinit = [random.random() for j in range(ND)]
+    xinit = [0.8,1.2,0.7]
+  # xinit = [0.8,1.2,1.7]             #... better when using "bad" range
+    min = [-0.999, -0.999, 0.999]     #XXX: behaves badly when large range
+    max = [200.001, 100.001, inf]     #... for >=1 x0 out of bounds; (up xtol)
+  # min = [-0.999, -0.999, -0.999]
+  # max = [200.001, 100.001, inf]
+ #  min = [-0.999, -0.999, 0.999]     #XXX: tight range and non-randomness
+ #  max = [2.001, 1.001, 1.001]       #...: is _bad_ for DE solvers
 
-    solver = fmin(len(xinit))
+   #print diffev(rosen,xinit,NP,retall=0,full_output=0)
+    solver = DifferentialEvolutionSolver(len(xinit), NP)
     solver.SetInitialPoints(xinit)
     solver.SetStrictRanges(min,max)
-    solver.Solve(rosen, CRT(), EvaluationMonitor = esow, StepMonitor = ssow)
+    solver.SetEvaluationLimits(maxiter=MAX_GENERATIONS)
+    solver.Solve(rosen, VTR(0.0001), EvaluationMonitor=esow, StepMonitor=ssow,\
+                 CrossProbability=0.5, ScalingFactor=0.6)
     sol = solver.Solution()
     print sol
  
@@ -83,8 +86,8 @@ if __name__ == '__main__':
 
    #print len(esow.x)
    #print len(ssow.x)
-    print "\nstep x:\n", ssow.x[1:10][0]
-    print "\nstep y:\n", ssow.y[1:10][0]
+   #print "\nstep x:\n", ssow.x[1:10][0]
+   #print "\nstep y:\n", ssow.y[1:10][0]
 
 
 

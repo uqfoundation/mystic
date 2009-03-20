@@ -10,10 +10,10 @@ Optimization 11: 341-359, 1997.
 [2] Storn, R. and Price, K. (Same title as above, but as a technical report.)
 http://www.icsi.berkeley.edu/~storn/deshort1.ps
 """
+from abstract_model import AbstractModel
 
 from numpy import sum as numpysum
 from numpy import asarray
-from mystic.forward_model import CostFactory as CF
 from numpy import poly1d as npoly1d
 
 def polyeval(coeffs, x):
@@ -34,55 +34,6 @@ i.e. numpy.poly1d(coeffs)"""
     return npoly1d(coeff)
 
 #########################################
-
-class AbstractModel(object):
-    """abstract Model"""
-
-    def __init__(self,name='dummy',metric=lambda x: numpysum(x*x),sigma=1.0):
-        self.__name__ = name
-        self.__metric__ = metric
-        self.__sigma__ = sigma
-        self.__forward__ = None
-        self.__cost__ = None
-        return
-
-#   def forward(self,pts):
-#       """takes points p=(x,y,...), returns f(xi,yi,...)"""
-#       if self.__forward__ is None:
-#           raise NotImplementedError, "construct w/ ForwardFactory(coeffs)"
-#       return self.__forward__(pts)
-
-#   def cost(self,coeffs):
-#       """takes list of coefficients, return cost of metric(coeffs,target) at evalpts"""
-#       if self.__cost__ is None:
-#           raise NotImplementedError, "construct w/ CostFactory(target,pts)"
-#       return self.__cost__(coeffs)
-
-    def evaluate(self,coeffs,x):
-        """takes list of coefficients & evaluation points, returns f(x)"""
-        raise NotImplementedError, "overwrite for each derived class"
-
-    def ForwardFactory(self,coeffs):
-        """generates a forward model instance from a list of coefficients"""
-        raise NotImplementedError, "overwrite for each derived class"
-
-    def CostFactory(self,target,pts):
-        """generates a cost function instance from list of coefficients & evaluation points"""
-        datapts = self.evaluate(target,pts)
-        F = CF()
-        F.addModel(self.ForwardFactory,self.__name__,len(target))
-        self.__cost__ = F.getCostFunction(evalpts=pts,observations=datapts,sigma=self.__sigma__,metric=self.__metric__)
-        return self.__cost__
-
-    def CostFactory2(self,pts,datapts,nparams):
-        """generates a cost function instance from datapoints & evaluation points"""
-        F = CF()
-        F.addModel(self.ForwardFactory,self.__name__,nparams)
-        self.__cost__ = F.getCostFunction(evalpts=pts,observations=datapts,sigma=self.__sigma__,metric=self.__metric__)
-        return self.__cost__
-
-    pass
-
 
 class Polynomial(AbstractModel):
     """1-D Polynomial models and functions"""

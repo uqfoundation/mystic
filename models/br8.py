@@ -5,7 +5,7 @@ References:
 
 [5] Bevington & Robinson (1992). Data Reduction and Error Analysis for the Physical Sciences, Second Edition, McGraw-Hill, Inc., New York.
 """
-from poly import AbstractModel
+from abstract_model import AbstractModel
 
 from numpy import array, asarray
 from numpy import sum as numpysum

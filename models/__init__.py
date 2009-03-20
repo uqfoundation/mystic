@@ -4,8 +4,7 @@
 models and functions used in testing & examples
 """
 # base classes
-from poly import AbstractModel
-from dejong import AbstractFunction
+from abstract_model import AbstractModel, AbstractFunction
 
 # models
 from poly import poly, chebyshev8, chebyshev16

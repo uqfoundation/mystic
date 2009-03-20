@@ -6,7 +6,7 @@ References:
 None
 """
 #FIXME: cost function seems to apply penalty when r=R0... it should not
-from poly import AbstractModel
+from abstract_model import AbstractModel
 
 from numpy import array, pi, arange
 from numpy import random, sin, cos

@@ -5,7 +5,7 @@ References:
 
 None
 """
-from poly import AbstractModel
+from abstract_model import AbstractModel
 
 from numpy import sum as numpysum
 from numpy import array, pi, asarray, arange

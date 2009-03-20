@@ -5,7 +5,7 @@ References:
 
 None.
 """
-from dejong import AbstractFunction
+from abstract_model import AbstractFunction
 
 from numpy import absolute as abs
 from numpy import asarray
