@@ -365,7 +365,44 @@ class NelderMeadSimplexSolver(AbstractSolver):
 
 def fmin(func, x0, args=(), xtol=1e-4, ftol=1e-4, maxiter=None, maxfun=None,
          full_output=0, disp=1, retall=0, callback=None):
-    """fmin using the 'original' scipy.optimize.fmin interface"""
+    """Minimize a function using the downhill simplex algorithm.
+    
+    Description:
+
+      Uses a Nelder-Mead simplex algorithm to find the minimum of function
+      of one or more variables. Mimics the scipy.optimize.fmin interface.
+
+    Inputs:
+
+      func -- the Python function or method to be minimized.
+      x0 -- ndarray - the initial guess.
+
+    Additional Inputs:
+
+      args -- extra arguments for func.
+      xtol -- number - acceptable relative error in xopt for convergence.
+      ftol -- number - acceptable relative error in func(xopt) for convergence.
+      maxiter -- number - the maximum number of iterations to perform.
+      maxfun -- number - the maximum number of function evaluations.
+      full_output -- number - non-zero if fval and warnflag outputs are desired.
+      disp -- number - non-zero to print convergence messages.
+      retall -- number - non-zero to return list of solutions at each iteration.
+      callback -- an optional user-supplied function to call after each
+                  iteration.  It is called as callback(xk), where xk is the
+                  current parameter vector.
+
+    Returns: (xopt, {fopt, iter, funcalls, warnflag}, {allvecs})
+
+      xopt -- ndarray - minimizer of function
+      fopt -- number - value of function at minimum: fopt = func(xopt)
+      iter -- number - number of iterations
+      funcalls -- number - number of function calls
+      warnflag -- number - Integer warning flag:
+                             1 : 'Maximum number of function evaluations.'
+                             2 : 'Maximum number of iterations.'
+      allvecs -- list - a list of solutions at each iteration
+
+    """
 
     from mystic.tools import Sow
     stepmon = Sow()
@@ -649,8 +686,47 @@ class PowellDirectionalSolver(AbstractSolver):
 def fmin_powell(func, x0, args=(), xtol=1e-4, ftol=1e-4, maxiter=None,
                 maxfun=None, full_output=0, disp=1, retall=0, callback=None,
                 direc=None):
-    """fmin_powell using the 'original' scipy.optimize.fmin_powell interface"""
+    """Minimize a function using modified Powell's method.
+    
+    Description:
 
+      Uses a modified Powell Directional Search algorithm to find
+      the minimum of function of one or more variables.  Mimics the
+      scipy.optimize.fmin_powell interface.
+
+    Inputs:
+
+      func -- the Python function or method to be minimized.
+      x0 -- ndarray - the initial guess.
+
+    Additional Inputs:
+
+      args -- extra arguments for func.
+      xtol -- number - acceptable relative error in xopt for convergence.
+      ftol -- number - acceptable relative error in func(xopt) for convergence.
+      maxiter -- number - the maximum number of iterations to perform.
+      maxfun -- number - the maximum number of function evaluations.
+      full_output -- number - non-zero if fval and warnflag outputs are desired.
+      disp -- number - non-zero to print convergence messages.
+      retall -- number - non-zero to return list of solutions at each iteration.
+      callback -- an optional user-supplied function to call after each
+                  iteration.  It is called as callback(xk), where xk is the
+                  current parameter vector.
+      direc -- initial direction set
+
+    Returns: (xopt, {fopt, direc, iter, funcalls, warnflag}, {allvecs})
+
+      xopt -- ndarray - minimizer of function
+      fopt -- number - value of function at minimum: fopt = func(xopt)
+      direc -- current direction set
+      iter -- number - number of iterations
+      funcalls -- number - number of function calls
+      warnflag -- number - Integer warning flag:
+                             1 : 'Maximum number of function evaluations.'
+                             2 : 'Maximum number of iterations.'
+      allvecs -- list - a list of solutions at each iteration
+
+    """
     #FIXME: need to resolve "direc"
     #        - should just pass 'direc', and then hands-off ?  How return it ?
 
