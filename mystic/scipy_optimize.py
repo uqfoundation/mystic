@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+#
 ## Nelder Mead Simplex Solver Class
 # (derives from optimize.py module by Travis E. Oliphant)
 #
@@ -12,18 +12,47 @@
 # by mmckerns@caltech.edu
 
 """
-Algorithms adapted from scipy.optimize, 
+Solvers
+=======
 
-fmin        ---      Nelder-Mead Simplex algorithm.
-                     Takes two additional input args
-                        -- EvaluationMonitor
-                        -- StepMonitor
-                     
-fmin_powell ---      Powell's Directional Search method.
-                     Takes two additional input args
-                        -- EvaluationMonitor
-                        -- StepMonitor
-                     
+This module contains a collection of optimization routines adapted
+from scipy.optimize.  The minimal scipy interface has been preserved,
+and functionality from the mystic solver API has been added with
+reasonable defaults.
+
+Minimal function interface to optimization routines:
+   fmin        -- Nelder-Mead Simplex algorithm
+                    (uses only function calls)
+   fmin_powell -- Powell's (modified) level set method (uses only
+                    function calls)
+
+The corresponding solvers built on mystic's AbstractSolver are:
+   NelderMeadSimplexSolver -- Nelder-Mead Simplex algorithm
+   PowellDirectionalSolver -- Powell's (modified) level set method
+
+Mystic solver behavior activated in fmin:
+   - EvaluationMonitor = Sow()
+   - StepMonitor = Sow()
+   - termination = CandidateRelativeTolerance(xtol,ftol)
+   - enable_signal_handler()
+
+Mystic solver behavior activated in fmin_powell:
+   - EvaluationMonitor = Sow()
+   - StepMonitor = Sow()
+   - termination = NormalizedChangeOverGeneration(ftol)
+   - enable_signal_handler()
+
+
+Usage
+=====
+
+See 'mystic.examples.test_rosenbrock2' for an example of using
+NelderMeadSimplexSolver. See 'mystic.examples.test_rosenbrock3'
+or an example of using PowellDirectionalSolver.
+
+All solvers included in this module provide the standard signal handling.
+For more information, see 'mystic.mystic.abstract_solver'.
+
 """
 __all__ = ['NelderMeadSimplexSolver','PowellDirectionalSolver',
            'fmin','fmin_powell']
@@ -51,6 +80,8 @@ class NelderMeadSimplexSolver(AbstractSolver):
         """
  Takes one initial input: 
    dim      -- dimensionality of the problem
+
+ The size of the simplex is dim+1.
         """
         simplex = dim+1
         #XXX: cleaner to set npop=simplex, and use 'population' as simplex
@@ -121,9 +152,9 @@ class NelderMeadSimplexSolver(AbstractSolver):
 
       callback -- an optional user-supplied function to call after each
                   iteration.  It is called as callback(xk), where xk is the
-                  current parameter vector
-      disp -- non-zero to print convergence messages.
-      radius -- percentage change for initial simplex values
+                  current parameter vector.  [default = None]
+      disp -- non-zero to print convergence messages.  [default = 0]
+      radius -- percentage change for initial simplex values.  [default = 0.05]
 
 """
         # set arg names to scipy.optimize.fmin names; set fixed inputs

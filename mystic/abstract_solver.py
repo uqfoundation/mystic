@@ -1,11 +1,65 @@
 #!/usr/bin/env python
-
+#
 ## Abstract Solver Class
-# ...
+# derived from Patrick Hung's original DifferentialEvolutionSolver
 # by mmckerns@caltech.edu
 
 """
-module doc... 
+This module contains the base class for mystic solvers, and describes
+the mystic solver interface.  The "Solve" method must be overwritten
+with the derived solver's optimization algorithm.  In many cases, a
+minimal funciton call interface for a derived solver is provided
+along with the derived class.  See 'mystic.scipy_optimize', and the
+follwing for an example.
+
+
+Usage
+=====
+
+A typical call to a mystic solver will roughly follow this example:
+
+    >>> # the function to be minimized and the initial values
+    >>> from mystic.models import rosen
+    >>> x0 = [0.8, 1.2, 0.7]
+    
+    >>> # get monitors and termination condition objects
+    >>> from mystic.tools import Sow
+    >>> stepmon = Sow()
+    >>> evalmon = Sow()
+    >>> from mystic.termination import CandidateRelativeTolerance as CRT
+
+    >>> # instantiate and configure the solver
+    >>> from mystic.scipy_optimize import NelderMeadSimplexSolver
+    >>> solver = NelderMeadSimplexSolver(len(x0))
+    >>> solver.SetInitialPoints(x0)
+    >>> solver.enable_signal_handler()
+    >>> solver.Solve(rosen, CRT(), EvaluationMonitor=evalmon, StepMonitor=stepmon)
+
+    >>> # obtain the solution
+    >>> solution = solver.Solution()
+
+
+An equivalent, yet less flexible, call using the minimal interface is:
+
+    >>> # the function to be minimized and the initial values
+    >>> from mystic.models import rosen
+    >>> x0 = [0.8, 1.2, 0.7]
+    
+    >>> # configure the solver and obtain the solution
+    >>> from mystic.scipy_optimize import fmin
+    >>> solution = fmin(rosen,x0)
+
+
+Handler
+=======
+
+All solvers packaged with mystic include a signal handler that
+provides the following options:
+   sol: Print current best solution.
+   cont: Continue calculation.
+   call: Executes sigint_callback, if provided.
+   exit: Exits with current best solution.
+
 """
 __all__ = ['AbstractSolver']
 
@@ -26,7 +80,22 @@ class AbstractSolver(object):
     
     def __init__(self, dim, **kwds):
         """
- constructor doc... <document class members here>
+ Takes one initial input: 
+   dim      -- dimensionality of the problem.
+
+ Additional inputs:
+   npop     -- size of the trial solution population.  [default = 1]
+
+ Important class members:
+   nDim, nPop      = dim, npop
+   generations     - an iteration counter.
+   bestEnergy      - current best energy.
+   bestSolution    - current best parameter set.  [size = dim]
+   popEnergy       - set of all trial energy solutions.  [size = npop]
+   population      - set of all trial parameter solutions.  [size = dim*npop]
+   energy_history  - history of bestEnergy status.  [equivalent to StepMonitor]
+   signal_handler  - catches the interrupt signal.
+
         """
         NP = 1
         if kwds.has_key('npop'): NP = kwds['npop']

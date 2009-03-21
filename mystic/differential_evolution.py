@@ -1,37 +1,72 @@
 #!/usr/bin/env python
-
+#
 ## Differential Evolution Solver Class
 ## Based on algorithms developed by Dr. Rainer Storn & Kenneth Price
-## Written By: Lester E. Godwin
-##             PushCorp, Inc.
-##             Dallas, Texas
-##             972-840-0208 x102
-##             godwin@pushcorp.com
+## Original C++ code written by: Lester E. Godwin
+##                               PushCorp, Inc.
+##                               Dallas, Texas
+##                               972-840-0208 x102
+##                               godwin@pushcorp.com
 ## Created: 6/8/98
-## Last Modified: 6/8/98
-## Revision: 1.0
+## Last Modified: 6/8/98         Revision: 1.0
 ##
-## Ported To Python From C++ July 2002
-## Ported To Python By: James R. Phillips
-##                      Birmingham, Alabama USA
-##                      zunzun@zunzun.com
+## Solver code ported to Python from C++ July 2002
+## by: James R. Phillips
+##     Birmingham, Alabama USA
+##     zunzun@zunzun.com
+##
+## DE Solver modified and cleaned by Patrick Hung, May 2006.
+## additional DE Solver (DESolver2) added by Patrick Hung.
 ##
 ## bounds (and minimal interface) added by mmckerns@caltech.edu
+## adapted to AbstractSolver interface by mmckerns@caltech.edu
 
 """
-Differential Evolution Solver of Storn and Price
-Ported to Python from Python by Parick Hung, May 2006. 
+Solvers
+=======
 
-Two classes are exported.
+This module contains a collection of optimization routines based on
+Storn and Price's differential evolution algorithm.  The core solver
+algorithm was adapted from Phillips's DETest.py.  An alternate solver
+is provided that follows the logic in Price, Storn, and Lampen -- in that
+both a current generation and a trial generation are maintained, and all
+vectors for creating difference vectors and mutations draw from the
+current generation... which remains invariant until the end of the iteration.
 
-  -- DifferentialEvolutionSolver, whose logic is identical to that found in DETest.py
+A minimal interface that mimics a scipy.optimize interface has also been
+implemented, and functionality from the mystic solver API has been added
+with reasonable defaults.  DifferentialEvolutionSolver2 is used by
+the minimal interface, unless 'invariant_current' is set to False.
 
-  -- DifferentialEvoltuionSolver2, whose logic follows [2] in that a current generation,
-     and a trial generation is kept. All the vectors for creating difference vectors and for 
-     mutations draw from the current_generation, which remains invariant the end of the 
-     round. (see tests/test_ffit.py and test/test_ffitB.py)
-  
-Reference:
+Minimal function interface to optimization routines:
+   diffev      -- Differential Evolution (DE) solver
+
+The corresponding solvers built on mystic's AbstractSolver are:
+   DifferentialEvolutionSolver  -- a DE solver
+   DifferentialEvolutionSolver2 -- Storn & Price's DE solver
+
+Mystic solver behavior activated in deffev:
+   - EvaluationMonitor = Sow()
+   - StepMonitor = Sow()
+   - enable_signal_handler()
+   - strategy = Best1Exp
+   - termination = ChangeOverGeneration(ftol,gtol), if gtol provided
+         ''      = VTR(ftol), otherwise
+
+
+Usage
+=====
+
+See 'mystic.examples.test_rosenbrock' for an example of using
+DifferentialEvolutionSolver. DifferentialEvolutionSolver2 has
+the identical interface and usage.
+
+All solvers included in this module provide the standard signal handling.
+For more information, see 'mystic.mystic.abstract_solver'.
+
+
+References
+==========
 
 [1] Storn, R. and Price, K. Differential Evolution - A Simple and Efficient
 Heuristic for Global Optimization over Continuous Spaces. Journal of Global
@@ -56,9 +91,11 @@ class DifferentialEvolutionSolver(AbstractSolver):
     
     def __init__(self, dim, NP):
         """
- Takes two inputs: 
+ Takes two initial inputs: 
    dim      -- dimensionality of the problem
-   NP       -- size of the population (> 4)
+   NP       -- size of the trial solution population.  [requires: NP <= 4]
+
+ Important class members inherited from AbstractSolver.
         """
         #XXX: raise Error if npop <= 4?
         AbstractSolver.__init__(self,dim,npop=NP)
@@ -96,19 +133,34 @@ class DifferentialEvolutionSolver(AbstractSolver):
 
     Description:
 
-      <doc here>
+      Uses a differential evolution algorith to find the minimum of function
+      of one or more variables.
 
     Inputs:
 
-      <doc here>
+      costfunction -- the Python function or method to be minimized.
+      termination -- callable object providing termination conditions.
 
     Additional Inputs:
 
-      <doc here>
+      sigint_callback -- callback function for signal handler.
+      EvaluationMonitor -- a callable object that will be passed x, fval
+           whenever the cost function is evaluated.
+      StepMonitor -- a callable object that will be passed x, fval
+           after the end of a simplex iteration.
+      ExtraArgs -- extra arguments for func.
 
     Further Inputs:
 
-      <doc here>
+      strategy -- the mutation strategy for generating new trial solutions
+                  [default = Best1Exp]
+      CrossProbability -- the probability of cross-parameter mutations
+                  [default = 0.5]
+      ScalingFactor -- multiplier for the impact of mutations on the trial
+                  solution [default = 0.7]
+      callback -- an optional user-supplied function to call after each
+                  iteration.  It is called as callback(xk), where xk is the
+                  current parameter vector.  [default = None]
 
         """
         #allow for inputs that don't conform to AbstractSolver interface
@@ -215,16 +267,12 @@ class DifferentialEvolutionSolver(AbstractSolver):
 
 
 
-##########################################################################################
-# DifferentialEvolutionSolver2 is functionally identical to MPIDifferentialEvolutionSolver
-##########################################################################################
-
 class DifferentialEvolutionSolver2(DifferentialEvolutionSolver):
     """
     Differential Evolution optimization of Storn and Price.
 
     Alternate implementaiton: 
-      - functionally equivalent to MPIDifferentialEvolutionSolver.
+      - functionally equivalent to pyina.MPIDifferentialEvolutionSolver.
       - both a current and a next generation are kept, while the current
         generation is invariant during the main DE logic.
     """
@@ -234,19 +282,35 @@ class DifferentialEvolutionSolver2(DifferentialEvolutionSolver):
 
     Description:
 
-      <doc here>
+      Uses a differential evolution algorith to find the minimum of function
+      of one or more variables. This implementation holds the current
+      generation invariant until the end of each iteration.
 
     Inputs:
 
-      <doc here>
+      costfunction -- the Python function or method to be minimized.
+      termination -- callable object providing termination conditions.
 
     Additional Inputs:
 
-      <doc here>
+      sigint_callback -- callback function for signal handler.
+      EvaluationMonitor -- a callable object that will be passed x, fval
+           whenever the cost function is evaluated.
+      StepMonitor -- a callable object that will be passed x, fval
+           after the end of a simplex iteration.
+      ExtraArgs -- extra arguments for func.
 
     Further Inputs:
 
-      <doc here>
+      strategy -- the mutation strategy for generating new trial solutions
+                  [default = Best1Exp]
+      CrossProbability -- the probability of cross-parameter mutations
+                  [default = 0.5]
+      ScalingFactor -- multiplier for the impact of mutations on the trial
+                  solution [default = 0.7]
+      callback -- an optional user-supplied function to call after each
+                  iteration.  It is called as callback(xk), where xk is the
+                  current parameter vector.  [default = None]
 
         """
         #allow for inputs that don't conform to AbstractSolver interface
