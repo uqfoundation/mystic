@@ -177,8 +177,7 @@ class DifferentialEvolutionSolver(AbstractSolver):
         #-------------------------------------------------------------
 
         import signal
-        import mystic.termination as detools
-        detools.EARLYEXIT = False
+        self._EARLYEXIT = False
 
         fcalls, costfunction = wrap_function(costfunction, ExtraArgs, EvaluationMonitor)
         if self._useStrictRange:
@@ -186,39 +185,8 @@ class DifferentialEvolutionSolver(AbstractSolver):
                 self.population[i] = self._clipGuessWithinRangeBoundary(self.population[i])
             costfunction = wrap_bounds(costfunction, self._strictMin, self._strictMax)
 
-        def handler(signum, frame):
-            import inspect
-            print inspect.getframeinfo(frame)
-            print inspect.trace()
-            while 1:
-                s = raw_input(\
-"""
- 
- Enter sense switch.
-
-   sol: Write current best solution.
-   cont: Continue calculation.
-   call: Executes sigint_callback [%s].
-   exit: Exits with current best solution.
-
- >>> """ % sigint_callback)
-                if s.lower() == 'sol': 
-                    print "sw1."
-                    print self.bestSolution
-                elif s.lower() == 'cont': 
-                    return
-                elif s.lower() == 'call': 
-                    # sigint call_back
-                    if sigint_callback is not None:
-                        sigint_callback(self.bestSolution)
-                elif s.lower() == 'exit': 
-                    detools.EARLYEXIT = True
-                    return
-                else:
-                    print "unknown option : %s ", s
-
-        self.signal_handler = handler
-
+        #generate signal_handler
+        self._generateHandler(sigint_callback) 
         if self._handle_sigint: signal.signal(signal.SIGINT, self.signal_handler)
 
         self.probability = CrossProbability
@@ -256,7 +224,7 @@ class DifferentialEvolutionSolver(AbstractSolver):
             if callback is not None:
                 callback(self.bestSolution)
             
-            if detools.EARLYEXIT or termination(self):
+            if self._EARLYEXIT or termination(self):
                 break
 
         self.generations = generation
@@ -327,8 +295,7 @@ class DifferentialEvolutionSolver2(DifferentialEvolutionSolver):
         #-------------------------------------------------------------
 
         import signal
-        import mystic.termination as detools
-        detools.EARLYEXIT = False
+        self._EARLYEXIT = False
 
         fcalls, costfunction = wrap_function(costfunction, ExtraArgs, EvaluationMonitor)
         if self._useStrictRange:
@@ -336,38 +303,9 @@ class DifferentialEvolutionSolver2(DifferentialEvolutionSolver):
                 self.population[i] = self._clipGuessWithinRangeBoundary(self.population[i])
             costfunction = wrap_bounds(costfunction, self._strictMin, self._strictMax)
 
-        def handler(signum, frame):
-            import inspect
-            print inspect.getframeinfo(frame)
-            print inspect.trace()
-            while 1:
-                s = raw_input(\
-"""
- 
- Enter sense switch.
-
-   sol: Write current best solution.
-   cont: Continue calculation.
-   call: Executes sigint_callback [%s].
-   exit: Exits with current best solution.
-
- >>> """ % sigint_callback)
-                if s.lower() == 'sol': 
-                    print "sw1."
-                    print self.bestSolution
-                elif s.lower() == 'cont': 
-                    return
-                elif s.lower() == 'call': 
-                    # sigint call_back
-                    if sigint_callback is not None:
-                        sigint_callback(self.bestSolution)
-                elif s.lower() == 'exit': 
-                    detools.EARLYEXIT = True
-                    return
-                else:
-                    print "unknown option : %s ", s
-
-        if self._handle_sigint: signal.signal(signal.SIGINT, handler)
+        #generate signal_handler
+        self._generateHandler(sigint_callback) 
+        if self._handle_sigint: signal.signal(signal.SIGINT, self.signal_handler)
 
         self.probability = CrossProbability
         self.scale = ScalingFactor
@@ -408,7 +346,7 @@ class DifferentialEvolutionSolver2(DifferentialEvolutionSolver):
             if callback is not None:
                 callback(self.bestSolution)
             
-            if detools.EARLYEXIT or termination(self):
+            if self._EARLYEXIT or termination(self):
                 break
 
         self.generations = generation
@@ -421,7 +359,50 @@ class DifferentialEvolutionSolver2(DifferentialEvolutionSolver):
 def diffev(func,x0,npop,args=(),bounds=None,ftol=5e-3,gtol=None,
            maxiter=None,maxfun=None,cross=1.0,scale=0.9,
            full_output=0,disp=1,retall=0,callback=None,invariant_current=True):
-    """interface for differential evolution that mimics scipy.optimize.fmin"""
+    """Minimize a function using differential evolution.
+
+    Description:
+
+      Uses a differential evolution algorith to find the minimum of function
+      of one or more variables. Mimics a scipy.optimize style interface.
+
+    Inputs:
+
+      func -- the Python function or method to be minimized.
+      x0 -- ndarray - the initial guess.
+      npop -- size of the trial solution population.
+
+    Additional Inputs:
+
+      args -- extra arguments for func.
+      bounds -- list - n pairs of bounds (min,max), one pair for each parameter.
+      ftol -- number - acceptable relative error in func(xopt) for convergence.
+      gtol -- number - maximum number of iterations to run without improvement.
+      maxiter -- number - the maximum number of iterations to perform.
+      maxfun -- number - the maximum number of function evaluations.
+      cross -- number - the probability of cross-parameter mutations
+      scale -- number - multiplier for impact of mutations on trial solution.
+      full_output -- number - non-zero if fval and warnflag outputs are desired.
+      disp -- number - non-zero to print convergence messages.
+      retall -- number - non-zero to return list of solutions at each iteration.
+      callback -- an optional user-supplied function to call after each
+                  iteration.  It is called as callback(xk), where xk is the
+                  current parameter vector.
+      invariant_current -- set to True to call DifferentialEvolutionSolver2,
+                           otherwise call DifferentialEvolutionSolver
+
+    Returns: (xopt, {fopt, iter, funcalls, warnflag}, {allvecs})
+
+      xopt -- ndarray - minimizer of function
+      fopt -- number - value of function at minimum: fopt = func(xopt)
+      iter -- number - number of iterations
+      funcalls -- number - number of function calls
+      warnflag -- number - Integer warning flag:
+                             1 : 'Maximum number of function evaluations.'
+                             2 : 'Maximum number of iterations.'
+      allvecs -- list - a list of solutions at each iteration
+
+    """
 
     from mystic.tools import Sow
     stepmon = Sow()

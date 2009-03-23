@@ -171,47 +171,15 @@ class NelderMeadSimplexSolver(AbstractSolver):
         #-------------------------------------------------------------
 
         import signal
-        import mystic.termination as detools
-        detools.EARLYEXIT = False
+        self._EARLYEXIT = False
 
         fcalls, func = wrap_function(func, args, EvaluationMonitor)
         if self._useStrictRange:
             x0 = self._clipGuessWithinRangeBoundary(x0)
             func = wrap_bounds(func, self._strictMin, self._strictMax)
 
-        def handler(signum, frame):
-            import inspect
-            print inspect.getframeinfo(frame)
-            print inspect.trace()
-            while 1:
-                s = raw_input(\
-"""
- 
- Enter sense switch.
-
-   sol: Write current best solution.
-   cont: Continue calculation.
-   call: Executes sigint_callback [%s].
-   exit: Exits with current best solution.
-
- >>> """ % sigint_callback)
-                if s.lower() == 'sol': 
-                    print "sw1."
-                    print self.bestSolution
-                elif s.lower() == 'cont': 
-                    return
-                elif s.lower() == 'call': 
-                    # sigint call_back
-                    if sigint_callback is not None:
-                        sigint_callback(self.bestSolution)
-                elif s.lower() == 'exit': 
-                    detools.EARLYEXIT = True
-                    return
-                else:
-                    print "unknown option : %s ", s
-
-        self.signal_handler = handler
-
+        #generate signal_handler
+        self._generateHandler(sigint_callback) 
         if self._handle_sigint: signal.signal(signal.SIGINT, self.signal_handler)
         #-------------------------------------------------------------
 
@@ -262,7 +230,7 @@ class NelderMeadSimplexSolver(AbstractSolver):
 
         while (fcalls[0] < self._maxfun and iterations < self._maxiter):
             StepMonitor(sim, fsim) # get all values; "best" is sim[0]
-            if detools.EARLYEXIT or termination(self):
+            if self._EARLYEXIT or termination(self):
                 break
 
             xbar = numpy.add.reduce(sim[:-1],0) / N
@@ -523,47 +491,15 @@ class PowellDirectionalSolver(AbstractSolver):
         #-------------------------------------------------------------
 
         import signal
-        import mystic.termination as detools
-        detools.EARLYEXIT = False
+        self._EARLYEXIT = False
 
         fcalls, func = wrap_function(func, args, EvaluationMonitor)
         if self._useStrictRange:
             x0 = self._clipGuessWithinRangeBoundary(x0)
             func = wrap_bounds(func, self._strictMin, self._strictMax)
 
-        def handler(signum, frame):
-            import inspect
-            print inspect.getframeinfo(frame)
-            print inspect.trace()
-            while 1:
-                s = raw_input(\
-"""
- 
- Enter sense switch.
-
-   sol: Write current best solution.
-   cont: Continue calculation.
-   call: Executes sigint_callback [%s].
-   exit: Exits with current best solution.
-
- >>> """ % sigint_callback)
-                if s.lower() == 'sol': 
-                    print "sw1."
-                    print self.bestSolution
-                elif s.lower() == 'cont': 
-                    return
-                elif s.lower() == 'call': 
-                    # sigint call_back
-                    if sigint_callback is not None:
-                        sigint_callback(self.bestSolution)
-                elif s.lower() == 'exit': 
-                    detools.EARLYEXIT = True
-                    return
-                else:
-                    print "unknown option : %s ", s
-
-        self.signal_handler = handler
-
+        #generate signal_handler
+        self._generateHandler(sigint_callback) 
         if self._handle_sigint: signal.signal(signal.SIGINT, self.signal_handler)
         #-------------------------------------------------------------
 
@@ -617,7 +553,7 @@ class PowellDirectionalSolver(AbstractSolver):
                 allvecs.append(x)
 
             self.energy_history.append(fval) #XXX: the 'best' for now...
-            if detools.EARLYEXIT or termination(self): CONTINUE = False #break
+            if self._EARLYEXIT or termination(self): CONTINUE = False #break
             elif fcalls[0] >= self._maxfun: CONTINUE = False #break
             elif iter >= self._maxiter: CONTINUE = False #break
 

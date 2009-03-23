@@ -77,7 +77,7 @@ class AbstractSolver(object):
     """
     AbstractSolver base class for mystic optimizers.
     """
-    
+
     def __init__(self, dim, **kwds):
         """
  Takes one initial input: 
@@ -119,6 +119,9 @@ class AbstractSolver(object):
         self._strictMax       = []
         self._maxiter         = None
         self._maxfun          = None
+
+        import mystic.termination
+        self._EARLYEXIT       = mystic.termination.EARLYEXIT
 
 
     def Solution(self):
@@ -224,6 +227,47 @@ class AbstractSolver(object):
     def disable_signal_handler(self):
         """disable workflow interrupt handler while solver is running"""
         self._handle_sigint = False
+
+    def _generateHandler(self,sigint_callback):
+        """factory to generate signal handler
+    Available switches:
+        - sol  --> Print current best solution.
+        - cont --> Continue calculation.
+        - call --> Executes sigint_callback, if provided.
+        - exit --> Exits with current best solution.
+"""
+        def handler(signum, frame):
+            import inspect
+            print inspect.getframeinfo(frame)
+            print inspect.trace()
+            while 1:
+                s = raw_input(\
+"""
+ 
+ Enter sense switch.
+
+    sol: Print current best solution.
+   cont: Continue calculation.
+   call: Executes sigint_callback [%s].
+   exit: Exits with current best solution.
+
+ >>> """ % sigint_callback)
+                if s.lower() == 'sol': 
+                    print self.bestSolution
+                elif s.lower() == 'cont': 
+                    return
+                elif s.lower() == 'call': 
+                    # sigint call_back
+                    if sigint_callback is not None:
+                        sigint_callback(self.bestSolution)
+                elif s.lower() == 'exit': 
+                    self._EARLYEXIT = True
+                    return
+                else:
+                    print "unknown option : %s ", s
+            return
+        self.signal_handler = handler
+        return
 
     def SetEvaluationLimits(self,*args,**kwds):
         """set limits for maxiter and/or maxfun

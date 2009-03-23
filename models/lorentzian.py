@@ -65,7 +65,11 @@ def histogram(data,binwidth, xmin,xmax):
 return bins of given binwidth (and histogram) generated between [xmin,xmax]"""
     bins = arange(xmin,xmax, binwidth)
     binsc = bins + (0.5 * binwidth)
-    return binsc, numpyhisto(data, bins)[0] #FIXME: use updated numpy.histogram
+    try: #FIXME: use updated numpy.histogram
+        histo = numpyhisto(data, bins, new=False)[0]
+    except:
+        histo = numpyhisto(data, bins)[0]
+    return binsc, histo
 
 
 # End of file
