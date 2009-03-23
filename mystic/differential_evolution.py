@@ -369,7 +369,8 @@ def diffev(func,x0,npop,args=(),bounds=None,ftol=5e-3,gtol=None,
     Inputs:
 
       func -- the Python function or method to be minimized.
-      x0 -- ndarray - the initial guess.
+      x0 -- the initial guess (ndarray), if desired to start from an set point;
+            an array of (min,max) bounds, if random initial points are desired
       npop -- size of the trial solution population.
 
     Additional Inputs:
