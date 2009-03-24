@@ -15,22 +15,22 @@
 """
 Various python tools
 
-Main functions exported are: 
- -- flatten: flatten a sequence
- -- flatten_array: flatten an array 
- -- Null: a Null object pattern
- -- getch: provides "press any key to quit"
- -- Sow: A class whose instances are callable (to be used as monitors)
- -- VerboseSow: A verbose version of the basic Sow
- -- CustomSow: A customizable 'n-variable' version of the basic Sow
- -- random_seed: sets the seed for calls to 'random()'
- -- wrap_function: bind an EvaluationMonitor and an evaluation counter
+Main functions exported are:: 
+    - flatten: flatten a sequence
+    - flatten_array: flatten an array 
+    - Null: a Null object pattern
+    - getch: provides "press any key to quit"
+    - Sow: A class whose instances are callable (to be used as monitors)
+    - VerboseSow: A verbose version of the basic Sow
+    - CustomSow: A customizable 'n-variable' version of the basic Sow
+    - random_seed: sets the seed for calls to 'random()'
+    - wrap_function: bind an EvaluationMonitor and an evaluation counter
         to a function object
- -- wrap_bounds: impose bounds on a funciton object
- -- unpair: convert a 1D array of N pairs to two 1D arrays of N values
+    - wrap_bounds: impose bounds on a funciton object
+    - unpair: convert a 1D array of N pairs to two 1D arrays of N values
 
-Other tools of interest are in:
-  'mystic.mystic.filters' and 'mystic.models.poly'
+Other tools of interest are in::
+    `mystic.mystic.filters` and `mystic.models.poly`
 """
 
 def list_or_tuple(x):
@@ -50,26 +50,25 @@ def flatten_array(sequence, maxlev=999, lev=0):
 def flatten(sequence, maxlev=999, to_expand=list_or_tuple, lev=0):
     """flatten a sequence; returns original sequence type
 
-Example: flatten([1,2,3,[4,5,6],7,[8,[9]]]) -> [1,2,3,4,5,6,7,8,9]
-Example: flatten([1,2,3,[4,5,6],7,[8,[9]]], 1) -> [1,2,3,4,5,6,7,8,[9]]
+example usage...
+    >>> A = [1,2,3,[4,5,6],7,[8,[9]]]
+    >>> 
+    >>> # Flatten.
+    >>> flatten(A)
+    [1, 2, 3, 4, 5, 6, 7, 8, 9]
+    >>> 
+    >>> # Flatten only one level deep.
+    >>> flatten(A,1)
+    [1, 2, 3, 4, 5, 6, 7, 8, [9]]
+    >>> 
+    >>> # Flatten twice. 
+    >>> flatten(A,2)
+    [1, 2, 3, 4, 5, 6, 7, 8, 9]
+    >>> 
+    >>> # Flatten zero levels deep (i.e. don't flatten).
+    >>> flatten(A,0)
+    [1, 2, 3, [4, 5, 6], 7, [8, [9]]]
 
->>> A = [1,2,3,[4,5,6],7,[8,[9]]]
-
-Flatten.
->>> list(flatten(A))
-[1, 2, 3, 4, 5, 6, 7, 8, 9]
-
-Flatten only one level deep.
->>> list(flatten(A,1))
-[1, 2, 3, 4, 5, 6, 7, 8, [9]]
-
-Flatten twice. 
->>> list(flatten(A,2))
-[1, 2, 3, 4, 5, 6, 7, 8, 9]
-
-Flatten zero levels deep (i.e. don't flatten).
->>> list(flatten(A,0))
-[1, 2, 3, [4, 5, 6], 7, [8, [9]]]
     """
     for item in sequence:
         if lev < maxlev and to_expand(item):
@@ -116,13 +115,16 @@ def getch(str="Press any key to continue"):
 
 class Sow(object):
     """
-Instances of objects that can be passed as monitors to solver.Solve():
-  >>> sow = Sow()
-  >>> solver.Solve(rosen, x0, EvaulationMonitor=sow)
+Instances of objects that can be passed as monitors.
+The Sow logs the parameters and corresponding costs,
+retrievable by accessing the Sow's member variables.
 
-The Sow logs the parameters and corresponding costs, retrievable by:
-  >>> sow.x   # parameters
-  >>> sow.y   # costs
+example usage...
+    >>> sow = Sow()
+    >>> solver.Solve(rosen, x0, EvaulationMonitor=sow)
+    >>> sow.x   # get log of parameters
+    >>> sow.y   # get log of costs
+
     """
     def __init__(self):
         self._x = []   
@@ -173,24 +175,24 @@ current parameters every 'xinterval'.
 
 def CustomSow(*args,**kwds):
     """
-    generate a custom Sow
+generate a custom Sow
 
-    takes *args & **kwds, where args will be required inputs for the Sow
-      - args: property name strings (i.e. 'x')
-      - kwds: must be in the form: property="doc" (i.e. x='Params')
+takes *args & **kwds, where args will be required inputs for the Sow
+    - args: property name strings (i.e. 'x')
+    - kwds: must be in the form: property="doc" (i.e. x='Params')
 
-    example usage...
-      >>> sow = CustomSow('x','y',x="Params",y="Costs",e="Error",d="Deriv")
-      >>> sow(1,1)
-      >>> sow(2,4,e=0)
-      >>> sow.x
-      [1,2]
-      >>> sow.y
-      [1,4]
-      >>> sow.e
-      [0]
-      >>> sow.d
-      []
+example usage...
+    >>> sow = CustomSow('x','y',x="Params",y="Costs",e="Error",d="Deriv")
+    >>> sow(1,1)
+    >>> sow(2,4,e=0)
+    >>> sow.x
+    [1,2]
+    >>> sow.y
+    [1,4]
+    >>> sow.e
+    [0]
+    >>> sow.d
+    []
     """
     from _genSow import genSow
     return genSow(**kwds)(*args)
@@ -255,8 +257,11 @@ def wrap_cf(CF, REG=None, cfmult = 1.0, regmult = 0.0):
 
 def unpair(pairs):
     '''convert a 1D array of N pairs to two 1D arrays of N values
-For example:
-    [a0,a1,a2],[b0,b1,b2] = unpair([(a0,b0),(a1,b1),(a2,b2)])'''
+
+example usage...
+    >>> unpair([(a0,b0),(a1,b1),(a2,b2)])
+    [a0,a1,a2],[b0,b1,b2]
+    '''
     from numpy import asarray
     pairsT = asarray(pairs).transpose()
     return [i.tolist() for i in pairsT]

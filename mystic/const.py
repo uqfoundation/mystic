@@ -26,6 +26,7 @@ class _const(object):
             raise self.ConstError, "Can't unbind const(%s)" % name
         raise NameError, name
 
+#FIXME: the following two lines choke epydoc
 import sys
 sys.modules[__name__] = _const()
 

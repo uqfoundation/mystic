@@ -20,23 +20,23 @@ from scipy.optimize.  The minimal scipy interface has been preserved,
 and functionality from the mystic solver API has been added with
 reasonable defaults.
 
-Minimal function interface to optimization routines:
+Minimal function interface to optimization routines::
    fmin        -- Nelder-Mead Simplex algorithm
                     (uses only function calls)
    fmin_powell -- Powell's (modified) level set method (uses only
                     function calls)
 
-The corresponding solvers built on mystic's AbstractSolver are:
+The corresponding solvers built on mystic's AbstractSolver are::
    NelderMeadSimplexSolver -- Nelder-Mead Simplex algorithm
    PowellDirectionalSolver -- Powell's (modified) level set method
 
-Mystic solver behavior activated in fmin:
+Mystic solver behavior activated in fmin::
    - EvaluationMonitor = Sow()
    - StepMonitor = Sow()
    - termination = CandidateRelativeTolerance(xtol,ftol)
    - enable_signal_handler()
 
-Mystic solver behavior activated in fmin_powell:
+Mystic solver behavior activated in fmin_powell::
    - EvaluationMonitor = Sow()
    - StepMonitor = Sow()
    - termination = NormalizedChangeOverGeneration(ftol)
@@ -46,12 +46,12 @@ Mystic solver behavior activated in fmin_powell:
 Usage
 =====
 
-See 'mystic.examples.test_rosenbrock2' for an example of using
-NelderMeadSimplexSolver. See 'mystic.examples.test_rosenbrock3'
+See `mystic.examples.test_rosenbrock2` for an example of using
+NelderMeadSimplexSolver. See `mystic.examples.test_rosenbrock3`
 or an example of using PowellDirectionalSolver.
 
 All solvers included in this module provide the standard signal handling.
-For more information, see 'mystic.mystic.abstract_solver'.
+For more information, see `mystic.mystic.abstract_solver`.
 
 """
 __all__ = ['NelderMeadSimplexSolver','PowellDirectionalSolver',
@@ -73,15 +73,15 @@ from abstract_solver import AbstractSolver
 
 class NelderMeadSimplexSolver(AbstractSolver):
     """
-    Nelder Mead Simplex optimization adapted from scipy.optimize.fmin.
+Nelder Mead Simplex optimization adapted from scipy.optimize.fmin.
     """
     
     def __init__(self, dim):
         """
- Takes one initial input: 
-   dim      -- dimensionality of the problem
+Takes one initial input: 
+    dim      -- dimensionality of the problem
 
- The size of the simplex is dim+1.
+The size of the simplex is dim+1.
         """
         simplex = dim+1
         #XXX: cleaner to set npop=simplex, and use 'population' as simplex
@@ -91,8 +91,8 @@ class NelderMeadSimplexSolver(AbstractSolver):
 
     def _setSimplexWithinRangeBoundary(self, x0, radius): #XXX: use population?
         """ensure that initial simplex is set within bounds
-        - x0: must be a sequence of length self.nDim
-        - radius: size of the initial simplex"""
+    - x0: must be a sequence of length self.nDim
+    - radius: size of the initial simplex"""
         #code modified from park-1.2/park/simplex.py (version 1257)
         if self._useStrictRange:
             x0 = self._clipGuessWithinRangeBoundary(x0)
@@ -129,33 +129,33 @@ class NelderMeadSimplexSolver(AbstractSolver):
               EvaluationMonitor=Null, StepMonitor=Null, ExtraArgs=(), **kwds):
         """Minimize a function using the downhill simplex algorithm.
 
-    Description:
+Description:
 
-      Uses a Nelder-Mead simplex algorithm to find the minimum of
-      a function of one or more variables.
+    Uses a Nelder-Mead simplex algorithm to find the minimum of
+    a function of one or more variables.
 
-    Inputs:
+Inputs:
 
-      func -- the Python function or method to be minimized.
-      termination -- callable object providing termination conditions.
+    func -- the Python function or method to be minimized.
+    termination -- callable object providing termination conditions.
 
-    Additional Inputs:
+Additional Inputs:
 
-      sigint_callback -- callback function for signal handler.
-      EvaluationMonitor -- a callable object that will be passed x, fval
-           whenever the cost function is evaluated.
-      StepMonitor -- a callable object that will be passed x, fval
-           after the end of a simplex iteration.
-      ExtraArgs -- extra arguments for func.
+    sigint_callback -- callback function for signal handler.
+    EvaluationMonitor -- a callable object that will be passed x, fval
+        whenever the cost function is evaluated.
+    StepMonitor -- a callable object that will be passed x, fval
+        after the end of a simplex iteration.
+    ExtraArgs -- extra arguments for func.
 
-    Further Inputs:
+Further Inputs:
 
-      callback -- an optional user-supplied function to call after each
-           iteration.  It is called as callback(xk), where xk is the
-           current parameter vector. [default = None]
-      disp -- non-zero to print convergence messages. [default = 0]
-      radius -- percentage change for initial simplex values.
-           [default = 0.05]
+    callback -- an optional user-supplied function to call after each
+        iteration.  It is called as callback(xk), where xk is the
+        current parameter vector. [default = None]
+    disp -- non-zero to print convergence messages. [default = 0]
+    radius -- percentage change for initial simplex values.
+        [default = 0.05]
 
 """
         # set arg names to scipy.optimize.fmin names; set fixed inputs
@@ -336,44 +336,44 @@ def fmin(func, x0, args=(), xtol=1e-4, ftol=1e-4, maxiter=None, maxfun=None,
          full_output=0, disp=1, retall=0, callback=None):
     """Minimize a function using the downhill simplex algorithm.
     
-    Description:
+Description:
 
-      Uses a Nelder-Mead simplex algorithm to find the minimum of
-      a function of one or more variables. Mimics the scipy.optimize.fmin
-      interface.
+    Uses a Nelder-Mead simplex algorithm to find the minimum of
+    a function of one or more variables. Mimics the scipy.optimize.fmin
+    interface.
 
-    Inputs:
+Inputs:
 
-      func -- the Python function or method to be minimized.
-      x0 -- ndarray - the initial guess.
+    func -- the Python function or method to be minimized.
+    x0 -- ndarray - the initial guess.
 
-    Additional Inputs:
+Additional Inputs:
 
-      args -- extra arguments for func.
-      xtol -- number - acceptable relative error in xopt for convergence.
-      ftol -- number - acceptable relative error in func(xopt) for
-           convergence.
-      maxiter -- number - the maximum number of iterations to perform.
-      maxfun -- number - the maximum number of function evaluations.
-      full_output -- number - non-zero if fval and warnflag outputs are
-           desired.
-      disp -- number - non-zero to print convergence messages.
-      retall -- number - non-zero to return list of solutions at each
-           iteration.
-      callback -- an optional user-supplied function to call after each
-           iteration.  It is called as callback(xk), where xk is the
-           current parameter vector.
+    args -- extra arguments for func.
+    xtol -- number - acceptable relative error in xopt for convergence.
+    ftol -- number - acceptable relative error in func(xopt) for
+        convergence.
+    maxiter -- number - the maximum number of iterations to perform.
+    maxfun -- number - the maximum number of function evaluations.
+    full_output -- number - non-zero if fval and warnflag outputs are
+        desired.
+    disp -- number - non-zero to print convergence messages.
+    retall -- number - non-zero to return list of solutions at each
+        iteration.
+    callback -- an optional user-supplied function to call after each
+        iteration.  It is called as callback(xk), where xk is the
+        current parameter vector.
 
-    Returns: (xopt, {fopt, iter, funcalls, warnflag}, {allvecs})
+Returns: (xopt, {fopt, iter, funcalls, warnflag}, {allvecs})
 
-      xopt -- ndarray - minimizer of function
-      fopt -- number - value of function at minimum: fopt = func(xopt)
-      iter -- number - number of iterations
-      funcalls -- number - number of function calls
-      warnflag -- number - Integer warning flag:
-           1 : 'Maximum number of function evaluations.'
-           2 : 'Maximum number of iterations.'
-      allvecs -- list - a list of solutions at each iteration
+    xopt -- ndarray - minimizer of function
+    fopt -- number - value of function at minimum: fopt = func(xopt)
+    iter -- number - number of iterations
+    funcalls -- number - number of function calls
+    warnflag -- number - Integer warning flag:
+        1 : 'Maximum number of function evaluations.'
+        2 : 'Maximum number of iterations.'
+    allvecs -- list - a list of solutions at each iteration
 
     """
 
@@ -434,14 +434,14 @@ def _linesearch_powell(func, p, xi, tol=1e-3):
 
 class PowellDirectionalSolver(AbstractSolver):
     """
-    Powell Direction Search optimization,
-    adapted from scipy.optimize.fmin_powell.
+Powell Direction Search optimization,
+adapted from scipy.optimize.fmin_powell.
     """
     
     def __init__(self, dim):
         """
- Takes one initial input: 
-   dim      -- dimensionality of the problem
+Takes one initial input: 
+    dim      -- dimensionality of the problem
         """
         AbstractSolver.__init__(self,dim)
         self._direc = None #FIXME: this is the easy way to return 'direc'...
@@ -451,33 +451,33 @@ class PowellDirectionalSolver(AbstractSolver):
               EvaluationMonitor=Null, StepMonitor=Null, ExtraArgs=(), **kwds):
         """Minimize a function using modified Powell's method.
 
-    Description:
+Description:
 
-      Uses a modified Powell Directional Search algorithm to find
-      the minimum of function of one or more variables.
+    Uses a modified Powell Directional Search algorithm to find
+    the minimum of function of one or more variables.
 
-    Inputs:
+Inputs:
 
-      func -- the Python function or method to be minimized.
-      termination -- callable object providing termination conditions.
+    func -- the Python function or method to be minimized.
+    termination -- callable object providing termination conditions.
 
-    Additional Inputs:
+Additional Inputs:
 
-      sigint_callback -- callback function for signal handler.
-      EvaluationMonitor -- a callable object that will be passed x, fval
-           whenever the cost function is evaluated.
-      StepMonitor -- a callable object that will be passed x, fval
-           after the end of a simplex iteration.
-      ExtraArgs -- extra arguments for func.
+    sigint_callback -- callback function for signal handler.
+    EvaluationMonitor -- a callable object that will be passed x, fval
+        whenever the cost function is evaluated.
+    StepMonitor -- a callable object that will be passed x, fval
+        after the end of a simplex iteration.
+    ExtraArgs -- extra arguments for func.
 
-    Further Inputs:
+Further Inputs:
 
-      callback -- an optional user-supplied function to call after each
-           iteration.  It is called as callback(xk), where xk is the
-           current parameter vector
-      direc -- initial direction set
-      xtol -- line-search error tolerance.
-      disp -- non-zero to print convergence messages.
+    callback -- an optional user-supplied function to call after each
+        iteration.  It is called as callback(xk), where xk is the
+        current parameter vector
+    direc -- initial direction set
+    xtol -- line-search error tolerance.
+    disp -- non-zero to print convergence messages.
 
 """
 
@@ -630,47 +630,47 @@ def fmin_powell(func, x0, args=(), xtol=1e-4, ftol=1e-4, maxiter=None,
                 direc=None):
     """Minimize a function using modified Powell's method.
     
-    Description:
+Description:
 
-      Uses a modified Powell Directional Search algorithm to find
-      the minimum of function of one or more variables.  Mimics the
-      scipy.optimize.fmin_powell interface.
+    Uses a modified Powell Directional Search algorithm to find
+    the minimum of function of one or more variables.  Mimics the
+    scipy.optimize.fmin_powell interface.
 
-    Inputs:
+Inputs:
 
-      func -- the Python function or method to be minimized.
-      x0 -- ndarray - the initial guess.
+    func -- the Python function or method to be minimized.
+    x0 -- ndarray - the initial guess.
 
-    Additional Inputs:
+Additional Inputs:
 
-      args -- extra arguments for func.
-      xtol -- number - acceptable relative error in xopt for
-           convergence.
-      ftol -- number - acceptable relative error in func(xopt) for
-           convergence.
-      maxiter -- number - the maximum number of iterations to perform.
-      maxfun -- number - the maximum number of function evaluations.
-      full_output -- number - non-zero if fval and warnflag outputs
-           are desired.
-      disp -- number - non-zero to print convergence messages.
-      retall -- number - non-zero to return list of solutions at each
-           iteration.
-      callback -- an optional user-supplied function to call after each
-           iteration.  It is called as callback(xk), where xk is the
-           current parameter vector.
-      direc -- initial direction set
+    args -- extra arguments for func.
+    xtol -- number - acceptable relative error in xopt for
+        convergence.
+    ftol -- number - acceptable relative error in func(xopt) for
+        convergence.
+    maxiter -- number - the maximum number of iterations to perform.
+    maxfun -- number - the maximum number of function evaluations.
+    full_output -- number - non-zero if fval and warnflag outputs
+        are desired.
+    disp -- number - non-zero to print convergence messages.
+    retall -- number - non-zero to return list of solutions at each
+        iteration.
+    callback -- an optional user-supplied function to call after each
+        iteration.  It is called as callback(xk), where xk is the
+        current parameter vector.
+    direc -- initial direction set
 
-    Returns: (xopt, {fopt, direc, iter, funcalls, warnflag}, {allvecs})
+Returns: (xopt, {fopt, direc, iter, funcalls, warnflag}, {allvecs})
 
-      xopt -- ndarray - minimizer of function
-      fopt -- number - value of function at minimum: fopt = func(xopt)
-      direc -- current direction set
-      iter -- number - number of iterations
-      funcalls -- number - number of function calls
-      warnflag -- number - Integer warning flag:
-           1 : 'Maximum number of function evaluations.'
-           2 : 'Maximum number of iterations.'
-      allvecs -- list - a list of solutions at each iteration
+    xopt -- ndarray - minimizer of function
+    fopt -- number - value of function at minimum: fopt = func(xopt)
+    direc -- current direction set
+    iter -- number - number of iterations
+    funcalls -- number - number of function calls
+    warnflag -- number - Integer warning flag:
+        1 : 'Maximum number of function evaluations.'
+        2 : 'Maximum number of iterations.'
+    allvecs -- list - a list of solutions at each iteration
 
     """
     #FIXME: need to resolve "direc"

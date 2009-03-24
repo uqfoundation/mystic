@@ -13,8 +13,8 @@ across a population.
 import random
 
 def get_random_candidates(NP, exclude, N):
-    """select N random candidates from population of size NP
-    - exclude -- candidate to exclude from section
+    """select N random candidates from population of size NP,
+where exclude is the candidate to exclude from selection.
 
 Thus, get_random_candidates(x,1,2) randomly selects two nPop[i],
 where i != 1"""

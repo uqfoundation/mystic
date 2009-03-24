@@ -2,8 +2,8 @@
 
 """
 Base classes for mystic's provided models
-  - AbstractFunction   [evaluates f(x) for given evaluation points x]
-  - AbstractModel      [generates f(x,p) for given coefficients p]
+    - AbstractFunction   [evaluates f(x) for given evaluation points x]
+    - AbstractModel      [generates f(x,p) for given coefficients p]
 
 """
 from numpy import sum as numpysum
@@ -61,7 +61,8 @@ class AbstractModel(object):
         raise NotImplementedError, "overwrite for each derived class"
 
     def CostFactory(self,target,pts):
-        """generates a cost function instance from list of coefficients & evaluation points"""
+        """generates a cost function instance from list of coefficients 
+and evaluation points"""
         datapts = self.evaluate(target,pts)
         F = CF()
         F.addModel(self.ForwardFactory,self.__name__,len(target))
@@ -69,7 +70,8 @@ class AbstractModel(object):
         return self.__cost__
 
     def CostFactory2(self,pts,datapts,nparams):
-        """generates a cost function instance from datapoints & evaluation points"""
+        """generates a cost function instance from datapoints 
+and evaluation points"""
         F = CF()
         F.addModel(self.ForwardFactory,self.__name__,nparams)
         self.__cost__ = F.getCostFunction(evalpts=pts,observations=datapts,sigma=self.__sigma__,metric=self.__metric__)

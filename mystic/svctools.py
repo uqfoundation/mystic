@@ -35,7 +35,7 @@ def SupportVectors(alpha, y=None, eps = 0):
         return list(sv1), list(sv2)
 
 def Bias(alpha, X, y, kernel=dot):
-    """ Compute classification bias. """
+    """Compute classification bias. """
     sv1, sv2 = SupportVectors(alpha, y,eps=1e-6)
     pt1, pt2 = X[sv1[0],:], X[sv2[0],:]
     k1, k2 = kernel(X, pt1), kernel(X,pt2)

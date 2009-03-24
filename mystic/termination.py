@@ -14,6 +14,7 @@ EARLYEXIT = 0
 # Factories that give termination conditions
 def VTR(tolerance = 0.005):
     """cost of last iteration is < tolerance:
+
 cost[-1] < tolerance"""
     def _(inst):
          hist = inst.energy_history
@@ -22,6 +23,7 @@ cost[-1] < tolerance"""
 
 def ChangeOverGeneration(tolerance = 1e-6, generations = 30):
     """change in cost is < tolerance over a number of generations:
+
 cost[-g] - cost[-1] < tolerance, where g=generations"""
     def _(inst):
          hist = inst.energy_history
@@ -31,6 +33,7 @@ cost[-g] - cost[-1] < tolerance, where g=generations"""
 
 def NormalizedChangeOverGeneration(tolerance = 1e-4, generations = 2):
     """normalized change in cost is < tolerance over number of generations:
+
 (cost[-g] - cost[-1]) /  0.5*(abs(cost[-g]) + abs(cost[-1])) <= tolerance"""
     eta = 1e-20
     def _(inst):
@@ -42,6 +45,7 @@ def NormalizedChangeOverGeneration(tolerance = 1e-4, generations = 2):
               
 def CandidateRelativeTolerance(xtol=1e-4, ftol=1e-4):
     """absolute difference in candidates is < tolerance:
+
 abs(xi-x0) <= xtol & abs(fi-f0) <= ftol, where x=params & f=cost"""
     def _(inst):
          sim = inst.population

@@ -11,12 +11,12 @@
 
 class genSow(object):
     """
-    a configurable Sow (monitor) generator
+a configurable Sow (monitor) generator
     """
     def __init__(self,**kwds):
         """
-        Build a Sow, with channels for the provided properties
-        Takes **kwds of the form property="doc" (i.e. x='Params')
+Build a Sow, with channels for the provided properties
+Takes **kwds of the form property="doc".
         """
         self.__args = [] #NOTE: self.__args must be subset of kwds.keys()
         self.__dict = kwds
@@ -35,8 +35,8 @@ class genSow(object):
 
     def __call__(self,*args):
         """
-        Takes string names of properties (given as *args), and sets the
-        corresponding properties as required inputs for the Sow.
+Takes string names of properties (given as *args), and sets the
+corresponding properties as required inputs for the Sow.
         """
         self.__args = [ i for i in args if self.__dict.has_key(i) ]
         exec(self._genClass()) # generates Sow()

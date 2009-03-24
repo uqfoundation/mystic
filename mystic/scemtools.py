@@ -8,14 +8,16 @@ of Vrugt et al. [1]
 Reference:
 
 [1] Jasper A. Vrugt, Hoshin V. Gupta, Willem Bouten, and Soroosh Sorooshian
-A Shuffled Complex Evolution Metropolis algorithm for optimization and uncertainty assessment of hydrologic model parameters
+A Shuffled Complex Evolution Metropolis algorithm for optimization and
+uncertainty assessment of hydrologic model parameters,
 WATER RESOURCES RESEARCH, VOL. 39, NO. 8, 1201, doi:10.1029/2002WR001642, 2003 
-Link to paper: http://www.agu.org/pubs/crossref/2003/2002WR001642.shtml
+Link: http://www.agu.org/pubs/crossref/2003/2002WR001642.shtml
 
 [2] Vrugt JA, Nuallain , Robinson BA, Bouten W, Dekker SC, Sloot PM
-Application of parallel computing to stochastic parameter estimation in environmental models
+Application of parallel computing to stochastic parameter estimation in
+environmental models,
 Computers & Geosciences, Vol. 32, No. 8. (October 2006), pp. 1139-1155.
-Link to paper: http://www.science.uva.nl/research/scs/papers/archive/Vrugt2006b.pdf
+Link: http://www.science.uva.nl/research/scs/papers/archive/Vrugt2006b.pdf
 
 """
 
@@ -27,7 +29,7 @@ TYPE_DOUBLE =  numpy.lib.getlimits.finfo(numpy.lib.getlimits.numeric.double)
 TINY = TYPE_DOUBLE.tiny
 
 def multinormal_pdf(mean, var):
-    """ var must be symmetric positive definite """
+    """var must be symmetric positive definite """
     from numpy.linalg import inv, det
     from numpy import transpose, array, exp, sqrt, pi, dot
     vinv = inv(var)
@@ -82,7 +84,7 @@ def sort_and_deal(cards, target, nplayers):
     return sequential_deal(sorted_deck, nplayers)
 
 def sort_ab_with_b(a, b, ord = -1):
-    """ default is descending.."""
+    """default is descending..."""
     import numpy
     aa,bb = array(a), array(b)
     if ord == -1:
@@ -256,8 +258,8 @@ This is the SCEM algorithm starting from line [35] of the reference [1].
 
 def remix(Cs, As):
     """
- Mixing and dealing the complexes.
- The types of Cs and As are very important.... 
+Mixing and dealing the complexes.
+The types of Cs and As are very important.... 
     """
     from mystic.tools import flatten_array
     q = len(Cs)

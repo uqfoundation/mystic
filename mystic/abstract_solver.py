@@ -9,7 +9,7 @@ This module contains the base class for mystic solvers, and describes
 the mystic solver interface.  The "Solve" method must be overwritten
 with the derived solver's optimization algorithm.  In many cases, a
 minimal funciton call interface for a derived solver is provided
-along with the derived class.  See 'mystic.scipy_optimize', and the
+along with the derived class.  See `mystic.scipy_optimize`, and the
 follwing for an example.
 
 
@@ -21,13 +21,13 @@ A typical call to a mystic solver will roughly follow this example:
     >>> # the function to be minimized and the initial values
     >>> from mystic.models import rosen
     >>> x0 = [0.8, 1.2, 0.7]
-    
+    >>> 
     >>> # get monitors and termination condition objects
     >>> from mystic.tools import Sow
     >>> stepmon = Sow()
     >>> evalmon = Sow()
     >>> from mystic.termination import CandidateRelativeTolerance as CRT
-
+    >>> 
     >>> # instantiate and configure the solver
     >>> from mystic.scipy_optimize import NelderMeadSimplexSolver
     >>> solver = NelderMeadSimplexSolver(len(x0))
@@ -35,7 +35,7 @@ A typical call to a mystic solver will roughly follow this example:
     >>> solver.enable_signal_handler()
     >>> solver.Solve(rosen, CRT(), EvaluationMonitor=evalmon,
     ...                            StepMonitor=stepmon)
-
+    >>> 
     >>> # obtain the solution
     >>> solution = solver.Solution()
 
@@ -45,7 +45,7 @@ An equivalent, yet less flexible, call using the minimal interface is:
     >>> # the function to be minimized and the initial values
     >>> from mystic.models import rosen
     >>> x0 = [0.8, 1.2, 0.7]
-    
+    >>> 
     >>> # configure the solver and obtain the solution
     >>> from mystic.scipy_optimize import fmin
     >>> solution = fmin(rosen,x0)
@@ -55,11 +55,11 @@ Handler
 =======
 
 All solvers packaged with mystic include a signal handler that
-provides the following options:
-   sol: Print current best solution.
-   cont: Continue calculation.
-   call: Executes sigint_callback, if provided.
-   exit: Exits with current best solution.
+provides the following options::
+    sol: Print current best solution.
+    cont: Continue calculation.
+    call: Executes sigint_callback, if provided.
+    exit: Exits with current best solution.
 
 Handlers are enabled with the 'enable_signal_handler' method,
 and are configured through the solver's 'Solve' method.  Handlers
@@ -81,29 +81,28 @@ abs = absolute
 
 class AbstractSolver(object):
     """
-    AbstractSolver base class for mystic optimizers.
+AbstractSolver base class for mystic optimizers.
     """
 
     def __init__(self, dim, **kwds):
         """
- Takes one initial input: 
-   dim      -- dimensionality of the problem.
+Takes one initial input:
+    dim      -- dimensionality of the problem.
 
- Additional inputs:
-   npop     -- size of the trial solution population.  [default = 1]
+Additional inputs:
+    npop     -- size of the trial solution population.  [default = 1]
 
- Important class members:
-   nDim, nPop     = dim, npop
-   generations    - an iteration counter.
-   bestEnergy     - current best energy.
-   bestSolution   - current best parameter set. [size = dim]
-   popEnergy      - set of all trial energy solutions. [size = npop]
-   population     - set of all trial parameter solutions.
-                    [size = dim*npop]
-   energy_history - history of bestEnergy status.
-                    [equivalent to StepMonitor]
-   signal_handler - catches the interrupt signal.
-
+Important class members:
+    nDim, nPop     = dim, npop
+    generations    - an iteration counter.
+    bestEnergy     - current best energy.
+    bestSolution   - current best parameter set. [size = dim]
+    popEnergy      - set of all trial energy solutions. [size = npop]
+    population     - set of all trial parameter solutions.
+        [size = dim*npop]
+    energy_history - history of bestEnergy status.
+        [equivalent to StepMonitor]
+    signal_handler - catches the interrupt signal.
         """
         NP = 1
         if kwds.has_key('npop'): NP = kwds['npop']
@@ -138,8 +137,10 @@ class AbstractSolver(object):
 
     def SetStrictRanges(self, min, max):
         """ensure solution is within bounds
-        - min, max: must be a sequence of length self.nDim
-        - each min[i] should be <= the corresponding max[i]"""
+
+input::
+    - min, max: must be a sequence of length self.nDim
+    - each min[i] should be <= the corresponding max[i]"""
         min = asarray(min); max = asarray(max)
         if numpy.any(( min > max ),0):
             raise ValueError, "each min[i] must be <= the corresponding max[i]"
@@ -152,7 +153,9 @@ class AbstractSolver(object):
 
     def _clipGuessWithinRangeBoundary(self, x0): #FIXME: use self.trialSolution?
         """ensure that initial guess is set within bounds
-        - x0: must be a sequence of length self.nDim"""
+
+input::
+    - x0: must be a sequence of length self.nDim"""
        #if len(x0) != self.nDim: #XXX: unnecessary w/ self.trialSolution
        #    raise ValueError, "initial guess must be length %s" % self.nDim
         x0 = asarray(x0)
@@ -165,9 +168,11 @@ class AbstractSolver(object):
 
     def SetInitialPoints(self, x0, radius=0.05):
         """Set Initial Points with Guess (x0)
-        - x0: must be a sequence of length self.nDim
-        - radius: generate random points within [-radius*x0, radius*x0]
-                  for i!=0 when a simplex-type initial guess in required"""
+
+input::
+    - x0: must be a sequence of length self.nDim
+    - radius: generate random points within [-radius*x0, radius*x0]
+        for i!=0 when a simplex-type initial guess in required"""
         x0 = asfarray(x0)
         rank = len(x0.shape)
         if rank is 0:
@@ -190,8 +195,10 @@ class AbstractSolver(object):
     
     def SetRandomInitialPoints(self, min=None, max=None):
         """Generate Random Initial Points within given Bounds
-        - min, max: must be a sequence of length self.nDim
-        - each min[i] should be <= the corresponding max[i]"""
+
+input::
+    - min, max: must be a sequence of length self.nDim
+    - each min[i] should be <= the corresponding max[i]"""
         if min == None: min = [-1e3]*self.nDim #XXX: good default range?
         if max == None: max = [1e3]*self.nDim
        #if numpy.any(( asarray(min) > asarray(max) ),0):
@@ -207,10 +214,13 @@ class AbstractSolver(object):
 
     def SetMultinormalInitialPoints(self, mean, var = None):
         """Generate Initial Points from Multivariate Normal.
-        - mean must be a sequence of length self.nDim
-        - var can be None: -> it becomes the identity
-                   scalar: -> var becomes scalar * I
-                   matrix: -> the variance matrix. must be the right size!
+
+input::
+    - mean must be a sequence of length self.nDim
+    - var can be...
+        None: -> it becomes the identity
+        scalar: -> var becomes scalar * I
+        matrix: -> the variance matrix. must be the right size!
         """
         from numpy.random import multivariate_normal
         assert(len(mean) == self.nDim)
@@ -238,11 +248,12 @@ class AbstractSolver(object):
 
     def _generateHandler(self,sigint_callback):
         """factory to generate signal handler
-    Available switches:
-        - sol  --> Print current best solution.
-        - cont --> Continue calculation.
-        - call --> Executes sigint_callback, if provided.
-        - exit --> Exits with current best solution.
+
+Available switches::
+    - sol  --> Print current best solution.
+    - cont --> Continue calculation.
+    - call --> Executes sigint_callback, if provided.
+    - exit --> Exits with current best solution.
 """
         def handler(signum, frame):
             import inspect
@@ -254,10 +265,10 @@ class AbstractSolver(object):
  
  Enter sense switch.
 
-    sol: Print current best solution.
-   cont: Continue calculation.
-   call: Executes sigint_callback [%s].
-   exit: Exits with current best solution.
+    sol:  Print current best solution.
+    cont: Continue calculation.
+    call: Executes sigint_callback [%s].
+    exit: Exits with current best solution.
 
  >>> """ % sigint_callback)
                 if s.lower() == 'sol': 
@@ -279,8 +290,10 @@ class AbstractSolver(object):
 
     def SetEvaluationLimits(self,*args,**kwds):
         """set limits for maxiter and/or maxfun
-  - maxiter = maximum number of solver iterations (i.e. steps)
-  - maxfun  = maximum number of function evaluations"""
+
+input::
+    - maxiter = maximum number of solver iterations (i.e. steps)
+    - maxfun  = maximum number of function evaluations"""
        #self._maxiter,self._maxfun = None,None
         if len(args) == 2:
             self._maxiter,self._maxfun = args[0],args[1]
@@ -292,7 +305,8 @@ class AbstractSolver(object):
     def Solve(self, func, termination, sigint_callback=None,
               EvaluationMonitor=Null, StepMonitor=Null, ExtraArgs=(), **kwds):
         """solve function 'func' with given termination conditions
-        *** this method must be overwritten ***"""
+
+*** this method must be overwritten ***"""
         raise NotImplementedError, "must be overwritten..."
 
 

@@ -40,18 +40,20 @@ def paginate(text, BoldQ = lambda linein: linein.lstrip()[0] == '#'):
     import pydoc
     pydoc.pager(commandstring(text, BoldQ))
              
-test_string = """
+
+if __name__=='__main__':
+
+    test_string = """
 # All strings that are comments should
 # begin with a pound sign
 
 # Strings that don't will be interpreted as a command:
 is this bold or what ?
 
-   # this is also a comment
+    # this is also a comment
 
-"""
+    """
 
-if __name__=='__main__':
     paginate(test_string)
     paginate('Now.. the opposite --- %s' %test_string, lambda linein: linein.lstrip()[0] != '#')
 

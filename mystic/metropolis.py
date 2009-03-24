@@ -8,8 +8,8 @@ Implements a simple version of the Metropolis-Hastings algorithm
 def metropolis_hastings(proposal, target, x):
     """ 
 Proposal(x) -> next point. Must be symmetric.
-This is because otherwise the PDF of the proposal density is needed (not just a way to draw from 
-the proposal)
+This is because otherwise the PDF of the proposal density is needed
+(not just a way to draw from the proposal)
     """
     from numpy import random
     Yt = proposal(x)

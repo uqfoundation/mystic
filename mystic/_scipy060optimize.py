@@ -8,6 +8,7 @@
 
 # Minimization routines
 # (removed: fmin_bfgs, fmin_cg)
+"""local copy of scipy.optimize"""
 
 __all__ = ['fmin', 'fmin_powell', 'fmin_ncg',
            'fminbound','brent', 'golden','bracket','rosen','rosen_der',

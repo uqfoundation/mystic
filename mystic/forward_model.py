@@ -24,7 +24,7 @@ from numpy import pi, sqrt, array, mgrid, random, real, conjugate, arange, sum
 
 class ForwardModel1(object):
     """
-    TODO: docstring here
+TODO: docstring here
     """
     def __init__(self, func, inputs, outputs):
         self._func = func
@@ -38,7 +38,7 @@ class ForwardModel1(object):
 
 class CostFactory(object):
     """
-    TODO: docstring here
+TODO: docstring here
     """
     def __init__(self):
         self._names = []
@@ -51,11 +51,12 @@ class CostFactory(object):
 
     def addModel(self, model, name, inputs, outputFilter = Identity, inputChecker = NullChecker):
         """
-    Adds a Model Factory (needs interface definition)
-    inputs:
-        model: a callable function factory
-        name: a string
-        inputs: number of arguments to model
+Adds a Model Factory (needs interface definition)
+
+inputs:
+    model: a callable function factory
+    name: a string
+    inputs: number of arguments to model
         """
         if name in self._names:
              print "Model [%s] already in database." % name
@@ -68,11 +69,12 @@ class CostFactory(object):
 
     def addModelNew(self, model, name, outputFilter = Identity, inputChecker = NullChecker):
         """
-    Adds a Model Factory (new style). No need for inputs because it can 
-    be obtained from inspect.getargspec
-    inputs:
-        model: a callable function factory
-        name: a string
+Adds a Model Factory (new style). No need for inputs because it can 
+be obtained from inspect.getargspec
+
+inputs:
+    model: a callable function factory
+    name: a string
         """
         #NOTE: better to replace "old-style" addModel above?
         if name in self._names:
@@ -87,7 +89,7 @@ class CostFactory(object):
 
     def getForwardEvaluator(self, evalpts):
         """
-    TODO: docstring here
+TODO: docstring here
         """
         #NOTE: does NOT go through inputChecker
         def _(params):
@@ -102,7 +104,7 @@ class CostFactory(object):
 
     def getVectorCostFunction(self, evalpts, observations):
         """
-    TODO: docstring here
+TODO: docstring here
         """
         def _(params):
             forward = self.getForwardEvaluator(evalpts)
@@ -143,7 +145,7 @@ and returns a scalar. The default is L2. When called, the "misfit" will be passe
 
     def getCostFunctionSlow(self, evalpts, observations):
         """
-    TODO: docstring here
+TODO: docstring here
         """
         #XXX: update interface to allow metric?
         def _(params):
@@ -154,7 +156,7 @@ and returns a scalar. The default is L2. When called, the "misfit" will be passe
 
     def getParameterList(self):
         """
-    TODO: docstring here
+TODO: docstring here
         """
         inputList = []
         for name, n in zip(self._names, self._inputs):
@@ -163,14 +165,14 @@ and returns a scalar. The default is L2. When called, the "misfit" will be passe
 
     def getRandomParams(self):
         """
-    TODO: docstring here
+TODO: docstring here
         """
         import random
         return array([random.random() for i in range(sum(self._inputs))])
     
     def __repr__(self):
         """
-    TODO: docstring here
+TODO: docstring here
         """
         return "Input Parameter List: %s " % self.getParameterList()
             
