@@ -9,9 +9,9 @@
 #
 
 """
-For prettifying help
+Tools for prettifying help
 
-Some of the codes are taken from Ka-Ping Yee's pydoc module
+Some of following code is taken from Ka-Ping Yee's pydoc module
 """
 
 def commandfy(text):
@@ -36,6 +36,7 @@ def commandstring(text, BoldQ):
     return '\n'.join(o)
 
 def paginate(text, BoldQ = lambda linein: linein.lstrip()[0] == '#'):
+    "break printed content into pages"
     import pydoc
     pydoc.pager(commandstring(text, BoldQ))
              

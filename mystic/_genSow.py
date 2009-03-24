@@ -7,9 +7,17 @@
 #
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
+"""a helper class for the CustomSow function"""
 
 class genSow(object):
+    """
+    a configurable Sow (monitor) generator
+    """
     def __init__(self,**kwds):
+        """
+        Build a Sow, with channels for the provided properties
+        Takes **kwds of the form property="doc" (i.e. x='Params')
+        """
         self.__args = [] #NOTE: self.__args must be subset of kwds.keys()
         self.__dict = kwds
         self.__initlist = []
@@ -26,12 +34,17 @@ class genSow(object):
         return
 
     def __call__(self,*args):
+        """
+        Takes string names of properties (given as *args), and sets the
+        corresponding properties as required inputs for the Sow.
+        """
         self.__args = [ i for i in args if self.__dict.has_key(i) ]
         exec(self._genClass()) # generates Sow()
         return Sow()
        #return self._genClass()
 
     def _genClass(self):
+        """append the code blocks for the entire Sow class"""
         code = self.__genHead() + \
                self.__genInit() + \
                self.__genCall() + \
@@ -40,12 +53,14 @@ class genSow(object):
         return code
 
     def __genHead(self):
+        """build the code block for the Sow class header"""
         code0 = """
 class Sow(object):
 """
         return code0
 
     def __genInit(self):
+        """build the code block for the Sow class __init__ method"""
         code1 = """
     def __init__(self):
 """
@@ -54,6 +69,7 @@ class Sow(object):
         return code1
 
     def __genCall(self):
+        """build the code block for the Sow class __call__ method"""
         code2 = """
     def __call__(self,"""
         for arg in self.__args:
@@ -69,6 +85,7 @@ class Sow(object):
         return code2
 
     def __genMeth(self):
+        """build the code block for the remaining Sow class methods"""
         code3 = """
 """
         for line in self.__methlist:
@@ -76,6 +93,7 @@ class Sow(object):
         return code3
 
     def __genProp(self):
+        """build the code block for the Sow class properties"""
         code4 = """
 """
         for line in self.__proplist:

@@ -9,10 +9,9 @@
 #
 
 """
-forward_model. 
-
 A set of classes that aids in constructing cost functions.
 
+TODO: <documentation here>
 """
 
 from mystic.filters import Identity, PickComponent
@@ -25,7 +24,7 @@ from numpy import pi, sqrt, array, mgrid, random, real, conjugate, arange, sum
 
 class ForwardModel1(object):
     """
-    docstring  here
+    TODO: docstring here
     """
     def __init__(self, func, inputs, outputs):
         self._func = func
@@ -39,7 +38,7 @@ class ForwardModel1(object):
 
 class CostFactory(object):
     """
-    docstring  here
+    TODO: docstring here
     """
     def __init__(self):
         self._names = []
@@ -87,6 +86,9 @@ class CostFactory(object):
         self._inputCheckers.append(inputChecker)
 
     def getForwardEvaluator(self, evalpts):
+        """
+    TODO: docstring here
+        """
         #NOTE: does NOT go through inputChecker
         def _(params):
             out = []
@@ -99,6 +101,9 @@ class CostFactory(object):
         return _
 
     def getVectorCostFunction(self, evalpts, observations):
+        """
+    TODO: docstring here
+        """
         def _(params):
             forward = self.getForwardEvaluator(evalpts)
             return sum(forward(params)) - observations
@@ -137,6 +142,9 @@ and returns a scalar. The default is L2. When called, the "misfit" will be passe
         return _
 
     def getCostFunctionSlow(self, evalpts, observations):
+        """
+    TODO: docstring here
+        """
         #XXX: update interface to allow metric?
         def _(params):
             v = self.getVectorCostFunction(evalpts, observations)
@@ -145,16 +153,25 @@ and returns a scalar. The default is L2. When called, the "misfit" will be passe
         return _
 
     def getParameterList(self):
+        """
+    TODO: docstring here
+        """
         inputList = []
         for name, n in zip(self._names, self._inputs):
             inputList += ['%s.x%d' % (name, i) for i in range(n)]
         return inputList
 
     def getRandomParams(self):
+        """
+    TODO: docstring here
+        """
         import random
         return array([random.random() for i in range(sum(self._inputs))])
     
     def __repr__(self):
+        """
+    TODO: docstring here
+        """
         return "Input Parameter List: %s " % self.getParameterList()
             
 

@@ -15,6 +15,7 @@ From Recipe 6.2 of the Python Cookbook.
 """
 
 class _const(object):
+    """constructor for module-level named constants"""
     class ConstError(TypeError): pass
     def __setattr__(self, name, value):
         if name in self.__dict__:

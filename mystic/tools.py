@@ -7,67 +7,67 @@
 #
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
+# flatten was adapted from the python cookbook
+# Null was adapted (and bugfixed) from the python cookbook
+# wrap_function was adapted from numpy
+# wrap_bounds was adapted from park
 
 """
 Various python tools
 
-Main function exported are: 
+Main functions exported are: 
+ -- flatten: flatten a sequence
+ -- flatten_array: flatten an array 
+ -- Null: a Null object pattern
+ -- getch: provides "press any key to quit"
+ -- Sow: A class whose instances are callable (to be used as monitors)
+ -- VerboseSow: A verbose version of the basic Sow
+ -- CustomSow: A customizable 'n-variable' version of the basic Sow
+ -- random_seed: sets the seed for calls to 'random()'
+ -- wrap_function: bind an EvaluationMonitor and an evaluation counter
+        to a function object
+ -- wrap_bounds: impose bounds on a funciton object
+ -- unpair: convert a 1D array of N pairs to two 1D arrays of N values
 
- -- flatten (adapted from the python cookbook)
-
- -- flatten_array 
-
- -- Null object pattern (from the python cookbook, bugfixed)
-
- -- getch (for "press any key to quit")
-
- -- Sow : Class whose instances are callable (compatible with EvaluationMonitor).
-
- -- VerboseSow : A verbose version of the basic Sow
-
- -- CustomSow : A customizable 'n-variable' version of the basic Sow
-
- -- random_seed : sets the seeds for python's random and numpy's random to seed value
-
- -- wrap_function : modified numpy's wrap_funciton to accept EvaluationMonitor
-
- -- wrap_bounds : impose bounds on a funciton object
-
- -- unpair : convert a 1D array of N pairs to two 1D arrays of N values
-
+Other tools of interest are in:
+  'mystic.mystic.filters' and 'mystic.models.poly'
 """
 
 def list_or_tuple(x):
+    "True if x is a list or a tuple"
     return isinstance(x, (list, tuple))
 
 def list_or_tuple_or_ndarray(x):
+    "True if x is a list, tuple, or a ndarray"
     import numpy
     return isinstance(x, (list, tuple, numpy.ndarray))
 
 def flatten_array(sequence, maxlev=999, lev=0):
+    "flatten a sequence; returns a ndarray"
     import numpy
     return numpy.array(list(flatten(sequence, maxlev, list_or_tuple_or_ndarray, lev)))
 
 def flatten(sequence, maxlev=999, to_expand=list_or_tuple, lev=0):
-    """
-Example: Flatten([1,2,3,[4,5,6],7,[8,[9]]]) -> [1,2,3,4,5,6,7,8,9]
-Example: Flatten([1,2,3,[4,5,6],7,[8,[9]]], 1) -> [1,2,3,4,5,6,7,8,[9]]
+    """flatten a sequence; returns original sequence type
+
+Example: flatten([1,2,3,[4,5,6],7,[8,[9]]]) -> [1,2,3,4,5,6,7,8,9]
+Example: flatten([1,2,3,[4,5,6],7,[8,[9]]], 1) -> [1,2,3,4,5,6,7,8,[9]]
 
 >>> A = [1,2,3,[4,5,6],7,[8,[9]]]
 
-Flattens.
+Flatten.
 >>> list(flatten(A))
 [1, 2, 3, 4, 5, 6, 7, 8, 9]
 
-Flattens only one level deep
+Flatten only one level deep.
 >>> list(flatten(A,1))
 [1, 2, 3, 4, 5, 6, 7, 8, [9]]
 
-Flattens twice. 
+Flatten twice. 
 >>> list(flatten(A,2))
 [1, 2, 3, 4, 5, 6, 7, 8, 9]
 
-The original
+Flatten zero levels deep (i.e. don't flatten).
 >>> list(flatten(A,0))
 [1, 2, 3, [4, 5, 6], 7, [8, [9]]]
     """
@@ -79,11 +79,13 @@ The original
             yield item
 
 class Null(object):
-    """ Null objects always and reliably "do nothing." """
+    """A Null object
+
+Null objects always and reliably "do nothing." """
     # optional optimization: ensure only one instance per subclass
     # (essentially just to save memory, no functional difference)
     #
-    # comes from the Python cookbook, but type.__new__ replaced by object.__new__
+    # from the Python cookbook, but type.__new__ replaced by object.__new__
     #
     def __new__(cls, *args, **kwargs):
         if '_inst' not in vars(cls):
@@ -98,6 +100,7 @@ class Null(object):
     def __delattr__(self, name): return self
 
 def getch(str="Press any key to continue"):
+    "configurable pause of execution"
     import os, sys
     if sys.stdin.isatty():
        if str != None:
@@ -113,17 +116,13 @@ def getch(str="Press any key to continue"):
 
 class Sow(object):
     """
-# Instances of objects can be passed as parameters to solver.Solve():
+Instances of objects that can be passed as monitors to solver.Solve():
+  >>> sow = Sow()
+  >>> solver.Solve(rosen, x0, EvaulationMonitor=sow)
 
-sow = Sow()
-solver.Solve(rosen, x0, EvaulationMonitor=sow)
-
-# Then parameters used to call the CostFunction can be retrieved via
-sow.x
-
-# the corresponding costs via
-sow.y
-
+The Sow logs the parameters and corresponding costs, retrievable by:
+  >>> sow.x   # parameters
+  >>> sow.y   # costs
     """
     def __init__(self):
         self._x = []   
@@ -144,6 +143,11 @@ sow.y
     pass
 
 class VerboseSow(Sow):
+    """A verbose version of the basic Sow.
+
+Prints ChiSq every 'interval', and optionally prints
+current parameters every 'xinterval'.
+    """
     import numpy
     def __init__(self, interval = 10, xinterval = numpy.inf):
         Sow.__init__(self)
@@ -192,6 +196,7 @@ def CustomSow(*args,**kwds):
     return genSow(**kwds)(*args)
 
 def random_seed(s):
+    "sets the seed for calls to 'random()'"
     import random
     random.seed(s)
     try: 
@@ -202,6 +207,8 @@ def random_seed(s):
     return
 
 def wrap_function(function, args, EvaluationMonitor):
+    """bind an EvaluationMonitor and an evaluation counter
+to a function object"""
     ncalls = [0]
     from numpy import array
     def function_wrapper(x):
@@ -212,6 +219,7 @@ def wrap_function(function, args, EvaluationMonitor):
     return ncalls, function_wrapper
 
 def wrap_bounds(function, min=None, max=None):
+    "impose bounds on a funciton object"
     from numpy import asarray, any, inf
     bounds = True
     if min is not None and max is not None: #has upper & lower bound
@@ -236,6 +244,7 @@ def wrap_bounds(function, min=None, max=None):
     return function_wrapper
 
 def wrap_cf(CF, REG=None, cfmult = 1.0, regmult = 0.0):
+    "wrap a cost function..."
     def _(*args, **kwargs):
          if REG is not None:
              return cfmult * CF(*args, **kwargs) + regmult * REG(*args, **kwargs)

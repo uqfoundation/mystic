@@ -1,14 +1,23 @@
 #!/usr/bin/env python
+#
+# Differential Evolution Strategies adapted from DESolver.py by Patrick Hung
 
 """
-Differential Evolution Strategies adapted from DESolver.py by Patrick Hung
+Differential Evolution Strategies
 
-These strategies are to be passed into DifferentialEvolutionSolver's Solve method.
+These strategies are to be passed into DifferentialEvolutionSolver's
+Solve method, and determine how the candidate parameter values mutate
+across a population.
 """
 
 import random
 
 def get_random_candidates(NP, exclude, N):
+    """select N random candidates from population of size NP
+    - exclude -- candidate to exclude from section
+
+Thus, get_random_candidates(x,1,2) randomly selects two nPop[i],
+where i != 1"""
     return random.sample(range(exclude)+range(exclude+1,NP), N)
 
 
@@ -17,6 +26,10 @@ def get_random_candidates(NP, exclude, N):
 #################### #################### #################### ####################
 
 def Best1Exp(inst, candidate):
+    """trial solution is current best solution plus scaled difference
+of two randomly chosen candidates; mutates until random stop
+
+trial = best + scale*(candidate1 - candidate2)"""
     r1,r2 = get_random_candidates(inst.nPop, candidate, 2) 
     n = random.randrange(inst.nDim)
    
@@ -36,10 +49,12 @@ def Best1Exp(inst, candidate):
     return
 
 def Best1Bin(inst, candidate):
-    """
-In DESolve, Best1Bin was identical to Best1Exp.
-But the logic of Best1Bin is different from [1]. Reimplementing here.
-    """
+    """trial solution is current best solution plus scaled difference
+of two randomly chosen candidates; mutates at random
+
+trial = best + scale*(candidate1 - candidate2)"""
+    # In DESolve, Best1Bin was identical to Best1Exp.
+    # But the logic of Best1Bin is different from [1]. Reimplementing here.
     r1,r2 = get_random_candidates(inst.nPop, candidate, 2) 
 
     inst.trialSolution[:] = inst.population[candidate][:]
@@ -59,6 +74,10 @@ But the logic of Best1Bin is different from [1]. Reimplementing here.
     return
 
 def Rand1Exp(inst, candidate):
+    """trial solution is randomly chosen candidate plus scaled difference
+of two other randomly chosen candidates; mutates until random stop
+
+trial = candidate1 + scale*(candidate2 - candidate3)"""
     r1,r2,r3 = get_random_candidates(inst.nPop, candidate, 3) 
     n = random.randrange(inst.nDim)
 
@@ -80,6 +99,11 @@ def Rand1Exp(inst, candidate):
 # WARNING, stuff below are not debugged
 
 def RandToBest1Exp(inst, candidate):
+    """trial solution is itself plus scaled difference of best solution
+and trial solution, plus the difference of two randomly chosen candidates;
+mutates at random
+
+trial += scale*(best - trial) + scale*(candidate1 - candidate2)"""
     r1,r2 = get_random_candidates(inst.nPop, candidate, 2) 
     n = random.randrange(inst.nDim)
 
@@ -99,6 +123,10 @@ def RandToBest1Exp(inst, candidate):
     return
 
 def Best2Exp(inst, candidate):
+    """trial solution is current best solution plus scaled contributions
+from four randomly chosen candidates; mutates until random stop
+
+trial = best + scale*(candidate1 + candidate2 - candidate3 - candidate4)"""
     r1,r2,r3,r4 = get_random_candidates(inst.nPop, candidate, 4) 
     n = random.randrange(inst.nDim)
 
@@ -119,6 +147,10 @@ def Best2Exp(inst, candidate):
     return
 
 def Rand2Exp(inst, candidate):
+    """trial solution is randomly chosen candidate plus scaled contributions
+from four other randomly chosen candidates; mutates until random stop
+
+trial = candidate1 + scale*(candidate2 + candidate3 - candidate4 - candidate5)"""
     r1,r2,r3,r4,r5 = get_random_candidates(inst.nPop, candidate, 5) 
     n = random.randrange(inst.nDim)
 
@@ -139,6 +171,10 @@ def Rand2Exp(inst, candidate):
     return
 
 def Rand1Bin(inst, candidate):
+    """trial solution is randomly chosen candidate plus scaled difference
+of two other randomly chosen candidates; mutates at random
+
+trial = candidate1 + scale*(candidate2 - candidate3)"""
     r1,r2,r3 = get_random_candidates(inst.nPop, candidate, 3) 
     n = random.randrange(inst.nDim)
 
@@ -157,6 +193,11 @@ def Rand1Bin(inst, candidate):
     return
 
 def RandToBest1Bin(inst, candidate):
+    """trial solution is itself plus scaled difference of best solution
+and trial solution, plus the difference of two randomly chosen candidates;
+mutates until random stop
+
+trial += scale*(best - trial) + scale*(candidate1 - candidate2)"""
     r1,r2 = get_random_candidates(inst.nPop, candidate, 2) 
     n = random.randrange(inst.nDim)
 
@@ -176,6 +217,10 @@ def RandToBest1Bin(inst, candidate):
     return
 
 def Best2Bin(inst, candidate):
+    """trial solution is current best solution plus scaled contributions
+of four randomly chosen candidates; mutates at random
+
+trial = best + scale*(candidate1 - candidate2 - candidate3 - candidate4)"""
     r1,r2,r3,r4 = get_random_candidates(inst.nPop, candidate, 4) 
     n = random.randrange(inst.nDim)
 
@@ -196,6 +241,10 @@ def Best2Bin(inst, candidate):
     return
 
 def Rand2Bin(inst, candidate):
+    """trial solution is randomly chosen candidate plus scaled contributions
+of four other randomly chosen candidates; mutates at random
+
+trial = candidate1 + scale*(candidate2 - candidate3 - candidate4 - candidate5)"""
     r1,r2,r3,r4,r5 = get_random_candidates(inst.nPop, candidate, 5) 
     n = random.randrange(inst.nDim)
 

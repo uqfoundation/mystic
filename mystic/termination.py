@@ -13,15 +13,16 @@ EARLYEXIT = 0
 
 # Factories that give termination conditions
 def VTR(tolerance = 0.005):
-    """cost of last iteration is less than tolerance"""
+    """cost of last iteration is < tolerance:
+cost[-1] < tolerance"""
     def _(inst):
          hist = inst.energy_history
          return hist[-1] < tolerance
     return _
 
 def ChangeOverGeneration(tolerance = 1e-6, generations = 30):
-    """change in cost is less than tolerance over a number of generations
-cost[n-g] - cost[n] < tolerance, where g=generations"""
+    """change in cost is < tolerance over a number of generations:
+cost[-g] - cost[-1] < tolerance, where g=generations"""
     def _(inst):
          hist = inst.energy_history
          lg = len(hist)
@@ -29,8 +30,8 @@ cost[n-g] - cost[n] < tolerance, where g=generations"""
     return _
 
 def NormalizedChangeOverGeneration(tolerance = 1e-4, generations = 2):
-    """normalized change in cost is less than tolerance over a number of generations
-(cost[n-g] - cost[n]) /  0.5*(abs(cost[n-g]) + abs(cost[n])) <= tolerance"""
+    """normalized change in cost is < tolerance over number of generations:
+(cost[-g] - cost[-1]) /  0.5*(abs(cost[-g]) + abs(cost[-1])) <= tolerance"""
     eta = 1e-20
     def _(inst):
          hist = inst.energy_history
@@ -39,8 +40,8 @@ def NormalizedChangeOverGeneration(tolerance = 1e-4, generations = 2):
          return lg > generations and 2.0*(hist[-generations]-hist[-1]) <= diff
     return _
               
-def CandidateRelativeTolerance(xtol=1e-4, ftol=1e-4): #FIXME: rename CandidateRelativeTolerance
-    """absolute difference in candidates is less than tolerance
+def CandidateRelativeTolerance(xtol=1e-4, ftol=1e-4):
+    """absolute difference in candidates is < tolerance:
 abs(xi-x0) <= xtol & abs(fi-f0) <= ftol, where x=params & f=cost"""
     def _(inst):
          sim = inst.population

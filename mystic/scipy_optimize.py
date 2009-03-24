@@ -131,8 +131,8 @@ class NelderMeadSimplexSolver(AbstractSolver):
 
     Description:
 
-      Uses a Nelder-Mead simplex algorithm to find the minimum of function
-      of one or more variables.
+      Uses a Nelder-Mead simplex algorithm to find the minimum of
+      a function of one or more variables.
 
     Inputs:
 
@@ -151,10 +151,11 @@ class NelderMeadSimplexSolver(AbstractSolver):
     Further Inputs:
 
       callback -- an optional user-supplied function to call after each
-                  iteration.  It is called as callback(xk), where xk is the
-                  current parameter vector.  [default = None]
-      disp -- non-zero to print convergence messages.  [default = 0]
-      radius -- percentage change for initial simplex values.  [default = 0.05]
+           iteration.  It is called as callback(xk), where xk is the
+           current parameter vector. [default = None]
+      disp -- non-zero to print convergence messages. [default = 0]
+      radius -- percentage change for initial simplex values.
+           [default = 0.05]
 
 """
         # set arg names to scipy.optimize.fmin names; set fixed inputs
@@ -337,8 +338,9 @@ def fmin(func, x0, args=(), xtol=1e-4, ftol=1e-4, maxiter=None, maxfun=None,
     
     Description:
 
-      Uses a Nelder-Mead simplex algorithm to find the minimum of function
-      of one or more variables. Mimics the scipy.optimize.fmin interface.
+      Uses a Nelder-Mead simplex algorithm to find the minimum of
+      a function of one or more variables. Mimics the scipy.optimize.fmin
+      interface.
 
     Inputs:
 
@@ -349,15 +351,18 @@ def fmin(func, x0, args=(), xtol=1e-4, ftol=1e-4, maxiter=None, maxfun=None,
 
       args -- extra arguments for func.
       xtol -- number - acceptable relative error in xopt for convergence.
-      ftol -- number - acceptable relative error in func(xopt) for convergence.
+      ftol -- number - acceptable relative error in func(xopt) for
+           convergence.
       maxiter -- number - the maximum number of iterations to perform.
       maxfun -- number - the maximum number of function evaluations.
-      full_output -- number - non-zero if fval and warnflag outputs are desired.
+      full_output -- number - non-zero if fval and warnflag outputs are
+           desired.
       disp -- number - non-zero to print convergence messages.
-      retall -- number - non-zero to return list of solutions at each iteration.
+      retall -- number - non-zero to return list of solutions at each
+           iteration.
       callback -- an optional user-supplied function to call after each
-                  iteration.  It is called as callback(xk), where xk is the
-                  current parameter vector.
+           iteration.  It is called as callback(xk), where xk is the
+           current parameter vector.
 
     Returns: (xopt, {fopt, iter, funcalls, warnflag}, {allvecs})
 
@@ -366,8 +371,8 @@ def fmin(func, x0, args=(), xtol=1e-4, ftol=1e-4, maxiter=None, maxfun=None,
       iter -- number - number of iterations
       funcalls -- number - number of function calls
       warnflag -- number - Integer warning flag:
-                             1 : 'Maximum number of function evaluations.'
-                             2 : 'Maximum number of iterations.'
+           1 : 'Maximum number of function evaluations.'
+           2 : 'Maximum number of iterations.'
       allvecs -- list - a list of solutions at each iteration
 
     """
@@ -429,7 +434,8 @@ def _linesearch_powell(func, p, xi, tol=1e-3):
 
 class PowellDirectionalSolver(AbstractSolver):
     """
-    Powell Direction Search optimization adapted from scipy.optimize.fmin_powell.
+    Powell Direction Search optimization,
+    adapted from scipy.optimize.fmin_powell.
     """
     
     def __init__(self, dim):
@@ -467,8 +473,8 @@ class PowellDirectionalSolver(AbstractSolver):
     Further Inputs:
 
       callback -- an optional user-supplied function to call after each
-                  iteration.  It is called as callback(xk), where xk is the
-                  current parameter vector
+           iteration.  It is called as callback(xk), where xk is the
+           current parameter vector
       direc -- initial direction set
       xtol -- line-search error tolerance.
       disp -- non-zero to print convergence messages.
@@ -638,16 +644,20 @@ def fmin_powell(func, x0, args=(), xtol=1e-4, ftol=1e-4, maxiter=None,
     Additional Inputs:
 
       args -- extra arguments for func.
-      xtol -- number - acceptable relative error in xopt for convergence.
-      ftol -- number - acceptable relative error in func(xopt) for convergence.
+      xtol -- number - acceptable relative error in xopt for
+           convergence.
+      ftol -- number - acceptable relative error in func(xopt) for
+           convergence.
       maxiter -- number - the maximum number of iterations to perform.
       maxfun -- number - the maximum number of function evaluations.
-      full_output -- number - non-zero if fval and warnflag outputs are desired.
+      full_output -- number - non-zero if fval and warnflag outputs
+           are desired.
       disp -- number - non-zero to print convergence messages.
-      retall -- number - non-zero to return list of solutions at each iteration.
+      retall -- number - non-zero to return list of solutions at each
+           iteration.
       callback -- an optional user-supplied function to call after each
-                  iteration.  It is called as callback(xk), where xk is the
-                  current parameter vector.
+           iteration.  It is called as callback(xk), where xk is the
+           current parameter vector.
       direc -- initial direction set
 
     Returns: (xopt, {fopt, direc, iter, funcalls, warnflag}, {allvecs})
@@ -658,8 +668,8 @@ def fmin_powell(func, x0, args=(), xtol=1e-4, ftol=1e-4, maxiter=None,
       iter -- number - number of iterations
       funcalls -- number - number of function calls
       warnflag -- number - Integer warning flag:
-                             1 : 'Maximum number of function evaluations.'
-                             2 : 'Maximum number of iterations.'
+           1 : 'Maximum number of function evaluations.'
+           2 : 'Maximum number of iterations.'
       allvecs -- list - a list of solutions at each iteration
 
     """

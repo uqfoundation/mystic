@@ -31,7 +31,8 @@ algorithm was adapted from Phillips's DETest.py.  An alternate solver
 is provided that follows the logic in Price, Storn, and Lampen -- in that
 both a current generation and a trial generation are maintained, and all
 vectors for creating difference vectors and mutations draw from the
-current generation... which remains invariant until the end of the iteration.
+current generation... which remains invariant until the end of the
+iteration.
 
 A minimal interface that mimics a scipy.optimize interface has also been
 implemented, and functionality from the mystic solver API has been added
@@ -72,8 +73,8 @@ References
 Heuristic for Global Optimization over Continuous Spaces. Journal of Global
 Optimization 11: 341-359, 1997.
 
-[2] Price, K., Storn, R., and Lampinen, J. - Differential Evolution, A Practical
-Approach to Global Optimization. Springer, 1st Edition, 2005
+[2] Price, K., Storn, R., and Lampinen, J. - Differential Evolution,
+A Practical Approach to Global Optimization. Springer, 1st Edition, 2005
 
 """
 __all__ = ['DifferentialEvolutionSolver','DifferentialEvolutionSolver2',\
@@ -92,10 +93,10 @@ class DifferentialEvolutionSolver(AbstractSolver):
     def __init__(self, dim, NP):
         """
  Takes two initial inputs: 
-   dim      -- dimensionality of the problem
-   NP       -- size of the trial solution population.  [requires: NP <= 4]
+   dim  -- dimensionality of the problem
+   NP   -- size of the trial solution population. [requires: NP <= 4]
 
- Important class members inherited from AbstractSolver.
+ All important class members are inherited from AbstractSolver.
         """
         #XXX: raise Error if npop <= 4?
         AbstractSolver.__init__(self,dim,npop=NP)
@@ -122,7 +123,8 @@ class DifferentialEvolutionSolver(AbstractSolver):
 
     def UpdateGenealogyRecords(self, id, newchild):
         """
-        Override me for more refined behavior. Currently all changes are logged.
+        Override me for more refined behavior. Currently all changes
+        are logged.
         """
         self.genealogy[id].append(newchild)
         return
@@ -133,8 +135,8 @@ class DifferentialEvolutionSolver(AbstractSolver):
 
     Description:
 
-      Uses a differential evolution algorith to find the minimum of function
-      of one or more variables.
+      Uses a differential evolution algorith to find the minimum of
+      a function of one or more variables.
 
     Inputs:
 
@@ -152,15 +154,15 @@ class DifferentialEvolutionSolver(AbstractSolver):
 
     Further Inputs:
 
-      strategy -- the mutation strategy for generating new trial solutions
-                  [default = Best1Exp]
+      strategy -- the mutation strategy for generating new trial
+           solutions [default = Best1Exp]
       CrossProbability -- the probability of cross-parameter mutations
-                  [default = 0.5]
-      ScalingFactor -- multiplier for the impact of mutations on the trial
-                  solution [default = 0.7]
+           [default = 0.5]
+      ScalingFactor -- multiplier for the impact of mutations on the
+           trial solution [default = 0.7]
       callback -- an optional user-supplied function to call after each
-                  iteration.  It is called as callback(xk), where xk is the
-                  current parameter vector.  [default = None]
+           iteration.  It is called as callback(xk), where xk is
+           the current parameter vector.  [default = None]
 
         """
         #allow for inputs that don't conform to AbstractSolver interface
@@ -250,9 +252,9 @@ class DifferentialEvolutionSolver2(DifferentialEvolutionSolver):
 
     Description:
 
-      Uses a differential evolution algorith to find the minimum of function
-      of one or more variables. This implementation holds the current
-      generation invariant until the end of each iteration.
+      Uses a differential evolution algorith to find the minimum of
+      a function of one or more variables. This implementation holds
+      the current generation invariant until the end of each iteration.
 
     Inputs:
 
@@ -270,15 +272,15 @@ class DifferentialEvolutionSolver2(DifferentialEvolutionSolver):
 
     Further Inputs:
 
-      strategy -- the mutation strategy for generating new trial solutions
-                  [default = Best1Exp]
+      strategy -- the mutation strategy for generating new trial
+           solutions [default = Best1Exp]
       CrossProbability -- the probability of cross-parameter mutations
-                  [default = 0.5]
-      ScalingFactor -- multiplier for the impact of mutations on the trial
-                  solution [default = 0.7]
+           [default = 0.5]
+      ScalingFactor -- multiplier for the impact of mutations on the
+           trial solution [default = 0.7]
       callback -- an optional user-supplied function to call after each
-                  iteration.  It is called as callback(xk), where xk is the
-                  current parameter vector.  [default = None]
+           iteration.  It is called as callback(xk), where xk is
+           the current parameter vector.  [default = None]
 
         """
         #allow for inputs that don't conform to AbstractSolver interface
@@ -363,34 +365,42 @@ def diffev(func,x0,npop,args=(),bounds=None,ftol=5e-3,gtol=None,
 
     Description:
 
-      Uses a differential evolution algorith to find the minimum of function
-      of one or more variables. Mimics a scipy.optimize style interface.
+      Uses a differential evolution algorith to find the minimum of
+      a function of one or more variables. Mimics a scipy.optimize style
+      interface.
 
     Inputs:
 
       func -- the Python function or method to be minimized.
-      x0 -- the initial guess (ndarray), if desired to start from an set point;
-            an array of (min,max) bounds, if random initial points are desired
+      x0 -- the initial guess (ndarray), if desired to start from a
+           set point; otherwise takes an array of (min,max) bounds,
+           for when random initial points are desired
       npop -- size of the trial solution population.
 
     Additional Inputs:
 
       args -- extra arguments for func.
-      bounds -- list - n pairs of bounds (min,max), one pair for each parameter.
-      ftol -- number - acceptable relative error in func(xopt) for convergence.
-      gtol -- number - maximum number of iterations to run without improvement.
+      bounds -- list - n pairs of bounds (min,max), one pair for each
+           parameter.
+      ftol -- number - acceptable relative error in func(xopt) for
+           convergence.
+      gtol -- number - maximum number of iterations to run without
+           improvement.
       maxiter -- number - the maximum number of iterations to perform.
       maxfun -- number - the maximum number of function evaluations.
       cross -- number - the probability of cross-parameter mutations
-      scale -- number - multiplier for impact of mutations on trial solution.
-      full_output -- number - non-zero if fval and warnflag outputs are desired.
+      scale -- number - multiplier for impact of mutations on trial
+           solution.
+      full_output -- number - non-zero if fval and warnflag outputs are
+           desired.
       disp -- number - non-zero to print convergence messages.
-      retall -- number - non-zero to return list of solutions at each iteration.
+      retall -- number - non-zero to return list of solutions at each
+           iteration.
       callback -- an optional user-supplied function to call after each
-                  iteration.  It is called as callback(xk), where xk is the
-                  current parameter vector.
+           iteration.  It is called as callback(xk), where xk is the
+           current parameter vector.
       invariant_current -- set to True to call DifferentialEvolutionSolver2,
-                           otherwise call DifferentialEvolutionSolver
+           otherwise call DifferentialEvolutionSolver
 
     Returns: (xopt, {fopt, iter, funcalls, warnflag}, {allvecs})
 
@@ -399,8 +409,8 @@ def diffev(func,x0,npop,args=(),bounds=None,ftol=5e-3,gtol=None,
       iter -- number - number of iterations
       funcalls -- number - number of function calls
       warnflag -- number - Integer warning flag:
-                             1 : 'Maximum number of function evaluations.'
-                             2 : 'Maximum number of iterations.'
+           1 : 'Maximum number of function evaluations.'
+           2 : 'Maximum number of iterations.'
       allvecs -- list - a list of solutions at each iteration
 
     """

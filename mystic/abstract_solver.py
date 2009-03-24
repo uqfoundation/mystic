@@ -33,7 +33,8 @@ A typical call to a mystic solver will roughly follow this example:
     >>> solver = NelderMeadSimplexSolver(len(x0))
     >>> solver.SetInitialPoints(x0)
     >>> solver.enable_signal_handler()
-    >>> solver.Solve(rosen, CRT(), EvaluationMonitor=evalmon, StepMonitor=stepmon)
+    >>> solver.Solve(rosen, CRT(), EvaluationMonitor=evalmon,
+    ...                            StepMonitor=stepmon)
 
     >>> # obtain the solution
     >>> solution = solver.Solution()
@@ -59,6 +60,11 @@ provides the following options:
    cont: Continue calculation.
    call: Executes sigint_callback, if provided.
    exit: Exits with current best solution.
+
+Handlers are enabled with the 'enable_signal_handler' method,
+and are configured through the solver's 'Solve' method.  Handlers
+trigger when a signal interrupt (usually, Ctrl-C) is given while
+the solver is running.
 
 """
 __all__ = ['AbstractSolver']
@@ -87,14 +93,16 @@ class AbstractSolver(object):
    npop     -- size of the trial solution population.  [default = 1]
 
  Important class members:
-   nDim, nPop      = dim, npop
-   generations     - an iteration counter.
-   bestEnergy      - current best energy.
-   bestSolution    - current best parameter set.  [size = dim]
-   popEnergy       - set of all trial energy solutions.  [size = npop]
-   population      - set of all trial parameter solutions.  [size = dim*npop]
-   energy_history  - history of bestEnergy status.  [equivalent to StepMonitor]
-   signal_handler  - catches the interrupt signal.
+   nDim, nPop     = dim, npop
+   generations    - an iteration counter.
+   bestEnergy     - current best energy.
+   bestSolution   - current best parameter set. [size = dim]
+   popEnergy      - set of all trial energy solutions. [size = npop]
+   population     - set of all trial parameter solutions.
+                    [size = dim*npop]
+   energy_history - history of bestEnergy status.
+                    [equivalent to StepMonitor]
+   signal_handler - catches the interrupt signal.
 
         """
         NP = 1
@@ -202,7 +210,7 @@ class AbstractSolver(object):
         - mean must be a sequence of length self.nDim
         - var can be None: -> it becomes the identity
                    scalar: -> var becomes scalar * I
-                   matrix: -> the variance matrix. better be the right size !
+                   matrix: -> the variance matrix. must be the right size!
         """
         from numpy.random import multivariate_normal
         assert(len(mean) == self.nDim)
