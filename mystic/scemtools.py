@@ -11,13 +11,13 @@ Reference:
 A Shuffled Complex Evolution Metropolis algorithm for optimization and
 uncertainty assessment of hydrologic model parameters,
 WATER RESOURCES RESEARCH, VOL. 39, NO. 8, 1201, doi:10.1029/2002WR001642, 2003 
-Link: http://www.agu.org/pubs/crossref/2003/2002WR001642.shtml
+http://www.agu.org/pubs/crossref/2003/2002WR001642.shtml
 
 [2] Vrugt JA, Nuallain , Robinson BA, Bouten W, Dekker SC, Sloot PM
 Application of parallel computing to stochastic parameter estimation in
 environmental models,
 Computers & Geosciences, Vol. 32, No. 8. (October 2006), pp. 1139-1155.
-Link: http://www.science.uva.nl/research/scs/papers/archive/Vrugt2006b.pdf
+http://www.science.uva.nl/research/scs/papers/archive/Vrugt2006b.pdf
 
 """
 

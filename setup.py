@@ -13,7 +13,7 @@ from distutils.core import setup
 setup(
     name="mystic",
     version="0.1a1",
-    author="Patrick Hung & Mike McKerns"
+    author="Mike McKerns, Patrick Hung"
     maintainer="Mike McKerns",
     maintainer_email="mmckerns@caltech.edu",
     license="BSD",
