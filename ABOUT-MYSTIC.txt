@@ -50,7 +50,7 @@ Mystic Design:
   < deployment model: slide #4 >
   < optimizer interface: slide #10 >
 
-Mystic's Interface:  (see MYSTIC-EXAMPLE.txt) -> uses example_getCost.py
+Mystic's Interface:  (see MYSTIC-EXAMPLE.txt) -> uses test_getCost.py
  * Model Factory Interface
  * Cost Function Generation
  * Standard "Solver" Configuration
@@ -70,7 +70,7 @@ Mystic's Interface:  (see MYSTIC-EXAMPLE.txt) -> uses example_getCost.py
 
 
 -------------------------------------------------------------
-== Example 1: simple parabola == (examples/example_getCost.py) == 
+== Example 1: simple parabola == (examples/test_getCost.py) == 
 - very simple forward model
 - highlights several configuration options (esp. SetStrictRanges)
 - highlights use of cost function generator

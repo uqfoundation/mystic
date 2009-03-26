@@ -68,11 +68,11 @@ EXPORT_BINS = \
 ##  test_twistedgaussian3.py \
     test_wavy.py \
 ##  derun.py \
-##  example.py \
-    example_getCost.py \
+##  dummy.py \
+    test_getCost.py \
     forward_model.py \
-    rosetta_parabola_example.py \
-    rosetta_mogi_example.py \
+    rosetta_parabola.py \
+    rosetta_mogi.py \
     example01.py \
     example02.py \
     example03.py \

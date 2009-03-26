@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-example_getCost.py
+test_getCost.py
 Example to demonstrate use of CostFactory
 """
 

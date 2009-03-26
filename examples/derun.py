@@ -33,7 +33,7 @@ class DerunApp(Script):
         probability = pyre.inventory.float('probability', default = 0.5)
         probability.meta['tip'] = 'Differential Evolution crossover probability.'
 
-        costfunc = pyre.inventory.str('costfunc', default = 'example')
+        costfunc = pyre.inventory.str('costfunc', default = 'dummy')
         costfunc.meta['tip'] = 'The python module containing the cost-function and other data.'
 
         strategy = pyre.inventory.str('strategy', default = 'Best1Exp')
@@ -116,7 +116,7 @@ if __name__ == '__main__':
     app = DerunApp()
     app.run()
 
-    # Chebyshev8 polynomial (used with "example.py")
+    # Chebyshev8 polynomial (used with "dummy.py")
     from mystic.models.poly import chebyshev8coeffs as target_coeffs
     from mystic.models.poly import poly1d
     print "target:\n", poly1d(target_coeffs)

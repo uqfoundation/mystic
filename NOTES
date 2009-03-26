@@ -11,7 +11,7 @@ Examples: (o = Demo; * = Code-only)
  o Model study: test_ffit and/or test_fosc3d
 
  o mystic.derun => an optimization framework pyre application [NEEDS WORK!]
- * mystic.example => Chebyshev8 cost function
+ * mystic.dummy => Chebyshev8 cost function
 
  * mystic.differential_evolution => Price & Storn's DE solver
    - solver.Solution()
@@ -34,7 +34,7 @@ Examples: (o = Demo; * = Code-only)
    - builder.CostFactory()
      . factory.addModel()
      . factory.getCostFunction[Slow]()
- o mystic.example_getCost => example usage of CostFactory [NEEDS WORK!]
+ o mystic.test_getCost => example usage of CostFactory [NEEDS WORK!]
    - SIMPLE example: User-prepared cost function
    - SIMPLE example: CostFactory-built cost function
    def f(p):

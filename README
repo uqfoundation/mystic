@@ -18,6 +18,11 @@ Additional egg for Mathematica Users:
 
 Notes on the "ffit" tests/examples:
  - test_ffit: The fitting problem whose exact solution is 8th order Chebyshev polynomial of the first kind.  This example uses a Ctrl-C signal handler. Try ctrl-c as the differential_evolution strategy is running.
+ - test_ffit2: The fitting problem whose exact solution is 16th order Chebyshev polynomial of the first kind.  Also uses the signal_handler. 
+ - test_ffitB: Same as test_ffit.py, but uses DifferentialEvolutionSolver2 instead of DifferentialEvolutionSolver. 
+ - test_ffitC: Same as test_ffit.py, but uses scipy_optimize.fmin.
+ - test_ffitD: Same as test_ffit.py, but uses scipy_optimize.diffev.
+
 
 Notes on the "mogi" tests/examples:
  - test_mogi.py: One mogi source with noise, comparison between DE and Conjugate Gradient, Simplex, and least squares (Levenberg Marquardt). CG / lsq don't work very well. lsq should work when bounds on the parameters are given, but minpack (wrapped by scipy) version doesn't seem to support bounds.

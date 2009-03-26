@@ -9,7 +9,7 @@
 #
 
 """
-example.py
+dummy.py -- cost function container module for derun.py
 """
 
 from mystic.models.poly import chebyshev8cost as cost
