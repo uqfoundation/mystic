@@ -169,7 +169,7 @@ current parameters every 'xinterval'.
            #print "Generation %d has best Chi-Squared: %s" % (self._step, y)
             print "Generation %d has best Chi-Squared: %f" % (self._step, y)
         if int(self._step % self._xinterval) == 0:
-            print "Generation %d has bet fit parameters: %s" % (self._step, x)
+            print "Generation %d has best fit parameters:\n %s" % (self._step, x)
         return
     pass
 

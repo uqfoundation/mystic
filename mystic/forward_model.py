@@ -67,6 +67,8 @@ inputs:
         self._outputFilters.append(outputFilter)
         self._inputCheckers.append(inputChecker)
 
+    #XXX: addModelNew is a work in progress...
+    '''
     def addModelNew(self, model, name, outputFilter = Identity, inputChecker = NullChecker):
         """
 Adds a Model Factory (new style). No need for inputs because it can 
@@ -86,6 +88,7 @@ inputs:
         self._inputs.append(len(inputs))
         self._outputFilters.append(outputFilter)
         self._inputCheckers.append(inputChecker)
+    '''
 
     def getForwardEvaluator(self, evalpts):
         """

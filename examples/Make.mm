@@ -73,6 +73,18 @@ EXPORT_BINS = \
     forward_model.py \
     rosetta_parabola_example.py \
     rosetta_mogi_example.py \
+    example01.py \
+    example02.py \
+    example03.py \
+    example04.py \
+    example05.py \
+    example06.py \
+    example07.py \
+    example08.py \
+    example09.py \
+    example10.py \
+    example11.py \
+    example12.py \
 
 
 # export:: export-package-python-modules

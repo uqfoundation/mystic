@@ -1,6 +1,7 @@
 == Notes on mystic and pyina examples ==
 
 Dependencies:
+ - All examples with prefix "example" should run without new dependencies, and are intended as a tutorial. (i.e. TRY THESE FIRST)
  - All examples with prefix "test_" should run without new dependencies.
  - All examples with prefix "scipy_" requires scipy to be installed. (tested on version 0.4.8).
  - All examples with prefix "sam_" requires "sam" and "scipy" to be installed. 
