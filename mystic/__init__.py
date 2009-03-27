@@ -43,8 +43,8 @@ Mystic provides a stock set of configurable, controllable solvers with::
     - a common interface
     - the ability to impose solver-independent bounds constraints
     - the ability to apply solver-independent monitors
-    - the ability to configure selver-independent termination conditions
-    - a control handler yeilding: [pause, continue, exit, and user_callback]
+    - the ability to configure solver-independent termination conditions
+    - a control handler yielding: [pause, continue, exit, and user_callback]
     - ease in selecting initial conditions: [initial_guess, random]
     - ease in selecting mutation strategies (for differential evolution)
 
