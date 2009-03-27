@@ -52,6 +52,14 @@ def noisy_data(params):
     y = [random.normal(0,1) + i for i in y]
     return x,y
 
+# draw the plot
+def plot_frame(label=None):
+    pylab.close()
+    pylab.suptitle("fitting noisy 5th-order polynomial coefficients")
+    pylab.xlabel("x")
+    pylab.ylabel("f(x)")
+    return
+ 
 # plot the polynomial
 def plot_data(evalpts,datapts,style='k.'):
     pylab.plot(evalpts,datapts,'%s' % style)
@@ -61,6 +69,7 @@ def plot_data(evalpts,datapts,style='k.'):
 def plot_solution(params,style='b-'):
     x,y = data(params)
     plot_data(x,y,style)
+    pylab.legend(["Data","Fitted"])
     return
 
 
@@ -76,9 +85,9 @@ if __name__ == '__main__':
     # generate 'observed' data
     x,datapts = noisy_data(target)
 
-    # plot observed and target data
+    # plot observed data
+    plot_frame()
     plot_data(x,datapts)
-    plot_solution(target)
 
     # generate cost function
     costfunction = PolyCostFactory(x,datapts,len(target))
@@ -91,7 +100,7 @@ if __name__ == '__main__':
     print "Target Coefficients:\n %s\n" % ForwardPolyFactory(target)
  
     # plot solution versus target coefficients
-    plot_solution(solution,'r-')
+    plot_solution(solution)
     getch() 
 
 # end of file
