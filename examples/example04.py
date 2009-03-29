@@ -25,7 +25,7 @@ pylab.ion()
 
 # draw the plot
 def plot_frame():
-    pylab.suptitle("Rosenbrock parameter convergence")
+    pylab.title("Rosenbrock parameter convergence")
     pylab.xlabel("Nelder-Mead solver iterations")
     pylab.ylabel("parameter value")
     return

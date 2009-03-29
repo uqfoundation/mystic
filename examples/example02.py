@@ -42,7 +42,7 @@ if __name__ == '__main__':
     pylab.plot([solution[0]],[rosen(solution)],'bo')
 
     # draw the plot
-    pylab.suptitle("minimium of Rosenbrock's function")
+    pylab.title("minimium of Rosenbrock's function")
     pylab.xlabel("x, y, z")
     pylab.ylabel("f(i) = Rosenbrock's function")
     pylab.legend(["f(x,1,1)","f(1,y,1)","f(1,1,z)"])

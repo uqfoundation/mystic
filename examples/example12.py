@@ -55,7 +55,7 @@ def noisy_data(params):
 # draw the plot
 def plot_frame(label=None):
     pylab.close()
-    pylab.suptitle("fitting noisy 5th-order polynomial coefficients")
+    pylab.title("fitting noisy 5th-order polynomial coefficients")
     pylab.xlabel("x")
     pylab.ylabel("f(x)")
     return

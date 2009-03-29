@@ -31,7 +31,7 @@ pylab.ion()
 # draw the plot
 def plot_frame(label=None):
     pylab.close()
-    pylab.suptitle("8th-order Chebyshev coefficient convergence")
+    pylab.title("8th-order Chebyshev coefficient convergence")
     pylab.xlabel("Nelder-Mead Simplex Solver %s" % label)
     pylab.ylabel("Chi-Squared")
     return
@@ -51,7 +51,7 @@ def plot_params(monitor):
 
 # draw the plot
 def plot_exact():
-    pylab.suptitle("fitting 8th-order Chebyshev polynomial coefficients")
+    pylab.title("fitting 8th-order Chebyshev polynomial coefficients")
     pylab.xlabel("x")
     pylab.ylabel("f(x)")
     import numpy

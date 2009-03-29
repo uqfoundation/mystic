@@ -24,7 +24,7 @@ pylab.ion()
 
 # draw the plot
 def plot_exact():
-    pylab.suptitle("fitting 8th-order Chebyshev polynomial coefficients")
+    pylab.title("fitting 8th-order Chebyshev polynomial coefficients")
     pylab.xlabel("x")
     pylab.ylabel("f(x)")
     import numpy

@@ -31,7 +31,7 @@ pylab.ion()
 # draw the plot
 def plot_frame(label=None):
     pylab.close()
-    pylab.suptitle("8th-order Chebyshev coefficient convergence")
+    pylab.title("8th-order Chebyshev coefficient convergence")
     pylab.xlabel("Differential Evolution %s" % label)
     pylab.ylabel("Chi-Squared")
     return

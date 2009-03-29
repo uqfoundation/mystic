@@ -36,7 +36,7 @@ if __name__ == '__main__':
     pylab.plot([i[2] for i in allvecs])
 
     # draw the plot
-    pylab.suptitle("Rosenbrock parameter convergence")
+    pylab.title("Rosenbrock parameter convergence")
     pylab.xlabel("Nelder-Mead solver iterations")
     pylab.ylabel("parameter value")
     pylab.legend(["x", "y", "z"])
