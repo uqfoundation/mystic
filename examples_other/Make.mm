@@ -33,6 +33,15 @@ EXPORT_BINS = \
 #   test_svc2.py \
 #   test_svr1.py \
 #   test_svr2.py \
+#   sam_corana.py \
+#   sam_corana2.py \
+#   sam_rosenbrock.py \
+#   sam_cg_rosenbrock.py \
+#   sam_zimmermann.py \
+#   sam_cg_zimmermann.py \
+#   sam_mogi.py \
+#   sam_circle_matlab.py \
+#   qld_circle_dual.py \
 
 
 # export:: export-package-python-modules

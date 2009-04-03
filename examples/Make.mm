@@ -24,55 +24,9 @@ update: clean
 
 #EXPORT_PYTHON_MODULES = \
 EXPORT_BINS = \
-    test_br8.py \
-#   gplot_test_ffit.py \
-    test_ffit.py \
-    test_ffit2.py \
-    test_ffitB.py \
-    test_ffitC.py \
-    test_ffitD.py \
-    scipy_ffit.py \
-    test_fosc3d.py \
-    test_griewangk.py \
-    test_dejong3.py \
-    test_dejong4.py \
-    test_dejong5.py \
-    test_corana.py \
-#   sam_corana.py \
-#   sam_corana2.py \
-    mpl_corana.py \
-    test_rosenbrock.py \
-    test_rosenbrock2.py \
-    test_rosenbrock3.py \
-#   sam_rosenbrock.py \
     cg_rosenbrock.py \
-#   sam_cg_rosenbrock.py \
-    test_zimmermann.py \
-#   sam_zimmermann.py \
-#   sam_cg_zimmermann.py \
-    test_lorentzian.py \
-    test_lorentzian2.py \
-#   sam_mogi.py \
-    test_mogi.py \
-    test_mogi2.py \
-##  test_mogi3.py \
-##  test_mogi4.py \
-    test_mogi_anneal.py \
-    test_mogi_leastsq.py \
-#   sam_circle_matlab.py \
-    test_circle.py \
-#   qld_circle_dual.py \
-##  metropolis.py \
-##  test_twistedgaussian.py \
-##  test_twistedgaussian2.py \
-##  test_twistedgaussian3.py \
-    test_wavy.py \
 ##  derun.py \
 ##  dummy.py \
-    test_getCost.py \
-    forward_model.py \
-    rosetta_parabola.py \
-    rosetta_mogi.py \
     example01.py \
     example02.py \
     example03.py \
@@ -85,6 +39,42 @@ EXPORT_BINS = \
     example10.py \
     example11.py \
     example12.py \
+    forward_model.py \
+#   gplot_test_ffit.py \
+##  metropolis.py \
+    mpl_corana.py \
+    rosetta_parabola.py \
+    rosetta_mogi.py \
+    test_br8.py \
+    test_circle.py \
+    test_corana.py \
+    test_dejong3.py \
+    test_dejong4.py \
+    test_dejong5.py \
+    test_ffit.py \
+    test_ffit2.py \
+    test_ffitB.py \
+    test_ffitC.py \
+    test_ffitD.py \
+    test_fosc3d.py \
+    test_getCost.py \
+    test_griewangk.py \
+    test_lorentzian.py \
+    test_lorentzian2.py \
+    test_mogi.py \
+    test_mogi2.py \
+##  test_mogi3.py \
+##  test_mogi4.py \
+    test_mogi_anneal.py \
+    test_mogi_leastsq.py \
+    test_rosenbrock.py \
+    test_rosenbrock2.py \
+    test_rosenbrock3.py \
+##  test_twistedgaussian.py \
+##  test_twistedgaussian2.py \
+##  test_twistedgaussian3.py \
+    test_wavy.py \
+    test_zimmermann.py \
 
 
 # export:: export-package-python-modules

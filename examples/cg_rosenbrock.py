@@ -34,7 +34,6 @@ def draw_contour():
           xx,yy = x[i,j], y[i,j]
           c[i,j] = rosen([xx,yy])
 
-    #sam.eval("[c,h]=contourf(X,Y,C,60);set(h,'EdgeColor','none')")
     pylab.contourf(x,y,log(c*20+1)+2,60)
     show()
 

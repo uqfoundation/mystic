@@ -56,10 +56,8 @@ if __name__ == '__main__':
         print "C3: ", C3(rp)
 
     test()
-    #import sam
     import pylab
     plot_noisy_data()
-    #sam.eval("hold on")
     desol, dstepmon = de_solve(C2)
     print "desol: ", desol
 

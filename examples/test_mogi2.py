@@ -39,26 +39,17 @@ def cost_function(params):
     return 100000. * numpy.sum(real((conjugate(x)*x)))
 
 def plot_noisy_data():
-    #import sam
-    #sam.putarray('st',stations)
-    #sam.putarray('data',data)
-    #sam.putarray('noise',noise)
-    #sam.eval("plot(st(1,:),-data(3,:)+noise(3,:),'k.')")
     import pylab
     pylab.plot(stations[0,:],-data[2,:]+noise[2,:],'k.')
 
 def plot_sol(params, linestyle = 'b-'):
     import pylab
-    #import sam
     s0 = ForwardMogiFactory(params[0:4])
     s1 = ForwardMogiFactory(params[4:])
     xx = arange(-500,500,1)+1250.
     yy = 0*xx - 200.
     ss  = array((xx, yy))
     dd = s0(ss) + s1(ss)
-    #sam.putarray('ss',ss)
-    #sam.putarray('dd',dd)
-    #sam.eval("plot(ss(1,:),-dd(3,:),'%s','LineWidth',2)" % linestyle)
     pylab.plot(ss[0,:],-dd[2,:],'%s'%linestyle,linewidth=2.0)
 
 ND = 8
@@ -87,10 +78,8 @@ def de_solve():
 
 if __name__ == '__main__':
 
-    #import sam
     pylab.ion()
     plot_noisy_data()
-    #sam.eval("hold on")
     desol, dstepmon = de_solve()
     print "desol: ", desol
    #plot_sol(dstepmon.x[-100],'k-')
