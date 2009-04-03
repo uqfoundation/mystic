@@ -230,7 +230,7 @@ Further Inputs:
         iterations = 1
 
         while (fcalls[0] < self._maxfun and iterations < self._maxiter):
-            StepMonitor(sim, fsim) # get all values; "best" is sim[0]
+            StepMonitor(sim[0], fsim[0]) # sim = all values; "best" is sim[0]
             if self._EARLYEXIT or termination(self):
                 break
 
@@ -400,8 +400,8 @@ Returns: (xopt, {fopt, iter, funcalls, warnflag}, {allvecs})
     iterations = len(stepmon.x)
     allvecs = []
     for i in range(iterations):
-       #allvecs.append(list(stepmon.x[i][0]))
-        allvecs.append(stepmon.x[i][0])
+       #allvecs.append(list(stepmon.x[i]))
+        allvecs.append(stepmon.x[i])
 
     if fcalls >= solver._maxfun:
         warnflag = 1

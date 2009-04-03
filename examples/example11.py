@@ -39,12 +39,7 @@ def plot_frame(label=None):
 # plot the polynomial trajectories
 def plot_params(monitor):
     x = range(len(monitor.y))
-    import numpy
-    # NOTE: workaround poor design, where simplex is logged by StepMonitor
-    if isinstance(monitor.y[0],numpy.ndarray):
-        y = [i[0] for i in monitor.y]
-    else:
-        y = monitor.y
+    y = monitor.y
     pylab.plot(x,y,'b-')
     pylab.axis([1,0.5*x[-1],0,y[1]],'k-')
     return
