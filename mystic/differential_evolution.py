@@ -163,6 +163,7 @@ Further Inputs:
     callback -- an optional user-supplied function to call after each
         iteration.  It is called as callback(xk), where xk is
         the current parameter vector.  [default = None]
+    disp -- non-zero to print convergence messages.
 
         """
         #allow for inputs that don't conform to AbstractSolver interface
@@ -171,11 +172,13 @@ Further Inputs:
         CrossProbability=0.5 #potential for parameter cross-mutation
         ScalingFactor=0.7    #multiplier for mutation impact
         callback=None        #user-supplied function, called after each step
+        disp=0               #non-zero to print convergence messages
         if kwds.has_key('strategy'): strategy = kwds['strategy']
         if kwds.has_key('CrossProbability'): \
            CrossProbability = kwds['CrossProbability']
         if kwds.has_key('ScalingFactor'): ScalingFactor = kwds['ScalingFactor']
         if kwds.has_key('callback'): callback = kwds['callback']
+        if kwds.has_key('disp'): disp = kwds['disp']
         #-------------------------------------------------------------
 
         import signal
@@ -233,6 +236,26 @@ Further Inputs:
 
         signal.signal(signal.SIGINT,signal.default_int_handler)
 
+        # code below here pushes output to scipy.optimize.fmin interface
+        fval = self.bestEnergy
+        warnflag = 0
+
+        if fcalls[0] >= self._maxfun:
+            warnflag = 1
+            if disp:
+                print "Warning: Maximum number of function evaluations has "\
+                      "been exceeded."
+        elif generation >= self._maxiter:
+            warnflag = 2
+            if disp:
+                print "Warning: Maximum number of iterations has been exceeded"
+        else:
+            if disp:
+                print "Optimization terminated successfully."
+                print "         Current function value: %f" % fval
+                print "         Iterations: %d" % generation
+                print "         Function evaluations: %d" % fcalls[0]
+
         return 
 
 
@@ -281,6 +304,7 @@ Further Inputs:
     callback -- an optional user-supplied function to call after each
         iteration.  It is called as callback(xk), where xk is
         the current parameter vector.  [default = None]
+    disp -- non-zero to print convergence messages.
 
         """
         #allow for inputs that don't conform to AbstractSolver interface
@@ -289,11 +313,13 @@ Further Inputs:
         CrossProbability=0.5 #potential for parameter cross-mutation
         ScalingFactor=0.7    #multiplier for mutation impact
         callback=None        #user-supplied function, called after each step
+        disp=0               #non-zero to print convergence messages
         if kwds.has_key('strategy'): strategy = kwds['strategy']
         if kwds.has_key('CrossProbability'): \
            CrossProbability = kwds['CrossProbability']
         if kwds.has_key('ScalingFactor'): ScalingFactor = kwds['ScalingFactor']
         if kwds.has_key('callback'): callback = kwds['callback']
+        if kwds.has_key('disp'): disp = kwds['disp']
         #-------------------------------------------------------------
 
         import signal
@@ -354,6 +380,26 @@ Further Inputs:
         self.generations = generation
 
         signal.signal(signal.SIGINT,signal.default_int_handler)
+
+        # code below here pushes output to scipy.optimize.fmin interface
+        fval = self.bestEnergy
+        warnflag = 0
+
+        if fcalls[0] >= self._maxfun:
+            warnflag = 1
+            if disp:
+                print "Warning: Maximum number of function evaluations has "\
+                      "been exceeded."
+        elif generation >= self._maxiter:
+            warnflag = 2
+            if disp:
+                print "Warning: Maximum number of iterations has been exceeded"
+        else:
+            if disp:
+                print "Optimization terminated successfully."
+                print "         Current function value: %f" % fval
+                print "         Iterations: %d" % generation
+                print "         Function evaluations: %d" % fcalls[0]
 
         return 
 
