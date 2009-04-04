@@ -42,6 +42,7 @@ if has_setuptools:
 
 # close 'setup' call
 setup_code += """    
+      zip_safe=True,
       scripts=[])
 """
 
@@ -51,7 +52,7 @@ exec setup_code
 # if dependencies are missing, print a warning
 try:
     import numpy
-    import matplotlib
+    #import matplotlib #XXX: has issues being zip_safe
 except ImportError:
     print "\n***********************************************************"
     print "WARNING: One of the following dependencies is unresolved:"
