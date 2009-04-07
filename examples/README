@@ -40,8 +40,6 @@ Notes on the "mogi" tests/examples:
  - test_mogi_leastsq.py: tests with scipy (minpack's) leastsq, but hasn't been tuned so it doesn't work at all.
  - test_mogi_anneal.py: tests with scipy simulated annealing, but hasn't been tuned, so again, doesn't work at all.
  - test_mogi2.py: two mogi sources
- - test_mpimogi.py: mpi version of test_mogi.py, default uses 4 proc
- - test_mpimogi2.py: mpi version of test_mogi2.py, default uses 4 proc
  - test_mogi3.py: reimplements test_mogi 
 
 
