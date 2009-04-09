@@ -197,7 +197,7 @@ Further Inputs:
         self.probability = CrossProbability
         self.scale = ScalingFactor
 
-        self.bestEnergy = 1.0E20
+        self.bestEnergy = self._init_popEnergy
          
         if self._maxiter is None:
             self._maxiter = self.nDim * self.nPop * 10  #XXX: set better defaults?
@@ -264,8 +264,8 @@ class DifferentialEvolutionSolver2(DifferentialEvolutionSolver):
     """
 Differential Evolution optimization, using Storn and Price's algorithm.
 
-Alternate implementaiton: 
-    - functionally equivalent to `pyina.MPIDifferentialEvolutionSolver'.
+Alternate implementation: 
+    - functionally equivalent to `pyina.DifferentialEvolutionSolver2'.
     - both a current and a next generation are kept, while the current
       generation is invariant during the main DE logic.
     """
@@ -338,7 +338,7 @@ Further Inputs:
         self.probability = CrossProbability
         self.scale = ScalingFactor
 
-        self.bestEnergy = 1.0E20
+        self.bestEnergy = self._init_popEnergy
          
         if self._maxiter is None:
             self._maxiter = self.nDim * self.nPop * 10  #XXX: set better defaults?

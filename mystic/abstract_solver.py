@@ -114,7 +114,7 @@ Important class members:
         self.bestSolution     = [0.0] * dim
         self.trialSolution    = [0.0] * dim
 
-        self._popEnergy_x0    = 1.0E20 #XXX: or numpy.inf?
+        self._init_popEnergy  = 1.0E20 #XXX: or numpy.inf?
         self.popEnergy	      = [0.0] * NP
         self.population	      = [[0.0 for i in range(dim)] for j in range(NP)]
         self.energy_history   = []
@@ -210,7 +210,7 @@ input::
         for i in range(self.nPop):
             for j in range(self.nDim):
                 self.population[i][j] = random.uniform(min[j],max[j])
-            self.popEnergy[i] = self._popEnergy_x0
+            self.popEnergy[i] = self._init_popEnergy
 
     def SetMultinormalInitialPoints(self, mean, var = None):
         """Generate Initial Points from Multivariate Normal.
@@ -235,7 +235,7 @@ input::
                 var = var * numpy.eye(self.nDim)
         for i in range(self.nPop):
             self.population[i] = multivariate_normal(mean, var).tolist()
-            self.popEnergy[i] = self._popEnergy_x0
+            self.popEnergy[i] = self._init_popEnergy
         return
 
     def enable_signal_handler(self):
