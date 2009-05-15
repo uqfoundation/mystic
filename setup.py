@@ -25,7 +25,6 @@ setup(name='mystic',
       url = 'http://www.cacr.caltech.edu/~mmckerns',
       classifiers = ('Intended Audience :: Developers',
                      'Programming Language :: Python',
-                     'Development Status :: 2 - Pre-Alpha',
                      'Topic :: Physics Programming'),
 
       packages = ['mystic','mystic.models'],
