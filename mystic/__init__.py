@@ -55,17 +55,24 @@ To get up and running quickly, mystic also provides infrastructure to::
     - extend fit jobs to parallel & distributed resources [COMING SOON]
 
 
-Installation
-============
+Current Release
+===============
 
+This release version is mystic-0.1a2. You can download it here.
 The latest version of mystic is available from::
     http://dev.danse.us/trac/mystic
+
+Mystic is distributed under a modified BSD license.
+
+
+Installation
+============
 
 Mystic is packaged to install from source, so you must
 download the tarball, unzip, and run the installer::
     [download]
-    $ tar -xvzf mystic-x.x.tgz
-    $ cd mystic-x.x
+    $ tar -xvzf mystic-0.1a2.tgz
+    $ cd mystic-0.1a2
     $ python setup py build
     $ python setup py install
 
@@ -73,12 +80,23 @@ You will be warned of any missing dependencies and/or settings
 after you run the "build" step above. Mystic depends on numpy,
 so you should install it first. Having matplotlib is necessary
 for running several of the examples, and you should probably go
-get it even though it's not required. A few of the examples
-require other packages, however they can be installed as needed.
+get it even though it's not required.
 
 Alternately, mystic can be installed with easy_install::
     [download]
     $ easy_install -f . mystic
+
+
+Requirements
+============
+
+Mystic requires::
+    - python, version >= 2.5, version < 3.0
+    - numpy, version >= 1.0
+
+Optional requirements::
+    - setuptools, version >= 0.6
+    - matplotlib, version >= 0.91
 
 
 Usage Notes
@@ -109,13 +127,22 @@ each of the individual solvers for their minimal (non-API compliant)
 interface.
 
 Important classes and functions are found here::
-    `mystic.mystic.abstract_solver`, `mystic.models.abstract_model`,
-    `mystic.mystic.tools.Sow`, `mystic.mystic.termination`
+    - mystic.mystic.abstract_solver [the solver API definition]
+    - mystic.mystic.termination     [solver termination conditions]
+    - mystic.mystic.strategy        [solver population mutation strategies]
+    - mystic.models.abstract_model  [the model API definition]
+    - mystic.models.forward_model   [cost function generator]
+    - mystic.mystic.tools           [monitors, function wrappers, and other useful tools]
 
 Solvers are found here::
-    `mystic.mystic.differential_evolution`, `mystic.mystic.scipy_optimize`
+    - mystic.mystic.differential_evolution [Differential Evolution solvers]
+    - mystic.mystic.scipy_optimize         [Nelder-Mead and Powell's Directional solvers]
 
-See http://dev.danse.us/trac/mystic for more information.
+
+More Information
+================
+
+Please see http://dev.danse.us/trac/mystic for further information.
 """
 __version__ = '0.1a2'
 __author__ = 'Mike McKerns, Patrick Hung'
