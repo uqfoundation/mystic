@@ -3,7 +3,7 @@
 """
 1d model representation for polynomials
 
-References:
+References::
     [1] Storn, R. and Price, K. Differential Evolution - A Simple and Efficient
     Heuristic for Global Optimization over Continuous Spaces. Journal of Global
     Optimization 11: 341-359, 1997.
@@ -32,7 +32,7 @@ thus, [a3, a2, a1, a0] yields  a3 x^3 + a2 x^2 + a1 x^1 + a0"""
 
 def poly1d(coeff):
     """generates a 1-D polynomial instance from a list of coefficients
-i.e. numpy.poly1d(coeffs)"""
+using numpy.poly1d(coeffs)"""
     return npoly1d(coeff)
 
 #########################################
@@ -51,7 +51,7 @@ thus, [a3, a2, a1, a0] yields  a3 x^3 + a2 x^2 + a1 x^1 + a0"""
 
     def ForwardFactory(self,coeffs):
         """generates a 1-D polynomial instance from a list of coefficients
-i.e. numpy.poly1d(coeffs)"""
+using numpy.poly1d(coeffs)"""
         self.__forward__ = npoly1d(coeffs)
         return self.__forward__
 
@@ -63,8 +63,9 @@ chebyshev8coeffs = [128., 0., -256., 0., 160., 0., -32., 0., 1.]
 chebyshev16coeffs = [32768., 0., -131072., 0., 212992., 0., -180224., 0., 84480., 0., -21504., 0., 2688., 0., -128., 0., 1]
 
 class Chebyshev(Polynomial):
-    """Chebyshev polynomial models and functions:
-with specific methods for T8(z) & T16(z), Eq. (27-33) of [2]
+    """Chebyshev polynomial models and functions,
+including specific methods for T8(z) & T16(z), Equation (27-33) of [2]
+
 NOTE: default is T8(z)"""
 
     def __init__(self,order=8,name='poly',metric=lambda x: numpysum(x*x),sigma=1.0):

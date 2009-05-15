@@ -4,7 +4,7 @@
 Mogi's model of surface displacements from a point spherical source in an
 elastic half space
 
-References:
+References::
     [3] Mogi, K. Relations between the eruptions of various
     volcanoes and the deformations of the ground surfaces around them, 
     Bull. Earthquake. Res. Inst., 36, 99-134, 1958.
@@ -25,8 +25,7 @@ pressure source in an elastic half space [3].
         return
 
     def evaluate(self,coeffs,evalpts):
-        """evaluate a single Mogi peak over a 2D (2 by N) numpy array of evalpts
-coeffs = (x0,y0,z0,dV)"""
+        """evaluate a single Mogi peak over a 2D (2 by N) numpy array of evalpts, where coeffs = (x0,y0,z0,dV)"""
         x0,y0,z0,dV = coeffs
         dx = evalpts[0,:] - x0
         dy = evalpts[1,:] - y0

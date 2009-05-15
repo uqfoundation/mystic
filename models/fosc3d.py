@@ -3,7 +3,7 @@
 """
 the fOsc3D Mathematica function
 
-References:
+References::
     [4] Mathematica guidebook
 """
 from abstract_model import AbstractFunction
@@ -20,6 +20,7 @@ fOsc3D[x_,y_] := -4 Exp[(-x^2 - y^2)] + Sin[6 x] Sin[5 y]"""
 
     def function(self,coeffs):
         """evaluates the fOsc3D function for a list of coeffs
+
 minimum is f(x)=? at x=(?,?)"""
         x,y = coeffs
         func =  -4. * exp( -x*x - y*y ) + sin(6. * x) * sin(5. *y)

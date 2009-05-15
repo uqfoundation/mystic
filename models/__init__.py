@@ -1,13 +1,14 @@
 #!/usr/bin/env python
-
 """
 models: sample models and functions prepared for use in mystic
 
+
 Functions
 =========
+
 Mystic provides a set of standard fitting functions that derive from
 the function API found in `mystic.models.abstract_model`. These standard
-functions are provides:
+functions are provided::
     rosen      -- Rosenbrock's function
     step       -- De Jong's step function
     quartic    -- De Jong's quartic function
@@ -19,10 +20,12 @@ functions are provides:
     wavy1      -- a simple sine-based multi-minima function
     wavy2      -- another simple sine-based multi-minima function
 
+
 Models
 ======
+
 Mystic also provides a set of example models that derive from the model API
-found in `mystic.models.abstract_model`. These standard models are provides:
+found in `mystic.models.abstract_model`. These standard models are provided::
     poly       -- 1d model representation for polynomials
     circle     -- 2d array representation of a circle
     lorentzian -- Lorentzian peak model
@@ -31,16 +34,17 @@ found in `mystic.models.abstract_model`. These standard models are provides:
                   source in an elastic half space
 
 Additionally, circle has been extended to provide three additional models,
-each with different packing densities:
+each with different packing densities::
     - dense_circle, sparse_circle, and minimal_circle
 
 Poly also provides two additional models, each for 8th and 16th order
-Chebyshev polynomials:
+Chebyshev polynomials::
     - chebyshev8, chebyshev16
+
 
 Tools
 =====
-Mystic also provides two tools for manipulating polynomials:
+Mystic also provides two tools for manipulating polynomials::
     polyeval   -- fast evaluation of an n-dimensional polynomial
     poly1d     -- generate a 1d polynomial instance
 

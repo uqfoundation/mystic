@@ -3,7 +3,7 @@
 """
 Corana's function
 
-References:
+References::
     [1] Storn, R. and Price, K. Differential Evolution - A Simple and Efficient
     Heuristic for Global Optimization over Continuous Spaces. Journal of Global
     Optimization 11: 341-359, 1997.
@@ -20,7 +20,7 @@ from numpy import sign, floor
 
 class Corana(AbstractFunction):
     """Corana's function:
-a multi-minima function, Eq. (22) of [2]"""
+a multi-minima function, Equation (22) of [2]"""
 
     def __init__(self):
         AbstractFunction.__init__(self)
@@ -28,6 +28,7 @@ a multi-minima function, Eq. (22) of [2]"""
 
     def function(self,coeffs):
         """evaluates the Corana function for a list of coeffs
+
 minimum is f(x)=0.0 at xi=0.0"""
         d = [1., 1000., 10., 100.]
        #x = asarray(coeffs) #XXX: converting to numpy.array slows by 10x

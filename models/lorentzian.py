@@ -3,7 +3,7 @@
 """
 Lorentzian peak model
 
-References:
+References::
     None
 """
 from abstract_model import AbstractModel

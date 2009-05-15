@@ -3,7 +3,7 @@
 """
 Zimmermann's function
 
-References:
+References::
     [1] Storn, R. and Price, K. Differential Evolution - A Simple and Efficient
     Heuristic for Global Optimization over Continuous Spaces. Journal of Global
     Optimization 11: 341-359, 1997.
@@ -16,7 +16,7 @@ from abstract_model import AbstractFunction
 
 class Zimmermann(AbstractFunction):
     """Zimmermann function:
-a non-continuous function, Eq. (24-26) of [2]"""
+a non-continuous function, Equation (24-26) of [2]"""
 
     def __init__(self):
         AbstractFunction.__init__(self)
@@ -24,6 +24,7 @@ a non-continuous function, Eq. (24-26) of [2]"""
 
     def function(self,coeffs):
         """evaluates the Zimmermann function for a list of coeffs
+
 minimum is f(x)=0.0 at x=(7.0,2.0)"""
         x0, x1 = coeffs #must provide 2 values (x0,y0)
         f8 = 9 - x0 - x1

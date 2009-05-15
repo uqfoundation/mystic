@@ -3,7 +3,7 @@
 """
 2d array representation of a circle
 
-References:
+References::
     None
 """
 #FIXME: cost function seems to apply penalty when r=R0... it should not
@@ -108,8 +108,9 @@ coeffs = (x,y,r)"""
     return xy
 
 def gendata(coeffs,npts=20):
-    """Generate a 2D dataset of npts enclosed in circle of given coeffs
-coeffs = (x,y,r)
+    """Generate a 2D dataset of npts enclosed in circle of given coeffs,
+where coeffs = (x,y,r).
+
 NOTE: if npts == None, constrain all points to circle of given radius"""
     if not npts:
         return gencircle(coeffs)

@@ -3,7 +3,7 @@
 """
 Griewangk's function
 
-References:
+References::
     [1] Storn, R. and Price, K. Differential Evolution - A Simple and Efficient
     Heuristic for Global Optimization over Continuous Spaces. Journal of Global
     Optimization 11: 341-359, 1997.
@@ -19,7 +19,7 @@ from math import cos, sqrt
 
 class Griewangk(AbstractFunction):
     """Griewangk function:
-a multi-minima function, Eq. (23) of [2]"""
+a multi-minima function, Equation (23) of [2]"""
 
     def __init__(self):
         AbstractFunction.__init__(self)
@@ -27,6 +27,7 @@ a multi-minima function, Eq. (23) of [2]"""
 
     def function(self,coeffs):
         """evaluates the Griewangk function for a list of coeffs
+
 minimum is f(x)=0.0 at xi=0.0"""
         # ensure that there are 10 coefficients
         x = [0]*10

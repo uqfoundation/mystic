@@ -4,7 +4,7 @@
 Rosenbrock's function, De Jong's step function, De Jong's quartic function,
 and Shekel's function
 
-References:
+References::
     [1] Storn, R. and Price, K. Differential Evolution - A Simple and Efficient
     Heuristic for Global Optimization over Continuous Spaces. Journal of Global
     Optimization 11: 341-359, 1997.
@@ -23,7 +23,7 @@ from math import pow
 
 class Rosenbrock(AbstractFunction):
     """Rosenbrock function:
-A modified second De Jong function, Eq. (18) of [2]"""
+A modified second De Jong function, Equation (18) of [2]"""
 
     def __init__(self):
         AbstractFunction.__init__(self)
@@ -31,6 +31,7 @@ A modified second De Jong function, Eq. (18) of [2]"""
 
     def function(self,coeffs):
         """evaluates n-dimensional Rosenbrock function for a list of coeffs
+
 minimum is f(x)=0.0 at xi=1.0"""
         #ensure that there are 2 coefficients
         x = [1]*2
@@ -47,7 +48,7 @@ minimum is f(x)=0.0 at xi=1.0"""
 
 class Step(AbstractFunction):
     """De Jong's step function:
-The third De Jong function, Eq. (19) of [2]"""
+The third De Jong function, Equation (19) of [2]"""
 
     def __init__(self):
         AbstractFunction.__init__(self)
@@ -55,6 +56,7 @@ The third De Jong function, Eq. (19) of [2]"""
 
     def function(self,coeffs):
         """evaluates n-dimensional De Jong step function for a list of coeffs
+
 minimum is f(x)=0.0 at xi=-5-n where n=[0.0,0.12]"""
         f = 30.
         for c in coeffs:
@@ -75,7 +77,7 @@ minimum is f(x)=0.0 at xi=-5-n where n=[0.0,0.12]"""
 
 class Quartic(AbstractFunction):
     """De Jong's quartic function:
-The modified fourth De Jong function, Eq. (20) of [2]"""
+The modified fourth De Jong function, Equation (20) of [2]"""
 
     def __init__(self):
         AbstractFunction.__init__(self)
@@ -83,6 +85,7 @@ The modified fourth De Jong function, Eq. (20) of [2]"""
 
     def function(self,coeffs):
         """evaluates n-dimensional De Jong quartic function for a list of coeffs
+
 minimum is f(x)=random, but statistically at xi=0"""
         f = 0.
         for j, c in enumerate(coeffs):
@@ -98,7 +101,7 @@ minimum is f(x)=random, but statistically at xi=0"""
 
 class Shekel(AbstractFunction):
     """Shekel's function:
-The modified fifth De Jong function, Eq. (21) of [2]"""
+The modified fifth De Jong function, Equation (21) of [2]"""
 
     def __init__(self):
         AbstractFunction.__init__(self)
@@ -106,6 +109,7 @@ The modified fifth De Jong function, Eq. (21) of [2]"""
 
     def function(self,coeffs):
         """evaluates 2-D Shekel's function at (x,y)
+
 minimum is f(x)=0.0 at x(-32,-32)"""
         A = [-32., -16., 0., 16., 32.]
         a1 = A * 5

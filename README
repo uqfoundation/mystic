@@ -1,7 +1,7 @@
 mystic: a simple model-independent inversion framework
 
 Current release:
-    mystic-0.1a1
+    mystic-0.1a2
 
 Installation:
     $ python setup.py build

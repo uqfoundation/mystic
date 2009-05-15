@@ -117,7 +117,7 @@ Solvers are found here::
 
 See http://dev.danse.us/trac/mystic for more information.
 """
-__version__ = '0.1a1'
+__version__ = '0.1a2'
 __author__ = 'Mike McKerns, Patrick Hung'
 
 __license__ = """
