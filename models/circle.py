@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 
 """
-References:
+2d array representation of a circle
 
-None
+References:
+    None
 """
 #FIXME: cost function seems to apply penalty when r=R0... it should not
 from abstract_model import AbstractModel

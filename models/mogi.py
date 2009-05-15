@@ -1,11 +1,13 @@
 #!/usr/bin/env python
 
 """
-References:
+Mogi's model of surface displacements from a point spherical source in an
+elastic half space
 
-[3] Mogi, K. Relations between the eruptions of various
-volcanoes and the deformations of the ground surfaces around them, 
-Bull. Earthquake. Res. Inst., 36, 99-134, 1958.
+References:
+    [3] Mogi, K. Relations between the eruptions of various
+    volcanoes and the deformations of the ground surfaces around them, 
+    Bull. Earthquake. Res. Inst., 36, 99-134, 1958.
 """
 from abstract_model import AbstractModel
 

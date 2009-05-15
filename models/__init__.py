@@ -1,7 +1,49 @@
 #!/usr/bin/env python
 
 """
-models and functions used in testing & examples
+models: sample models and functions prepared for use in mystic
+
+Functions
+=========
+Mystic provides a set of standard fitting functions that derive from
+the function API found in `mystic.models.abstract_model`. These standard
+functions are provides:
+    rosen      -- Rosenbrock's function
+    step       -- De Jong's step function
+    quartic    -- De Jong's quartic function
+    shekel     -- Shekel's function
+    corana     -- Corana's function
+    fosc3d     -- the fOsc3D Mathematica function
+    griewangk  -- Griewangk's function
+    zimmermann -- Zimmermann's function
+    wavy1      -- a simple sine-based multi-minima function
+    wavy2      -- another simple sine-based multi-minima function
+
+Models
+======
+Mystic also provides a set of example models that derive from the model API
+found in `mystic.models.abstract_model`. These standard models are provides:
+    poly       -- 1d model representation for polynomials
+    circle     -- 2d array representation of a circle
+    lorentzian -- Lorentzian peak model
+    br8        -- Bevington & Robinson's model of dual exponential decay
+    mogi       -- Mogi's model of surface displacements from a point spherical
+                  source in an elastic half space
+
+Additionally, circle has been extended to provide three additional models,
+each with different packing densities:
+    - dense_circle, sparse_circle, and minimal_circle
+
+Poly also provides two additional models, each for 8th and 16th order
+Chebyshev polynomials:
+    - chebyshev8, chebyshev16
+
+Tools
+=====
+Mystic also provides two tools for manipulating polynomials:
+    polyeval   -- fast evaluation of an n-dimensional polynomial
+    poly1d     -- generate a 1d polynomial instance
+
 """
 # base classes
 from abstract_model import AbstractModel, AbstractFunction

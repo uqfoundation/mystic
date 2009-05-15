@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 
 """
-References:
+the fOsc3D Mathematica function
 
-[4] Mathematica guidebook
+References:
+    [4] Mathematica guidebook
 """
 from abstract_model import AbstractFunction
 

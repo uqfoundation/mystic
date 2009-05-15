@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 
 """
-References:
+simple sine-based multi-minima functions
 
-None.
+References:
+    None.
 """
 from abstract_model import AbstractFunction
 

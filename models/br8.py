@@ -1,9 +1,12 @@
 #!/usr/bin/env python
 
 """
-References:
+Bevington & Robinson's model of dual exponential decay
 
-[5] Bevington & Robinson (1992). Data Reduction and Error Analysis for the Physical Sciences, Second Edition, McGraw-Hill, Inc., New York.
+References:
+    [5] Bevington & Robinson (1992).
+    Data Reduction and Error Analysis for the Physical Sciences,
+    Second Edition, McGraw-Hill, Inc., New York.
 """
 from abstract_model import AbstractModel
 

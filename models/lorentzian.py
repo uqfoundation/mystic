@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 
 """
-References:
+Lorentzian peak model
 
-None
+References:
+    None
 """
 from abstract_model import AbstractModel
 

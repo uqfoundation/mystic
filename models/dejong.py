@@ -1,14 +1,17 @@
 #!/usr/bin/env python
 
 """
+Rosenbrock's function, De Jong's step function, De Jong's quartic function,
+and Shekel's function
+
 References:
+    [1] Storn, R. and Price, K. Differential Evolution - A Simple and Efficient
+    Heuristic for Global Optimization over Continuous Spaces. Journal of Global
+    Optimization 11: 341-359, 1997.
 
-[1] Storn, R. and Price, K. Differential Evolution - A Simple and Efficient
-Heuristic for Global Optimization over Continuous Spaces. Journal of Global
-Optimization 11: 341-359, 1997.
-
-[2] Storn, R. and Price, K. (Same title as above, but as a technical report.)
-http://www.icsi.berkeley.edu/~storn/deshort1.ps
+    [2] Storn, R. and Price, K.
+    (Same title as above, but as a technical report.)
+    http://www.icsi.berkeley.edu/~storn/deshort1.ps
 """
 from abstract_model import AbstractFunction
 
