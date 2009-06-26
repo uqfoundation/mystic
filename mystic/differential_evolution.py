@@ -232,7 +232,7 @@ Further Inputs:
             if self._EARLYEXIT or termination(self):
                 break
 
-        self.generations = generation
+        self.generations = generation + 1
 
         signal.signal(signal.SIGINT,signal.default_int_handler)
 
@@ -245,7 +245,7 @@ Further Inputs:
             if disp:
                 print "Warning: Maximum number of function evaluations has "\
                       "been exceeded."
-        elif generation >= self._maxiter:
+        elif self.generations >= self._maxiter:
             warnflag = 2
             if disp:
                 print "Warning: Maximum number of iterations has been exceeded"
@@ -253,7 +253,7 @@ Further Inputs:
             if disp:
                 print "Optimization terminated successfully."
                 print "         Current function value: %f" % fval
-                print "         Iterations: %d" % generation
+                print "         Iterations: %d" % self.generations
                 print "         Function evaluations: %d" % fcalls[0]
 
         return 
@@ -377,7 +377,7 @@ Further Inputs:
             if self._EARLYEXIT or termination(self):
                 break
 
-        self.generations = generation
+        self.generations = generation + 1
 
         signal.signal(signal.SIGINT,signal.default_int_handler)
 
@@ -390,7 +390,7 @@ Further Inputs:
             if disp:
                 print "Warning: Maximum number of function evaluations has "\
                       "been exceeded."
-        elif generation >= self._maxiter:
+        elif self.generations >= self._maxiter:
             warnflag = 2
             if disp:
                 print "Warning: Maximum number of iterations has been exceeded"
@@ -398,7 +398,7 @@ Further Inputs:
             if disp:
                 print "Optimization terminated successfully."
                 print "         Current function value: %f" % fval
-                print "         Iterations: %d" % generation
+                print "         Iterations: %d" % self.generations
                 print "         Function evaluations: %d" % fcalls[0]
 
         return 
