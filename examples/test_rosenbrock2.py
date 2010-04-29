@@ -23,16 +23,18 @@ if __name__=='__main__':
     print "Nelder-Mead Simplex"
     print "==================="
     start = time.time()
-    from mystic.tools import Sow #VerboseSow
+    from mystic.tools import Sow, VerboseSow
+   #stepmon = VerboseSow(1)
     stepmon = Sow() #VerboseSow(10)
     from mystic.termination import CandidateRelativeTolerance as CRT
 
-   #from scipy.optimize import fmin
+    from scipy.optimize import fmin
     from mystic.scipy_optimize import fmin, NelderMeadSimplexSolver
-   #print fmin(rosen,x0,retall=0,full_output=0)
+    print fmin(rosen,x0,retall=0,full_output=0,maxiter=121)
     solver = NelderMeadSimplexSolver(len(x0))
     solver.SetInitialPoints(x0)
     solver.SetStrictRanges(min,max)
+    solver.SetEvaluationLimits(maxiter=146)
     solver.enable_signal_handler()
     solver.Solve(rosen,termination=CRT(xtol=4e-5),StepMonitor=stepmon,disp=1)
     print solver.Solution()

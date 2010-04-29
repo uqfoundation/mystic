@@ -15,13 +15,14 @@ test_rosenbrock*.py (or optimize.py in scipy.optimize).
 from mystic.differential_evolution import DifferentialEvolutionSolver, diffev
 from mystic.termination import ChangeOverGeneration, VTR
 from mystic.models import rosen
-from mystic import Sow
+from mystic import Sow, VerboseSow
 
 import random
 random.seed(123)
 
 ND = 3
 NP = 30
+#MAX_GENERATIONS = 29
 MAX_GENERATIONS = 99999
 
 def main():
@@ -31,7 +32,7 @@ def main():
     solver.SetEvaluationLimits(maxiter=MAX_GENERATIONS)
 
     solver.Solve(rosen, termination = VTR(0.0001), \
-                 CrossProbability=0.5, ScalingFactor=0.6)
+                 CrossProbability=0.5, ScalingFactor=0.6, disp=1)
 
     solution = solver.Solution()
   
@@ -43,6 +44,8 @@ if __name__ == '__main__':
     from numpy import inf
     print "without bounds..."
     from timeit import Timer
+    print "Differential Evolution"
+    print "======================"
     t = Timer("main()", "from __main__ import main")
     timetaken =  t.timeit(number=1)
     print "CPU Time: %s\n" % timetaken
@@ -57,6 +60,7 @@ if __name__ == '__main__':
     start = time.time()
     esow= Sow()
     ssow= Sow()
+   #ssow= VerboseSow(1)
 
  #  xinit = [random.random() for j in range(ND)]
     xinit = [0.8,1.2,0.7]
@@ -74,7 +78,7 @@ if __name__ == '__main__':
     solver.SetStrictRanges(min,max)
     solver.SetEvaluationLimits(maxiter=MAX_GENERATIONS)
     solver.Solve(rosen, VTR(0.0001), EvaluationMonitor=esow, StepMonitor=ssow,\
-                 CrossProbability=0.5, ScalingFactor=0.6)
+                 CrossProbability=0.5, ScalingFactor=0.6, disp=1)
     sol = solver.Solution()
     print sol
  

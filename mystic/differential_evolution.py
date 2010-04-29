@@ -248,16 +248,38 @@ Further Inputs:
         self.probability = CrossProbability
         self.scale = ScalingFactor
 
-        self.bestEnergy = self._init_popEnergy
+        #set initial solution and energy by running a single iteration
+        self.bestSolution = self.population[0][:]
+        self.bestEnergy = self.popEnergy[0]
+        for candidate in range(self.nPop):
+            # generate trialSolution (within valid range)
+            self.trialSolution[:] = self.population[candidate][:]
+            trialEnergy = costfunction(self.trialSolution)
+
+            if trialEnergy < self.popEnergy[candidate]:
+                # New low for this candidate
+                self.popEnergy[candidate] = trialEnergy
+                self.population[candidate][:] = self.trialSolution[:]
+                self.UpdateGenealogyRecords(candidate, self.trialSolution[:])
+
+                # Check if all-time low
+                if trialEnergy < self.bestEnergy:
+                    self.bestEnergy = trialEnergy
+                    self.bestSolution[:] = self.trialSolution[:]
+                            
+        self.energy_history.append(self.bestEnergy)
+        StepMonitor(self.bestSolution[:], self.bestEnergy)
+        self.generations = 0  #XXX: above currently *not* counted as an iteration
+        if callback is not None:
+            callback(self.bestSolution)
          
         if self._maxiter is None:
             self._maxiter = self.nDim * self.nPop * 10  #XXX: set better defaults?
         if self._maxfun is None:
             self._maxfun = self.nDim * self.nPop * 1000 #XXX: set better defaults?
 
-        generation = 0
-        for generation in range(self._maxiter):
-            StepMonitor(self.bestSolution[:], self.bestEnergy)
+        #run for generations <= maxiter
+        for generation in range(self._maxiter - self.generations):
             if fcalls[0] >= self._maxfun: break
             for candidate in range(self.nPop):
                 # generate trialSolution (within valid range)
@@ -276,14 +298,13 @@ Further Inputs:
                         self.bestSolution[:] = self.trialSolution[:]
                             
             self.energy_history.append(self.bestEnergy)
-
+            StepMonitor(self.bestSolution[:], self.bestEnergy)
+            self.generations += 1
             if callback is not None:
                 callback(self.bestSolution)
             
             if self._EARLYEXIT or termination(self):
                 break
-
-        self.generations = generation + 1
 
         signal.signal(signal.SIGINT,signal.default_int_handler)
 
@@ -393,17 +414,46 @@ Further Inputs:
         self.probability = CrossProbability
         self.scale = ScalingFactor
 
-        self.bestEnergy = self._init_popEnergy
+        #set initial solution and energy by running a single iteration
+        self.bestSolution = self.population[0][:]
+        self.bestEnergy = self.popEnergy[0]
+        trialPop = [[0.0 for i in range(self.nDim)] for j in range(self.nPop)]
+        for candidate in range(self.nPop):
+            # generate trialSolution (within valid range)
+            self.trialSolution[:] = self.population[candidate][:]
+            #XXX:[HACK] apply constraints
+            self.trialSolution[:] = constraints(self.trialSolution[:])
+            #XXX:[HACK] -end-
+            trialPop[candidate][:] = self.trialSolution[:]
+
+        trialEnergy = map(costfunction, trialPop)
+
+        for candidate in range(self.nPop):
+            if trialEnergy[candidate] < self.popEnergy[candidate]:
+                # New low for this candidate
+                self.popEnergy[candidate] = trialEnergy[candidate]
+                self.population[candidate][:] = trialPop[candidate][:]
+                self.UpdateGenealogyRecords(candidate, trialPop[candidate][:])
+               #XXX: was self.UpdateGenealogyRecords(candidate, self.trialSolution[:])
+
+                # Check if all-time low
+                if trialEnergy[candidate] < self.bestEnergy:
+                    self.bestEnergy = trialEnergy[candidate]
+                    self.bestSolution[:] = trialPop[candidate][:]
+                        
+        self.energy_history.append(self.bestEnergy)
+        StepMonitor(self.bestSolution[:], self.bestEnergy)
+        self.generations = 0  #XXX: above currently *not* counted as an iteration
+        if callback is not None:
+            callback(self.bestSolution)
          
         if self._maxiter is None:
             self._maxiter = self.nDim * self.nPop * 10  #XXX: set better defaults?
         if self._maxfun is None:
             self._maxfun = self.nDim * self.nPop * 1000 #XXX: set better defaults?
-        trialPop = [[0.0 for i in range(self.nDim)] for j in range(self.nPop)]
 
-        generation = 0
-        for generation in range(self._maxiter):
-            StepMonitor(self.bestSolution[:], self.bestEnergy)
+        #run for generations <= maxiter
+        for generation in range(self._maxiter - self.generations):
             if fcalls[0] >= self._maxfun: break
             for candidate in range(self.nPop):
                 # generate trialSolution (within valid range)
@@ -434,14 +484,13 @@ Further Inputs:
                         self.bestSolution[:] = trialPop[candidate][:]
                             
             self.energy_history.append(self.bestEnergy)
-
+            StepMonitor(self.bestSolution[:], self.bestEnergy)
+            self.generations += 1
             if callback is not None:
                 callback(self.bestSolution)
             
             if self._EARLYEXIT or termination(self):
                 break
-
-        self.generations = generation + 1
 
         signal.signal(signal.SIGINT,signal.default_int_handler)
 

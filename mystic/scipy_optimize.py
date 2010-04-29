@@ -206,6 +206,7 @@ Further Inputs:
         if retall:
             allvecs = [sim[0]]
         fsim[0] = func(x0)
+        StepMonitor(sim[0], fsim[0]) # sim = all values; "best" is sim[0]
 
         #--- ensure initial simplex is within bounds ---
         x0,val = self._setSimplexWithinRangeBoundary(x0,radius)
@@ -226,11 +227,11 @@ Further Inputs:
         self.population = sim
         self.popEnergy = fsim
         self.energy_history.append(self.bestEnergy)
+        StepMonitor(sim[0], fsim[0]) # sim = all values; "best" is sim[0]
 
         iterations = 1
 
         while (fcalls[0] < self._maxfun and iterations < self._maxiter):
-            StepMonitor(sim[0], fsim[0]) # sim = all values; "best" is sim[0]
             if self._EARLYEXIT or termination(self):
                 break
 
@@ -294,6 +295,7 @@ Further Inputs:
             self.population = sim
             self.popEnergy = fsim
             self.energy_history.append(self.bestEnergy)
+            StepMonitor(sim[0], fsim[0]) # sim = all values; "best" is sim[0]
 
         self.generations = iterations
         signal.signal(signal.SIGINT,signal.default_int_handler)
