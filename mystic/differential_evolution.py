@@ -371,6 +371,10 @@ Further Inputs:
         if kwds.has_key('ScalingFactor'): ScalingFactor = kwds['ScalingFactor']
         if kwds.has_key('callback'): callback = kwds['callback']
         if kwds.has_key('disp'): disp = kwds['disp']
+        #XXX:[HACK] accept constraints
+        constraints = lambda x: x
+        if kwds.has_key('constraints'): constraints = kwds['constraints']
+        #XXX:[HACK] -end-
         #-------------------------------------------------------------
 
         import signal
@@ -404,16 +408,25 @@ Further Inputs:
             for candidate in range(self.nPop):
                 # generate trialSolution (within valid range)
                 strategy(self, candidate)
+                #XXX:[HACK] apply constraints
+                self.trialSolution[:] = constraints(self.trialSolution[:])
+                #XXX:[HACK] -end-
                 trialPop[candidate][:] = self.trialSolution[:]
 
             trialEnergy = map(costfunction, trialPop)
+           ##XXX:[HACK] return trialPop b/c may be altered by constraints
+           #trials = map(costfunction, trialPop)
+           #trialEnergy = [i for i,j in trials]
+           #trialPop = [j for i,j in trials] #FIXME: breaks on inf (out of bounds)
+           ##XXX:[HACK] -end-
 
             for candidate in range(self.nPop):
                 if trialEnergy[candidate] < self.popEnergy[candidate]:
                     # New low for this candidate
                     self.popEnergy[candidate] = trialEnergy[candidate]
                     self.population[candidate][:] = trialPop[candidate][:]
-                    self.UpdateGenealogyRecords(candidate, self.trialSolution[:])
+                    self.UpdateGenealogyRecords(candidate, trialPop[candidate][:])
+                   #XXX: was self.UpdateGenealogyRecords(candidate, self.trialSolution[:])
 
                     # Check if all-time low
                     if trialEnergy[candidate] < self.bestEnergy:
