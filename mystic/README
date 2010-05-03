@@ -2,6 +2,9 @@ This package contains the beginnings of a simple model-independent
 inversion framework. The core optimizer is an implementation of the
 Storn and Price differential evolution solver in python.
 
-The parallel framework implementation is being developed in the pyina branch.
+If 'pyina' is installed, the global optimizers can launched in parallel
+mode using MPI. Pyina is part of the pathos package, available here:
+  http://dev.danse.us/trac/pathos
+
 
 # end of file
