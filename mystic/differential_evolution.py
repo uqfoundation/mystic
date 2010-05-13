@@ -20,6 +20,8 @@
 ##
 ## bounds (and minimal interface) added by mmckerns@caltech.edu
 ## adapted to AbstractSolver interface by mmckerns@caltech.edu
+##
+## modified for AbstractMapSolver interface by mmckerns@caltech.edu 
 
 """
 Solvers
@@ -53,6 +55,12 @@ Mystic solver behavior activated in deffev::
     - strategy = Best1Exp
     - termination = ChangeOverGeneration(ftol,gtol), if gtol provided
           ''      = VTR(ftol), otherwise
+
+Storn & Price's DE Solver has also been implemented to use the "map"
+interface. Mystic enables the user to override the standard python
+map function with their own 'map' function, or one of the map functions
+provided by the pathos package (see http://dev.danse.us/trac/pathos)
+for distributed and high-performance computing.
 
 
 Usage
@@ -135,6 +143,7 @@ from mystic.tools import Null, wrap_function, unpair
 from mystic.tools import wrap_bounds
 
 from abstract_solver import AbstractSolver
+from abstract_map_solver import AbstractMapSolver
 
 class DifferentialEvolutionSolver(AbstractSolver):
     """
@@ -332,15 +341,37 @@ Further Inputs:
 
 
 
-class DifferentialEvolutionSolver2(DifferentialEvolutionSolver):
+class DifferentialEvolutionSolver2(AbstractMapSolver):
     """
 Differential Evolution optimization, using Storn and Price's algorithm.
 
 Alternate implementation: 
-    - functionally equivalent to `pyina.DifferentialEvolutionSolver2'.
+    - utilizes a map-reduce interface, extensible to parallel computing
     - both a current and a next generation are kept, while the current
-      generation is invariant during the main DE logic.
+      generation is invariant during the main DE logic
     """
+    def __init__(self, dim, NP):
+        """
+Takes two initial inputs: 
+    dim  -- dimensionality of the problem
+    NP   -- size of the trial solution population. [requires: NP <= 4]
+
+All important class members are inherited from AbstractSolver.
+        """
+        #XXX: raise Error if npop <= 4?
+        super(DifferentialEvolutionSolver2, self).__init__(dim, npop=NP)
+        self.genealogy     = [ [] for j in range(NP)]
+        self.scale         = 0.7
+        self.probability   = 0.5
+        
+    def UpdateGenealogyRecords(self, id, newchild):
+        """
+Override me for more refined behavior. Currently all changes
+are logged.
+        """
+        self.genealogy[id].append(newchild)
+        return
+
     def Solve(self, costfunction, termination, sigint_callback=None,
               EvaluationMonitor=Null, StepMonitor=Null, ExtraArgs=(), **kwds):
         """Minimize a function using differential evolution.
@@ -376,8 +407,12 @@ Further Inputs:
     callback -- an optional user-supplied function to call after each
         iteration.  It is called as callback(xk), where xk is
         the current parameter vector.  [default = None]
+    constraints -- an optional user-supplied function to call just
+        prior to each function evaluation.  It is called as
+        xk' = constraints(xk), where xk is the current parameter vector.
+        Ideally, this function is used to ensure each function evaulation
+        encounters a parameter set that satisfies user-supplied constraints.
     disp -- non-zero to print convergence messages.
-
         """
         #allow for inputs that don't conform to AbstractSolver interface
         from mystic.strategy import Best1Exp
@@ -398,9 +433,12 @@ Further Inputs:
         #XXX:[HACK] -end-
         #-------------------------------------------------------------
 
+        # 'map' is read from self._map  #FIXME: delete this line
+
         import signal
         self._EARLYEXIT = False
 
+       #fcalls = [0] #FIXME: temporary patch for removing the following line
         fcalls, costfunction = wrap_function(costfunction, ExtraArgs, EvaluationMonitor)
         if self._useStrictRange:
             for i in range(self.nPop):
@@ -426,7 +464,10 @@ Further Inputs:
             #XXX:[HACK] -end-
             trialPop[candidate][:] = self.trialSolution[:]
 
-        trialEnergy = map(costfunction, trialPop)
+        mapconfig = dict(nnodes=self._nnodes, launcher=self._launcher, \
+                         mapper=self._mapper, queue=self._queue, \
+                         timelimit=self._timelimit)
+        trialEnergy = self._map(costfunction, trialPop, **mapconfig)
 
         for candidate in range(self.nPop):
             if trialEnergy[candidate] < self.popEnergy[candidate]:
@@ -434,7 +475,6 @@ Further Inputs:
                 self.popEnergy[candidate] = trialEnergy[candidate]
                 self.population[candidate][:] = trialPop[candidate][:]
                 self.UpdateGenealogyRecords(candidate, trialPop[candidate][:])
-               #XXX: was self.UpdateGenealogyRecords(candidate, self.trialSolution[:])
 
                 # Check if all-time low
                 if trialEnergy[candidate] < self.bestEnergy:
@@ -463,7 +503,7 @@ Further Inputs:
                 #XXX:[HACK] -end-
                 trialPop[candidate][:] = self.trialSolution[:]
 
-            trialEnergy = map(costfunction, trialPop)
+            trialEnergy = self._map(costfunction, trialPop, **mapconfig)
            ##XXX:[HACK] return trialPop b/c may be altered by constraints
            #trials = map(costfunction, trialPop)
            #trialEnergy = [i for i,j in trials]
@@ -476,7 +516,6 @@ Further Inputs:
                     self.popEnergy[candidate] = trialEnergy[candidate]
                     self.population[candidate][:] = trialPop[candidate][:]
                     self.UpdateGenealogyRecords(candidate, trialPop[candidate][:])
-                   #XXX: was self.UpdateGenealogyRecords(candidate, self.trialSolution[:])
 
                     # Check if all-time low
                     if trialEnergy[candidate] < self.bestEnergy:

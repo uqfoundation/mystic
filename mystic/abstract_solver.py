@@ -10,7 +10,7 @@ the mystic solver interface.  The "Solve" method must be overwritten
 with the derived solver's optimization algorithm.  In many cases, a
 minimal funciton call interface for a derived solver is provided
 along with the derived class.  See `mystic.scipy_optimize`, and the
-follwing for an example.
+following for an example.
 
 
 Usage
