@@ -36,13 +36,14 @@ A typical call to a 'map' solver will roughly follow this example:
     >>> # select the parallel launch configuration
     >>> from pyina.launchers import mpirun_launcher
     >>> from pyina.mappers import equalportion_mapper
+    >>> from pyina.ez_map import ez_map
     >>> NNODES = 4
     >>>
     >>> # instantiate and configure the solver
     >>> from mystic.scipy_optimize import NelderMeadSimplexMapSolver
     >>> solver = NelderMeadSimplexMapSolver(len(x0))
     >>> solver.SetInitialPoints(x0)            #FIXME: use batchgrid w/ bounds
-    >>> solver.SetMapStrategy(equalportion_mapper)
+    >>> solver.SetMapper(ez_map, equalportion_mapper)
     >>> solver.SetLauncher(mpirun_launcher, NNODES)
     >>> solver.Solve(rosen, CRT(), StepMonitor=stepmon)
     >>> 
@@ -149,19 +150,22 @@ Additional inputs:
 #       self._format = format
 #       return
 
-    def SetMapper(self, strategy): #XXX: should use strategy+format ?
-        """Set the mapping strategy.
+    def SetMapper(self, map, strategy=None): #XXX: use strategy+format ?
+        """Set the map function and the mapping strategy.
 
 Description:
 
+    Sets a mapping function to perform the map-reduce algorithm.
     Uses a mapping strategy to provide the algorithm for distributing
     the work list of optimization jobs across available resources.
 
 Inputs:
-    mapper -- mapper function (see pyina.mappers)  [DEFAULT: carddealer_mapper]
+    map -- the mapping function [DEFAULT: python_map]
+    strategy -- map strategy (see pyina.mappers) [DEFAULT: carddealer_mapper]
         """
-        #XXX: allow python's 'map' to be passed
-        self._mapper = strategy
+        self._map = map
+        if strategy:
+          self._mapper = strategy
         #FIXME: not a true mapping function... just a dummy interface to a str
         # a real mapper has map(func,*args) interface... this expects map().
         # should be...
