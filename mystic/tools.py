@@ -22,6 +22,7 @@ Main functions exported are::
     - getch: provides "press any key to quit"
     - Sow: A class whose instances are callable (to be used as monitors)
     - VerboseSow: A verbose version of the basic Sow
+    - LoggingSow: A version of the basic Sow that logs to a file
     - CustomSow: A customizable 'n-variable' version of the basic Sow
     - random_seed: sets the seed for calls to 'random()'
     - wrap_function: bind an EvaluationMonitor and an evaluation counter
@@ -170,6 +171,41 @@ current parameters every 'xinterval'.
         if int(self._step % self._xinterval) == 0:
             print "Generation %d has best fit parameters:\n %s" % (self._step, x)
         self._step += 1
+        return
+    pass
+
+class LoggingSow(Sow):
+    """A version of the basic Sow that writes to a file at specified intervals.
+
+Logs ChiSq and parameters to a file every 'interval'
+    """
+    import numpy
+    def __init__(self, interval=1, filename='log.txt', new=False):
+        import datetime
+        Sow.__init__(self)
+        self._filename = filename
+        self._step = 0
+        self._yinterval = interval
+        self._xinterval = interval
+        if new: ind = 'w'
+        else: ind = 'a'
+        self._file = open(self._filename,ind)
+        self._file.write("%s\n" % datetime.datetime.now().ctime() )
+        self._file.write("_#_  __ChiSq__  __params__\n")
+        self._file.close()
+        return
+    def __call__(self, x, y):
+        self._file = open(self._filename,'a')
+        from numpy import ndarray
+        Sow.__call__(self, x, y)
+        if isinstance(y,(list,ndarray)):
+            y = y[0] #XXX: get the "best" fit... which should be in y[0]
+        if isinstance(x[0],(list,ndarray)): #XXX: x should always be iterable
+            x = x[0] #XXX: get the "best" fit... which should be in x[0]
+        if int(self._step % self._yinterval) == 0:
+            self._file.write(" %d   %f   %s\n" % (self._step, y, x))
+        self._step += 1
+        self._file.close()
         return
     pass
 
