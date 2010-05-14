@@ -39,10 +39,15 @@ EXPORT_BINS = \
     example10.py \
     example11.py \
     example12.py \
+    ezmap_desolve.py \
+    ezmap_desolve_rosen.py \
     forward_model.py \
 #   gplot_test_ffit.py \
 ##  metropolis.py \
     mpl_corana.py \
+    raw_chebyshev8.py \
+    raw_chebyshev8b.py \
+    raw_rosen.py \
     rosetta_parabola.py \
     rosetta_mogi.py \
     test_br8.py \
