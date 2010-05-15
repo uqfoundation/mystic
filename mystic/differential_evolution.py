@@ -436,9 +436,12 @@ Further Inputs:
         import signal
         self._EARLYEXIT = False
 
-       #FIXME: EvaluationMonitor fails for MPI, throws error for 'pp'?
-       #fcalls = [0] #FIXME: temporary patch for removing the following line
-        fcalls, costfunction = wrap_function(costfunction, ExtraArgs, EvaluationMonitor)
+       #FIXME: EvaluationMonitor fails for MPI, throws error for 'pp'
+        from python_map import python_map
+        if self._map != python_map:
+            fcalls = [0] #FIXME: temporary patch for removing the following line
+        else:
+            fcalls, costfunction = wrap_function(costfunction, ExtraArgs, EvaluationMonitor)
         if self._useStrictRange:
             for i in range(self.nPop):
                 self.population[i] = self._clipGuessWithinRangeBoundary(self.population[i])
@@ -482,7 +485,7 @@ Further Inputs:
                     self.bestSolution[:] = trialPop[candidate][:]
                         
         self.energy_history.append(self.bestEnergy)
-       #FIXME: StepMonitor throws error for 'pp'?
+       #FIXME: StepMonitor works for 'pp'?
         StepMonitor(self.bestSolution[:], self.bestEnergy)
         self.generations = 0  #XXX: above currently *not* counted as an iteration
         if callback is not None:
@@ -524,7 +527,7 @@ Further Inputs:
                         self.bestSolution[:] = trialPop[candidate][:]
                             
             self.energy_history.append(self.bestEnergy)
-           #FIXME: StepMonitor throws error for 'pp'?
+           #FIXME: StepMonitor works for 'pp'?
             StepMonitor(self.bestSolution[:], self.bestEnergy)
             self.generations += 1
             if callback is not None:
