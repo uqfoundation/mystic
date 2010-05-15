@@ -433,11 +433,10 @@ Further Inputs:
         #XXX:[HACK] -end-
         #-------------------------------------------------------------
 
-        # 'map' is read from self._map  #FIXME: delete this line
-
         import signal
         self._EARLYEXIT = False
 
+       #FIXME: EvaluationMonitor fails for MPI, throws error for 'pp'?
        #fcalls = [0] #FIXME: temporary patch for removing the following line
         fcalls, costfunction = wrap_function(costfunction, ExtraArgs, EvaluationMonitor)
         if self._useStrictRange:
@@ -466,7 +465,8 @@ Further Inputs:
 
         mapconfig = dict(nnodes=self._nnodes, launcher=self._launcher, \
                          mapper=self._mapper, queue=self._queue, \
-                         timelimit=self._timelimit)
+                         timelimit=self._timelimit, \
+                         ncpus=self._ncpus, servers=self._servers)
         trialEnergy = self._map(costfunction, trialPop, **mapconfig)
 
         for candidate in range(self.nPop):
@@ -482,6 +482,7 @@ Further Inputs:
                     self.bestSolution[:] = trialPop[candidate][:]
                         
         self.energy_history.append(self.bestEnergy)
+       #FIXME: StepMonitor throws error for 'pp'?
         StepMonitor(self.bestSolution[:], self.bestEnergy)
         self.generations = 0  #XXX: above currently *not* counted as an iteration
         if callback is not None:
@@ -523,6 +524,7 @@ Further Inputs:
                         self.bestSolution[:] = trialPop[candidate][:]
                             
             self.energy_history.append(self.bestEnergy)
+           #FIXME: StepMonitor throws error for 'pp'?
             StepMonitor(self.bestSolution[:], self.bestEnergy)
             self.generations += 1
             if callback is not None:

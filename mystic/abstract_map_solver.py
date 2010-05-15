@@ -119,8 +119,10 @@ Important class members:
         self._nnodes          = int(defaults['nodes'])
         self._queue           = defaults['queue'] # scheduler_queue
         self._timelimit       = defaults['timelimit']
-        self._servers         = ('*',)            # hostname:port
-        self._ncpus           = None
+        self._servers         = ('*',) #<detect>  # hostname:port
+        self._ncpus           = None   #<detect>  # local processors
+       #self._servers         = ()     #<None>    # hostname:port
+       #self._ncpus           = 0      #<None>    # local processors
         return
 
     def SelectServers(self, servers, ncpus=None): #XXX: needs some thought...
@@ -132,7 +134,7 @@ Description:
     computing server.
 
     If ncpus=None, then 'autodetect'; or if ncpus=0, then 'no local'.
-    If servers=('*',), then 'autodetect'.
+    If servers=('*',), then 'autodetect'; or if servers=(), then 'no remote'.
 
 Inputs:
     servers -- tuple of compute servers  [DEFAULT: autodetect]
