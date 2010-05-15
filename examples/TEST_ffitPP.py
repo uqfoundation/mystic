@@ -15,7 +15,7 @@ from test_ffit import *
 
 def main():
     from mystic.differential_evolution import DifferentialEvolutionSolver2
-    from pyina.pp_map import pp_map
+    from pathos.pp_map import pp_map
 
     solver = DifferentialEvolutionSolver2(ND, NP)
     solver.SetMapper(pp_map)

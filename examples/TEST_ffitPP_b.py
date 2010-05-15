@@ -42,7 +42,7 @@ M evaluation points between [-1, 1], and two end points"""
 
 def main(servers,ncpus):
     from mystic.differential_evolution import DifferentialEvolutionSolver2
-    from pyina.pp_map import pp_map
+    from pathos.pp_map import pp_map
 
     solver = DifferentialEvolutionSolver2(ND, NP)
     solver.SetMapper(pp_map)
