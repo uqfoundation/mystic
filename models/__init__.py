@@ -42,12 +42,6 @@ Chebyshev polynomials::
     - chebyshev8, chebyshev16
 
 
-Tools
-=====
-Mystic also provides two tools for manipulating polynomials::
-    polyeval   -- fast evaluation of an n-dimensional polynomial
-    poly1d     -- generate a 1d polynomial instance
-
 """
 # base classes
 from abstract_model import AbstractModel, AbstractFunction
@@ -68,7 +62,6 @@ from zimmermann import zimmermann
 from wavy import wavy1, wavy2
 
 #shortcuts
-#from poly import polyeval, poly1d
 #from poly import chebyshev8cost, chebyshev16cost
 #from br8 import data as br8data
 #from br8 import cost as br8cost

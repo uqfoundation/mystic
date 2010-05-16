@@ -75,8 +75,7 @@ All important class members are inherited from AbstractNestedSolver.
             bins.append( [lower[i] + (j+0.5)*step for j in range(nbins[i])] )
 
         # build a grid of starting points
-       #from mystic.math import gridpts
-        from mystic_math import gridpts
+        from mystic.math import gridpts
         initial_values = gridpts(bins)
 
         # run optimizer for each grid point
@@ -223,8 +222,7 @@ All important class members are inherited from AbstractNestedSolver.
             lower = list(self._defaultMin)
 
         # generate a set of starting points
-       #from mystic.math import samplepts
-        from mystic_math import samplepts
+        from mystic.math import samplepts
         initial_values = samplepts(lower,upper,npts)
 
         # run optimizer for each grid point

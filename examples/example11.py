@@ -20,11 +20,12 @@ from mystic.scipy_optimize import NelderMeadSimplexSolver
 
 # Chebyshev polynomial and cost function
 from mystic.models.poly import chebyshev8, chebyshev8cost
+from mystic.models.poly import chebyshev8coeffs
 
 # tools
 from mystic.termination import CandidateRelativeTolerance as CRT
 from mystic import getch, random_seed, VerboseSow, Sow
-from mystic.models.poly import poly1d, chebyshev8coeffs
+from mystic.math import poly1d
 import pylab
 pylab.ion()
 

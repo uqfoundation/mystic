@@ -14,14 +14,14 @@ Note:
 from test_ffit import *
 
 # get the target coefficients and cost function
-from mystic.models.poly import poly1d
+from mystic.math import poly1d
 
 def ChebyshevCost(trial,M=61):
     """The costfunction for order-n Chebyshev fitting.
 M evaluation points between [-1, 1], and two end points"""
 
     from mystic.models.poly import chebyshev8coeffs as target
-    from mystic.models.poly import polyeval
+    from mystic.math import polyeval
     result=0.0
     x=-1.0
     dx = 2.0 / (M-1)

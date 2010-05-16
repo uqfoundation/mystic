@@ -19,12 +19,13 @@ from mystic.differential_evolution import DifferentialEvolutionSolver2
 
 # Chebyshev polynomial and cost function
 from mystic.models.poly import chebyshev8, chebyshev8cost
+from mystic.models.poly import chebyshev8coeffs
 
 # tools
 from mystic.termination import VTR
 from mystic.strategy import Best1Exp
 from mystic import getch, random_seed, VerboseSow, Sow
-from mystic.models.poly import poly1d, chebyshev8coeffs
+from mystic.math import poly1d
 import pylab
 pylab.ion()
 

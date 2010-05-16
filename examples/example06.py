@@ -15,9 +15,10 @@ from mystic.scipy_optimize import fmin_powell
 
 # Chebyshev polynomial and cost function
 from mystic.models.poly import chebyshev8, chebyshev8cost
+from mystic.models.poly import chebyshev8coeffs
 
 # tools
-from mystic.models.poly import poly1d, chebyshev8coeffs
+from mystic.math import poly1d
 from mystic import getch
 import pylab
 pylab.ion()

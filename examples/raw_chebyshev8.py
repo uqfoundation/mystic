@@ -9,7 +9,7 @@ def chebyshev8cost(trial,M=61):
 M evaluation points between [-1, 1], and two end points"""
 
     from mystic.models.poly import chebyshev8coeffs as target
-    from mystic.models.poly import polyeval
+    from mystic.math import polyeval
 
     result=0.0
     x=-1.0
@@ -30,7 +30,7 @@ M evaluation points between [-1, 1], and two end points"""
 
 if __name__=='__main__':
     from mystic.models.poly import chebyshev8coeffs as target
-    from mystic.models.poly import poly1d
+    from mystic.math import poly1d
     print poly1d(target)
     print ""
     print chebyshev8cost(target)

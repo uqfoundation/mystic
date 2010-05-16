@@ -27,8 +27,9 @@ setup(name='mystic',
                      'Programming Language :: Python',
                      'Topic :: Physics Programming'),
 
-      packages = ['mystic','mystic.models'],
-      package_dir = {'mystic':'mystic','mystic.models':'models'},
+      packages = ['mystic','mystic.models','mystic.math'],
+      package_dir = {'mystic':'mystic','mystic.models':'models',
+                     'mystic.math':'math'},
 """
 
 # add dependencies

@@ -115,7 +115,7 @@ if __name__ == '__main__':
     ## a3 = -(-x2*x2*x3*y1+x2*x3*x3*y1+x1*x1*x3*y2-x1*x3*x3*y2-x1*x1*x2*y3+x1*x2*x2*y3)/((x2-x3)*(x1*x1-x1*x2-x1*x3+x2*x3))
     ## print a1, a2, a3
     ## x = arange(150,270)
-    ## from mystic.models.poly import polyeval
+    ## from mystic.math import polyeval
     ## pylab.plot(x, polyeval([a1,a2,a3],x),'k-')
     ## myshow()
 

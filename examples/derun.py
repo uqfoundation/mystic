@@ -118,7 +118,7 @@ if __name__ == '__main__':
 
     # Chebyshev8 polynomial (used with "dummy.py")
     from mystic.models.poly import chebyshev8coeffs as target_coeffs
-    from mystic.models.poly import poly1d
+    from mystic.math import poly1d
     print "target:\n", poly1d(target_coeffs)
     print "\nDE Solution:\n", poly1d(app.solution)
 

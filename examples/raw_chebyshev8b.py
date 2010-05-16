@@ -5,7 +5,7 @@ due to pickling issues, cost function is provided w/o using a factory method.
 """
 
 from mystic.models.poly import chebyshev8coeffs as target
-from mystic.models.poly import polyeval, poly1d
+from mystic.math import polyeval, poly1d
 
 def chebyshev8cost(trial,M=61):
     """The costfunction for order-n Chebyshev fitting.

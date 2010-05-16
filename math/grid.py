@@ -1,21 +1,5 @@
 #!/usr/bin/env python
 
-def tmp_pickle(func, suffix='.pik'):
-    """ standard pickle.dump of function to a NamedTemporaryFile """
-    import dill as pickle
-    import tempfile
-    file = tempfile.NamedTemporaryFile(suffix=suffix, dir='.')
-    pickle.dump(func, file)
-    file.flush()
-    return file
-
-
-def unpickle(filename):
-  """ standard pickle.load of function from a File """
-  import dill as pickle
-  return pickle.load(open(filename,'r'))
-
-
 from numpy import asarray
 
 def ndim_meshgrid(*arrs):

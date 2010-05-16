@@ -16,26 +16,8 @@ from abstract_model import AbstractModel
 
 from numpy import sum as numpysum
 from numpy import asarray
-from numpy import poly1d as npoly1d
+from mystic.math import polyeval, poly1d
 
-def polyeval(coeffs, x):
-    """takes list of coefficients & evaluation points, returns f(x)
-thus, [a3, a2, a1, a0] yields  a3 x^3 + a2 x^2 + a1 x^1 + a0"""
-    # The effect is this:
-    #    return reduce(lambda x1, x2: x1 * x + x2, coeffs, 0)
-    # However, the for loop used below is faster by about 50%.
-#   x = asarray(x) #FIXME: converting to numpy.array slows by 10x
-    val = 0*x
-    for c in coeffs:
-       val = c + val*x #FIXME: requires x to be a numpy.array
-    return val
-
-def poly1d(coeff):
-    """generates a 1-D polynomial instance from a list of coefficients
-using numpy.poly1d(coeffs)"""
-    return npoly1d(coeff)
-
-#########################################
 
 class Polynomial(AbstractModel):
     """1-D Polynomial models and functions"""
@@ -52,7 +34,7 @@ thus, [a3, a2, a1, a0] yields  a3 x^3 + a2 x^2 + a1 x^1 + a0"""
     def ForwardFactory(self,coeffs):
         """generates a 1-D polynomial instance from a list of coefficients
 using numpy.poly1d(coeffs)"""
-        self.__forward__ = npoly1d(coeffs)
+        self.__forward__ = poly1d(coeffs)
         return self.__forward__
 
     pass
