@@ -17,6 +17,7 @@ update: clean
 
 EXPORT_PYTHON_MODULES = \
     __init__.py \
+    approx.py \
     grid.py \
     poly.py \
 
