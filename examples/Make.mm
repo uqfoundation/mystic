@@ -52,6 +52,7 @@ EXPORT_BINS = \
     raw_rosen.py \
     rosetta_parabola.py \
     rosetta_mogi.py \
+    scattershot_example06.py \
     test_br8.py \
     test_circle.py \
     test_corana.py \

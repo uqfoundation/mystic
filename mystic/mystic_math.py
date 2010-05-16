@@ -54,6 +54,26 @@ and produces a list of gridpoints g = [[1,3],[1,4],[2,3],[2,4]]
     return [list(i) for i in q]
 
 
+def random_samples(lb,ub,npts=10000):
+  "generate npts random samples between given lb & ub"
+  from numpy.random import random
+  dim = len(lb)
+  pts = random((dim,npts))
+  for i in range(dim):
+    pts[i] = (pts[i] * abs(ub[i] - lb[i])) + lb[i]
+  return pts
+
+
+def samplepts(lb,ub,npts):
+    """
+takes upper and lower bounds (e.g. ub = [2,4], lb = [0,3])
+produces a list of sample points s = [[1,3],[1,4],[2,3],[2,4]]
+    """
+    q = random_samples(lb,ub,npts)
+    q = [list(i) for i in q]
+    q = zip(*q)
+    return [list(i) for i in q]
+
 
 
 #######################################################################
@@ -72,7 +92,15 @@ if __name__ == '__main__':
 
   # build a grid of starting points
   initial_values = gridpts(bins)
-  print initial_values
+  print "grid: %s" % initial_values
+
+  npts = 10
+  lower = [0.0, 3.0, 6.0]
+  upper = [2.0, 5.0, 8.0]
+
+  # generate a set of random starting points
+  initial_values = samplepts(lower,upper,npts)
+  print "scatter: %s" % initial_values
 
 
 # EOF
