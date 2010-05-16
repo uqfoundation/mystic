@@ -28,12 +28,15 @@ EXPORT_PYTHON_MODULES = \
     _genSow.py \
     _scipy060optimize.py \
     abstract_map_solver.py \
+    abstract_nested_solver.py \
     abstract_solver.py \
     const.py \
     differential_evolution.py \
     filters.py \
     forward_model.py \
     helputil.py \
+    mystic_math.py \
+    nested.py \
     python_map.py \
     scipy_optimize.py \
     strategy.py \

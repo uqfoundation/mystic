@@ -24,6 +24,8 @@ update: clean
 
 #EXPORT_PYTHON_MODULES = \
 EXPORT_BINS = \
+    TEST_ffitPP_b.py \
+    batchgrid_example06.py \
     cg_rosenbrock.py \
 ##  derun.py \
 ##  dummy.py \

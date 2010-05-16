@@ -8,7 +8,7 @@
 This module contains the base class for mystic solvers, and describes
 the mystic solver interface.  The "Solve" method must be overwritten
 with the derived solver's optimization algorithm.  In many cases, a
-minimal funciton call interface for a derived solver is provided
+minimal function call interface for a derived solver is provided
 along with the derived class.  See `mystic.scipy_optimize`, and the
 following for an example.
 
@@ -122,6 +122,8 @@ Important class members:
 
         self._handle_sigint   = False
         self._useStrictRange  = False
+        self._defaultMin      = [-1e3] * dim
+        self._defaultMax      = [ 1e3] * dim
         self._strictMin       = []
         self._strictMax       = []
         self._maxiter         = None
@@ -199,8 +201,8 @@ input::
 input::
     - min, max: must be a sequence of length self.nDim
     - each min[i] should be <= the corresponding max[i]"""
-        if min == None: min = [-1e3]*self.nDim #XXX: good default range?
-        if max == None: max = [1e3]*self.nDim
+        if min == None: min = self._defaultMin
+        if max == None: max = self._defaultMax
        #if numpy.any(( asarray(min) > asarray(max) ),0):
        #    raise ValueError, "each min[i] must be <= the corresponding max[i]"
         if len(min) != self.nDim or len(max) != self.nDim:

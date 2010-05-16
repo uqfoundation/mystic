@@ -16,38 +16,38 @@ def VTR(tolerance = 0.005):
     """cost of last iteration is < tolerance:
 
 cost[-1] < tolerance"""
-    def _(inst):
+    def _VTR(inst):
          hist = inst.energy_history
          return hist[-1] < tolerance
-    return _
+    return _VTR
 
 def ChangeOverGeneration(tolerance = 1e-6, generations = 30):
     """change in cost is < tolerance over a number of generations:
 
 cost[-g] - cost[-1] < tolerance, where g=generations"""
-    def _(inst):
+    def _ChangeOverGeneration(inst):
          hist = inst.energy_history
          lg = len(hist)
          return lg > generations and (hist[-generations]-hist[-1]) < tolerance
-    return _
+    return _ChangeOverGeneration
 
 def NormalizedChangeOverGeneration(tolerance = 1e-4, generations = 2):
     """normalized change in cost is < tolerance over number of generations:
 
 (cost[-g] - cost[-1]) /  0.5*(abs(cost[-g]) + abs(cost[-1])) <= tolerance"""
     eta = 1e-20
-    def _(inst):
+    def _NormalizedChangeOverGeneration(inst):
          hist = inst.energy_history
          lg = len(hist)
          diff = tolerance*(abs(hist[-generations])+abs(hist[-1])) + eta
          return lg > generations and 2.0*(hist[-generations]-hist[-1]) <= diff
-    return _
+    return _NormalizedChangeOverGeneration
               
 def CandidateRelativeTolerance(xtol=1e-4, ftol=1e-4):
     """absolute difference in candidates is < tolerance:
 
 abs(xi-x0) <= xtol & abs(fi-f0) <= ftol, where x=params & f=cost"""
-    def _(inst):
+    def _CandidateRelativeTolerance(inst):
          sim = inst.population
          fsim = inst.popEnergy
          #FIXME: abs(inf - inf) will raise a warning...
@@ -56,6 +56,6 @@ abs(xi-x0) <= xtol & abs(fi-f0) <= ftol, where x=params & f=cost"""
                   and max(abs(fsim[0]-fsim[1:])) <= ftol)
          numpy.seterr(invalid=errdict['invalid']) #FIXME: turn on warnings
          return answer
-    return _
+    return _CandidateRelativeTolerance
 
 # end of file
