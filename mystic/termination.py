@@ -28,10 +28,11 @@ cost[-g] - cost[-1] < tolerance, where g=generations"""
     def _ChangeOverGeneration(inst):
          hist = inst.energy_history
          lg = len(hist)
-         return lg > generations and (hist[-generations]-hist[-1]) < tolerance
+         if lg <= generations: return False
+         return (hist[-generations]-hist[-1]) < tolerance
     return _ChangeOverGeneration
 
-def NormalizedChangeOverGeneration(tolerance = 1e-4, generations = 2):
+def NormalizedChangeOverGeneration(tolerance = 1e-4, generations = 10):
     """normalized change in cost is < tolerance over number of generations:
 
 (cost[-g] - cost[-1]) /  0.5*(abs(cost[-g]) + abs(cost[-1])) <= tolerance"""
@@ -39,21 +40,27 @@ def NormalizedChangeOverGeneration(tolerance = 1e-4, generations = 2):
     def _NormalizedChangeOverGeneration(inst):
          hist = inst.energy_history
          lg = len(hist)
+         if lg <= generations: return False
          diff = tolerance*(abs(hist[-generations])+abs(hist[-1])) + eta
-         return lg > generations and 2.0*(hist[-generations]-hist[-1]) <= diff
+         return 2.0*(hist[-generations]-hist[-1]) <= diff
     return _NormalizedChangeOverGeneration
               
 def CandidateRelativeTolerance(xtol=1e-4, ftol=1e-4):
     """absolute difference in candidates is < tolerance:
 
 abs(xi-x0) <= xtol & abs(fi-f0) <= ftol, where x=params & f=cost"""
+    #NOTE: this termination expects nPop > 1
     def _CandidateRelativeTolerance(inst):
-         sim = inst.population
-         fsim = inst.popEnergy
+         sim = numpy.array(inst.population)
+         fsim = numpy.array(inst.popEnergy)
+         if not len(fsim[1:]):
+             print "Warning: Invalid termination condition (nPop < 2)"
+             return True
+         #   raise ValueError, "Invalid termination condition (nPop < 2)"
          #FIXME: abs(inf - inf) will raise a warning...
          errdict = numpy.seterr(invalid='ignore') #FIXME: turn off warning 
-         answer = (max(numpy.ravel(abs(sim[1:]-sim[0]))) <= xtol \
-                  and max(abs(fsim[0]-fsim[1:])) <= ftol)
+         answer = max(numpy.ravel(abs(sim[1:]-sim[0]))) <= xtol
+         answer = answer and max(abs(fsim[0]-fsim[1:])) <= ftol
          numpy.seterr(invalid=errdict['invalid']) #FIXME: turn on warnings
          return answer
     return _CandidateRelativeTolerance
