@@ -30,7 +30,6 @@ EXPORT_PYTHON_MODULES = \
     abstract_map_solver.py \
     abstract_nested_solver.py \
     abstract_solver.py \
-    const.py \
     differential_evolution.py \
     filters.py \
     forward_model.py \
