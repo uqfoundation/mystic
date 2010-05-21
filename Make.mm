@@ -5,7 +5,7 @@ PROJECT = mystic
 BUILD_DIRS = \
     mystic \
     models \
-    math \
+    _math \
 
 OTHER_DIRS = \
     examples \

@@ -36,7 +36,7 @@ A typical call to a 'nested' solver will roughly follow this example:
     >>> 
     >>> # select the parallel launch configuration
     >>> from pyina.launchers import mpirun_launcher
-    >>> from pyina.ez_map import ez_map
+    >>> from pyina.ez_map import ez_map2
     >>> NNODES = 4
     >>> nbins = [4,4,4]
     >>>
@@ -46,7 +46,7 @@ A typical call to a 'nested' solver will roughly follow this example:
     >>> solver = BatchGridSolver(len(nbins), nbins)
     >>> solver.SetNestedSolver(NelderMeadSimplexSolver)
     >>> solver.SetStrictRanges(lb, ub)
-    >>> solver.SetMapper(ez_map)
+    >>> solver.SetMapper(ez_map2)
     >>> solver.SetLauncher(mpirun_launcher, NNODES)
     >>> solver.Solve(rosen, CRT(), StepMonitor=stepmon)
     >>> 

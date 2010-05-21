@@ -15,9 +15,9 @@ except ImportError:
 # build the 'setup' call
 setup_code = """
 setup(name='mystic',
-      version='0.1a2',
+      version='0.2a1',
       description='a simple interactive inversion analysis framework',
-      author = 'Mike McKerns, Patrick Hung',
+      author = 'Mike McKerns',
       maintainer = 'Mike McKerns',
       maintainer_email = 'mmckerns@caltech.edu',
       license = 'BSD',
@@ -29,7 +29,7 @@ setup(name='mystic',
 
       packages = ['mystic','mystic.models','mystic.math'],
       package_dir = {'mystic':'mystic','mystic.models':'models',
-                     'mystic.math':'math'},
+                     'mystic.math':'_math'},
 """
 
 # add dependencies

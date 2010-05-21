@@ -2,7 +2,7 @@
 #
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
-#                       Patrick Hung & Mike McKerns, Caltech
+#                       Mike McKerns & Patrick Hung, Caltech
 #                        (C) 1997-2010  All Rights Reserved
 #
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -51,14 +51,14 @@ Mystic provides a stock set of configurable, controllable solvers with::
 To get up and running quickly, mystic also provides infrastructure to::
     - easily generate a fit model (several example models are included)
     - configure and auto-generate a cost function from a model
+    - extend fit jobs to parallel & distributed resources
     - couple models with optimization parameter constraints [COMING SOON]
-    - extend fit jobs to parallel & distributed resources [COMING SOON]
 
 
 Current Release
 ===============
 
-This release version is mystic-0.1a2. You can download it here.
+This release version is mystic-0.2a1. You can download it here.
 The latest version of mystic is available from::
     http://dev.danse.us/trac/mystic
 
@@ -71,8 +71,8 @@ Installation
 Mystic is packaged to install from source, so you must
 download the tarball, unzip, and run the installer::
     [download]
-    $ tar -xvzf mystic-0.1a2.tgz
-    $ cd mystic-0.1a2
+    $ tar -xvzf mystic-0.2a1.tgz
+    $ cd mystic-0.2a1
     $ python setup py build
     $ python setup py install
 
@@ -126,17 +126,31 @@ information, see `mystic.mystic.abstract_solver` for the solver API, and
 each of the individual solvers for their minimal (non-API compliant)
 interface.
 
+Mystic extends the solver API to parallel computing by providing a solver
+class that utilizes the parallel map-reduce algorithm. Mystic includes
+a set of defaults in `mystic.mystic.python_map` that mirror the behavior
+of serial python and the built-in python map function. Mystic solvers
+built on map-reduce can utilize the distributed and parallel tools provided
+by the `pathos` package, and thus with little new code solvers are
+extended to high-performance computing. For more information, see
+`mystic.mystic.abstract_map_solver`, `mystic.mystic.abstract_nested_solver`,
+and the pathos documentation at http://dev.danse.us/trac/pathos.
+
 Important classes and functions are found here::
     - mystic.mystic.abstract_solver [the solver API definition]
+    - mystic.mystic.abstract_map_solver [the parallel solver API]
+    - mystic.mystic.abstract_nested_solver [the nested solver API]
     - mystic.mystic.termination     [solver termination conditions]
     - mystic.mystic.strategy        [solver population mutation strategies]
     - mystic.models.abstract_model  [the model API definition]
     - mystic.models.forward_model   [cost function generator]
-    - mystic.mystic.tools           [monitors, function wrappers, and other useful tools]
+    - mystic.mystic.tools           [monitors, function wrappers, and other tools]
+    - mystic.mystic.math            [some useful mathematical functions and tools]
 
 Solvers are found here::
     - mystic.mystic.differential_evolution [Differential Evolution solvers]
     - mystic.mystic.scipy_optimize         [Nelder-Mead and Powell's Directional solvers]
+    - mystic.mystic.nested                 [Batch Grid and Scattershot solvers]
 
 
 More Information
@@ -144,8 +158,8 @@ More Information
 
 Please see http://dev.danse.us/trac/mystic for further information.
 """
-__version__ = '0.1a2'
-__author__ = 'Mike McKerns, Patrick Hung'
+__version__ = '0.2a1'
+__author__ = 'Mike McKerns'
 
 __license__ = """
 This software is part of the open-source DANSE project at the California
@@ -181,7 +195,7 @@ WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
 OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-Copyright (c) 2009 California Institute of Technology. All rights reserved.
+Copyright (c) 2010 California Institute of Technology. All rights reserved.
 
 
 If you use this software to do productive scientific research that leads to
@@ -195,7 +209,7 @@ following paper in your publication::
 """
 
 # solvers
-import differential_evolution, scipy_optimize
+import differential_evolution, scipy_optimize, nested
 
 # strategies, termination conditions
 import termination

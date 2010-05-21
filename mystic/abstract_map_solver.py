@@ -36,14 +36,14 @@ A typical call to a 'map' solver will roughly follow this example:
     >>> # select the parallel launch configuration
     >>> from pyina.launchers import mpirun_launcher
     >>> from pyina.mappers import equalportion_mapper
-    >>> from pyina.ez_map import ez_map
+    >>> from pyina.ez_map import ez_map2
     >>> NNODES = 4
     >>>
     >>> # instantiate and configure the solver
     >>> from mystic.scipy_optimize import NelderMeadSimplexMapSolver
     >>> solver = NelderMeadSimplexMapSolver(len(x0))
     >>> solver.SetInitialPoints(x0)            #FIXME: use batchgrid w/ bounds
-    >>> solver.SetMapper(ez_map, equalportion_mapper)
+    >>> solver.SetMapper(ez_map2, equalportion_mapper)
     >>> solver.SetLauncher(mpirun_launcher, NNODES)
     >>> solver.Solve(rosen, CRT(), StepMonitor=stepmon)
     >>> 
@@ -220,15 +220,6 @@ Additional inputs:
         self._queue = queue
         self._timelimit = timelimit
         return
-
-    '''
-    def Solve(self, func, termination, sigint_callback=None,
-              EvaluationMonitor=Null, StepMonitor=Null, ExtraArgs=(), **kwds):
-        """solve function 'func' with given termination conditions
-
-*** this method must be overwritten ***"""
-        raise NotImplementedError, "must be overwritten..."
-    '''
 
 
 if __name__=='__main__':

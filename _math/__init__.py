@@ -8,8 +8,8 @@ Functions
 
 Mystic provides a set of mathematical functions that support various
 advanced optimization features such as uncertainty analysis and
-parameter sensitivity.  These functions are provided::
-    ...          -- ...
+parameter sensitivity.  (These functions are to be provided in an
+upcoming release.)
 
 
 Tools
