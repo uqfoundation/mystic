@@ -29,7 +29,7 @@ setup(name='mystic',
 
       packages = ['mystic','mystic.models','mystic.math'],
       package_dir = {'mystic':'mystic','mystic.models':'models',
-                     'mystic.math':'mystic/math'},
+                     'mystic.math':'_math'},
 """
 
 # add dependencies
