@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 
+"""
+tools for measuring equality
+"""
 def _float_approx_equal(x, y, tol=1e-18, rel=1e-7):
     if tol is rel is None:
         raise TypeError('cannot specify both absolute and relative errors are None')

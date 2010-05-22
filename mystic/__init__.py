@@ -97,6 +97,7 @@ Mystic requires::
 Optional requirements::
     - setuptools, version >= 0.6
     - matplotlib, version >= 0.91
+    - pathos, version >= 0.1a1
 
 
 Usage Notes
@@ -137,15 +138,15 @@ extended to high-performance computing. For more information, see
 and the pathos documentation at http://dev.danse.us/trac/pathos.
 
 Important classes and functions are found here::
-    - mystic.mystic.abstract_solver [the solver API definition]
-    - mystic.mystic.abstract_map_solver [the parallel solver API]
+    - mystic.mystic.abstract_solver        [the solver API definition]
+    - mystic.mystic.abstract_map_solver    [the parallel solver API]
     - mystic.mystic.abstract_nested_solver [the nested solver API]
-    - mystic.mystic.termination     [solver termination conditions]
-    - mystic.mystic.strategy        [solver population mutation strategies]
-    - mystic.models.abstract_model  [the model API definition]
-    - mystic.models.forward_model   [cost function generator]
-    - mystic.mystic.tools           [monitors, function wrappers, and other tools]
-    - mystic.mystic.math            [some useful mathematical functions and tools]
+    - mystic.mystic.termination            [solver termination conditions]
+    - mystic.mystic.strategy               [solver population mutation strategies]
+    - mystic.models.abstract_model         [the model API definition]
+    - mystic.models.forward_model          [cost function generator]
+    - mystic.mystic.tools                  [monitors, function wrappers, and other tools]
+    - mystic.mystic.math                   [some useful mathematical functions and tools]
 
 Solvers are found here::
     - mystic.mystic.differential_evolution [Differential Evolution solvers]

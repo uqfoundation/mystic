@@ -2,7 +2,28 @@
 #
 
 """
-...
+Solvers
+=======
+
+This module contains a collection of optimization that use map-reduce
+to distribute several optimizer instances over parameter space. Each
+solver accepts a imported solver object as the "nested" solver, which
+becomes the target of the map function.
+
+The set of solvers built on mystic's AbstractNestdSolver are::
+   BatchGridSolver -- start from center of N grid points
+   ScattershotSolver -- start from N random points in parameter space
+
+
+Usage
+=====
+
+See `mystic.examples.scattershot_example06` for an example of using
+ScattershotSolver. See `mystic.examples.batchgrid_example06`
+or an example of using BatchGridSolver.
+
+All solvers included in this module provide the standard signal handling.
+For more information, see `mystic.mystic.abstract_solver`.
 """
 __all__ = ['BatchGridSolver','ScattershotSolver']
 
@@ -13,7 +34,7 @@ from abstract_nested_solver import AbstractNestedSolver
 
 class BatchGridSolver(AbstractNestedSolver):
     """
-...
+parallel mapped optimization starting from the center of N grid points
     """
     def __init__(self, dim, nbins):
         """
@@ -34,7 +55,32 @@ All important class members are inherited from AbstractNestedSolver.
     def Solve(self, cost, termination, sigint_callback=None,
               EvaluationMonitor=Null, StepMonitor=Null, ExtraArgs=(), **kwds):
         """Minimize a function using batch grid optimization.
-        ...
+
+Description:
+
+    Uses parallel mapping of solvers on a regular grid to find the
+    minimum of a function of one or more variables.
+
+Inputs:
+
+    cost -- the Python function or method to be minimized.
+    termination -- callable object providing termination conditions.
+
+Additional Inputs:
+
+    sigint_callback -- callback function for signal handler.
+    EvaluationMonitor -- a callable object that will be passed x, fval
+        whenever the cost function is evaluated.
+    StepMonitor -- a callable object that will be passed x, fval
+        after the end of a solver iteration.
+    ExtraArgs -- extra arguments for cost.
+
+Further Inputs:
+
+    callback -- an optional user-supplied function to call after each
+        iteration.  It is called as callback(xk), where xk is the
+        current parameter vector.                           [default = None]
+    disp -- non-zero to print convergence messages.         [default = 0]
         """
         #allow for inputs that don't conform to AbstractSolver interface
 #       callback=None        #user-supplied function, called after each step
@@ -173,7 +219,7 @@ def local_optimize(cost, termination, x0):
 
 class ScattershotSolver(AbstractNestedSolver):
     """
-...
+parallel mapped optimization starting from the N random points
     """
     def __init__(self, dim, npts):
         """
@@ -188,7 +234,32 @@ All important class members are inherited from AbstractNestedSolver.
     def Solve(self, cost, termination, sigint_callback=None,
               EvaluationMonitor=Null, StepMonitor=Null, ExtraArgs=(), **kwds):
         """Minimize a function using scattershot optimization.
-        ...
+
+Description:
+
+    Uses parallel mapping of solvers on randomly selected points
+    to find the minimum of a function of one or more variables.
+
+Inputs:
+
+    cost -- the Python function or method to be minimized.
+    termination -- callable object providing termination conditions.
+
+Additional Inputs:
+
+    sigint_callback -- callback function for signal handler.
+    EvaluationMonitor -- a callable object that will be passed x, fval
+        whenever the cost function is evaluated.
+    StepMonitor -- a callable object that will be passed x, fval
+        after the end of a solver iteration.
+    ExtraArgs -- extra arguments for cost.
+
+Further Inputs:
+
+    callback -- an optional user-supplied function to call after each
+        iteration.  It is called as callback(xk), where xk is the
+        current parameter vector.                           [default = None]
+    disp -- non-zero to print convergence messages.         [default = 0]
         """
         #allow for inputs that don't conform to AbstractSolver interface
 #       callback=None        #user-supplied function, called after each step

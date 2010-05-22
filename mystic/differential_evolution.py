@@ -69,53 +69,53 @@ Usage
 Practical advice for how to configure the Differential Evolution
 Solver for your own objective function can be found on R. Storn's
 web page (http://www.icsi.berkeley.edu/~storn/code.html), and is
-reproduced here:
+reproduced here::
 
-  First try the following classical settings for the solver configuration:
-  Choose a crossover strategy (e.g. Rand1Bin), set the number of parents
-  NP to 10 times the number of parameters, select ScalingFactor=0.8, and
-  CrossProbability=0.9.
+    First try the following classical settings for the solver configuration:
+    Choose a crossover strategy (e.g. Rand1Bin), set the number of parents
+    NP to 10 times the number of parameters, select ScalingFactor=0.8, and
+    CrossProbability=0.9.
 
-  It has been found recently that selecting ScalingFactor from the interval
-  [0.5, 1.0] randomly for each generation or for each difference vector,
-  a technique called dither, improves convergence behaviour significantly,
-  especially for noisy objective functions.
+    It has been found recently that selecting ScalingFactor from the interval
+    [0.5, 1.0] randomly for each generation or for each difference vector,
+    a technique called dither, improves convergence behaviour significantly,
+    especially for noisy objective functions.
 
-  It has also been found that setting CrossProbability to a low value,
-  e.g. CrossProbability=0.2 helps optimizing separable functions since
-  it fosters the search along the coordinate axes. On the contrary,
-  this choice is not effective if parameter dependence is encountered,
-  something which is frequently occuring in real-world optimization
-  problems rather than artificial test functions. So for parameter
-  dependence the choice of CrossProbability=0.9 is more appropriate.
+    It has also been found that setting CrossProbability to a low value,
+    e.g. CrossProbability=0.2 helps optimizing separable functions since
+    it fosters the search along the coordinate axes. On the contrary,
+    this choice is not effective if parameter dependence is encountered,
+    something which is frequently occuring in real-world optimization
+    problems rather than artificial test functions. So for parameter
+    dependence the choice of CrossProbability=0.9 is more appropriate.
 
-  Another interesting empirical finding is that rasing NP above, say, 40
-  does not substantially improve the convergence, independent of the
-  number of parameters. It is worthwhile to experiment with these suggestions.
+    Another interesting empirical finding is that rasing NP above, say, 40
+    does not substantially improve the convergence, independent of the
+    number of parameters. It is worthwhile to experiment with these suggestions.
+  
+    Make sure that you initialize your parameter vectors by exploiting
+    their full numerical range, i.e. if a parameter is allowed to exhibit
+    values in the range [-100, 100] it's a good idea to pick the initial
+    values from this range instead of unnecessarily restricting diversity.
 
-  Make sure that you initialize your parameter vectors by exploiting
-  their full numerical range, i.e. if a parameter is allowed to exhibit
-  values in the range [-100, 100] it's a good idea to pick the initial
-  values from this range instead of unnecessarily restricting diversity.
+    Keep in mind that different problems often require different settings
+    for NP, ScalingFactor and CrossProbability (see Ref 1, 2). If you
+    experience misconvergence, you typically can increase the value for NP,
+    but often you only have to adjust ScalingFactor to be a little lower or
+    higher than 0.8. If you increase NP and simultaneously lower ScalingFactor
+    a little, convergence is more likely to occur but generally takes longer,
+    i.e. DE is getting more robust (a convergence speed/robustness tradeoff).
 
-  Keep in mind that different problems often require different settings
-  for NP, ScalingFactor and CrossProbability (see Ref 1, 2). If you
-  experience misconvergence, you typically can increase the value for NP,
-  but often you only have to adjust ScalingFactor to be a little lower or
-  higher than 0.8. If you increase NP and simultaneously lower ScalingFactor
-  a little, convergence is more likely to occur but generally takes longer,
-  i.e. DE is getting more robust (a convergence speed/robustness tradeoff).
+    If you still get misconvergence you might want to instead try a different
+    crossover strategy. The most commonly used are Rand1Bin, Rand1Exp,
+    Best1Bin, and Best1Exp. The crossover strategy is not so important a
+    choice, although K. Price claims that binomial (Bin) is never worse than
+    exponential (Exp).
 
-  If you still get misconvergence you might want to instead try a different
-  crossover strategy. The most commonly used are Rand1Bin, Rand1Exp,
-  Best1Bin, and Best1Exp. The crossover strategy is not so important a
-  choice, although K. Price claims that binomial (Bin) is never worse than
-  exponential (Exp).
-
-  In case of continued misconvergence, check your choice of objective function.
-  There might be a better one to describe your problem. Any knowledge that
-  you have about the problem should be worked into the objective function.
-  A good objective function can make all the difference.
+    In case of continued misconvergence, check the choice of objective function.
+    There might be a better one to describe your problem. Any knowledge that
+    you have about the problem should be worked into the objective function.
+    A good objective function can make all the difference.
 
 See `mystic.examples.test_rosenbrock` for an example of using
 DifferentialEvolutionSolver. DifferentialEvolutionSolver2 has
@@ -583,22 +583,16 @@ Inputs:
 Additional Inputs:
 
     args -- extra arguments for func.
-    bounds -- list - n pairs of bounds (min,max), one pair for each
-        parameter.
-    ftol -- number - acceptable relative error in func(xopt) for
-        convergence.
-    gtol -- number - maximum number of iterations to run without
-        improvement.
+    bounds -- list - n pairs of bounds (min,max), one pair for each parameter.
+    ftol -- number - acceptable relative error in func(xopt) for convergence.
+    gtol -- number - maximum number of iterations to run without improvement.
     maxiter -- number - the maximum number of iterations to perform.
     maxfun -- number - the maximum number of function evaluations.
     cross -- number - the probability of cross-parameter mutations
-    scale -- number - multiplier for impact of mutations on trial
-        solution.
-    full_output -- number - non-zero if fval and warnflag outputs are
-        desired.
+    scale -- number - multiplier for impact of mutations on trial solution.
+    full_output -- number - non-zero if fval and warnflag outputs are desired.
     disp -- number - non-zero to print convergence messages.
-    retall -- number - non-zero to return list of solutions at each
-        iteration.
+    retall -- number - non-zero to return list of solutions at each iteration.
     callback -- an optional user-supplied function to call after each
         iteration.  It is called as callback(xk), where xk is the
         current parameter vector.

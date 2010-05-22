@@ -90,18 +90,16 @@ Takes one initial input:
     dim      -- dimensionality of the problem.
 
 Additional inputs:
-    npop     -- size of the trial solution population.  [default = 1]
+    npop     -- size of the trial solution population.      [default = 1]
 
 Important class members:
     nDim, nPop     = dim, npop
     generations    - an iteration counter.
     bestEnergy     - current best energy.
-    bestSolution   - current best parameter set. [size = dim]
-    popEnergy      - set of all trial energy solutions. [size = npop]
-    population     - set of all trial parameter solutions.
-        [size = dim*npop]
-    energy_history - history of bestEnergy status.
-        [equivalent to StepMonitor]
+    bestSolution   - current best parameter set.            [size = dim]
+    popEnergy      - set of all trial energy solutions.     [size = npop]
+    population     - set of all trial parameter solutions.  [size = dim*npop]
+    energy_history - history of bestEnergy status.          [equivalent to StepMonitor]
     signal_handler - catches the interrupt signal.
         """
         NP = 1

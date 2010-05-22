@@ -15,8 +15,8 @@ for an example.
 
 The default map API settings are provided within mystic, while
 distributed and high-performance computing mappers and launchers
-can be obtained within the "pathos" package, found here:
-    - http://dev.danse.us/trac/pathos   (see subpackage = pyina)
+can be obtained within the "pathos" package, found here::
+    - http://dev.danse.us/trac/pathos
 
 
 Usage
@@ -91,22 +91,19 @@ Takes one initial input:
     dim      -- dimensionality of the problem.
 
 Additional inputs:
-    npop     -- size of the trial solution population.  [default = 1]
+    npop     -- size of the trial solution population.      [default = 1]
     nbins    -- tuple of number of bins in each dimension.  [default = [1]*dim]
-    npts     -- number of solver instances.  [default = 1]
+    npts     -- number of solver instances.                 [default = 1]
 
 Important class members:
     nDim, nPop     = dim, npop
     generations    - an iteration counter.
     bestEnergy     - current best energy.
-    bestSolution   - current best parameter set. [size = dim]
-    popEnergy      - set of all trial energy solutions. [size = npop]
-    population     - set of all trial parameter solutions.
-        [size = dim*npop]
-    energy_history - history of bestEnergy status.
-        [equivalent to StepMonitor]
-    signal_handler - catches the interrupt signal.
-        [***disabled***]
+    bestSolution   - current best parameter set.            [size = dim]
+    popEnergy      - set of all trial energy solutions.     [size = npop]
+    population     - set of all trial parameter solutions.  [size = dim*npop]
+    energy_history - history of bestEnergy status.          [equivalent to StepMonitor]
+    signal_handler - catches the interrupt signal.          [***disabled***]
         """
         super(AbstractNestedSolver, self).__init__(dim, **kwds)
        #self.signal_handler   = None

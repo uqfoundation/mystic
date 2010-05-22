@@ -213,7 +213,7 @@ def CustomSow(*args,**kwds):
     """
 generate a custom Sow
 
-takes *args & **kwds, where args will be required inputs for the Sow
+takes *args & **kwds, where args will be required inputs for the Sow::
     - args: property name strings (i.e. 'x')
     - kwds: must be in the form: property="doc" (i.e. x='Params')
 

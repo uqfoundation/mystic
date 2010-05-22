@@ -15,8 +15,8 @@ following for an example.
 
 The default map API settings are provided within mystic, while
 distributed and high-performance computing mappers and launchers
-can be obtained within the "pathos" package, found here:
-    - http://dev.danse.us/trac/pathos   (see subpackage = pyina)
+can be obtained within the "pathos" package, found here::
+    - http://dev.danse.us/trac/pathos
 
 
 Usage
@@ -26,7 +26,8 @@ A typical call to a 'map' solver will roughly follow this example:
 
     >>> # the function to be minimized and the initial values
     >>> from mystic.models import rosen
-    >>> x0 = [0.8, 1.2, 0.7]
+    >>> lb = [0.0, 0.0, 0.0]
+    >>> ub = [2.0, 2.0, 2.0]
     >>> 
     >>> # get monitors and termination condition objects
     >>> from mystic.tools import Sow
@@ -38,11 +39,11 @@ A typical call to a 'map' solver will roughly follow this example:
     >>> from pyina.mappers import equalportion_mapper
     >>> from pyina.ez_map import ez_map2
     >>> NNODES = 4
+    >>>> npts = 20
     >>>
     >>> # instantiate and configure the solver
-    >>> from mystic.scipy_optimize import NelderMeadSimplexMapSolver
-    >>> solver = NelderMeadSimplexMapSolver(len(x0))
-    >>> solver.SetInitialPoints(x0)            #FIXME: use batchgrid w/ bounds
+    >>> from mystic.nested import ScattershotSolver
+    >>> solver = ScattershotSolver(len(lb), npts)
     >>> solver.SetMapper(ez_map2, equalportion_mapper)
     >>> solver.SetLauncher(mpirun_launcher, NNODES)
     >>> solver.Solve(rosen, CRT(), StepMonitor=stepmon)
@@ -86,20 +87,17 @@ Takes one initial input:
     dim      -- dimensionality of the problem.
 
 Additional inputs:
-    npop     -- size of the trial solution population.  [default = 1]
+    npop     -- size of the trial solution population.     [default = 1]
 
 Important class members:
     nDim, nPop     = dim, npop
     generations    - an iteration counter.
     bestEnergy     - current best energy.
-    bestSolution   - current best parameter set. [size = dim]
-    popEnergy      - set of all trial energy solutions. [size = npop]
-    population     - set of all trial parameter solutions.
-        [size = dim*npop]
-    energy_history - history of bestEnergy status.
-        [equivalent to StepMonitor]
-    signal_handler - catches the interrupt signal.
-        [***disabled***]
+    bestSolution   - current best parameter set.           [size = dim]
+    popEnergy      - set of all trial energy solutions.    [size = npop]
+    population     - set of all trial parameter solutions. [size = dim*npop]
+    energy_history - history of bestEnergy status.         [equivalent to StepMonitor]
+    signal_handler - catches the interrupt signal.         [***disabled***]
         """
         super(AbstractMapSolver, self).__init__(dim, **kwds)
        #AbstractSolver.__init__(self,dim,**kwds)

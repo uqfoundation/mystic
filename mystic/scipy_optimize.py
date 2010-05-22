@@ -152,10 +152,9 @@ Further Inputs:
 
     callback -- an optional user-supplied function to call after each
         iteration.  It is called as callback(xk), where xk is the
-        current parameter vector. [default = None]
-    disp -- non-zero to print convergence messages. [default = 0]
-    radius -- percentage change for initial simplex values.
-        [default = 0.05]
+        current parameter vector.                           [default = None]
+    disp -- non-zero to print convergence messages.         [default = 0]
+    radius -- percentage change for initial simplex values. [default = 0.05]
 
 """
         # set arg names to scipy.optimize.fmin names; set fixed inputs

@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 
+"""
+tools for generating points on a grid
+"""
 from numpy import asarray
 
 def ndim_meshgrid(*arrs):
