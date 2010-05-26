@@ -114,8 +114,8 @@ if __name__ == '__main__':
     #
     desol, dstepmon = de_solve()
     print "desol: ", desol
-    print "dstepmon 10: ", dstepmon.x[50]
-    print "dstepmon 20: ", dstepmon.x[100]
+    print "dstepmon 50: ", dstepmon.x[50]
+    print "dstepmon 100: ", dstepmon.x[100]
     #
     # this will try to use nelder_mean from a relatively "near by" point (very sensitive)
     point = [1234., -500., 10., 0.001] # both cg and nm does fine

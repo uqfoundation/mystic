@@ -132,6 +132,8 @@ example usage...
         self._y = []   
 
     def __call__(self, x, y):
+        from numpy import ndarray
+        if isinstance(x,ndarray): x = list(x)
         self._x.append(x)
         self._y.append(y)
      
@@ -153,14 +155,16 @@ current parameters every 'xinterval'.
     """
     import numpy
     def __init__(self, interval = 10, xinterval = numpy.inf):
-        Sow.__init__(self)
+       #Sow.__init__(self)
+        super(VerboseSow,self).__init__()
         self._step = 0
         self._yinterval = interval
         self._xinterval = xinterval
         return
     def __call__(self, x, y):
         from numpy import ndarray
-        Sow.__call__(self, x, y)
+       #Sow.__call__(self, x, y)
+        super(VerboseSow,self).__call__(x, y)
         if isinstance(y,(list,ndarray)):
             y = y[0] #XXX: get the "best" fit... which should be in y[0]
         if isinstance(x[0],(list,ndarray)): #XXX: x should always be iterable
@@ -182,7 +186,8 @@ Logs ChiSq and parameters to a file every 'interval'
     import numpy
     def __init__(self, interval=1, filename='log.txt', new=False):
         import datetime
-        Sow.__init__(self)
+       #Sow.__init__(self)
+        super(LoggingSow,self).__init__()
         self._filename = filename
         self._step = 0
         self._yinterval = interval
@@ -197,7 +202,8 @@ Logs ChiSq and parameters to a file every 'interval'
     def __call__(self, x, y):
         self._file = open(self._filename,'a')
         from numpy import ndarray
-        Sow.__call__(self, x, y)
+       #Sow.__call__(self, x, y)
+        super(LoggingSow,self).__call__(x, y)
         if isinstance(y,(list,ndarray)):
             y = y[0] #XXX: get the "best" fit... which should be in y[0]
         if isinstance(x[0],(list,ndarray)): #XXX: x should always be iterable
