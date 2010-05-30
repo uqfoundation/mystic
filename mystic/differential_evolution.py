@@ -562,7 +562,7 @@ Further Inputs:
 
 
 def diffev(func,x0,npop,args=(),bounds=None,ftol=5e-3,gtol=None,
-           maxiter=None,maxfun=None,cross=1.0,scale=0.9,
+           maxiter=None,maxfun=None,cross=0.9,scale=0.8,
            full_output=0,disp=1,retall=0,callback=None,invariant_current=True):
     """Minimize a function using differential evolution.
 
