@@ -215,11 +215,11 @@ Additional Inputs:
 Further Inputs:
 
     strategy -- the mutation strategy for generating new trial
-        solutions [default = Best1Exp]
+        solutions [default = Best1Bin]
     CrossProbability -- the probability of cross-parameter mutations
-        [default = 0.5]
+        [default = 0.9]
     ScalingFactor -- multiplier for the impact of mutations on the
-        trial solution [default = 0.7]
+        trial solution [default = 0.8]
     callback -- an optional user-supplied function to call after each
         iteration.  It is called as callback(xk), where xk is
         the current parameter vector.  [default = None]
@@ -227,10 +227,10 @@ Further Inputs:
 
         """
         #allow for inputs that don't conform to AbstractSolver interface
-        from mystic.strategy import Best1Exp
-        strategy=Best1Exp    #mutation strategy (see mystic.strategy)
-        CrossProbability=0.5 #potential for parameter cross-mutation
-        ScalingFactor=0.7    #multiplier for mutation impact
+        from mystic.strategy import Best1Bin
+        strategy=Best1Bin    #mutation strategy (see mystic.strategy)
+        CrossProbability=0.9 #potential for parameter cross-mutation
+        ScalingFactor=0.8    #multiplier for mutation impact
         callback=None        #user-supplied function, called after each step
         disp=0               #non-zero to print convergence messages
         if kwds.has_key('strategy'): strategy = kwds['strategy']
@@ -399,11 +399,11 @@ Additional Inputs:
 Further Inputs:
 
     strategy -- the mutation strategy for generating new trial
-        solutions [default = Best1Exp]
+        solutions [default = Best1Bin]
     CrossProbability -- the probability of cross-parameter mutations
-        [default = 0.5]
+        [default = 0.9]
     ScalingFactor -- multiplier for the impact of mutations on the
-        trial solution [default = 0.7]
+        trial solution [default = 0.8]
     callback -- an optional user-supplied function to call after each
         iteration.  It is called as callback(xk), where xk is
         the current parameter vector.  [default = None]
@@ -415,10 +415,10 @@ Further Inputs:
     disp -- non-zero to print convergence messages.
         """
         #allow for inputs that don't conform to AbstractSolver interface
-        from mystic.strategy import Best1Exp
-        strategy=Best1Exp    #mutation strategy (see mystic.strategy)
-        CrossProbability=0.5 #potential for parameter cross-mutation
-        ScalingFactor=0.7    #multiplier for mutation impact
+        from mystic.strategy import Best1Bin
+        strategy=Best1Bin    #mutation strategy (see mystic.strategy)
+        CrossProbability=0.9 #potential for parameter cross-mutation
+        ScalingFactor=0.8    #multiplier for mutation impact
         callback=None        #user-supplied function, called after each step
         disp=0               #non-zero to print convergence messages
         if kwds.has_key('strategy'): strategy = kwds['strategy']

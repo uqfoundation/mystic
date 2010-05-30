@@ -173,6 +173,7 @@ current parameters every 'xinterval'.
            #print "Generation %d has best Chi-Squared: %s" % (self._step, y)
             print "Generation %d has best Chi-Squared: %f" % (self._step, y)
         if int(self._step % self._xinterval) == 0:
+            if isinstance(x,ndarray): x = list(x)
             print "Generation %d has best fit parameters:\n %s" % (self._step, x)
         self._step += 1
         return
@@ -209,6 +210,7 @@ Logs ChiSq and parameters to a file every 'interval'
         if isinstance(x[0],(list,ndarray)): #XXX: x should always be iterable
             x = x[0] #XXX: get the "best" fit... which should be in x[0]
         if int(self._step % self._yinterval) == 0:
+            if isinstance(x,ndarray): x = list(x)
             self._file.write(" %d   %f   %s\n" % (self._step, y, x))
         self._step += 1
         self._file.close()
