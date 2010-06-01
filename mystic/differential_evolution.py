@@ -154,15 +154,15 @@ Differential Evolution optimization.
         """
 Takes two initial inputs: 
     dim  -- dimensionality of the problem
-    NP   -- size of the trial solution population. [requires: NP <= 4]
+    NP   -- size of the trial solution population. [requires: NP >= 4]
 
 All important class members are inherited from AbstractSolver.
         """
         #XXX: raise Error if npop <= 4?
         AbstractSolver.__init__(self,dim,npop=NP)
         self.genealogy     = [ [] for j in range(NP)]
-        self.scale         = 0.7
-        self.probability   = 0.5
+        self.scale         = 0.8
+        self.probability   = 0.9
         
 ### XXX: OBSOLETED by wrap_bounds ###
 #   def _keepSolutionWithinRangeBoundary(self, base):
@@ -354,15 +354,15 @@ Alternate implementation:
         """
 Takes two initial inputs: 
     dim  -- dimensionality of the problem
-    NP   -- size of the trial solution population. [requires: NP <= 4]
+    NP   -- size of the trial solution population. [requires: NP >= 4]
 
 All important class members are inherited from AbstractSolver.
         """
         #XXX: raise Error if npop <= 4?
         super(DifferentialEvolutionSolver2, self).__init__(dim, npop=NP)
         self.genealogy     = [ [] for j in range(NP)]
-        self.scale         = 0.7
-        self.probability   = 0.5
+        self.scale         = 0.8
+        self.probability   = 0.9
         
     def UpdateGenealogyRecords(self, id, newchild):
         """
