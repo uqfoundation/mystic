@@ -4,7 +4,7 @@
 PROJECT = mystic
 PACKAGE = tests
 
-PROJ_CLEAN += $(PROJ_CPPTESTS)
+PROJ_CLEAN += $(PROJ_CPPTESTS) log1.py log2.py
 
 PROJ_PYTESTS = 
 PROJ_CPPTESTS = 
