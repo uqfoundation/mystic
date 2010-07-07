@@ -111,6 +111,7 @@ Important class members:
         self.bestEnergy       = 0.0
         self.bestSolution     = [0.0] * dim
         self.trialSolution    = [0.0] * dim
+        self.id               = None     # identifier (use like "rank" for MPI)
 
         self._init_popEnergy  = 1.0E20 #XXX: or numpy.inf?
         self.popEnergy	      = [self._init_popEnergy] * NP

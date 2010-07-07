@@ -254,6 +254,7 @@ Further Inputs:
         self._generateHandler(sigint_callback) 
         if self._handle_sigint: signal.signal(signal.SIGINT, self.signal_handler)
 
+        id = self.id
         self.probability = CrossProbability
         self.scale = ScalingFactor
 
@@ -277,7 +278,7 @@ Further Inputs:
                     self.bestSolution[:] = self.trialSolution[:]
                             
         self.energy_history.append(self.bestEnergy)
-        StepMonitor(self.bestSolution[:], self.bestEnergy)
+        StepMonitor(self.bestSolution[:], self.bestEnergy, id)
         self.generations = 0  #XXX: above currently *not* counted as an iteration
         if callback is not None:
             callback(self.bestSolution)
@@ -307,7 +308,7 @@ Further Inputs:
                         self.bestSolution[:] = self.trialSolution[:]
                             
             self.energy_history.append(self.bestEnergy)
-            StepMonitor(self.bestSolution[:], self.bestEnergy)
+            StepMonitor(self.bestSolution[:], self.bestEnergy, id)
             self.generations += 1
             if callback is not None:
                 callback(self.bestSolution)
@@ -451,6 +452,7 @@ Further Inputs:
         self._generateHandler(sigint_callback) 
         if self._handle_sigint: signal.signal(signal.SIGINT, self.signal_handler)
 
+        id = self.id
         self.probability = CrossProbability
         self.scale = ScalingFactor
 
@@ -486,7 +488,7 @@ Further Inputs:
                         
         self.energy_history.append(self.bestEnergy)
        #FIXME: StepMonitor works for 'pp'?
-        StepMonitor(self.bestSolution[:], self.bestEnergy)
+        StepMonitor(self.bestSolution[:], self.bestEnergy, id)
         self.generations = 0  #XXX: above currently *not* counted as an iteration
         if callback is not None:
             callback(self.bestSolution)
@@ -528,7 +530,7 @@ Further Inputs:
                             
             self.energy_history.append(self.bestEnergy)
            #FIXME: StepMonitor works for 'pp'?
-            StepMonitor(self.bestSolution[:], self.bestEnergy)
+            StepMonitor(self.bestSolution[:], self.bestEnergy, id)
             self.generations += 1
             if callback is not None:
                 callback(self.bestSolution)

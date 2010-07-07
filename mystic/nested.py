@@ -127,10 +127,11 @@ Further Inputs:
         # run optimizer for each grid point
         cf = [cost for i in range(len(initial_values))]
         tm = [termination for i in range(len(initial_values))]
+        id = range(len(initial_values))
 
         # generate the local_optimize function
         local_opt = """\n
-def local_optimize(cost, termination, x0):
+def local_optimize(cost, termination, x0, rank):
     from %s import %s as LocalSolver
     from mystic import Sow
 
@@ -140,6 +141,7 @@ def local_optimize(cost, termination, x0):
     ndim = len(x0)
 
     solver = LocalSolver(ndim)
+    solver.id = rank
     solver.SetInitialPoints(x0)
 """ % (self._solver.__module__, self._solver.__name__)
         if self._useStrictRange:
@@ -155,12 +157,12 @@ def local_optimize(cost, termination, x0):
 """ % (str(self._maxiter), str(self._maxfun), str(disp))
         exec local_opt
 
-        # map:: params, energy, smon, emon = local_optimize(cost,term,x0)
+        # map:: params, energy, smon, emon = local_optimize(cost,term,x0,id)
         mapconfig = dict(nnodes=self._nnodes, launcher=self._launcher, \
                          mapper=self._mapper, queue=self._queue, \
                          timelimit=self._timelimit, \
                          ncpus=self._ncpus, servers=self._servers)
-        results = self._map(local_optimize, cf, tm, initial_values, **mapconfig)
+        results = self._map(local_optimize, cf, tm, initial_values, id, **mapconfig)
 
         # get the results with the lowest energy
         best = list(results[0][0]), results[0][1]
@@ -182,7 +184,7 @@ def local_optimize(cost, termination, x0):
 
         # write 'bests' to monitors  #XXX: non-best monitors may be useful too
         for i in range(len(bestpath.y)):
-            StepMonitor(bestpath.x[i], bestpath.y[i])
+            StepMonitor(bestpath.x[i], bestpath.y[i], self.id)
             #XXX: could apply callback here, or in exec'd code
         for i in range(len(besteval.y)):
             EvaluationMonitor(besteval.x[i], besteval.y[i])
@@ -299,10 +301,11 @@ Further Inputs:
         # run optimizer for each grid point
         cf = [cost for i in range(len(initial_values))]
         tm = [termination for i in range(len(initial_values))]
+        id = range(len(initial_values))
 
         # generate the local_optimize function
         local_opt = """\n
-def local_optimize(cost, termination, x0):
+def local_optimize(cost, termination, x0, rank):
     from %s import %s as LocalSolver
     from mystic import Sow
 
@@ -312,6 +315,7 @@ def local_optimize(cost, termination, x0):
     ndim = len(x0)
 
     solver = LocalSolver(ndim)
+    solver.id = rank
     solver.SetInitialPoints(x0)
 """ % (self._solver.__module__, self._solver.__name__)
         if self._useStrictRange:
@@ -332,7 +336,7 @@ def local_optimize(cost, termination, x0):
                          mapper=self._mapper, queue=self._queue, \
                          timelimit=self._timelimit, \
                          ncpus=self._ncpus, servers=self._servers)
-        results = self._map(local_optimize, cf, tm, initial_values, **mapconfig)
+        results = self._map(local_optimize, cf, tm, initial_values, id, **mapconfig)
 
         # get the results with the lowest energy
         best = list(results[0][0]), results[0][1]
@@ -354,7 +358,7 @@ def local_optimize(cost, termination, x0):
 
         # write 'bests' to monitors  #XXX: non-best monitors may be useful too
         for i in range(len(bestpath.y)):
-            StepMonitor(bestpath.x[i], bestpath.y[i])
+            StepMonitor(bestpath.x[i], bestpath.y[i], self.id)
             #XXX: could apply callback here, or in exec'd code
         for i in range(len(besteval.y)):
             EvaluationMonitor(besteval.x[i], besteval.y[i])

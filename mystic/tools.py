@@ -130,12 +130,14 @@ example usage...
     def __init__(self):
         self._x = []   
         self._y = []   
+        self._id = []
 
-    def __call__(self, x, y):
+    def __call__(self, x, y, id=None):
         from numpy import ndarray
         if isinstance(x,ndarray): x = list(x)
         self._x.append(x)
         self._y.append(y)
+        self._id.append(id)
      
     def get_x(self):   
         return self._x
@@ -143,8 +145,12 @@ example usage...
     def get_y(self):   
         return self._y
 
+    def get_id(self):   
+        return self._id
+
     x = property(get_x, doc = "Params")
     y = property(get_y, doc = "Costs")
+    id = property(get_id, doc = "Id")
     pass
 
 class VerboseSow(Sow):
@@ -161,20 +167,24 @@ current parameters every 'xinterval'.
         self._yinterval = interval
         self._xinterval = xinterval
         return
-    def __call__(self, x, y):
+    def __call__(self, x, y, id=None):
         from numpy import ndarray
        #Sow.__call__(self, x, y)
-        super(VerboseSow,self).__call__(x, y)
+        super(VerboseSow,self).__call__(x, y, id)
         if isinstance(y,(list,ndarray)):
             y = y[0] #XXX: get the "best" fit... which should be in y[0]
         if isinstance(x[0],(list,ndarray)): #XXX: x should always be iterable
             x = x[0] #XXX: get the "best" fit... which should be in x[0]
         if int(self._step % self._yinterval) == 0:
            #print "Generation %d has best Chi-Squared: %s" % (self._step, y)
-            print "Generation %d has best Chi-Squared: %f" % (self._step, y)
+            message = "Generation %d has best Chi-Squared: %f" % (self._step, y)
+            if id != None: message = "[id: %d] " % (id) + message
+            print message
         if int(self._step % self._xinterval) == 0:
             if isinstance(x,ndarray): x = list(x)
-            print "Generation %d has best fit parameters:\n %s" % (self._step, x)
+            message = "Generation %d has best fit parameters:\n %s" % (self._step, x)
+            if id != None: message = "[id: %d] " % (id) + message
+            print message
         self._step += 1
         return
     pass
@@ -197,21 +207,23 @@ Logs ChiSq and parameters to a file every 'interval'
         else: ind = 'a'
         self._file = open(self._filename,ind)
         self._file.write("%s\n" % datetime.datetime.now().ctime() )
-        self._file.write("_#_  __ChiSq__  __params__\n")
+        self._file.write("___#___  __ChiSq__  __params__\n")
         self._file.close()
         return
-    def __call__(self, x, y):
+    def __call__(self, x, y, id=None):
         self._file = open(self._filename,'a')
         from numpy import ndarray
        #Sow.__call__(self, x, y)
-        super(LoggingSow,self).__call__(x, y)
+        super(LoggingSow,self).__call__(x, y, id)
         if isinstance(y,(list,ndarray)):
             y = y[0] #XXX: get the "best" fit... which should be in y[0]
         if isinstance(x[0],(list,ndarray)): #XXX: x should always be iterable
             x = x[0] #XXX: get the "best" fit... which should be in x[0]
         if int(self._step % self._yinterval) == 0:
             if isinstance(x,ndarray): x = list(x)
-            self._file.write(" %d   %f   %s\n" % (self._step, y, x))
+            step = [self._step]
+            if id != None: step.append(id)
+            self._file.write("%s     %f   %s\n" % (tuple(step), y, x))
         self._step += 1
         self._file.close()
         return

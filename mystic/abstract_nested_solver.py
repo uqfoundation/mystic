@@ -7,7 +7,7 @@
 This module contains the base class for launching several mystic solvers
 instances -- utilizing a parallel "map" function to enable parallel
 computing.  This module describes the nested solver interface.  As with
-the AbstractSolver, the "Solve" method must be overwritte with the derived
+the AbstractSolver, the "Solve" method must be overwritten with the derived
 solver's optimization algorithm. Similar to AbstractMapSolver, a call to
 self.map is required.  In many cases, a minimal function call interface for a
 derived solver is provided along with the derived class.  See the following
