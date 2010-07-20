@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+#
+# Mike McKerns, Caltech
 
 def write_converge_file(mon,log_file='paramlog.py'):
   log = []

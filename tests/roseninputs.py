@@ -1,12 +1,6 @@
 #!/usr/bin/env python
 #
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#
-#                       Patrick Hung & Mike McKerns, Caltech
-#                        (C) 1998-2008  All Rights Reserved
-#
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#
+# Alta Fang & Mike McKerns, Caltech
 
 """
 roseninputs.py -- inputs for testing the rosenbrock function for testsolvers_pyre.py

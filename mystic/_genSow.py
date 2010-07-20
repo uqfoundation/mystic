@@ -1,12 +1,7 @@
 #!/usr/bin/env python
 #
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#
-#                              Mike McKerns, Caltech
-#                        (C) 1998-2009  All Rights Reserved
-#
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#
+# Mike McKerns, Caltech
+ 
 """a helper class for the CustomSow function"""
 
 class genSow(object):

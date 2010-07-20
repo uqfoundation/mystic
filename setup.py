@@ -15,7 +15,7 @@ except ImportError:
 # build the 'setup' call
 setup_code = """
 setup(name='mystic',
-      version='0.2a1',
+      version='0.2a2.dev',
       description='a simple interactive inversion analysis framework',
       author = 'Mike McKerns',
       maintainer = 'Mike McKerns',

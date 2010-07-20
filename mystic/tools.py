@@ -1,11 +1,6 @@
 #!/usr/bin/env python
 #
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#
-#                       Patrick Hung & Mike McKerns, Caltech
-#                        (C) 1998-2008  All Rights Reserved
-#
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Patrick Hung & Mike McKerns, Caltech
 #
 # flatten was adapted from the python cookbook
 # Null was adapted (and bugfixed) from the python cookbook

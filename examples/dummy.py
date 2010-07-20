@@ -1,12 +1,6 @@
 #!/usr/bin/env python
 #
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#
-#                       Patrick Hung & Mike McKerns, Caltech
-#                        (C) 1998-2008  All Rights Reserved
-#
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#
+# Patrick Hung & Mike McKerns, Caltech
 
 """
 dummy.py -- cost function container module for derun.py

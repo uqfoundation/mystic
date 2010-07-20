@@ -1,12 +1,6 @@
 #!/usr/bin/env python
 #
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#
-#                       Patrick Hung & Mike McKerns, Caltech
-#                        (C) 1998-2008  All Rights Reserved
-#
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#
+# Alta Fang & Mike McKerns, Caltech
 
 """
 chebychevinputs_de.py -- cost function container module for differential evolution 

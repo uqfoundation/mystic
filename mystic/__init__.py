@@ -2,7 +2,7 @@
 #
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
-#                       Mike McKerns & Patrick Hung, Caltech
+#                 Mike McKerns, Alta Fang, & Patrick Hung, Caltech
 #                        (C) 1997-2010  All Rights Reserved
 #
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -58,7 +58,7 @@ To get up and running quickly, mystic also provides infrastructure to::
 Current Release
 ===============
 
-This release version is mystic-0.2a1. You can download it here.
+This release version is mystic-0.2a2.dev. You can download it here.
 The latest version of mystic is available from::
     http://dev.danse.us/trac/mystic
 
@@ -71,8 +71,8 @@ Installation
 Mystic is packaged to install from source, so you must
 download the tarball, unzip, and run the installer::
     [download]
-    $ tar -xvzf mystic-0.2a1.tgz
-    $ cd mystic-0.2a1
+    $ tar -xvzf mystic-0.2a2.dev.tgz
+    $ cd mystic-0.2a2.dev
     $ python setup py build
     $ python setup py install
 
@@ -159,7 +159,7 @@ More Information
 
 Please see http://dev.danse.us/trac/mystic for further information.
 """
-__version__ = '0.2a1'
+__version__ = '0.2a2.dev'
 __author__ = 'Mike McKerns'
 
 __license__ = """
