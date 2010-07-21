@@ -86,6 +86,11 @@ Alternately, mystic can be installed with easy_install::
     [download]
     $ easy_install -f . mystic
 
+For Windows users, source code and examples are available in zip format.
+A binary installer is also provided::
+    [download]
+    [double-click]
+
 
 Requirements
 ============

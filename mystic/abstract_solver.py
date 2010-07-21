@@ -73,7 +73,7 @@ __all__ = ['AbstractSolver']
 from mystic.tools import Null
 
 import numpy
-from numpy import shape, asarray, absolute, asfarray
+from numpy import inf, shape, asarray, absolute, asfarray
 
 abs = absolute
 
@@ -113,7 +113,7 @@ Important class members:
         self.trialSolution    = [0.0] * dim
         self.id               = None     # identifier (use like "rank" for MPI)
 
-        self._init_popEnergy  = 1.0E20 #XXX: or numpy.inf?
+        self._init_popEnergy  = inf
         self.popEnergy	      = [self._init_popEnergy] * NP
         self.population	      = [[0.0 for i in range(dim)] for j in range(NP)]
         self.energy_history   = []
