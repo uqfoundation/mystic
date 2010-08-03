@@ -41,6 +41,7 @@ EXPORT_PYTHON_MODULES = \
     strategy.py \
     termination.py \
     tools.py \
+    munge.py \
     metropolis.py \
     scemtools.py \
     svmtools.py \

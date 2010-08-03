@@ -38,6 +38,11 @@ def list_or_tuple_or_ndarray(x):
     import numpy
     return isinstance(x, (list, tuple, numpy.ndarray))
 
+def listify(x):
+    "recursivly convert all members of a sequence to a list"
+    if not list_or_tuple_or_ndarray(x): return x
+    return [listify(i) for i in x]
+
 def flatten_array(sequence, maxlev=999, lev=0):
     "flatten a sequence; returns a ndarray"
     import numpy
@@ -122,25 +127,28 @@ example usage...
     >>> sow.y   # get log of costs
 
     """
-    def __init__(self):
-        self._x = []   
-        self._y = []   
+    def __init__(self, **kwds):#, all=True):
+        self._x = []
+        self._y = []
         self._id = []
+       #self._all = all
 
-    def __call__(self, x, y, id=None):
-        from numpy import ndarray
-        if isinstance(x,ndarray): x = list(x)
-        self._x.append(x)
-        self._y.append(y)
+    def __call__(self, x, y, id=None, **kwds):#, best=0):
+        self._x.append(listify(x)) #XXX: better to save as-is?
+        self._y.append(listify(y)) #XXX: better to save as-is?
         self._id.append(id)
-     
-    def get_x(self):   
+       #if not self._all and list_or_tuple_or_ndarray(x):
+       #    self._x[-1] = self._x[-1][best]
+       #if not self._all and list_or_tuple_or_ndarray(y):
+       #    self._y[-1] = self._y[-1][best]
+
+    def get_x(self):
         return self._x
 
-    def get_y(self):   
+    def get_y(self):
         return self._y
 
-    def get_id(self):   
+    def get_id(self):
         return self._id
 
     x = property(get_x, doc = "Params")
@@ -155,31 +163,41 @@ Prints ChiSq every 'interval', and optionally prints
 current parameters every 'xinterval'.
     """
     import numpy
-    def __init__(self, interval = 10, xinterval = numpy.inf):
-       #Sow.__init__(self)
+    def __init__(self, interval = 10, xinterval = numpy.inf, all=False):
         super(VerboseSow,self).__init__()
         self._step = 0
         self._yinterval = interval
         self._xinterval = xinterval
+        self._all = all
         return
-    def __call__(self, x, y, id=None):
-        from numpy import ndarray
-       #Sow.__call__(self, x, y)
+    def __call__(self, x, y, id=None, best=0):
         super(VerboseSow,self).__call__(x, y, id)
-        if isinstance(y,(list,ndarray)):
-            y = y[0] #XXX: get the "best" fit... which should be in y[0]
-        if isinstance(x[0],(list,ndarray)): #XXX: x should always be iterable
-            x = x[0] #XXX: get the "best" fit... which should be in x[0]
         if int(self._step % self._yinterval) == 0:
-           #print "Generation %d has best Chi-Squared: %s" % (self._step, y)
-            message = "Generation %d has best Chi-Squared: %f" % (self._step, y)
-            if id != None: message = "[id: %d] " % (id) + message
-            print message
+            if not list_or_tuple_or_ndarray(y):
+                who = ''
+                y = " %f" % self._y[-1]
+            elif self._all:
+                who = ''
+                y = " %s" % self._y[-1]
+            else:
+                who = ' best'
+                y = " %f" % self._y[-1][best]
+            msg = "Generation %d has%s Chi-Squared:%s" % (self._step, who, y)
+            if id != None: msg = "[id: %d] " % (id) + msg
+            print msg
         if int(self._step % self._xinterval) == 0:
-            if isinstance(x,ndarray): x = list(x)
-            message = "Generation %d has best fit parameters:\n %s" % (self._step, x)
-            if id != None: message = "[id: %d] " % (id) + message
-            print message
+            if not list_or_tuple_or_ndarray(x):
+                who = ''
+                x = " %f" % self._x[-1]
+            elif self._all:
+                who = ''
+                x = "\n %s" % self._x[-1]
+            else:
+                who = ' best'
+                x = "\n %s" % self._x[-1][best]
+            msg = "Generation %d has%s fit parameters:%s" % (self._step, who, x)
+            if id != None: msg = "[id: %d] " % (id) + msg
+            print msg
         self._step += 1
         return
     pass
@@ -190,9 +208,8 @@ class LoggingSow(Sow):
 Logs ChiSq and parameters to a file every 'interval'
     """
     import numpy
-    def __init__(self, interval=1, filename='log.txt', new=False):
+    def __init__(self, interval=1, filename='log.txt', new=False, all=False):
         import datetime
-       #Sow.__init__(self)
         super(LoggingSow,self).__init__()
         self._filename = filename
         self._step = 0
@@ -201,24 +218,38 @@ Logs ChiSq and parameters to a file every 'interval'
         if new: ind = 'w'
         else: ind = 'a'
         self._file = open(self._filename,ind)
-        self._file.write("%s\n" % datetime.datetime.now().ctime() )
-        self._file.write("___#___  __ChiSq__  __params__\n")
+        self._file.write("# %s\n" % datetime.datetime.now().ctime() )
+        self._file.write("# ___#___  __ChiSq__  __params__\n")
         self._file.close()
+        self._all = all
         return
-    def __call__(self, x, y, id=None):
+    def __call__(self, x, y, id=None, best=0):
         self._file = open(self._filename,'a')
-        from numpy import ndarray
-       #Sow.__call__(self, x, y)
         super(LoggingSow,self).__call__(x, y, id)
-        if isinstance(y,(list,ndarray)):
-            y = y[0] #XXX: get the "best" fit... which should be in y[0]
-        if isinstance(x[0],(list,ndarray)): #XXX: x should always be iterable
-            x = x[0] #XXX: get the "best" fit... which should be in x[0]
         if int(self._step % self._yinterval) == 0:
-            if isinstance(x,ndarray): x = list(x)
+            if not list_or_tuple_or_ndarray(y):
+                y = "%f" % self._y[-1]
+            elif self._all:
+                y = "%s" % self._y[-1]
+            else:
+                y = "%f" % self._y[-1][best]
+            if not list_or_tuple_or_ndarray(x):
+                x = "[%f]" % self._x[-1]
+            elif self._all:
+                xa = self._x[-1]
+                if not list_or_tuple_or_ndarray(xa):
+                  x = "[%f]" % xa
+                else:
+                  x = "%s" % xa
+            else:
+                xb = self._x[-1][best]
+                if not list_or_tuple_or_ndarray(xb):
+                  x = "[%f]" % xb
+                else:
+                  x = "%s" % xb
             step = [self._step]
             if id != None: step.append(id)
-            self._file.write("%s     %f   %s\n" % (tuple(step), y, x))
+            self._file.write("  %s     %s   %s\n" % (tuple(step), y, x))
         self._step += 1
         self._file.close()
         return

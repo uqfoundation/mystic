@@ -2,44 +2,19 @@
 #
 # Mike McKerns, Caltech
 
-def write_converge_file(mon,log_file='paramlog.py'):
-  log = []
-  steps = mon.x[:]
-  energy = mon.y[:]
-  f = open(log_file,'w')
- #f.write('# %s\n' % energy[-1])
-  f.write('params = %s' % steps)
-  f.write('\ncost = %s' % energy)
-  f.close()
-  return
+from mystic.munge import write_support_file, write_converge_file
 
-def write_support_file(mon,log_file='paramlog.py'):
-  log = []
-  steps = mon.x[:]
-  energy = mon.y[:]
-  for p in range(len(steps[0])):
-    q = []
-    for s in range(len(steps)):
-      q.append(steps[s][p])
-    log.append(q)  
-  f = open(log_file,'w')
- #f.write('# %s\n' % energy[-1])
-  f.write('params = %s' % log)
-  f.write('\ncost = %s' % energy)
-  f.close()
-  return
-
-def test1(monitor):
+def test0(monitor):
   from numpy import array
   x1 = array([1,2,3])
   x2 = array([3,4,5])
   x3 = array([5,6,7])
   x4 = array([7,8,9])
 
-  monitor(x1,1)
-  monitor(x2,2)
-  monitor(x3,3)
-  monitor(x4,4)
+  monitor(x1,-1)
+  monitor(x2,-3)
+  monitor(x3,-5)
+  monitor(x4,-7)
 
   print "...printing..."
   print monitor.x[0], monitor.y[0]
@@ -49,20 +24,44 @@ def test1(monitor):
   return
 
 
-def test2(monitor):
-  from mystic.differential_evolution import DifferentialEvolutionSolver as DE
- #from mystic.differential_evolution import DifferentialEvolutionSolver2 as DE
-  from mystic.scipy_optimize import NelderMeadSimplexSolver as noDE
+def test1(monitor):
+  from numpy import array
+  x1 = array([[1,2,3],[2,3,4]]); y1 = array([-1,-2])
+  x2 = array([[3,4,5],[4,5,6]]); y2 = [-3,-4]
+  x3 = [[5,6,7],[6,7,8]];        y3 = array([-5,-6])
+  x4 = [[7,8,9],[8,9,0]];        y4 = [-7,-8]
+
+  monitor(x1,y1)
+  monitor(x2,y2)
+  monitor(x3,y3)
+  monitor(x4,y4)
+
+  print "...printing..."
+  print monitor.x[0], monitor.y[0]
+  print monitor.x[1], monitor.y[1]
+  print monitor.x[2], monitor.y[2]
+  print monitor.x[3], monitor.y[3]
+  return
+
+
+def test2(monitor, diffenv=None):
+  if diffenv == True:
+    from mystic.differential_evolution import DifferentialEvolutionSolver as DE
+   #from mystic.differential_evolution import DifferentialEvolutionSolver2 as DE
+  elif diffenv == False:
+    from mystic.scipy_optimize import NelderMeadSimplexSolver as noDE
+  else:
+    from mystic.scipy_optimize import PowellDirectionalSolver as noDE
   from mystic.termination import ChangeOverGeneration as COG
   from mystic import getch, random_seed
 
- #random_seed(123)
+  random_seed(123)
 
   lb = [-100,-100,-100]
   ub = [1000,1000,1000]
   ndim = len(lb)
-  npop = 40
-  maxiter = 30
+  npop = 5
+  maxiter = 5
   maxfun = 1e+6
   convergence_tol = 1e-10; ngen = 100
   crossover = 0.9
@@ -72,8 +71,10 @@ def test2(monitor):
     ax,bx,c = x
     return (ax)**2 - bx + c
 
-  solver = DE(ndim,npop)
- #solver = noDE(ndim)
+  if diffenv == True:
+    solver = DE(ndim,npop)
+  else:
+    solver = noDE(ndim)
   solver.SetRandomInitialPoints(min=lb,max=ub)
   solver.SetStrictRanges(min=lb,max=ub)
   solver.SetEvaluationLimits(maxiter,maxfun)
@@ -89,13 +90,27 @@ def test2(monitor):
 
 if __name__ == '__main__':
 
-  from mystic.tools import Sow, VerboseSow
- #monitor = Sow()
-  monitor = VerboseSow(1,1) 
+  from mystic import Sow, VerboseSow
+  monitor = Sow()
+ #monitor = Sow(all=False)
+ #monitor = VerboseSow(1,1) 
+ #monitor = VerboseSow(1,1, all=True) 
+ #monitor = LoggingSow(1)
+ #monitor = LoggingSow(1, all=True)
 
- #test1(monitor)
-  test2(monitor)
+ #test0(monitor)
+  test1(monitor)
+ #test2(monitor)                 # r340 is like test0; desired is like test1
+ #test2(monitor, diffenv=False)  #       ... (for Powell, add enclosing [ ])
+ #test2(monitor, diffenv=True)
 
-  write_support_file(monitor,'log1.py')
-  write_converge_file(monitor,'log2.py')
+  # these are for "SowPlotter(s)"; need to adapt log.py plotters for test1
+  write_support_file(monitor,'paramlog1.py')
+  write_converge_file(monitor,'paramlog2.py')
 
+  # also need "LogPlotter(s)" for log.txt from test1 all=True & all=False data
+  # all Plotters for all=True should take "best=True" to draw only 'best' data
+
+  # when using "best=True", find ChiSq[i] that is least, take corresponding x ??
+
+# EOF
