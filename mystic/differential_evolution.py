@@ -276,7 +276,7 @@ Further Inputs:
                 if trialEnergy < self.bestEnergy:
                     self.bestEnergy = trialEnergy
                     self.bestSolution[:] = self.trialSolution[:]
-                            
+
         self.energy_history.append(self.bestEnergy)
         StepMonitor(self.bestSolution[:], self.bestEnergy, id)
         self.generations = 0  #XXX: above currently *not* counted as an iteration
@@ -306,7 +306,7 @@ Further Inputs:
                     if trialEnergy < self.bestEnergy:
                         self.bestEnergy = trialEnergy
                         self.bestSolution[:] = self.trialSolution[:]
-                            
+
             self.energy_history.append(self.bestEnergy)
             StepMonitor(self.bestSolution[:], self.bestEnergy, id)
             self.generations += 1
@@ -485,7 +485,7 @@ Further Inputs:
                 if trialEnergy[candidate] < self.bestEnergy:
                     self.bestEnergy = trialEnergy[candidate]
                     self.bestSolution[:] = trialPop[candidate][:]
-                        
+
         self.energy_history.append(self.bestEnergy)
        #FIXME: StepMonitor works for 'pp'?
         StepMonitor(self.bestSolution[:], self.bestEnergy, id)
@@ -527,7 +527,7 @@ Further Inputs:
                     if trialEnergy[candidate] < self.bestEnergy:
                         self.bestEnergy = trialEnergy[candidate]
                         self.bestSolution[:] = trialPop[candidate][:]
-                            
+
             self.energy_history.append(self.bestEnergy)
            #FIXME: StepMonitor works for 'pp'?
             StepMonitor(self.bestSolution[:], self.bestEnergy, id)

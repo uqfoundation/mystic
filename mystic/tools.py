@@ -163,7 +163,7 @@ Prints ChiSq every 'interval', and optionally prints
 current parameters every 'xinterval'.
     """
     import numpy
-    def __init__(self, interval = 10, xinterval = numpy.inf, all=False):
+    def __init__(self, interval = 10, xinterval = numpy.inf, all=True):
         super(VerboseSow,self).__init__()
         self._step = 0
         self._yinterval = interval
@@ -208,7 +208,7 @@ class LoggingSow(Sow):
 Logs ChiSq and parameters to a file every 'interval'
     """
     import numpy
-    def __init__(self, interval=1, filename='log.txt', new=False, all=False):
+    def __init__(self, interval=1, filename='log.txt', new=False, all=True):
         import datetime
         super(LoggingSow,self).__init__()
         self._filename = filename

@@ -206,7 +206,7 @@ Further Inputs:
         if retall:
             allvecs = [sim[0]]
         fsim[0] = func(x0)
-        StepMonitor(sim[0], fsim[0], id) # sim = all values; "best" is sim[0]
+        StepMonitor(sim[0], fsim[0], id) # sim = all; "best" is sim[0]
 
         #--- ensure initial simplex is within bounds ---
         x0,val = self._setSimplexWithinRangeBoundary(x0,radius)
@@ -227,7 +227,7 @@ Further Inputs:
         self.population = sim
         self.popEnergy = fsim
         self.energy_history.append(self.bestEnergy)
-        StepMonitor(sim[0], fsim[0], id) # sim = all values; "best" is sim[0]
+        StepMonitor(sim[0], fsim[0], id) # sim = all; "best" is sim[0]
 
         iterations = 1
 
@@ -295,7 +295,7 @@ Further Inputs:
             self.population = sim
             self.popEnergy = fsim
             self.energy_history.append(self.bestEnergy)
-            StepMonitor(sim[0], fsim[0],id) # sim = all values; "best" is sim[0]
+            StepMonitor(sim[0], fsim[0],id) # sim = all; "best" is sim[0]
 
         self.generations = iterations
         signal.signal(signal.SIGINT,signal.default_int_handler)
@@ -590,7 +590,7 @@ Further Inputs:
             self.bestEnergy = fval
             self.population[0] = x    #XXX: pointless
             self.popEnergy[0] = fval  #XXX: pointless
-            StepMonitor(x, fval, id) # get ith values; #XXX: should be [x],[fval] ?
+            StepMonitor(x, fval, id) # get ith values
     
         self.generations = iter
         signal.signal(signal.SIGINT,signal.default_int_handler)

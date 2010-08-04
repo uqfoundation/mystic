@@ -46,8 +46,8 @@ def test1(monitor):
 
 def test2(monitor, diffenv=None):
   if diffenv == True:
-    from mystic.differential_evolution import DifferentialEvolutionSolver as DE
-   #from mystic.differential_evolution import DifferentialEvolutionSolver2 as DE
+   #from mystic.differential_evolution import DifferentialEvolutionSolver as DE
+    from mystic.differential_evolution import DifferentialEvolutionSolver2 as DE
   elif diffenv == False:
     from mystic.scipy_optimize import NelderMeadSimplexSolver as noDE
   else:
@@ -61,7 +61,7 @@ def test2(monitor, diffenv=None):
   ub = [1000,1000,1000]
   ndim = len(lb)
   npop = 5
-  maxiter = 5
+  maxiter = 10
   maxfun = 1e+6
   convergence_tol = 1e-10; ngen = 100
   crossover = 0.9
@@ -80,7 +80,8 @@ def test2(monitor, diffenv=None):
   solver.SetEvaluationLimits(maxiter,maxfun)
 
   tol = convergence_tol
-  solver.Solve(cost, termination=COG(tol,ngen), StepMonitor=monitor)
+ #solver.Solve(cost, termination=COG(tol,ngen), StepMonitor=monitor)
+  solver.Solve(cost, termination=COG(tol,ngen), EvaluationMonitor=monitor)
 
   solved = solver.Solution()
   print "solved: %s" % solver.Solution()
@@ -90,27 +91,25 @@ def test2(monitor, diffenv=None):
 
 if __name__ == '__main__':
 
-  from mystic import Sow, VerboseSow
-  monitor = Sow()
+  from mystic import Sow, VerboseSow, LoggingSow
+ #monitor = Sow()
+ #monitor = Sow(all=True)
  #monitor = Sow(all=False)
  #monitor = VerboseSow(1,1) 
  #monitor = VerboseSow(1,1, all=True) 
- #monitor = LoggingSow(1)
+ #monitor = VerboseSow(1,1, all=False) 
+  monitor = LoggingSow(1)
  #monitor = LoggingSow(1, all=True)
+ #monitor = LoggingSow(1, all=False)
 
  #test0(monitor)
-  test1(monitor)
- #test2(monitor)                 # r340 is like test0; desired is like test1
- #test2(monitor, diffenv=False)  #       ... (for Powell, add enclosing [ ])
+ #test1(monitor)
+  test2(monitor)                 # StepMonitor works like test0
+ #test2(monitor, diffenv=False)  # (to make like test1, add enclosing [])
  #test2(monitor, diffenv=True)
 
   # these are for "SowPlotter(s)"; need to adapt log.py plotters for test1
   write_support_file(monitor,'paramlog1.py')
-  write_converge_file(monitor,'paramlog2.py')
-
-  # also need "LogPlotter(s)" for log.txt from test1 all=True & all=False data
-  # all Plotters for all=True should take "best=True" to draw only 'best' data
-
-  # when using "best=True", find ChiSq[i] that is least, take corresponding x ??
+ #write_converge_file(monitor,'paramlog2.py')
 
 # EOF
