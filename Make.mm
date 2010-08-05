@@ -6,6 +6,7 @@ BUILD_DIRS = \
     mystic \
     models \
     _math \
+    scripts \
 
 OTHER_DIRS = \
     examples \
