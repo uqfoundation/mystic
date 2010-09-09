@@ -27,6 +27,7 @@ EXPORT_PYTHON_MODULES = \
     __init__.py \
     _genSow.py \
     _scipy060optimize.py \
+    _scipyoptimize.py \
     abstract_map_solver.py \
     abstract_nested_solver.py \
     abstract_solver.py \
@@ -34,6 +35,7 @@ EXPORT_PYTHON_MODULES = \
     filters.py \
     forward_model.py \
     helputil.py \
+    linesearch.py \
     mystic_math.py \
     nested.py \
     python_map.py \

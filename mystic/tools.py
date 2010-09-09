@@ -20,6 +20,7 @@ Main functions exported are::
     - LoggingSow: A version of the basic Sow that logs to a file
     - CustomSow: A customizable 'n-variable' version of the basic Sow
     - random_seed: sets the seed for calls to 'random()'
+    - wrap_nested: nest a function call within a function object
     - wrap_function: bind an EvaluationMonitor and an evaluation counter
         to a function object
     - wrap_bounds: impose bounds on a funciton object
@@ -289,6 +290,17 @@ def random_seed(s):
     except:
         pass
     return
+
+def wrap_nested(function, inner_function):
+    """nest a function call within a function object
+
+This is useful for nesting a constraints function in a cost function;
+thus, the constraints will be enforced at every cost function evaluation.
+    """
+    def function_wrapper(x):
+        _x = x[:] #XXX: trouble if x not a list or ndarray... maybe "deepcopy"?
+        return function(inner_function(_x))
+    return function_wrapper
 
 def wrap_function(function, args, EvaluationMonitor):
     """bind an EvaluationMonitor and an evaluation counter

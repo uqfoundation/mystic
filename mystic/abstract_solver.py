@@ -130,7 +130,7 @@ Important class members:
 
         import mystic.termination
         self._EARLYEXIT       = mystic.termination.EARLYEXIT
-
+        return
 
     def Solution(self):
         """return the best solution"""
@@ -282,7 +282,7 @@ Available switches::
                     self._EARLYEXIT = True
                     return
                 else:
-                    print "unknown option : %s ", s
+                    print "unknown option : %s" % s
             return
         self.signal_handler = handler
         return

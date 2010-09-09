@@ -5,20 +5,17 @@
 # You may copy and use this module as you see fit with no
 # guarantee implied provided you keep this notice in all copies.
 # *****END NOTICE************
-
-# Minimization routines
-# (removed: fmin_bfgs, fmin_cg)
 """local copy of scipy.optimize"""
 
-__all__ = ['fmin', 'fmin_powell', 'fmin_ncg',
-           'fminbound','brent', 'golden','bracket','rosen','rosen_der',
-           'rosen_hess', 'rosen_hess_prod', 'brute', 'approx_fprime',
-           'line_search', 'check_grad']
+#__all__ = ['fmin', 'fmin_powell', 'fmin_ncg', 'fmin_cg', 'fmin_bfgs',
+#           'fminbound','brent', 'golden','bracket','rosen','rosen_der',
+#           'rosen_hess', 'rosen_hess_prod', 'brute', 'approx_fprime',
+#           'line_search', 'check_grad']
 
 import numpy
 from numpy import atleast_1d, eye, mgrid, argmin, zeros, shape, empty, \
      squeeze, isscalar, vectorize, asarray, absolute, sqrt, Inf, asfarray, isinf
-#import linesearch
+import linesearch
 
 # These have been copied from Numeric's MLab.py
 # I don't think they made the transition to scipy_core
@@ -621,7 +618,6 @@ def approx_fhess_p(x0,p,fprime,epsilon,*args):
     f1 = fprime(*((x0,)+args))
     return (f2 - f1)/epsilon
 
-'''
 def fmin_bfgs(f, x0, fprime=None, args=(), gtol=1e-5, norm=Inf,
               epsilon=_epsilon, maxiter=None, full_output=0, disp=1,
               retall=0, callback=None):
@@ -807,9 +803,7 @@ def fmin_bfgs(f, x0, fprime=None, args=(), gtol=1e-5, norm=Inf,
             retlist = (xk, allvecs)
 
     return retlist
-'''
 
-'''
 def fmin_cg(f, x0, fprime=None, args=(), gtol=1e-5, norm=Inf, epsilon=_epsilon,
               maxiter=None, full_output=0, disp=1, retall=0, callback=None):
     """Minimize a function with nonlinear conjugate gradient algorithm.
@@ -978,7 +972,6 @@ def fmin_cg(f, x0, fprime=None, args=(), gtol=1e-5, norm=Inf, epsilon=_epsilon,
             retlist = (xk, allvecs)
 
     return retlist
-'''
 
 def fmin_ncg(f, x0, fprime, fhess_p=None, fhess=None, args=(), avextol=1e-5,
              epsilon=_epsilon, maxiter=None, full_output=0, disp=1, retall=0,
@@ -2041,33 +2034,32 @@ def main():
     times.append(time.time() - start)
     algor.append('Powell Direction Set Method.')
 
-#   print
-#   print "Nonlinear CG"
-#   print "============"
-#   start = time.time()
-#   x = fmin_cg(rosen, x0, fprime=rosen_der, maxiter=200)
-#   print x
-#   times.append(time.time() - start)
-#   algor.append('Nonlinear CG     \t')
+    print
+    print "Nonlinear CG"
+    print "============"
+    start = time.time()
+    x = fmin_cg(rosen, x0, fprime=rosen_der, maxiter=200)
+    print x
+    times.append(time.time() - start)
+    algor.append('Nonlinear CG     \t')
 
-#   print
-#   print "BFGS Quasi-Newton"
-#   print "================="
-#   start = time.time()
-#   x = fmin_bfgs(rosen, x0, fprime=rosen_der, maxiter=80)
-#   print x
-#   times.append(time.time() - start)
-#   algor.append('BFGS Quasi-Newton\t')
+    print
+    print "BFGS Quasi-Newton"
+    print "================="
+    start = time.time()
+    x = fmin_bfgs(rosen, x0, fprime=rosen_der, maxiter=80)
+    print x
+    times.append(time.time() - start)
+    algor.append('BFGS Quasi-Newton\t')
 
-#   print
-#   print "BFGS approximate gradient"
-#   print "========================="
-#   start = time.time()
-#   x = fmin_bfgs(rosen, x0, gtol=1e-4, maxiter=100)
-#   print x
-#   times.append(time.time() - start)
-#   algor.append('BFGS without gradient\t')
-
+    print
+    print "BFGS approximate gradient"
+    print "========================="
+    start = time.time()
+    x = fmin_bfgs(rosen, x0, gtol=1e-4, maxiter=100)
+    print x
+    times.append(time.time() - start)
+    algor.append('BFGS without gradient\t')
 
     print
     print "Newton-CG with Hessian product"
@@ -2077,7 +2069,6 @@ def main():
     print x
     times.append(time.time() - start)
     algor.append('Newton-CG with hessian product')
-
 
     print
     print "Newton-CG with full Hessian"

@@ -28,13 +28,13 @@ if __name__=='__main__':
     stepmon = Sow() #VerboseSow(10)
     from mystic.termination import NormalizedChangeOverGeneration as NCOG
 
-    from scipy.optimize import fmin_powell
+   #from scipy.optimize import fmin_powell
     from mystic.scipy_optimize import fmin_powell, PowellDirectionalSolver
-    print fmin_powell(rosen,x0,retall=0,full_output=0,maxiter=14)
+   #print fmin_powell(rosen,x0,retall=0,full_output=0)#,maxiter=14)
     solver = PowellDirectionalSolver(len(x0))
     solver.SetInitialPoints(x0)
     solver.SetStrictRanges(min,max)
-    solver.SetEvaluationLimits(maxiter=13)
+   #solver.SetEvaluationLimits(maxiter=13)
     solver.enable_signal_handler()
     solver.Solve(rosen,termination=NCOG(tolerance=1e-4),StepMonitor=stepmon,disp=1)
     print solver.Solution()
