@@ -42,6 +42,8 @@ def list_or_tuple_or_ndarray(x):
 def listify(x):
     "recursivly convert all members of a sequence to a list"
     if not list_or_tuple_or_ndarray(x): return x
+    #if isinstance(x, numpy.ndarray) and x.ndim == 0: return x # i.e. array(1)
+    if not list_or_tuple(x) and x.ndim == 0: return x.flatten()[0]
     return [listify(i) for i in x]
 
 def flatten_array(sequence, maxlev=999, lev=0):

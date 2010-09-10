@@ -3534,5 +3534,5 @@ if __name__ == '__main__':
     #                                suite6, suite7, suite8, suite9, suite10, \
     #                                suite11, suite12, suite13, suite14,\
     #                                suite15, suite16, suite17])
-    allsuites = unittest.TestSuite([suite4])
+    allsuites = unittest.TestSuite([suite1])
     unittest.TextTestRunner(verbosity=2).run(allsuites)
