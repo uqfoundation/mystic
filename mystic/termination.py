@@ -16,21 +16,21 @@ EARLYEXIT = 0
 def VTR(tolerance = 0.005):
     """cost of last iteration is < tolerance:
 
-cost[-1] < tolerance"""
+cost[-1] <= tolerance"""
     def _VTR(inst):
          hist = inst.energy_history
-         return hist[-1] < tolerance
+         return hist[-1] <= tolerance
     return _VTR
 
 def ChangeOverGeneration(tolerance = 1e-6, generations = 30):
     """change in cost is < tolerance over a number of generations:
 
-cost[-g] - cost[-1] < tolerance, where g=generations"""
+cost[-g] - cost[-1] <= tolerance, where g=generations"""
     def _ChangeOverGeneration(inst):
          hist = inst.energy_history
          lg = len(hist)
          if lg <= generations: return False
-         return (hist[-generations]-hist[-1]) < tolerance
+         return (hist[-generations]-hist[-1]) <= tolerance
     return _ChangeOverGeneration
 
 def NormalizedChangeOverGeneration(tolerance = 1e-4, generations = 10):
@@ -46,7 +46,7 @@ def NormalizedChangeOverGeneration(tolerance = 1e-4, generations = 10):
          return 2.0*(hist[-generations]-hist[-1]) <= diff
     return _NormalizedChangeOverGeneration
               
-def CandidateRelativeTolerance(xtol=1e-4, ftol=1e-4):
+def CandidateRelativeTolerance(xtol = 1e-4, ftol = 1e-4):
     """absolute difference in candidates is < tolerance:
 
 abs(xi-x0) <= xtol & abs(fi-f0) <= ftol, where x=params & f=cost"""
@@ -71,7 +71,9 @@ def SolutionImprovement(tolerance = 1e-5):
 
 sum(abs(last_params - current_params)) <= tolerance"""
     def _SolutionImprovement(inst):
-        update = inst.bestSolution - inst.trialSolution #XXX: if inf - inf ?
+        best = numpy.array(inst.bestSolution)
+        trial = numpy.array(inst.trialSolution)
+        update = best - trial #XXX: if inf - inf ?
         answer = numpy.add.reduce(abs(update)) <= tolerance
         return answer
     return _SolutionImprovement
@@ -89,40 +91,40 @@ abs(cost[-1] - fval)/fval <= tolerance *or* (cost[-1] - cost[-g]) = 0 """
              hist = inst.energy_history
              lg = len(hist)
              #XXX: throws error when hist is shorter than generations ?
-             return lg > generations and (hist[-generations]-hist[-1]) < 0
+             return lg > generations and (hist[-generations]-hist[-1]) <= 0
          if not generations and fval == None: return True
          return abs(inst.bestEnergy-fval) <= abs(tolerance * fval)
     return _NormalizedCostTarget
 
-def VTRChangeOverGenerations(ftol = 0.005, gtol = 1e-6, generations = 30):
+def VTRChangeOverGeneration(ftol = 0.005, gtol = 1e-6, generations = 30):
     """change in cost is < gtol over a number of generations,
 or cost of last iteration is < ftol:
 
-cost[-g] - cost[-1] < gtol, where g=generations *or* cost[-1] < ftol."""
-    def _VTRChangeOverGenerations(inst):
+cost[-g] - cost[-1] <= gtol, where g=generations *or* cost[-1] <= ftol."""
+    def _VTRChangeOverGeneration(inst):
          hist = inst.energy_history
          lg = len(hist)
          #XXX: throws error when hist is shorter than generations ?
-         return (lg > generations and (hist[-generations]-hist[-1]) < gtol)\
-                or ( hist[-1] < ftol )
-    return _VTRChangeOverGenerations
+         return (lg > generations and (hist[-generations]-hist[-1]) <= gtol)\
+                or ( hist[-1] <= ftol )
+    return _VTRChangeOverGeneration
 
-def PopulationSpread(tolerance=1e-6):
+def PopulationSpread(tolerance = 1e-6):
     """normalized absolute deviation from best candidate is < tolerance:
 
-abs(params - params[0]) < tolerance"""
+abs(params - params[0]) <= tolerance"""
     def _PopulationSpread(inst):
          sim = numpy.array(inst.population)
          #if not len(sim[1:]):
          #    print "Warning: Invalid termination condition (nPop < 2)"
          #    return True
-         return all(abs(sim - sim[0]) <= abs(tolerance * sim[0]))
+         return numpy.all(abs(sim - sim[0]) <= abs(tolerance * sim[0]))
     return _PopulationSpread
 
-def GradientNormTolerance(tolerance=1e-5, norm=Inf): 
+def GradientNormTolerance(tolerance = 1e-5, norm = Inf): 
     """gradient norm is < tolerance, given user-supplied norm:
 
-sum( abs(gradient)**norm )**(1.0/norm) < tolerance"""
+sum( abs(gradient)**norm )**(1.0/norm) <= tolerance"""
     def _GradientNormTolerance(inst):
         try:
             gfk = inst.gfk #XXX: need to ensure that gfk is an array ?
