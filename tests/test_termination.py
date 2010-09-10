@@ -1,17 +1,17 @@
 #!/usr/bin/env python
-"""test termination conditions...
-def VTR(tolerance = 0.005):
-def ChangeOverGeneration(tolerance = 1e-6, generations = 30):
-def NormalizedChangeOverGeneration(tolerance = 1e-4, generations = 10):
-def CandidateRelativeTolerance(xtol=1e-4, ftol=1e-4):
-def SolutionImprovement(tolerance = 1e-5):
-def NormalizedCostTarget(fval = None, tolerance = 1e-6, generations = 30):
-def VTRChangeOverGeneration(ftol = 0.005, gtol = 1e-6, generations = 30):
-def PopulationSpread(tolerance=1e-6):
-def GradientNormTolerance(tolerance=1e-5, norm=Inf):
+"""test termination conditions. (defaults listed below)
+
+VTR(tolerance = 0.005)
+ChangeOverGeneration(tolerance = 1e-6, generations = 30)
+NormalizedChangeOverGeneration(tolerance = 1e-4, generations = 10)
+CandidateRelativeTolerance(xtol=1e-4, ftol=1e-4)
+SolutionImprovement(tolerance = 1e-5)
+NormalizedCostTarget(fval = None, tolerance = 1e-6, generations = 30)
+VTRChangeOverGeneration(ftol = 0.005, gtol = 1e-6, generations = 30)
+PopulationSpread(tolerance=1e-6)
+GradientNormTolerance(tolerance=1e-5, norm=Inf)
 """
-#FIXME: need to use 'mystic' module imports
-from termination import *
+from mystic.termination import *
 from numpy import inf
 
 def test_terminators(test, func=lambda x:x[0], verbose=False):
@@ -49,7 +49,7 @@ def verbosity(solver):
     return
 
 def test01(terminate, func=lambda x:x[0], debug=False):
-  from differential_evolution import DifferentialEvolutionSolver2 as DE2
+  from mystic.differential_evolution import DifferentialEvolutionSolver2 as DE2
   solver = DE2(3,5)
   solver.SetRandomInitialPoints()
   solver.SetEvaluationLimits(8)
@@ -58,7 +58,7 @@ def test01(terminate, func=lambda x:x[0], debug=False):
   return terminate(solver)
 
 def test02(terminate, func=lambda x:x[0], debug=False):
-  from differential_evolution import DifferentialEvolutionSolver2 as DE2
+  from mystic.differential_evolution import DifferentialEvolutionSolver2 as DE2
  #solver = DE2(3,1) #Solver throws ValueError "sample larger than population"
  #solver = DE2(1,1) #Solver throws ValueError "sample larger than population"
   solver = DE2(1,5)
@@ -69,7 +69,7 @@ def test02(terminate, func=lambda x:x[0], debug=False):
   return terminate(solver)
 
 def test03(terminate, func=lambda x:x[0], debug=False):
-  from differential_evolution import DifferentialEvolutionSolver as DE
+  from mystic.differential_evolution import DifferentialEvolutionSolver as DE
   solver = DE(3,5)
   solver.SetRandomInitialPoints()
   solver.SetEvaluationLimits(8)
@@ -78,7 +78,7 @@ def test03(terminate, func=lambda x:x[0], debug=False):
   return terminate(solver)
 
 def test04(terminate, func=lambda x:x[0], debug=False):
-  from differential_evolution import DifferentialEvolutionSolver as DE
+  from mystic.differential_evolution import DifferentialEvolutionSolver as DE
   solver = DE(1,5)
   solver.SetRandomInitialPoints()
   solver.SetEvaluationLimits(8)
@@ -87,7 +87,7 @@ def test04(terminate, func=lambda x:x[0], debug=False):
   return terminate(solver)
 
 def test05(terminate, func=lambda x:x[0], debug=False):
-  from scipy_optimize import NelderMeadSimplexSolver as NM
+  from mystic.scipy_optimize import NelderMeadSimplexSolver as NM
   solver = NM(3)
   solver.SetRandomInitialPoints()
   solver.SetEvaluationLimits(8)
@@ -96,7 +96,7 @@ def test05(terminate, func=lambda x:x[0], debug=False):
   return terminate(solver)
 
 def test06(terminate, func=lambda x:x[0], debug=False):
-  from scipy_optimize import NelderMeadSimplexSolver as NM
+  from mystic.scipy_optimize import NelderMeadSimplexSolver as NM
   solver = NM(1)
   solver.SetRandomInitialPoints()
   solver.SetEvaluationLimits(8)
@@ -105,7 +105,7 @@ def test06(terminate, func=lambda x:x[0], debug=False):
   return terminate(solver)
 
 def test07(terminate, func=lambda x:x[0], debug=False):
-  from scipy_optimize import PowellDirectionalSolver as PDS
+  from mystic.scipy_optimize import PowellDirectionalSolver as PDS
   solver = PDS(3)
   solver.SetRandomInitialPoints()
   solver.SetEvaluationLimits(8)
@@ -114,7 +114,7 @@ def test07(terminate, func=lambda x:x[0], debug=False):
   return terminate(solver)
 
 def test08(terminate, func=lambda x:x[0], debug=False):
-  from scipy_optimize import PowellDirectionalSolver as PDS
+  from mystic.scipy_optimize import PowellDirectionalSolver as PDS
   solver = PDS(1)
   solver.SetRandomInitialPoints()
   solver.SetEvaluationLimits(8)
