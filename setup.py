@@ -34,11 +34,13 @@ setup(name='mystic',
 
 # add dependencies
 numpy_version = '>=1.0'
+sympy_version = '>=0.6.7'
+scipy_version = '>=0.6.0'
 matplotlib_version = '>=0.91'
 if has_setuptools:
     setup_code += """
-      install_requires = ('numpy%s'),
-""" % numpy_version
+      install_requires = ('numpy%s', 'sympy%s'),
+""" % (numpy_version, sympy_version)
 
 # close 'setup' call
 setup_code += """    
@@ -59,11 +61,15 @@ exec setup_code
 # if dependencies are missing, print a warning
 try:
     import numpy
+    import sympy
+    #import scipy
     #import matplotlib #XXX: has issues being zip_safe
 except ImportError:
     print "\n***********************************************************"
     print "WARNING: One of the following dependencies is unresolved:"
     print "    numpy %s" % numpy_version
+    print "    sympy %s" % sympy_version
+    print "    scipy %s (optional)" % scipy_version
     print "    matplotlib %s (optional)" % matplotlib_version
     print "***********************************************************\n"
 
