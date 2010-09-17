@@ -34,9 +34,8 @@ def test_sumt1():
     end_solver = sumt(constraints_string, ndim, costfunc, solver,\
                                 term, disp=True)
     soln = end_solver.Solution()
-    print "Final answer:", soln
-    print verify_constraints_satisfied(constraints_string, soln)
-
+    print "final answer:", soln
+    print "constraints satisfied:", satisfy(constraints_string, soln)
     print "expected: [1., 1.]"
 
 def test_sumt2():
@@ -59,8 +58,8 @@ def test_sumt2():
     end_solver = sumt(constraints_string, ndim, costfunc, solver,\
                                 term, disp=True)
     soln = end_solver.Solution()
-    print "Final answer:", soln
-    print verify_constraints_satisfied(constraints_string, soln)
+    print "final answer:", soln
+    print "constraints satisfied:", satisfy(constraints_string, soln)
     print "expected: [ 6.25827968  4.999961    5.20662288]"
 
 def test_form_constraints_function():
@@ -72,19 +71,19 @@ x3 = x1 - 3.
     x0 = [0.8,1.2,-0.7]
     cf = form_constraints_function(string, 3)
     c = cf(x0)
-    print 'constraints satisfied?', verify_constraints_satisfied(string, c)
-    print 'Strict: constraints(x0) = ', c
+    print 'constraints satisfied:', satisfy(string, c)
+    print 'strictly... constraints(x0) =', c
 
 def test_matrix_interface():
-    # Demonstrates matrix_to_symbolic()
+    # Demonstrates linear_symbolic()
     A = asarray([[3., 4., 5.],
          [1., 6., -9.]])
     b = asarray([0., 0.])
     G = [1., 0., 0.]
     h = [5.]
     costfunc = lambda x: sum(x)
-    constraints_string = matrix_to_symbolic(A=A, b=b, G=G, h=h)
-    print "Symbolic string:"
+    constraints_string = linear_symbolic(A=A, b=b, G=G, h=h)
+    print "symbolic string:"
     print constraints_string
     cf = wrap_constraints_to_cost(constraints_string, len(A[0]), costfunc)
     print cf([1., 1., 1.])
@@ -103,7 +102,7 @@ def test_feasible_pt():
 x1 + x2 < 3.
 x1 + x2 > 4."""
     soln = find_feasible_point(constraints, 8, x0=[1.]*8)
-    print 'Actual soln:', soln
+    print 'actual solution:', soln
 
 def test_varnamelist2():
     # Test tricky cases of varnamelist

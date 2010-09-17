@@ -1,13 +1,20 @@
 #!/usr/bin/env python
 #
 # coded by Alta Fang, 2010
+# 
+# updated by mmckerns@caltech.edu
+#FIXME: Major improvement would be to use a constraints class,
+#       where __call__ works like the current constraints function
+#       then, most of the following functions would take constraints objects
+#       and configuration could be seperated from the below methods.
+#       This should improve speed and clarity.
 """
 Tools for imposing constraints on an optimization.
 
 The main functions exported are::
-    - verify_constraints_satisfied: checks if a set of parameters x satisfies
-          the constraints, and can calculate the norm of residual errors.
-    - matrix_to_symbolic: converts constraints from matrix form to a symbolic
+    - rnorm: calculate the norm of residual errors.
+    - satisfy: checks if a set of parameters x satisfies the constraints.
+    - linear_symbolic: converts constraints from matrix form to a symbolic
           string that can be input into a constraints-function generator.
 
 Several 'advanced' functions are also included::
@@ -42,12 +49,12 @@ from math import *
 from numpy import *
 import random
 from mystic.math import approx_equal
-from mystic.tools import Null
+from mystic.tools import Null, list_or_tuple_or_ndarray
 
 #------------------------------------------------------------------
 # Useful helper functions.
 
-def matrix_to_symbolic(A=None, b=None, G=None, h=None):
+def linear_symbolic(A=None, b=None, G=None, h=None):
     """Convert linear equality and inequality constraints from matrices to a 
 symbolic string of the form required by mystic's solver.Solve method.
 
@@ -90,7 +97,7 @@ Inputs:
             Asum = ""
             for j in range(ndim):
                 Asum += str(A[i][j]) + '*x' + str(j+1) + ' + '
-            eqstring += Asum.rstrip(' + ') + '=' + str(b[i]) + '\n'
+            eqstring += Asum.rstrip(' + ') + ' = ' + str(b[i]) + '\n'
 
     # Inequality constraints
     ineqstring = ""
@@ -115,72 +122,78 @@ Inputs:
             Gsum = ""
             for j in range(ndim):
                 Gsum += str(G[i][j]) + '*x' + str(j+1) + ' + '
-            ineqstring += Gsum.rstrip(' + ') + '<=' + str(h[i]) + '\n'
+            ineqstring += Gsum.rstrip(' + ') + ' <= ' + str(h[i]) + '\n'
     totalconstraints = ineqstring + eqstring
     return totalconstraints 
 
-#Tips on using the symbolic string:
-#* When inputting the constraints, ignore the keywords "varname" and
-#  "varnamelist". The default, 'x', is used.
-def verify_constraints_satisfied(constraints_string, x,\
-                                 varname='x', disp=False, tol=1e-3,\
-                                 varnamelist=None, returnerror=True, \
-                                 eqcon_funcs=[], ineqcon_funcs=[]):
-    """Calculates the amount of constraints violation (norm of residual errors)
-and returns whether constraints were violated or not within some tolerance. 
-A tuple of (satisfied, norm) with type (boolean, float) is returned, unless 
-returnerror=False. If returnerror=False, only a boolean for whether the
-constraints are satisfied or not is returned.
-
-Inputs:
-    constraints_string -- string of symbolic constraints.
-    x -- (list) parameter vector to check if satisfies the given constraints.
-
-Additional Inputs:
-    ineqcon_funcs -- list of 'inequality' functions, f, where f(x) <= 0.
-    eqcon_funcs -- list of 'equality' functions, f, where f(x) == 0.
+__feq_variables_doc = """
+    fineq -- list of 'inequality' functions, f, where f(x) <= 0.
+    feq -- list of 'equality' functions, f, where f(x) == 0.
 
     NOTE: If all constraints are in functional form, enter an empty string
-        for 'constraints_string' and provide ineqcon_funcs and/or eqcon_funcs.
+        for 'constraints' and provide fineq and/or feq.
 
     For example, the constraint equations f1(x) <= 0 and f2(x) == 0
-        would be entered as: ineqcon_funcs=[f1], eqcon_funcs=[f2]
+        would be entered as: fineq=[f1], feq=[f2]
         >>> def f1(x): return -x[0] - x[1] + 2.
         ...
         >>> def f2(x): return x[0] + x[1]
         ...
 
-    varname -- variable name. Default is 'x'.
-    varnamelist -- list of variable name strings. Use this keyword if variable
-        names in the constraints string are not of the form x1, x2, x3, ...
+    variables -- variable name. Default is 'x'. Also, a list of variable name
+        strings are accepted. Use this form if variable names don't have the
+        same root name.
 
-    NOTE: For example, a constraints_string = '''length = height**2 - 3*width'''
-        will have a varnamelist = ['length', 'width', 'height'] which specifies
+    NOTE: For example, if constraints = '''length = height**2 - 3*width''', we
+        will have variables = ['length', 'height', 'width'] which specifies
         the variable names used in the constraints string. The variable names
         must be provided in the same order as in the constraints string.
+    """
 
-    disp -- True to print values on each side of the equality or inequality
-        for each constraint. Default is False.
+def satisfy(constraints, solution, tol=1e-3, **kwds):
+    """Returns whether constraints were violated or not within some tolerance. 
+
+Inputs:
+    constraints -- string of symbolic constraints.
+    solution -- list of parameter values proposed to solve the constraints.
     tol -- size limit of norm of residual errors for which constraints
         are considered to be solved. Default is 1e-3.
-    returnerror -- False to only return a boolean. Default is True.
-"""
+
+Further Inputs:
+    verbose -- True to print details for each of the equality or inequality
+        constraints. Default is False.""" + __feq_variables_doc
+    if rnorm(constraints, solution, **kwds) <= tol:
+        return True
+    return False
+
+def rnorm(constraints, solution, verbose=False,
+          variables='x', feq=[], fineq=[]):
+    """Calculates the amount of constraints violation (norm of residual errors).
+
+Inputs:
+    constraints -- string of symbolic constraints.
+    solution -- list of parameter values proposed to solve the constraints.
+
+Additional Inputs:
+    verbose -- True to print values on each side of the equality or inequality
+        for each constraint. Default is False.""" + __feq_variables_doc
+    #FIXME: needs to be optimized for speed
     from mystic.math import approx_equal
 
-    if varnamelist:
-        constraints_string = _replace_variable_names(constraints_string, varnamelist)
-        varname = '$'
+    if list_or_tuple_or_ndarray(variables):
+        constraints = _replace_variable_names(constraints, variables)
+        variables = '$'
 
-    ndim = len(x)
+    ndim = len(solution)
 
     # Iterate in reverse in case ndim > 9.
     indices = list(range(ndim))
     indices.reverse()
     for i in indices:
-        variable = varname + str(i+1)
-        constraints_string = constraints_string.replace(variable, 'x[' + str(i) + ']')
+        variable = variables + str(i+1)
+        constraints = constraints.replace(variable, 'solution[' + str(i) + ']')
 
-    constraints_list = constraints_string.splitlines()
+    constraints_list = constraints.splitlines()
 
     # Remove empty strings:
     actual_eqns = []
@@ -195,9 +208,8 @@ Additional Inputs:
             item = item.rstrip('strict').strip().rstrip(',')
 
         if item.find('mean') != -1: 
-            mean = average(asarray(x))
-            if disp: 
-                print 'actual mean = ', mean 
+            myerror = 'None'
+            mean = average(asarray(solution))
             split = item.split('>')
             if len(split) == 1:
                 split = item.split('<')
@@ -206,13 +218,15 @@ Additional Inputs:
                 item = item.replace('=', '==')
             if not eval(item):
                 # Only add to error if the constraint is not satisfied
-                error += (eval(split[0].rstrip(' = ')) - eval(split[1].lstrip(' = ')))**2
+                myerror = (eval(split[0].rstrip(' = ')) - eval(split[1].lstrip(' = ')))**2
+                error += myerror
+            if verbose: 
+                print 'actual mean =', mean, '   error:', myerror
             continue
         if item.find('range') != -1:
-            r = max(x) - min(x)
+            myerror = 'None'
+            r = max(solution) - min(solution)
             item = item.replace('range', 'r')
-            if disp:
-                print 'actual range = ', r
             split = item.split('>')
             if len(split) == 1:
                 split = item.split('<')
@@ -221,53 +235,57 @@ Additional Inputs:
                 item = item.replace('=', '==')
             if not eval(item):
                 # Only add to error if the constraint is not satisfied
-                error += (eval(split[0].rstrip(' = ')) - eval(split[1].lstrip(' = ')))**2
+                myerror = (eval(split[0].rstrip(' = ')) - eval(split[1].lstrip(' = ')))**2
+                error += myerror
+            if verbose:
+                print 'actual range =', r, '   error:', myerror
             continue
+        myerror = 'None'
         split = item.split('>')
         if len(split) != 1:
-            if disp:
-                print eval(split[0]), ' ?>= ', eval(split[1].lstrip(' = '))
             if not eval(split[0] + '>' + split[1]):
                 # Only add to error if the constraint is not satisfied
-                error += (eval(split[0].rstrip(' = ')) - eval(split[1].lstrip(' = ')))**2
+                myerror = (eval(split[0].rstrip(' = ')) - eval(split[1].lstrip(' = ')))**2
+                error += myerror
+            if verbose:
+                print eval(split[0]), '?>=', eval(split[1].lstrip(' = ')), '   error:', myerror
             continue
+        myerror = 'None'
         split = item.split('<')
         if len(split) != 1:
-            if disp:
-                print eval(split[0]), ' ?<= ', eval(split[1].lstrip('='))
             if not eval(split[0] + '<' + split[1]): 
                 # Only add to error if the constraint is not satisfied
-                error += (eval(split[0].rstrip(' = ')) - eval(split[1].lstrip(' = ')))**2
+                myerror = (eval(split[0].rstrip(' = ')) - eval(split[1].lstrip(' = ')))**2
+                error += myerror
+            if verbose:
+                print eval(split[0]), '?<=', eval(split[1].lstrip('=')), '   error:', myerror
             continue
+        myerror = 'None'
         split = item.split('=')
         if len(split) != 1:
-            if disp:
-                print eval(split[0]), ' ?= ', eval(split[1])
             if not eval(split[0]) == eval(split[1]):
                 # Only add to error if the constraint is not satisfied
-                error += (eval(split[0]) - eval(split[1]))**2
+                myerror = (eval(split[0]) - eval(split[1]))**2
+                error += myerror
+            if verbose:
+                print eval(split[0]), '?=', eval(split[1]), '   error:', myerror
             continue
 
-    # Loop through eqcon_funcs and ineqcon_funcs
-    for func in eqcon_funcs:
-        f = func(x)
-        error += f**2
-        if disp:
-            print f, ' ?= 0.0'
-    for func in ineqcon_funcs:
-        f = func(x)
-        error += max(0., f)**2
-        if disp:
-            print f, ' ?<= 0.0'
+    # Loop through feq and fineq
+    for func in feq:
+        f = func(solution)
+        myerror = f**2
+        error += myerror  #XXX: always add to error? (as opposed to above)
+        if verbose:
+            print f, '?= 0.0', '   error:', myerror
+    for func in fineq:
+        f = func(solution)
+        myerror = max(0., f)**2
+        error += myerror  #XXX: always add to error? (as opposed to above)
+        if verbose:
+            print f, '?<= 0.0', '   error:', myerror
 
-    if error**0.5 <= tol:
-        satisfied = True
-    else:
-        satisfied = False
-
-    if returnerror:
-        return (satisfied, error**0.5)
-    return satisfied
+    return error**0.5
 
 #--------------------------------------------------------------------------------
 # wrap_constraints_to_cost is mostly used as a helper function for the penalty
@@ -308,7 +326,7 @@ Additional Inputs:
         names in the constraints string are not of the form x1, x2, x3, ...
 
     NOTE: For example, a constraints_string = '''length = height**2 - 3*width'''
-        will have a varnamelist = ['length', 'width', 'height'] which specifies
+        will have a varnamelist = ['length', 'height', 'width'] which specifies
         the variable names used in the constraints string. The variable names
         must be provided in the same order as in the constraints string.
 
@@ -434,7 +452,7 @@ Additional Inputs:
         names in the constraints string are not of the form x1, x2, x3, ...
 
     NOTE: For example, a constraints_string = '''length = height**2 - 3*width'''
-        will have a varnamelist = ['length', 'width', 'height'] which specifies
+        will have a varnamelist = ['length', 'height', 'width'] which specifies
         the variable names used in the constraints string. The variable names
         must be provided in the same order as in the constraints string.
 
@@ -475,10 +493,10 @@ Additional Inputs:
                  eqcon_funcs, ineqcon_funcs=ineqcon_funcs, varname=varname,\
                  varnamelist=varnamelist, constraints_method='penalty')
     soln = solver.Solution()
-    if not verify_constraints_satisfied(constraints, soln, varname=varname,\
-                                disp=False, varnamelist=varnamelist, \
-                                returnerror=False, eqcon_funcs=eqcon_funcs,\
-                                ineqcon_funcs=ineqcon_funcs):
+    if varnamelist: vars = varnamelist  #XXX: hack to merge varnamelist
+    else: vars = varname                #     and varname to variables
+    if not satisfy(constraints, soln, variables=vars, verbose=False, \
+                                feq=eqcon_funcs, fineq=ineqcon_funcs):
         soln = None
     return soln
 
@@ -524,7 +542,6 @@ Inputs:
         constraints_string = constraints_string.replace(varnamelist[i], '$' + str(i+1))
     return constraints_string
 
-#XXX: probably needs redesign -- should be a property of a constraints method?
 def _process_constraints(solver_instance, constraints, costfunc, \
                         termination, sigint_callback, EvaluationMonitor,\
                         StepMonitor, **kwds):
@@ -549,7 +566,9 @@ Further Inputs:
     constraints_method -- string name of constraints method. Valid method
         names are ['direct', 'barrier', 'penalty', 'auglag'].
 """
-    #XXX Should the eqcon_funcs/ineqcon_funcs interface have the user input a
+    #XXX: probably needs redesign -- should be property of a constraints method?
+
+    #XXX: Should the eqcon_funcs/ineqcon_funcs interface have the user input a
     # list of functions or one function that returns a list of results?
 
     import types
@@ -743,9 +762,10 @@ with the symbolic interface.")
         eqcon_funcs = []
         if kwds.has_key('ineqcon_funcs'): ineqcon_funcs = kwds['ineqcon_funcs']
         if kwds.has_key('eqcon_funcs'): eqcon_funcs = kwds['eqcon_funcs']
-        if not verify_constraints_satisfied(constraints, x0, varname=varname,\
-                            disp=False, varnamelist=varnamelist, eqcon_funcs=\
-                            eqcon_funcs, ineqcon_funcs=ineqcon_funcs)[0]:
+        if varnamelist: vars = varnamelist  #XXX: hack to merge varnamelist
+        else: vars = varname                #     and varname to variables
+        if not satisfy(constraints, x0, variables=vars, verbose=False, \
+                         feq=eqcon_funcs, fineq=ineqcon_funcs):
             # If constraints are not satisfied, do an optimization to find
             # a feasible point. If one is found, continue optimizing with that.
             # Should print a message to say a preliminary optimization is being
@@ -876,7 +896,7 @@ Additional Inputs:
         names in the constraints string are not of the form x1, x2, x3, ...
 
     NOTE: For example, a constraints_string = '''length = height**2 - 3*width'''
-        will have a varnamelist = ['length', 'width', 'height'] which specifies
+        will have a varnamelist = ['length', 'height', 'width'] which specifies
         the variable names used in the constraints string. The variable names
         must be provided in the same order as in the constraints string.
 """
@@ -938,7 +958,7 @@ Additional Inputs:
         names in the constraints string are not of the form x1, x2, x3, ...
 
     NOTE: For example, a constraints_string = '''length = height**2 - 3*width'''
-        will have a varnamelist = ['length', 'width', 'height'] which specifies
+        will have a varnamelist = ['length', 'height', 'width'] which specifies
         the variable names used in the constraints string. The variable names
         must be provided in the same order as in the constraints string.
 
@@ -1284,9 +1304,6 @@ Additional Inputs:
 
     return code, left, right, xlist, neqns
 
-#FIXME: must set ndim >= max(i) for all xi in equation_string
-#       might want eqn = "x2 = 1. + x4"... and only use ndim = 2.
-#       could ndim = len(get_variables(eqn)) be used to implement this?
 def simplify(equation_string, ndim, varname='x', target=None, **kwds):
     """Solve a single equation for each variable found within the equation.
 Returns permutations of the equation_string, solved for each variable.  If
@@ -1312,6 +1329,9 @@ Additional Inputs:
         >>> print simplify(equation, 3, target='x2')
         x2 = 3.0 + x1*x3
 """
+    #FIXME: must set ndim >= max(i) for all xi in equation_string
+    #       might want eqn = "x2 = 1. + x4"... and only use ndim = 2.
+    #       could ndim = len(get_variables(eqn)) be used to implement this?
     warn = True  # if True, don't supress warning about old versions of sympy
     if kwds.has_key('warn'): warn = kwds['warn']
 
@@ -1386,7 +1406,7 @@ Additional Inputs:
         names in the constraints string are not of the form x1, x2, x3, ...
 
     NOTE: For example, a constraints_string = '''length = height**2 - 3*width'''
-        will have a varnamelist = ['length', 'width', 'height'] which specifies
+        will have a varnamelist = ['length', 'height', 'width'] which specifies
         the variable names used in the constraints string. The variable names
         must be provided in the same order as in the constraints string.
 
@@ -1445,7 +1465,7 @@ Additional Inputs:
         names in the constraints string are not of the form x1, x2, x3, ...
 
     NOTE: For example, a constraints_string = '''length = height**2 - 3*width'''
-        will have a varnamelist = ['length', 'width', 'height'] which specifies
+        will have a varnamelist = ['length', 'height', 'width'] which specifies
         the variable names used in the constraints string. The variable names
         must be provided in the same order as in the constraints string.
 
@@ -1568,7 +1588,7 @@ Additional Inputs:
                 continue
             compatible = constraints_inside_bounds(cf, x0, lower_bounds=\
                  lower_bounds, upper_bounds=upper_bounds)
-            satisfied = verify_constraints_satisfied(equations_string, cf(x0), disp=False)
+            satisfied = satisfy(equations_string, cf(x0), verbose=False)
             if compatible and satisfied:
                 if details:
                     info = get_variable_info('\n'.join(simplified), ndim, varname=varname)
@@ -1589,7 +1609,6 @@ may not be enforced correctly. Constraints function may be faulty.'
 #-------------------------------------------------------------------
 # Method for successive `helper' optimizations
  
-#FIXME: interface needs some cleaning.
 def sumt(constraints_string, ndim, costfunc, solverinstance, term, \
          varname='x', eps = 1e-4, max_SUMT_iters = 10, \
          StepMonitor=Null, EvaluationMonitor=Null, sigint_callback=None, \
@@ -1631,7 +1650,7 @@ Additional Inputs:
         names in the constraints string are not of the form x1, x2, x3, ...
 
     NOTE: For example, a constraints_string = '''length = height**2 - 3*width'''
-        will have a varnamelist = ['length', 'width', 'height'] which specifies
+        will have a varnamelist = ['length', 'height', 'width'] which specifies
         the variable names used in the constraints string. The variable names
         must be provided in the same order as in the constraints string.
 
@@ -1678,6 +1697,7 @@ References:
         Discrete Continuous Optimization and Its Applications to Mechanical
         Design", by Kannan and Kramer. 1994.
 """
+    #FIXME: interface needs some cleaning.
     from mystic.math import approx_equal
     disp = False # to match the defaults in the solvers
     iterated_penalty = False
