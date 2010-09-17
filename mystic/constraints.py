@@ -16,11 +16,10 @@ The main functions exported are::
     - satisfy: checks if a set of parameters x satisfies the constraints.
     - linear_symbolic: converts constraints from matrix form to a symbolic
           string that can be input into a constraints-function generator.
+    - wrap_constraints: takes a string of constraints of any form, and
+          imposes the constraints on a function using the 'penalty' method.
 
 Several 'advanced' functions are also included::
-    - wrap_constraints_to_cost: takes a string of constraints of any form
-          (inequality or equality, and/or mean and range constraints), and
-          wraps it to the cost function using the `penalty' method.
     - find_feasible_point: tries to find a point to satisfy given constraints.
     - form_constraints_function: creates a constraints function from a symbolic
           string. This only handles equality constraints, and no mean or range
@@ -126,7 +125,28 @@ Inputs:
     totalconstraints = ineqstring + eqstring
     return totalconstraints 
 
-__feq_variables_doc = """
+def satisfy(constraints, solution, tol=1e-3, **kwds):
+    """Returns whether constraints were violated or not within some tolerance. 
+
+Inputs:
+    constraints -- a string of symbolic constraints, with one constraint
+        equation per line. Constraints can be equality, inequality, mean,
+        and/or range constraints. Standard python syntax rules should be
+        followed (with the math module already imported).
+
+    For example:
+        >>> constraints = '''
+        ...     x1**2 = 2.5*x2 - 5.0
+        ...     exp(x3/x1) >= 7.0'''
+        ...
+
+    solution -- list of parameter values proposed to solve the constraints.
+    tol -- size limit of norm of residual errors for which constraints
+        are considered to be solved. Default is 1e-3.
+
+Further Inputs:
+    verbose -- True to print details for each of the equality or
+        inequality constraints. Default is False.
     fineq -- list of 'inequality' functions, f, where f(x) <= 0.
     feq -- list of 'equality' functions, f, where f(x) == 0.
 
@@ -140,28 +160,16 @@ __feq_variables_doc = """
         >>> def f2(x): return x[0] + x[1]
         ...
 
-    variables -- variable name. Default is 'x'. Also, a list of variable name
-        strings are accepted. Use this form if variable names don't have the
-        same root name.
+    variables -- variable name. Default is 'x'. Also, a list of variable
+        name strings are accepted. Use a list if variable names don't have
+        the same root name.
 
-    NOTE: For example, if constraints = '''length = height**2 - 3*width''', we
-        will have variables = ['length', 'height', 'width'] which specifies
-        the variable names used in the constraints string. The variable names
-        must be provided in the same order as in the constraints string.
+    NOTE: For example, if constraints = '''length = height**2 - 3*width''',
+        we will have variables = ['length', 'height', 'width'] which
+        specifies the variable names used in the constraints string. The
+        variable names must be provided in the same order as in the
+        constraints string.
     """
-
-def satisfy(constraints, solution, tol=1e-3, **kwds):
-    """Returns whether constraints were violated or not within some tolerance. 
-
-Inputs:
-    constraints -- string of symbolic constraints.
-    solution -- list of parameter values proposed to solve the constraints.
-    tol -- size limit of norm of residual errors for which constraints
-        are considered to be solved. Default is 1e-3.
-
-Further Inputs:
-    verbose -- True to print details for each of the equality or inequality
-        constraints. Default is False.""" + __feq_variables_doc
     if rnorm(constraints, solution, **kwds) <= tol:
         return True
     return False
@@ -171,12 +179,45 @@ def rnorm(constraints, solution, verbose=False,
     """Calculates the amount of constraints violation (norm of residual errors).
 
 Inputs:
-    constraints -- string of symbolic constraints.
+    constraints -- a string of symbolic constraints, with one constraint
+        equation per line. Constraints can be equality, inequality, mean,
+        and/or range constraints. Standard python syntax rules should be
+        followed (with the math module already imported).
+
+    For example:
+        >>> constraints = '''
+        ...     x1**2 = 2.5*x2 - 5.0
+        ...     exp(x3/x1) >= 7.0'''
+        ...
+
     solution -- list of parameter values proposed to solve the constraints.
 
 Additional Inputs:
-    verbose -- True to print values on each side of the equality or inequality
-        for each constraint. Default is False.""" + __feq_variables_doc
+    verbose -- True to print details for each of the equality or
+        inequality constraints. Default is False.
+    fineq -- list of 'inequality' functions, f, where f(x) <= 0.
+    feq -- list of 'equality' functions, f, where f(x) == 0.
+
+    NOTE: If all constraints are in functional form, enter an empty string
+        for 'constraints' and provide fineq and/or feq.
+
+    For example, the constraint equations f1(x) <= 0 and f2(x) == 0
+        would be entered as: fineq=[f1], feq=[f2]
+        >>> def f1(x): return -x[0] - x[1] + 2.
+        ...
+        >>> def f2(x): return x[0] + x[1]
+        ...
+
+    variables -- variable name. Default is 'x'. Also, a list of variable
+        name strings are accepted. Use a list if variable names don't have
+        the same root name.
+
+    NOTE: For example, if constraints = '''length = height**2 - 3*width''',
+        we will have variables = ['length', 'height', 'width'] which
+        specifies the variable names used in the constraints string. The
+        variable names must be provided in the same order as in the
+        constraints string.
+    """
     #FIXME: needs to be optimized for speed
     from mystic.math import approx_equal
 
@@ -288,65 +329,63 @@ Additional Inputs:
     return error**0.5
 
 #--------------------------------------------------------------------------------
-# wrap_constraints_to_cost is mostly used as a helper function for the penalty
-# and barrier methods, but could be used directly too, if for some reason
-# one wants to wrap a cost function with this instead of using keywords to 
-# Solve().
+# wrap_constraints is mostly used as a helper function for the penalty
+# and barrier methods, but could be used directly too.
+#
 # find_feasible_point is mostly a helper function for the barrier method, but
 # could also be used by users to find a feasible point without writing too much
 # code.
 
-def wrap_constraints_to_cost(constraints_string, ndim, costfunc,\
-                             varname='x', penalty=1e4, varnamelist=None, \
-                             ineqcon_funcs=[], eqcon_funcs=[], \
-                             strict_constraints=None, **kwds):
-    """Wraps a cost function with a set of constraints. The constraints are
-imposed using the `penalty' method, using a fixed penalty parameter. Returns
-a cost function with the constraints built-in.
+def wrap_constraints(constraints, func, nvars, variables='x', \
+                     feq=[], fineq=[], penalty=1e4, strict=[]):
+    """Wraps a function with a set of constraints. The constraints are
+imposed using the 'penalty' method, using a fixed penalty parameter. Returns
+a function with the constraints built-in.
 
 Inputs:
-    constraints_string -- a string of symbolic constraints, with one constraint
+    constraints -- a string of symbolic constraints, with one constraint
         equation per line. Constraints can be equality, inequality, mean,
         and/or range constraints. Standard python syntax rules should be
         followed (with the math module already imported).
 
     For example:
-        >>> constraints_string = '''
+        >>> constraints = '''
         ...     x1**2 = 2.5*x2 - 5.0
         ...     exp(x3/x1) >= 7.0'''
         ...
 
-    ndim -- number of variables. Includes xi not explicit in constraints_string.
-        Should correspond to len(x) for x in costfunc(x).
-    costfunc -- the cost function to be minimized.
+    func -- the function to be constrained.
+    nvars -- number of variables. Should equal len(x) for x in func(x).
 
 Additional Inputs:
-    varname -- variable name. Default is 'x'.
-    varnamelist -- list of variable name strings. Use this keyword if variable
-        names in the constraints string are not of the form x1, x2, x3, ...
-
-    NOTE: For example, a constraints_string = '''length = height**2 - 3*width'''
-        will have a varnamelist = ['length', 'height', 'width'] which specifies
-        the variable names used in the constraints string. The variable names
-        must be provided in the same order as in the constraints string.
-
-    ineqcon_funcs -- list of 'inequality' functions, f, where f(x) <= 0.
-    eqcon_funcs -- list of 'equality' functions, f, where f(x) == 0.
+    fineq -- list of 'inequality' functions, f, where f(x) <= 0.
+    feq -- list of 'equality' functions, f, where f(x) == 0.
 
     NOTE: If all constraints are in functional form, enter an empty string
-        for 'constraints_string' and provide ineqcon_funcs and/or eqcon_funcs.
+        for 'constraints' and provide fineq and/or feq.
 
     For example, the constraint equations f1(x) <= 0 and f2(x) == 0
-        would be entered as: ineqcon_funcs=[f1], eqcon_funcs=[f2]
+        would be entered as: fineq=[f1], feq=[f2]
         >>> def f1(x): return -x[0] - x[1] + 2.
         ...
         >>> def f2(x): return x[0] + x[1]
         ...
 
+    variables -- variable name. Default is 'x'. Also, a list of variable
+        name strings are accepted. Use a list if variable names don't have
+        the same root name.
+
+    NOTE: For example, if constraints = '''length = height**2 - 3*width''',
+        we will have variables = ['length', 'height', 'width'] which
+        specifies the variable names used in the constraints string. The
+        variable names must be provided in the same order as in the
+        constraints string.
+
     penalty -- penalty multiplier if the constraints are violated. Default
         is 1e4. It is not recommended to use infinity.
-    strict_constraints -- list of constraint strings, where if any constraint
-        is violated, the penalty is set to infinity (i.e. cost(x) = inf).
+    strict -- list of constraint strings, where if any constraint is
+        violated, the penalty is set to infinity (i.e. func(x) = inf).
+        Each string must be a single line of valid python (usable by eval).
 
 References: 
     [1] http://en.wikipedia.org/wiki/Penalty_method
@@ -354,13 +393,19 @@ References:
         section 7.2.1: Exterior Penalty Function Method
     [3] http://www.srl.gatech.edu/education/ME6103/Penalty-Barrier.ppt
 """
-    if varnamelist:
-        constraints_string = _replace_variable_names(constraints_string, \
-                                                     varnamelist)
-        varname = '$'
+    if list_or_tuple_or_ndarray(variables):
+        constraints = _replace_variable_names(constraints, variables)
+        variables = '$'
+
+    #XXX: should be able to extract nvars in func (e.g. the following equations)
+   #from mystic.tools import src
+   #ndim = len(get_variables(src(func), variables))
+   #ndim = len(get_variables(constraints, variables))
+   #ndim = len(variables)
+    ndim = nvars
 
     # Parse the constraints string
-    lines = constraints_string.splitlines()
+    lines = constraints.splitlines()
     eqconstraints = []
     ineqconstraints = []
     for line in lines:
@@ -370,7 +415,7 @@ References:
             indices = list(range(1, ndim+1))
             indices.reverse()
             for i in indices:
-                fixed = fixed.replace(varname + str(i), 'x[' + str(i-1) + ']') 
+                fixed = fixed.replace(variables + str(i), 'x[' + str(i-1) + ']') 
             constraint = fixed.strip()
             # Replace 'mean' with actual expression for calculating mean
             if constraint.find('mean') != -1:
@@ -402,28 +447,27 @@ References:
     # Use exterior penalty function method, with fixed penalty. 
     # It tolerates infeasible starting points. Ideally, the penalty should
     # be higher if the function values are higher, but replacing penalty
-    # with costfunc(x)*penalty is no good because that is too sensitive
-    # to the costfunc value. Increasing the penalty by some fixed factor 
+    # with func(x)*penalty is no good because that is too sensitive
+    # to the func value. Increasing the penalty by some fixed factor 
     # if result > penalty*0.5, for example, is too abrupt and also arbitrary.
-    def wrapped_costfunc(x):
-        if strict_constraints:
-            for constraint in strict_constraints:
-                if not eval(constraint):
-                    return inf
-        result = costfunc(x)
+    def wrapped_func(x):
+        for constraint in strict:
+            if not eval(constraint):
+                return inf
+        result = func(x)
         # For constraints that were input symbolically
         for constraint in ineqconstraints:
             result += float(penalty)*max(0., eval(constraint))**2
         for constraint in eqconstraints:
             result += float(penalty)*eval(constraint)**2
         # For constraints in function form
-        for constraint in ineqcon_funcs:
+        for constraint in fineq:
             result += float(penalty)*max(0., constraint(x))**2
-        for constraint in eqcon_funcs:
+        for constraint in feq:
             result += float(penalty)*constraint(x)**2
         return result
 
-    return wrapped_costfunc
+    return wrapped_func
 
 
 def find_feasible_point(constraints, ndim, x0=None, \
@@ -646,7 +690,7 @@ Further Inputs:
     valid_methods = ['direct', 'barrier', 'penalty', 'auglag']
     if valid_methods.count(method) == 0:
         print "Method" + str(method) + "is not a valid option. Proceeding \
-with `penalty' method."
+with 'penalty' method."
         method = 'penalty'
 
     # If direct and symbolic string input, pass to form_constraints_function
@@ -756,14 +800,15 @@ with the symbolic interface.")
                                         for j in range(solver_instance.nPop)]
             returnflag = True"""
             
+    if varnamelist: vars = varnamelist  #XXX: hack to merge varnamelist
+    else: vars = varname                #     and varname to variables
+
     if method == 'barrier':
         # Check if x0 satisfies constraints.
         ineqcon_funcs = []
         eqcon_funcs = []
         if kwds.has_key('ineqcon_funcs'): ineqcon_funcs = kwds['ineqcon_funcs']
         if kwds.has_key('eqcon_funcs'): eqcon_funcs = kwds['eqcon_funcs']
-        if varnamelist: vars = varnamelist  #XXX: hack to merge varnamelist
-        else: vars = varname                #     and varname to variables
         if not satisfy(constraints, x0, variables=vars, verbose=False, \
                          feq=eqcon_funcs, fineq=ineqcon_funcs):
             # If constraints are not satisfied, do an optimization to find
@@ -792,10 +837,9 @@ with the symbolic interface.")
         returnflag = True
 
     if method == 'penalty':
-        costfunc = wrap_constraints_to_cost(constraints, ndim, \
-                          costfunc, varname=varname,\
-                          varnamelist=varnamelist, \
-                          strict_constraints=constraints_strict, **kwds)
+        costfunc = wrap_constraints(constraints, costfunc, ndim, \
+                                    strict=constraints_strict, \
+                                    variables=vars, **kwds)
         constraints = lambda x: x
         #XXX solver.bestEnergy does not give costfunc(bestSolution)! It gives
         # wrapped_costfunc(bestSolution), so if the constraints are not 

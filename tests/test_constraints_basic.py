@@ -85,7 +85,7 @@ def test_matrix_interface():
     constraints_string = linear_symbolic(A=A, b=b, G=G, h=h)
     print "symbolic string:"
     print constraints_string
-    cf = wrap_constraints_to_cost(constraints_string, len(A[0]), costfunc)
+    cf = wrap_constraints(constraints_string, costfunc, len(A[0]))
     print cf([1., 1., 1.])
 
 def test_varnamelist():
@@ -93,7 +93,7 @@ def test_varnamelist():
     varnamelist = ['length', 'width', 'height']
     string = "length = height**2 - 3.5*width"
     costfunc = lambda x: x[0]   
-    wrappedfunc = wrap_constraints_to_cost(string, 3, costfunc, varnamelist=varnamelist)
+    wrappedfunc = wrap_constraints(string, costfunc, 3, variables=varnamelist)
     print wrappedfunc([2., 2., 3.]) # Expected: 2.0
 
 def test_feasible_pt():

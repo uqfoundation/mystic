@@ -6,6 +6,7 @@
 # Null was adapted (and bugfixed) from the python cookbook
 # wrap_function was adapted from numpy
 # wrap_bounds was adapted from park
+# src & parse_from_history were copied from pathos.pyina.ez_map
 
 """
 Various python tools
@@ -25,6 +26,7 @@ Main functions exported are::
         to a function object
     - wrap_bounds: impose bounds on a funciton object
     - unpair: convert a 1D array of N pairs to two 1D arrays of N values
+    - src: extract source code from a python code object
 
 Other tools of interest are in::
     `mystic.mystic.filters` and `mystic.models.poly`
@@ -361,6 +363,39 @@ example usage...
     from numpy import asarray
     pairsT = asarray(pairs).transpose()
     return [i.tolist() for i in pairsT]
+
+def parse_from_history(object):
+    """extract code blocks from a code object using stored history"""
+    import readline, inspect
+    lbuf = readline.get_current_history_length()
+    code = [readline.get_history_item(i)+'\n' for i in range(1,lbuf)]
+    lnum = 0
+    codeblocks = []
+    while lnum < len(code)-1:
+       if code[lnum].startswith('def'):    
+           block = inspect.getblock(code[lnum:])
+           lnum += len(block)
+           if block[0].startswith('def %s' % object.func_name):
+               codeblocks.append(block)
+       else:
+           lnum +=1
+    return codeblocks
+
+def src(object):
+    """Extract source code from python code object.
+
+This function is designed to work with simple functions, and will not
+work on any general callable. However, this function can extract source
+code from functions that are defined interactively.
+    """
+    import inspect
+    # no try/except (like the normal src function)
+    if hasattr(object,'func_code') and object.func_code.co_filename == '<stdin>':
+        # function is typed in at the python shell
+        lines = parse_from_history(object)[-1]
+    else:
+        lines, lnum = inspect.getsourcelines(object)
+    return ''.join(lines)
 
 
 if __name__=='__main__':
