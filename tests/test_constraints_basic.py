@@ -5,7 +5,6 @@
 A few basic constraints tests, but definitely not a comprehensive suite.
 """
 from mystic.constraints import *
-from mystic.constraints import _replace_variable_names
 from mystic.tools import random_seed
 random_seed(123)
 
@@ -35,7 +34,7 @@ def test_sumt1():
                                 term, disp=True)
     soln = end_solver.Solution()
     print "final answer:", soln
-    print "constraints satisfied:", satisfy(constraints_string, soln)
+    print "constraints satisfied:", issolution(constraints_string, soln)
     print "expected: [1., 1.]"
 
 def test_sumt2():
@@ -59,7 +58,7 @@ def test_sumt2():
                                 term, disp=True)
     soln = end_solver.Solution()
     print "final answer:", soln
-    print "constraints satisfied:", satisfy(constraints_string, soln)
+    print "constraints satisfied:", issolution(constraints_string, soln)
     print "expected: [ 6.25827968  4.999961    5.20662288]"
 
 def test_form_constraints_function():
@@ -71,7 +70,7 @@ x3 = x1 - 3.
     x0 = [0.8,1.2,-0.7]
     cf = form_constraints_function(string, 3)
     c = cf(x0)
-    print 'constraints satisfied:', satisfy(string, c)
+    print 'constraints satisfied:', issolution(string, c)
     print 'strictly... constraints(x0) =', c
 
 def test_matrix_interface():
@@ -101,14 +100,14 @@ def test_feasible_pt():
     bad_constraints = """
 x1 + x2 < 3.
 x1 + x2 > 4."""
-    soln = find_feasible_point(constraints, 8, x0=[1.]*8)
+    soln = solve(constraints, guess=[1.]*8)
     print 'actual solution:', soln
 
 def test_varnamelist2():
     # Test tricky cases of varnamelist
     varnamelist = ['x', 'y', 'x3']
     string = "x + y + x3 = 0"
-    newstring = _replace_variable_names(string, varnamelist)
+    newstring = substitute_symbolic(string, varnamelist, varname='x')
     print newstring
 
 

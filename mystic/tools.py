@@ -397,6 +397,43 @@ code from functions that are defined interactively.
         lines, lnum = inspect.getsourcelines(object)
     return ''.join(lines)
 
+try:
+    from itertools import permutations
+except ImportError:
+    def permutations(iterable, r=None):
+        """return successive r-length permutations of elements in the iterable.
+Produces a generator object.
+
+For example, 
+    >>> print list( permutations(range(3),2) ) 
+    [(0,1), (0,2), (1,0), (1,2), (2,0), (2,1)]
+    >>> print list( permutations(range(3)) )
+    [(0,1,2), (0,2,1), (1,0,2), (1,2,0), (2,0,1), (2,1,0)]
+        """
+        # code from http://docs.python.org/library/itertools.html
+        pool = tuple(iterable)
+        n = len(pool)
+        r = n if r is None else r
+        if r > n:
+            return
+        indices = range(n)
+        cycles = range(n, n-r, -1)
+        yield tuple(pool[i] for i in indices[:r])
+        while n:
+            for i in reversed(range(r)):
+                cycles[i] -= 1
+                if cycles[i] == 0:
+                    indices[i:] = indices[i+1:] + indices[i:i+1]
+                    cycles[i] = n - i
+                else:
+                    j = cycles[i]
+                    indices[i], indices[-j] = indices[-j], indices[i]
+                    yield tuple(pool[i] for i in indices[:r])
+                    break
+            else:
+                return
+        return
+
 
 if __name__=='__main__':
     import doctest
