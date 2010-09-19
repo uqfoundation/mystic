@@ -579,7 +579,6 @@ Additional Inputs:
     #       and solve for x.  (see rnorm)
     #       Alternately, use constraints='' and a f built with feq & fineq.
 
-    #XXX: the following block is a hack until "solver.Solve" uses 'variables'
     if list_or_tuple_or_ndarray(variables):
         varnamelist = variables
         varname = 'x'
@@ -622,7 +621,7 @@ Additional Inputs:
     return soln
 
 
-def substitute_symbolic(constraints, varnamelist, varname='$'):
+def substitute_symbolic(constraints, varnamelist, variables='$'):
     """Replace variables in constraints string with a marker '$i',
 where i = 1,2,3,...  Returns a modified constraints string.
 
@@ -641,9 +640,24 @@ Inputs:
         '$1 + $2 - 42'
 
 Additional Inputs:
-    varname -- base for new variable names. Default is '$'.
+    variables -- variable name. Default is '$'. Also, a list of variable
+        name strings are accepted. Use a list if variable names don't have
+        the same base name.
+
+    NOTE: For example, if constraints = '''length = height**2 - 3*width''',
+        we will have variables = ['length', 'height', 'width'] which
+        specifies the variable names used in the constraints string. The
+        variable names must be provided in the same order as in the
+        constraints string.
 """
-    # Helper function for when varnamelist is specified
+    # substitite one list of strings for another
+    if list_or_tuple_or_ndarray(variables):
+        equations = substitute_symbolic(constraints,varnamelist,'_')
+        vars = get_variables(equations,'_')
+        indices = [int(v.strip('_'))-1 for v in vars]
+        for i in range(len(vars)):
+            equations = equations.replace(vars[i],variables[indices[i]])
+        return equations
 
     # Sort by decreasing length of variable name, so that if one variable name 
     # is a substring of another, that won't be a problem. 
@@ -657,16 +671,22 @@ Additional Inputs:
     for item in varnamelistcopy:
         indices.append(varnamelist.index(item))
 
-    # Default is varname='$', as '$' is not a special symbol in Python,
+    # Default is variables='$', as '$' is not a special symbol in Python,
     # and it is unlikely a user will choose it for a variable name.
-    if varname in varnamelist:
+    if variables in varnamelist:
         marker = '_$$$$$$$$$$' # even less likely...
     else:
-        marker = varname
+        marker = variables
 
+    '''Bug demonstrated here:
+    >>> equation = """x3 = max(y,x) + x"""
+    >>> vars = ['x','y','z','x3']
+    >>> print substitute_symbolic(equation,vars)
+    '$4 = ma$1($2,$1) + $1'
+    '''
     for i in indices:
         constraints = constraints.replace(varnamelist[i], marker + str(i+1))
-    return constraints.replace(marker, varname)
+    return constraints.replace(marker, variables)
 
 
 def isbounded(func, x, lower_bounds=None, upper_bounds=None):
@@ -680,7 +700,6 @@ Additional Inputs:
     lower_bounds -- list of lower bounds on parameters.
     upper_bounds -- list of upper bounds on parameters.
 """
-    #XXX: needs better name than isbounded?
     from mystic.tools import wrap_bounds
     wrapped = wrap_bounds(func, min=lower_bounds, max=upper_bounds)
     if wrapped(func(x)) == inf:
@@ -773,7 +792,7 @@ Additional Inputs:
     d = {'dependent':dep, 'independent':indep, 'unconstrained':variables}
     return d
 
-def get_variables(constraints, varname='x'):
+def get_variables(constraints, variables='x'):
     """extract a list of the string variable names from constraints string
 
 Inputs:
@@ -789,20 +808,35 @@ Inputs:
         ['x1', 'x2', 'x3', 'x4'] 
 
 Additional Inputs:
-    varname -- base variable name. Default is 'x'.
+    variables -- variable name. Default is 'x'. Also, a list of variable
+        name strings are accepted. Use a list if variable names don't have
+        the same base name.
+
+    NOTE: For example, if constraints = '''length = height**2 - 3*width''',
+        we will have variables = ['length', 'height', 'width'] which
+        specifies the variable names used in the constraints string. The
+        variable names must be provided in the same order as in the
+        constraints string.
 """
-    #XXX: would be pointless to get_variables with varnamelist, right?
-    #FIXME: think about doing the above (with varnamelist) anyway.
+    if list_or_tuple_or_ndarray(variables):
+        equations = substitute_symbolic(constraints,variables,'_')
+        vars = get_variables(equations,'_')
+        indices = [int(v.strip('_'))-1 for v in vars]
+        varnamelist = []
+        for i in sort(indices):
+            varnamelist.append(variables[i])
+        return varnamelist
+
     import re
-    target = varname+'[0-9]+'
-    variables = []
+    target = variables+'[0-9]+'
+    varnamelist = []
     equation_list = constraints.splitlines()
     for equation in equation_list:
         vars = re.findall(target,equation)
         for var in vars:
-            if var not in variables:
-                variables.append(var)
-    return variables
+            if var not in varnamelist:
+                varnamelist.append(var)
+    return varnamelist
 
 def _prepare_sympy(constraints, nvars=None, variables='x'):
     """Parse an equation string and prepare input for sympy. Returns a tuple
@@ -844,7 +878,7 @@ Additional Inputs:
     '''
 
     if list_or_tuple_or_ndarray(variables):
-        constraints = substitute_symbolic(constraints, variables, varname='_')
+        constraints = substitute_symbolic(constraints, variables, variables='_')
         varname = '_'
         ndim = len(variables)
     else:
@@ -925,11 +959,11 @@ Additional Inputs:
 """
     #FIXME: different behavior for target='x' (NameError) & target='xi' (None)
     if list_or_tuple_or_ndarray(variables):
-        constraints = substitute_symbolic(constraint, variables, varname='_')
+        constraints = substitute_symbolic(constraint, variables, variables='_')
         varname = '_'
         ndim = len(variables)
         if variables.count(target):
-            target = substitute_symbolic(target, variables, varname='_')
+            target = substitute_symbolic(target, variables, variables='_')
     else:
         constraints = constraint # constraints used below
         varname = variables # varname used below instead of variables

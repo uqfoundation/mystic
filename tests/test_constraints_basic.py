@@ -107,7 +107,7 @@ def test_varnamelist2():
     # Test tricky cases of varnamelist
     varnamelist = ['x', 'y', 'x3']
     string = "x + y + x3 = 0"
-    newstring = substitute_symbolic(string, varnamelist, varname='x')
+    newstring = substitute_symbolic(string, varnamelist, variables='x')
     print newstring
 
 
