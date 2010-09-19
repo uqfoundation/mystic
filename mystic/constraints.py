@@ -160,7 +160,7 @@ Further Inputs:
 
     variables -- variable name. Default is 'x'. Also, a list of variable
         name strings are accepted. Use a list if variable names don't have
-        the same root name.
+        the same base name.
 
     NOTE: For example, if constraints = '''length = height**2 - 3*width''',
         we will have variables = ['length', 'height', 'width'] which
@@ -210,7 +210,7 @@ Additional Inputs:
 
     variables -- variable name. Default is 'x'. Also, a list of variable
         name strings are accepted. Use a list if variable names don't have
-        the same root name.
+        the same base name.
 
     NOTE: For example, if constraints = '''length = height**2 - 3*width''',
         we will have variables = ['length', 'height', 'width'] which
@@ -376,7 +376,7 @@ Additional Inputs:
 
     variables -- variable name. Default is 'x'. Also, a list of variable
         name strings are accepted. Use a list if variable names don't have
-        the same root name.
+        the same base name.
 
     NOTE: For example, if constraints = '''length = height**2 - 3*width''',
         we will have variables = ['length', 'height', 'width'] which
@@ -403,6 +403,59 @@ References:
         constraints = substitute_symbolic(constraints, variables)
         variables = '$'
 
+    #FIXME: nvars doesn't work as expected... as is can be automated
+    '''Bugs demonstrated here:
+    >>> f = wrap_constraints(equation,lambda x:1, 3)
+    >>> f([1,1,1])
+    Traceback (most recent call last):
+      File "<stdin>", line 1, in <module>
+      File "constraints.py", line 468, in wrapped_func
+        for constraint in eqconstraints:
+      File "<string>", line 1, in <module>
+    NameError: name 'x4' is not defined
+    >>> f = wrap_constraints(equation,lambda x:1, 4)
+    >>> f([1,1,1,1])
+    90001.0
+    >>> f([1,1,1])
+    Traceback (most recent call last):
+      File "<stdin>", line 1, in <module>
+      File "constraints.py", line 468, in wrapped_func
+        for constraint in eqconstraints:
+      File "<string>", line 1, in <module>
+    IndexError: list index out of range
+    >>> f([1,1,1,1,1])
+    90001.0
+
+    >>> f = wrap_constraints(equation,lambda x:1, 4,variables='_')
+    >>> f([1,1,1,1])
+    Traceback (most recent call last):
+      File "<stdin>", line 1, in <module>
+      File "constraints.py", line 468, in wrapped_func
+        for constraint in eqconstraints:
+      File "<string>", line 1, in <module>
+    NameError: name 'x2' is not defined
+
+    >>> f = wrap_constraints(equation,lambda x:1,3,variables=['x1','x2','x4'])
+    >>> f([1,1,1,1])
+    90001.0
+    >>> f([1,1,1])
+    90001.0
+    >>> f = wrap_constraints(equation,lambda x:1,3,variables=['x1','x2','x4','x3'])
+    >>> f([1,1,1])
+    90001.0
+    >>> f([1,1,1,1])
+    90001.0
+    >>> f = wrap_constraints(equation,lambda x:1,2,variables=['x1','x2','x4'])
+    >>> f([1,1,1,1])
+    Traceback (most recent call last):
+      File "<stdin>", line 1, in <module>
+      File "constraints.py", line 468, in wrapped_func
+        for constraint in eqconstraints:
+      File "<string>", line 1
+        x[1] + 3. -( x[0]*$3)
+                      ^
+    SyntaxError: invalid syntax
+    '''
     #XXX: should be able to extract nvars in func (e.g. the following equations)
    #from mystic.tools import src
    #ndim = len(get_variables(src(func), variables))
@@ -514,7 +567,7 @@ Additional Inputs:
 
     variables -- variable name. Default is 'x'. Also, a list of variable
         name strings are accepted. Use a list if variable names don't have
-        the same root name.
+        the same base name.
 
     NOTE: For example, if constraints = '''length = height**2 - 3*width''',
         we will have variables = ['length', 'height', 'width'] which
@@ -627,6 +680,7 @@ Additional Inputs:
     lower_bounds -- list of lower bounds on parameters.
     upper_bounds -- list of upper bounds on parameters.
 """
+    #XXX: needs better name than isbounded?
     from mystic.tools import wrap_bounds
     wrapped = wrap_bounds(func, min=lower_bounds, max=upper_bounds)
     if wrapped(func(x)) == inf:
@@ -657,7 +711,7 @@ Additional Inputs:
         given by the constraint equations (e.g. 'x2' in the example above).
     variables -- variable name. Default is 'x'. Also, a list of variable
         name strings are accepted. Use a list if variable names don't have
-        the same root name.
+        the same base name.
 
     NOTE: For example, if constraints = '''length = height**2 - 3*width''',
         we will have variables = ['length', 'height', 'width'] which
@@ -738,6 +792,7 @@ Additional Inputs:
     varname -- base variable name. Default is 'x'.
 """
     #XXX: would be pointless to get_variables with varnamelist, right?
+    #FIXME: think about doing the above (with varnamelist) anyway.
     import re
     target = varname+'[0-9]+'
     variables = []
@@ -749,21 +804,58 @@ Additional Inputs:
                 variables.append(var)
     return variables
 
-def _sympy_setup(equations, ndim, varname='x'):
+def _prepare_sympy(constraints, nvars=None, variables='x'):
     """Parse an equation string and prepare input for sympy. Returns a tuple
-of sympy-specific input. Used as a helper function for form_constraints_linear
-and form_constraints_nonlinear.
+of sympy-specific input.
 
 Inputs:
-    equations -- a string, where each line is a constraint equation.
-    ndim -- number of variables. Includes xi not explicit in equations.
+    constraints -- a string of symbolic constraints, with one constraint
+        equation per line. Constraints can be equality, inequality, mean,
+        and/or range constraints. Standard python syntax rules should be
+        followed (with the math module already imported).
+
+    For example:
+        >>> constraints = '''
+        ...     x1**2 = 2.5*x2 - 5.0
+        ...     exp(x3/x1) >= 7.0'''
+        ...
     
 Additional Inputs:
-    varname -- base variable name. Default is 'x'.
+    nvars -- number of variables. Includes variables not explicitly
+        given by the constraint equations (e.g. 'x4' in the example above).
+    variables -- variable name. Default is 'x'. Also, a list of variable
+        name strings are accepted. Use a list if variable names don't have
+        the same base name.
+
+    NOTE: For example, if constraints = '''length = height**2 - 3*width''',
+        we will have variables = ['length', 'height', 'width'] which
+        specifies the variable names used in the constraints string. The
+        variable names must be provided in the same order as in the
+        constraints string.
 """
+    #FIXME: if constraints contain x1,x2,x4 should x3 be in code,xlist?
+    #FIXME: _3 appears in equation if nvars=2,variables=x1,x2,x4. Should it?
+    '''Bugs (?) demonstrated here:
+    >>> print _prepare_sympy(equation)
+    ("x1=Symbol('x1')\nx2=Symbol('x2')\nx3=Symbol('x3')\nx4=Symbol('x4')\nrand = Symbol('rand')\n", ['x2 + 3. '], [' x1*x4'], 'x1,x2,x3,x4,', 1)
+
+    >>> print _prepare_sympy(equation,2,variables=['x1','x2','x4'])
+    ("_1=Symbol('_1')\n_2=Symbol('_2')\nrand = Symbol('rand')\n", ['_2 + 3. '], [' _1*_3'], '_1,_2,', 1)
+    '''
+
+    if list_or_tuple_or_ndarray(variables):
+        constraints = substitute_symbolic(constraints, variables, varname='_')
+        varname = '_'
+        ndim = len(variables)
+    else:
+        varname = variables # varname used below instead of variables
+        myvar = get_variables(constraints, variables)
+        if myvar: ndim = max([int(v.strip(varname)) for v in myvar])
+        else: ndim = 0
+    if nvars: ndim = nvars
 
     # split constraints_str into lists of left hand sides and right hand sides
-    eacheqn = equations.splitlines()
+    eacheqn = constraints.splitlines()
     neqns = 0
     left = []
     right = []
@@ -796,49 +888,80 @@ Additional Inputs:
         code += xn + '=' + "Symbol('" + xn + "')\n"
 
     code += "rand = Symbol('rand')\n"
-
     return code, left, right, xlist, neqns
 
-def simplify_symbolic(equation_string, ndim, varname='x', target=None, **kwds):
-    """Solve a single equation for each variable found within the equation.
-Returns permutations of the equation_string, solved for each variable.  If
-the equations fail to simplify, the original equation is returned.
+def simplify_symbolic(constraint, variables='x', target=None, **kwds):
+    """Solve a single equation for each variable found within the constraint.
+Returns permutations of the constraint equation, solved for each variable.
+If the equation fails to simplify, the original equation is returned.
 
-    equation_string -- a string representing a single constraint equation.
-        Only a single equation should be provided.
-    ndim -- number of variables. Includes variables not explicit in equation_string.
+    constraint -- a string representing a single constraint equation.
+        Only a single constraint equation should be provided.
 
     For example:
         >>> equation = "x2 - 3. = x1*x3"
-        >>> print simplify_symbolic(equation, 3)
+        >>> print simplify_symbolic(equation)
         x3 = -(3.0 - x2)/x1
         x2 = 3.0 + x1*x3
         x1 = -(3.0 - x2)/x3
 
 Additional Inputs:
-    varname -- base variable name. Default is 'x'.
+    variables -- variable name. Default is 'x'. Also, a list of variable
+        name strings are accepted. Use a list if variable names don't have
+        the same base name.
+
+    NOTE: For example, if constraints = '''length = height**2 - 3*width''',
+        we will have variables = ['length', 'height', 'width'] which
+        specifies the variable names used in the constraints string. The
+        variable names must be provided in the same order as in the
+        constraints string.
+
     target -- specify the variable to isolate on the left side upon return.
 
     For example:
         >>> equation = "x2 - 3. = x1*x3"
-        >>> print simplify_symbolic(equation, 3, target='x2')
+        >>> print simplify_symbolic(equation, target='x2')
         x2 = 3.0 + x1*x3
 """
-    #FIXME: must set ndim >= max(i) for all xi in equation_string
-    #       might want eqn = "x2 = 1. + x4"... and only use ndim = 2.
-    #       could ndim = len(get_variables(eqn)) be used to implement this?
+    #FIXME: different behavior for target='x' (NameError) & target='xi' (None)
+    if list_or_tuple_or_ndarray(variables):
+        constraints = substitute_symbolic(constraint, variables, varname='_')
+        varname = '_'
+        ndim = len(variables)
+        if variables.count(target):
+            target = substitute_symbolic(target, variables, varname='_')
+    else:
+        constraints = constraint # constraints used below
+        varname = variables # varname used below instead of variables
+        myvar = get_variables(constraint, variables)
+        if myvar: ndim = max([int(v.strip(varname)) for v in myvar])
+        else: ndim = 0
+    '''Bug (?) demonstrated here:
+    >>> equation = 'x2 + 3. = x1*x4'
+    >>> print simplify_symbolic(equation,target='x2')
+    x2 = -3.0 + x1*x4
+    >>> print simplify_symbolic(equation,target='x3')
+    Target variable is invalid. Returning None.
+    None
+    >>> print simplify_symbolic(equation,target='x')
+    Traceback (most recent call last):
+      File "<stdin>", line 1, in <module>
+      File "constraints.py", line 948, in simplify_symbolic
+        exec code in globals(), locals()
+      File "<string>", line 7, in <module>
+    NameError: name 'x' is not defined
+    '''
     warn = True  # if True, don't supress warning about old versions of sympy
     if kwds.has_key('warn'): warn = kwds['warn']
 
     try:
         from sympy import Eq, Symbol
         from sympy import solve as symsol
-    except ImportError:
-        if warn: print "Warning: sympy not installed."# Equation will not be simplified."
-        return equation_string
-       #return form_constraints_directly(equation_string, ndim, varname=varname)
+    except ImportError: # Equation will not be simplified."
+        if warn: print "Warning: sympy not installed."
+        return constraint
 
-    code, left, right, xlist, neqns = _sympy_setup(equation_string, ndim, varname)
+    code,left,right,xlist,neqns = _prepare_sympy(constraints, ndim, varname)
 
     code += 'eq = Eq(' + left[0] + ',' + right[0] + ')\n' 
 
@@ -851,25 +974,29 @@ Additional Inputs:
         exec code in globals(), locals()
     except NotImplementedError: # catch 'multivariate' error for older sympy
         if warn: print "Warning: sympy could not simplify equation."
-       #if warn: print "Warning: older sympy version. Equation will not be simplified."
-        return equation_string
-       #return form_constraints_directly(equation_string, ndim, varname=varname)
+        return constraint
 
+    #XXX Not the best way to handle multiple solutions?
     if not target:
         solvedstring = ""
         for key, value in soln.iteritems():
             if value:
                 for v in value:
                     solvedstring += str(key) + ' = ' + str(v) + '\n'
-        #XXX Not the best way to handle multiple solutions?
-        return solvedstring
+        if solvedstring: solvedstring = solvedstring[:-1]
     #XXX: consistent to return string (above) and None (below)?
     else:
         if not soln:
             print "Target variable is invalid. Returning None."
             return None
-        return target + ' = ' + str(soln[0])
-
+        solvedstring = target + ' = ' + str(soln[0])
+    # replace '_' with the original variable names
+    if list_or_tuple_or_ndarray(variables):
+        vars = get_variables(solvedstring,'_')
+        indices = [int(v.strip('_'))-1 for v in vars]
+        for i in range(len(vars)):
+            solvedstring = solvedstring.replace(vars[i],variables[indices[i]])
+    return solvedstring
 
 def form_constraints_directly(constraints_str, ndim, varname='x',\
                               varnamelist=None):
@@ -1036,7 +1163,7 @@ Additional Inputs:
         if warn: print "Warning: sympy not installed."# Equation will not be simplified."
         return form_constraints_directly(equations_string, ndim, varname=varname)
 
-    code, left, right, xlist, neqns = _sympy_setup(equations_string, ndim, varname)
+    code, left, right, xlist, neqns = _prepare_sympy(equations_string, ndim, varname)
 
     eqlist = ""
     for i in range(1, neqns + 1):
@@ -1312,7 +1439,7 @@ Additional Inputs:
             # containing xi.
             target = usedvars[i]
             for eqn in actual_eqns[i:]:
-                invertedstring = simplify_symbolic(eqn, ndim, varname=varname, target=target, warn=warn)
+                invertedstring = simplify_symbolic(eqn, variables=varname, target=target, warn=warn)
                 if invertedstring:
                     warn = False
                     break
@@ -1333,7 +1460,7 @@ Additional Inputs:
         simplified = []
         for eqn in actual_eqns:
             target = usedvars[actual_eqns.index(eqn)]
-            simplified.append(simplify_symbolic(eqn, ndim, varname=varname, target=target, warn=warn))
+            simplified.append(simplify_symbolic(eqn, variables=varname, target=target, warn=warn))
 
         cf = form_constraints_directly('\n'.join(simplified), ndim, varname=varname) 
 
