@@ -339,7 +339,7 @@ Additional Inputs:
     return error**0.5
 
 
-def wrap_constraints(constraints, func, nvars, variables='x', \
+def wrap_constraints(constraints, func, variables='x', \
                      feq=[], fineq=[], penalty=1e4, strict=[]):
     """Wraps a function with a set of constraints. The constraints are
 imposed using the 'penalty' method, using a fixed penalty parameter. Returns
@@ -358,7 +358,6 @@ Inputs:
         ...
 
     func -- the function to be constrained.
-    nvars -- number of variables. Should equal len(x) for x in func(x).
 
 Additional Inputs:
     fineq -- list of 'inequality' functions, f, where f(x) <= 0.
@@ -399,69 +398,17 @@ References:
     #FIXME: need to add the abilty to take a constraints function constrain(x)
     #       and wrap func(x) with constrain(x).  (see rnorm)
     #       Alternately, use constraints='' and a f built with feq & fineq.
-    if list_or_tuple_or_ndarray(variables):
-        constraints = substitute_symbolic(constraints, variables)
-        variables = '$'
-
-    #FIXME: nvars doesn't work as expected... as is can be automated
-    '''Bugs demonstrated here:
-    >>> f = wrap_constraints(equation,lambda x:1, 3)
-    >>> f([1,1,1])
-    Traceback (most recent call last):
-      File "<stdin>", line 1, in <module>
-      File "constraints.py", line 468, in wrapped_func
-        for constraint in eqconstraints:
-      File "<string>", line 1, in <module>
-    NameError: name 'x4' is not defined
-    >>> f = wrap_constraints(equation,lambda x:1, 4)
-    >>> f([1,1,1,1])
-    90001.0
-    >>> f([1,1,1])
-    Traceback (most recent call last):
-      File "<stdin>", line 1, in <module>
-      File "constraints.py", line 468, in wrapped_func
-        for constraint in eqconstraints:
-      File "<string>", line 1, in <module>
-    IndexError: list index out of range
-    >>> f([1,1,1,1,1])
-    90001.0
-
-    >>> f = wrap_constraints(equation,lambda x:1, 4,variables='_')
-    >>> f([1,1,1,1])
-    Traceback (most recent call last):
-      File "<stdin>", line 1, in <module>
-      File "constraints.py", line 468, in wrapped_func
-        for constraint in eqconstraints:
-      File "<string>", line 1, in <module>
-    NameError: name 'x2' is not defined
-
-    >>> f = wrap_constraints(equation,lambda x:1,3,variables=['x1','x2','x4'])
-    >>> f([1,1,1,1])
-    90001.0
-    >>> f([1,1,1])
-    90001.0
-    >>> f = wrap_constraints(equation,lambda x:1,3,variables=['x1','x2','x4','x3'])
-    >>> f([1,1,1])
-    90001.0
-    >>> f([1,1,1,1])
-    90001.0
-    >>> f = wrap_constraints(equation,lambda x:1,2,variables=['x1','x2','x4'])
-    >>> f([1,1,1,1])
-    Traceback (most recent call last):
-      File "<stdin>", line 1, in <module>
-      File "constraints.py", line 468, in wrapped_func
-        for constraint in eqconstraints:
-      File "<string>", line 1
-        x[1] + 3. -( x[0]*$3)
-                      ^
-    SyntaxError: invalid syntax
-    '''
-    #XXX: should be able to extract nvars in func (e.g. the following equations)
    #from mystic.tools import src
    #ndim = len(get_variables(src(func), variables))
-   #ndim = len(get_variables(constraints, variables))
-   #ndim = len(variables)
-    ndim = nvars
+
+    if list_or_tuple_or_ndarray(variables):
+        constraints = substitute_symbolic(constraints, variables)
+        ndim = len(variables)
+        variables = '$'
+    else:
+        myvar = get_variables(constraints, variables)
+        if myvar: ndim = max([int(v.strip(variables)) for v in myvar])
+        else: ndim = 0
 
     # Parse the constraints string
     lines = constraints.splitlines()
@@ -738,7 +685,7 @@ Additional Inputs:
         variable names must be provided in the same order as in the
         constraints string.
 """
-    #XXX: use simplify_symbolic? or maybe that causes cyclic behavior
+    #XXX: use simplify_symbolic first if not in form xi = ... ?
     if list_or_tuple_or_ndarray(variables):
         constraints = substitute_symbolic(constraints, variables)
         varname = '$'
@@ -2167,7 +2114,7 @@ with the symbolic interface.")
         returnflag = True
 
     if method == 'penalty':
-        costfunc = wrap_constraints(constraints, costfunc, ndim, \
+        costfunc = wrap_constraints(constraints, costfunc, \
                                     strict=constraints_strict, \
                                     variables=vars, **kwds)
         constraints = lambda x: x
