@@ -68,10 +68,10 @@ x2*x3 = 1.
 x3 = x1 - 3.
 """
     x0 = [0.8,1.2,-0.7]
-    cf = form_constraints_function(string, 3)
+    cf = parse(string)
     c = cf(x0)
     print 'constraints satisfied:', issolution(string, c)
-    print 'strictly... constraints(x0) =', c
+    print 'strictly... constraints(x0) =', asarray(c)
 
 def test_matrix_interface():
     # Demonstrates linear_symbolic()

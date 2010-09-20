@@ -1505,7 +1505,8 @@ Constraints may not be enforced correctly. Constraints function may be faulty.'
 
 #-------------------------------------------------------------------
 # Method for successive `helper' optimizations
- 
+# FIXME FIXME: the final two functions are broken due to above interface changes
+
 def sumt(constraints_string, ndim, costfunc, solverinstance, term, \
          varname='x', eps = 1e-4, max_SUMT_iters = 10, \
          StepMonitor=Null, EvaluationMonitor=Null, sigint_callback=None, \
@@ -1993,6 +1994,9 @@ Further Inputs:
 with 'penalty' method."
         method = 'penalty'
 
+    if varnamelist: vars = varnamelist  #XXX: hack to merge varnamelist
+    else: vars = varname                #     and varname to variables
+
     # If direct and symbolic string input, pass to parse
     if method == 'direct':
         if type(constraints) == str:
@@ -2013,9 +2017,8 @@ with the `direct' method.")
                 raise Exception("Inequality constraints are not supported \
 with the symbolic interface.")
 
-            constraints = parse(constraints, ndim, \
-                            varname=varname, varnamelist=varnamelist,\
-                            suggestedorder=suggestedorder)
+            constraints = parse(constraints, variables=vars, \
+                                suggestedorder=suggestedorder)
             # If there are strict constraints, wrap them. 
             if constraints_strict:
                 def strict_costfunc(x):
@@ -2063,9 +2066,11 @@ with the symbolic interface.")
             if suggestedorder != None:
                 suggestedorder += range(ndim + 1, ndim + n_slack)
 
-            constraints_func = parse(new_constraints, \
-                            ndim + n_slack, varname=varname, varnamelist=varnamelist,\
-                            suggestedorder=suggestedorder)
+            if varnamelist: vars = varnamelist #XXX: hack to merge varnamelist
+            else: vars = varname               #     and varname to variables
+            constraints_func = parse(new_constraints, variables=vars, \
+                                     suggestedorder=suggestedorder)
+            #XXX: ndim + n_slack, varname=varname, varnamelist=varnamelist,\
 
             def new_costfunc(x):
                 for constraint in constraints_strict:
