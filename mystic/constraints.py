@@ -26,18 +26,18 @@ Several 'advanced' functions are also included::
           optionally, for a single target variable.
     - get_variables: extract a list of the string variable names from the given
           equations string.
-    - form_constraints_function: creates a constraints function from a symbolic
+    - parse: creates a constraints function from a symbolic
           string. This only handles equality constraints, and no mean or range
-          constraints. It first tries to call `form_constraints_linear', and
-          if that fails, then tries `form_constraints_nonlinear'. It returns a
+          constraints. It first tries to call `parse_linear', and
+          if that fails, then tries `parse_nonlinear'. It returns a
           function that imposes the constraints on an x value, and this
           function can then be passed to the solver with the `constraints'
           keyword in solver.Solve. This function is called when using the
           `direct' method.
-    - form_constraints_directly: parses a string into a constraints function.
-    - form_constraints_linear: parses a string of linear equations into a
+    - parse_simplified: parses a string into a constraints function.
+    - parse_linear: parses a string of linear equations into a
           constraints function.
-    - form_constraints_nonlinear: parses a string of equations that are not
+    - parse_nonlinear: parses a string of equations that are not
           necessarily linear into a constraints function.
     - sumt: solves several successive optimization problems with slightly
           different cost functions each time, and produces a solver instance
@@ -668,7 +668,7 @@ Inputs:
 
     For example:
         >>> constraints = '''x1 = x5**2
-        ... x3 = x4 + x5'''
+        ...     x3 = x4 + x5'''
         >>> print classify_variables(constraints, 5)
         {'dependent':[1, 3], 'independent':[4, 5], 'unconstrained':[2]}
 
@@ -714,23 +714,23 @@ Additional Inputs:
                     if split[1].find(varname + str(var)) != -1:
                         indep.append(var)
                         variables.remove(var)
-    #FIXME: Known bug is as follows...
-    """
+    #FIXME: This is a bug, as non-simplified eqations don't throw errors
+    """Bugs (?) demonstrated here:
     >>> constraints = '''x1 = x5**2 
-    ... x3 = x4 + x5'''
+    ...     x3 = x4 + x5'''
     >>> classify_variables(constraints, 5)
     {'dependent': [1, 3], 'independent': [4, 5], 'unconstrained': [2]}
     >>> constraints = '''x1 = x5**2
-    ... x3 - x5 = x4'''
+    ...     x3 - x5 = x4'''
     >>> classify_variables(constraints, 5)
     {'dependent': [1, 3], 'independent': [4, 5], 'unconstrained': [2]}
 
     >>> constraints = '''x1 = x5**2
-    ... x3 - x4 = x5'''
+    ...     x3 - x4 = x5'''
     >>> classify_variables(constraints, 5)
     {'dependent': [1, 3], 'independent': [5], 'unconstrained': [2, 4]}
     >>> constraints = '''x1 = x5**2
-    ... x3 - x4 - x5 = 0'''
+    ...     x3 - x4 - x5 = 0'''
     >>> classify_variables(constraints, 5)
     {'dependent': [1, 3], 'independent': [5], 'unconstrained': [2, 4]}
     """
@@ -750,7 +750,7 @@ Inputs:
 
     For example:
         >>> constraints = '''x1 + x2 = x3*4
-        ... x3 = x2*x4'''
+        ...     x3 = x2*x4'''
         >>> print get_variables(constraints)
         ['x1', 'x2', 'x3', 'x4'] 
 
@@ -979,47 +979,55 @@ Additional Inputs:
             solvedstring = solvedstring.replace(vars[i],variables[indices[i]])
     return solvedstring
 
-def form_constraints_directly(constraints_str, ndim, varname='x',\
-                              varnamelist=None):
+def parse_simplified(constraints, variables='x', **kwds):
     """Build a constraints function given a constraints string. 
 Returns a constraints function.
 
 Inputs:
-    constraints_str -- a string, where each line is a constraint equation.
-        For each equation, one variable must be isolated on the left side.
-    ndim -- number of variables. Includes xi not explicit in constraints_str.
+    constraints -- a string of symbolic constraints, with one constraint
+        equation per line. Constraints can be equality, inequality, mean,
+        and/or range constraints. Standard python syntax rules should be
+        followed (with the math module already imported).
+
+    NOTE: For each equation, one variable must be isolated on the left side.
+        Thus, an equation is of the form "xi = expression".
 
     For example:
         >>> constraints = '''x1 = cos(x2) + 2.
-        ... x2 = x3*2.'''
-        >>> f = form_constraints_directly(constraints, 3)
+        ...     x2 = x3*2.'''
+        >>> f = parse_simplified(constraints)
         >>> f([1.0, 0.0, 1.0])
         [3.0, 2.0, 1.0]
-
-    NOTE: By default, variables are named {x1, x2, ..., xn}. However, the base
-        variable name can be changed from 'x' to any string using "varname".
 
     NOTE: Regular python math conventions are used. For example, if an 'int'
         is used in a constraint equation, one or more variable may be evaluate
         to an 'int' -- this can affect solved values for the variables.
 
 Additional Inputs:
-    varname -- base variable name. Default is 'x'.
-    varnamelist -- list of variable name strings. Use this keyword if variable
-        names in the constraints string are not of the form x1, x2, x3, ...
+    variables -- variable name. Default is 'x'. Also, a list of variable
+        name strings are accepted. Use a list if variable names don't have
+        the same base name.
 
-    NOTE: For example, a constraints_string = '''length = height**2 - 3*width'''
-        will have a varnamelist = ['length', 'height', 'width'] which specifies
-        the variable names used in the constraints string. The variable names
-        must be provided in the same order as in the constraints string.
+    NOTE: For example, if constraints = '''length = height**2 - 3*width''',
+        we will have variables = ['length', 'height', 'width'] which
+        specifies the variable names used in the constraints string. The
+        variable names must be provided in the same order as in the
+        constraints string.
 """
-    if varnamelist:
-        constraints_str = substitute_symbolic(constraints_str, varnamelist)
-        varname = '$'
+    #FIXME: should handle guess,lower_bounds,upper_bounds ?
+    if list_or_tuple_or_ndarray(variables):
+        constraints = substitute_symbolic(constraints, variables, '_')
+        ndim = len(variables)
+        varname = '_'
+    else:
+        myvar = get_variables(constraints, variables)
+        if myvar: ndim = max([int(v.strip(variables)) for v in myvar])
+        else: ndim = 0
+        varname = variables
 
     # Parse the string
     parsed = ""
-    lines = constraints_str.splitlines()
+    lines = constraints.splitlines()
     for line in lines:
         fixed = line
         # Iterate in reverse in case ndim > 9.
@@ -1029,7 +1037,6 @@ Additional Inputs:
             fixed = fixed.replace(varname + str(i), '_params[' + str(i-1) + ']') 
         parsed += fixed.strip() + '\n'
     #FIXME: parsed throws SyntaxError in cf if LHS has more than one variable
-
     #print parsed # debugging
 
     # form the constraints function
@@ -1044,38 +1051,26 @@ Additional Inputs:
     return cf
 
 
-def form_constraints_linear(equations_string, ndim, x0=None, \
-                            lower_bounds=None, upper_bounds=None, \
-                            varname='x', disp=True, details=False, \
-                            suggestedorder=None, varnamelist=None, **kwds):
+def parse_linear(constraints, variables='x', suggestedorder=None, **kwds):
     """Build a constraints function given a string of linear constraints.
 Returns a constraints function. 
 
 Inputs:
-    equations_string -- a string, where each line is a constraint equation.
-    ndim -- number of parameters. Includes xi not explicit in equations_string.
+    constraints -- a string of symbolic constraints, with one constraint
+        equation per line. Constraints can be equality, inequality, mean,
+        and/or range constraints. Standard python syntax rules should be
+        followed (with the math module already imported).
+
+    FIXME: 'math' throws an 'AttributeError' -- try 'parse_simplified'.
 
     For example:
-        >>> constraints = '''x1 = cos(x2) + 2.
-        ... x2 = x3*2.'''
-        >>> f = form_constraints_linear(constraints, 3)
+        >>> constraints = '''x1 = x2 + 2.
+        ...     x2 = x3*2.'''
+        >>> f = parse_linear(constraints)
         >>> f([1.0, 0.0, 1.0])
-        [3.0, 2.0, 1.0]
+        [4.0, 2.0, 1.0]
 
 Additional Inputs:
-    x0 -- list of initial parameter values.
-    lower_bounds -- list of lower bounds on parameters.
-    upper_bounds -- list of upper bounds on parameters.
-    details -- boolean for whether or not to also return 'variable_info'.
-    varname -- base variable name. Default is 'x'.
-    varnamelist -- list of variable name strings. Use this keyword if variable
-        names in the constraints string are not of the form x1, x2, x3, ...
-
-    NOTE: For example, a constraints_string = '''length = height**2 - 3*width'''
-        will have a varnamelist = ['length', 'height', 'width'] which specifies
-        the variable names used in the constraints string. The variable names
-        must be provided in the same order as in the constraints string.
-
     suggestedorder -- tuple containing the order in which the variables should
         be solved for. The first 'neqns' variables will be independent, and
         the rest will be dependent.
@@ -1083,31 +1078,21 @@ Additional Inputs:
     NOTE: For example, if suggestedorder=(3, 1, 2) and there are two
         constraints equations, x3 and x1 will be constrained in terms of x2.
         By default, increasing order (i.e. 1, 2, ...) is used. suggestedorder
-        must enumerate all variables, hence len(sugestedorder) == ndim.
+        must enumerate all variables, hence len(sugestedorder) == nvars.
 
-    NOTE: For optimization problem with initial values and either lower or
+Further Inputs:
+    details -- boolean for whether or not to also return 'variable_info'.
+    guess -- list of parameter values proposed to solve the constraints.
+    lower_bounds -- list of lower bounds on solution values.
+    upper_bounds -- list of upper bounds on solution values.
+
+    NOTE: For optimization problems with initial values and either lower or
         upper bounds, the constraints function must be formulated in a manner
         such that it does not immediately violate the given bounds.
-"""
     """
-    For example:
-        >>> '''x2 = x1 - 2.
-        ... x2 = x3*2.'''
-
-    should be identical to:
-        >>> '''x1 = x2 + 2.
-        ... x2 = x3*2.'''
-
-    should be identical to:
-        >>> '''x1 = x2 + 2.
-        ... x3 = 0.5*x2'''
-
-    should be identical to:
-        >>> '''x2 - x1 = -2.
-        ... x2 - 2.*x3 = 0.'''
-
+    """
     Returns a constraints function with the constraints simplified nicely.
-    In this example, the constraints become:
+    For example, the constraints function is:
 
     def f(params):
         params[1] = 2.0*params[2]
@@ -1118,13 +1103,41 @@ Additional Inputs:
     simplify them. However, using the nonlinear all-purpose equation 
     inverter/simplifier will probably also work! It just won't get rid of
     redundancies, but that should be ok.
-"""
+    """
+    # FIXME: exec seems to fail on 'math' functions...
+    #        workaound might be to catch AttributeError to 'parse_simplified'
+    nvars = None # number of variables. Should be determined automatically
+    strict = False # if True, force to use 'permutations' code
     warn = True  # if True, don't supress warning about old versions of sympy
+    verbose = False # if False, keep information to a minimum
+    details = False # if True, print details from classify_variables
+    guess = None
+    upper_bounds = None
+    lower_bounds = None
+    #-----------------------undocumented-------------------------------
+    if kwds.has_key('nvars'): nvars = kwds['nvars']
+    if kwds.has_key('strict'): strict = kwds['strict']
     if kwds.has_key('warn'): warn = kwds['warn']
+    if kwds.has_key('verbose'): verbose = kwds['verbose']
+    #------------------------------------------------------------------
+    if kwds.has_key('details'): details = kwds['details']
+    if kwds.has_key('guess'): guess = kwds['guess']
+    if kwds.has_key('upper_bounds'): upper_bounds = kwds['upper_bounds']
+    if kwds.has_key('lower_bounds'): lower_bounds = kwds['lower_bounds']
 
-    if varnamelist:
-        equations_string = substitute_symbolic(equations_string, varnamelist)
-        varname = '$'
+    if list_or_tuple_or_ndarray(variables):
+        constraints = substitute_symbolic(constraints, variables, '_')
+        ndim = len(variables)
+        varname = '_'
+    else:
+        myvar = get_variables(constraints, variables)
+        if myvar: ndim = max([int(v.strip(variables)) for v in myvar])
+        else: ndim = 0
+        varname = variables
+    if nvars: ndim = nvars
+    elif guess: ndim = len(guess)
+    elif lower_bounds: ndim = len(lower_bounds)
+    elif upper_bounds: ndim = len(upper_bounds)
 
     # The following code attempts to construct something like:
     # >>> from sympy import Eq, Symbol
@@ -1136,15 +1149,15 @@ Additional Inputs:
     # >>> eq2 = Eq(x2, x3*2.)
     # >>> soln = symsol([eq2, eq1], [x1, x2, x3])
 
-    # If no Sympy installed, just call form_constraints_directly
+    # If no Sympy installed, just call parse_simplified
     try:
         from sympy import Eq, Symbol
         from sympy import solve as symsol
     except ImportError:
         if warn: print "Warning: sympy not installed."# Equation will not be simplified."
-        return form_constraints_directly(equations_string, ndim, varname=varname)
+        return parse_simplified(constraints, variables=varname)
 
-    code, left, right, xlist, neqns = _prepare_sympy(equations_string, ndim, varname)
+    code, left, right, xlist, neqns = _prepare_sympy(constraints, ndim, varname)
 
     eqlist = ""
     for i in range(1, neqns + 1):
@@ -1153,8 +1166,7 @@ Additional Inputs:
         code += eqn + '= Eq(' + left[i-1] + ',' + right[i-1] + ')\n'
 
     # Figure out if trying various permutations is necessary
-    strict = False
-    if (x0 and lower_bounds) or (x0 and upper_bounds):
+    if (guess and lower_bounds) or (guess and upper_bounds):
         strict = True
 
     xinlist = xlist.split(',')[:-1]
@@ -1168,8 +1180,8 @@ Additional Inputs:
         # For sympy, change the order of the x variables passed to symsol()
         # to get different variables solved for.
         solns = []
-        xperms = list(permutations(xinlist)) #XXX Gets stuck here if ndim is 
-                                             # on the order of 10....
+        xperms = list(permutations(xinlist)) #XXX Gets stuck here if nvars
+                                             # is on the order of 10....
         if suggestedorder:
             xperms.remove(xorder)
             xperms.insert(0, xorder)
@@ -1181,11 +1193,11 @@ Additional Inputs:
                 xstring += item + ","
             tempcode += 'soln = symsol([' + eqlist.rstrip(',') + '], [' + \
                         xstring.rstrip(',') + '])'
-            print tempcode
+            if verbose: print tempcode
             exec tempcode in globals(), locals()
 
-            if soln == None:
-                print "Constraints seem to be inconsistent..."
+            if soln == None and warn:
+                print "Warning: constraints seem to be inconsistent."
 
             solvedstring = ""
             for key, value in soln.iteritems():
@@ -1193,7 +1205,7 @@ Additional Inputs:
             solns.append(solvedstring)
 
         # Create strings of all permutations of the solved equations.
-        # First remove duplicates, then take permutations of the lines of equations
+        # Remove duplicates, then take permutations of the lines of equations
         # to create equations in different orders.
         noduplicates = list(set(solns)) 
         stringperms = []
@@ -1205,12 +1217,14 @@ Additional Inputs:
                     permstring += line + '\n'
                 stringperms.append(permstring)
 
-        # feed each solved set of equations into form_constraints_directly to get 
-        # constraints functions, and check if constraints(x0) is inside the bounds.
+        # Feed each solved set of equations into parse_simplified to get 
+        # constraints functions. Check if constraints(guess) is in the bounds.
         for string in stringperms:
-            cf = form_constraints_directly(string, ndim, varname=varname)
-            compatible = isbounded(cf, x0, lower_bounds=lower_bounds,\
-                                                   upper_bounds=upper_bounds)
+            cf = parse_simplified(string, variables=varname)
+            if guess: compatible = isbounded(cf, guess, \
+                                             lower_bounds=lower_bounds,\
+                                             upper_bounds=upper_bounds)
+            else: compatible = True
             if compatible:
                 #print string # Debugging
                 if details:
@@ -1219,71 +1233,56 @@ Additional Inputs:
                 else:
                     return cf# Return the first compatible constraints function
             else:
-                constraints = cf # Save a value for later and try other permutations
+                _constraints = cf # Save for later and try other permutations
         # Perhaps raising an Exception is better? But sometimes it's ok...
-        print 'Warning: x0 does not satisfy both constraints and bounds.\n\
+        warning='Warning: guess does not satisfy both constraints and bounds.\n\
 Constraints function may be faulty.'
+        if warn: print warning
         if details:
             info = classify_variables(string, ndim, variables=varname)
             return [cf, info]
         return cf
 
     else:
-        # If no bounds and x0, no need for permutations. Just form code and get whatever
-        # solution sympy comes up with.
+        # If no bounds and guess, no need for permutations.
+        # Just form code and get whatever solution sympy comes up with.
         if suggestedorder:
             xlist = ','.join(xorder)
         code += 'soln = symsol([' + eqlist.rstrip(',') + '], [' + xlist.rstrip(',') + '])'
         exec code in globals(), locals()
-        if soln == None:
-            print "Constraints seem to be inconsistent..."
+        if soln == None and warn:
+            print "Warning: constraints seem to be inconsistent."
 
         solvedstring = ""
         for key, value in soln.iteritems():
             solvedstring += str(key) + ' = ' + str(value) + '\n'
 
-        cf = form_constraints_directly(solvedstring, ndim, varname=varname)
+        cf = parse_simplified(solvedstring, variables=varname)
         if details:
             info = classify_variables(solvedstring, ndim, variables=varname)
             return [cf, info]
         return cf
 
-
-def form_constraints_function(equations_string, ndim, x0=None, \
-                              lower_bounds=None, upper_bounds=None, \
-                              varname='x', details=False,\
-                              suggestedorder=None, varnamelist=None):
+def parse(constraints, variables='x', suggestedorder=None, **kwds):
     """Build a constraints function given a constraints string. 
 Returns a constraints function.
 
 Inputs:
-    equations_string -- a string, where each line is a constraint equation.
-    ndim -- number of parameters. Includes xi not explicit in equations_string.
+    constraints -- a string of symbolic constraints, with one constraint
+        equation per line. Constraints can be equality, inequality, mean,
+        and/or range constraints. Standard python syntax rules should be
+        followed (with the math module already imported).
+
+    FIXME: 'math' throws an 'AttributeError' -- try 'parse_simplified'.
 
     For example:
-        >>> constraints = '''x1 = cos(x2) + 2.
-        ... x2 = x3*2.'''
-        >>> f = form_constraints_function(constraints, 3)
+        >>> constraints = '''x1 = x2 + 2.
+        ...     x2 = x3*2.'''
+        >>> f = parse(constraints)
         >>> f([1.0, 0.0, 1.0])
-        [3.0, 2.0, 1.0]
-
-    NOTE: Will attempt to process equations_string as linear constraints first;
-        if fails, will attempt to process as nonlinear constraints.
+        [4.0, 2.0, 1.0]
 
 Additional Inputs:
-    x0 -- list of initial parameter values.
-    lower_bounds -- list of lower bounds on parameters.
-    upper_bounds -- list of upper bounds on parameters.
-    details -- boolean for whether or not to also return 'variable_info'.
-    varname -- base variable name. Default is 'x'.
-    varnamelist -- list of variable name strings. Use this keyword if variable
-        names in the constraints string are not of the form x1, x2, x3, ...
-
-    NOTE: For example, a constraints_string = '''length = height**2 - 3*width'''
-        will have a varnamelist = ['length', 'height', 'width'] which specifies
-        the variable names used in the constraints string. The variable names
-        must be provided in the same order as in the constraints string.
-
     suggestedorder -- tuple containing the order in which the variables should
         be solved for. The first 'neqns' variables will be independent, and
         the rest will be dependent.
@@ -1291,58 +1290,46 @@ Additional Inputs:
     NOTE: For example, if suggestedorder=(3, 1, 2) and there are two
         constraints equations, x3 and x1 will be constrained in terms of x2.
         By default, increasing order (i.e. 1, 2, ...) is used. suggestedorder
-        must enumerate all variables, hence len(sugestedorder) == ndim.
+        must enumerate all variables, hence len(sugestedorder) == nvars.
 
-    NOTE: For optimization problem with initial values and either lower or
+Further Inputs:
+    details -- boolean for whether or not to also return 'variable_info'.
+    guess -- list of parameter values proposed to solve the constraints.
+    lower_bounds -- list of lower bounds on solution values.
+    upper_bounds -- list of upper bounds on solution values.
+
+    NOTE: For optimization problems with initial values and either lower or
         upper bounds, the constraints function must be formulated in a manner
         such that it does not immediately violate the given bounds.
 """
+    # FIXME: exec seems to fail on 'math' functions...
+    #        workaound might be to catch AttributeError to 'parse_simplified'
     try:
-        return form_constraints_linear(equations_string, ndim, x0=x0, \
-                      lower_bounds=lower_bounds, upper_bounds=upper_bounds,\
-                      varname=varname, details=details, \
-                      suggestedorder=suggestedorder, varnamelist=varnamelist)
+        return parse_linear(constraints, variables=variables, \
+                            suggestedorder=suggestedorder, **kwds)
     except:
-        return form_constraints_nonlinear(equations_string, ndim, x0=x0,\
-                lower_bounds=lower_bounds, upper_bounds=upper_bounds,\
-                varname=varname, details=details, varnamelist=varnamelist,\
-                suggestedorder=suggestedorder)
+        return parse_nonlinear(constraints, variables=variables, \
+                               suggestedorder=suggestedorder, **kwds)
 
-
-def form_constraints_nonlinear(equations_string, ndim, varname='x', x0=None,\
-                               lower_bounds=None, upper_bounds=None, \
-                               details=False, suggestedorder=None, \
-                               allperms=False, varnamelist=None):
+def parse_nonlinear(constraints, variables='x', suggestedorder=None, **kwds):
     """Build a constraints function given a string of nonlinear constraints.
 Returns a constraints function. 
 
 Inputs:
-    equations_string -- a string, where each line is a constraint equation.
-    ndim -- number of parameters. Includes xi not explicit in equations_string.
+    constraints -- a string of symbolic constraints, with one constraint
+        equation per line. Constraints can be equality, inequality, mean,
+        and/or range constraints. Standard python syntax rules should be
+        followed (with the math module already imported).
+
+    FIXME: 'math' throws an 'AttributeError' -- try 'parse_simplified'.
 
     For example:
         >>> constraints = '''x2 = x4*3. + (x1*x3)**x1'''
-        >>> f = form_constraints_nonlinear(constraints, 4)
+        >>> f = parse_nonlinear(constraints)
         >>> f([1.0, 1.0, 1.0, 1.0])
         [1.0, 4.0, 1.0, 1.0]
 
 Additional Inputs:
-    x0 -- list of initial parameter values.
-    lower_bounds -- list of lower bounds on parameters.
-    upper_bounds -- list of upper bounds on parameters.
-    details -- boolean for whether or not to also return 'variable_info'.
-    allperms -- boolean for whether or not to return a list of constraints
-        functions composed from all permutations of solutions of the given
-        constraints equations.
-    varname -- base variable name. Default is 'x'.
-    varnamelist -- list of variable name strings. Use this keyword if variable
-        names in the constraints string are not of the form x1, x2, x3, ...
-
-    NOTE: For example, a constraints_string = '''length = height**2 - 3*width'''
-        will have a varnamelist = ['length', 'height', 'width'] which specifies
-        the variable names used in the constraints string. The variable names
-        must be provided in the same order as in the constraints string.
-
     suggestedorder -- tuple containing the order in which the variables should
         be solved for. The first 'neqns' variables will be independent, and
         the rest will be dependent.
@@ -1350,23 +1337,58 @@ Additional Inputs:
     NOTE: For example, if suggestedorder=(3, 1, 2) and there are two
         constraints equations, x3 and x1 will be constrained in terms of x2.
         By default, increasing order (i.e. 1, 2, ...) is used. suggestedorder
-        must enumerate all variables, hence len(sugestedorder) == ndim.
+        must enumerate all variables, hence len(sugestedorder) == nvars.
 
-    NOTE: For optimization problem with initial values and either lower or
+Further Inputs:
+    details -- boolean for whether or not to also return 'variable_info'.
+    guess -- list of parameter values proposed to solve the constraints.
+    lower_bounds -- list of lower bounds on solution values.
+    upper_bounds -- list of upper bounds on solution values.
+
+    NOTE: For optimization problems with initial values and either lower or
         upper bounds, the constraints function must be formulated in a manner
         such that it does not immediately violate the given bounds.
 """
+    # FIXME: exec seems to fail on 'math' functions...
+    #        workaound might be to catch AttributeError to 'parse_simplified'
+    nvars = None # number of variables. Should be determined automatically
+    strict = False # if True, force to use 'permutations' code
     warn = True  # if True, don't supress warning about old versions of sympy
-    if varnamelist:
-        equations_string = substitute_symbolic(equations_string, varnamelist)
-        varname = '$'
+    verbose = False # if True, return all permutations
+    details = False # if True, print details from classify_variables
+    guess = None
+    upper_bounds = None
+    lower_bounds = None
+    #-----------------------undocumented-------------------------------
+    if kwds.has_key('nvars'): nvars = kwds['nvars']
+    if kwds.has_key('strict'): strict = kwds['strict']
+    if kwds.has_key('warn'): warn = kwds['warn']
+    if kwds.has_key('verbose'): verbose = kwds['verbose']
+    #------------------------------------------------------------------
+    if kwds.has_key('details'): details = kwds['details']
+    if kwds.has_key('guess'): guess = kwds['guess']
+    if kwds.has_key('upper_bounds'): upper_bounds = kwds['upper_bounds']
+    if kwds.has_key('lower_bounds'): lower_bounds = kwds['lower_bounds']
+
+    if list_or_tuple_or_ndarray(variables):
+        constraints = substitute_symbolic(constraints, variables, '_')
+        ndim = len(variables)
+        varname = '_'
+    else:
+        myvar = get_variables(constraints, variables)
+        if myvar: ndim = max([int(v.strip(variables)) for v in myvar])
+        else: ndim = 0
+        varname = variables
+    if nvars: ndim = nvars
+    elif guess: ndim = len(guess)
+    elif lower_bounds: ndim = len(lower_bounds)
+    elif upper_bounds: ndim = len(upper_bounds)
 
     # Figure out if trying various permutations is necessary
-    strict = False
-    if (x0 and lower_bounds) or (x0 and upper_bounds):
+    if (guess and lower_bounds) or (guess and upper_bounds):
         strict = True
 
-    eqns = equations_string.splitlines()
+    eqns = constraints.splitlines()
     # Remove empty strings:
     actual_eqns = []
     for j in range(len(eqns)):
@@ -1376,8 +1398,8 @@ Additional Inputs:
 
     neqns = len(actual_eqns)
 
-    # Getting all permutations will take a really really long time for ndim
-    # as low as 10.
+    # Getting all permutations will take a really really long time
+    # for something like nvars >= 10.
     perms = list(permutations(range(ndim)))
     if suggestedorder: # Try the suggested order first.
         suggestedorder = tuple(asarray(suggestedorder) - 1)
@@ -1387,11 +1409,11 @@ Additional Inputs:
     complete_list = []
 
     constraints_function_list = []
-    # Some of the permutations will give the same answer; look into reducing the number
-    # of repeats?
+    # Some of the permutations will give the same answer;
+    # look into reducing the number of repeats?
     for p in perms:
         thisorder = p
-        # Sort the list actual_eqns so that any equation containing x1 is first, etc.
+        # Sort the list actual_eqns so any equation containing x1 is first, etc.
         sorted_eqns = []
         actual_eqns_copy = orig_eqns[:]
         usedvars = []
@@ -1416,16 +1438,16 @@ Additional Inputs:
             usedvars.append(varname + str(len(tempusedvar) + m))
 
         for i in range(neqns):
-            # Trying to use xi as a pivot. Loop through the equations looking for one
-            # containing xi.
+            # Trying to use xi as a pivot. Loop through the equations
+            # looking for one containing xi.
             target = usedvars[i]
             for eqn in actual_eqns[i:]:
                 invertedstring = simplify_symbolic(eqn, variables=varname, target=target, warn=warn)
                 if invertedstring:
                     warn = False
                     break
-            # substitute into the remaining equations. the equations' order in the list
-            # newsystem is like in a linear coefficient matrix.
+            # substitute into the remaining equations. the equations' order
+            # in the list newsystem is like in a linear coefficient matrix.
             newsystem = ['']*neqns
             j = actual_eqns.index(eqn)
             newsystem[j] = eqn
@@ -1437,46 +1459,47 @@ Additional Inputs:
                 newsystem[k] = fixed
             actual_eqns = newsystem
             
-        # Invert so that it can be fed properly to form_constraints_directly
+        # Invert so that it can be fed properly to parse_simplified
         simplified = []
         for eqn in actual_eqns:
             target = usedvars[actual_eqns.index(eqn)]
             simplified.append(simplify_symbolic(eqn, variables=varname, target=target, warn=warn))
 
-        cf = form_constraints_directly('\n'.join(simplified), ndim, varname=varname) 
+        cf = parse_simplified('\n'.join(simplified), variables=varname) 
 
-        if allperms:
+        if verbose:
             complete_list.append(cf)
             continue
 
-        if not strict:
-            if details:
-                info = classify_variables('\n'.join(simplified), ndim, variables=varname)
-                return [cf, info]
-            else:
-                return cf
-        else:
+        if strict and guess:
             try: # catches trying to square root a negative number, for example.
-                cf(x0)
+                cf(guess)
             except ValueError:
                 continue
-            compatible = isbounded(cf, x0, lower_bounds=\
+            compatible = isbounded(cf, guess, lower_bounds=\
                  lower_bounds, upper_bounds=upper_bounds)
-            satisfied = issolution(equations_string, cf(x0), verbose=False)
+            satisfied = issolution(constraints, cf(guess), verbose=False)
             if compatible and satisfied:
                 if details:
                     info = classify_variables('\n'.join(simplified), ndim, variables=varname)
                     return [cf, info]
                 else:
                     return cf
+        else: #not strict or not guess
+            if details:
+                info = classify_variables('\n'.join(simplified), ndim, variables=varname)
+                return [cf, info]
+            else:
+                return cf
 
-    print 'Warning: x0 does not satisfy both constraints and bounds, or constraints\n\
-may not be enforced correctly. Constraints function may be faulty.'
+    warning='Warning: guess does not satisfy both constraints and bounds.\n\
+Constraints may not be enforced correctly. Constraints function may be faulty.'
+    if warn: print warning
     if details:
         info = classify_variables('\n'.join(simplified), ndim, variables=varname)
         return [cf, info]
 
-    if allperms:
+    if verbose:
         return complete_list
     return cf
 
@@ -1577,8 +1600,8 @@ References:
     iterated_penalty = False
     randomstate = None
     if kwds.has_key('disp'): disp = kwds['disp']
-    if kwds.has_key('iterated_penalty'): disp = kwds['iterated_penalty']
-    if kwds.has_key('randomstate'): disp = kwds['randomstate']
+    if kwds.has_key('iterated_penalty'): iterated_penalty = kwds['iterated_penalty']
+    if kwds.has_key('randomstate'): randomstate = kwds['randomstate']
 
     # kwds whose defaults vary depending on other kwds. iterated_penalty 
     # currently is not used in the constraints interface in Solve().
@@ -1970,7 +1993,7 @@ Further Inputs:
 with 'penalty' method."
         method = 'penalty'
 
-    # If direct and symbolic string input, pass to form_constraints_function
+    # If direct and symbolic string input, pass to parse
     if method == 'direct':
         if type(constraints) == str:
             suggestedorder = None
@@ -1990,7 +2013,7 @@ with the `direct' method.")
                 raise Exception("Inequality constraints are not supported \
 with the symbolic interface.")
 
-            constraints = form_constraints_function(constraints, ndim, \
+            constraints = parse(constraints, ndim, \
                             varname=varname, varnamelist=varnamelist,\
                             suggestedorder=suggestedorder)
             # If there are strict constraints, wrap them. 
@@ -2040,7 +2063,7 @@ with the symbolic interface.")
             if suggestedorder != None:
                 suggestedorder += range(ndim + 1, ndim + n_slack)
 
-            constraints_func = form_constraints_function(new_constraints, \
+            constraints_func = parse(new_constraints, \
                             ndim + n_slack, varname=varname, varnamelist=varnamelist,\
                             suggestedorder=suggestedorder)
 
