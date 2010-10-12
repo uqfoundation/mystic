@@ -11,9 +11,14 @@ if '--help' in sys.argv:
   print __doc__
   sys.exit(0)
 
+style = '-' # default linestyle
 if '--dots' in sys.argv:
   mark = 'o'
   sys.argv.remove('--dots')
+  # when using 'dots', also can turn off 'line'
+  if '--noline' in sys.argv:
+    style = 'None'
+    sys.argv.remove('--noline')
 else:
   mark = ''
 
@@ -108,13 +113,13 @@ ax1 = fig.add_subplot(2,1,1)
 for j in range(len(param[0])):
   for i in range(len(conv)):
     tag = "%d,%d" % (i,j)
-    ax1.plot(iter_conv[i],conv[i][j],label="%s" % tag,marker=mark)
+    ax1.plot(iter_conv[i],conv[i][j],label="%s" % tag,marker=mark,linestyle=style)
 plt.legend()
 
 ax2 = fig.add_subplot(2,1,2)
 for i in range(len(conv)):
   tag = "%d" % i
-  ax2.plot(iter_conv[i],cost_conv[i],label='cost %s' % tag,marker=mark)
+  ax2.plot(iter_conv[i],cost_conv[i],label='cost %s' % tag,marker=mark,linestyle=style)
 plt.legend()
 
 plt.show()
