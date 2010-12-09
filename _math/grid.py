@@ -5,40 +5,18 @@ tools for generating points on a grid
 """
 from numpy import asarray
 
-def ndim_meshgrid(*arrs):
-    """n-dimensional analogue to numpy.meshgrid"""
-    arrs = tuple(reversed(arrs))  #edit
-    lens = map(len, arrs)
-    dim = len(arrs)
-
-    sz = 1
-    for s in lens:
-        sz*=s
-
-    ans = []    
-    for i, arr in enumerate(arrs):
-        slc = [1]*dim
-        slc[i] = lens[i]
-        arr2 = asarray(arr).reshape(slc)
-        for j, sz in enumerate(lens):
-            if j!=i:
-                arr2 = arr2.repeat(sz, axis=j) 
-        ans.append(arr2)
-
-    return tuple(ans)
-
-
 def gridpts(q):
     """
-takes a list of lists of equal length q = [[1,2],[3,4]]
+takes a list of lists of arbitrary length q = [[1,2],[3,4]]
 and produces a list of gridpoints g = [[1,3],[1,4],[2,3],[2,4]]
     """
-    q = list(reversed(q))
-    w = ndim_meshgrid(*q)
-    for i in range(len(q)):
-        q[i] = list( w[i].reshape(w[i].size) )
-    q = zip(*q)
-    return [list(i) for i in q]
+    w = [[] for i in range(len(q[-1]))]
+    for j in range(len(q)-1,-1,-1):
+      for k in range(len(q[j])):
+        for l in range(k*len(w)/len(q[j]), (k+1)*len(w)/len(q[j])):
+          w[l].append(q[j][k])
+      if j: w += [i[:] for i in w[:]*(len(q[j-1])-1)]
+    return [list(reversed(w[i])) for i in range(len(w))]
 
 
 def random_samples(lb,ub,npts=10000):
