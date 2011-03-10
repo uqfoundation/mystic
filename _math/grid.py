@@ -3,7 +3,6 @@
 """
 tools for generating points on a grid
 """
-from numpy import asarray
 
 def gridpts(q):
     """
@@ -19,23 +18,6 @@ and produces a list of gridpoints g = [[1,3],[1,4],[2,3],[2,4]]
     return [list(reversed(w[i])) for i in range(len(w))]
 
 
-def random_samples(lb,ub,npts=10000):
-  """
-generate npts random samples between given lb & ub
-
-Inputs:
-    lower bounds  --  a list of the lower bounds
-    upper bounds  --  a list of the upper bounds
-    npts  --  number of sample points [default = 10000]
-"""
-  from numpy.random import random
-  dim = len(lb)
-  pts = random((dim,npts))
-  for i in range(dim):
-    pts[i] = (pts[i] * abs(ub[i] - lb[i])) + lb[i]
-  return pts
-
-
 def samplepts(lb,ub,npts):
     """
 takes upper and lower bounds (e.g. ub = [2,4], lb = [0,3])
@@ -46,6 +28,7 @@ Inputs:
     upper bounds  --  a list of the upper bounds
     npts  --  number of sample points
     """
+    from mystic.math.samples import random_samples
     q = random_samples(lb,ub,npts)
     q = [list(i) for i in q]
     q = zip(*q)

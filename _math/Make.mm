@@ -20,6 +20,9 @@ EXPORT_PYTHON_MODULES = \
     approx.py \
     grid.py \
     poly.py \
+    integrate.py \
+    samples.py \
+    stats.py \
 
 export:: export-package-python-modules
 
