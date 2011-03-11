@@ -96,7 +96,7 @@ Inputs:
 
 
 def monte_carlo_integrate(f, lb, ub, n=10000): #XXX ok default for n?
-    """
+  """
 Returns the integral of an m-dimensional function f from lb to ub
 using a Monte Carlo integration of n points
 
@@ -112,14 +112,14 @@ References:
     Also, see http://en.wikipedia.org/wiki/Monte_Carlo_integration
     and http://math.fullerton.edu/mathews/n2003/MonteCarloMod.html
 """
-    from mystic.math.stats import volume
-    from mystic.math.samples import random_samples
-    vol = volume(lb, ub)
-    x = [random_samples(lb, ub, npts=1) for k in range(1, n+1)]
-    r = map(f, x)  #FIXME: , nnodes=nnodes, launcher=launcher)
-    s = sum(r)[0]
-    I = (vol/k)*s
-    return float(I)
+  from mystic.math.stats import volume
+  from mystic.math.samples import random_samples
+  vol = volume(lb, ub)
+  x = [random_samples(lb, ub, npts=1) for k in range(1, n+1)]
+  r = map(f, x)  #FIXME: , nnodes=nnodes, launcher=launcher)
+  s = sum(r)[0]
+  I = (vol/k)*s
+  return float(I)
 
 
 # ALTERNATE: STATISTICS SPECIAL CASES #
@@ -128,30 +128,30 @@ def __uniform_integrated_mean(lb,ub):
 
 same as: mean = (lb + ub) / 2.0
 """
-    lb = float(lb); ub = float(ub)
-    def g(x): return x
-    return integrated_mean(g,[lb],[ub])
+  lb = float(lb); ub = float(ub)
+  def g(x): return x
+  return integrated_mean(g,[lb],[ub])
 
 def __uniform_integrated_variance(lb,ub):
   """use integration of cumulative function to calculate variance (in 1D)
 
 same as: variance = (ub - lb)**2 / 12.0
 """
-    lb = float(lb); ub = float(ub)
-    def g(x): return x
-    return integrated_variance(g,[lb],[ub])
+  lb = float(lb); ub = float(ub)
+  def g(x): return x
+  return integrated_variance(g,[lb],[ub])
 
 #----------------------------------------------------------------------------
 # Tests
 
 def __test_integrator1():
-    def f(x):
-        return x[0]/2. + x[1]**3 + 3.*x[2]
-    lb = [1., 1., 1.]
-    ub = [2., 2., 2.]
-    print "monte_carlo_integrate says:", monte_carlo_integrate(f, lb, ub)
-    print "_scipy_integrate says: ", _scipy_integrate(f, lb, ub)
-    return
+  def f(x):
+    return x[0]/2. + x[1]**3 + 3.*x[2]
+  lb = [1., 1., 1.]
+  ub = [2., 2., 2.]
+  print "monte_carlo_integrate says:", monte_carlo_integrate(f, lb, ub)
+  print "_scipy_integrate says: ", _scipy_integrate(f, lb, ub)
+  return
 
 def __test_mean():
   def f(x):
