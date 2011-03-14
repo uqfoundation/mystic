@@ -339,6 +339,7 @@ Additional Inputs:
     return error**0.5
 
 
+# FIXME: should be able to wrap with other 'mystic.penalty' methods
 def wrap_constraints(constraints, func, variables='x', \
                      feq=[], fineq=[], penalty=1e4, strict=[]):
     """Wraps a function with a set of constraints. The constraints are
@@ -1505,7 +1506,6 @@ Constraints may not be enforced correctly. Constraints function may be faulty.'
 
 #-------------------------------------------------------------------
 # Method for successive `helper' optimizations
-# FIXME FIXME: the final two functions are broken due to above interface changes
 
 def sumt(constraints_string, ndim, costfunc, solverinstance, term, \
          varname='x', eps = 1e-4, max_SUMT_iters = 10, \

@@ -23,6 +23,8 @@ EXPORT_PYTHON_MODULES = \
     integrate.py \
     samples.py \
     stats.py \
+    measures.py \
+    dirac_measure.py \
 
 export:: export-package-python-modules
 

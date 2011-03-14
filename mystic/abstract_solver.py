@@ -136,12 +136,20 @@ Important class members:
         """return the best solution"""
         return self.bestSolution
 
-    def SetStrictRanges(self, min, max):
+    def SetStrictRanges(self, min=None, max=None):
         """ensure solution is within bounds
 
 input::
     - min, max: must be a sequence of length self.nDim
     - each min[i] should be <= the corresponding max[i]"""
+        #XXX: better to use 'defaultMin,defaultMax' or '-inf,inf' ???
+        if min == None: min = self._defaultMin
+        if max == None: max = self._defaultMax
+        # when 'some' of the bounds are given as 'None', replace with default
+        for i in range(len(min)): 
+            if min[i] == None: min[i] = self._defaultMin[0]
+            if max[i] == None: max[i] = self._defaultMax[0]
+
         min = asarray(min); max = asarray(max)
         if numpy.any(( min > max ),0):
             raise ValueError, "each min[i] must be <= the corresponding max[i]"
@@ -206,6 +214,10 @@ input::
        #    raise ValueError, "each min[i] must be <= the corresponding max[i]"
         if len(min) != self.nDim or len(max) != self.nDim:
             raise ValueError, "bounds array must be length %s" % self.nDim
+        # when 'some' of the bounds are given as 'None', replace with default
+        for i in range(len(min)): 
+            if min[i] == None: min[i] = self._defaultMin[0]
+            if max[i] == None: max[i] = self._defaultMax[0]
         import random
         #generate random initial values
         for i in range(self.nPop):
