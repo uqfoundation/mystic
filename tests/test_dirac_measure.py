@@ -181,8 +181,8 @@ def test_collection_behavior():
   print "mass: %s" % c.mass
   print "expect: %s" % c.get_expect(f)
 
-  print "center: %s" % c.center
-  print "delta: %s" % c.delta
+ #print "center: %s" % c.center
+ #print "delta: %s" % c.delta
 
   # change the coords in the collection
   coords[::3]
@@ -201,9 +201,11 @@ def test_collection_behavior():
   _range = 0.25
 
   c.set_expect((_mean,_range), f)
-  print "mean: %s" % c.center
-  print "range: %s" % c.delta
+  print "mean: %s" % _mean
+  print "range: %s" % _range
   print "expect: %s" % c.get_expect(f)
+
+ #print "pof: %s" % c.pof(f)
 
   return
 

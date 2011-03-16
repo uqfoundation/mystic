@@ -111,19 +111,18 @@ class product_measure(list):  #FIXME: meant to only accept sets...
   c.npts  --  returns total number of points
   c.weights   --  returns list of weights
   c.coords  --  returns list of position tuples
-  c.center  --  returns the bounding mean center
-  c.delta  --  returns the bounding mean radius
   c.mass  --  returns list of weight norms
 
  settings:
   c.coords = [(x1,y1,z1),...]  --  set positions (propagates to each set member)
 
  methods:
-  c.get_expect(f)  --  calculates the expectation
-  c.set_expect((center,delta), f)  --  set c.center & c.delta; adjusts positions
+  c.pof(f)  --  calculate the probability of failure
+  c.get_expect(f)  --  calculate the expectation
+  c.set_expect((center,delta), f)  --  impose expectation by adjusting positions
 
  notes:
-  - constraints impose expect (c.center - c.delta) <= E <= (c.center + c.delta)
+  - constraints impose expect (center - delta) <= E <= (center + delta)
   - constraints impose sum(weights) == 1.0 for each set
   - assumes that c.npts = len(c.coords) == len(c.weights)
   - weight wxi should be same for each (yj,zk) at xi; similarly for wyi & wzi
@@ -161,35 +160,62 @@ class product_measure(list):  #FIXME: meant to only accept sets...
       self[i].coords = coords[i]
     return
 
-  def __get_center(self):
-    return self.__center
+ #def __get_center(self):
+ #  return self.__center
 
-  def __get_delta(self):
-    return self.__delta
+ #def __get_delta(self):
+ #  return self.__delta
 
   def __mass(self):
     return [self[i].mass for i in range(len(self))]
 
   def get_expect(self, f):
+    """calculate the expectation for a given function
+
+Inputs:
+    f -- a function that takes a list and returns a number
+"""
     from mystic.math.measures import expectation
     return expectation(f, self.coords, self.weights)
 
   def set_expect(self, (m,D), f, bounds=None):
-    self.__center = m
-    self.__delta = D
+    """impose a expectation on a product measure
+
+Inputs:
+    (m,D) -- tuple of expectation m and acceptable deviation D
+    f -- a function that takes a list and returns a number
+    bounds -- tuple of lists of bounds  (lower_bounds, upper_bounds)
+"""
+   #self.__center = m
+   #self.__delta = D
     npts = [i.npts for i in self]
     self.coords = impose_expectation((m,D), f, npts, bounds, self.weights) 
     return
 
-  __center = None
-  __delta = None
+  def pof(self, f):
+    """calculate probability of failure over a given function, f,
+where f takes a list of (product_measure) positions and returns a single value
+
+Inputs:
+    f -- a function that returns True for 'success' and False for 'failure'
+"""
+    u = 0
+    for i in range(self.npts):
+      #if f(self.coords[i]) > 0.0:  #NOTE: f(x) > 0.0 yields prob of success
+      if f(self.coords[i]) <= 0.0:  #NOTE: f(x) <= 0.0 yields prob of failure
+        u += self.weights[i]
+    return u  #XXX: does this need to be normalized?
+    
+
+ #__center = None
+ #__delta = None
 
   # interface
   npts = property(__n )
   weights = property(__weights )
   coords = property(__positions, __set_positions )
-  center = property(__get_center )
-  delta = property(__get_delta )
+ #center = property(__get_center ) #FIXME: remove c.center and c.delta... or
+ #delta = property(__get_delta )   #       replace with c._params (e.g. (m,D))
  #expect = property(__expect, __set_expect )
   mass = property(__mass )
   pass
