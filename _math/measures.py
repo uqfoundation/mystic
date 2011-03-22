@@ -100,7 +100,7 @@ Optimiziation on f over the given bounds seeks a mean 'm' with deviation 'D'.
   (this function is not 'mean-preserving' or 'range-preserving')
 
 Inputs:
-    param -- a tuple of target parameters: param = (mean, ..., deviation)
+    param -- a tuple of target parameters: param = (mean, deviation)
     f -- a function that takes a list and returns a number
     npts -- a tuple of dimensions of the target product measure
     bounds -- a tuple of sample bounds:   bounds = (lower_bounds, upper_bounds)
@@ -127,9 +127,8 @@ For example:
     >>> expectation(f, samples)
     >>> 2.00001001012246015
 """
-  # set param indicies... typically, we should have:  param = (mean, Deviation)
-  target = 0      # index for the target mean
-  deviation = -1  # index for acceptable deviation from the target mean
+  # param[0] is the target mean
+  # param[1] is the acceptable deviation from the target mean
 
   # construct cost function to reduce deviation from expectation value
   def cost(rv):
@@ -138,7 +137,7 @@ For example:
     # from mystic.math.measures import _pack, _nested, expectation
     samples = _pack( _nested(rv,npts) )
     Ex = expectation(f, samples, weights)
-    return (Ex - param[target])**2
+    return (Ex - param[0])**2
 
   # if bounds are not set, use the default optimizer bounds
   if not bounds:
@@ -155,7 +154,7 @@ For example:
   maxiter = 1000;  maxfun = 1e+6
   crossover = 0.9; percent_change = 0.9
 
-  def optimize(cost,lb,ub,tolerance):
+  def optimize(cost,(lb,ub),tolerance):
     from mystic.differential_evolution import DifferentialEvolutionSolver2
     from mystic.termination import VTR
     from mystic.strategy import Best1Exp
@@ -179,8 +178,8 @@ For example:
     return solved, diameter_squared, func_evals
 
   # use optimization to get expectation value
-  tolerance = (param[deviation])**2
-  results = optimize(cost, lower_bounds, upper_bounds, tolerance)
+  tolerance = (param[1])**2
+  results = optimize(cost, (lower_bounds, upper_bounds), tolerance)
 
   # repack the results
   samples = _pack( _nested(results[0],npts) )

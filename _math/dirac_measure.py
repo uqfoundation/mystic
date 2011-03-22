@@ -224,31 +224,46 @@ Inputs:
 #---------------------------------------------
 # creators and destructors from parameter list
 
-def unflatten(params, npts):
-  """Map a list of random variables to N x 1D discrete measures
- in a product_measure object."""
-  from mystic.math.measures import _nested_split
-  w, x = _nested_split(params, npts)
+def compose(samples, weights):
+  """Generate a product_measure object from a nested list of N x 1D
+discrete measure positions and a nested list of N x 1D weights."""
   total = []
-  for i in range(len(npts)):
+  for i in range(len(samples)):
     next = dirac_measure()
-    for j in range(npts[i]):
-      next.append(point( x[i][j], w[i][j] ))
+    for j in range(len(samples[i])):
+      next.append(point( samples[i][j], weights[i][j] ))
     total.append(next)
   c = product_measure(total)
   return c
 
 
+def decompose(c):
+  """Decomposes a product_measure object into a nested list of
+N x 1D discrete measure positions and a nested list of N x 1D weights."""
+  from mystic.math.measures import _nested_split
+  npts = [set.npts for set in c]
+  w, x = _nested_split(flatten(c), npts)
+  return x, w
+
+
+def unflatten(params, npts):
+  """Map a list of random variables to N x 1D discrete measures
+in a product_measure object."""
+  from mystic.math.measures import _nested_split
+  w, x = _nested_split(params, npts)
+  return compose(x, w)
+
+
 def flatten(c):
-    """Flattens a product_measure object into a list."""
-    rv = []
-    for i in range(len(c)):
-      rv.append(c[i].weights)
-      rv.append(c[i].coords)
-    # now flatten list of lists into just a list
-    from itertools import chain
-    rv = list(chain(*rv))
-    return rv
+  """Flattens a product_measure object into a list."""
+  rv = []
+  for i in range(len(c)):
+    rv.append(c[i].weights)
+    rv.append(c[i].coords)
+  # now flatten list of lists into just a list
+  from itertools import chain
+  rv = list(chain(*rv))
+  return rv
 
 
 # EOF

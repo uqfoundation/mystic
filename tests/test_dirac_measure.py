@@ -227,6 +227,15 @@ def test_flatten_unflatten():
   assert c.npts == d.npts
   assert c.weights == d.weights
   assert c.coords == d.coords
+
+  # decompose and compose
+  from mystic.math.dirac_measure import decompose, compose
+  b = compose(*decompose(c))
+
+  # check if the same
+  assert c.npts == b.npts
+  assert c.weights == b.weights
+  assert c.coords == b.coords
   return
 
 
