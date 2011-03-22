@@ -55,12 +55,26 @@ Inputs:
   from numpy import inf
   return ssum * inf  # protect against ZeroDivision
 
+def variance(samples, weights=None): #, _mean=None):
+  """calculate the (weighted) variance for a list of points
+
+Inputs:
+    samples -- a list of sample points
+    weights -- a list of sample weights
+"""
+  if weights == None:
+    weights = [1.0/float(len(samples))] * len(samples)
+ #if _mean == None:
+  _mean = mean(samples, weights)
+  svar = [abs(s - _mean)**2 for s in samples]
+  return mean(svar, weights)
+
 
 ##### coordinate shift methods #####
 from numpy import asarray
 def impose_mean(m, samples, weights=None):
   """impose a mean on a list of (weighted) points
-  (this function is 'range-preserving')
+  (this function is 'range-preserving' and 'variance-preserving')
 
 Inputs:
     m -- the target mean
@@ -73,6 +87,32 @@ Inputs:
   shift = m - mean(samples, weights)
   samples += shift  #NOTE: is "range-preserving"
   return list(samples)
+
+
+def impose_variance(v, samples, weights=None):
+  """impose a variance on a list of (weighted) points
+  (this function is 'mean-preserving')
+
+Inputs:
+    v -- the target variance
+    samples -- a list of sample points
+    weights -- a list of sample weights
+"""
+  m = mean(samples, weights)
+  samples = asarray(samples)
+  sv = variance(samples,weights) #,m)
+  if not sv:  # protect against ZeroDivision when variance = 0
+    from numpy import nan
+    return [nan]*len(samples) #XXX: better to space pts evenly across range?
+  from numpy import sqrt
+  scale = sqrt(float(v) / sv)
+  samples *= scale  #NOTE: not "mean-preserving", until the next line
+  return impose_mean(m, samples, weights) #NOTE: not range preserving
+
+#FIXME: for range and variance to be 'mutually preserving'...
+#       must reconcile scaling by sqrt(v2/v1) & (r2/r1)
+#       ...so likely, must scale the weights... or scale each point differently
+
 
 def impose_spread(r, samples, weights=None): #FIXME: fails if len(samples) = 1
   """impose a range on a list of (weighted) points
@@ -91,13 +131,13 @@ Inputs:
     return [nan]*len(samples) #XXX: better to space pts evenly across range?
   scale = float(r) / sr
   samples *= scale  #NOTE: not "mean-preserving", until the next line
-  return impose_mean(m, samples, weights)
+  return impose_mean(m, samples, weights) #NOTE: not variance preserving
 
 
 def impose_expectation(param, f, npts, bounds=None, weights=None):
   """impose a given expextation value (m +/- D) on a given function f.
 Optimiziation on f over the given bounds seeks a mean 'm' with deviation 'D'.
-  (this function is not 'mean-preserving' or 'range-preserving')
+  (this function is not 'mean-, range-, or variance-preserving')
 
 Inputs:
     param -- a tuple of target parameters: param = (mean, deviation)

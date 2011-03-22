@@ -33,15 +33,17 @@ class dirac_measure(list):  #FIXME: meant to only accept points...
   s.coords  --  returns list of positions
   s.npts  --  returns the number of points
   s.mass  --  calculates sum of weights
-  s.range  --  calculates |max - min| for positions
   s.mean  --  calculates sum of weights*positions
+  s.range  --  calculates |max - min| for positions
+  s.var  --  calculates mean( |positions - mean(positions)|**2 )
 
  settings:
   s.weights = [w1, w2, ..., wn]  --  set weights
   s.coords = [x1, x2, ..., xn]  --  set positions
   s.normalize()  --  normalizes the weights to 1.0
-  s.range(R)  --  set the range
   s.mean(R)  --  set the mean
+  s.range(R)  --  set the range
+  s.var(R)  --  set the variance
 
  notes:
   - constraints should impose that sum(weights) should be 1.0
@@ -62,13 +64,17 @@ class dirac_measure(list):  #FIXME: meant to only accept points...
     #from mystic.math.measures import norm
     #return norm(self.weights)  # normalized by self.npts
 
+  def __mean(self):
+    from mystic.math.measures import mean
+    return mean(self.coords, self.weights)
+
   def __range(self):
     from mystic.math.measures import spread
     return spread(self.coords)
 
-  def __mean(self):
-    from mystic.math.measures import mean
-    return mean(self.coords, self.weights)
+  def __variance(self):
+    from mystic.math.measures import variance
+    return variance(self.coords, self.weights)
 
   def __set_weights(self, weights):
     for i in range(len(weights)):
@@ -84,12 +90,16 @@ class dirac_measure(list):  #FIXME: meant to only accept points...
     self.coords, self.weights = impose_weight_norm(self.coords, self.weights)
     return
 
+  def __set_mean(self, m):
+    self.coords = impose_mean(m, self.coords, self.weights)
+    return
+
   def __set_range(self, r):
     self.coords = impose_spread(r, self.coords, self.weights)
     return
 
-  def __set_mean(self, m):
-    self.coords = impose_mean(m, self.coords, self.weights)
+  def __set_variance(self, v):
+    self.coords = impose_variance(v, self.coords, self.weights)
     return
 
   # interface
@@ -100,6 +110,7 @@ class dirac_measure(list):  #FIXME: meant to only accept points...
   mass = property(__mass )
   range = property(__range, __set_range)
   mean = property(__mean, __set_mean)
+  var = property(__variance, __set_variance)
   pass
 
 class product_measure(list):  #FIXME: meant to only accept sets...

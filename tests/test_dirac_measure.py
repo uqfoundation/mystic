@@ -91,6 +91,11 @@ def test_calculate_methods(npts=2):
   sm = mean(DD, weights)
   print "mean: %s" % sm
 
+  # calculate variance
+  print "\ncalculate variance"
+  sv = variance(DD, weights)
+  print "var: %s" % sv
+
 def test_set_behavior():
   from mystic.math import approx_equal as almostEqual
   from numpy import inf
