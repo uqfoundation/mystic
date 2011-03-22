@@ -90,11 +90,19 @@ def test_calculate_methods(npts=2):
   print "range: %s" % R
   sm = mean(DD, weights)
   print "mean: %s" % sm
-
-  # calculate variance
-  print "\ncalculate variance"
   sv = variance(DD, weights)
   print "var: %s" % sv
+
+  # -------------------------------------
+  # modify variance, maintaining mean
+  # -------------------------------------
+  print "\nmodify variance, maintaining mean"
+  DD = impose_variance(R, DD, weights)
+  sm = mean(DD, weights)
+  print "mean: %s" % sm
+  sv = variance(DD, weights)
+  print "var: %s" % sv
+  
 
 def test_set_behavior():
   from mystic.math import approx_equal as almostEqual

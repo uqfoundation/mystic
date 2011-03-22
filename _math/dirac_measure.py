@@ -7,7 +7,8 @@ Includes point, dirac_measure, and product_measure classes.
 # For usage example, see seesaw2d_inf_example.py .
 
 from mystic.math.measures import impose_mean, impose_expectation
-from mystic.math.measures import impose_spread, impose_weight_norm
+from mystic.math.measures import impose_spread, impose_variance
+from mystic.math.measures import impose_weight_norm
 
 class point(object):
   """ 1-d object with weight and position """
