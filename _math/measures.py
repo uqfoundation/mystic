@@ -134,7 +134,7 @@ Inputs:
   return impose_mean(m, samples, weights) #NOTE: not variance preserving
 
 
-def impose_expectation(param, f, npts, bounds=None, weights=None):
+def impose_expectation(param, f, npts, bounds=None, weights=None, **kwds):
   """impose a given expextation value (m +/- D) on a given function f.
 Optimiziation on f over the given bounds seeks a mean 'm' with deviation 'D'.
   (this function is not 'mean-, range-, or variance-preserving')
@@ -145,6 +145,11 @@ Inputs:
     npts -- a tuple of dimensions of the target product measure
     bounds -- a tuple of sample bounds:   bounds = (lower_bounds, upper_bounds)
     weights -- a list of sample weights
+
+Additional Inputs:
+    constrain -- an optional user-supplied constraints function,
+        where (x', w') = constrain(x, w); and (x, w) are (samples, weights)
+        in product_measure space
 
 Outputs:
     samples -- a list of sample positions
@@ -170,6 +175,18 @@ For example:
   # param[0] is the target mean
   # param[1] is the acceptable deviation from the target mean
 
+  # plug in 'constraints' function provided by user
+  constrain = lambda x,w: (x,w)
+  if kwds.has_key('constraints'): constrain = kwds['constraints']
+  if not constrain:
+    constraints = lambda x,w: (x,w)
+  else: #XXX: better to use a standard "xk' = constrain(xk)" interface ?
+    def constraints(rv):
+      # assumes: samples', weights' = constrain(samples, weights)
+      samples = _nested(rv,npts)
+      smp, wts = constrain(samples, weights)
+      return _flat(smp)
+
   # construct cost function to reduce deviation from expectation value
   def cost(rv):
     """compute cost from a 1-d array of model parameters,
@@ -194,7 +211,7 @@ For example:
   maxiter = 1000;  maxfun = 1e+6
   crossover = 0.9; percent_change = 0.9
 
-  def optimize(cost,(lb,ub),tolerance):
+  def optimize(cost,(lb,ub),tolerance,_constraints):
     from mystic.differential_evolution import DifferentialEvolutionSolver2
     from mystic.termination import VTR
     from mystic.strategy import Best1Exp
@@ -210,7 +227,8 @@ For example:
     solver.SetEvaluationLimits(maxiter,maxfun)
     solver.Solve(cost,termination=VTR(tolerance),strategy=Best1Exp, \
                  CrossProbability=crossover,ScalingFactor=percent_change, \
-                 StepMonitor=stepmon, EvaluationMonitor=evalmon)
+                 StepMonitor=stepmon, EvaluationMonitor=evalmon, \
+                 constraints = _constraints)
 
     solved = solver.Solution()
     diameter_squared = solver.bestEnergy
@@ -219,7 +237,7 @@ For example:
 
   # use optimization to get expectation value
   tolerance = (param[1])**2
-  results = optimize(cost, (lower_bounds, upper_bounds), tolerance)
+  results = optimize(cost, (lower_bounds, upper_bounds), tolerance, constraints)
 
   # repack the results
   samples = _pack( _nested(results[0],npts) )

@@ -431,6 +431,7 @@ Further Inputs:
         #XXX:[HACK] accept constraints
         constraints = lambda x: x
         if kwds.has_key('constraints'): constraints = kwds['constraints']
+        if not constraints: constraints = lambda x: x
         #XXX:[HACK] -end-
         #-------------------------------------------------------------
 
