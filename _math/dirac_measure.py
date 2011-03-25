@@ -190,18 +190,21 @@ Inputs:
     from mystic.math.measures import expectation
     return expectation(f, self.coords, self.weights)
 
-  def set_expect(self, (m,D), f, bounds=None):
+  def set_expect(self, (m,D), f, bounds=None, constraints=None):
     """impose a expectation on a product measure
 
 Inputs:
     (m,D) -- tuple of expectation m and acceptable deviation D
     f -- a function that takes a list and returns a number
     bounds -- tuple of lists of bounds  (lower_bounds, upper_bounds)
+    constraints -- a function that takes a nested list of N x 1D discrete
+        measure positions and weights   x' = constraints(x, w)
 """
    #self.__center = m
    #self.__delta = D
     npts = [i.npts for i in self]
-    self.coords = impose_expectation((m,D), f, npts, bounds, self.weights) 
+    self.coords = impose_expectation((m,D), f, npts, bounds, self.weights, \
+                                                     constraints=constraints) 
     return
 
   def pof(self, f):
@@ -235,6 +238,30 @@ Inputs:
 
 #---------------------------------------------
 # creators and destructors from parameter list
+
+def _mimic(samples, weights):
+  """Generate a product_measure object from a list N product measure
+positions and a list of N weights. The resulting product measure will
+mimic the original product measure's statistics, but be larger in size.
+
+For example:
+    >>> smp = [[-6,3,6],[-2,4],[1]]
+    >>> wts = [[.4,.2,.4],[.5,.5],[1.]]
+    >>> c = compose(samples, weights)
+    >>> d = _mimic(c.coords, c.weights)
+    >>> c[0].mean == d[0].mean
+    True
+    >>> c[1].range == d[1].range
+    True
+    >>> c.npts == d.npts
+    False
+    >>> c.npts == d[0].npts
+    True
+"""
+  x = zip(*samples)                     # 'mimic' to a nested list
+  w = [weights for i in range(len(x))]  # 'mimic' to a nested list
+  return compose(x,w)
+
 
 def compose(samples, weights):
   """Generate a product_measure object from a nested list of N x 1D

@@ -147,9 +147,8 @@ Inputs:
     weights -- a list of sample weights
 
 Additional Inputs:
-    constrain -- an optional user-supplied constraints function,
-        where (x', w') = constrain(x, w); and (x, w) are (samples, weights)
-        in product_measure space
+    constraints -- a function that takes a nested list of N x 1D discrete
+        measure positions and weights   x' = constraints(x, w)
 
 Outputs:
     samples -- a list of sample positions
@@ -175,17 +174,20 @@ For example:
   # param[0] is the target mean
   # param[1] is the acceptable deviation from the target mean
 
-  # plug in 'constraints' function provided by user
-  constrain = lambda x,w: (x,w)
+  # FIXME: the following is a HACK to recover from lost 'weights' information
+  #        we 'mimic' discrete measures using the product measure weights
+  # plug in the 'constraints' function:  samples' = constrain(samples, weights)
+  constrain = None   # default is no constraints
   if kwds.has_key('constraints'): constrain = kwds['constraints']
-  if not constrain:
-    constraints = lambda x,w: (x,w)
+  if not constrain:  # if None (default), there are no constraints
+    constraints = lambda x: x
   else: #XXX: better to use a standard "xk' = constrain(xk)" interface ?
     def constraints(rv):
-      # assumes: samples', weights' = constrain(samples, weights)
-      samples = _nested(rv,npts)
-      smp, wts = constrain(samples, weights)
-      return _flat(smp)
+      coords = _pack( _nested(rv,npts) )
+      coords = zip(*coords)              # 'mimic' a nested list
+      coords = constrain(coords, [weights for i in range(len(coords))])
+      coords = zip(*coords)              # revert back to a packed list
+      return _flat( _unpack(coords,npts) )
 
   # construct cost function to reduce deviation from expectation value
   def cost(rv):

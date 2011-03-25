@@ -2,7 +2,7 @@
 """
 test imposing the expectation for a function f by optimization
 """
-debug = False
+debug = True
 
 from math import pi, cos, tanh
 import random
@@ -96,20 +96,45 @@ if __name__ == '__main__':
   wy = [1.0 / float(ny)] * ny
   wz = [1.0 / float(nz)] * nz
 
-  from mystic.math.measures import _pack
+  from mystic.math.measures import _pack, _unpack
   wts = _pack([wx,wy,wz])
   weights = [i[0]*i[1]*i[2] for i in wts]
 
-  from mystic.math.measures import expectation, impose_expectation
-  samples = impose_expectation((_mean,_range), G, (nx,ny,nz), bounds, weights)
+  if not debug:
+    constraints = None
+  else:  # impose a mean constraint on 'thickness'
+    h_mean = (h_upper[0] + h_lower[0]) / 2.0
+    h_error = 1.0
+    v_mean = (v_upper[0] + v_lower[0]) / 2.0
+    v_error = 0.05
+    print "impose: mean[x] = %s +/- %s" % (str(h_mean),str(h_error))
+    print "impose: mean[z] = %s +/- %s" % (str(v_mean),str(v_error))
+    def constraints(x, w):
+      from mystic.math.dirac_measure import compose, decompose
+      c = compose(x,w)
+      E = float(c[0].mean)
+      if not (E <= float(h_mean+h_error)) or not (float(h_mean-h_error) <= E):
+        c[0].mean = h_mean
+      E = float(c[2].mean)
+      if not (E <= float(v_mean+v_error)) or not (float(v_mean-v_error) <= E):
+        c[2].mean = v_mean
+      return decompose(c)[0]
+
+  from mystic.math.measures import mean, expectation, impose_expectation
+  samples = impose_expectation((_mean,_range), G, (nx,ny,nz), bounds, \
+                                      weights, constraints=constraints)
 
   if debug:
     from numpy import array
     # rv = [xi]*nx + [yi]*ny + [zi]*nz
-    print "solved: [x]\n%s" % array(samples[:nx])
-    print "solved: [y]\n%s" % array(samples[nx:nx+ny])
-    print "solved: [z]\n%s" % array(samples[nx+ny:])
-    #print "solved: %s" % samples
+    smp = _unpack(samples,(nx,ny,nz))
+    print "\nsolved [x]: %s" % array( smp[0] )
+    print "solved [y]: %s" % array( smp[1] )
+    print "solved [z]: %s" % array( smp[2] )
+    #print "solved: %s" % smp
+    print "\nmean[x]: %s" % mean(smp[0])  # weights are all equal
+    print "mean[y]: %s" % mean(smp[1])  # weights are all equal
+    print "mean[z]: %s\n" % mean(smp[2])  # weights are all equal
 
   Ex = expectation(G, samples, weights)
   print "expect: %s" % Ex
