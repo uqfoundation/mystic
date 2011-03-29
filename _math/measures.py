@@ -83,7 +83,7 @@ Inputs:
 """
  #XXX: this is as expected... mean(impose_mean(2.0, samples, weights), weights)
  #XXX: this is unexpected?... mean(impose_mean(2.0, samples, weights))
-  samples = asarray(samples)
+  samples = asarray(list(samples)) #XXX: faster to use x = array(x, copy=True) ?
   shift = m - mean(samples, weights)
   samples += shift  #NOTE: is "range-preserving"
   return list(samples)
@@ -99,7 +99,7 @@ Inputs:
     weights -- a list of sample weights
 """
   m = mean(samples, weights)
-  samples = asarray(samples)
+  samples = asarray(list(samples)) #XXX: faster to use x = array(x, copy=True) ?
   sv = variance(samples,weights) #,m)
   if not sv:  # protect against ZeroDivision when variance = 0
     from numpy import nan
@@ -124,7 +124,7 @@ Inputs:
     weights -- a list of sample weights
 """
   m = mean(samples, weights)
-  samples = asarray(samples)
+  samples = asarray(list(samples)) #XXX: faster to use x = array(x, copy=True) ?
   sr = spread(samples)
   if not sr:  # protect against ZeroDivision when range = 0
     from numpy import nan
@@ -247,16 +247,17 @@ For example:
 
 
 ##### weight shift methods #####
-def impose_weight_norm(samples, weights): #XXX: should allow setting norm != 1
+def impose_weight_norm(samples, weights, mass=1.0):
   """normalize the weights for a list of (weighted) points
   (this function is 'mean-preserving')
 
 Inputs:
     samples -- a list of sample points
     weights -- a list of sample weights
+    mass -- target sum of normalized weights
 """
   m = mean(samples, weights)
-  wts = normalize(weights)  #NOTE: not "mean-preserving", until the next line
+  wts = normalize(weights,mass) #NOTE: not "mean-preserving", until next line
   return impose_mean(m, samples, wts), wts
 
 def normalize(weights, mass=1.0):
@@ -266,7 +267,7 @@ Inputs:
     weights -- a list of sample weights
     mass -- target sum of normalized weights
 """
-  weights = asarray(weights)
+  weights = asarray(list(weights)) #XXX: faster to use x = array(x, copy=True) ?
   w = float(sum(weights))
   if w: return [i*mass for i in (weights / w)] #FIXME: not "mean-preserving"
   from numpy import inf
