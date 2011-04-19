@@ -215,11 +215,16 @@ Inputs:
     f -- a function that returns True for 'success' and False for 'failure'
 """
     u = 0
-    for i in range(self.npts):
-      #if f(self.coords[i]) > 0.0:  #NOTE: f(x) > 0.0 yields prob of success
-      if f(self.coords[i]) <= 0.0:  #NOTE: f(x) <= 0.0 yields prob of failure
-        u += self.weights[i]
-    return u  #XXX: does this need to be normalized?
+    set = zip(self.coords, self.weights)
+    for x in set:
+      if f(x[0]) <= 0.0:
+        u += x[1]
+    return u
+  # for i in range(self.npts):
+  #   #if f(self.coords[i]) > 0.0:  #NOTE: f(x) > 0.0 yields prob of success
+  #   if f(self.coords[i]) <= 0.0:  #NOTE: f(x) <= 0.0 yields prob of failure
+  #     u += self.weights[i]
+  # return u  #XXX: does this need to be normalized?
     
 
  #__center = None

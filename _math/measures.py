@@ -293,6 +293,26 @@ For example:
   [(1,4,6), (2,4,6), (3,4,6), (1,5,6), (2,5,6), (3,5,6), \
    (1,4,7), (2,4,7), (3,4,7), (1,5,7), (2,5,7), (3,5,7)]
 """
+ #from numpy import prod, array, ones
+ #ndim = len(samples)
+ #npts = [len(s) for s in samples]
+ #z = []
+ #for i in range(ndim):
+ #  tmp = list(array([n*ones(prod(npts[:i])) for n in samples[i]]).flatten())
+ #  z.append( prod(npts[i+1:])*tmp )
+ #del tmp
+ #zT = []
+ #for i in range(len(z[0])):
+ #  zT.append( tuple([y.pop(0) for y in z]) )
+ #return zT
+# from numpy import prod, array, ones
+# ndim = len(samples)
+# npts = [len(s) for s in samples]
+# z = ones((ndim, prod(npts)))  # z.T of what's needed
+# for i in range(ndim):
+#   tmp = list(array([n*ones(prod(npts[:i])) for n in samples[i]]).flatten())
+#   z[i] = prod(npts[i+1:])*tmp
+# return [tuple(i) for i in z.T]
   ndim = len(samples)
   currentx=[0.]*ndim
   _samples = []
@@ -321,26 +341,26 @@ For example:
   ...        )
   [[1,2,3], [4,5], [6,7]]
 """
+# from numpy import prod, array
+# ndim = len(npts)
+# z = []
+# for i in range(ndim):
+#   tmp = array(samples[:int(len(samples)/prod(npts[i+1:]))]).T[i]
+#   z.append( list(tmp[::int(prod(npts[:i]))]) )
+# return z
   _samples = []
   ndim = len(npts)
   temp = [npts[0]]*ndim
   _samples.append([j[0] for j in samples][:npts[0]])
- #ndim = len(samples[0])
- #npts = int(len(samples)**(1.0/ndim))
- #temp = [npts]*ndim
- #_samples.append([j[0] for j in samples][:npts])
-
   def recurse(next):
     if next == ndim:
       return
     else:
-     #temp[next] = temp[next-1]*npts
       temp[next] = temp[next-1]*npts[next]
       currentindex = temp[next]
       lastindex = temp[next-1]
       _samples.append([j[next] for j in samples][:currentindex:lastindex])
       recurse(next + 1)
-
   recurse(1)
   return _samples
 
