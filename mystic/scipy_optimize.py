@@ -59,7 +59,7 @@ __all__ = ['NelderMeadSimplexSolver','PowellDirectionalSolver',
 
 
 from mystic.tools import Null, wrap_function
-from mystic.tools import wrap_bounds
+from mystic.tools import wrap_bounds, wrap_nested
 
 import numpy
 from numpy import eye, zeros, shape, asarray, absolute, asfarray
@@ -165,9 +165,12 @@ Further Inputs:
         retall=0       #non-zero to return all steps
         callback=None  #user-supplied function, called after each step
         radius=0.05    #percentage change for initial simplex values
+        constraints = lambda x: x # Constraints function to be imposed
         if kwds.has_key('callback'): callback = kwds['callback']
         if kwds.has_key('disp'): disp = kwds['disp']
         if kwds.has_key('radius'): radius = kwds['radius']
+        if kwds.has_key('constraints'): constraints = kwds['constraints']
+        if not constraints: constraints = lambda x: x
         #-------------------------------------------------------------
 
         import signal
@@ -182,6 +185,9 @@ Further Inputs:
         self._generateHandler(sigint_callback) 
         if self._handle_sigint: signal.signal(signal.SIGINT, self.signal_handler)
         #-------------------------------------------------------------
+
+        # wrap constraints function
+        func = wrap_nested(func, constraints)
 
         id = self.id
         x0 = asfarray(x0).flatten()
@@ -234,6 +240,9 @@ Further Inputs:
         while (fcalls[0] < self._maxfun and iterations < self._maxiter):
             if self._EARLYEXIT or termination(self):
                 break
+
+            # apply constraints
+            sim[0] = constraints(sim[0])
 
             xbar = numpy.add.reduce(sim[:-1],0) / N
             xr = (1+rho)*xbar - rho*sim[-1]
@@ -492,10 +501,13 @@ Further Inputs:
         direc=None
         callback=None  #user-supplied function, called after each step
         xtol=1e-4      #line-search error tolerance
+        constraints = lambda x: x # Constraints function to be imposed
         if kwds.has_key('callback'): callback = kwds['callback']
         if kwds.has_key('direc'): direc = kwds['direc']  #XXX: best interface?
         if kwds.has_key('xtol'): xtol = kwds['xtol']
         if kwds.has_key('disp'): disp = kwds['disp']
+        if kwds.has_key('constraints'): constraints = kwds['constraints']
+        if not constraints: constraints = lambda x: x
         #-------------------------------------------------------------
 
         import signal
@@ -510,6 +522,9 @@ Further Inputs:
         self._generateHandler(sigint_callback) 
         if self._handle_sigint: signal.signal(signal.SIGINT, self.signal_handler)
         #-------------------------------------------------------------
+
+        # wrap constraints function
+        func = wrap_nested(func, constraints)
 
         id = self.id
         x = asfarray(x0).flatten()
@@ -554,6 +569,9 @@ Further Inputs:
                 if (fx2 - fval) > delta:
                     delta = fx2 - fval
                     bigind = i
+
+                # apply constraints
+                x = constraints(x)
 
             iter += 1
             if callback is not None:
