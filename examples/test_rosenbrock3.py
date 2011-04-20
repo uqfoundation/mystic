@@ -7,6 +7,10 @@ example of using PowellDirectionalSolver on the rosenbrock function
 from mystic.models import rosen
 import numpy
 
+def constrain(x):
+  x[1] = x[0]
+  return x
+
 if __name__=='__main__':
     import time
 
@@ -24,8 +28,8 @@ if __name__=='__main__':
     print "==========================="
     start = time.time()
     from mystic.tools import Sow, VerboseSow
-   #stepmon = VerboseSow(1)
-    stepmon = Sow() #VerboseSow(10)
+    stepmon = VerboseSow(1,1)
+   #stepmon = Sow() #VerboseSow(10)
     from mystic.termination import NormalizedChangeOverGeneration as NCOG
 
    #from scipy.optimize import fmin_powell
@@ -36,7 +40,7 @@ if __name__=='__main__':
     solver.SetStrictRanges(min,max)
    #solver.SetEvaluationLimits(maxiter=13)
     solver.enable_signal_handler()
-    solver.Solve(rosen,termination=NCOG(tolerance=1e-4),StepMonitor=stepmon,disp=1)
+    solver.Solve(rosen,termination=NCOG(tolerance=1e-4),StepMonitor=stepmon,disp=1, constraints=constrain)
     print solver.Solution()
 
     times.append(time.time() - start)
