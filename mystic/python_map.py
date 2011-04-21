@@ -18,7 +18,8 @@ defaults = { 'timelimit' : '00:05:00',
              'queue' : '',
              'python' : '`which python`' ,
              'nodes' : '1',
-             'progargs' : ''
+             'progargs' : '',
+             'scheduler' : ''
            }
 
 def serial_launcher(kdict={}):
@@ -44,6 +45,7 @@ to conform with the pathos.pyina.map interface.
 Further Input: [***disabled***]
     nnodes -- the number of parallel nodes
     launcher -- the launcher object
+    scheduler -- the scheduler object
     mapper -- the mapper object
     timelimit -- string representation of maximum run time (e.g. '00:02')
     queue -- string name of selected queue (e.g. 'normal')

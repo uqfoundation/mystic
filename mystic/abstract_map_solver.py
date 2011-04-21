@@ -115,6 +115,7 @@ Important class members:
         self._map             = python_map        # map
         self._mapper          = carddealer_mapper # map_strategy
         self._nnodes          = int(defaults['nodes'])
+        self._scheduler       = defaults['scheduler'] # scheduler
         self._queue           = defaults['queue'] # scheduler_queue
         self._timelimit       = defaults['timelimit']
         self._servers         = ('*',) #<detect>  # hostname:port
@@ -199,22 +200,25 @@ Additional inputs:
         self._nnodes = nnodes
         return
 
-    def SelectQueue(self, queue, timelimit=None):  #XXX: SelectScheduler better?
-        """Select queue and (optionally) timelimit.
+    def SelectScheduler(self, scheduler, queue, timelimit=None):
+        """Select scheduler and queue (and optionally) timelimit.
 
 Description:
 
-    Takes string name of a scheduler queue to submit the optimization
-    job. Additionally takes string time limit for scheduled job.
+    Takes a scheduler function and a string queue name to submit
+    the optimization job. Additionally takes string time limit
+    for scheduled job.
 
-    Example: queue='normal', timelimit='00:02'
+    Example: scheduler, queue='normal', timelimit='00:02'
 
 Inputs:
+    scheduler -- scheduler function (see pyina.launchers)  [DEFAULT: None]
     queue -- queue name string (see pyina.launchers)  [DEFAULT: None]
 
 Additional inputs:
     timelimit -- time string HH:MM:SS format  [DEFAULT: '00:05:00']
         """
+        self._scheduler = scheduler
         self._queue = queue
         self._timelimit = timelimit
         return

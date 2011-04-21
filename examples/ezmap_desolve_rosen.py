@@ -13,12 +13,13 @@ __doc__ = """
 # Optimization 11: 341-359, 1997.
 
 # To run in parallel:  (must install 'pyina')
-mpipython.exe ezmap_desolve_rosen.py
+python ezmap_desolve_rosen.py
 """
 
 try:
   import pyina.launchers as launchers
   from pyina.launchers import mpirun_launcher
+  from pyina.schedulers import torque_scheduler
   from pyina.mappers import equalportion_mapper
   from pyina.ez_map import ez_map2 as ez_map
 except:
@@ -34,9 +35,11 @@ from mystic.tools import VerboseSow, random_seed
 from mystic.models import rosen as myCost  # ez_map2 doesn't require help
 
 ND = 3
-NP = ND*10
-MAX_GENERATIONS = ND*NP
-NNODES = ND
+NP = 20
+MAX_GENERATIONS = NP*NP
+NNODES = "5:ppn=4"
+QUEUE = "weekdayQ"
+TIMELIMIT = "00:30:00"
 
 TOL = 0.01
 CROSS = 0.9
@@ -68,6 +71,7 @@ if __name__=='__main__':
     solver2 = DifferentialEvolutionSolver2(ND,NP)  #XXX: parallel
     solver2.SetMapper(ez_map, equalportion_mapper)
     solver2.SetLauncher(mpirun_launcher, NNODES)
+    solver2.SelectScheduler(torque_scheduler, QUEUE, TIMELIMIT)
     solver2.SetRandomInitialPoints(min=[-100.0]*ND, max=[100.0]*ND)
     solver2.SetEvaluationLimits(maxiter=MAX_GENERATIONS)
     solver2.Solve(myCost, VTR(TOL), strategy=Best1Exp, \

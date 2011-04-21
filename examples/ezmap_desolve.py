@@ -13,7 +13,7 @@ __doc__ = """
 # Optimization 11: 341-359, 1997.
 
 # To run in parallel:  (must install 'pyina')
-mpipython.exe ezmap_desolve.py
+python ezmap_desolve.py
 """
 
 try:
@@ -36,9 +36,9 @@ from raw_chebyshev8 import chebyshev8cost as ChebyshevCost      # no globals
 #from mystic.models.poly import chebyshev8cost as ChebyshevCost # no helper
 
 ND = 9
-NP = ND*10
-MAX_GENERATIONS = ND*NP
-NNODES = ND
+NP = 40
+MAX_GENERATIONS = NP*NP
+NNODES = NP/5
 
 seed = 100
 

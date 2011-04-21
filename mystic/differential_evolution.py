@@ -471,7 +471,7 @@ Further Inputs:
 
         mapconfig = dict(nnodes=self._nnodes, launcher=self._launcher, \
                          mapper=self._mapper, queue=self._queue, \
-                         timelimit=self._timelimit, \
+                         timelimit=self._timelimit, scheduler=self._scheduler, \
                          ncpus=self._ncpus, servers=self._servers)
         trialEnergy = self._map(costfunction, trialPop, **mapconfig)
 
