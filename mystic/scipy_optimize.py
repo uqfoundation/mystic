@@ -191,6 +191,7 @@ Further Inputs:
 
         id = self.id
         x0 = asfarray(x0).flatten()
+        x0 = asfarray(constraints(x0))
         N = len(x0) #XXX: this should be equal to self.nDim
         rank = len(x0.shape)
         if not -1 < rank < 2:
@@ -241,8 +242,8 @@ Further Inputs:
             if self._EARLYEXIT or termination(self):
                 break
 
-            # apply constraints
-            sim[0] = constraints(sim[0])
+            # apply constraints  #XXX: is this the only appropriate place???
+            sim[0] = asfarray(constraints(sim[0]))
 
             xbar = numpy.add.reduce(sim[:-1],0) / N
             xr = (1+rho)*xbar - rho*sim[-1]
@@ -528,6 +529,7 @@ Further Inputs:
 
         id = self.id
         x = asfarray(x0).flatten()
+        x = asfarray(constraints(x))
         if retall:
             allvecs = [x]
         N = len(x) #XXX: this should be equal to self.nDim
@@ -571,7 +573,7 @@ Further Inputs:
                     bigind = i
 
                 # apply constraints
-                x = constraints(x)
+                x = asfarray(constraints(x))
 
             iter += 1
             if callback is not None:
@@ -600,6 +602,8 @@ Further Inputs:
                         fval, x, direc1 = _linesearch_powell(func, x, direc1, tol=xtol*100)
                         direc[bigind] = direc[-1]
                         direc[-1] = direc1
+ 
+               #        x = asfarray(constraints(x))
 
                 self.energy_history[-1] = fval #...update to 'best' energy
 
