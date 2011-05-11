@@ -280,18 +280,24 @@ Inputs:
   wts = normalize(weights,mass) #NOTE: not "mean-preserving", until next line
   return impose_mean(m, samples, wts), wts
 
-def normalize(weights, mass=1.0):
+def normalize(weights, mass=1.0, zscale=1.0):
   """normalize a list of points to unity (i.e. normalize to 1.0)
 
 Inputs:
     weights -- a list of sample weights
     mass -- target sum of normalized weights
+    zscale -- scaling when mass = 0.0
 """
   weights = asarray(list(weights)) #XXX: faster to use x = array(x, copy=True) ?
   w = float(sum(weights))
-  if w: return [i*mass for i in (weights / w)] #FIXME: not "mean-preserving"
-  from numpy import inf
-  return list(weights * inf)  # protect against ZeroDivision
+  if not w:
+    from numpy import inf
+    return list(weights * inf)  # protect against ZeroDivision
+  if float(mass):
+    return [i*mass for i in (weights / w)] #FIXME: not "mean-preserving"
+  normed = normalize(weights[:-1], zscale)
+  normed.append( -sum(normed) ) # force last member to satisfy sum = 0.0
+  return normed #FIXME: also not "mean-preserving" (burden the last member)
 
 
 #--------------------------------------------------------------------

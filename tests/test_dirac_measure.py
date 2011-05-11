@@ -34,8 +34,10 @@ def test_calculate_methods(npts=2):
 
   # select weights randomly in [0,1], then normalize so sum(weights) = 1
   wts = random_samples([0],[1], npts)[0]
+  weights = normalize(wts, 0.0)
+  print "weights (when normalized to 0.0): %s" % weights
   weights = normalize(wts)
-  print "weights: %s" % weights
+  print "weights (when normalized to 1.0): %s" % weights
   w = norm(weights)
   print "norm: %s" % w
 
@@ -264,10 +266,10 @@ def test_flatten_unflatten():
 
 
 if __name__ == '__main__':
-  #test_calculate_methods(npts=2)
+  test_calculate_methods(npts=2)
   #test_set_behavior()
   #test_pack_unpack()
-  test_collection_behavior()
+  #test_collection_behavior()
   #test_flatten_unflatten()
   pass
 
