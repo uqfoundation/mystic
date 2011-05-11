@@ -179,12 +179,19 @@ def test_collection_behavior():
   sy = set([point(0.0,1.0), point(3.0,2.0)])
   sz = set([point(1.0,1.0), point(2.0,3.0)])
   #NOTE: for marc_surr(x,y,z), we must have x > 0.0
+  sx.normalize()
+  sy.normalize()
+  sz.normalize()
 
   # build a collection
   c = collection([sx,sy,sz])
   print "x_coords: %s" % c[0].coords
   print "y_coords: %s" % c[1].coords
   print "z_coords: %s" % c[2].coords
+  print "x_weights: %s" % c[0].weights
+  print "y_weights: %s" % c[1].weights
+  print "z_weights: %s" % c[2].weights
+  print "randomly selected support:\n %s" % c.support(10)
 
   print "npts: %s" % c.npts
   print "weights: %s" % c.weights
@@ -218,8 +225,12 @@ def test_collection_behavior():
   print "range: %s" % _range
   print "expect: %s" % c.get_expect(f)
 
- #print "pof: %s" % c.pof(f)
-
+  # a test function for probability of failure
+  def g(x):
+    if f(x) <= 0.0: return False
+    return True
+  print "pof: %s" % c.pof(g)
+  print "sampled_pof: %s" % c.sampled_pof(g, npts=10000)
   return
 
 def test_flatten_unflatten():

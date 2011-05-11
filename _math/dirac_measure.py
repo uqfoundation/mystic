@@ -226,6 +226,36 @@ Inputs:
   #     u += self.weights[i]
   # return u  #XXX: does this need to be normalized?
     
+  def sampled_pof(self, f, npts=10000):
+    """calculate probability of failure over a given function, f,
+where f takes a list of (product_measure) positions and returns a single value
+
+Inputs:
+    f -- a function that returns True for 'success' and False for 'failure'
+    npts -- number of points sampled from the underlying discrete measures
+"""
+    from mystic.math.samples import _pof_given_samples
+    pts = self.support(npts)
+    return _pof_given_samples(f, pts)
+
+  def support(self, npts=10000):
+    """randomly select support points from the underlying discrete measures
+
+Inputs:
+    npts -- number of points sampled from the underlying discrete measures
+
+Returns:
+    pts -- a nested list of len(prod_measure) lists, each of len(npts)
+"""
+    from mystic.math.measures import weighted_select as _select
+    pts = []
+    for i in range(npts):
+      # for a single trial, select coords from all sets
+      pts.append( [_select(set.coords, set.weights) for set in self] )
+
+    # convert pts to len(prod_meas) lists, each of len(npts)
+    from numpy import transpose
+    return transpose(pts)  #XXX: assumes 'coords' is a list of floats
 
  #__center = None
  #__delta = None

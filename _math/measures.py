@@ -7,6 +7,26 @@ from mystic.math.stats import *
 from mystic.math.samples import *
 from mystic.math.integrate import *
 
+def weighted_select(samples, weights, mass=1.0):
+  """randomly select a sample from weighted set of samples
+
+Inputs:
+    samples -- a list of sample points
+    weights -- a list of sample weights
+    mass -- sum of normalized weights
+"""
+  from numpy import sum, array
+  from numpy.random import rand
+  # generate a list representing the weighted distribution
+  wts = normalize(weights, mass)
+  wts = array([sum(wts[:i+1]) for i in range(len(wts))])
+  # correct for any rounding error
+  wts[-1] = mass
+  # generate a random weight
+  w = mass * rand()
+  # select samples that corresponds to randomly selected weight
+  selected = len(wts[ wts <= w ])
+  return samples[selected]
 
 ##### calculate methods #####
 def spread(samples):
