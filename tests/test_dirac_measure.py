@@ -266,10 +266,10 @@ def test_flatten_unflatten():
 
 
 if __name__ == '__main__':
-  test_calculate_methods(npts=2)
+  #test_calculate_methods(npts=2)
   #test_set_behavior()
   #test_pack_unpack()
-  #test_collection_behavior()
+  test_collection_behavior()
   #test_flatten_unflatten()
   pass
 

@@ -297,6 +297,19 @@ Inputs:
     return [i*mass for i in (weights / w)] #FIXME: not "mean-preserving"
   normed = normalize(weights[:-1], zscale)
   normed.append( -sum(normed) ) # force last member to satisfy sum = 0.0
+  #XXX: better to always burden the last member ???
+  from numpy.random import rand
+  ind1 = int(len(weights) * rand())
+  ind2 = -1 # int(len(weights) * rand())
+  tmp = normed[ind1]
+  normed[ind1] = normed[ind2]
+  normed[ind2] = tmp
+ #from numpy.random import rand
+ #ind = int(len(weights) * rand())
+ #weights = list(weights)
+ #normed = normalize(weights[:ind]+weights[ind+1:], zscale)
+ ## force randomly selected member to satisfy sum = 0.0
+ #normed = normed[:ind] + [-sum(normed)] + normed[ind+1:]
   return normed #FIXME: also not "mean-preserving" (burden the last member)
 
 
