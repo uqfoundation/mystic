@@ -105,7 +105,7 @@ Inputs:
  #XXX: this is unexpected?... mean(impose_mean(2.0, samples, weights))
   samples = asarray(list(samples)) #XXX: faster to use x = array(x, copy=True) ?
   shift = m - mean(samples, weights)
-  samples += shift  #NOTE: is "range-preserving"
+  samples = samples + shift  #NOTE: is "range-preserving"
   return list(samples)
 
 
@@ -126,7 +126,7 @@ Inputs:
     return [nan]*len(samples) #XXX: better to space pts evenly across range?
   from numpy import sqrt
   scale = sqrt(float(v) / sv)
-  samples *= scale  #NOTE: not "mean-preserving", until the next line
+  samples = samples * scale  #NOTE: not "mean-preserving", until the next line
   return impose_mean(m, samples, weights) #NOTE: not range preserving
 
 #FIXME: for range and variance to be 'mutually preserving'...
@@ -150,7 +150,7 @@ Inputs:
     from numpy import nan
     return [nan]*len(samples) #XXX: better to space pts evenly across range?
   scale = float(r) / sr
-  samples *= scale  #NOTE: not "mean-preserving", until the next line
+  samples = samples * scale  #NOTE: not "mean-preserving", until the next line
   return impose_mean(m, samples, weights) #NOTE: not variance preserving
 
 
