@@ -280,37 +280,27 @@ Inputs:
   wts = normalize(weights,mass) #NOTE: not "mean-preserving", until next line
   return impose_mean(m, samples, wts), wts
 
-def normalize(weights, mass=1.0, zscale=1.0):
+def normalize(weights, mass=1.0, zsum=False, zmass=1.0):
   """normalize a list of points to unity (i.e. normalize to 1.0)
 
 Inputs:
     weights -- a list of sample weights
     mass -- target sum of normalized weights
-    zscale -- scaling when mass = 0.0
+    zsum -- use counterbalance when mass = 0.0
+    zmass -- member scaling when mass = 0.0
 """
   weights = asarray(list(weights)) #XXX: faster to use x = array(x, copy=True) ?
   w = float(sum(weights))
-  if not w:
+  if not w:  #XXX: is this the best behavior?
     from numpy import inf
     return list(weights * inf)  # protect against ZeroDivision
-  if float(mass):
-    return [i*mass for i in (weights / w)] #FIXME: not "mean-preserving"
-  normed = normalize(weights[:-1], zscale)
-  normed.append( -sum(normed) ) # force last member to satisfy sum = 0.0
-  #XXX: better to always burden the last member ???
-  from numpy.random import rand
-  ind1 = int(len(weights) * rand())
-  ind2 = -1 # int(len(weights) * rand())
-  tmp = normed[ind1]
-  normed[ind1] = normed[ind2]
-  normed[ind2] = tmp
- #from numpy.random import rand
- #ind = int(len(weights) * rand())
- #weights = list(weights)
- #normed = normalize(weights[:ind]+weights[ind+1:], zscale)
- ## force randomly selected member to satisfy sum = 0.0
- #normed = normed[:ind] + [-sum(normed)] + normed[ind+1:]
-  return normed #FIXME: also not "mean-preserving" (burden the last member)
+  if float(mass) or not zsum:
+    return list(mass * weights / w)  #FIXME: not "mean-preserving"
+  # force selected member to satisfy sum = 0.0
+  zsum = -1
+  weights[zsum] = -(w - weights[zsum])
+  mass = zmass
+  return list(mass * weights / w)  #FIXME: not "mean-preserving"
 
 
 #--------------------------------------------------------------------

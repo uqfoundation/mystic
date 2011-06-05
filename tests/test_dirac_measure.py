@@ -34,7 +34,7 @@ def test_calculate_methods(npts=2):
 
   # select weights randomly in [0,1], then normalize so sum(weights) = 1
   wts = random_samples([0],[1], npts)[0]
-  weights = normalize(wts, 0.0)
+  weights = normalize(wts, 0.0, zsum=True)
   print "weights (when normalized to 0.0): %s" % weights
   weights = normalize(wts)
   print "weights (when normalized to 1.0): %s" % weights
