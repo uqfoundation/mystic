@@ -98,6 +98,7 @@ Additional inputs:
 Important class members:
     nDim, nPop     = dim, npop
     generations    - an iteration counter.
+    evaluations    - an evaluation counter.
     bestEnergy     - current best energy.
     bestSolution   - current best parameter set.            [size = dim]
     popEnergy      - set of all trial energy solutions.     [size = npop]

@@ -42,6 +42,9 @@ if __name__=='__main__':
     solver.enable_signal_handler()
     solver.Solve(rosen,termination=NCOG(tolerance=1e-4),StepMonitor=stepmon,disp=1, constraints=constrain)
     print solver.Solution()
+   #print "Current function value: %s" % solver.bestEnergy
+   #print "Iterations: %s" % solver.generations
+   #print "Function evaluations: %s" % solver.evaluations
 
     times.append(time.time() - start)
     algor.append("Powell's Method\t")

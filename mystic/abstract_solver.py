@@ -95,6 +95,7 @@ Additional inputs:
 Important class members:
     nDim, nPop     = dim, npop
     generations    - an iteration counter.
+    evaluations    - an evaluation counter.
     bestEnergy     - current best energy.
     bestSolution   - current best parameter set.            [size = dim]
     popEnergy      - set of all trial energy solutions.     [size = npop]
@@ -105,6 +106,7 @@ Important class members:
         NP = 1
         if kwds.has_key('npop'): NP = kwds['npop']
 
+        self._fcalls          = [0]
         self.nDim             = dim
         self.nPop             = NP
         self.generations      = 0
@@ -135,6 +137,10 @@ Important class members:
     def Solution(self):
         """return the best solution"""
         return self.bestSolution
+
+    def __evaluations(self):
+        """get the number of function calls"""
+        return self._fcalls[0]
 
     def SetStrictRanges(self, min=None, max=None):
         """ensure solution is within bounds
@@ -319,6 +325,10 @@ input::
 
 *** this method must be overwritten ***"""
         raise NotImplementedError, "must be overwritten..."
+
+    # extensions to the solver interface
+    evaluations = property(__evaluations )
+    pass
 
 
 

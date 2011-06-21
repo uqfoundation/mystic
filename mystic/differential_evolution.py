@@ -244,7 +244,7 @@ Further Inputs:
         import signal
         self._EARLYEXIT = False
 
-        fcalls, costfunction = wrap_function(costfunction, ExtraArgs, EvaluationMonitor)
+        self._fcalls, costfunction = wrap_function(costfunction, ExtraArgs, EvaluationMonitor)
         if self._useStrictRange:
             for i in range(self.nPop):
                 self.population[i] = self._clipGuessWithinRangeBoundary(self.population[i])
@@ -290,7 +290,7 @@ Further Inputs:
 
         #run for generations <= maxiter
         for generation in range(self._maxiter - self.generations):
-            if fcalls[0] >= self._maxfun: break
+            if self._fcalls[0] >= self._maxfun: break
             for candidate in range(self.nPop):
                 # generate trialSolution (within valid range)
                 strategy(self, candidate)
@@ -322,7 +322,7 @@ Further Inputs:
         fval = self.bestEnergy
         warnflag = 0
 
-        if fcalls[0] >= self._maxfun:
+        if self._fcalls[0] >= self._maxfun:
             warnflag = 1
             if disp:
                 print "Warning: Maximum number of function evaluations has "\
@@ -336,7 +336,7 @@ Further Inputs:
                 print "Optimization terminated successfully."
                 print "         Current function value: %f" % fval
                 print "         Iterations: %d" % self.generations
-                print "         Function evaluations: %d" % fcalls[0]
+                print "         Function evaluations: %d" % self._fcalls[0]
 
         return 
 
@@ -441,9 +441,9 @@ Further Inputs:
        #FIXME: EvaluationMonitor fails for MPI, throws error for 'pp'
         from python_map import python_map
         if self._map != python_map:
-            fcalls = [0] #FIXME: temporary patch for removing the following line
+            self._fcalls = [0] #FIXME: temporary patch for removing the following line
         else:
-            fcalls, costfunction = wrap_function(costfunction, ExtraArgs, EvaluationMonitor)
+            self._fcalls, costfunction = wrap_function(costfunction, ExtraArgs, EvaluationMonitor)
         if self._useStrictRange:
             for i in range(self.nPop):
                 self.population[i] = self._clipGuessWithinRangeBoundary(self.population[i])
@@ -501,7 +501,7 @@ Further Inputs:
 
         #run for generations <= maxiter
         for generation in range(self._maxiter - self.generations):
-            if fcalls[0] >= self._maxfun: break
+            if self._fcalls[0] >= self._maxfun: break
             for candidate in range(self.nPop):
                 # generate trialSolution (within valid range)
                 strategy(self, candidate)
@@ -545,7 +545,7 @@ Further Inputs:
         fval = self.bestEnergy
         warnflag = 0
 
-        if fcalls[0] >= self._maxfun:
+        if self._fcalls[0] >= self._maxfun:
             warnflag = 1
             if disp:
                 print "Warning: Maximum number of function evaluations has "\
@@ -559,7 +559,7 @@ Further Inputs:
                 print "Optimization terminated successfully."
                 print "         Current function value: %f" % fval
                 print "         Iterations: %d" % self.generations
-                print "         Function evaluations: %d" % fcalls[0]
+                print "         Function evaluations: %d" % self._fcalls[0]
 
         return 
 

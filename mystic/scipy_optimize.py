@@ -176,7 +176,7 @@ Further Inputs:
         import signal
         self._EARLYEXIT = False
 
-        fcalls, func = wrap_function(func, args, EvaluationMonitor)
+        self._fcalls, func = wrap_function(func, args, EvaluationMonitor)
         if self._useStrictRange:
             x0 = self._clipGuessWithinRangeBoundary(x0)
             func = wrap_bounds(func, self._strictMin, self._strictMax)
@@ -238,7 +238,7 @@ Further Inputs:
 
         iterations = 1
 
-        while (fcalls[0] < self._maxfun and iterations < self._maxiter):
+        while (self._fcalls[0] < self._maxfun and iterations < self._maxiter):
             if self._EARLYEXIT or termination(self):
                 break
 
@@ -315,7 +315,7 @@ Further Inputs:
         fval = min(fsim)
         warnflag = 0
 
-        if fcalls[0] >= self._maxfun:
+        if self._fcalls[0] >= self._maxfun:
             warnflag = 1
             if disp:
                 print "Warning: Maximum number of function evaluations has "\
@@ -329,11 +329,11 @@ Further Inputs:
                 print "Optimization terminated successfully."
                 print "         Current function value: %f" % fval
                 print "         Iterations: %d" % iterations
-                print "         Function evaluations: %d" % fcalls[0]
+                print "         Function evaluations: %d" % self._fcalls[0]
 
 
         if full_output:
-            retlist = x, fval, iterations, fcalls[0], warnflag
+            retlist = x, fval, iterations, self._fcalls[0], warnflag
             if retall:
                 retlist += (allvecs,)
         else:
@@ -514,7 +514,7 @@ Further Inputs:
         import signal
         self._EARLYEXIT = False
 
-        fcalls, func = wrap_function(func, args, EvaluationMonitor)
+        self._fcalls, func = wrap_function(func, args, EvaluationMonitor)
         if self._useStrictRange:
             x0 = self._clipGuessWithinRangeBoundary(x0)
             func = wrap_bounds(func, self._strictMin, self._strictMax)
@@ -583,7 +583,7 @@ Further Inputs:
 
             self.energy_history.append(fval) #XXX: the 'best' for now...
             if self._EARLYEXIT or termination(self): CONTINUE = False #break
-            elif fcalls[0] >= self._maxfun: CONTINUE = False #break
+            elif self._fcalls[0] >= self._maxfun: CONTINUE = False #break
             elif iter >= self._maxiter: CONTINUE = False #break
 
             else: # Construct the extrapolated point
@@ -620,7 +620,7 @@ Further Inputs:
         # code below here is dead, unless disp!=0
         warnflag = 0
 
-        if fcalls[0] >= self._maxfun:
+        if self._fcalls[0] >= self._maxfun:
             warnflag = 1
             if disp:
                 print "Warning: Maximum number of function evaluations has "\
@@ -634,12 +634,12 @@ Further Inputs:
                 print "Optimization terminated successfully."
                 print "         Current function value: %f" % fval
                 print "         Iterations: %d" % iter
-                print "         Function evaluations: %d" % fcalls[0]
+                print "         Function evaluations: %d" % self._fcalls[0]
     
         x = squeeze(x)
 
         if full_output:
-            retlist = x, fval, direc, iter, fcalls[0], warnflag
+            retlist = x, fval, direc, iter, self._fcalls[0], warnflag
             if retall:
                 retlist += (allvecs,)
         else:

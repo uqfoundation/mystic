@@ -35,6 +35,9 @@ def main():
                  CrossProbability=0.5, ScalingFactor=0.6, disp=1)
 
     solution = solver.Solution()
+   #print "Current function value: %s" % solver.bestEnergy
+   #print "Iterations: %s" % solver.generations
+   #print "Function evaluations: %s" % solver.evaluations
   
     print solution
 
@@ -81,6 +84,9 @@ if __name__ == '__main__':
                  CrossProbability=0.5, ScalingFactor=0.6, disp=1)
     sol = solver.Solution()
     print sol
+   #print "Current function value: %s" % solver.bestEnergy
+   #print "Iterations: %s" % solver.generations
+   #print "Function evaluations: %s" % solver.evaluations
  
     times.append(time.time() - start)
     algor.append('Differential Evolution\t')

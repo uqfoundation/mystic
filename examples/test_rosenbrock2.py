@@ -38,6 +38,9 @@ if __name__=='__main__':
     solver.enable_signal_handler()
     solver.Solve(rosen,termination=CRT(xtol=4e-5),StepMonitor=stepmon,disp=1)
     print solver.Solution()
+   #print "Current function value: %s" % solver.bestEnergy
+   #print "Iterations: %s" % solver.generations
+   #print "Function evaluations: %s" % solver.evaluations
 
     times.append(time.time() - start)
     algor.append('Nelder-Mead Simplex\t')
