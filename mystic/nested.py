@@ -95,9 +95,9 @@ Further Inputs:
        #FIXME: EvaluationMonitor fails for MPI, throws error for 'pp'
         from python_map import python_map
         if self._map != python_map:
-            fcalls = [0] #FIXME: temporary patch for removing the following line
+            self._fcalls = [0] #FIXME: temporary patch for removing the following line
         else:
-            fcalls, cost = wrap_function(cost, ExtraArgs, EvaluationMonitor)
+            self._fcalls, cost = wrap_function(cost, ExtraArgs, EvaluationMonitor)
 
         #generate signal_handler
         self._generateHandler(sigint_callback) 
@@ -180,7 +180,7 @@ def local_optimize(cost, termination, x0, rank):
         self.bestSolution = best[0]
         self.bestEnergy = best[1]
         self.generations = len(bestpath.y)
-        fcalls = [ len(besteval.y) ]
+        self._fcalls = [ len(besteval.y) ]
 
         # write 'bests' to monitors  #XXX: non-best monitors may be useful too
         for i in range(len(bestpath.y)):
@@ -201,7 +201,7 @@ def local_optimize(cost, termination, x0, rank):
         if self._maxiter is None: self._maxiter = self.nDim * 1e8
         if self._maxfun is None: self._maxfun = self.nDim * 1e8
 
-        if fcalls[0] >= self._maxfun:
+        if self._fcalls[0] >= self._maxfun:
             warnflag = 1
             if disp:
                 print "Warning: Maximum number of function evaluations has "\
@@ -215,7 +215,7 @@ def local_optimize(cost, termination, x0, rank):
                 print "Optimization terminated successfully."
                 print "         Current function value: %f" % fval
                 print "         Iterations: %d" % self.generations
-                print "         Function evaluations: %d" % fcalls[0]
+                print "         Function evaluations: %d" % self._fcalls[0]
 
         return 
 
@@ -276,9 +276,9 @@ Further Inputs:
        #FIXME: EvaluationMonitor fails for MPI, throws error for 'pp'
         from python_map import python_map
         if self._map != python_map:
-            fcalls = [0] #FIXME: temporary patch for removing the following line
+            self._fcalls = [0] #FIXME: temporary patch for removing the following line
         else:
-            fcalls, cost = wrap_function(cost, ExtraArgs, EvaluationMonitor)
+            self._fcalls, cost = wrap_function(cost, ExtraArgs, EvaluationMonitor)
 
         #generate signal_handler
         self._generateHandler(sigint_callback) 
@@ -354,7 +354,7 @@ def local_optimize(cost, termination, x0, rank):
         self.bestSolution = best[0]
         self.bestEnergy = best[1]
         self.generations = len(bestpath.y)
-        fcalls = [ len(besteval.y) ]
+        self._fcalls = [ len(besteval.y) ]
 
         # write 'bests' to monitors  #XXX: non-best monitors may be useful too
         for i in range(len(bestpath.y)):
@@ -375,7 +375,7 @@ def local_optimize(cost, termination, x0, rank):
         if self._maxiter is None: self._maxiter = self.nDim * 1e8
         if self._maxfun is None: self._maxfun = self.nDim * 1e8
 
-        if fcalls[0] >= self._maxfun:
+        if self._fcalls[0] >= self._maxfun:
             warnflag = 1
             if disp:
                 print "Warning: Maximum number of function evaluations has "\
@@ -389,7 +389,7 @@ def local_optimize(cost, termination, x0, rank):
                 print "Optimization terminated successfully."
                 print "         Current function value: %f" % fval
                 print "         Iterations: %d" % self.generations
-                print "         Function evaluations: %d" % fcalls[0]
+                print "         Function evaluations: %d" % self._fcalls[0]
 
         return 
 
