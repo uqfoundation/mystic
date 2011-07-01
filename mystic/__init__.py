@@ -3,7 +3,7 @@
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
 #                 Mike McKerns, Alta Fang, & Patrick Hung, Caltech
-#                        (C) 1997-2010  All Rights Reserved
+#                        (C) 1997-2011  All Rights Reserved
 #
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
@@ -201,16 +201,20 @@ WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
 OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-Copyright (c) 2010 California Institute of Technology. All rights reserved.
+Copyright (c) 2011 California Institute of Technology. All rights reserved.
 
 
 If you use this software to do productive scientific research that leads to
 publication, we ask that you acknowledge use of the software by citing the
-following paper in your publication::
+following in your publication::
 
-    "mystic: a simple model-independent inversion framework",
-     Michael McKerns, Patrick Hung, and Michael Aivazis, unpublished;
-     http://dev.danse.us/trac/mystic
+    M.M. McKerns, L. Strand, T. Sullivan, A. Fang, M.A.G. Aivazis,
+    "Building a framework for predictive science", Proceedings of
+    the 10th Python in Science Conference, (submitted 2011).
+
+    Michael McKerns, Patrick Hung, and Michael Aivazis,
+    "mystic: a simple model-independent inversion framework", 2009- ;
+    http://dev.danse.us/trac/mystic
 
 """
 
