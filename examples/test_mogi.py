@@ -20,9 +20,9 @@ Bull. Earthquake. Res. Inst., 36, 99-134, 1958.
 """
 
 import pylab
-from mystic.differential_evolution import DifferentialEvolutionSolver
+from mystic.solvers import DifferentialEvolutionSolver
 from mystic.termination import ChangeOverGeneration, VTR
-from mystic import getch, Sow, random_seed, VerboseSow
+from mystic.tools import getch, Sow, random_seed, VerboseSow
 
 from numpy import pi, sqrt, array, mgrid, random, real, conjugate, arange
 from numpy.random import rand
@@ -108,7 +108,7 @@ def plot_sol(params, linestyle = 'b-'):
 
 if __name__ == '__main__':
 
-    from mystic.scipy_optimize import NelderMeadSimplexSolver as fmin
+    from mystic.solvers import NelderMeadSimplexSolver as fmin
     from mystic.termination import CandidateRelativeTolerance as CRT
     from scipy.optimize import leastsq, fmin_cg
     #

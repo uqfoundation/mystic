@@ -4,12 +4,12 @@
 test some simple multi-minima functions, such as |x + 3 sin[x]|
 """
 
-from mystic.differential_evolution import DifferentialEvolutionSolver2 as DifferentialEvolutionSolver
+from mystic.solvers import DifferentialEvolutionSolver2 as DifferentialEvolutionSolver
 from mystic.termination import ChangeOverGeneration, VTR
 from mystic.strategy import Best1Exp, Best1Bin, Rand1Exp
-from mystic import getch, VerboseSow
+from mystic.tools import getch, VerboseSow
 from numpy import arange
-from mystic.scipy_optimize import fmin
+from mystic.solvers import fmin
 #from scipy.optimize import fmin
 
 import random

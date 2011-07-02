@@ -11,7 +11,7 @@ Demonstrates:
 """
 
 # Nelder-Mead solver
-from mystic.scipy_optimize import fmin
+from mystic.solvers import fmin
 
 # Rosenbrock function
 from mystic.models import rosen

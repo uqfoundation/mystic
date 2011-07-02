@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from mystic import getch
+from mystic.tools import getch
 
 import Gnuplot, numpy
 g = Gnuplot.Gnuplot(debug = 1)

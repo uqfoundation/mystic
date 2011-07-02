@@ -10,9 +10,9 @@ Corana's parabola in 2D.
 
 import sam
 #from test_corana import *
-from mystic.scipy_optimize import NelderMeadSimplexSolver as fmin
+from mystic.solvers import NelderMeadSimplexSolver as fmin
 from mystic.termination import CandidateRelativeTolerance as CRT
-from mystic import getch, Sow
+from mystic.tools import getch, Sow
 
 from mystic.models.corana import corana2d as Corana2
 

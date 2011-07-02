@@ -25,7 +25,7 @@ except:
   print __doc__
 
 
-from mystic.differential_evolution import DifferentialEvolutionSolver2
+from mystic.solvers import DifferentialEvolutionSolver2
 from mystic.termination import ChangeOverGeneration, VTR
 from mystic.strategy import Best1Exp
 from mystic.tools import VerboseSow, random_seed

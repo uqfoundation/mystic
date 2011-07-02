@@ -51,8 +51,8 @@ def plot_sol(params,linestyle='b-'):
 
 # --- Call to Mystic ---
 def mystic_optimize(point):
-    from mystic import Sow, VerboseSow
-    from mystic.scipy_optimize import NelderMeadSimplexSolver as fmin
+    from mystic.tools import Sow, VerboseSow
+    from mystic.solvers import NelderMeadSimplexSolver as fmin
     from mystic.termination import CandidateRelativeTolerance as CRT
     simplex, esow = VerboseSow(50), Sow()
     solver = fmin(len(point))
@@ -143,7 +143,7 @@ if __name__ == '__main__':
     parsed_opts, parsed_args = parser.parse_args()
 
     # set plot window
-    from mystic import getch
+    from mystic.tools import getch
     plotview = [-10,10, 0,100]
 
     # Let the "actual parameters" be :

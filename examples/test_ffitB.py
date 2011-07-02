@@ -14,7 +14,7 @@ Note:
 from test_ffit import *
 
 def main():
-    from mystic.differential_evolution import DifferentialEvolutionSolver2 as DifferentialEvolutionSolver
+    from mystic.solvers import DifferentialEvolutionSolver2 as DifferentialEvolutionSolver
 
     solver = DifferentialEvolutionSolver(ND, NP)
     solver.SetRandomInitialPoints(min = [-100.0]*ND, max = [100.0]*ND)

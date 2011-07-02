@@ -32,7 +32,7 @@ if __name__=='__main__':
        # need to gather and remix
        Cs , As = remix(Cs, As)
     
-    from mystic import flatten_array
+    from mystic.tools import flatten_array
 
     Sk = [a[100:] for a in Sk] # throw away the first 100 pts of each chain
     sk = flatten_array(Sk,1)

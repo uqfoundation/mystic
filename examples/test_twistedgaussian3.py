@@ -48,7 +48,7 @@ if __name__=='__main__':
        args = [(Cs[chain], As[chain], Sk[chain], Sak[chain], target, 0.1) for chain in range(q)]
 
     
-    from mystic import flatten_array
+    from mystic.tools import flatten_array
 
     Sk = [a[100:] for a in Sk] # throw away the first 100 pts of each chain
     sk = flatten_array(Sk,1)

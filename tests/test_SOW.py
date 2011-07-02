@@ -46,14 +46,14 @@ def test1(monitor):
 
 def test2(monitor, diffenv=None):
   if diffenv == True:
-   #from mystic.differential_evolution import DifferentialEvolutionSolver as DE
-    from mystic.differential_evolution import DifferentialEvolutionSolver2 as DE
+   #from mystic.solvers import DifferentialEvolutionSolver as DE
+    from mystic.solvers import DifferentialEvolutionSolver2 as DE
   elif diffenv == False:
-    from mystic.scipy_optimize import NelderMeadSimplexSolver as noDE
+    from mystic.solvers import NelderMeadSimplexSolver as noDE
   else:
-    from mystic.scipy_optimize import PowellDirectionalSolver as noDE
+    from mystic.solvers import PowellDirectionalSolver as noDE
   from mystic.termination import ChangeOverGeneration as COG
-  from mystic import getch, random_seed
+  from mystic.tools import getch, random_seed
 
   random_seed(123)
 
@@ -91,7 +91,7 @@ def test2(monitor, diffenv=None):
 
 if __name__ == '__main__':
 
-  from mystic import Sow, VerboseSow, LoggingSow
+  from mystic.tools import Sow, VerboseSow, LoggingSow
  #monitor = Sow()
  #monitor = Sow(all=True)
  #monitor = Sow(all=False)

@@ -3,14 +3,14 @@
 # Patrick Hung & Mike McKerns, Caltech
 
 """
-Runs differential_evolution as a pyre application
+Runs differential evolution as a pyre application
 
-Based on differential_evolution.py
+Based on DifferentialEvolutionSolver
 """
 
 from pyre.applications.Script import Script
 from mystic.helputil import paginate
-from mystic.differential_evolution import *
+from mystic.solvers import DifferentialEvolutionSolver
 import logging
 
 class DerunApp(Script):

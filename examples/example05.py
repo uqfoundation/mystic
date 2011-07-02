@@ -12,7 +12,7 @@ Demonstrates:
 """
 
 # Powell's Directonal solver
-from mystic.scipy_optimize import fmin_powell
+from mystic.solvers import fmin_powell
 
 # Rosenbrock function
 from mystic.models import rosen

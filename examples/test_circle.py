@@ -41,7 +41,7 @@ minrange = [0., 0., 0.]
 maxrange = [50., 50., 10.]
 
 # prepare DESolver
-from mystic.differential_evolution import DifferentialEvolutionSolver2 \
+from mystic.solvers import DifferentialEvolutionSolver2 \
       as DifferentialEvolutionSolver
 from mystic.termination import ChangeOverGeneration, VTR
 solver = DifferentialEvolutionSolver(ND, NP)
@@ -65,7 +65,7 @@ if __name__ == '__main__':
     legend = ['random points','generating circle : %f' % R0]
     pylab.axis('equal')
 
-    # solve with mystic.differential_evolution
+    # solve with mystic's differential evolution solver
     solution = solver.Solution()
     sx, sy, sr = solution
     print "DEsol : (%f, %f) @ R = %f" % (sx, sy, sr)
@@ -76,7 +76,7 @@ if __name__ == '__main__':
     legend.append('DE optimal : %f' % sr)
 
     # solve with scipy.fmin
-    from mystic.scipy_optimize import fmin
+    from mystic.solvers import fmin
     sol = fmin(cost, guess)
     print "scipy.fmin sol: ", sol
     ax, ay, ar = sol

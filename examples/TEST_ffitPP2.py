@@ -13,7 +13,7 @@ Optimization 11: 341-359, 1997.
 from test_ffit import Chebyshev8, ChebyshevCost, plot_solution, print_solution
 
 if __name__ == '__main__':
-    from mystic.scipy_optimize import fmin
+    from mystic.solvers import fmin
    #from scipy.optimize import fmin
     import random
     random.seed(123)

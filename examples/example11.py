@@ -16,7 +16,7 @@ Demonstrates:
 """
 
 # Nelder-Mead Simplex solver
-from mystic.scipy_optimize import NelderMeadSimplexSolver
+from mystic.solvers import NelderMeadSimplexSolver
 
 # Chebyshev polynomial and cost function
 from mystic.models.poly import chebyshev8, chebyshev8cost
@@ -24,7 +24,7 @@ from mystic.models.poly import chebyshev8coeffs
 
 # tools
 from mystic.termination import CandidateRelativeTolerance as CRT
-from mystic import getch, random_seed, VerboseSow, Sow
+from mystic.tools import getch, random_seed, VerboseSow, Sow
 from mystic.math import poly1d
 import pylab
 pylab.ion()

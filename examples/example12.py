@@ -11,13 +11,13 @@ Demonstrates:
 """
 
 # Powell's Directonal solver
-from mystic.scipy_optimize import fmin_powell
+from mystic.solvers import fmin_powell
 
 # cost function factory
 from mystic.forward_model import CostFactory
 
 # tools
-from mystic import getch, random_seed
+from mystic.tools import getch, random_seed
 random_seed(123)
 import pylab
 pylab.ion()

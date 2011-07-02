@@ -28,7 +28,7 @@ class TestZimmermann(unittest.TestCase):
         self.local = [ 2.35393787,  5.94748068] # local minimum
 
     def _run_solver(self, iter_limit=False, local=False, **kwds):
-        from mystic import Sow
+        from mystic.tools import Sow
         import numpy
         from mystic.tools import random_seed
         random_seed(123) # Number of failures is quite dependent on random seed!
@@ -71,7 +71,7 @@ class TestZimmermann(unittest.TestCase):
             self.assertAlmostEqual(sol[i], self.expected[i], self.nplaces)
 
     def test_DifferentialEvolutionSolver_VTR(self):
-        from mystic.differential_evolution import DifferentialEvolutionSolver
+        from mystic.solvers import DifferentialEvolutionSolver
         from mystic.termination import VTR
         tol = 1e-7
         self.NP = 40 
@@ -81,7 +81,7 @@ class TestZimmermann(unittest.TestCase):
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver_COG(self): # Default for this solver
-        from mystic.differential_evolution import DifferentialEvolutionSolver
+        from mystic.solvers import DifferentialEvolutionSolver
         from mystic.termination import ChangeOverGeneration as COG
         tol = 1e-7
         self.NP = 40 
@@ -91,7 +91,7 @@ class TestZimmermann(unittest.TestCase):
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver_NCOG(self):
-        from mystic.differential_evolution import DifferentialEvolutionSolver
+        from mystic.solvers import DifferentialEvolutionSolver
         from mystic.termination import NormalizedChangeOverGeneration as NCOG
         tol = 1e-7
         self.NP = 40 
@@ -101,7 +101,7 @@ class TestZimmermann(unittest.TestCase):
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver_CRT(self):
-        from mystic.differential_evolution import DifferentialEvolutionSolver
+        from mystic.solvers import DifferentialEvolutionSolver
         from mystic.termination import CandidateRelativeTolerance as CRT
         tol = 1e-7
         self.NP = 40 
@@ -113,7 +113,7 @@ class TestZimmermann(unittest.TestCase):
 #--------------------------------------------------------------------------
 
     def test_DifferentialEvolutionSolver2_VTR(self): 
-        from mystic.differential_evolution import DifferentialEvolutionSolver2
+        from mystic.solvers import DifferentialEvolutionSolver2
         from mystic.termination import VTR
         tol = 1e-7
         self.NP = 40 
@@ -123,7 +123,7 @@ class TestZimmermann(unittest.TestCase):
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver2_COG(self): # Default for this solver
-        from mystic.differential_evolution import DifferentialEvolutionSolver2
+        from mystic.solvers import DifferentialEvolutionSolver2
         from mystic.termination import ChangeOverGeneration as COG
         tol = 1e-7
         self.NP = 40 
@@ -133,7 +133,7 @@ class TestZimmermann(unittest.TestCase):
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver2_NCOG(self):
-        from mystic.differential_evolution import DifferentialEvolutionSolver2
+        from mystic.solvers import DifferentialEvolutionSolver2
         from mystic.termination import NormalizedChangeOverGeneration as NCOG
         tol = 1e-7
         self.NP = 40 
@@ -143,7 +143,7 @@ class TestZimmermann(unittest.TestCase):
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver2_CRT(self):
-        from mystic.differential_evolution import DifferentialEvolutionSolver2
+        from mystic.solvers import DifferentialEvolutionSolver2
         from mystic.termination import CandidateRelativeTolerance as CRT
         tol = 1e-7
         self.NP = 40 
@@ -155,7 +155,7 @@ class TestZimmermann(unittest.TestCase):
 #--------------------------------------------------------------------------
 
     def test_NelderMeadSimplexSolver_CRT(self): # Default for this solver
-        from mystic.scipy_optimize import NelderMeadSimplexSolver
+        from mystic.solvers import NelderMeadSimplexSolver
         from mystic.termination import CandidateRelativeTolerance as CRT
         tol = 1e-7
         self.solver = NelderMeadSimplexSolver(self.ND)
@@ -163,7 +163,7 @@ class TestZimmermann(unittest.TestCase):
         self._run_solver(local=True)
 
     def test_NelderMeadSimplexSolver_VTR(self): 
-        from mystic.scipy_optimize import NelderMeadSimplexSolver
+        from mystic.solvers import NelderMeadSimplexSolver
         from mystic.termination import VTR
         tol = 1e-7
         self.solver = NelderMeadSimplexSolver(self.ND)
@@ -171,7 +171,7 @@ class TestZimmermann(unittest.TestCase):
         self._run_solver(local=True)
 
     def test_NelderMeadSimplexSolver_COG(self): 
-        from mystic.scipy_optimize import NelderMeadSimplexSolver
+        from mystic.solvers import NelderMeadSimplexSolver
         from mystic.termination import ChangeOverGeneration as COG
         tol = 1e-7
         self.solver = NelderMeadSimplexSolver(self.ND)
@@ -179,7 +179,7 @@ class TestZimmermann(unittest.TestCase):
         self._run_solver(local=True)
 
     def test_NelderMeadSimplexSolver_NCOG(self): 
-        from mystic.scipy_optimize import NelderMeadSimplexSolver
+        from mystic.solvers import NelderMeadSimplexSolver
         from mystic.termination import NormalizedChangeOverGeneration as NCOG
         tol = 1e-7
         self.solver = NelderMeadSimplexSolver(self.ND)
@@ -189,7 +189,7 @@ class TestZimmermann(unittest.TestCase):
 #--------------------------------------------------------------------------
 
     def test_PowellDirectionalSolver_NCOG(self): # Default for this solver
-        from mystic.scipy_optimize import PowellDirectionalSolver
+        from mystic.solvers import PowellDirectionalSolver
         from mystic.termination import NormalizedChangeOverGeneration as NCOG
         tol = 1e-7
         self.solver = PowellDirectionalSolver(self.ND)
@@ -197,7 +197,7 @@ class TestZimmermann(unittest.TestCase):
         self._run_solver(local=True)
 
     def test_PowellDirectionalSolver_COG(self): 
-        from mystic.scipy_optimize import PowellDirectionalSolver
+        from mystic.solvers import PowellDirectionalSolver
         from mystic.termination import ChangeOverGeneration as COG
         tol = 1e-7
         self.solver = PowellDirectionalSolver(self.ND)
@@ -205,7 +205,7 @@ class TestZimmermann(unittest.TestCase):
         self._run_solver(local=True)
 
     def test_PowellDirectionalSolver_VTR(self): 
-        from mystic.scipy_optimize import PowellDirectionalSolver
+        from mystic.solvers import PowellDirectionalSolver
         from mystic.termination import VTR
         tol = 1e-7
         self.solver = PowellDirectionalSolver(self.ND)
@@ -213,7 +213,7 @@ class TestZimmermann(unittest.TestCase):
         self._run_solver(local=True)
 
     def test_PowellDirectionalSolver_CRT(self): 
-        from mystic.scipy_optimize import PowellDirectionalSolver
+        from mystic.solvers import PowellDirectionalSolver
         from mystic.termination import CandidateRelativeTolerance as CRT
         tol = 1e-7
         self.solver = PowellDirectionalSolver(self.ND)
@@ -238,7 +238,7 @@ class TestRosenbrock(unittest.TestCase):
         self.nplaces = 0 # Precision of answer
 
     def _run_solver(self, iter_limit=False, **kwds):
-        from mystic import Sow
+        from mystic.tools import Sow
         import numpy
         from mystic.tools import random_seed
         #random_seed(123)
@@ -271,7 +271,7 @@ class TestRosenbrock(unittest.TestCase):
             self.assertAlmostEqual(sol[i], self.expected[i], self.nplaces)
 
     def test_DifferentialEvolutionSolver_VTR(self):
-        from mystic.differential_evolution import DifferentialEvolutionSolver
+        from mystic.solvers import DifferentialEvolutionSolver
         from mystic.termination import VTR
         tol = 1e-7
         self.NP = 40 
@@ -281,7 +281,7 @@ class TestRosenbrock(unittest.TestCase):
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver_COG(self): # Default for this solver
-        from mystic.differential_evolution import DifferentialEvolutionSolver
+        from mystic.solvers import DifferentialEvolutionSolver
         from mystic.termination import ChangeOverGeneration as COG
         tol = 1e-7
         self.NP = 40
@@ -291,7 +291,7 @@ class TestRosenbrock(unittest.TestCase):
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver_NCOG(self):
-        from mystic.differential_evolution import DifferentialEvolutionSolver
+        from mystic.solvers import DifferentialEvolutionSolver
         from mystic.termination import NormalizedChangeOverGeneration as NCOG
         tol = 1e-7
         self.NP = 40 
@@ -301,7 +301,7 @@ class TestRosenbrock(unittest.TestCase):
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver_CRT(self):
-        from mystic.differential_evolution import DifferentialEvolutionSolver
+        from mystic.solvers import DifferentialEvolutionSolver
         from mystic.termination import CandidateRelativeTolerance as CRT
         tol = 1e-7
         self.NP = 40 
@@ -313,7 +313,7 @@ class TestRosenbrock(unittest.TestCase):
 #--------------------------------------------------------------------------
 
     def test_DifferentialEvolutionSolver2_VTR(self): 
-        from mystic.differential_evolution import DifferentialEvolutionSolver2
+        from mystic.solvers import DifferentialEvolutionSolver2
         from mystic.termination import VTR
         tol = 1e-7
         self.NP = 40 
@@ -323,7 +323,7 @@ class TestRosenbrock(unittest.TestCase):
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver2_COG(self): # Default for this solver
-        from mystic.differential_evolution import DifferentialEvolutionSolver2
+        from mystic.solvers import DifferentialEvolutionSolver2
         from mystic.termination import ChangeOverGeneration as COG
         tol = 1e-7
         self.NP = 40 
@@ -333,7 +333,7 @@ class TestRosenbrock(unittest.TestCase):
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver2_NCOG(self):
-        from mystic.differential_evolution import DifferentialEvolutionSolver2
+        from mystic.solvers import DifferentialEvolutionSolver2
         from mystic.termination import NormalizedChangeOverGeneration as NCOG
         tol = 1e-7
         self.NP = 40 
@@ -343,7 +343,7 @@ class TestRosenbrock(unittest.TestCase):
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver2_CRT(self):
-        from mystic.differential_evolution import DifferentialEvolutionSolver2
+        from mystic.solvers import DifferentialEvolutionSolver2
         from mystic.termination import CandidateRelativeTolerance as CRT
         tol = 1e-7
         self.NP = 40 
@@ -355,7 +355,7 @@ class TestRosenbrock(unittest.TestCase):
 #--------------------------------------------------------------
 
     def test_NelderMeadSimplexSolver_CRT(self): # Default for this solver
-        from mystic.scipy_optimize import NelderMeadSimplexSolver
+        from mystic.solvers import NelderMeadSimplexSolver
         from mystic.termination import CandidateRelativeTolerance as CRT
         tol = 1e-7
         self.solver = NelderMeadSimplexSolver(self.ND)
@@ -363,7 +363,7 @@ class TestRosenbrock(unittest.TestCase):
         self._run_solver()
 
     def test_NelderMeadSimplexSolver_VTR(self): 
-        from mystic.scipy_optimize import NelderMeadSimplexSolver
+        from mystic.solvers import NelderMeadSimplexSolver
         from mystic.termination import VTR
         tol = 1e-7
         self.solver = NelderMeadSimplexSolver(self.ND)
@@ -371,7 +371,7 @@ class TestRosenbrock(unittest.TestCase):
         self._run_solver()
 
     def test_NelderMeadSimplexSolver_COG(self): 
-        from mystic.scipy_optimize import NelderMeadSimplexSolver
+        from mystic.solvers import NelderMeadSimplexSolver
         from mystic.termination import ChangeOverGeneration as COG
         tol = 1e-7
         self.solver = NelderMeadSimplexSolver(self.ND)
@@ -379,7 +379,7 @@ class TestRosenbrock(unittest.TestCase):
         self._run_solver()
 
     def test_NelderMeadSimplexSolver_NCOG(self): 
-        from mystic.scipy_optimize import NelderMeadSimplexSolver
+        from mystic.solvers import NelderMeadSimplexSolver
         from mystic.termination import NormalizedChangeOverGeneration as NCOG
         tol = 1e-7
         self.solver = NelderMeadSimplexSolver(self.ND)
@@ -389,7 +389,7 @@ class TestRosenbrock(unittest.TestCase):
 #--------------------------------------------------------------------------
 
     def test_PowellDirectionalSolver_NCOG(self): # Default for this solver
-        from mystic.scipy_optimize import PowellDirectionalSolver
+        from mystic.solvers import PowellDirectionalSolver
         from mystic.termination import NormalizedChangeOverGeneration as NCOG
         tol = 1e-7
         self.solver = PowellDirectionalSolver(self.ND)
@@ -397,7 +397,7 @@ class TestRosenbrock(unittest.TestCase):
         self._run_solver()
 
     def test_PowellDirectionalSolver_COG(self): 
-        from mystic.scipy_optimize import PowellDirectionalSolver
+        from mystic.solvers import PowellDirectionalSolver
         from mystic.termination import ChangeOverGeneration as COG
         tol = 1e-7
         self.solver = PowellDirectionalSolver(self.ND)
@@ -405,7 +405,7 @@ class TestRosenbrock(unittest.TestCase):
         self._run_solver()
 
     def test_PowellDirectionalSolver_VTR(self): 
-        from mystic.scipy_optimize import PowellDirectionalSolver
+        from mystic.solvers import PowellDirectionalSolver
         from mystic.termination import VTR
         tol = 1e-7
         self.solver = PowellDirectionalSolver(self.ND)
@@ -413,7 +413,7 @@ class TestRosenbrock(unittest.TestCase):
         self._run_solver()
 
     def test_PowellDirectionalSolver_CRT(self): 
-        from mystic.scipy_optimize import PowellDirectionalSolver
+        from mystic.solvers import PowellDirectionalSolver
         from mystic.termination import CandidateRelativeTolerance as CRT
         tol = 1e-7
         self.solver = PowellDirectionalSolver(self.ND)
@@ -438,7 +438,7 @@ minima."""
         #self.nplaces = 0 # Precision of answer
 
     def _run_solver(self, iter_limit=False, **kwds):
-        from mystic import Sow
+        from mystic.tools import Sow
         import numpy
         from mystic.tools import random_seed
         random_seed(123)
@@ -472,7 +472,7 @@ minima."""
             self.assertTrue(abs(sol[i]) < self.maxexpected[i] + error)
 
     def test_DifferentialEvolutionSolver_VTR(self): 
-        from mystic.differential_evolution import DifferentialEvolutionSolver
+        from mystic.solvers import DifferentialEvolutionSolver
         from mystic.termination import VTR
         tol = 1e-7
         self.NP = 40 
@@ -482,7 +482,7 @@ minima."""
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver_COG(self): # Default for this solver
-        from mystic.differential_evolution import DifferentialEvolutionSolver
+        from mystic.solvers import DifferentialEvolutionSolver
         from mystic.termination import ChangeOverGeneration as COG
         tol = 1e-7
         self.NP = 40
@@ -492,7 +492,7 @@ minima."""
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver_NCOG(self):
-        from mystic.differential_evolution import DifferentialEvolutionSolver
+        from mystic.solvers import DifferentialEvolutionSolver
         from mystic.termination import NormalizedChangeOverGeneration as NCOG
         tol = 1e-7
         self.NP = 40 
@@ -502,7 +502,7 @@ minima."""
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver_CRT(self):
-        from mystic.differential_evolution import DifferentialEvolutionSolver
+        from mystic.solvers import DifferentialEvolutionSolver
         from mystic.termination import CandidateRelativeTolerance as CRT
         tol = 1e-7
         self.NP = 40 
@@ -514,7 +514,7 @@ minima."""
 #--------------------------------------------------------------------------
 
     def test_DifferentialEvolutionSolver2_VTR(self):
-        from mystic.differential_evolution import DifferentialEvolutionSolver2
+        from mystic.solvers import DifferentialEvolutionSolver2
         from mystic.termination import VTR
         tol = 1e-7
         self.NP = 40 
@@ -524,7 +524,7 @@ minima."""
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver2_COG(self): # Default for this solver
-        from mystic.differential_evolution import DifferentialEvolutionSolver2
+        from mystic.solvers import DifferentialEvolutionSolver2
         from mystic.termination import ChangeOverGeneration as COG
         tol = 1e-7
         self.NP = 40 
@@ -534,7 +534,7 @@ minima."""
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver2_NCOG(self):
-        from mystic.differential_evolution import DifferentialEvolutionSolver2
+        from mystic.solvers import DifferentialEvolutionSolver2
         from mystic.termination import NormalizedChangeOverGeneration as NCOG
         tol = 1e-7
         self.NP = 40 
@@ -544,7 +544,7 @@ minima."""
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver2_CRT(self):
-        from mystic.differential_evolution import DifferentialEvolutionSolver2
+        from mystic.solvers import DifferentialEvolutionSolver2
         from mystic.termination import CandidateRelativeTolerance as CRT
         tol = 1e-7
         self.NP = 40 
@@ -556,7 +556,7 @@ minima."""
 #--------------------------------------------------------------
 
     def test_NelderMeadSimplexSolver_CRT(self): # Default for this solver
-        from mystic.scipy_optimize import NelderMeadSimplexSolver
+        from mystic.solvers import NelderMeadSimplexSolver
         from mystic.termination import CandidateRelativeTolerance as CRT
         tol = 1e-7
         self.solver = NelderMeadSimplexSolver(self.ND)
@@ -564,7 +564,7 @@ minima."""
         self._run_solver()
 
     def test_NelderMeadSimplexSolver_VTR(self): 
-        from mystic.scipy_optimize import NelderMeadSimplexSolver
+        from mystic.solvers import NelderMeadSimplexSolver
         from mystic.termination import VTR
         tol = 1e-7
         self.solver = NelderMeadSimplexSolver(self.ND)
@@ -572,7 +572,7 @@ minima."""
         self._run_solver()
 
     def test_NelderMeadSimplexSolver_COG(self): 
-        from mystic.scipy_optimize import NelderMeadSimplexSolver
+        from mystic.solvers import NelderMeadSimplexSolver
         from mystic.termination import ChangeOverGeneration as COG
         tol = 1e-7
         self.solver = NelderMeadSimplexSolver(self.ND)
@@ -580,7 +580,7 @@ minima."""
         self._run_solver()
 
     def test_NelderMeadSimplexSolver_NCOG(self): 
-        from mystic.scipy_optimize import NelderMeadSimplexSolver
+        from mystic.solvers import NelderMeadSimplexSolver
         from mystic.termination import NormalizedChangeOverGeneration as NCOG
         tol = 1e-7
         self.solver = NelderMeadSimplexSolver(self.ND)
@@ -590,7 +590,7 @@ minima."""
 #--------------------------------------------------------------------------
 
     def test_PowellDirectionalSolver_NCOG(self): # Default for this solver
-        from mystic.scipy_optimize import PowellDirectionalSolver
+        from mystic.solvers import PowellDirectionalSolver
         from mystic.termination import NormalizedChangeOverGeneration as NCOG
         tol = 1e-7
         self.solver = PowellDirectionalSolver(self.ND)
@@ -598,7 +598,7 @@ minima."""
         self._run_solver()
 
     def test_PowellDirectionalSolver_COG(self): 
-        from mystic.scipy_optimize import PowellDirectionalSolver
+        from mystic.solvers import PowellDirectionalSolver
         from mystic.termination import ChangeOverGeneration as COG
         tol = 1e-7
         self.solver = PowellDirectionalSolver(self.ND)
@@ -606,7 +606,7 @@ minima."""
         self._run_solver()
 
     def test_PowellDirectionalSolver_VTR(self): 
-        from mystic.scipy_optimize import PowellDirectionalSolver
+        from mystic.solvers import PowellDirectionalSolver
         from mystic.termination import VTR
         tol = 1e-7
         self.solver = PowellDirectionalSolver(self.ND)
@@ -614,7 +614,7 @@ minima."""
         self._run_solver()
 
     def test_PowellDirectionalSolver_CRT(self): 
-        from mystic.scipy_optimize import PowellDirectionalSolver
+        from mystic.solvers import PowellDirectionalSolver
         from mystic.termination import CandidateRelativeTolerance as CRT
         tol = 1e-7
         self.solver = PowellDirectionalSolver(self.ND)
@@ -638,7 +638,7 @@ class TestQuartic(unittest.TestCase):
         self.nplaces = 0 # Precision of answer 
 
     def _run_solver(self, iter_limit=False, **kwds):
-        from mystic import Sow
+        from mystic.tools import Sow
         import numpy
         from mystic.tools import random_seed
         #random_seed(123)
@@ -670,7 +670,7 @@ class TestQuartic(unittest.TestCase):
             self.assertAlmostEqual(sol[i], self.expected[i], self.nplaces)
 
     def test_DifferentialEvolutionSolver_VTR(self): 
-        from mystic.differential_evolution import DifferentialEvolutionSolver
+        from mystic.solvers import DifferentialEvolutionSolver
         from mystic.termination import VTR
         tol = 1e-7
         self.NP = 40 
@@ -680,7 +680,7 @@ class TestQuartic(unittest.TestCase):
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver_COG(self): # Default for this solver
-        from mystic.differential_evolution import DifferentialEvolutionSolver
+        from mystic.solvers import DifferentialEvolutionSolver
         from mystic.termination import ChangeOverGeneration as COG
         tol = 1e-7
         self.NP = 40
@@ -690,7 +690,7 @@ class TestQuartic(unittest.TestCase):
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver_NCOG(self):
-        from mystic.differential_evolution import DifferentialEvolutionSolver
+        from mystic.solvers import DifferentialEvolutionSolver
         from mystic.termination import NormalizedChangeOverGeneration as NCOG
         tol = 1e-7
         self.NP = 40 
@@ -700,7 +700,7 @@ class TestQuartic(unittest.TestCase):
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver_CRT(self):
-        from mystic.differential_evolution import DifferentialEvolutionSolver
+        from mystic.solvers import DifferentialEvolutionSolver
         from mystic.termination import CandidateRelativeTolerance as CRT
         tol = 1e-7
         self.NP = 40 
@@ -712,7 +712,7 @@ class TestQuartic(unittest.TestCase):
 #--------------------------------------------------------------------------
 
     def test_DifferentialEvolutionSolver2_VTR(self):
-        from mystic.differential_evolution import DifferentialEvolutionSolver2
+        from mystic.solvers import DifferentialEvolutionSolver2
         from mystic.termination import VTR
         tol = 1e-7
         self.NP = 40 
@@ -722,7 +722,7 @@ class TestQuartic(unittest.TestCase):
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver2_COG(self): # Default for this solver
-        from mystic.differential_evolution import DifferentialEvolutionSolver2
+        from mystic.solvers import DifferentialEvolutionSolver2
         from mystic.termination import ChangeOverGeneration as COG
         tol = 1e-7
         self.NP = 40 
@@ -732,7 +732,7 @@ class TestQuartic(unittest.TestCase):
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver2_NCOG(self):
-        from mystic.differential_evolution import DifferentialEvolutionSolver2
+        from mystic.solvers import DifferentialEvolutionSolver2
         from mystic.termination import NormalizedChangeOverGeneration as NCOG
         tol = 1e-7
         self.NP = 40 
@@ -742,7 +742,7 @@ class TestQuartic(unittest.TestCase):
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver2_CRT(self):
-        from mystic.differential_evolution import DifferentialEvolutionSolver2
+        from mystic.solvers import DifferentialEvolutionSolver2
         from mystic.termination import CandidateRelativeTolerance as CRT
         tol = 1e-7
         self.NP = 40 
@@ -754,7 +754,7 @@ class TestQuartic(unittest.TestCase):
 #--------------------------------------------------------------
 
     def test_NelderMeadSimplexSolver_CRT(self): # Default for this solver
-        from mystic.scipy_optimize import NelderMeadSimplexSolver
+        from mystic.solvers import NelderMeadSimplexSolver
         from mystic.termination import CandidateRelativeTolerance as CRT
         tol = 1e-7
         self.solver = NelderMeadSimplexSolver(self.ND)
@@ -762,7 +762,7 @@ class TestQuartic(unittest.TestCase):
         self._run_solver()
 
     def test_NelderMeadSimplexSolver_VTR(self): 
-        from mystic.scipy_optimize import NelderMeadSimplexSolver
+        from mystic.solvers import NelderMeadSimplexSolver
         from mystic.termination import VTR
         tol = 1e-7
         self.solver = NelderMeadSimplexSolver(self.ND)
@@ -770,7 +770,7 @@ class TestQuartic(unittest.TestCase):
         self._run_solver()
 
     def test_NelderMeadSimplexSolver_COG(self): 
-        from mystic.scipy_optimize import NelderMeadSimplexSolver
+        from mystic.solvers import NelderMeadSimplexSolver
         from mystic.termination import ChangeOverGeneration as COG
         tol = 1e-7
         self.solver = NelderMeadSimplexSolver(self.ND)
@@ -778,7 +778,7 @@ class TestQuartic(unittest.TestCase):
         self._run_solver()
 
     def test_NelderMeadSimplexSolver_NCOG(self): 
-        from mystic.scipy_optimize import NelderMeadSimplexSolver
+        from mystic.solvers import NelderMeadSimplexSolver
         from mystic.termination import NormalizedChangeOverGeneration as NCOG
         tol = 1e-7
         self.solver = NelderMeadSimplexSolver(self.ND)
@@ -788,7 +788,7 @@ class TestQuartic(unittest.TestCase):
 #--------------------------------------------------------------------------
 
     def test_PowellDirectionalSolver_NCOG(self): # Default for this solver
-        from mystic.scipy_optimize import PowellDirectionalSolver
+        from mystic.solvers import PowellDirectionalSolver
         from mystic.termination import NormalizedChangeOverGeneration as NCOG
         tol = 1e-7
         self.solver = PowellDirectionalSolver(self.ND)
@@ -796,7 +796,7 @@ class TestQuartic(unittest.TestCase):
         self._run_solver()
 
     def test_PowellDirectionalSolver_COG(self): 
-        from mystic.scipy_optimize import PowellDirectionalSolver
+        from mystic.solvers import PowellDirectionalSolver
         from mystic.termination import ChangeOverGeneration as COG
         tol = 1e-7
         self.solver = PowellDirectionalSolver(self.ND)
@@ -804,7 +804,7 @@ class TestQuartic(unittest.TestCase):
         self._run_solver()
 
     def test_PowellDirectionalSolver_VTR(self): 
-        from mystic.scipy_optimize import PowellDirectionalSolver
+        from mystic.solvers import PowellDirectionalSolver
         from mystic.termination import VTR
         tol = 1e-7
         self.solver = PowellDirectionalSolver(self.ND)
@@ -812,7 +812,7 @@ class TestQuartic(unittest.TestCase):
         self._run_solver()
 
     def test_PowellDirectionalSolver_CRT(self): 
-        from mystic.scipy_optimize import PowellDirectionalSolver
+        from mystic.solvers import PowellDirectionalSolver
         from mystic.termination import CandidateRelativeTolerance as CRT
         tol = 1e-7
         self.solver = PowellDirectionalSolver(self.ND)
@@ -836,7 +836,7 @@ class TestShekel(unittest.TestCase):
         self.nplaces = 0 # Precision of answer
 
     def _run_solver(self, iter_limit=False, **kwds):
-        from mystic import Sow
+        from mystic.tools import Sow
         import numpy
         from mystic.tools import random_seed
         random_seed(123)
@@ -868,7 +868,7 @@ class TestShekel(unittest.TestCase):
             self.assertAlmostEqual(sol[i], self.expected[i], self.nplaces)
 
     def test_DifferentialEvolutionSolver_VTR(self): 
-        from mystic.differential_evolution import DifferentialEvolutionSolver
+        from mystic.solvers import DifferentialEvolutionSolver
         from mystic.termination import VTR
         tol = 1e-7
         self.NP = 40 
@@ -878,7 +878,7 @@ class TestShekel(unittest.TestCase):
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver_COG(self): # Default for this solver
-        from mystic.differential_evolution import DifferentialEvolutionSolver
+        from mystic.solvers import DifferentialEvolutionSolver
         from mystic.termination import ChangeOverGeneration as COG
         tol = 1e-7
         self.NP = 40
@@ -888,7 +888,7 @@ class TestShekel(unittest.TestCase):
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver_NCOG(self):
-        from mystic.differential_evolution import DifferentialEvolutionSolver
+        from mystic.solvers import DifferentialEvolutionSolver
         from mystic.termination import NormalizedChangeOverGeneration as NCOG
         tol = 1e-7
         self.NP = 40 
@@ -898,7 +898,7 @@ class TestShekel(unittest.TestCase):
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver_CRT(self):
-        from mystic.differential_evolution import DifferentialEvolutionSolver
+        from mystic.solvers import DifferentialEvolutionSolver
         from mystic.termination import CandidateRelativeTolerance as CRT
         tol = 1e-7
         self.NP = 40 
@@ -910,7 +910,7 @@ class TestShekel(unittest.TestCase):
 #--------------------------------------------------------------------------
 
     def test_DifferentialEvolutionSolver2_VTR(self):
-        from mystic.differential_evolution import DifferentialEvolutionSolver2
+        from mystic.solvers import DifferentialEvolutionSolver2
         from mystic.termination import VTR
         tol = 1e-7
         self.NP = 40 
@@ -920,7 +920,7 @@ class TestShekel(unittest.TestCase):
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver2_COG(self): # Default for this solver
-        from mystic.differential_evolution import DifferentialEvolutionSolver2
+        from mystic.solvers import DifferentialEvolutionSolver2
         from mystic.termination import ChangeOverGeneration as COG
         tol = 1e-7
         self.NP = 40 
@@ -930,7 +930,7 @@ class TestShekel(unittest.TestCase):
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver2_NCOG(self):
-        from mystic.differential_evolution import DifferentialEvolutionSolver2
+        from mystic.solvers import DifferentialEvolutionSolver2
         from mystic.termination import NormalizedChangeOverGeneration as NCOG
         tol = 1e-7
         self.NP = 40 
@@ -940,7 +940,7 @@ class TestShekel(unittest.TestCase):
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver2_CRT(self):
-        from mystic.differential_evolution import DifferentialEvolutionSolver2
+        from mystic.solvers import DifferentialEvolutionSolver2
         from mystic.termination import CandidateRelativeTolerance as CRT
         tol = 1e-7
         self.NP = 40 
@@ -952,7 +952,7 @@ class TestShekel(unittest.TestCase):
 #--------------------------------------------------------------
 
     def test_NelderMeadSimplexSolver_CRT(self): # Default for this solver
-        from mystic.scipy_optimize import NelderMeadSimplexSolver
+        from mystic.solvers import NelderMeadSimplexSolver
         from mystic.termination import CandidateRelativeTolerance as CRT
         tol = 1e-7
         self.solver = NelderMeadSimplexSolver(self.ND)
@@ -960,7 +960,7 @@ class TestShekel(unittest.TestCase):
         self._run_solver()
 
     def test_NelderMeadSimplexSolver_VTR(self): 
-        from mystic.scipy_optimize import NelderMeadSimplexSolver
+        from mystic.solvers import NelderMeadSimplexSolver
         from mystic.termination import VTR
         tol = 1e-7
         self.solver = NelderMeadSimplexSolver(self.ND)
@@ -968,7 +968,7 @@ class TestShekel(unittest.TestCase):
         self._run_solver()
 
     def test_NelderMeadSimplexSolver_COG(self): 
-        from mystic.scipy_optimize import NelderMeadSimplexSolver
+        from mystic.solvers import NelderMeadSimplexSolver
         from mystic.termination import ChangeOverGeneration as COG
         tol = 1e-7
         self.solver = NelderMeadSimplexSolver(self.ND)
@@ -976,7 +976,7 @@ class TestShekel(unittest.TestCase):
         self._run_solver()
 
     def test_NelderMeadSimplexSolver_NCOG(self): 
-        from mystic.scipy_optimize import NelderMeadSimplexSolver
+        from mystic.solvers import NelderMeadSimplexSolver
         from mystic.termination import NormalizedChangeOverGeneration as NCOG
         tol = 1e-7
         self.solver = NelderMeadSimplexSolver(self.ND)
@@ -986,7 +986,7 @@ class TestShekel(unittest.TestCase):
 #--------------------------------------------------------------------------
 
     def test_PowellDirectionalSolver_NCOG(self): # Default for this solver
-        from mystic.scipy_optimize import PowellDirectionalSolver
+        from mystic.solvers import PowellDirectionalSolver
         from mystic.termination import NormalizedChangeOverGeneration as NCOG
         tol = 1e-7
         self.solver = PowellDirectionalSolver(self.ND)
@@ -994,7 +994,7 @@ class TestShekel(unittest.TestCase):
         self._run_solver()
 
     def test_PowellDirectionalSolver_COG(self): 
-        from mystic.scipy_optimize import PowellDirectionalSolver
+        from mystic.solvers import PowellDirectionalSolver
         from mystic.termination import ChangeOverGeneration as COG
         tol = 1e-7
         self.solver = PowellDirectionalSolver(self.ND)
@@ -1002,7 +1002,7 @@ class TestShekel(unittest.TestCase):
         self._run_solver()
 
     def test_PowellDirectionalSolver_VTR(self): 
-        from mystic.scipy_optimize import PowellDirectionalSolver
+        from mystic.solvers import PowellDirectionalSolver
         from mystic.termination import VTR
         tol = 1e-7
         self.solver = PowellDirectionalSolver(self.ND)
@@ -1010,7 +1010,7 @@ class TestShekel(unittest.TestCase):
         self._run_solver()
 
     def test_PowellDirectionalSolver_CRT(self): 
-        from mystic.scipy_optimize import PowellDirectionalSolver
+        from mystic.solvers import PowellDirectionalSolver
         from mystic.termination import CandidateRelativeTolerance as CRT
         tol = 1e-7
         self.solver = PowellDirectionalSolver(self.ND)
@@ -1035,7 +1035,7 @@ class TestStep(unittest.TestCase):
         #self.nplaces = 0 # Precision of answer
 
     def _run_solver(self, iter_limit = False, **kwds):
-        from mystic import Sow
+        from mystic.tools import Sow
         import numpy
         from mystic.tools import random_seed
        #random_seed(123)
@@ -1068,7 +1068,7 @@ class TestStep(unittest.TestCase):
             self.assertTrue(sol[i] > self.expected[i] - 0.12 or sol[i] < self.expected[i])
 
     def test_DifferentialEvolutionSolver_VTR(self): 
-        from mystic.differential_evolution import DifferentialEvolutionSolver
+        from mystic.solvers import DifferentialEvolutionSolver
         from mystic.termination import VTR
         tol = 1e-7
         self.NP = 40 
@@ -1078,7 +1078,7 @@ class TestStep(unittest.TestCase):
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver_COG(self): # Default for this solver
-        from mystic.differential_evolution import DifferentialEvolutionSolver
+        from mystic.solvers import DifferentialEvolutionSolver
         from mystic.termination import ChangeOverGeneration as COG
         tol = 1e-7
         self.NP = 40
@@ -1088,7 +1088,7 @@ class TestStep(unittest.TestCase):
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver_NCOG(self):
-        from mystic.differential_evolution import DifferentialEvolutionSolver
+        from mystic.solvers import DifferentialEvolutionSolver
         from mystic.termination import NormalizedChangeOverGeneration as NCOG
         tol = 1e-7
         self.NP = 40 
@@ -1098,7 +1098,7 @@ class TestStep(unittest.TestCase):
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver_CRT(self):
-        from mystic.differential_evolution import DifferentialEvolutionSolver
+        from mystic.solvers import DifferentialEvolutionSolver
         from mystic.termination import CandidateRelativeTolerance as CRT
         tol = 1e-7
         self.NP = 40 
@@ -1110,7 +1110,7 @@ class TestStep(unittest.TestCase):
 #--------------------------------------------------------------------------
 
     def test_DifferentialEvolutionSolver2_VTR(self):
-        from mystic.differential_evolution import DifferentialEvolutionSolver2
+        from mystic.solvers import DifferentialEvolutionSolver2
         from mystic.termination import VTR
         tol = 1e-7
         self.NP = 40 
@@ -1120,7 +1120,7 @@ class TestStep(unittest.TestCase):
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver2_COG(self): # Default for this solver
-        from mystic.differential_evolution import DifferentialEvolutionSolver2
+        from mystic.solvers import DifferentialEvolutionSolver2
         from mystic.termination import ChangeOverGeneration as COG
         tol = 1e-7
         self.NP = 40 
@@ -1130,7 +1130,7 @@ class TestStep(unittest.TestCase):
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver2_NCOG(self):
-        from mystic.differential_evolution import DifferentialEvolutionSolver2
+        from mystic.solvers import DifferentialEvolutionSolver2
         from mystic.termination import NormalizedChangeOverGeneration as NCOG
         tol = 1e-7
         self.NP = 40 
@@ -1140,7 +1140,7 @@ class TestStep(unittest.TestCase):
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver2_CRT(self):
-        from mystic.differential_evolution import DifferentialEvolutionSolver2
+        from mystic.solvers import DifferentialEvolutionSolver2
         from mystic.termination import CandidateRelativeTolerance as CRT
         tol = 1e-7
         self.NP = 40 
@@ -1152,7 +1152,7 @@ class TestStep(unittest.TestCase):
 #--------------------------------------------------------------
 
     def test_NelderMeadSimplexSolver_CRT(self): # Default for this solver
-        from mystic.scipy_optimize import NelderMeadSimplexSolver
+        from mystic.solvers import NelderMeadSimplexSolver
         from mystic.termination import CandidateRelativeTolerance as CRT
         tol = 1e-7
         self.solver = NelderMeadSimplexSolver(self.ND)
@@ -1160,7 +1160,7 @@ class TestStep(unittest.TestCase):
         self._run_solver()
 
     def test_NelderMeadSimplexSolver_VTR(self): 
-        from mystic.scipy_optimize import NelderMeadSimplexSolver
+        from mystic.solvers import NelderMeadSimplexSolver
         from mystic.termination import VTR
         tol = 1e-7
         self.solver = NelderMeadSimplexSolver(self.ND)
@@ -1168,7 +1168,7 @@ class TestStep(unittest.TestCase):
         self._run_solver()
 
     def test_NelderMeadSimplexSolver_COG(self): 
-        from mystic.scipy_optimize import NelderMeadSimplexSolver
+        from mystic.solvers import NelderMeadSimplexSolver
         from mystic.termination import ChangeOverGeneration as COG
         tol = 1e-7
         self.solver = NelderMeadSimplexSolver(self.ND)
@@ -1176,7 +1176,7 @@ class TestStep(unittest.TestCase):
         self._run_solver()
 
     def test_NelderMeadSimplexSolver_NCOG(self): 
-        from mystic.scipy_optimize import NelderMeadSimplexSolver
+        from mystic.solvers import NelderMeadSimplexSolver
         from mystic.termination import NormalizedChangeOverGeneration as NCOG
         tol = 1e-7
         self.solver = NelderMeadSimplexSolver(self.ND)
@@ -1186,7 +1186,7 @@ class TestStep(unittest.TestCase):
 #--------------------------------------------------------------------------
 
     def test_PowellDirectionalSolver_NCOG(self): # Default for this solver
-        from mystic.scipy_optimize import PowellDirectionalSolver
+        from mystic.solvers import PowellDirectionalSolver
         from mystic.termination import NormalizedChangeOverGeneration as NCOG
         tol = 1e-7
         self.solver = PowellDirectionalSolver(self.ND)
@@ -1194,7 +1194,7 @@ class TestStep(unittest.TestCase):
         self._run_solver()
 
     def test_PowellDirectionalSolver_COG(self): 
-        from mystic.scipy_optimize import PowellDirectionalSolver
+        from mystic.solvers import PowellDirectionalSolver
         from mystic.termination import ChangeOverGeneration as COG
         tol = 1e-7
         self.solver = PowellDirectionalSolver(self.ND)
@@ -1202,7 +1202,7 @@ class TestStep(unittest.TestCase):
         self._run_solver()
 
     def test_PowellDirectionalSolver_VTR(self): 
-        from mystic.scipy_optimize import PowellDirectionalSolver
+        from mystic.solvers import PowellDirectionalSolver
         from mystic.termination import VTR
         tol = 1e-7
         self.solver = PowellDirectionalSolver(self.ND)
@@ -1210,7 +1210,7 @@ class TestStep(unittest.TestCase):
         self._run_solver()
 
     def test_PowellDirectionalSolver_CRT(self): 
-        from mystic.scipy_optimize import PowellDirectionalSolver
+        from mystic.solvers import PowellDirectionalSolver
         from mystic.termination import CandidateRelativeTolerance as CRT
         tol = 1e-7
         self.solver = PowellDirectionalSolver(self.ND)
@@ -1235,7 +1235,7 @@ class TestGriewangk(unittest.TestCase):
         self.nplaces = 0 # Precision of answer
 
     def _run_solver(self, iter_limit=False, **kwds):
-        from mystic import Sow
+        from mystic.tools import Sow
         import numpy
         from mystic.tools import random_seed
         #random_seed(123)
@@ -1268,7 +1268,7 @@ class TestGriewangk(unittest.TestCase):
             self.assertTrue(sol[i] > self.expected[i] - 0.12 or sol[i] < self.expected[i])
 
     def test_DifferentialEvolutionSolver_VTR(self): 
-        from mystic.differential_evolution import DifferentialEvolutionSolver
+        from mystic.solvers import DifferentialEvolutionSolver
         from mystic.termination import VTR
         tol = 1e-7
         self.NP = 40 
@@ -1278,7 +1278,7 @@ class TestGriewangk(unittest.TestCase):
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver_COG(self): # Default for this solver
-        from mystic.differential_evolution import DifferentialEvolutionSolver
+        from mystic.solvers import DifferentialEvolutionSolver
         from mystic.termination import ChangeOverGeneration as COG
         tol = 1e-7
         self.NP = 40
@@ -1288,7 +1288,7 @@ class TestGriewangk(unittest.TestCase):
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver_NCOG(self):
-        from mystic.differential_evolution import DifferentialEvolutionSolver
+        from mystic.solvers import DifferentialEvolutionSolver
         from mystic.termination import NormalizedChangeOverGeneration as NCOG
         tol = 1e-7
         self.NP = 40 
@@ -1298,7 +1298,7 @@ class TestGriewangk(unittest.TestCase):
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver_CRT(self):
-        from mystic.differential_evolution import DifferentialEvolutionSolver
+        from mystic.solvers import DifferentialEvolutionSolver
         from mystic.termination import CandidateRelativeTolerance as CRT
         tol = 1e-7
         self.NP = 40 
@@ -1310,7 +1310,7 @@ class TestGriewangk(unittest.TestCase):
 #--------------------------------------------------------------------------
 
     def test_DifferentialEvolutionSolver2_VTR(self): 
-        from mystic.differential_evolution import DifferentialEvolutionSolver2
+        from mystic.solvers import DifferentialEvolutionSolver2
         from mystic.termination import VTR
         tol = 1e-7
         self.NP = 40
@@ -1320,7 +1320,7 @@ class TestGriewangk(unittest.TestCase):
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver2_COG(self): # Default for this solver
-        from mystic.differential_evolution import DifferentialEvolutionSolver2
+        from mystic.solvers import DifferentialEvolutionSolver2
         from mystic.termination import ChangeOverGeneration as COG
         tol = 1e-7
         self.NP = 40
@@ -1330,7 +1330,7 @@ class TestGriewangk(unittest.TestCase):
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver2_NCOG(self):
-        from mystic.differential_evolution import DifferentialEvolutionSolver2
+        from mystic.solvers import DifferentialEvolutionSolver2
         from mystic.termination import NormalizedChangeOverGeneration as NCOG
         tol = 1e-7
         self.NP = 40
@@ -1340,7 +1340,7 @@ class TestGriewangk(unittest.TestCase):
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver2_CRT(self):
-        from mystic.differential_evolution import DifferentialEvolutionSolver2
+        from mystic.solvers import DifferentialEvolutionSolver2
         from mystic.termination import CandidateRelativeTolerance as CRT
         tol = 1e-7
         self.NP = 40 
@@ -1352,7 +1352,7 @@ class TestGriewangk(unittest.TestCase):
 #-------------------------------------------------------------------------
 
     def test_NelderMeadSimplexSolver_CRT(self): # Default for this solver
-        from mystic.scipy_optimize import NelderMeadSimplexSolver
+        from mystic.solvers import NelderMeadSimplexSolver
         from mystic.termination import CandidateRelativeTolerance as CRT
         tol = 1e-7
         self.solver = NelderMeadSimplexSolver(self.ND)
@@ -1360,7 +1360,7 @@ class TestGriewangk(unittest.TestCase):
         self._run_solver()
 
     def test_NelderMeadSimplexSolver_VTR(self): 
-        from mystic.scipy_optimize import NelderMeadSimplexSolver
+        from mystic.solvers import NelderMeadSimplexSolver
         from mystic.termination import VTR
         tol = 1e-7
         self.solver = NelderMeadSimplexSolver(self.ND)
@@ -1368,7 +1368,7 @@ class TestGriewangk(unittest.TestCase):
         self._run_solver()
 
     def test_NelderMeadSimplexSolver_COG(self): 
-        from mystic.scipy_optimize import NelderMeadSimplexSolver
+        from mystic.solvers import NelderMeadSimplexSolver
         from mystic.termination import ChangeOverGeneration as COG
         tol = 1e-7
         self.solver = NelderMeadSimplexSolver(self.ND)
@@ -1376,7 +1376,7 @@ class TestGriewangk(unittest.TestCase):
         self._run_solver()
 
     def test_NelderMeadSimplexSolver_NCOG(self): 
-        from mystic.scipy_optimize import NelderMeadSimplexSolver
+        from mystic.solvers import NelderMeadSimplexSolver
         from mystic.termination import NormalizedChangeOverGeneration as NCOG
         tol = 1e-7
         self.solver = NelderMeadSimplexSolver(self.ND)
@@ -1386,7 +1386,7 @@ class TestGriewangk(unittest.TestCase):
 #--------------------------------------------------------------------------
 
     def test_PowellDirectionalSolver_NCOG(self): # Default for this solver
-        from mystic.scipy_optimize import PowellDirectionalSolver
+        from mystic.solvers import PowellDirectionalSolver
         from mystic.termination import NormalizedChangeOverGeneration as NCOG
         tol = 1e-7
         self.solver = PowellDirectionalSolver(self.ND)
@@ -1394,7 +1394,7 @@ class TestGriewangk(unittest.TestCase):
         self._run_solver()
 
     def test_PowellDirectionalSolver_COG(self): 
-        from mystic.scipy_optimize import PowellDirectionalSolver
+        from mystic.solvers import PowellDirectionalSolver
         from mystic.termination import ChangeOverGeneration as COG
         tol = 1e-7
         self.solver = PowellDirectionalSolver(self.ND)
@@ -1402,7 +1402,7 @@ class TestGriewangk(unittest.TestCase):
         self._run_solver()
 
     def test_PowellDirectionalSolver_VTR(self): 
-        from mystic.scipy_optimize import PowellDirectionalSolver
+        from mystic.solvers import PowellDirectionalSolver
         from mystic.termination import VTR
         tol = 1e-7
         self.solver = PowellDirectionalSolver(self.ND)
@@ -1410,7 +1410,7 @@ class TestGriewangk(unittest.TestCase):
         self._run_solver()
 
     def test_PowellDirectionalSolver_CRT(self): 
-        from mystic.scipy_optimize import PowellDirectionalSolver
+        from mystic.solvers import PowellDirectionalSolver
         from mystic.termination import CandidateRelativeTolerance as CRT
         tol = 1e-7
         self.solver = PowellDirectionalSolver(self.ND)
@@ -1447,7 +1447,7 @@ Source: http://www.nag.co.uk/numeric/FL/nagdoc_fl22/xhtml/E05/e05jbf.xml"""
         self.nplaces = 0 # Precision of answer
 
     def _run_solver(self, iter_limit=False, **kwds):
-        from mystic import Sow
+        from mystic.tools import Sow
         import numpy
         from mystic.tools import random_seed
         #random_seed(123)
@@ -1479,7 +1479,7 @@ Source: http://www.nag.co.uk/numeric/FL/nagdoc_fl22/xhtml/E05/e05jbf.xml"""
             self.assertAlmostEqual(sol[i], self.expected[i], self.nplaces)
 
     def test_DifferentialEvolutionSolver_VTR(self): 
-        from mystic.differential_evolution import DifferentialEvolutionSolver
+        from mystic.solvers import DifferentialEvolutionSolver
         from mystic.termination import VTR
         tol = 1e-7
         self.NP = 40 
@@ -1489,7 +1489,7 @@ Source: http://www.nag.co.uk/numeric/FL/nagdoc_fl22/xhtml/E05/e05jbf.xml"""
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver_COG(self): # Default for this solver
-        from mystic.differential_evolution import DifferentialEvolutionSolver
+        from mystic.solvers import DifferentialEvolutionSolver
         from mystic.termination import ChangeOverGeneration as COG
         tol = 1e-7
         self.NP = 40
@@ -1499,7 +1499,7 @@ Source: http://www.nag.co.uk/numeric/FL/nagdoc_fl22/xhtml/E05/e05jbf.xml"""
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver_NCOG(self):
-        from mystic.differential_evolution import DifferentialEvolutionSolver
+        from mystic.solvers import DifferentialEvolutionSolver
         from mystic.termination import NormalizedChangeOverGeneration as NCOG
         tol = 1e-7
         self.NP = 40
@@ -1509,7 +1509,7 @@ Source: http://www.nag.co.uk/numeric/FL/nagdoc_fl22/xhtml/E05/e05jbf.xml"""
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver_CRT(self):
-        from mystic.differential_evolution import DifferentialEvolutionSolver
+        from mystic.solvers import DifferentialEvolutionSolver
         from mystic.termination import CandidateRelativeTolerance as CRT
         tol = 1e-7
         self.NP = 40
@@ -1521,7 +1521,7 @@ Source: http://www.nag.co.uk/numeric/FL/nagdoc_fl22/xhtml/E05/e05jbf.xml"""
 #--------------------------------------------------------------------------
 
     def test_DifferentialEvolutionSolver2_VTR(self): 
-        from mystic.differential_evolution import DifferentialEvolutionSolver2
+        from mystic.solvers import DifferentialEvolutionSolver2
         from mystic.termination import VTR
         tol = 1e-7
         self.NP = 40
@@ -1531,7 +1531,7 @@ Source: http://www.nag.co.uk/numeric/FL/nagdoc_fl22/xhtml/E05/e05jbf.xml"""
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver2_COG(self): # Default for this solver
-        from mystic.differential_evolution import DifferentialEvolutionSolver2
+        from mystic.solvers import DifferentialEvolutionSolver2
         from mystic.termination import ChangeOverGeneration as COG
         tol = 1e-7
         self.NP = 40
@@ -1541,7 +1541,7 @@ Source: http://www.nag.co.uk/numeric/FL/nagdoc_fl22/xhtml/E05/e05jbf.xml"""
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver2_NCOG(self):
-        from mystic.differential_evolution import DifferentialEvolutionSolver2
+        from mystic.solvers import DifferentialEvolutionSolver2
         from mystic.termination import NormalizedChangeOverGeneration as NCOG
         tol = 1e-7
         self.NP = 40
@@ -1551,7 +1551,7 @@ Source: http://www.nag.co.uk/numeric/FL/nagdoc_fl22/xhtml/E05/e05jbf.xml"""
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver2_CRT(self):
-        from mystic.differential_evolution import DifferentialEvolutionSolver2
+        from mystic.solvers import DifferentialEvolutionSolver2
         from mystic.termination import CandidateRelativeTolerance as CRT
         tol = 1e-7
         self.NP = 40 
@@ -1563,7 +1563,7 @@ Source: http://www.nag.co.uk/numeric/FL/nagdoc_fl22/xhtml/E05/e05jbf.xml"""
 #-------------------------------------------------------------------------
 
     def test_NelderMeadSimplexSolver_CRT(self): # Default for this solver
-        from mystic.scipy_optimize import NelderMeadSimplexSolver
+        from mystic.solvers import NelderMeadSimplexSolver
         from mystic.termination import CandidateRelativeTolerance as CRT
         tol = 1e-7
         self.solver = NelderMeadSimplexSolver(self.ND)
@@ -1571,7 +1571,7 @@ Source: http://www.nag.co.uk/numeric/FL/nagdoc_fl22/xhtml/E05/e05jbf.xml"""
         self._run_solver()
 
     def test_NelderMeadSimplexSolver_VTR(self): 
-        from mystic.scipy_optimize import NelderMeadSimplexSolver
+        from mystic.solvers import NelderMeadSimplexSolver
         from mystic.termination import VTR
         tol = 1e-7
         self.solver = NelderMeadSimplexSolver(self.ND)
@@ -1579,7 +1579,7 @@ Source: http://www.nag.co.uk/numeric/FL/nagdoc_fl22/xhtml/E05/e05jbf.xml"""
         self._run_solver()
 
     def test_NelderMeadSimplexSolver_COG(self): 
-        from mystic.scipy_optimize import NelderMeadSimplexSolver
+        from mystic.solvers import NelderMeadSimplexSolver
         from mystic.termination import ChangeOverGeneration as COG
         tol = 1e-7
         self.solver = NelderMeadSimplexSolver(self.ND)
@@ -1587,7 +1587,7 @@ Source: http://www.nag.co.uk/numeric/FL/nagdoc_fl22/xhtml/E05/e05jbf.xml"""
         self._run_solver()
 
     def test_NelderMeadSimplexSolver_NCOG(self): 
-        from mystic.scipy_optimize import NelderMeadSimplexSolver
+        from mystic.solvers import NelderMeadSimplexSolver
         from mystic.termination import NormalizedChangeOverGeneration as NCOG
         tol = 1e-7
         self.solver = NelderMeadSimplexSolver(self.ND)
@@ -1597,7 +1597,7 @@ Source: http://www.nag.co.uk/numeric/FL/nagdoc_fl22/xhtml/E05/e05jbf.xml"""
 #--------------------------------------------------------------------------
 
     def test_PowellDirectionalSolver_NCOG(self): # Default for this solver
-        from mystic.scipy_optimize import PowellDirectionalSolver
+        from mystic.solvers import PowellDirectionalSolver
         from mystic.termination import NormalizedChangeOverGeneration as NCOG
         tol = 1e-7
         self.solver = PowellDirectionalSolver(self.ND)
@@ -1605,7 +1605,7 @@ Source: http://www.nag.co.uk/numeric/FL/nagdoc_fl22/xhtml/E05/e05jbf.xml"""
         self._run_solver()
 
     def test_PowellDirectionalSolver_COG(self): 
-        from mystic.scipy_optimize import PowellDirectionalSolver
+        from mystic.solvers import PowellDirectionalSolver
         from mystic.termination import ChangeOverGeneration as COG
         tol = 1e-7
         self.solver = PowellDirectionalSolver(self.ND)
@@ -1613,7 +1613,7 @@ Source: http://www.nag.co.uk/numeric/FL/nagdoc_fl22/xhtml/E05/e05jbf.xml"""
         self._run_solver()
 
     def test_PowellDirectionalSolver_VTR(self): 
-        from mystic.scipy_optimize import PowellDirectionalSolver
+        from mystic.solvers import PowellDirectionalSolver
         from mystic.termination import VTR
         tol = 1e-7
         self.solver = PowellDirectionalSolver(self.ND)
@@ -1621,7 +1621,7 @@ Source: http://www.nag.co.uk/numeric/FL/nagdoc_fl22/xhtml/E05/e05jbf.xml"""
         self._run_solver()
 
     def test_PowellDirectionalSolver_CRT(self): 
-        from mystic.scipy_optimize import PowellDirectionalSolver
+        from mystic.solvers import PowellDirectionalSolver
         from mystic.termination import CandidateRelativeTolerance as CRT
         tol = 1e-7
         self.solver = PowellDirectionalSolver(self.ND)
@@ -1658,7 +1658,7 @@ Wiley, 2nd edition, 2009."""
         self.nplaces = 0 # Precision of answer
 
     def _run_solver(self, iter_limit=False, **kwds):
-        from mystic import Sow
+        from mystic.tools import Sow
         import numpy
         from mystic.tools import random_seed
         #random_seed(123)
@@ -1690,7 +1690,7 @@ Wiley, 2nd edition, 2009."""
             return
 
     def test_DifferentialEvolutionSolver_VTR(self): 
-        from mystic.differential_evolution import DifferentialEvolutionSolver
+        from mystic.solvers import DifferentialEvolutionSolver
         from mystic.termination import VTR
         tol = 1e-7
         self.NP = 40 
@@ -1700,7 +1700,7 @@ Wiley, 2nd edition, 2009."""
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver_COG(self): # Default for this solver
-        from mystic.differential_evolution import DifferentialEvolutionSolver
+        from mystic.solvers import DifferentialEvolutionSolver
         from mystic.termination import ChangeOverGeneration as COG
         tol = 1e-7
         self.NP = 40
@@ -1710,7 +1710,7 @@ Wiley, 2nd edition, 2009."""
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver_NCOG(self):
-        from mystic.differential_evolution import DifferentialEvolutionSolver
+        from mystic.solvers import DifferentialEvolutionSolver
         from mystic.termination import NormalizedChangeOverGeneration as NCOG
         tol = 1e-7
         self.NP = 40 
@@ -1720,7 +1720,7 @@ Wiley, 2nd edition, 2009."""
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver_CRT(self):
-        from mystic.differential_evolution import DifferentialEvolutionSolver
+        from mystic.solvers import DifferentialEvolutionSolver
         from mystic.termination import CandidateRelativeTolerance as CRT
         tol = 1e-7
         self.NP = 40 
@@ -1732,7 +1732,7 @@ Wiley, 2nd edition, 2009."""
 #--------------------------------------------------------------------------
 
     def test_DifferentialEvolutionSolver2_VTR(self):
-        from mystic.differential_evolution import DifferentialEvolutionSolver2
+        from mystic.solvers import DifferentialEvolutionSolver2
         from mystic.termination import VTR
         tol = 1e-7
         self.NP = 40
@@ -1742,7 +1742,7 @@ Wiley, 2nd edition, 2009."""
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver2_COG(self): # Default for this solver
-        from mystic.differential_evolution import DifferentialEvolutionSolver2
+        from mystic.solvers import DifferentialEvolutionSolver2
         from mystic.termination import ChangeOverGeneration as COG
         tol = 1e-7
         self.NP = 40
@@ -1752,7 +1752,7 @@ Wiley, 2nd edition, 2009."""
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver2_NCOG(self):
-        from mystic.differential_evolution import DifferentialEvolutionSolver2
+        from mystic.solvers import DifferentialEvolutionSolver2
         from mystic.termination import NormalizedChangeOverGeneration as NCOG
         tol = 1e-7
         self.NP = 40
@@ -1762,7 +1762,7 @@ Wiley, 2nd edition, 2009."""
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver2_CRT(self):
-        from mystic.differential_evolution import DifferentialEvolutionSolver2
+        from mystic.solvers import DifferentialEvolutionSolver2
         from mystic.termination import CandidateRelativeTolerance as CRT
         tol = 1e-7
         self.NP = 40 
@@ -1774,7 +1774,7 @@ Wiley, 2nd edition, 2009."""
 #-------------------------------------------------------------------------
 
     def test_NelderMeadSimplexSolver_CRT(self): # Default for this solver
-        from mystic.scipy_optimize import NelderMeadSimplexSolver
+        from mystic.solvers import NelderMeadSimplexSolver
         from mystic.termination import CandidateRelativeTolerance as CRT
         tol = 1e-7
         self.solver = NelderMeadSimplexSolver(self.ND)
@@ -1782,7 +1782,7 @@ Wiley, 2nd edition, 2009."""
         self._run_solver()
 
     def test_NelderMeadSimplexSolver_VTR(self): 
-        from mystic.scipy_optimize import NelderMeadSimplexSolver
+        from mystic.solvers import NelderMeadSimplexSolver
         from mystic.termination import VTR
         tol = 1e-7
         self.solver = NelderMeadSimplexSolver(self.ND)
@@ -1790,7 +1790,7 @@ Wiley, 2nd edition, 2009."""
         self._run_solver()
 
     def test_NelderMeadSimplexSolver_COG(self): 
-        from mystic.scipy_optimize import NelderMeadSimplexSolver
+        from mystic.solvers import NelderMeadSimplexSolver
         from mystic.termination import ChangeOverGeneration as COG
         tol = 1e-7
         self.solver = NelderMeadSimplexSolver(self.ND)
@@ -1798,7 +1798,7 @@ Wiley, 2nd edition, 2009."""
         self._run_solver()
 
     def test_NelderMeadSimplexSolver_NCOG(self): 
-        from mystic.scipy_optimize import NelderMeadSimplexSolver
+        from mystic.solvers import NelderMeadSimplexSolver
         from mystic.termination import NormalizedChangeOverGeneration as NCOG
         tol = 1e-7
         self.solver = NelderMeadSimplexSolver(self.ND)
@@ -1808,7 +1808,7 @@ Wiley, 2nd edition, 2009."""
 #--------------------------------------------------------------------------
 
     def test_PowellDirectionalSolver_NCOG(self): # Default for this solver
-        from mystic.scipy_optimize import PowellDirectionalSolver
+        from mystic.solvers import PowellDirectionalSolver
         from mystic.termination import NormalizedChangeOverGeneration as NCOG
         tol = 1e-7
         self.solver = PowellDirectionalSolver(self.ND)
@@ -1816,7 +1816,7 @@ Wiley, 2nd edition, 2009."""
         self._run_solver()
 
     def test_PowellDirectionalSolver_COG(self): 
-        from mystic.scipy_optimize import PowellDirectionalSolver
+        from mystic.solvers import PowellDirectionalSolver
         from mystic.termination import ChangeOverGeneration as COG
         tol = 1e-7
         self.solver = PowellDirectionalSolver(self.ND)
@@ -1824,7 +1824,7 @@ Wiley, 2nd edition, 2009."""
         self._run_solver()
 
     def test_PowellDirectionalSolver_VTR(self): 
-        from mystic.scipy_optimize import PowellDirectionalSolver
+        from mystic.solvers import PowellDirectionalSolver
         from mystic.termination import VTR
         tol = 1e-7
         self.solver = PowellDirectionalSolver(self.ND)
@@ -1832,7 +1832,7 @@ Wiley, 2nd edition, 2009."""
         self._run_solver()
 
     def test_PowellDirectionalSolver_CRT(self): 
-        from mystic.scipy_optimize import PowellDirectionalSolver
+        from mystic.solvers import PowellDirectionalSolver
         from mystic.termination import CandidateRelativeTolerance as CRT
         tol = 1e-7
         self.solver = PowellDirectionalSolver(self.ND)
@@ -1866,7 +1866,7 @@ class TestSchwefel(unittest.TestCase):
         self.nplaces = -1 # Precision of answer
 
     def _run_solver(self, iter_limit=False, **kwds):
-        from mystic import Sow
+        from mystic.tools import Sow
         import numpy
         from mystic.tools import random_seed
         random_seed(123)
@@ -1898,7 +1898,7 @@ class TestSchwefel(unittest.TestCase):
             self.assertAlmostEqual(sol[i], self.expected[i], self.nplaces)
 
     def test_DifferentialEvolutionSolver_VTR(self): 
-        from mystic.differential_evolution import DifferentialEvolutionSolver
+        from mystic.solvers import DifferentialEvolutionSolver
         from mystic.termination import VTR
         tol = 1e-7
         self.NP = 40 
@@ -1908,7 +1908,7 @@ class TestSchwefel(unittest.TestCase):
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver_COG(self): # Default for this solver
-        from mystic.differential_evolution import DifferentialEvolutionSolver
+        from mystic.solvers import DifferentialEvolutionSolver
         from mystic.termination import ChangeOverGeneration as COG
         tol = 1e-7
         self.NP = 40
@@ -1918,7 +1918,7 @@ class TestSchwefel(unittest.TestCase):
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver_NCOG(self):
-        from mystic.differential_evolution import DifferentialEvolutionSolver
+        from mystic.solvers import DifferentialEvolutionSolver
         from mystic.termination import NormalizedChangeOverGeneration as NCOG
         tol = 1e-7
         self.NP = 40 
@@ -1928,7 +1928,7 @@ class TestSchwefel(unittest.TestCase):
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver_CRT(self):
-        from mystic.differential_evolution import DifferentialEvolutionSolver
+        from mystic.solvers import DifferentialEvolutionSolver
         from mystic.termination import CandidateRelativeTolerance as CRT
         tol = 1e-7
         self.NP = 40 
@@ -1940,7 +1940,7 @@ class TestSchwefel(unittest.TestCase):
 #--------------------------------------------------------------------------
 
     def test_DifferentialEvolutionSolver2_VTR(self): 
-        from mystic.differential_evolution import DifferentialEvolutionSolver2
+        from mystic.solvers import DifferentialEvolutionSolver2
         from mystic.termination import VTR
         tol = 1e-7
         self.NP = 40
@@ -1950,7 +1950,7 @@ class TestSchwefel(unittest.TestCase):
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver2_COG(self): # Default for this solver
-        from mystic.differential_evolution import DifferentialEvolutionSolver2
+        from mystic.solvers import DifferentialEvolutionSolver2
         from mystic.termination import ChangeOverGeneration as COG
         tol = 1e-7
         self.NP = 40
@@ -1960,7 +1960,7 @@ class TestSchwefel(unittest.TestCase):
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver2_NCOG(self):
-        from mystic.differential_evolution import DifferentialEvolutionSolver2
+        from mystic.solvers import DifferentialEvolutionSolver2
         from mystic.termination import NormalizedChangeOverGeneration as NCOG
         tol = 1e-7
         self.NP = 40
@@ -1970,7 +1970,7 @@ class TestSchwefel(unittest.TestCase):
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver2_CRT(self):
-        from mystic.differential_evolution import DifferentialEvolutionSolver2
+        from mystic.solvers import DifferentialEvolutionSolver2
         from mystic.termination import CandidateRelativeTolerance as CRT
         tol = 1e-7
         self.NP = 40 
@@ -1982,7 +1982,7 @@ class TestSchwefel(unittest.TestCase):
 #-------------------------------------------------------------------------
 
     def test_NelderMeadSimplexSolver_CRT(self): # Default for this solver
-        from mystic.scipy_optimize import NelderMeadSimplexSolver
+        from mystic.solvers import NelderMeadSimplexSolver
         from mystic.termination import CandidateRelativeTolerance as CRT
         tol = 1e-7
         self.solver = NelderMeadSimplexSolver(self.ND)
@@ -1990,7 +1990,7 @@ class TestSchwefel(unittest.TestCase):
         self._run_solver()
 
     def test_NelderMeadSimplexSolver_VTR(self): 
-        from mystic.scipy_optimize import NelderMeadSimplexSolver
+        from mystic.solvers import NelderMeadSimplexSolver
         from mystic.termination import VTR
         tol = 1e-7
         self.solver = NelderMeadSimplexSolver(self.ND)
@@ -1998,7 +1998,7 @@ class TestSchwefel(unittest.TestCase):
         self._run_solver()
 
     def test_NelderMeadSimplexSolver_COG(self): 
-        from mystic.scipy_optimize import NelderMeadSimplexSolver
+        from mystic.solvers import NelderMeadSimplexSolver
         from mystic.termination import ChangeOverGeneration as COG
         tol = 1e-7
         self.solver = NelderMeadSimplexSolver(self.ND)
@@ -2006,7 +2006,7 @@ class TestSchwefel(unittest.TestCase):
         self._run_solver()
 
     def test_NelderMeadSimplexSolver_NCOG(self): 
-        from mystic.scipy_optimize import NelderMeadSimplexSolver
+        from mystic.solvers import NelderMeadSimplexSolver
         from mystic.termination import NormalizedChangeOverGeneration as NCOG
         tol = 1e-7
         self.solver = NelderMeadSimplexSolver(self.ND)
@@ -2016,7 +2016,7 @@ class TestSchwefel(unittest.TestCase):
 #--------------------------------------------------------------------------
 
     def test_PowellDirectionalSolver_NCOG(self): # Default for this solver
-        from mystic.scipy_optimize import PowellDirectionalSolver
+        from mystic.solvers import PowellDirectionalSolver
         from mystic.termination import NormalizedChangeOverGeneration as NCOG
         tol = 1e-7
         self.solver = PowellDirectionalSolver(self.ND)
@@ -2024,7 +2024,7 @@ class TestSchwefel(unittest.TestCase):
         self._run_solver()
 
     def test_PowellDirectionalSolver_COG(self): 
-        from mystic.scipy_optimize import PowellDirectionalSolver
+        from mystic.solvers import PowellDirectionalSolver
         from mystic.termination import ChangeOverGeneration as COG
         tol = 1e-7
         self.solver = PowellDirectionalSolver(self.ND)
@@ -2032,7 +2032,7 @@ class TestSchwefel(unittest.TestCase):
         self._run_solver()
 
     def test_PowellDirectionalSolver_VTR(self): 
-        from mystic.scipy_optimize import PowellDirectionalSolver
+        from mystic.solvers import PowellDirectionalSolver
         from mystic.termination import VTR
         tol = 1e-7
         self.solver = PowellDirectionalSolver(self.ND)
@@ -2040,7 +2040,7 @@ class TestSchwefel(unittest.TestCase):
         self._run_solver()
 
     def test_PowellDirectionalSolver_CRT(self): 
-        from mystic.scipy_optimize import PowellDirectionalSolver
+        from mystic.solvers import PowellDirectionalSolver
         from mystic.termination import CandidateRelativeTolerance as CRT
         tol = 1e-7
         self.solver = PowellDirectionalSolver(self.ND)
@@ -2072,7 +2072,7 @@ class TestEasom(unittest.TestCase):
         self.nplaces = -1 # Precision of answer
 
     def _run_solver(self, iter_limit=False, **kwds):
-        from mystic import Sow
+        from mystic.tools import Sow
         import numpy
         from mystic.tools import random_seed
         random_seed(123)
@@ -2104,7 +2104,7 @@ class TestEasom(unittest.TestCase):
             self.assertAlmostEqual(sol[i], self.expected[i], self.nplaces)
 
     def test_DifferentialEvolutionSolver_VTR(self): 
-        from mystic.differential_evolution import DifferentialEvolutionSolver
+        from mystic.solvers import DifferentialEvolutionSolver
         from mystic.termination import VTR
         tol = 1e-7
         self.NP = 40 
@@ -2114,7 +2114,7 @@ class TestEasom(unittest.TestCase):
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver_COG(self): # Default for this solver
-        from mystic.differential_evolution import DifferentialEvolutionSolver
+        from mystic.solvers import DifferentialEvolutionSolver
         from mystic.termination import ChangeOverGeneration as COG
         tol = 1e-7
         self.NP = 40
@@ -2124,7 +2124,7 @@ class TestEasom(unittest.TestCase):
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver_NCOG(self):
-        from mystic.differential_evolution import DifferentialEvolutionSolver
+        from mystic.solvers import DifferentialEvolutionSolver
         from mystic.termination import NormalizedChangeOverGeneration as NCOG
         tol = 1e-7
         self.NP = 40 
@@ -2134,7 +2134,7 @@ class TestEasom(unittest.TestCase):
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver_CRT(self):
-        from mystic.differential_evolution import DifferentialEvolutionSolver
+        from mystic.solvers import DifferentialEvolutionSolver
         from mystic.termination import CandidateRelativeTolerance as CRT
         tol = 1e-7
         self.NP = 40 
@@ -2146,7 +2146,7 @@ class TestEasom(unittest.TestCase):
 #--------------------------------------------------------------------------
 
     def test_DifferentialEvolutionSolver2_VTR(self):
-        from mystic.differential_evolution import DifferentialEvolutionSolver2
+        from mystic.solvers import DifferentialEvolutionSolver2
         from mystic.termination import VTR
         tol = 1e-7
         self.NP = 40
@@ -2156,7 +2156,7 @@ class TestEasom(unittest.TestCase):
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver2_COG(self): # Default for this solver
-        from mystic.differential_evolution import DifferentialEvolutionSolver2
+        from mystic.solvers import DifferentialEvolutionSolver2
         from mystic.termination import ChangeOverGeneration as COG
         tol = 1e-7
         self.NP = 40
@@ -2166,7 +2166,7 @@ class TestEasom(unittest.TestCase):
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver2_NCOG(self):
-        from mystic.differential_evolution import DifferentialEvolutionSolver2
+        from mystic.solvers import DifferentialEvolutionSolver2
         from mystic.termination import NormalizedChangeOverGeneration as NCOG
         tol = 1e-7
         self.NP = 40
@@ -2176,7 +2176,7 @@ class TestEasom(unittest.TestCase):
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver2_CRT(self):
-        from mystic.differential_evolution import DifferentialEvolutionSolver2
+        from mystic.solvers import DifferentialEvolutionSolver2
         from mystic.termination import CandidateRelativeTolerance as CRT
         tol = 1e-7
         self.NP = 40 
@@ -2188,7 +2188,7 @@ class TestEasom(unittest.TestCase):
 #-------------------------------------------------------------------------
 
     def test_NelderMeadSimplexSolver_CRT(self): # Default for this solver
-        from mystic.scipy_optimize import NelderMeadSimplexSolver
+        from mystic.solvers import NelderMeadSimplexSolver
         from mystic.termination import CandidateRelativeTolerance as CRT
         tol = 1e-7
         self.solver = NelderMeadSimplexSolver(self.ND)
@@ -2196,7 +2196,7 @@ class TestEasom(unittest.TestCase):
         self._run_solver()
 
     def test_NelderMeadSimplexSolver_VTR(self): 
-        from mystic.scipy_optimize import NelderMeadSimplexSolver
+        from mystic.solvers import NelderMeadSimplexSolver
         from mystic.termination import VTR
         tol = 1e-7
         self.solver = NelderMeadSimplexSolver(self.ND)
@@ -2204,7 +2204,7 @@ class TestEasom(unittest.TestCase):
         self._run_solver()
 
     def test_NelderMeadSimplexSolver_COG(self): 
-        from mystic.scipy_optimize import NelderMeadSimplexSolver
+        from mystic.solvers import NelderMeadSimplexSolver
         from mystic.termination import ChangeOverGeneration as COG
         tol = 1e-7
         self.solver = NelderMeadSimplexSolver(self.ND)
@@ -2212,7 +2212,7 @@ class TestEasom(unittest.TestCase):
         self._run_solver()
 
     def test_NelderMeadSimplexSolver_NCOG(self): 
-        from mystic.scipy_optimize import NelderMeadSimplexSolver
+        from mystic.solvers import NelderMeadSimplexSolver
         from mystic.termination import NormalizedChangeOverGeneration as NCOG
         tol = 1e-7
         self.solver = NelderMeadSimplexSolver(self.ND)
@@ -2222,7 +2222,7 @@ class TestEasom(unittest.TestCase):
 #--------------------------------------------------------------------------
 
     def test_PowellDirectionalSolver_NCOG(self): # Default for this solver
-        from mystic.scipy_optimize import PowellDirectionalSolver
+        from mystic.solvers import PowellDirectionalSolver
         from mystic.termination import NormalizedChangeOverGeneration as NCOG
         tol = 1e-7
         self.solver = PowellDirectionalSolver(self.ND)
@@ -2230,7 +2230,7 @@ class TestEasom(unittest.TestCase):
         self._run_solver()
 
     def test_PowellDirectionalSolver_COG(self): 
-        from mystic.scipy_optimize import PowellDirectionalSolver
+        from mystic.solvers import PowellDirectionalSolver
         from mystic.termination import ChangeOverGeneration as COG
         tol = 1e-7
         self.solver = PowellDirectionalSolver(self.ND)
@@ -2238,7 +2238,7 @@ class TestEasom(unittest.TestCase):
         self._run_solver()
 
     def test_PowellDirectionalSolver_VTR(self): 
-        from mystic.scipy_optimize import PowellDirectionalSolver
+        from mystic.solvers import PowellDirectionalSolver
         from mystic.termination import VTR
         tol = 1e-7
         self.solver = PowellDirectionalSolver(self.ND)
@@ -2246,7 +2246,7 @@ class TestEasom(unittest.TestCase):
         self._run_solver()
 
     def test_PowellDirectionalSolver_CRT(self): 
-        from mystic.scipy_optimize import PowellDirectionalSolver
+        from mystic.solvers import PowellDirectionalSolver
         from mystic.termination import CandidateRelativeTolerance as CRT
         tol = 1e-7
         self.solver = PowellDirectionalSolver(self.ND)
@@ -2283,7 +2283,7 @@ class TestRotatedEllipsoid(unittest.TestCase):
         self.nplaces = -1 # Precision of answer
 
     def _run_solver(self, iter_limit=False, **kwds):
-        from mystic import Sow
+        from mystic.tools import Sow
         import numpy
         from mystic.tools import random_seed
         random_seed(123)
@@ -2315,7 +2315,7 @@ class TestRotatedEllipsoid(unittest.TestCase):
             self.assertAlmostEqual(sol[i], self.expected[i], self.nplaces)
 
     def test_DifferentialEvolutionSolver_VTR(self):
-        from mystic.differential_evolution import DifferentialEvolutionSolver
+        from mystic.solvers import DifferentialEvolutionSolver
         from mystic.termination import VTR
         tol = 1e-7
         self.NP = 40 
@@ -2325,7 +2325,7 @@ class TestRotatedEllipsoid(unittest.TestCase):
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver_COG(self): # Default for this solver
-        from mystic.differential_evolution import DifferentialEvolutionSolver
+        from mystic.solvers import DifferentialEvolutionSolver
         from mystic.termination import ChangeOverGeneration as COG
         tol = 1e-7
         self.NP = 40
@@ -2335,7 +2335,7 @@ class TestRotatedEllipsoid(unittest.TestCase):
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver_NCOG(self):
-        from mystic.differential_evolution import DifferentialEvolutionSolver
+        from mystic.solvers import DifferentialEvolutionSolver
         from mystic.termination import NormalizedChangeOverGeneration as NCOG
         tol = 1e-7
         self.NP = 40 
@@ -2345,7 +2345,7 @@ class TestRotatedEllipsoid(unittest.TestCase):
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver_CRT(self):
-        from mystic.differential_evolution import DifferentialEvolutionSolver
+        from mystic.solvers import DifferentialEvolutionSolver
         from mystic.termination import CandidateRelativeTolerance as CRT
         tol = 1e-7
         self.NP = 40 
@@ -2357,7 +2357,7 @@ class TestRotatedEllipsoid(unittest.TestCase):
 #--------------------------------------------------------------------------
 
     def test_DifferentialEvolutionSolver2_VTR(self):
-        from mystic.differential_evolution import DifferentialEvolutionSolver2
+        from mystic.solvers import DifferentialEvolutionSolver2
         from mystic.termination import VTR
         tol = 1e-7
         self.NP = 40
@@ -2367,7 +2367,7 @@ class TestRotatedEllipsoid(unittest.TestCase):
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver2_COG(self): # Default for this solver
-        from mystic.differential_evolution import DifferentialEvolutionSolver2
+        from mystic.solvers import DifferentialEvolutionSolver2
         from mystic.termination import ChangeOverGeneration as COG
         tol = 1e-7
         self.NP = 40
@@ -2377,7 +2377,7 @@ class TestRotatedEllipsoid(unittest.TestCase):
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver2_NCOG(self):
-        from mystic.differential_evolution import DifferentialEvolutionSolver2
+        from mystic.solvers import DifferentialEvolutionSolver2
         from mystic.termination import NormalizedChangeOverGeneration as NCOG
         tol = 1e-7
         self.NP = 40
@@ -2387,7 +2387,7 @@ class TestRotatedEllipsoid(unittest.TestCase):
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver2_CRT(self):
-        from mystic.differential_evolution import DifferentialEvolutionSolver2
+        from mystic.solvers import DifferentialEvolutionSolver2
         from mystic.termination import CandidateRelativeTolerance as CRT
         tol = 1e-7
         self.NP = 40 
@@ -2399,7 +2399,7 @@ class TestRotatedEllipsoid(unittest.TestCase):
 #-------------------------------------------------------------------------
 
     def test_NelderMeadSimplexSolver_CRT(self): # Default for this solver
-        from mystic.scipy_optimize import NelderMeadSimplexSolver
+        from mystic.solvers import NelderMeadSimplexSolver
         from mystic.termination import CandidateRelativeTolerance as CRT
         tol = 1e-7
         self.solver = NelderMeadSimplexSolver(self.ND)
@@ -2407,7 +2407,7 @@ class TestRotatedEllipsoid(unittest.TestCase):
         self._run_solver()
 
     def test_NelderMeadSimplexSolver_VTR(self): 
-        from mystic.scipy_optimize import NelderMeadSimplexSolver
+        from mystic.solvers import NelderMeadSimplexSolver
         from mystic.termination import VTR
         tol = 1e-7
         self.solver = NelderMeadSimplexSolver(self.ND)
@@ -2415,7 +2415,7 @@ class TestRotatedEllipsoid(unittest.TestCase):
         self._run_solver()
 
     def test_NelderMeadSimplexSolver_COG(self): 
-        from mystic.scipy_optimize import NelderMeadSimplexSolver
+        from mystic.solvers import NelderMeadSimplexSolver
         from mystic.termination import ChangeOverGeneration as COG
         tol = 1e-7
         self.solver = NelderMeadSimplexSolver(self.ND)
@@ -2423,7 +2423,7 @@ class TestRotatedEllipsoid(unittest.TestCase):
         self._run_solver()
 
     def test_NelderMeadSimplexSolver_NCOG(self): 
-        from mystic.scipy_optimize import NelderMeadSimplexSolver
+        from mystic.solvers import NelderMeadSimplexSolver
         from mystic.termination import NormalizedChangeOverGeneration as NCOG
         tol = 1e-7
         self.solver = NelderMeadSimplexSolver(self.ND)
@@ -2433,7 +2433,7 @@ class TestRotatedEllipsoid(unittest.TestCase):
 #--------------------------------------------------------------------------
 
     def test_PowellDirectionalSolver_NCOG(self): # Default for this solver
-        from mystic.scipy_optimize import PowellDirectionalSolver
+        from mystic.solvers import PowellDirectionalSolver
         from mystic.termination import NormalizedChangeOverGeneration as NCOG
         tol = 1e-7
         self.solver = PowellDirectionalSolver(self.ND)
@@ -2441,7 +2441,7 @@ class TestRotatedEllipsoid(unittest.TestCase):
         self._run_solver()
 
     def test_PowellDirectionalSolver_COG(self): 
-        from mystic.scipy_optimize import PowellDirectionalSolver
+        from mystic.solvers import PowellDirectionalSolver
         from mystic.termination import ChangeOverGeneration as COG
         tol = 1e-7
         self.solver = PowellDirectionalSolver(self.ND)
@@ -2449,7 +2449,7 @@ class TestRotatedEllipsoid(unittest.TestCase):
         self._run_solver()
 
     def test_PowellDirectionalSolver_VTR(self): 
-        from mystic.scipy_optimize import PowellDirectionalSolver
+        from mystic.solvers import PowellDirectionalSolver
         from mystic.termination import VTR
         tol = 1e-7
         self.solver = PowellDirectionalSolver(self.ND)
@@ -2457,7 +2457,7 @@ class TestRotatedEllipsoid(unittest.TestCase):
         self._run_solver()
 
     def test_PowellDirectionalSolver_CRT(self): 
-        from mystic.scipy_optimize import PowellDirectionalSolver
+        from mystic.solvers import PowellDirectionalSolver
         from mystic.termination import CandidateRelativeTolerance as CRT
         tol = 1e-7
         self.solver = PowellDirectionalSolver(self.ND)
@@ -2489,7 +2489,7 @@ class TestAckley(unittest.TestCase):
         self.nplaces = 0 # Precision of answer
 
     def _run_solver(self, iter_limit=False, **kwds):
-        from mystic import Sow
+        from mystic.tools import Sow
         import numpy
         from mystic.tools import random_seed
         random_seed(123)
@@ -2521,7 +2521,7 @@ class TestAckley(unittest.TestCase):
             self.assertAlmostEqual(sol[i], self.expected[i], self.nplaces)
 
     def test_DifferentialEvolutionSolver_VTR(self):
-        from mystic.differential_evolution import DifferentialEvolutionSolver
+        from mystic.solvers import DifferentialEvolutionSolver
         from mystic.termination import VTR
         tol = 1e-7
         self.NP = 40 
@@ -2531,7 +2531,7 @@ class TestAckley(unittest.TestCase):
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver_COG(self): # Default for this solver
-        from mystic.differential_evolution import DifferentialEvolutionSolver
+        from mystic.solvers import DifferentialEvolutionSolver
         from mystic.termination import ChangeOverGeneration as COG
         tol = 1e-7
         self.NP = 40
@@ -2541,7 +2541,7 @@ class TestAckley(unittest.TestCase):
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver_NCOG(self):
-        from mystic.differential_evolution import DifferentialEvolutionSolver
+        from mystic.solvers import DifferentialEvolutionSolver
         from mystic.termination import NormalizedChangeOverGeneration as NCOG
         tol = 1e-7
         self.NP = 40 
@@ -2551,7 +2551,7 @@ class TestAckley(unittest.TestCase):
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver_CRT(self):
-        from mystic.differential_evolution import DifferentialEvolutionSolver
+        from mystic.solvers import DifferentialEvolutionSolver
         from mystic.termination import CandidateRelativeTolerance as CRT
         tol = 1e-7
         self.NP = 40 
@@ -2563,7 +2563,7 @@ class TestAckley(unittest.TestCase):
 #--------------------------------------------------------------------------
 
     def test_DifferentialEvolutionSolver2_VTR(self):
-        from mystic.differential_evolution import DifferentialEvolutionSolver2
+        from mystic.solvers import DifferentialEvolutionSolver2
         from mystic.termination import VTR
         tol = 1e-7
         self.NP = 40
@@ -2573,7 +2573,7 @@ class TestAckley(unittest.TestCase):
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver2_COG(self): # Default for this solver
-        from mystic.differential_evolution import DifferentialEvolutionSolver2
+        from mystic.solvers import DifferentialEvolutionSolver2
         from mystic.termination import ChangeOverGeneration as COG
         tol = 1e-7
         self.NP = 40
@@ -2583,7 +2583,7 @@ class TestAckley(unittest.TestCase):
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver2_NCOG(self):
-        from mystic.differential_evolution import DifferentialEvolutionSolver2
+        from mystic.solvers import DifferentialEvolutionSolver2
         from mystic.termination import NormalizedChangeOverGeneration as NCOG
         tol = 1e-7
         self.NP = 40
@@ -2593,7 +2593,7 @@ class TestAckley(unittest.TestCase):
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver2_CRT(self):
-        from mystic.differential_evolution import DifferentialEvolutionSolver2
+        from mystic.solvers import DifferentialEvolutionSolver2
         from mystic.termination import CandidateRelativeTolerance as CRT
         tol = 1e-7
         self.NP = 40 
@@ -2605,7 +2605,7 @@ class TestAckley(unittest.TestCase):
 #-------------------------------------------------------------------------
 
     def test_NelderMeadSimplexSolver_CRT(self): # Default for this solver
-        from mystic.scipy_optimize import NelderMeadSimplexSolver
+        from mystic.solvers import NelderMeadSimplexSolver
         from mystic.termination import CandidateRelativeTolerance as CRT
         tol = 1e-7
         self.solver = NelderMeadSimplexSolver(self.ND)
@@ -2613,7 +2613,7 @@ class TestAckley(unittest.TestCase):
         self._run_solver()
 
     def test_NelderMeadSimplexSolver_VTR(self): 
-        from mystic.scipy_optimize import NelderMeadSimplexSolver
+        from mystic.solvers import NelderMeadSimplexSolver
         from mystic.termination import VTR
         tol = 1e-7
         self.solver = NelderMeadSimplexSolver(self.ND)
@@ -2621,7 +2621,7 @@ class TestAckley(unittest.TestCase):
         self._run_solver()
 
     def test_NelderMeadSimplexSolver_COG(self): 
-        from mystic.scipy_optimize import NelderMeadSimplexSolver
+        from mystic.solvers import NelderMeadSimplexSolver
         from mystic.termination import ChangeOverGeneration as COG
         tol = 1e-7
         self.solver = NelderMeadSimplexSolver(self.ND)
@@ -2629,7 +2629,7 @@ class TestAckley(unittest.TestCase):
         self._run_solver()
 
     def test_NelderMeadSimplexSolver_NCOG(self): 
-        from mystic.scipy_optimize import NelderMeadSimplexSolver
+        from mystic.solvers import NelderMeadSimplexSolver
         from mystic.termination import NormalizedChangeOverGeneration as NCOG
         tol = 1e-7
         self.solver = NelderMeadSimplexSolver(self.ND)
@@ -2639,7 +2639,7 @@ class TestAckley(unittest.TestCase):
 #--------------------------------------------------------------------------
 
     def test_PowellDirectionalSolver_NCOG(self): # Default for this solver
-        from mystic.scipy_optimize import PowellDirectionalSolver
+        from mystic.solvers import PowellDirectionalSolver
         from mystic.termination import NormalizedChangeOverGeneration as NCOG
         tol = 1e-7
         self.solver = PowellDirectionalSolver(self.ND)
@@ -2647,7 +2647,7 @@ class TestAckley(unittest.TestCase):
         self._run_solver()
 
     def test_PowellDirectionalSolver_COG(self): 
-        from mystic.scipy_optimize import PowellDirectionalSolver
+        from mystic.solvers import PowellDirectionalSolver
         from mystic.termination import ChangeOverGeneration as COG
         tol = 1e-7
         self.solver = PowellDirectionalSolver(self.ND)
@@ -2655,7 +2655,7 @@ class TestAckley(unittest.TestCase):
         self._run_solver()
 
     def test_PowellDirectionalSolver_VTR(self): 
-        from mystic.scipy_optimize import PowellDirectionalSolver
+        from mystic.solvers import PowellDirectionalSolver
         from mystic.termination import VTR
         tol = 1e-7
         self.solver = PowellDirectionalSolver(self.ND)
@@ -2663,7 +2663,7 @@ class TestAckley(unittest.TestCase):
         self._run_solver()
 
     def test_PowellDirectionalSolver_CRT(self): 
-        from mystic.scipy_optimize import PowellDirectionalSolver
+        from mystic.solvers import PowellDirectionalSolver
         from mystic.termination import CandidateRelativeTolerance as CRT
         tol = 1e-7
         self.solver = PowellDirectionalSolver(self.ND)
@@ -2694,7 +2694,7 @@ one global minimum."""
         self.nplaces = 0 # Precision of answer
 
     def _run_solver(self, iter_limit=False, **kwds):
-        from mystic import Sow
+        from mystic.tools import Sow
         import numpy
         from mystic.tools import random_seed
         random_seed(123)
@@ -2726,7 +2726,7 @@ one global minimum."""
             self.assertAlmostEqual(sol[i], self.expected[i], self.nplaces)
 
     def test_DifferentialEvolutionSolver_VTR(self):
-        from mystic.differential_evolution import DifferentialEvolutionSolver
+        from mystic.solvers import DifferentialEvolutionSolver
         from mystic.termination import VTR
         tol = 1e-7
         self.NP = 40 
@@ -2736,7 +2736,7 @@ one global minimum."""
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver_COG(self): # Default for this solver
-        from mystic.differential_evolution import DifferentialEvolutionSolver
+        from mystic.solvers import DifferentialEvolutionSolver
         from mystic.termination import ChangeOverGeneration as COG
         tol = 1e-7
         self.NP = 40
@@ -2746,7 +2746,7 @@ one global minimum."""
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver_NCOG(self):
-        from mystic.differential_evolution import DifferentialEvolutionSolver
+        from mystic.solvers import DifferentialEvolutionSolver
         from mystic.termination import NormalizedChangeOverGeneration as NCOG
         tol = 1e-7
         self.NP = 40 
@@ -2756,7 +2756,7 @@ one global minimum."""
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver_CRT(self):
-        from mystic.differential_evolution import DifferentialEvolutionSolver
+        from mystic.solvers import DifferentialEvolutionSolver
         from mystic.termination import CandidateRelativeTolerance as CRT
         tol = 1e-7
         self.NP = 40 
@@ -2768,7 +2768,7 @@ one global minimum."""
 #--------------------------------------------------------------------------
 
     def test_DifferentialEvolutionSolver2_VTR(self):
-        from mystic.differential_evolution import DifferentialEvolutionSolver2
+        from mystic.solvers import DifferentialEvolutionSolver2
         from mystic.termination import VTR
         tol = 1e-7
         self.NP = 40
@@ -2778,7 +2778,7 @@ one global minimum."""
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver2_COG(self): # Default for this solver
-        from mystic.differential_evolution import DifferentialEvolutionSolver2
+        from mystic.solvers import DifferentialEvolutionSolver2
         from mystic.termination import ChangeOverGeneration as COG
         tol = 1e-7
         self.NP = 40
@@ -2788,7 +2788,7 @@ one global minimum."""
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver2_NCOG(self):
-        from mystic.differential_evolution import DifferentialEvolutionSolver2
+        from mystic.solvers import DifferentialEvolutionSolver2
         from mystic.termination import NormalizedChangeOverGeneration as NCOG
         tol = 1e-7
         self.NP = 40
@@ -2798,7 +2798,7 @@ one global minimum."""
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver2_CRT(self):
-        from mystic.differential_evolution import DifferentialEvolutionSolver2
+        from mystic.solvers import DifferentialEvolutionSolver2
         from mystic.termination import CandidateRelativeTolerance as CRT
         tol = 1e-7
         self.NP = 40 
@@ -2810,7 +2810,7 @@ one global minimum."""
 #-------------------------------------------------------------------------
 
     def test_NelderMeadSimplexSolver_CRT(self): # Default for this solver
-        from mystic.scipy_optimize import NelderMeadSimplexSolver
+        from mystic.solvers import NelderMeadSimplexSolver
         from mystic.termination import CandidateRelativeTolerance as CRT
         tol = 1e-7
         self.solver = NelderMeadSimplexSolver(self.ND)
@@ -2818,7 +2818,7 @@ one global minimum."""
         self._run_solver()
 
     def test_NelderMeadSimplexSolver_VTR(self): 
-        from mystic.scipy_optimize import NelderMeadSimplexSolver
+        from mystic.solvers import NelderMeadSimplexSolver
         from mystic.termination import VTR
         tol = 1e-7
         self.solver = NelderMeadSimplexSolver(self.ND)
@@ -2826,7 +2826,7 @@ one global minimum."""
         self._run_solver()
 
     def test_NelderMeadSimplexSolver_COG(self): 
-        from mystic.scipy_optimize import NelderMeadSimplexSolver
+        from mystic.solvers import NelderMeadSimplexSolver
         from mystic.termination import ChangeOverGeneration as COG
         tol = 1e-7
         self.solver = NelderMeadSimplexSolver(self.ND)
@@ -2834,7 +2834,7 @@ one global minimum."""
         self._run_solver()
 
     def test_NelderMeadSimplexSolver_NCOG(self): 
-        from mystic.scipy_optimize import NelderMeadSimplexSolver
+        from mystic.solvers import NelderMeadSimplexSolver
         from mystic.termination import NormalizedChangeOverGeneration as NCOG
         tol = 1e-7
         self.solver = NelderMeadSimplexSolver(self.ND)
@@ -2844,7 +2844,7 @@ one global minimum."""
 #--------------------------------------------------------------------------
 
     def test_PowellDirectionalSolver_NCOG(self): # Default for this solver
-        from mystic.scipy_optimize import PowellDirectionalSolver
+        from mystic.solvers import PowellDirectionalSolver
         from mystic.termination import NormalizedChangeOverGeneration as NCOG
         tol = 1e-7
         self.solver = PowellDirectionalSolver(self.ND)
@@ -2852,7 +2852,7 @@ one global minimum."""
         self._run_solver()
 
     def test_PowellDirectionalSolver_COG(self): 
-        from mystic.scipy_optimize import PowellDirectionalSolver
+        from mystic.solvers import PowellDirectionalSolver
         from mystic.termination import ChangeOverGeneration as COG
         tol = 1e-7
         self.solver = PowellDirectionalSolver(self.ND)
@@ -2860,7 +2860,7 @@ one global minimum."""
         self._run_solver()
 
     def test_PowellDirectionalSolver_VTR(self): 
-        from mystic.scipy_optimize import PowellDirectionalSolver
+        from mystic.solvers import PowellDirectionalSolver
         from mystic.termination import VTR
         tol = 1e-7
         self.solver = PowellDirectionalSolver(self.ND)
@@ -2868,7 +2868,7 @@ one global minimum."""
         self._run_solver()
 
     def test_PowellDirectionalSolver_CRT(self): 
-        from mystic.scipy_optimize import PowellDirectionalSolver
+        from mystic.solvers import PowellDirectionalSolver
         from mystic.termination import CandidateRelativeTolerance as CRT
         tol = 1e-7
         self.solver = PowellDirectionalSolver(self.ND)
@@ -2900,7 +2900,7 @@ class TestGoldsteinPrice(unittest.TestCase):
         self.nplaces = 0 # Precision of answer
 
     def _run_solver(self, iter_limit=False, **kwds):
-        from mystic import Sow
+        from mystic.tools import Sow
         import numpy
         from mystic.tools import random_seed
         random_seed(123)
@@ -2933,7 +2933,7 @@ class TestGoldsteinPrice(unittest.TestCase):
 
 
     def test_DifferentialEvolutionSolver_VTR(self):
-        from mystic.differential_evolution import DifferentialEvolutionSolver
+        from mystic.solvers import DifferentialEvolutionSolver
         from mystic.termination import VTR
         tol = 1e-7
         self.NP = 40 
@@ -2943,7 +2943,7 @@ class TestGoldsteinPrice(unittest.TestCase):
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver_COG(self): # Default for this solver
-        from mystic.differential_evolution import DifferentialEvolutionSolver
+        from mystic.solvers import DifferentialEvolutionSolver
         from mystic.termination import ChangeOverGeneration as COG
         tol = 1e-7
         self.NP = 40
@@ -2953,7 +2953,7 @@ class TestGoldsteinPrice(unittest.TestCase):
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver_NCOG(self):
-        from mystic.differential_evolution import DifferentialEvolutionSolver
+        from mystic.solvers import DifferentialEvolutionSolver
         from mystic.termination import NormalizedChangeOverGeneration as NCOG
         tol = 1e-7
         self.NP = 40 
@@ -2963,7 +2963,7 @@ class TestGoldsteinPrice(unittest.TestCase):
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver_CRT(self):
-        from mystic.differential_evolution import DifferentialEvolutionSolver
+        from mystic.solvers import DifferentialEvolutionSolver
         from mystic.termination import CandidateRelativeTolerance as CRT
         tol = 1e-7
         self.NP = 40 
@@ -2975,7 +2975,7 @@ class TestGoldsteinPrice(unittest.TestCase):
 #--------------------------------------------------------------------------
 
     def test_DifferentialEvolutionSolver2_VTR(self):
-        from mystic.differential_evolution import DifferentialEvolutionSolver2
+        from mystic.solvers import DifferentialEvolutionSolver2
         from mystic.termination import VTR
         tol = 1e-7
         self.NP = 40
@@ -2985,7 +2985,7 @@ class TestGoldsteinPrice(unittest.TestCase):
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver2_COG(self): # Default for this solver
-        from mystic.differential_evolution import DifferentialEvolutionSolver2
+        from mystic.solvers import DifferentialEvolutionSolver2
         from mystic.termination import ChangeOverGeneration as COG
         tol = 1e-7
         self.NP = 40
@@ -2995,7 +2995,7 @@ class TestGoldsteinPrice(unittest.TestCase):
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver2_NCOG(self):
-        from mystic.differential_evolution import DifferentialEvolutionSolver2
+        from mystic.solvers import DifferentialEvolutionSolver2
         from mystic.termination import NormalizedChangeOverGeneration as NCOG
         tol = 1e-7
         self.NP = 40
@@ -3005,7 +3005,7 @@ class TestGoldsteinPrice(unittest.TestCase):
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver2_CRT(self):
-        from mystic.differential_evolution import DifferentialEvolutionSolver2
+        from mystic.solvers import DifferentialEvolutionSolver2
         from mystic.termination import CandidateRelativeTolerance as CRT
         tol = 1e-7
         self.NP = 40 
@@ -3017,7 +3017,7 @@ class TestGoldsteinPrice(unittest.TestCase):
 #-------------------------------------------------------------------------
 
     def test_NelderMeadSimplexSolver_CRT(self): # Default for this solver
-        from mystic.scipy_optimize import NelderMeadSimplexSolver
+        from mystic.solvers import NelderMeadSimplexSolver
         from mystic.termination import CandidateRelativeTolerance as CRT
         tol = 1e-7
         self.solver = NelderMeadSimplexSolver(self.ND)
@@ -3025,7 +3025,7 @@ class TestGoldsteinPrice(unittest.TestCase):
         self._run_solver()
 
     def test_NelderMeadSimplexSolver_VTR(self): 
-        from mystic.scipy_optimize import NelderMeadSimplexSolver
+        from mystic.solvers import NelderMeadSimplexSolver
         from mystic.termination import VTR
         tol = 1e-7
         self.solver = NelderMeadSimplexSolver(self.ND)
@@ -3033,7 +3033,7 @@ class TestGoldsteinPrice(unittest.TestCase):
         self._run_solver()
 
     def test_NelderMeadSimplexSolver_COG(self): 
-        from mystic.scipy_optimize import NelderMeadSimplexSolver
+        from mystic.solvers import NelderMeadSimplexSolver
         from mystic.termination import ChangeOverGeneration as COG
         tol = 1e-7
         self.solver = NelderMeadSimplexSolver(self.ND)
@@ -3041,7 +3041,7 @@ class TestGoldsteinPrice(unittest.TestCase):
         self._run_solver()
 
     def test_NelderMeadSimplexSolver_NCOG(self): 
-        from mystic.scipy_optimize import NelderMeadSimplexSolver
+        from mystic.solvers import NelderMeadSimplexSolver
         from mystic.termination import NormalizedChangeOverGeneration as NCOG
         tol = 1e-7
         self.solver = NelderMeadSimplexSolver(self.ND)
@@ -3051,7 +3051,7 @@ class TestGoldsteinPrice(unittest.TestCase):
 #--------------------------------------------------------------------------
 
     def test_PowellDirectionalSolver_NCOG(self): # Default for this solver
-        from mystic.scipy_optimize import PowellDirectionalSolver
+        from mystic.solvers import PowellDirectionalSolver
         from mystic.termination import NormalizedChangeOverGeneration as NCOG
         tol = 1e-7
         self.solver = PowellDirectionalSolver(self.ND)
@@ -3059,7 +3059,7 @@ class TestGoldsteinPrice(unittest.TestCase):
         self._run_solver()
 
     def test_PowellDirectionalSolver_COG(self): 
-        from mystic.scipy_optimize import PowellDirectionalSolver
+        from mystic.solvers import PowellDirectionalSolver
         from mystic.termination import ChangeOverGeneration as COG
         tol = 1e-7
         self.solver = PowellDirectionalSolver(self.ND)
@@ -3067,7 +3067,7 @@ class TestGoldsteinPrice(unittest.TestCase):
         self._run_solver()
 
     def test_PowellDirectionalSolver_VTR(self): 
-        from mystic.scipy_optimize import PowellDirectionalSolver
+        from mystic.solvers import PowellDirectionalSolver
         from mystic.termination import VTR
         tol = 1e-7
         self.solver = PowellDirectionalSolver(self.ND)
@@ -3075,7 +3075,7 @@ class TestGoldsteinPrice(unittest.TestCase):
         self._run_solver()
 
     def test_PowellDirectionalSolver_CRT(self): 
-        from mystic.scipy_optimize import PowellDirectionalSolver
+        from mystic.solvers import PowellDirectionalSolver
         from mystic.termination import CandidateRelativeTolerance as CRT
         tol = 1e-7
         self.solver = PowellDirectionalSolver(self.ND)
@@ -3110,7 +3110,7 @@ http://reference.wolfram.com/mathematica/tutorial/ConstrainedOptimizationGlobalN
         self.nplaces = 0 # Precision of answer
 
     def _run_solver(self, iter_limit=False, **kwds):
-        from mystic import Sow
+        from mystic.tools import Sow
         import numpy
         from mystic.tools import random_seed
         random_seed(123)
@@ -3143,7 +3143,7 @@ http://reference.wolfram.com/mathematica/tutorial/ConstrainedOptimizationGlobalN
             self.assertAlmostEqual(sol[i], self.expected[i], self.nplaces)
 
     def test_DifferentialEvolutionSolver_VTR(self):
-        from mystic.differential_evolution import DifferentialEvolutionSolver
+        from mystic.solvers import DifferentialEvolutionSolver
         from mystic.termination import VTR
         tol = 1e-7
         self.NP = 40 
@@ -3153,7 +3153,7 @@ http://reference.wolfram.com/mathematica/tutorial/ConstrainedOptimizationGlobalN
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver_COG(self): # Default for this solver
-        from mystic.differential_evolution import DifferentialEvolutionSolver
+        from mystic.solvers import DifferentialEvolutionSolver
         from mystic.termination import ChangeOverGeneration as COG
         tol = 1e-7
         self.NP = 40
@@ -3163,7 +3163,7 @@ http://reference.wolfram.com/mathematica/tutorial/ConstrainedOptimizationGlobalN
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver_NCOG(self):
-        from mystic.differential_evolution import DifferentialEvolutionSolver
+        from mystic.solvers import DifferentialEvolutionSolver
         from mystic.termination import NormalizedChangeOverGeneration as NCOG
         tol = 1e-7
         self.NP = 40 
@@ -3173,7 +3173,7 @@ http://reference.wolfram.com/mathematica/tutorial/ConstrainedOptimizationGlobalN
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver_CRT(self):
-        from mystic.differential_evolution import DifferentialEvolutionSolver
+        from mystic.solvers import DifferentialEvolutionSolver
         from mystic.termination import CandidateRelativeTolerance as CRT
         tol = 1e-7
         self.NP = 40 
@@ -3185,7 +3185,7 @@ http://reference.wolfram.com/mathematica/tutorial/ConstrainedOptimizationGlobalN
 #--------------------------------------------------------------------------
 
     def test_DifferentialEvolutionSolver2_VTR(self):
-        from mystic.differential_evolution import DifferentialEvolutionSolver2
+        from mystic.solvers import DifferentialEvolutionSolver2
         from mystic.termination import VTR
         tol = 1e-7
         self.NP = 40
@@ -3195,7 +3195,7 @@ http://reference.wolfram.com/mathematica/tutorial/ConstrainedOptimizationGlobalN
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver2_COG(self): # Default for this solver
-        from mystic.differential_evolution import DifferentialEvolutionSolver2
+        from mystic.solvers import DifferentialEvolutionSolver2
         from mystic.termination import ChangeOverGeneration as COG
         tol = 1e-7
         self.NP = 40
@@ -3205,7 +3205,7 @@ http://reference.wolfram.com/mathematica/tutorial/ConstrainedOptimizationGlobalN
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver2_NCOG(self):
-        from mystic.differential_evolution import DifferentialEvolutionSolver2
+        from mystic.solvers import DifferentialEvolutionSolver2
         from mystic.termination import NormalizedChangeOverGeneration as NCOG
         tol = 1e-7
         self.NP = 40
@@ -3215,7 +3215,7 @@ http://reference.wolfram.com/mathematica/tutorial/ConstrainedOptimizationGlobalN
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver2_CRT(self):
-        from mystic.differential_evolution import DifferentialEvolutionSolver2
+        from mystic.solvers import DifferentialEvolutionSolver2
         from mystic.termination import CandidateRelativeTolerance as CRT
         tol = 1e-7
         self.NP = 40 
@@ -3227,7 +3227,7 @@ http://reference.wolfram.com/mathematica/tutorial/ConstrainedOptimizationGlobalN
 #-------------------------------------------------------------------------
 
     def test_NelderMeadSimplexSolver_CRT(self): # Default for this solver
-        from mystic.scipy_optimize import NelderMeadSimplexSolver
+        from mystic.solvers import NelderMeadSimplexSolver
         from mystic.termination import CandidateRelativeTolerance as CRT
         tol = 1e-7
         self.solver = NelderMeadSimplexSolver(self.ND)
@@ -3235,7 +3235,7 @@ http://reference.wolfram.com/mathematica/tutorial/ConstrainedOptimizationGlobalN
         self._run_solver()
 
     def test_NelderMeadSimplexSolver_VTR(self): 
-        from mystic.scipy_optimize import NelderMeadSimplexSolver
+        from mystic.solvers import NelderMeadSimplexSolver
         from mystic.termination import VTR
         tol = 1e-7
         self.solver = NelderMeadSimplexSolver(self.ND)
@@ -3243,7 +3243,7 @@ http://reference.wolfram.com/mathematica/tutorial/ConstrainedOptimizationGlobalN
         self._run_solver()
 
     def test_NelderMeadSimplexSolver_COG(self): 
-        from mystic.scipy_optimize import NelderMeadSimplexSolver
+        from mystic.solvers import NelderMeadSimplexSolver
         from mystic.termination import ChangeOverGeneration as COG
         tol = 1e-7
         self.solver = NelderMeadSimplexSolver(self.ND)
@@ -3251,7 +3251,7 @@ http://reference.wolfram.com/mathematica/tutorial/ConstrainedOptimizationGlobalN
         self._run_solver()
 
     def test_NelderMeadSimplexSolver_NCOG(self): 
-        from mystic.scipy_optimize import NelderMeadSimplexSolver
+        from mystic.solvers import NelderMeadSimplexSolver
         from mystic.termination import NormalizedChangeOverGeneration as NCOG
         tol = 1e-7
         self.solver = NelderMeadSimplexSolver(self.ND)
@@ -3261,7 +3261,7 @@ http://reference.wolfram.com/mathematica/tutorial/ConstrainedOptimizationGlobalN
 #--------------------------------------------------------------------------
 
     def test_PowellDirectionalSolver_NCOG(self): # Default for this solver
-        from mystic.scipy_optimize import PowellDirectionalSolver
+        from mystic.solvers import PowellDirectionalSolver
         from mystic.termination import NormalizedChangeOverGeneration as NCOG
         tol = 1e-7
         self.solver = PowellDirectionalSolver(self.ND)
@@ -3269,7 +3269,7 @@ http://reference.wolfram.com/mathematica/tutorial/ConstrainedOptimizationGlobalN
         self._run_solver()
 
     def test_PowellDirectionalSolver_COG(self): 
-        from mystic.scipy_optimize import PowellDirectionalSolver
+        from mystic.solvers import PowellDirectionalSolver
         from mystic.termination import ChangeOverGeneration as COG
         tol = 1e-7
         self.solver = PowellDirectionalSolver(self.ND)
@@ -3277,7 +3277,7 @@ http://reference.wolfram.com/mathematica/tutorial/ConstrainedOptimizationGlobalN
         self._run_solver()
 
     def test_PowellDirectionalSolver_VTR(self): 
-        from mystic.scipy_optimize import PowellDirectionalSolver
+        from mystic.solvers import PowellDirectionalSolver
         from mystic.termination import VTR
         tol = 1e-7
         self.solver = PowellDirectionalSolver(self.ND)
@@ -3285,7 +3285,7 @@ http://reference.wolfram.com/mathematica/tutorial/ConstrainedOptimizationGlobalN
         self._run_solver()
 
     def test_PowellDirectionalSolver_CRT(self): 
-        from mystic.scipy_optimize import PowellDirectionalSolver
+        from mystic.solvers import PowellDirectionalSolver
         from mystic.termination import CandidateRelativeTolerance as CRT
         tol = 1e-7
         self.solver = PowellDirectionalSolver(self.ND)
@@ -3324,7 +3324,7 @@ F(min) is negative, so VTR default can fail."""
         self.nplaces = 0 # Precision of answer
 
     def _run_solver(self, iter_limit=False, **kwds):
-        from mystic import Sow
+        from mystic.tools import Sow
         import numpy
         from mystic.tools import random_seed
         random_seed(123)
@@ -3358,7 +3358,7 @@ F(min) is negative, so VTR default can fail."""
 
 
     def test_DifferentialEvolutionSolver_VTR(self):
-        from mystic.differential_evolution import DifferentialEvolutionSolver
+        from mystic.solvers import DifferentialEvolutionSolver
         from mystic.termination import VTR
         tol = 1e-7
         self.NP = 40 
@@ -3368,7 +3368,7 @@ F(min) is negative, so VTR default can fail."""
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver_COG(self): # Default for this solver
-        from mystic.differential_evolution import DifferentialEvolutionSolver
+        from mystic.solvers import DifferentialEvolutionSolver
         from mystic.termination import ChangeOverGeneration as COG
         tol = 1e-7
         self.NP = 40
@@ -3378,7 +3378,7 @@ F(min) is negative, so VTR default can fail."""
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver_NCOG(self):
-        from mystic.differential_evolution import DifferentialEvolutionSolver
+        from mystic.solvers import DifferentialEvolutionSolver
         from mystic.termination import NormalizedChangeOverGeneration as NCOG
         tol = 1e-7
         self.NP = 40 
@@ -3388,7 +3388,7 @@ F(min) is negative, so VTR default can fail."""
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver_CRT(self):
-        from mystic.differential_evolution import DifferentialEvolutionSolver
+        from mystic.solvers import DifferentialEvolutionSolver
         from mystic.termination import CandidateRelativeTolerance as CRT
         tol = 1e-7
         self.NP = 40 
@@ -3400,7 +3400,7 @@ F(min) is negative, so VTR default can fail."""
 #--------------------------------------------------------------------------
 
     def test_DifferentialEvolutionSolver2_VTR(self):
-        from mystic.differential_evolution import DifferentialEvolutionSolver2
+        from mystic.solvers import DifferentialEvolutionSolver2
         from mystic.termination import VTR
         tol = 1e-7
         self.NP = 40
@@ -3410,7 +3410,7 @@ F(min) is negative, so VTR default can fail."""
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver2_COG(self): # Default for this solver
-        from mystic.differential_evolution import DifferentialEvolutionSolver2
+        from mystic.solvers import DifferentialEvolutionSolver2
         from mystic.termination import ChangeOverGeneration as COG
         tol = 1e-7
         self.NP = 40
@@ -3420,7 +3420,7 @@ F(min) is negative, so VTR default can fail."""
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver2_NCOG(self):
-        from mystic.differential_evolution import DifferentialEvolutionSolver2
+        from mystic.solvers import DifferentialEvolutionSolver2
         from mystic.termination import NormalizedChangeOverGeneration as NCOG
         tol = 1e-7
         self.NP = 40
@@ -3430,7 +3430,7 @@ F(min) is negative, so VTR default can fail."""
         self._run_solver( strategy=Rand1Bin )
 
     def test_DifferentialEvolutionSolver2_CRT(self):
-        from mystic.differential_evolution import DifferentialEvolutionSolver2
+        from mystic.solvers import DifferentialEvolutionSolver2
         from mystic.termination import CandidateRelativeTolerance as CRT
         tol = 1e-7
         self.NP = 40 
@@ -3442,7 +3442,7 @@ F(min) is negative, so VTR default can fail."""
 #-------------------------------------------------------------------------
 
     def test_NelderMeadSimplexSolver_CRT(self): # Default for this solver
-        from mystic.scipy_optimize import NelderMeadSimplexSolver
+        from mystic.solvers import NelderMeadSimplexSolver
         from mystic.termination import CandidateRelativeTolerance as CRT
         tol = 1e-7
         self.solver = NelderMeadSimplexSolver(self.ND)
@@ -3450,7 +3450,7 @@ F(min) is negative, so VTR default can fail."""
         self._run_solver()
 
     def test_NelderMeadSimplexSolver_VTR(self): 
-        from mystic.scipy_optimize import NelderMeadSimplexSolver
+        from mystic.solvers import NelderMeadSimplexSolver
         from mystic.termination import VTR
         tol = 1e-7
         self.solver = NelderMeadSimplexSolver(self.ND)
@@ -3458,7 +3458,7 @@ F(min) is negative, so VTR default can fail."""
         self._run_solver()
 
     def test_NelderMeadSimplexSolver_COG(self): 
-        from mystic.scipy_optimize import NelderMeadSimplexSolver
+        from mystic.solvers import NelderMeadSimplexSolver
         from mystic.termination import ChangeOverGeneration as COG
         tol = 1e-7
         self.solver = NelderMeadSimplexSolver(self.ND)
@@ -3466,7 +3466,7 @@ F(min) is negative, so VTR default can fail."""
         self._run_solver()
 
     def test_NelderMeadSimplexSolver_NCOG(self): 
-        from mystic.scipy_optimize import NelderMeadSimplexSolver
+        from mystic.solvers import NelderMeadSimplexSolver
         from mystic.termination import NormalizedChangeOverGeneration as NCOG
         tol = 1e-7
         self.solver = NelderMeadSimplexSolver(self.ND)
@@ -3476,7 +3476,7 @@ F(min) is negative, so VTR default can fail."""
 #--------------------------------------------------------------------------
 
     def test_PowellDirectionalSolver_NCOG(self): # Default for this solver
-        from mystic.scipy_optimize import PowellDirectionalSolver
+        from mystic.solvers import PowellDirectionalSolver
         from mystic.termination import NormalizedChangeOverGeneration as NCOG
         tol = 1e-7
         self.solver = PowellDirectionalSolver(self.ND)
@@ -3484,7 +3484,7 @@ F(min) is negative, so VTR default can fail."""
         self._run_solver()
 
     def test_PowellDirectionalSolver_COG(self): 
-        from mystic.scipy_optimize import PowellDirectionalSolver
+        from mystic.solvers import PowellDirectionalSolver
         from mystic.termination import ChangeOverGeneration as COG
         tol = 1e-7
         self.solver = PowellDirectionalSolver(self.ND)
@@ -3492,7 +3492,7 @@ F(min) is negative, so VTR default can fail."""
         self._run_solver()
 
     def test_PowellDirectionalSolver_VTR(self): 
-        from mystic.scipy_optimize import PowellDirectionalSolver
+        from mystic.solvers import PowellDirectionalSolver
         from mystic.termination import VTR
         tol = 1e-7
         self.solver = PowellDirectionalSolver(self.ND)
@@ -3500,7 +3500,7 @@ F(min) is negative, so VTR default can fail."""
         self._run_solver()
 
     def test_PowellDirectionalSolver_CRT(self): 
-        from mystic.scipy_optimize import PowellDirectionalSolver
+        from mystic.solvers import PowellDirectionalSolver
         from mystic.termination import CandidateRelativeTolerance as CRT
         tol = 1e-7
         self.solver = PowellDirectionalSolver(self.ND)

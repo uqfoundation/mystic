@@ -14,7 +14,7 @@ Note:
 from test_ffit import *
 
 def main():
-    from mystic.differential_evolution import DifferentialEvolutionSolver2
+    from mystic.solvers import DifferentialEvolutionSolver2
     from pathos.pp_map import pp_map
 
     solver = DifferentialEvolutionSolver2(ND, NP)

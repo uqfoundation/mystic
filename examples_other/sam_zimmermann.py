@@ -11,9 +11,9 @@ the search.
 
 import sam
 from test_zimmermann import *
-from mystic.scipy_optimize import NelderMeadSimplexSolver as fmin
+from mystic.solvers import NelderMeadSimplexSolver as fmin
 from mystic.termination import CandidateRelativeTolerance as CRT
-from mystic import getch, Sow
+from mystic.tools import getch, Sow
 
 def draw_contour():
     import numpy

@@ -20,8 +20,7 @@ $python testsolvers_pyre.py --solver=NelderMeadSimplex --inputs=chebyshevinputs
 
 from pyre.applications.Script import Script
 from mystic.helputil import paginate
-from mystic.differential_evolution import *
-from mystic.scipy_optimize import *
+from mystic.solvers import *
 from mystic.termination import *
 import logging
 

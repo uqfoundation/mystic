@@ -41,6 +41,7 @@ EXPORT_PYTHON_MODULES = \
     nested.py \
     python_map.py \
     scipy_optimize.py \
+    solvers.py \
     strategy.py \
     termination.py \
     tools.py \

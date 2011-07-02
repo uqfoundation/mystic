@@ -1,4 +1,4 @@
-from mystic import list_or_tuple_or_ndarray as sequence
+from mystic.tools import list_or_tuple_or_ndarray as sequence
 
 def write_support_file(mon,log_file='paramlog.py'):
   steps = mon.x[:]

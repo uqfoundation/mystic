@@ -15,7 +15,7 @@ Optimization 11: 341-359, 1997.
 try: http://www.icsi.berkeley.edu/~storn/deshort1.ps
 """
 
-from mystic.differential_evolution import DifferentialEvolutionSolver
+from mystic.solvers import DifferentialEvolutionSolver
 from mystic.termination import ChangeOverGeneration, VTR
 from mystic.models.dejong import step as DeJong3
 
@@ -50,7 +50,7 @@ if __name__ == '__main__':
     print "CPU Time: %s\n" % timetaken
 
     # optimize with fmin
-    from mystic.scipy_optimize import fmin
+    from mystic.solvers import fmin
     print fmin(DeJong3, [0 for i in range(ND)])
 
 # end of file

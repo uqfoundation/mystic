@@ -10,7 +10,7 @@ from forward_model import *
 
 from mystic.math import poly1d as ForwardPolyFactory
 from mystic.models import poly; PolyCostFactory = poly.CostFactory
-from mystic.differential_evolution import DifferentialEvolutionSolver
+from mystic.solvers import DifferentialEvolutionSolver
 from mystic.tools import VerboseSow, getch
 
 ND = 3

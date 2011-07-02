@@ -12,10 +12,10 @@ For a direct comparison between DE and steepest-descent solvers, run
 test_rosenbrock*.py (or optimize.py in scipy.optimize).
 """
 
-from mystic.differential_evolution import DifferentialEvolutionSolver, diffev
+from mystic.solvers import DifferentialEvolutionSolver, diffev
 from mystic.termination import ChangeOverGeneration, VTR
 from mystic.models import rosen
-from mystic import Sow, VerboseSow
+from mystic.tools import Sow, VerboseSow
 
 import random
 random.seed(123)

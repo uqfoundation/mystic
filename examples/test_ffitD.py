@@ -11,7 +11,7 @@ Heuristic for Global Optimization over Continuous Spaces. Journal of Global
 Optimization 11: 341-359, 1997.
 """
 
-from mystic.differential_evolution import diffev
+from mystic.solvers import diffev
 from test_ffit import plot_solution, print_solution, Chebyshev8, ChebyshevCost
 
 import random

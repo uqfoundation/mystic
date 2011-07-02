@@ -49,7 +49,7 @@ def verbosity(solver):
     return
 
 def test01(terminate, func=lambda x:x[0], debug=False):
-  from mystic.differential_evolution import DifferentialEvolutionSolver2 as DE2
+  from mystic.solvers import DifferentialEvolutionSolver2 as DE2
   solver = DE2(3,5)
   solver.SetRandomInitialPoints()
   solver.SetEvaluationLimits(8)
@@ -58,7 +58,7 @@ def test01(terminate, func=lambda x:x[0], debug=False):
   return terminate(solver)
 
 def test02(terminate, func=lambda x:x[0], debug=False):
-  from mystic.differential_evolution import DifferentialEvolutionSolver2 as DE2
+  from mystic.solvers import DifferentialEvolutionSolver2 as DE2
  #solver = DE2(3,1) #Solver throws ValueError "sample larger than population"
  #solver = DE2(1,1) #Solver throws ValueError "sample larger than population"
   solver = DE2(1,5)
@@ -69,7 +69,7 @@ def test02(terminate, func=lambda x:x[0], debug=False):
   return terminate(solver)
 
 def test03(terminate, func=lambda x:x[0], debug=False):
-  from mystic.differential_evolution import DifferentialEvolutionSolver as DE
+  from mystic.solvers import DifferentialEvolutionSolver as DE
   solver = DE(3,5)
   solver.SetRandomInitialPoints()
   solver.SetEvaluationLimits(8)
@@ -78,7 +78,7 @@ def test03(terminate, func=lambda x:x[0], debug=False):
   return terminate(solver)
 
 def test04(terminate, func=lambda x:x[0], debug=False):
-  from mystic.differential_evolution import DifferentialEvolutionSolver as DE
+  from mystic.solvers import DifferentialEvolutionSolver as DE
   solver = DE(1,5)
   solver.SetRandomInitialPoints()
   solver.SetEvaluationLimits(8)
@@ -87,7 +87,7 @@ def test04(terminate, func=lambda x:x[0], debug=False):
   return terminate(solver)
 
 def test05(terminate, func=lambda x:x[0], debug=False):
-  from mystic.scipy_optimize import NelderMeadSimplexSolver as NM
+  from mystic.solvers import NelderMeadSimplexSolver as NM
   solver = NM(3)
   solver.SetRandomInitialPoints()
   solver.SetEvaluationLimits(8)
@@ -96,7 +96,7 @@ def test05(terminate, func=lambda x:x[0], debug=False):
   return terminate(solver)
 
 def test06(terminate, func=lambda x:x[0], debug=False):
-  from mystic.scipy_optimize import NelderMeadSimplexSolver as NM
+  from mystic.solvers import NelderMeadSimplexSolver as NM
   solver = NM(1)
   solver.SetRandomInitialPoints()
   solver.SetEvaluationLimits(8)
@@ -105,7 +105,7 @@ def test06(terminate, func=lambda x:x[0], debug=False):
   return terminate(solver)
 
 def test07(terminate, func=lambda x:x[0], debug=False):
-  from mystic.scipy_optimize import PowellDirectionalSolver as PDS
+  from mystic.solvers import PowellDirectionalSolver as PDS
   solver = PDS(3)
   solver.SetRandomInitialPoints()
   solver.SetEvaluationLimits(8)
@@ -114,7 +114,7 @@ def test07(terminate, func=lambda x:x[0], debug=False):
   return terminate(solver)
 
 def test08(terminate, func=lambda x:x[0], debug=False):
-  from mystic.scipy_optimize import PowellDirectionalSolver as PDS
+  from mystic.solvers import PowellDirectionalSolver as PDS
   solver = PDS(1)
   solver.SetRandomInitialPoints()
   solver.SetEvaluationLimits(8)

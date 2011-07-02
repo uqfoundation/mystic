@@ -33,7 +33,7 @@ if __name__=='__main__':
     from mystic.termination import NormalizedChangeOverGeneration as NCOG
 
    #from scipy.optimize import fmin_powell
-    from mystic.scipy_optimize import fmin_powell, PowellDirectionalSolver
+    from mystic.solvers import fmin_powell, PowellDirectionalSolver
    #print fmin_powell(rosen,x0,retall=0,full_output=0)#,maxiter=14)
     solver = PowellDirectionalSolver(len(x0))
     solver.SetInitialPoints(x0)

@@ -9,10 +9,10 @@ y = a1 + a2 Exp[-t / a4] + a3 Exp[-t/a5] to data
 
 from numpy import *
 from scipy.integrate import romberg
-from mystic.differential_evolution import DifferentialEvolutionSolver2 as DifferentialEvolutionSolver
+from mystic.solvers import DifferentialEvolutionSolver2 as DifferentialEvolutionSolver
 from mystic.termination import ChangeOverGeneration, VTR
-from mystic import getch, random_seed
-from mystic import VerboseSow as MySow
+from mystic.tools import getch, random_seed
+from mystic.tools import VerboseSow as MySow
 
 from mystic.models.br8 import decay; F = decay.ForwardFactory
 from mystic.models.br8 import cost as myCF

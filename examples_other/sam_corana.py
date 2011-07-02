@@ -6,8 +6,8 @@ Testing the Corana parabola in 1D. Requires sam.
 
 import sam, numpy, mystic
 #from test_corana import *
-from mystic.scipy_optimize import fmin
-from mystic import getch
+from mystic.solvers import fmin
+from mystic.tools import getch
 
 from mystic.models.corana import corana1d as Corana1
 

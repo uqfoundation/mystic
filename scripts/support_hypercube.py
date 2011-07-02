@@ -167,7 +167,7 @@ if __name__ == '__main__':
   #xyz = [(0,1),(4,5),(8,9)] for any length tuple
   #steps = [[0,1],[1,2],[2,3],[3,4,5,6,7,8]] or similar
   if flatten:
-    from mystic import flatten
+    from mystic.tools import flatten
     steps = [list(flatten(steps))]
 
   # build all the plots

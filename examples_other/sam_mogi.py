@@ -8,9 +8,9 @@ This uses Nelder-Mead and StepMonitor
 
 import sam
 from test_mogi import *
-from mystic.scipy_optimize import NelderMeadSimplexSolver as fmin
+from mystic.solvers import NelderMeadSimplexSolver as fmin
 from mystic.termination import CandidateRelativeTolerance as CRT
-from mystic import getch, Sow
+from mystic.tools import getch, Sow
 
 x0,y0,z0,v0 = actual_params
 

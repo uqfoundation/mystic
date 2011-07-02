@@ -11,28 +11,28 @@ solver accepts a imported solver object as the "nested" solver, which
 becomes the target of the map function.
 
 The set of solvers built on mystic's AbstractNestdSolver are::
-   BatchGridSolver -- start from center of N grid points
-   ScattershotSolver -- start from N random points in parameter space
+   LatticeSolver -- start from center of N grid points
+   BuckshotSolver -- start from N random points in parameter space
 
 
 Usage
 =====
 
-See `mystic.examples.scattershot_example06` for an example of using
-ScattershotSolver. See `mystic.examples.batchgrid_example06`
-or an example of using BatchGridSolver.
+See `mystic.examples.buckshot_example06` for an example of using
+BuckshotSolver. See `mystic.examples.lattice_example06`
+or an example of using LatticeSolver.
 
 All solvers included in this module provide the standard signal handling.
 For more information, see `mystic.mystic.abstract_solver`.
 """
-__all__ = ['BatchGridSolver','ScattershotSolver']
+__all__ = ['LatticeSolver','BuckshotSolver']
 
 from mystic.tools import Null, wrap_function
 
 from abstract_nested_solver import AbstractNestedSolver
 
 
-class BatchGridSolver(AbstractNestedSolver):
+class LatticeSolver(AbstractNestedSolver):
     """
 parallel mapped optimization starting from the center of N grid points
     """
@@ -44,7 +44,7 @@ Takes two initial inputs:
 
 All important class members are inherited from AbstractNestedSolver.
         """
-        super(BatchGridSolver, self).__init__(dim, nbins=nbins)
+        super(LatticeSolver, self).__init__(dim, nbins=nbins)
 
 #   def SetGridBins(self, nbins):
 #   def ConfigureNestedSolver(self, **kwds):
@@ -133,7 +133,7 @@ Further Inputs:
         local_opt = """\n
 def local_optimize(cost, termination, x0, rank):
     from %s import %s as LocalSolver
-    from mystic import Sow
+    from mystic.tools import Sow
 
     stepmon = Sow()
     evalmon = Sow()
@@ -219,7 +219,7 @@ def local_optimize(cost, termination, x0, rank):
 
         return 
 
-class ScattershotSolver(AbstractNestedSolver):
+class BuckshotSolver(AbstractNestedSolver):
     """
 parallel mapped optimization starting from the N random points
     """
@@ -231,11 +231,11 @@ Takes two initial inputs:
 
 All important class members are inherited from AbstractNestedSolver.
         """
-        super(ScattershotSolver, self).__init__(dim, npts=npts)
+        super(BuckshotSolver, self).__init__(dim, npts=npts)
 
     def Solve(self, cost, termination, sigint_callback=None,
               EvaluationMonitor=Null, StepMonitor=Null, ExtraArgs=(), **kwds):
-        """Minimize a function using scattershot optimization.
+        """Minimize a function using buckshot optimization.
 
 Description:
 
@@ -307,7 +307,7 @@ Further Inputs:
         local_opt = """\n
 def local_optimize(cost, termination, x0, rank):
     from %s import %s as LocalSolver
-    from mystic import Sow
+    from mystic.tools import Sow
 
     stepmon = Sow()
     evalmon = Sow()
@@ -392,6 +392,10 @@ def local_optimize(cost, termination, x0, rank):
                 print "         Function evaluations: %d" % self._fcalls[0]
 
         return 
+
+# backward compatibility
+ScattershotSolver = BuckshotSolver
+BatchGridSolver = LatticeSolver
 
 
 if __name__=='__main__':

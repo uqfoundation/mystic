@@ -10,7 +10,7 @@ import sam
 from test_zimmermann import *
 from scipy.optimize import fmin_cg
 import numpy
-from mystic import getch
+from mystic.tools import getch
 
 def draw_contour():
     import numpy

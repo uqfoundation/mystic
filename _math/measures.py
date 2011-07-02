@@ -234,10 +234,10 @@ For example:
   crossover = 0.9; percent_change = 0.9
 
   def optimize(cost,(lb,ub),tolerance,_constraints):
-    from mystic.differential_evolution import DifferentialEvolutionSolver2
+    from mystic.solvers import DifferentialEvolutionSolver2
     from mystic.termination import VTR
     from mystic.strategy import Best1Exp
-    from mystic import random_seed, VerboseSow, Sow
+    from mystic.tools import random_seed, VerboseSow, Sow
     if debug: random_seed(123)
     evalmon = Sow();  stepmon = Sow()
     if debug: stepmon = VerboseSow(10)

@@ -12,7 +12,7 @@ Heuristic for Global Optimization over Continuous Spaces. Journal of Global
 Optimization 11: 341-359, 1997.
 """
 
-from mystic.differential_evolution import DifferentialEvolutionSolver
+from mystic.solvers import DifferentialEvolutionSolver
 from mystic.termination import ChangeOverGeneration, VTR
 from mystic.strategy import Best1Exp, Rand1Exp
 
@@ -48,7 +48,7 @@ if __name__ == '__main__':
     print "CPU Time: %s" % timetaken
 
     try:
-        from mystic.scipy_optimize import fmin
+        from mystic.solvers import fmin
        #from scipy.optimize import fmin
         import random
         print  "\nScipy: "

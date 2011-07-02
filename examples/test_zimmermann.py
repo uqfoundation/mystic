@@ -15,7 +15,7 @@ Optimization 11: 341-359, 1997.
 try: http://www.icsi.berkeley.edu/~storn/deshort1.ps
 """
 
-from mystic.differential_evolution import DifferentialEvolutionSolver
+from mystic.solvers import DifferentialEvolutionSolver
 from mystic.termination import ChangeOverGeneration, VTR
 from mystic.strategy import Best1Exp, Rand1Exp
 
@@ -50,8 +50,8 @@ if __name__ == '__main__':
     timetaken =  t.timeit(number=1)
     print "CPU Time: %s" % timetaken
 
-    from mystic import Sow
-    from mystic.scipy_optimize import NelderMeadSimplexSolver as fmin
+    from mystic.tools import Sow
+    from mystic.solvers import NelderMeadSimplexSolver as fmin
     from mystic.termination import CandidateRelativeTolerance as CRT
 
     simplex = Sow()

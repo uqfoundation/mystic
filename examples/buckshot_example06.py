@@ -3,18 +3,18 @@
 """
 Example:
     - Solve 8th-order Chebyshev polynomial coefficients with Powell's method.
-    - Uses ScattershotSolver to provide 'pseudo-global' optimization
+    - Uses BuckshotSolver to provide 'pseudo-global' optimization
     - Plot of fitting to Chebyshev polynomial.
 
 Demonstrates:
     - standard models
     - minimal solver interface
 """
-# the Scattershot solver
-from mystic.nested import ScattershotSolver
+# the Buckshot solver
+from mystic.solvers import BuckshotSolver
 
 # Powell's Directonal solver
-from mystic.scipy_optimize import PowellDirectionalSolver
+from mystic.solvers import PowellDirectionalSolver
 
 # Chebyshev polynomial and cost function
 from mystic.models.poly import chebyshev8, chebyshev8cost
@@ -23,7 +23,7 @@ from mystic.models.poly import chebyshev8coeffs
 # tools
 from mystic.termination import NormalizedChangeOverGeneration as NCOG
 from mystic.math import poly1d
-from mystic import getch, VerboseSow
+from mystic.tools import getch, VerboseSow
 import pylab
 pylab.ion()
 
@@ -69,8 +69,8 @@ if __name__ == '__main__':
     # configure monitor
     stepmon = VerboseSow(1)
 
-    # use Scattershot Powell to solve 8th-order Chebyshev coefficients
-    solver = ScattershotSolver(ndim, npts)
+    # use buckshot-Powell to solve 8th-order Chebyshev coefficients
+    solver = BuckshotSolver(ndim, npts)
     solver.SetNestedSolver(PowellDirectionalSolver)
    #solver.SetMapper(ez_map)
     solver.SetStrictRanges(min=[-300]*ndim, max=[300]*ndim)

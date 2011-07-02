@@ -5,7 +5,7 @@ Adapted from The Mathematica Guidebook, Numerics.
 
 """
 
-from mystic.differential_evolution import DifferentialEvolutionSolver
+from mystic.solvers import DifferentialEvolutionSolver
 
 from mystic.termination import ChangeOverGeneration, VTR
 from mystic.strategy import Best1Exp, Best1Bin, Rand1Exp
@@ -47,7 +47,7 @@ def main():
 
 if __name__ == '__main__':
     import pylab, Image
-    from mystic.scipy_optimize import fmin
+    from mystic.solvers import fmin
    #from scipy.optimize import fmin
     draw_contour()
     solution = main()

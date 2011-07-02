@@ -13,7 +13,7 @@ from test_rosenbrock import *
 from numpy import log
 from scipy.optimize import fmin_cg
 import numpy
-from mystic import getch
+from mystic.tools import getch
 
 def show():
      import pylab, Image

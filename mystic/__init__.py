@@ -77,10 +77,13 @@ download the tarball, unzip, and run the installer::
     $ python setup py install
 
 You will be warned of any missing dependencies and/or settings
-after you run the "build" step above. Mystic depends on numpy,
-so you should install it first. Having matplotlib is necessary
-for running several of the examples, and you should probably go
-get it even though it's not required.
+after you run the "build" step above. Mystic depends on numpy
+and sympy, so you should install them first. There are several
+functions within mystic where scipy is used if it is available;
+however, scipy is an optional dependency. Having matplotlib installed
+is necessary for running several of the examples, and you should
+probably go get it even though it's not required. Matplotlib is
+also required by mystic's "analysis viewers".
 
 Alternately, mystic can be installed with easy_install::
     [download]
@@ -98,11 +101,14 @@ Requirements
 Mystic requires::
     - python, version >= 2.5, version < 3.0
     - numpy, version >= 1.0
+    - sympy, version >= 0.6.7
 
 Optional requirements::
     - setuptools, version >= 0.6
     - matplotlib, version >= 0.91
+    - scipy, version >= 0.6.0
     - pathos, version >= 0.1a1
+    - pyina, version >= 0.1a1
 
 
 Usage Notes
@@ -143,20 +149,19 @@ extended to high-performance computing. For more information, see
 and the pathos documentation at http://dev.danse.us/trac/pathos.
 
 Important classes and functions are found here::
+    - mystic.mystic.solvers                [solver optimization algorithms]
+    - mystic.mystic.termination            [solver termination conditions]
+    - mystic.mystic.strategy               [solver population mutation strategies]
+    - mystic.mystic.tools                  [monitors, function wrappers, and other tools]
+    - mystic.mystic.forward_model          [cost function generator]
+    - mystic.models                        [a collection of standard models]
+    - mystic.math                          [some mathematical functions and tools]
+
+Solver and model API definitions are found here::
     - mystic.mystic.abstract_solver        [the solver API definition]
     - mystic.mystic.abstract_map_solver    [the parallel solver API]
     - mystic.mystic.abstract_nested_solver [the nested solver API]
-    - mystic.mystic.termination            [solver termination conditions]
-    - mystic.mystic.strategy               [solver population mutation strategies]
     - mystic.models.abstract_model         [the model API definition]
-    - mystic.models.forward_model          [cost function generator]
-    - mystic.mystic.tools                  [monitors, function wrappers, and other tools]
-    - mystic.mystic.math                   [some useful mathematical functions and tools]
-
-Solvers are found here::
-    - mystic.mystic.differential_evolution [Differential Evolution solvers]
-    - mystic.mystic.scipy_optimize         [Nelder-Mead and Powell's Directional solvers]
-    - mystic.mystic.nested                 [Batch Grid and Scattershot solvers]
 
 
 More Information
@@ -217,16 +222,27 @@ following in your publication::
     http://dev.danse.us/trac/mystic
 
 """
+__all__ = ['solvers', 'termination', 'strategy', 'munge', 'tools']
 
 # solvers
-import differential_evolution, scipy_optimize, nested
+import solvers
 
 # strategies, termination conditions
 import termination
 import strategy
 
+# constraints and penalties
+# import constraints
+# import penalties
+
 # monitors, function wrappers, and other tools
+# import monitors
+import munge
+import tools
+
+# backward compatibility
 from tools import *
+
 
 def copyright():
     """print copyright and reference"""

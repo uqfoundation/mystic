@@ -53,7 +53,7 @@ Time elapsed:  0.113857030869  seconds
     # DifferentialEvolutionSolver
     print "\nUsing DifferentialEvolutionSolver:"
     npop = 40
-    from mystic.differential_evolution import DifferentialEvolutionSolver
+    from mystic.solvers import DifferentialEvolutionSolver
     from mystic.termination import ChangeOverGeneration as COG
     from mystic.strategy import Rand1Bin
     esow = Sow()
@@ -77,7 +77,7 @@ Time elapsed:  0.113857030869  seconds
     # DifferentialEvolutionSolver2
     print "\nUsing DifferentialEvolutionSolver2:"
     npop = 40
-    from mystic.differential_evolution import DifferentialEvolutionSolver2
+    from mystic.solvers import DifferentialEvolutionSolver2
     from mystic.termination import ChangeOverGeneration as COG
     from mystic.strategy import Rand1Bin
     esow = Sow()
@@ -100,7 +100,7 @@ Time elapsed:  0.113857030869  seconds
 
     # NelderMeadSimplexSolver
     print "\nUsing NelderMeadSimplexSolver:"
-    from mystic.scipy_optimize import NelderMeadSimplexSolver
+    from mystic.solvers import NelderMeadSimplexSolver
     from mystic.termination import CandidateRelativeTolerance as CRT
     esow = Sow()
     ssow = Sow() 
@@ -121,7 +121,7 @@ Time elapsed:  0.113857030869  seconds
 
     # PowellDirectionalSolver
     print "\nUsing PowellDirectionalSolver:"
-    from mystic.scipy_optimize import PowellDirectionalSolver
+    from mystic.solvers import PowellDirectionalSolver
     from mystic.termination import NormalizedChangeOverGeneration as NCOG
     esow = Sow()
     ssow = Sow() 
@@ -178,7 +178,7 @@ Time elapsed:  32.8412370682  seconds
     print "\nUsing DifferentialEvolutionSolver:"
     npop = 50
     random_seed(seed)
-    from mystic.differential_evolution import DifferentialEvolutionSolver
+    from mystic.solvers import DifferentialEvolutionSolver
     from mystic.termination import ChangeOverGeneration as COG
     from mystic.termination import CandidateRelativeTolerance as CRT
     from mystic.termination import VTR
@@ -208,7 +208,7 @@ Time elapsed:  32.8412370682  seconds
     print "\nUsing DifferentialEvolutionSolver2:"
     npop = 50
     random_seed(seed)
-    from mystic.differential_evolution import DifferentialEvolutionSolver2
+    from mystic.solvers import DifferentialEvolutionSolver2
     from mystic.termination import ChangeOverGeneration as COG
     from mystic.termination import CandidateRelativeTolerance as CRT
     from mystic.termination import VTR

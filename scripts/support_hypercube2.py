@@ -179,7 +179,7 @@ if __name__ == '__main__':
   #wxyz = [(0,1),(4,5),(8,9)] for any length tuple (should match up with xyz)
   #steps = [[0],[1],[3],[8]] or similar
   if flatten:
-    from mystic import flatten
+    from mystic.tools import flatten
     steps = [list(flatten(steps))]
 
   # dot color is based on a product of weights

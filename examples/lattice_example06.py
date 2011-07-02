@@ -3,18 +3,18 @@
 """
 Example:
     - Solve 8th-order Chebyshev polynomial coefficients with Powell's method.
-    - Uses BatchGridSolver to provide 'pseudo-global' optimization
+    - Uses LatticeSolver to provide 'pseudo-global' optimization
     - Plot of fitting to Chebyshev polynomial.
 
 Demonstrates:
     - standard models
     - minimal solver interface
 """
-# the BatchGrid solver
-from mystic.nested import BatchGridSolver
+# the Lattice solver
+from mystic.solvers import LatticeSolver
 
 # Powell's Directonal solver
-from mystic.scipy_optimize import PowellDirectionalSolver
+from mystic.solvers import PowellDirectionalSolver
 
 # Chebyshev polynomial and cost function
 from mystic.models.poly import chebyshev8, chebyshev8cost
@@ -23,7 +23,7 @@ from mystic.models.poly import chebyshev8coeffs
 # tools
 from mystic.termination import NormalizedChangeOverGeneration as NCOG
 from mystic.math import poly1d
-from mystic import getch, VerboseSow
+from mystic.tools import getch, VerboseSow
 import pylab
 pylab.ion()
 
@@ -70,8 +70,8 @@ if __name__ == '__main__':
     # configure monitor
     stepmon = VerboseSow(1)
 
-    # use BatchGrid Powell to solve 8th-order Chebyshev coefficients
-    solver = BatchGridSolver(ndim, nbins)
+    # use lattice-Powell to solve 8th-order Chebyshev coefficients
+    solver = LatticeSolver(ndim, nbins)
     solver.SetNestedSolver(PowellDirectionalSolver)
    #solver.SetMapper(ez_map)
     solver.SetStrictRanges(min=[-300]*ndim, max=[300]*ndim)

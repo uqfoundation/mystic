@@ -11,7 +11,7 @@ Demonstrates:
 """
 
 # Powell's Directonal solver
-from mystic.scipy_optimize import fmin_powell
+from mystic.solvers import fmin_powell
 
 # Chebyshev polynomial and cost function
 from mystic.models.poly import chebyshev8, chebyshev8cost
@@ -19,7 +19,7 @@ from mystic.models.poly import chebyshev8coeffs
 
 # tools
 from mystic.math import poly1d
-from mystic import getch
+from mystic.tools import getch
 import pylab
 pylab.ion()
 

@@ -12,7 +12,7 @@ Demonstrates:
 """
 
 # Differential Evolution solver
-from mystic.differential_evolution import diffev
+from mystic.solvers import diffev
 
 # Chebyshev polynomial and cost function
 from mystic.models.poly import chebyshev8, chebyshev8cost
@@ -20,7 +20,7 @@ from mystic.models.poly import chebyshev8coeffs
 
 # tools
 from mystic.math import poly1d
-from mystic import getch, random_seed
+from mystic.tools import getch, random_seed
 import pylab
 pylab.ion()
 

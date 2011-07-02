@@ -5,9 +5,9 @@ Similar to test_mogi2 (two sources) (See that one first)
 """
 
 from test_mogi2 import params0, params1, stations, data, data_z, ND, NP, plot_sol, plot_noisy_data, MAX_GENERATIONS, ForwardMogiFactory
-from mystic.differential_evolution import DifferentialEvolutionSolver
+from mystic.solvers import DifferentialEvolutionSolver
 from mystic.termination import ChangeOverGeneration, VTR
-from mystic import getch, Sow, random_seed
+from mystic.tools import getch, Sow, random_seed
 
 from mystic.forward_model import CostFactory
 from mystic.filters import PickComponent

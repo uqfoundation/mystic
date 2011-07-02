@@ -23,8 +23,8 @@ def test_sumt1():
     x0 = [3., 2.]
     npop = 25
 
-    from mystic.differential_evolution import DifferentialEvolutionSolver
-    from mystic.scipy_optimize import NelderMeadSimplexSolver
+    from mystic.solvers import DifferentialEvolutionSolver
+    from mystic.solvers import NelderMeadSimplexSolver
     from mystic.termination import VTR
     #solver = DifferentialEvolutionSolver(ndim, npop)
     solver = NelderMeadSimplexSolver(ndim)
@@ -47,8 +47,8 @@ def test_sumt2():
     4.*x1-5.*x3 < -1.
     (x1-10.)**2 + (x2+1.)**2 < 50. 
     """
-    from mystic.differential_evolution import DifferentialEvolutionSolver
-    from mystic.scipy_optimize import NelderMeadSimplexSolver
+    from mystic.solvers import DifferentialEvolutionSolver
+    from mystic.solvers import NelderMeadSimplexSolver
     from mystic.termination import VTR
     #solver = DifferentialEvolutionSolver(ndim, npop)
     solver = NelderMeadSimplexSolver(ndim)

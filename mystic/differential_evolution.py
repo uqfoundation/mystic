@@ -38,17 +38,17 @@ iteration.
 
 A minimal interface that mimics a scipy.optimize interface has also been
 implemented, and functionality from the mystic solver API has been added
-with reasonable defaults.  DifferentialEvolutionSolver2 is used by
-the minimal interface, unless 'invariant_current' is set to False.
+with reasonable defaults. 
 
 Minimal function interface to optimization routines::
     diffev      -- Differential Evolution (DE) solver
+    diffev2     -- Price & Storn's Differential Evolution solver
 
 The corresponding solvers built on mystic's AbstractSolver are::
     DifferentialEvolutionSolver  -- a DE solver
     DifferentialEvolutionSolver2 -- Storn & Price's DE solver
 
-Mystic solver behavior activated in deffev::
+Mystic solver behavior activated in diffev and diffev2::
     - EvaluationMonitor = Sow()
     - StepMonitor = Sow()
     - enable_signal_handler()
@@ -137,7 +137,7 @@ A Practical Approach to Global Optimization. Springer, 1st Edition, 2005
 
 """
 __all__ = ['DifferentialEvolutionSolver','DifferentialEvolutionSolver2',\
-           'diffev']
+           'diffev','diffev2']
 
 from mystic.tools import Null, wrap_function, unpair
 from mystic.tools import wrap_bounds
@@ -564,9 +564,63 @@ Further Inputs:
         return 
 
 
+def diffev2(func,x0,npop,args=(),bounds=None,ftol=5e-3,gtol=None,
+            maxiter=None,maxfun=None,cross=0.9,scale=0.8,
+            full_output=0,disp=1,retall=0,callback=None):
+    """Minimize a function using Storn & Price's differential evolution.
+
+Description:
+
+    Uses Storn & Prices's differential evolution algorith to find the minimum
+    of a function of one or more variables. Mimics a scipy.optimize style
+    interface.
+
+Inputs:
+
+    func -- the Python function or method to be minimized.
+    x0 -- the initial guess (ndarray), if desired to start from a
+        set point; otherwise takes an array of (min,max) bounds,
+        for when random initial points are desired
+    npop -- size of the trial solution population.
+
+Additional Inputs:
+
+    args -- extra arguments for func.
+    bounds -- list - n pairs of bounds (min,max), one pair for each parameter.
+    ftol -- number - acceptable relative error in func(xopt) for convergence.
+    gtol -- number - maximum number of iterations to run without improvement.
+    maxiter -- number - the maximum number of iterations to perform.
+    maxfun -- number - the maximum number of function evaluations.
+    cross -- number - the probability of cross-parameter mutations
+    scale -- number - multiplier for impact of mutations on trial solution.
+    full_output -- number - non-zero if fval and warnflag outputs are desired.
+    disp -- number - non-zero to print convergence messages.
+    retall -- number - non-zero to return list of solutions at each iteration.
+    callback -- an optional user-supplied function to call after each
+        iteration.  It is called as callback(xk), where xk is the
+        current parameter vector.
+
+Returns: (xopt, {fopt, iter, funcalls, warnflag}, {allvecs})
+
+    xopt -- ndarray - minimizer of function
+    fopt -- number - value of function at minimum: fopt = func(xopt)
+    iter -- number - number of iterations
+    funcalls -- number - number of function calls
+    warnflag -- number - Integer warning flag:
+        1 : 'Maximum number of function evaluations.'
+        2 : 'Maximum number of iterations.'
+    allvecs -- list - a list of solutions at each iteration
+
+    """
+    return diffev(func,x0,npop,args=(),bounds=None,ftol=5e-3,gtol=None,
+                  maxiter=None,maxfun=None,cross=0.9,scale=0.8,
+                  full_output=0,disp=1,retall=0,callback=None,
+                  invariant_current=True)
+
+
 def diffev(func,x0,npop,args=(),bounds=None,ftol=5e-3,gtol=None,
            maxiter=None,maxfun=None,cross=0.9,scale=0.8,
-           full_output=0,disp=1,retall=0,callback=None,invariant_current=True):
+           full_output=0,disp=1,retall=0,callback=None,**kwds):
     """Minimize a function using differential evolution.
 
 Description:
@@ -599,8 +653,6 @@ Additional Inputs:
     callback -- an optional user-supplied function to call after each
         iteration.  It is called as callback(xk), where xk is the
         current parameter vector.
-    invariant_current -- set to True to call DifferentialEvolutionSolver2,
-        otherwise call DifferentialEvolutionSolver
 
 Returns: (xopt, {fopt, iter, funcalls, warnflag}, {allvecs})
 
@@ -614,6 +666,9 @@ Returns: (xopt, {fopt, iter, funcalls, warnflag}, {allvecs})
     allvecs -- list - a list of solutions at each iteration
 
     """
+    invariant_current = False
+    if kwds.has_key('invariant_current'):
+        invariant_current = kwds['invariant_current']
 
     from mystic.tools import Sow
     stepmon = Sow()

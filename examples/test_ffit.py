@@ -14,11 +14,11 @@ Heuristic for Global Optimization over Continuous Spaces. Journal of Global
 Optimization 11: 341-359, 1997.
 """
 
-from mystic.differential_evolution import DifferentialEvolutionSolver
+from mystic.solvers import DifferentialEvolutionSolver
 from mystic.termination import ChangeOverGeneration, VTR
 from mystic.strategy import Best1Exp, Best1Bin, Rand1Exp
 from mystic.math import poly1d
-from mystic import getch, VerboseSow
+from mystic.tools import getch, VerboseSow
 
 import random
 random.seed(123)
