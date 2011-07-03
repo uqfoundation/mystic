@@ -91,16 +91,16 @@ def test2(monitor, diffenv=None):
 
 if __name__ == '__main__':
 
-  from mystic.tools import Sow, VerboseSow, LoggingSow
- #monitor = Sow()
- #monitor = Sow(all=True)
- #monitor = Sow(all=False)
- #monitor = VerboseSow(1,1) 
- #monitor = VerboseSow(1,1, all=True) 
- #monitor = VerboseSow(1,1, all=False) 
-  monitor = LoggingSow(1)
- #monitor = LoggingSow(1, all=True)
- #monitor = LoggingSow(1, all=False)
+  from mystic.monitors import Monitor, VerboseMonitor, LoggingMonitor
+ #monitor = Monitor()
+ #monitor = Monitor(all=True)
+ #monitor = Monitor(all=False)
+ #monitor = VerboseMonitor(1,1) 
+ #monitor = VerboseMonitor(1,1, all=True) 
+ #monitor = VerboseMonitor(1,1, all=False) 
+  monitor = LoggingMonitor(1)
+ #monitor = LoggingMonitor(1, all=True)
+ #monitor = LoggingMonitor(1, all=False)
 
  #test0(monitor)
  #test1(monitor)
@@ -108,7 +108,7 @@ if __name__ == '__main__':
  #test2(monitor, diffenv=False)  # (to make like test1, add enclosing [])
  #test2(monitor, diffenv=True)
 
-  # these are for "SowPlotter(s)"; need to adapt log.py plotters for test1
+  # these are for "MonitorPlotter(s)"; need to adapt log.py plotters for test1
   write_support_file(monitor,'paramlog1.py')
  #write_converge_file(monitor,'paramlog2.py')
 

@@ -49,8 +49,8 @@ The corresponding solvers built on mystic's AbstractSolver are::
     DifferentialEvolutionSolver2 -- Storn & Price's DE solver
 
 Mystic solver behavior activated in diffev and diffev2::
-    - EvaluationMonitor = Sow()
-    - StepMonitor = Sow()
+    - EvaluationMonitor = Monitor()
+    - StepMonitor = Monitor()
     - enable_signal_handler()
     - strategy = Best1Exp
     - termination = ChangeOverGeneration(ftol,gtol), if gtol provided
@@ -670,9 +670,9 @@ Returns: (xopt, {fopt, iter, funcalls, warnflag}, {allvecs})
     if kwds.has_key('invariant_current'):
         invariant_current = kwds['invariant_current']
 
-    from mystic.tools import Sow
-    stepmon = Sow()
-    evalmon = Sow()
+    from mystic.monitors import Monitor
+    stepmon = Monitor()
+    evalmon = Monitor()
    #from mystic.strategy import Best1Exp #, Best1Bin, Rand1Exp
    #strategy = Best1Exp
     if gtol: #if number of generations provided, use ChangeOverGeneration 

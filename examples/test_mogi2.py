@@ -61,7 +61,7 @@ def de_solve():
 
     solver.enable_signal_handler()
 
-    stepmon = VerboseSow()
+    stepmon = VerboseMonitor()
     minrange = [-1000., -1000., -100., -1.]*2;
     maxrange = [1000., 1000., 100., 1.]*2;
     solver.SetRandomInitialPoints(min = minrange, max = maxrange)

@@ -15,7 +15,7 @@ test_rosenbrock*.py (or optimize.py in scipy.optimize).
 from mystic.solvers import DifferentialEvolutionSolver, diffev
 from mystic.termination import ChangeOverGeneration, VTR
 from mystic.models import rosen
-from mystic.tools import Sow, VerboseSow
+from mystic.monitors import Monitor, VerboseMonitor
 
 import random
 random.seed(123)
@@ -61,9 +61,9 @@ if __name__ == '__main__':
     print "Differential Evolution"
     print "======================"
     start = time.time()
-    esow= Sow()
-    ssow= Sow()
-   #ssow= VerboseSow(1)
+    esow= Monitor()
+    ssow= Monitor()
+   #ssow= VerboseMonitor(1)
 
  #  xinit = [random.random() for j in range(ND)]
     xinit = [0.8,1.2,0.7]

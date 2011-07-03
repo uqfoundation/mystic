@@ -30,8 +30,8 @@ A typical call to a 'nested' solver will roughly follow this example:
     >>> ub = [2.0, 2.0, 2.0]
     >>> 
     >>> # get monitors and termination condition objects
-    >>> from mystic.tools import Sow
-    >>> stepmon = Sow()
+    >>> from mystic.monitors import Monitor
+    >>> stepmon = Monitor()
     >>> from mystic.termination import CandidateRelativeTolerance as CRT
     >>> 
     >>> # select the parallel launch configuration
@@ -41,8 +41,8 @@ A typical call to a 'nested' solver will roughly follow this example:
     >>> nbins = [4,4,4]
     >>>
     >>> # instantiate and configure the solver
-    >>> from mystic.scipy_optimize import NelderMeadSimplexSolver
-    >>> from mystic.nested import BatchGridSolver
+    >>> from mystic.solvers import NelderMeadSimplexSolver
+    >>> from mystic.solvers import BatchGridSolver
     >>> solver = BatchGridSolver(len(nbins), nbins)
     >>> solver.SetNestedSolver(NelderMeadSimplexSolver)
     >>> solver.SetStrictRanges(lb, ub)
@@ -117,7 +117,7 @@ Important class members:
         npts = 1
         if kwds.has_key('npts'): npts = kwds['npts']
         self._npts            = npts
-        from mystic.scipy_optimize import NelderMeadSimplexSolver
+        from mystic.solvers import NelderMeadSimplexSolver
         self._solver          = NelderMeadSimplexSolver
         return
 

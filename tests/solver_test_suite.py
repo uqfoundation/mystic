@@ -28,12 +28,12 @@ class TestZimmermann(unittest.TestCase):
         self.local = [ 2.35393787,  5.94748068] # local minimum
 
     def _run_solver(self, iter_limit=False, local=False, **kwds):
-        from mystic.tools import Sow
+        from mystic.monitors import Monitor
         import numpy
         from mystic.tools import random_seed
         random_seed(123) # Number of failures is quite dependent on random seed!
-        esow = Sow()
-        ssow = Sow() 
+        esow = Monitor()
+        ssow = Monitor() 
 
         if iter_limit: # CRT with solvers that don't use population.
             print '\nA warning should print:'
@@ -238,12 +238,12 @@ class TestRosenbrock(unittest.TestCase):
         self.nplaces = 0 # Precision of answer
 
     def _run_solver(self, iter_limit=False, **kwds):
-        from mystic.tools import Sow
+        from mystic.monitors import Monitor
         import numpy
         from mystic.tools import random_seed
         #random_seed(123)
-        esow = Sow()
-        ssow = Sow() 
+        esow = Monitor()
+        ssow = Monitor() 
 
         solver = self.solver
         solver.SetRandomInitialPoints(min = self.min, max = self.max)
@@ -438,12 +438,12 @@ minima."""
         #self.nplaces = 0 # Precision of answer
 
     def _run_solver(self, iter_limit=False, **kwds):
-        from mystic.tools import Sow
+        from mystic.monitors import Monitor
         import numpy
         from mystic.tools import random_seed
         random_seed(123)
-        esow = Sow()
-        ssow = Sow() 
+        esow = Monitor()
+        ssow = Monitor() 
 
         solver = self.solver
         solver.SetRandomInitialPoints(self.min, self.max)
@@ -638,12 +638,12 @@ class TestQuartic(unittest.TestCase):
         self.nplaces = 0 # Precision of answer 
 
     def _run_solver(self, iter_limit=False, **kwds):
-        from mystic.tools import Sow
+        from mystic.monitors import Monitor
         import numpy
         from mystic.tools import random_seed
         #random_seed(123)
-        esow = Sow()
-        ssow = Sow() 
+        esow = Monitor()
+        ssow = Monitor() 
 
         solver = self.solver
         solver.SetRandomInitialPoints(self.min, self.max)
@@ -836,12 +836,12 @@ class TestShekel(unittest.TestCase):
         self.nplaces = 0 # Precision of answer
 
     def _run_solver(self, iter_limit=False, **kwds):
-        from mystic.tools import Sow
+        from mystic.monitors import Monitor
         import numpy
         from mystic.tools import random_seed
         random_seed(123)
-        esow = Sow()
-        ssow = Sow() 
+        esow = Monitor()
+        ssow = Monitor() 
 
         solver = self.solver
         solver.SetRandomInitialPoints(self.min, self.max)
@@ -1035,12 +1035,12 @@ class TestStep(unittest.TestCase):
         #self.nplaces = 0 # Precision of answer
 
     def _run_solver(self, iter_limit = False, **kwds):
-        from mystic.tools import Sow
+        from mystic.monitors import Monitor
         import numpy
         from mystic.tools import random_seed
        #random_seed(123)
-        esow = Sow()
-        ssow = Sow() 
+        esow = Monitor()
+        ssow = Monitor() 
 
         solver = self.solver
         solver.SetRandomInitialPoints(self.min, self.max)
@@ -1235,12 +1235,12 @@ class TestGriewangk(unittest.TestCase):
         self.nplaces = 0 # Precision of answer
 
     def _run_solver(self, iter_limit=False, **kwds):
-        from mystic.tools import Sow
+        from mystic.monitors import Monitor
         import numpy
         from mystic.tools import random_seed
         #random_seed(123)
-        esow = Sow()
-        ssow = Sow() 
+        esow = Monitor()
+        ssow = Monitor() 
 
         solver = self.solver
         solver.SetRandomInitialPoints(self.min, self.max)
@@ -1447,12 +1447,12 @@ Source: http://www.nag.co.uk/numeric/FL/nagdoc_fl22/xhtml/E05/e05jbf.xml"""
         self.nplaces = 0 # Precision of answer
 
     def _run_solver(self, iter_limit=False, **kwds):
-        from mystic.tools import Sow
+        from mystic.monitors import Monitor
         import numpy
         from mystic.tools import random_seed
         #random_seed(123)
-        esow = Sow()
-        ssow = Sow() 
+        esow = Monitor()
+        ssow = Monitor() 
 
         solver = self.solver
         solver.SetRandomInitialPoints(self.min, self.max)
@@ -1658,12 +1658,12 @@ Wiley, 2nd edition, 2009."""
         self.nplaces = 0 # Precision of answer
 
     def _run_solver(self, iter_limit=False, **kwds):
-        from mystic.tools import Sow
+        from mystic.monitors import Monitor
         import numpy
         from mystic.tools import random_seed
         #random_seed(123)
-        esow = Sow()
-        ssow = Sow() 
+        esow = Monitor()
+        ssow = Monitor() 
 
         solver = self.solver
         solver.SetRandomInitialPoints(self.min, self.max)
@@ -1866,12 +1866,12 @@ class TestSchwefel(unittest.TestCase):
         self.nplaces = -1 # Precision of answer
 
     def _run_solver(self, iter_limit=False, **kwds):
-        from mystic.tools import Sow
+        from mystic.monitors import Monitor
         import numpy
         from mystic.tools import random_seed
         random_seed(123)
-        esow = Sow()
-        ssow = Sow() 
+        esow = Monitor()
+        ssow = Monitor() 
 
         solver = self.solver
         solver.SetRandomInitialPoints(self.min, self.max)
@@ -2072,12 +2072,12 @@ class TestEasom(unittest.TestCase):
         self.nplaces = -1 # Precision of answer
 
     def _run_solver(self, iter_limit=False, **kwds):
-        from mystic.tools import Sow
+        from mystic.monitors import Monitor
         import numpy
         from mystic.tools import random_seed
         random_seed(123)
-        esow = Sow()
-        ssow = Sow() 
+        esow = Monitor()
+        ssow = Monitor() 
 
         solver = self.solver
         solver.SetRandomInitialPoints(self.min, self.max)
@@ -2283,12 +2283,12 @@ class TestRotatedEllipsoid(unittest.TestCase):
         self.nplaces = -1 # Precision of answer
 
     def _run_solver(self, iter_limit=False, **kwds):
-        from mystic.tools import Sow
+        from mystic.monitors import Monitor
         import numpy
         from mystic.tools import random_seed
         random_seed(123)
-        esow = Sow()
-        ssow = Sow() 
+        esow = Monitor()
+        ssow = Monitor() 
 
         solver = self.solver
         solver.SetRandomInitialPoints(self.min, self.max)
@@ -2489,12 +2489,12 @@ class TestAckley(unittest.TestCase):
         self.nplaces = 0 # Precision of answer
 
     def _run_solver(self, iter_limit=False, **kwds):
-        from mystic.tools import Sow
+        from mystic.monitors import Monitor
         import numpy
         from mystic.tools import random_seed
         random_seed(123)
-        esow = Sow()
-        ssow = Sow() 
+        esow = Monitor()
+        ssow = Monitor() 
 
         solver = self.solver
         solver.SetRandomInitialPoints(self.min, self.max)
@@ -2694,12 +2694,12 @@ one global minimum."""
         self.nplaces = 0 # Precision of answer
 
     def _run_solver(self, iter_limit=False, **kwds):
-        from mystic.tools import Sow
+        from mystic.monitors import Monitor
         import numpy
         from mystic.tools import random_seed
         random_seed(123)
-        esow = Sow()
-        ssow = Sow() 
+        esow = Monitor()
+        ssow = Monitor() 
 
         solver = self.solver
         solver.SetRandomInitialPoints(self.min, self.max)
@@ -2900,12 +2900,12 @@ class TestGoldsteinPrice(unittest.TestCase):
         self.nplaces = 0 # Precision of answer
 
     def _run_solver(self, iter_limit=False, **kwds):
-        from mystic.tools import Sow
+        from mystic.monitors import Monitor
         import numpy
         from mystic.tools import random_seed
         random_seed(123)
-        esow = Sow()
-        ssow = Sow() 
+        esow = Monitor()
+        ssow = Monitor() 
 
         solver = self.solver
         solver.SetRandomInitialPoints(self.min, self.max)
@@ -3110,12 +3110,12 @@ http://reference.wolfram.com/mathematica/tutorial/ConstrainedOptimizationGlobalN
         self.nplaces = 0 # Precision of answer
 
     def _run_solver(self, iter_limit=False, **kwds):
-        from mystic.tools import Sow
+        from mystic.monitors import Monitor
         import numpy
         from mystic.tools import random_seed
         random_seed(123)
-        esow = Sow()
-        ssow = Sow() 
+        esow = Monitor()
+        ssow = Monitor() 
 
         solver = self.solver
         solver.SetRandomInitialPoints(self.min, self.max)
@@ -3324,12 +3324,12 @@ F(min) is negative, so VTR default can fail."""
         self.nplaces = 0 # Precision of answer
 
     def _run_solver(self, iter_limit=False, **kwds):
-        from mystic.tools import Sow
+        from mystic.monitors import Monitor
         import numpy
         from mystic.tools import random_seed
         random_seed(123)
-        esow = Sow()
-        ssow = Sow() 
+        esow = Monitor()
+        ssow = Monitor() 
 
         solver = self.solver
         solver.SetInitialPoints(self.x0)

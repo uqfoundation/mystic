@@ -13,7 +13,8 @@ import sam
 from test_zimmermann import *
 from mystic.solvers import NelderMeadSimplexSolver as fmin
 from mystic.termination import CandidateRelativeTolerance as CRT
-from mystic.tools import getch, Sow
+from mystic.monitors import Monitor
+from mystic.tools import getch
 
 def draw_contour():
     import numpy
@@ -38,7 +39,7 @@ def draw_contour():
 
 
 def run_once():
-    simplex = Sow()
+    simplex = Monitor()
     solver = fmin(2)
     solver.SetRandomInitialPoints([0,0],[7,7])
     solver.Solve(CostFunction, termination=CRT(), StepMonitor = simplex)

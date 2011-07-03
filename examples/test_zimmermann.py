@@ -50,12 +50,12 @@ if __name__ == '__main__':
     timetaken =  t.timeit(number=1)
     print "CPU Time: %s" % timetaken
 
-    from mystic.tools import Sow
+    from mystic.monitors import Monitor
     from mystic.solvers import NelderMeadSimplexSolver as fmin
     from mystic.termination import CandidateRelativeTolerance as CRT
 
-    simplex = Sow()
-    esow = Sow()
+    simplex = Monitor()
+    esow = Monitor()
     xinit = [random.uniform(0,5) for j in range(ND)]
 
     solver = fmin(len(xinit))

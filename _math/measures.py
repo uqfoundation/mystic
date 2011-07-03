@@ -237,10 +237,11 @@ For example:
     from mystic.solvers import DifferentialEvolutionSolver2
     from mystic.termination import VTR
     from mystic.strategy import Best1Exp
-    from mystic.tools import random_seed, VerboseSow, Sow
+    from mystic.monitors import VerboseMonitor, Monitor
+    from mystic.tools import random_seed
     if debug: random_seed(123)
-    evalmon = Sow();  stepmon = Sow()
-    if debug: stepmon = VerboseSow(10)
+    evalmon = Monitor();  stepmon = Monitor()
+    if debug: stepmon = VerboseMonitor(10)
 
     ndim = len(lb)
     solver = DifferentialEvolutionSolver2(ndim,npop)

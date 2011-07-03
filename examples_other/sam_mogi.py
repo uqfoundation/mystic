@@ -10,7 +10,8 @@ import sam
 from test_mogi import *
 from mystic.solvers import NelderMeadSimplexSolver as fmin
 from mystic.termination import CandidateRelativeTolerance as CRT
-from mystic.tools import getch, Sow
+from mystic.monitors import Monitor
+from mystic.tools import getch
 
 x0,y0,z0,v0 = actual_params
 
@@ -58,7 +59,7 @@ def draw_contour_xv():
     sam.eval('hold on')
 
 def run_once_xy():
-    simplex = Sow()
+    simplex = Monitor()
     z1 = z0*random.uniform(0.5,1.5)
     v1 = v0*random.uniform(0.5,1.5)
     xinit = [random.uniform(x0-40,x0+40), random.uniform(y0-40,y0+40), z1, v1]
@@ -76,7 +77,7 @@ def run_once_xy():
 
 
 def run_once_xv():
-    simplex = Sow()
+    simplex = Monitor()
     y1 = y0*random.uniform(0.5,1.5)
     z1 = z0*random.uniform(0.5,1.5)
     xinit = [random.uniform(x0-40,x0+40), y1, z1, random.uniform(v0-0.1,v0+0.1)]

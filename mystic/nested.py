@@ -133,10 +133,10 @@ Further Inputs:
         local_opt = """\n
 def local_optimize(cost, termination, x0, rank):
     from %s import %s as LocalSolver
-    from mystic.tools import Sow
+    from mystic.monitors import Monitor
 
-    stepmon = Sow()
-    evalmon = Sow()
+    stepmon = Monitor()
+    evalmon = Monitor()
 
     ndim = len(x0)
 
@@ -307,10 +307,10 @@ Further Inputs:
         local_opt = """\n
 def local_optimize(cost, termination, x0, rank):
     from %s import %s as LocalSolver
-    from mystic.tools import Sow
+    from mystic.monitors import Monitor
 
-    stepmon = Sow()
-    evalmon = Sow()
+    stepmon = Monitor()
+    evalmon = Monitor()
 
     ndim = len(x0)
 

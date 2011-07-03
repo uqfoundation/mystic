@@ -30,8 +30,8 @@ A typical call to a 'map' solver will roughly follow this example:
     >>> ub = [2.0, 2.0, 2.0]
     >>> 
     >>> # get monitors and termination condition objects
-    >>> from mystic.tools import Sow
-    >>> stepmon = Sow()
+    >>> from mystic.monitors import Monitor
+    >>> stepmon = Monitor()
     >>> from mystic.termination import CandidateRelativeTolerance as CRT
     >>> 
     >>> # select the parallel launch configuration
@@ -42,7 +42,7 @@ A typical call to a 'map' solver will roughly follow this example:
     >>>> npts = 20
     >>>
     >>> # instantiate and configure the solver
-    >>> from mystic.nested import ScattershotSolver
+    >>> from mystic.solvers import ScattershotSolver
     >>> solver = ScattershotSolver(len(lb), npts)
     >>> solver.SetMapper(ez_map2, equalportion_mapper)
     >>> solver.SetLauncher(mpirun_launcher, NNODES)

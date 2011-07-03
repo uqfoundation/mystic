@@ -114,7 +114,7 @@ MAX_GENERATIONS = ND*NP
 - NP is size of trial population
 - MAX_GENERATIONS is maximum optimization iterations
 #-----------------------------------------------------------------------------
-- VerboseSow logs/prints "goodness of fit" and "best solution" at each step
+- VerboseMonitor logs/prints "goodness of fit" and "best solution" at each step
 - minrange/maxrange provide box constraints (for parameters a,b,c)
 - SetRandomInitialPoints chooses an initial solution within box constraints
 - SetStrictRanges only allows trial solutions within box constraints
@@ -126,7 +126,7 @@ def de_solve(CF):
     solver = DifferentialEvolutionSolver(ND, NP)
     solver.enable_signal_handler()
 
-    stepmon = VerboseSow(10,50)
+    stepmon = VerboseMonitor(10,50)
     minrange = [-100., -100., -100.]; maxrange = [100., 100., 100.];
     solver.SetRandomInitialPoints(min = minrange, max = maxrange)
     solver.SetStrictRanges(min = minrange, max = maxrange)

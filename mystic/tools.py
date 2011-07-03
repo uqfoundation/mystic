@@ -16,10 +16,6 @@ Main functions exported are::
     - flatten_array: flatten an array 
     - Null: a Null object pattern
     - getch: provides "press any key to quit"
-    - Sow: A class whose instances are callable (to be used as monitors)
-    - VerboseSow: A verbose version of the basic Sow
-    - LoggingSow: A version of the basic Sow that logs to a file
-    - CustomSow: A customizable 'n-variable' version of the basic Sow
     - random_seed: sets the seed for calls to 'random()'
     - wrap_nested: nest a function call within a function object
     - wrap_function: bind an EvaluationMonitor and an evaluation counter
@@ -118,171 +114,6 @@ def getch(str="Press any key to continue"):
        if str != None:
            print str + " and press enter"
        return raw_input()
-
-class Sow(object):
-    """
-Instances of objects that can be passed as monitors.
-The Sow logs the parameters and corresponding costs,
-retrievable by accessing the Sow's member variables.
-
-example usage...
-    >>> sow = Sow()
-    >>> solver.Solve(rosen, x0, EvaulationMonitor=sow)
-    >>> sow.x   # get log of parameters
-    >>> sow.y   # get log of costs
-
-    """
-    def __init__(self, **kwds):#, all=True):
-        self._x = []
-        self._y = []
-        self._id = []
-       #self._all = all
-
-    def __call__(self, x, y, id=None, **kwds):#, best=0):
-        self._x.append(listify(x)) #XXX: better to save as-is?
-        self._y.append(listify(y)) #XXX: better to save as-is?
-        self._id.append(id)
-       #if not self._all and list_or_tuple_or_ndarray(x):
-       #    self._x[-1] = self._x[-1][best]
-       #if not self._all and list_or_tuple_or_ndarray(y):
-       #    self._y[-1] = self._y[-1][best]
-
-    def get_x(self):
-        return self._x
-
-    def get_y(self):
-        return self._y
-
-    def get_id(self):
-        return self._id
-
-    x = property(get_x, doc = "Params")
-    y = property(get_y, doc = "Costs")
-    id = property(get_id, doc = "Id")
-    pass
-
-class VerboseSow(Sow):
-    """A verbose version of the basic Sow.
-
-Prints ChiSq every 'interval', and optionally prints
-current parameters every 'xinterval'.
-    """
-    import numpy
-    def __init__(self, interval = 10, xinterval = numpy.inf, all=True):
-        super(VerboseSow,self).__init__()
-        self._step = 0
-        self._yinterval = interval
-        self._xinterval = xinterval
-        self._all = all
-        return
-    def __call__(self, x, y, id=None, best=0):
-        super(VerboseSow,self).__call__(x, y, id)
-        if int(self._step % self._yinterval) == 0:
-            if not list_or_tuple_or_ndarray(y):
-                who = ''
-                y = " %f" % self._y[-1]
-            elif self._all:
-                who = ''
-                y = " %s" % self._y[-1]
-            else:
-                who = ' best'
-                y = " %f" % self._y[-1][best]
-            msg = "Generation %d has%s Chi-Squared:%s" % (self._step, who, y)
-            if id != None: msg = "[id: %d] " % (id) + msg
-            print msg
-        if int(self._step % self._xinterval) == 0:
-            if not list_or_tuple_or_ndarray(x):
-                who = ''
-                x = " %f" % self._x[-1]
-            elif self._all:
-                who = ''
-                x = "\n %s" % self._x[-1]
-            else:
-                who = ' best'
-                x = "\n %s" % self._x[-1][best]
-            msg = "Generation %d has%s fit parameters:%s" % (self._step, who, x)
-            if id != None: msg = "[id: %d] " % (id) + msg
-            print msg
-        self._step += 1
-        return
-    pass
-
-class LoggingSow(Sow):
-    """A version of the basic Sow that writes to a file at specified intervals.
-
-Logs ChiSq and parameters to a file every 'interval'
-    """
-    import numpy
-    def __init__(self, interval=1, filename='log.txt', new=False, all=True):
-        import datetime
-        super(LoggingSow,self).__init__()
-        self._filename = filename
-        self._step = 0
-        self._yinterval = interval
-        self._xinterval = interval
-        if new: ind = 'w'
-        else: ind = 'a'
-        self._file = open(self._filename,ind)
-        self._file.write("# %s\n" % datetime.datetime.now().ctime() )
-        self._file.write("# ___#___  __ChiSq__  __params__\n")
-        self._file.close()
-        self._all = all
-        return
-    def __call__(self, x, y, id=None, best=0):
-        self._file = open(self._filename,'a')
-        super(LoggingSow,self).__call__(x, y, id)
-        if int(self._step % self._yinterval) == 0:
-            if not list_or_tuple_or_ndarray(y):
-                y = "%f" % self._y[-1]
-            elif self._all:
-                y = "%s" % self._y[-1]
-            else:
-                y = "%f" % self._y[-1][best]
-            if not list_or_tuple_or_ndarray(x):
-                x = "[%f]" % self._x[-1]
-            elif self._all:
-                xa = self._x[-1]
-                if not list_or_tuple_or_ndarray(xa):
-                  x = "[%f]" % xa
-                else:
-                  x = "%s" % xa
-            else:
-                xb = self._x[-1][best]
-                if not list_or_tuple_or_ndarray(xb):
-                  x = "[%f]" % xb
-                else:
-                  x = "%s" % xb
-            step = [self._step]
-            if id != None: step.append(id)
-            self._file.write("  %s     %s   %s\n" % (tuple(step), y, x))
-        self._step += 1
-        self._file.close()
-        return
-    pass
-
-def CustomSow(*args,**kwds):
-    """
-generate a custom Sow
-
-takes *args & **kwds, where args will be required inputs for the Sow::
-    - args: property name strings (i.e. 'x')
-    - kwds: must be in the form: property="doc" (i.e. x='Params')
-
-example usage...
-    >>> sow = CustomSow('x','y',x="Params",y="Costs",e="Error",d="Deriv")
-    >>> sow(1,1)
-    >>> sow(2,4,e=0)
-    >>> sow.x
-    [1,2]
-    >>> sow.y
-    [1,4]
-    >>> sow.e
-    [0]
-    >>> sow.d
-    []
-    """
-    from _genSow import genSow
-    return genSow(**kwds)(*args)
 
 def random_seed(s):
     "sets the seed for calls to 'random()'"
@@ -433,6 +264,13 @@ For example,
             else:
                 return
         return
+
+
+# backward compatibility
+from monitors import Monitor as Sow
+from monitors import VerboseMonitor as VerboseSow
+from monitors import LoggingMonitor as LoggingSow
+from monitors import CustomMonitor as CustomSow
 
 
 if __name__=='__main__':

@@ -69,11 +69,12 @@ def plot_noisy_data():
 
 # --- Call to Mystic's Fmin optimizer ---
 def mystic_optimize(point):
-    from mystic.tools import getch, Sow, random_seed, VerboseSow
+    from mystic.monitors import Monitor, VerboseMonitor
+    from mystic.tools import getch, random_seed
     random_seed(123)
     from mystic.solvers import NelderMeadSimplexSolver as fmin
     from mystic.termination import CandidateRelativeTolerance as CRT
-    simplex, esow = VerboseSow(50), Sow()
+    simplex, esow = VerboseMonitor(50), Monitor()
     solver = fmin(len(point))
     solver.SetInitialPoints(point)
     solver.Solve(cost_function, CRT(), EvaluationMonitor = esow, StepMonitor = simplex)
@@ -83,12 +84,13 @@ def mystic_optimize(point):
 
 # --- Call to Mystic's DE optimizer ---
 def mystic_optimize2(point):
-    from mystic.tools import getch, Sow, random_seed, VerboseSow
+    from mystic.monitors import Monitor, VerboseMonitor
+    from mystic.tools import getch, random_seed
     random_seed(123)
     from mystic.solvers import DifferentialEvolutionSolver as de
     from mystic.termination import ChangeOverGeneration as COG
     NPOP = 50
-    simplex, esow = VerboseSow(50), Sow()
+    simplex, esow = VerboseMonitor(50), Monitor()
     solver = de(len(point),NPOP)
     solver.SetInitialPoints(point)
     solver.Solve(cost_function, COG(generations=100), \

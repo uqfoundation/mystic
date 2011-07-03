@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 __doc__ = """
-plot parameter convergence from file written with 'LoggingSow'
+plot parameter convergence from file written with 'LoggingMonitor'
 
 Usage: python log_reader.py [filename] [maxiter]
     [filename] - name of the convergence logfile (e.g log.txt)

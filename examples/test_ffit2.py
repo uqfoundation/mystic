@@ -14,7 +14,7 @@ from mystic.solvers import DifferentialEvolutionSolver
 from mystic.termination import ChangeOverGeneration, VTR
 from mystic.strategy import Best1Exp, Best1Bin, Rand1Exp, Best2Bin, Best2Exp
 from mystic.math import poly1d
-from mystic.tools import VerboseSow
+from mystic.monitors import VerboseMonitor
 from mystic.models.poly import chebyshev16cost
 
 import random
@@ -48,7 +48,7 @@ def main():
     strategy = Best2Exp
 
     solver.Solve(ChebyshevCost, termination=VTR(0.0001), strategy=strategy, \
-                 StepMonitor=VerboseSow(10), CrossProbability=1.0, ScalingFactor=0.6)
+                 StepMonitor=VerboseMonitor(10), CrossProbability=1.0, ScalingFactor=0.6)
 
     solution = solver.Solution()
   

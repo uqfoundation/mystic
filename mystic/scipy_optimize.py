@@ -31,14 +31,14 @@ The corresponding solvers built on mystic's AbstractSolver are::
    PowellDirectionalSolver -- Powell's (modified) level set method
 
 Mystic solver behavior activated in fmin::
-   - EvaluationMonitor = Sow()
-   - StepMonitor = Sow()
+   - EvaluationMonitor = Monitor()
+   - StepMonitor = Monitor()
    - termination = CandidateRelativeTolerance(xtol,ftol)
    - enable_signal_handler()
 
 Mystic solver behavior activated in fmin_powell::
-   - EvaluationMonitor = Sow()
-   - StepMonitor = Sow()
+   - EvaluationMonitor = Monitor()
+   - StepMonitor = Monitor()
    - termination = NormalizedChangeOverGeneration(ftol)
    - enable_signal_handler()
 
@@ -389,9 +389,9 @@ Returns: (xopt, {fopt, iter, funcalls, warnflag}, {allvecs})
 
     """
 
-    from mystic.tools import Sow
-    stepmon = Sow()
-    evalmon = Sow()
+    from mystic.monitors import Monitor
+    stepmon = Monitor()
+    evalmon = Monitor()
     from mystic.termination import CandidateRelativeTolerance as CRT
 
     solver = NelderMeadSimplexSolver(len(x0))
@@ -701,9 +701,9 @@ Returns: (xopt, {fopt, direc, iter, funcalls, warnflag}, {allvecs})
     #FIXME: need to resolve "direc"
     #        - should just pass 'direc', and then hands-off ?  How return it ?
 
-    from mystic.tools import Sow
-    stepmon = Sow()
-    evalmon = Sow()
+    from mystic.monitors import Monitor
+    stepmon = Monitor()
+    evalmon = Monitor()
     from mystic.termination import NormalizedChangeOverGeneration as NCOG
 
     solver = PowellDirectionalSolver(len(x0))

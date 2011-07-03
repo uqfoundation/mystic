@@ -12,7 +12,8 @@ import sam
 #from test_corana import *
 from mystic.solvers import NelderMeadSimplexSolver as fmin
 from mystic.termination import CandidateRelativeTolerance as CRT
-from mystic.tools import getch, Sow
+from mystic.monitors import Monitor
+from mystic.tools import getch
 
 from mystic.models.corana import corana2d as Corana2
 
@@ -40,7 +41,7 @@ def draw_contour():
 
 
 def run_once():
-    simplex = Sow()
+    simplex = Monitor()
     solver = fmin(2)
     solver.SetRandomInitialPoints([0,0],[2,2])
     solver.Solve(Corana2, termination=CRT(), StepMonitor = simplex)

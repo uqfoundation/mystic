@@ -24,7 +24,8 @@ from mystic.models.poly import chebyshev8coeffs
 # tools
 from mystic.termination import VTR
 from mystic.strategy import Best1Exp
-from mystic.tools import getch, random_seed, VerboseSow, Sow
+from mystic.monitors import VerboseMonitor, Monitor
+from mystic.tools import getch, random_seed
 from mystic.math import poly1d
 import pylab
 pylab.ion()
@@ -56,8 +57,8 @@ if __name__ == '__main__':
     random_seed(123)
 
     # configure monitors
-    stepmon = VerboseSow(50)
-    evalmon = Sow()
+    stepmon = VerboseMonitor(50)
+    evalmon = Monitor()
 
     # use DE to solve 8th-order Chebyshev coefficients
     npop = 10*ndim

@@ -7,7 +7,8 @@ test some simple multi-minima functions, such as |x + 3 sin[x]|
 from mystic.solvers import DifferentialEvolutionSolver2 as DifferentialEvolutionSolver
 from mystic.termination import ChangeOverGeneration, VTR
 from mystic.strategy import Best1Exp, Best1Bin, Rand1Exp
-from mystic.tools import getch, VerboseSow
+from mystic.monitors import VerboseMonitor
+from mystic.tools import getch
 from numpy import arange
 from mystic.solvers import fmin
 #from scipy.optimize import fmin
@@ -51,7 +52,7 @@ def main():
     solver.enable_signal_handler()
 
     strategy = Best1Bin
-    stepmon = VerboseSow(1)
+    stepmon = VerboseMonitor(1)
     solver.Solve(wavy,
                  termination = ChangeOverGeneration(generations=50), \
                  strategy=strategy, CrossProbability=1.0, ScalingFactor=0.9, \

@@ -51,10 +51,10 @@ def plot_sol(params,linestyle='b-'):
 
 # --- Call to Mystic ---
 def mystic_optimize(point):
-    from mystic.tools import Sow, VerboseSow
+    from mystic.monitors import Monitor, VerboseMonitor
     from mystic.solvers import NelderMeadSimplexSolver as fmin
     from mystic.termination import CandidateRelativeTolerance as CRT
-    simplex, esow = VerboseSow(50), Sow()
+    simplex, esow = VerboseMonitor(50), Monitor()
     solver = fmin(len(point))
     solver.SetInitialPoints(point)
     min = [-100,-100,-100]; max = [100,100,100]

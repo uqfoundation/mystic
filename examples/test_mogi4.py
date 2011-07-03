@@ -7,7 +7,8 @@ Similar to test_mogi2 (two sources) (See that one first)
 from test_mogi2 import params0, params1, stations, data, data_z, ND, NP, plot_sol, plot_noisy_data, MAX_GENERATIONS, ForwardMogiFactory
 from mystic.solvers import DifferentialEvolutionSolver
 from mystic.termination import ChangeOverGeneration, VTR
-from mystic.tools import getch, Sow, random_seed
+from mystic.monitors import Monitor
+from mystic.tools import getch, random_seed
 
 from mystic.forward_model import CostFactory
 from mystic.filters import PickComponent
@@ -17,7 +18,7 @@ def de_solve(CF):
 
     solver.enable_signal_handler()
 
-    stepmon = Sow()
+    stepmon = Monitor()
     minrange = [-1000., -1000., -100., -1.]*2;
     maxrange = [1000., 1000., 100., 1.]*2;
     solver.SetRandomInitialPoints(min = minrange, max = maxrange)

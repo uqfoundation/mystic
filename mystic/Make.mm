@@ -37,6 +37,7 @@ EXPORT_PYTHON_MODULES = \
     forward_model.py \
     helputil.py \
     linesearch.py \
+    monitors.py \
     mystic_math.py \
     nested.py \
     python_map.py \

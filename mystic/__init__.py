@@ -152,7 +152,8 @@ Important classes and functions are found here::
     - mystic.mystic.solvers                [solver optimization algorithms]
     - mystic.mystic.termination            [solver termination conditions]
     - mystic.mystic.strategy               [solver population mutation strategies]
-    - mystic.mystic.tools                  [monitors, function wrappers, and other tools]
+    - mystic.mystic.monitors               [optimization monitors]
+    - mystic.mystic.tools                  [function wrappers, etc]
     - mystic.mystic.forward_model          [cost function generator]
     - mystic.models                        [a collection of standard models]
     - mystic.math                          [some mathematical functions and tools]
@@ -236,7 +237,7 @@ import strategy
 # import penalties
 
 # monitors, function wrappers, and other tools
-# import monitors
+import monitors
 import munge
 import tools
 

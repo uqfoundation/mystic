@@ -2,7 +2,8 @@
 """Test Mystic's performance on some benchmark problems, with Mystic's settings
 adjusted to achieve the best results.
 """
-from mystic.tools import random_seed, Sow
+from mystic.monitors import Monitor
+from mystic.tools import random_seed
 random_seed(123)
 import time
 
@@ -56,8 +57,8 @@ Time elapsed:  0.113857030869  seconds
     from mystic.solvers import DifferentialEvolutionSolver
     from mystic.termination import ChangeOverGeneration as COG
     from mystic.strategy import Rand1Bin
-    esow = Sow()
-    ssow = Sow() 
+    esow = Monitor()
+    ssow = Monitor() 
     solver = DifferentialEvolutionSolver(ndim, npop)
     solver.SetInitialPoints(x0)
     solver.SetStrictRanges(lb, ub)
@@ -80,8 +81,8 @@ Time elapsed:  0.113857030869  seconds
     from mystic.solvers import DifferentialEvolutionSolver2
     from mystic.termination import ChangeOverGeneration as COG
     from mystic.strategy import Rand1Bin
-    esow = Sow()
-    ssow = Sow() 
+    esow = Monitor()
+    ssow = Monitor() 
     solver = DifferentialEvolutionSolver2(ndim, npop)
     solver.SetInitialPoints(x0)
     solver.SetStrictRanges(lb, ub)
@@ -102,8 +103,8 @@ Time elapsed:  0.113857030869  seconds
     print "\nUsing NelderMeadSimplexSolver:"
     from mystic.solvers import NelderMeadSimplexSolver
     from mystic.termination import CandidateRelativeTolerance as CRT
-    esow = Sow()
-    ssow = Sow() 
+    esow = Monitor()
+    ssow = Monitor() 
     solver = NelderMeadSimplexSolver(ndim)
     solver.SetInitialPoints(x0)
     solver.SetStrictRanges(lb, ub)
@@ -123,8 +124,8 @@ Time elapsed:  0.113857030869  seconds
     print "\nUsing PowellDirectionalSolver:"
     from mystic.solvers import PowellDirectionalSolver
     from mystic.termination import NormalizedChangeOverGeneration as NCOG
-    esow = Sow()
-    ssow = Sow() 
+    esow = Monitor()
+    ssow = Monitor() 
     solver = PowellDirectionalSolver(ndim)
     solver.SetInitialPoints(x0)
     solver.SetStrictRanges(lb, ub)
@@ -183,8 +184,8 @@ Time elapsed:  32.8412370682  seconds
     from mystic.termination import CandidateRelativeTolerance as CRT
     from mystic.termination import VTR
     from mystic.strategy import Rand1Bin, Best1Bin, Rand1Exp
-    esow = Sow()
-    ssow = Sow() 
+    esow = Monitor()
+    ssow = Monitor() 
     solver = DifferentialEvolutionSolver(ndim, npop)
     solver.SetRandomInitialPoints(lb, ub)
     solver.SetStrictRanges(lb, ub)
@@ -213,8 +214,8 @@ Time elapsed:  32.8412370682  seconds
     from mystic.termination import CandidateRelativeTolerance as CRT
     from mystic.termination import VTR
     from mystic.strategy import Rand1Bin, Best1Bin, Rand1Exp
-    esow = Sow()
-    ssow = Sow() 
+    esow = Monitor()
+    ssow = Monitor() 
     solver = DifferentialEvolutionSolver2(ndim, npop)
     solver.SetRandomInitialPoints(lb, ub)
     solver.SetStrictRanges(lb, ub)

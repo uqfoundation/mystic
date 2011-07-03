@@ -27,9 +27,9 @@ if __name__=='__main__':
     print "Powell Direction Set Method"
     print "==========================="
     start = time.time()
-    from mystic.tools import Sow, VerboseSow
-    stepmon = VerboseSow(1,1)
-   #stepmon = Sow() #VerboseSow(10)
+    from mystic.monitors import Monitor, VerboseMonitor
+    stepmon = VerboseMonitor(1,1)
+   #stepmon = Monitor() #VerboseMonitor(10)
     from mystic.termination import NormalizedChangeOverGeneration as NCOG
 
    #from scipy.optimize import fmin_powell

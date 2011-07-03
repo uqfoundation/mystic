@@ -545,7 +545,7 @@ Additional Inputs:
     def dummy_func(x):
         return 1.
 
-    from mystic.differential_evolution import DifferentialEvolutionSolver
+    from mystic.solvers import DifferentialEvolutionSolver
     from mystic.termination import ChangeOverGeneration as COG
     solver = DifferentialEvolutionSolver(ndim, 40)
     if guess != None:

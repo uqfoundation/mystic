@@ -14,7 +14,7 @@ from mystic.filters import PickComponent
 def de_solve(CF):
     solver = DifferentialEvolutionSolver(ND, NP)
 
-    stepmon = Sow()
+    stepmon = Monitor()
     minrange = [-1000., -1000., -100., -10.];
     maxrange = [1000., 1000., 100., 10.];
     solver.SetRandomInitialPoints(min = minrange, max = maxrange)

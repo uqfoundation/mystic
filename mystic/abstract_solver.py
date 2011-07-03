@@ -23,13 +23,13 @@ A typical call to a mystic solver will roughly follow this example:
     >>> x0 = [0.8, 1.2, 0.7]
     >>> 
     >>> # get monitors and termination condition objects
-    >>> from mystic.tools import Sow
-    >>> stepmon = Sow()
-    >>> evalmon = Sow()
+    >>> from mystic.monitors import Monitor
+    >>> stepmon = Monitor()
+    >>> evalmon = Monitor()
     >>> from mystic.termination import CandidateRelativeTolerance as CRT
     >>> 
     >>> # instantiate and configure the solver
-    >>> from mystic.scipy_optimize import NelderMeadSimplexSolver
+    >>> from mystic.solvers import NelderMeadSimplexSolver
     >>> solver = NelderMeadSimplexSolver(len(x0))
     >>> solver.SetInitialPoints(x0)
     >>> solver.enable_signal_handler()
@@ -47,7 +47,7 @@ An equivalent, yet less flexible, call using the minimal interface is:
     >>> x0 = [0.8, 1.2, 0.7]
     >>> 
     >>> # configure the solver and obtain the solution
-    >>> from mystic.scipy_optimize import fmin
+    >>> from mystic.solvers import fmin
     >>> solution = fmin(rosen,x0)
 
 

@@ -23,9 +23,9 @@ if __name__=='__main__':
     print "Nelder-Mead Simplex"
     print "==================="
     start = time.time()
-    from mystic.tools import Sow, VerboseSow
-   #stepmon = VerboseSow(1)
-    stepmon = Sow() #VerboseSow(10)
+    from mystic.monitors import Monitor, VerboseMonitor
+   #stepmon = VerboseMonitor(1)
+    stepmon = Monitor() #VerboseMonitor(10)
     from mystic.termination import CandidateRelativeTolerance as CRT
 
    #from scipy.optimize import fmin

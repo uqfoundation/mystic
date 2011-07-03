@@ -12,7 +12,7 @@ from scipy.integrate import romberg
 from mystic.solvers import DifferentialEvolutionSolver2 as DifferentialEvolutionSolver
 from mystic.termination import ChangeOverGeneration, VTR
 from mystic.tools import getch, random_seed
-from mystic.tools import VerboseSow as MySow
+from mystic.monitors import VerboseMonitor as MyMonitor
 
 from mystic.models.br8 import decay; F = decay.ForwardFactory
 from mystic.models.br8 import cost as myCF
@@ -62,7 +62,7 @@ def de_solve(CF, a4=None, a5=None):
 
     solver = DifferentialEvolutionSolver(ND, NP)
     solver.enable_signal_handler()
-    stepmon = MySow(interval)
+    stepmon = MyMonitor(interval)
     solver.SetRandomInitialPoints(min=minrange,max=maxrange)
     solver.SetStrictRanges(min=minrange, max=maxrange)
     solver.SetEvaluationLimits(maxiter=MAX_GENERATIONS)

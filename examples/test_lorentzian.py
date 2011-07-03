@@ -51,7 +51,7 @@ maxrange = [2, 60., -5, 50, 2, 1, 1]
 def de_solve(CF):
     solver = DifferentialEvolutionSolver(ND, NP)
     solver.enable_signal_handler()
-    stepmon = Sow()
+    stepmon = Monitor()
     solver.SetRandomInitialPoints(min=minrange,max=maxrange)
     solver.SetStrictRanges(min=minrange,max=maxrange)
     solver.SetEvaluationLimits(maxiter=MAX_GENERATIONS)

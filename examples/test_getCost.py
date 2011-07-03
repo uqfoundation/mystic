@@ -11,7 +11,8 @@ from forward_model import *
 from mystic.math import poly1d as ForwardPolyFactory
 from mystic.models import poly; PolyCostFactory = poly.CostFactory
 from mystic.solvers import DifferentialEvolutionSolver
-from mystic.tools import VerboseSow, getch
+from mystic.monitors import VerboseMonitor
+from mystic.tools import getch
 
 ND = 3
 NP = 80
@@ -28,7 +29,7 @@ def de_solve(CF):
     solver = DifferentialEvolutionSolver(ND, NP)
     solver.enable_signal_handler()
 
-    stepmon = VerboseSow(10,50)
+    stepmon = VerboseMonitor(10,50)
     minrange = [-100., -100., -100.];
     maxrange = [100., 100., 100.];
     solver.SetRandomInitialPoints(min = minrange, max = maxrange)

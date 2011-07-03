@@ -28,7 +28,7 @@ def main():
 
     solver.Solve(ChebyshevCost, termination=VTR(0.01), strategy=strategy, \
                  CrossProbability=1.0, ScalingFactor=0.9 , \
-                 StepMonitor=VerboseSow(30), sigint_callback=plot_solution)
+                 StepMonitor=VerboseMonitor(30), sigint_callback=plot_solution)
 
     solution = solver.Solution()
 

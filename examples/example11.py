@@ -24,7 +24,8 @@ from mystic.models.poly import chebyshev8coeffs
 
 # tools
 from mystic.termination import CandidateRelativeTolerance as CRT
-from mystic.tools import getch, random_seed, VerboseSow, Sow
+from mystic.monitors import VerboseMonitor, Monitor
+from mystic.tools import getch, random_seed
 from mystic.math import poly1d
 import pylab
 pylab.ion()
@@ -93,8 +94,8 @@ if __name__ == '__main__':
     max_bounds = [200, 1,   0, 1,200, 1,   0, inf, inf]
 
     # configure monitors
-    stepmon = VerboseSow(100)
-    evalmon = Sow()
+    stepmon = VerboseMonitor(100)
+    evalmon = Monitor()
 
     # use Nelder-Mead to solve 8th-order Chebyshev coefficients
     solver = NelderMeadSimplexSolver(ndim)

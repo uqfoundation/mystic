@@ -22,7 +22,8 @@ Bull. Earthquake. Res. Inst., 36, 99-134, 1958.
 import pylab
 from mystic.solvers import DifferentialEvolutionSolver
 from mystic.termination import ChangeOverGeneration, VTR
-from mystic.tools import getch, Sow, random_seed, VerboseSow
+from mystic.monitors import Monitor, VerboseMonitor
+from mystic.tools import getch, random_seed
 
 from numpy import pi, sqrt, array, mgrid, random, real, conjugate, arange
 from numpy.random import rand
@@ -81,7 +82,7 @@ MAX_GENERATIONS = 2500
 def de_solve():
     solver = DifferentialEvolutionSolver(ND, NP)
 
-    stepmon = Sow()
+    stepmon = Monitor()
     minrange = [-1000., -1000., -100., -10.];
     maxrange = [1000., 1000., 100., 10.];
     solver.SetRandomInitialPoints(min = minrange, max = maxrange)
@@ -123,7 +124,7 @@ if __name__ == '__main__':
     # this will try nelder-mead from an unconverged DE solution 
     #point = dstepmon.x[-150]
     #
-    simplex, esow = Sow(), Sow()
+    simplex, esow = Monitor(), Monitor()
     solver = fmin(len(point))
     solver.SetInitialPoints(point)
     solver.Solve(cost_function, CRT(), EvaluationMonitor = esow, StepMonitor = simplex)

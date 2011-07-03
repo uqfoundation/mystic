@@ -23,7 +23,8 @@ from mystic.models.poly import chebyshev8coeffs
 # tools
 from mystic.termination import NormalizedChangeOverGeneration as NCOG
 from mystic.math import poly1d
-from mystic.tools import getch, VerboseSow
+from mystic.monitors import VerboseMonitor
+from mystic.tools import getch
 import pylab
 pylab.ion()
 
@@ -68,7 +69,7 @@ if __name__ == '__main__':
     plot_exact()
 
     # configure monitor
-    stepmon = VerboseSow(1)
+    stepmon = VerboseMonitor(1)
 
     # use lattice-Powell to solve 8th-order Chebyshev coefficients
     solver = LatticeSolver(ndim, nbins)

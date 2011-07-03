@@ -29,7 +29,8 @@ except:
 from mystic.solvers import DifferentialEvolutionSolver2
 from mystic.termination import ChangeOverGeneration, VTR
 from mystic.strategy import Best1Exp
-from mystic.tools import VerboseSow, random_seed
+from mystic.monitors import VerboseMonitor
+from mystic.tools import random_seed
 
 #from raw_rosen import rosen as myCost     # ez_map needs a helper function
 from mystic.models import rosen as myCost  # ez_map2 doesn't require help
@@ -52,8 +53,8 @@ if __name__=='__main__':
         print func
         return
 
-    psow = VerboseSow(10)
-    ssow = VerboseSow(10)
+    psow = VerboseMonitor(10)
+    ssow = VerboseMonitor(10)
 
     random_seed(seed)
     print "first sequential..."

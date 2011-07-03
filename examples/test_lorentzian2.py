@@ -12,7 +12,8 @@ from numpy import *
 from mystic.solvers import DifferentialEvolutionSolver
 from mystic.termination import ChangeOverGeneration, VTR
 from mystic.strategy import Best1Exp, Rand1Exp, Best2Exp, Best2Exp
-from mystic.tools import getch, Sow, random_seed
+from mystic.monitors import Monitor
+from mystic.tools import getch, random_seed
 
 random.seed(123)
 
@@ -52,7 +53,7 @@ maxrange = [2, 60., -5, 50, 2, 1, 200]
 def de_solve(CF):
     solver = DifferentialEvolutionSolver(ND, NP)
     solver.enable_signal_handler()
-    stepmon = Sow()
+    stepmon = Monitor()
     solver.SetRandomInitialPoints(min=minrange,max=maxrange)
     solver.SetStrictRanges(min=minrange,max=maxrange)
     solver.SetEvaluationLimits(maxiter=MAX_GENERATIONS)
