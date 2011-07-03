@@ -462,7 +462,7 @@ For example:
   return weights, coords
 
 
-def _flat_split(params, npts):
+def split_param(params, npts):
   """
 splits a flat parameter list into a flat list of weights
 and a flat list of positions;  weights and positions are expected
@@ -475,7 +475,7 @@ Inputs:
 For example:
     >>> nx = 3;  ny = 2;  nz = 1
     >>> par = ['wx']*nx + ['x']*nx + ['wy']*ny + ['y']*ny + ['wz']*nz + ['z']*nz
-    >>> weights, positions = _flat_split(par, (nx,ny,nz))
+    >>> weights, positions = split_param(par, (nx,ny,nz))
     >>> weights
     ['wx','wx','wx','wy','wy','wz']
     >>> positions
@@ -484,5 +484,8 @@ For example:
   w,x = _nested_split(params, npts)
   return _flat(w), _flat(x)
 
+
+# backward compatibility
+_flat_split = split_param
 
 # EOF
