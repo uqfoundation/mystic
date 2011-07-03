@@ -107,7 +107,7 @@ def test_calculate_methods(npts=2):
   
 
 def test_set_behavior():
-  from mystic.math import approx_equal as almostEqual
+  from mystic.math import almostEqual
   from numpy import inf
 
   # check basic behavior for set of two points
@@ -172,7 +172,7 @@ def test_pack_unpack():
   return
 
 def test_collection_behavior():
-  from mystic.math import approx_equal as almostEqual
+  from mystic.math import almostEqual
   from numpy import inf
   def f(x): return sum(x)  # a test function for expectation value
 

@@ -1,8 +1,10 @@
 #!/usr/bin/env python
+#
+# almostEqual is a repackaging of numpy.allclose, but at different 'tol'
+# approx_equal is similar to almostEqual, and can be treated as deprecated
 """
 tools for measuring equality
 """
-#NOTE: need to comapre to numpy.allclose...
 
 def _float_approx_equal(x, y, tol=1e-18, rel=1e-7):
     if tol is rel is None:
@@ -60,3 +62,49 @@ def approx_equal(x, y, *args, **kwargs):
     # approximate equal comparison (or are both floats). Fall back to a numeric
     # comparison.
     return _float_approx_equal(x, y, *args, **kwargs)
+
+
+def almostEqual(x, y, tol=1e-18, rel=1e-7):
+    """
+    Returns True if two arrays are element-wise equal within a tolerance.
+    
+    The tolerance values are positive, typically very small numbers.  The
+    relative difference (`rtol` * abs(`b`)) and the absolute difference
+    `atol` are added together to compare against the absolute difference
+    between `a` and `b`.
+    
+    Parameters
+    ----------
+    a, b : array_like
+        Input arrays to compare.
+    rtol : float
+        The relative tolerance parameter (see Notes).
+    atol : float
+        The absolute tolerance parameter (see Notes).
+    
+    Returns
+    -------
+    y : bool
+        Returns True if the two arrays are equal within the given
+        tolerance; False otherwise. If either array contains NaN, then
+        False is returned.
+
+    Notes
+    -----
+    If the following equation is element-wise True, then almostEqual returns
+    True.
+    
+     absolute(`a` - `b`) <= (`atol` + `rtol` * absolute(`b`))
+    
+    Examples
+    --------
+    >>> almostEqual([1e10,1.2345678], [1e10,1.2345677])
+    True
+    >>> almostEqual([1e10,1.234], [1e10,1.235])
+    False
+"""
+    from numpy import allclose
+    return allclose(x, y, rtol=rel, atol=tol)
+
+
+# end of file

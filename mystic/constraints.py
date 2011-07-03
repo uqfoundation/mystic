@@ -47,7 +47,7 @@ from __future__ import division
 from math import *
 from numpy import *
 import random
-from mystic.math import approx_equal
+from mystic.math import almostEqual
 from mystic.tools import Null, list_or_tuple_or_ndarray, permutations
 
 def linear_symbolic(A=None, b=None, G=None, h=None):
@@ -219,7 +219,7 @@ Additional Inputs:
         constraints string.
     """
     #FIXME: needs to be optimized for speed
-    from mystic.math import approx_equal
+    from mystic.math import almostEqual
     if not isinstance(constraints, str):
         #FIXME: The following is undocumented in the interface.
         #       Get 'rms error', where constraits is a function.
@@ -1596,7 +1596,7 @@ References:
         Design", by Kannan and Kramer. 1994.
 """
     #FIXME: interface needs some cleaning.
-    from mystic.math import approx_equal
+    from mystic.math import almostEqual
     disp = False # to match the defaults in the solvers
     iterated_penalty = False
     randomstate = None

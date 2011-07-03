@@ -8,7 +8,7 @@ are local optimizers."""
 
 import unittest
 from math import *
-from mystic.math import approx_equal
+from mystic.math import almostEqual
 
 disp = True # Flag for whether to display number of iterations and 
             # function evaluations
@@ -60,10 +60,10 @@ class TestZimmermann(unittest.TestCase):
 
         # Allow success if local solvers find the local or global minimum
         if local:
-            tol = 1. # Tolerance for approx_equal.
+            tol = 1. # Tolerance for almostEqual.
             for i in range(len(sol)):
-                self.assertTrue(approx_equal(sol[i], self.local[i], tol=tol) or \
-                                approx_equal(sol[i], self.expected[i], tol=tol))
+                self.assertTrue(almostEqual(sol[i], self.local[i], tol=tol) or \
+                                almostEqual(sol[i], self.expected[i], tol=tol))
             return
 
         # Verify solution is close to expected

@@ -22,13 +22,17 @@ These mathematical tools are provided::
     poly1d       -- generate a 1d polynomial instance
     gridpts      -- generate a set of regularly spaced points
     samplepts    -- generate a set of randomly sampled points 
-    approx_equal -- test if equal within some absolute or relative tolerance
+    almostEqual  -- test if equal within some absolute or relative tolerance
 
 
 """
 # functions and tools
 from poly import polyeval, poly1d
 from grid import gridpts, samplepts
+from approx import almostEqual
+
+
+# backward compatibility
 from approx import approx_equal
 
 # end of file
