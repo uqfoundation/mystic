@@ -60,7 +60,9 @@ if __name__ == '__main__':
 
     solver = fmin(len(xinit))
     solver.SetInitialPoints(xinit)
-    solver.Solve(CostFunction, CRT(), EvaluationMonitor = esow, StepMonitor = simplex)
+    solver.SetEvaluationMonitor(esow)
+    solver.SetGenerationMonitor(simplex)
+    solver.Solve(CostFunction, CRT())
     sol = solver.Solution()
     print "fmin solution: ", sol
 

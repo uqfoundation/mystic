@@ -3,7 +3,7 @@
 """
 See test_mogi.py
 
-This uses Nelder-Mead and StepMonitor
+This uses Nelder-Mead and GenerationMonitor
 """
 
 import sam
@@ -66,7 +66,8 @@ def run_once_xy():
 
     solver = fmin(len(xinit))
     solver.SetInitialPoints(xinit)
-    solver.Solve(cost_function, termination=CRT(), StepMonitor = simplex)
+    solver.SetGenerationMonitor(simplex)
+    solver.Solve(cost_function, termination=CRT())
     sol = solver.Solution()
     print sol
     
@@ -84,7 +85,8 @@ def run_once_xv():
 
     solver = fmin(len(xinit))
     solver.SetInitialPoints(xinit)
-    solver.Solve(cost_function, termination=CRT(), StepMonitor = simplex)
+    solver.SetGenerationMonitor(simplex)
+    solver.Solve(cost_function, termination=CRT())
     sol = solver.Solution()
     print sol
 

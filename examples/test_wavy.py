@@ -53,10 +53,10 @@ def main():
 
     strategy = Best1Bin
     stepmon = VerboseMonitor(1)
-    solver.Solve(wavy,
-                 termination = ChangeOverGeneration(generations=50), \
+    solver.SetGenerationMonitor(stepmon)
+    solver.Solve(wavy, ChangeOverGeneration(generations=50), \
                  strategy=strategy, CrossProbability=1.0, ScalingFactor=0.9, \
-                 StepMonitor = stepmon,  sigint_callback = plot_solution)
+                 sigint_callback = plot_solution)
 
     solution = solver.Solution()
 

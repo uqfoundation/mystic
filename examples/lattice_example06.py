@@ -75,8 +75,9 @@ if __name__ == '__main__':
     solver = LatticeSolver(ndim, nbins)
     solver.SetNestedSolver(PowellDirectionalSolver)
    #solver.SetMapper(ez_map)
+    solver.SetGenerationMonitor(stepmon)
     solver.SetStrictRanges(min=[-300]*ndim, max=[300]*ndim)
-    solver.Solve(chebyshev8cost, NCOG(1e-4), StepMonitor=stepmon, disp=1)
+    solver.Solve(chebyshev8cost, NCOG(1e-4), disp=1)
     solution = solver.Solution()
 
     # use monitor to retrieve results information

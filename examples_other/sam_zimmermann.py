@@ -5,7 +5,7 @@ See test_zimmermann.py.
 
 This one uses Nelder-Mead plus matlab viz.
 
-It uses the StepMonitor option to track all simplices generated during 
+It uses a GenerationMonitor to track all simplices generated during 
 the search.
 """
 
@@ -42,7 +42,8 @@ def run_once():
     simplex = Monitor()
     solver = fmin(2)
     solver.SetRandomInitialPoints([0,0],[7,7])
-    solver.Solve(CostFunction, termination=CRT(), StepMonitor = simplex)
+    solver.SetGenerationMonitor(simplex)
+    solver.Solve(CostFunction, termination=CRT())
     sol = solver.Solution()
 
     for x in simplex.x:

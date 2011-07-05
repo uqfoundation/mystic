@@ -46,7 +46,8 @@ A typical call to a 'map' solver will roughly follow this example:
     >>> solver = ScattershotSolver(len(lb), npts)
     >>> solver.SetMapper(ez_map2, equalportion_mapper)
     >>> solver.SetLauncher(mpirun_launcher, NNODES)
-    >>> solver.Solve(rosen, CRT(), StepMonitor=stepmon)
+    >>> solver.SetGenerationMonitor(stepmon)
+    >>> solver.Solve(rosen, CRT())
     >>> 
     >>> # obtain the solution
     >>> solution = solver.Solution()
@@ -72,7 +73,7 @@ when the solver has been launched in parallel.***
 __all__ = ['AbstractMapSolver']
 
 
-from mystic.tools import Null
+from mystic.monitors import Null
 from mystic.abstract_solver import AbstractSolver
 
 

@@ -48,7 +48,8 @@ from math import *
 from numpy import *
 import random
 from mystic.math import almostEqual
-from mystic.tools import Null, list_or_tuple_or_ndarray, permutations
+from mystic.tools import list_or_tuple_or_ndarray, permutations
+from mystic.monitors import Null
 
 def linear_symbolic(A=None, b=None, G=None, h=None):
     """Convert linear equality and inequality constraints from matrices to a 
@@ -1799,9 +1800,10 @@ References:
 
         # Perform the 'inner' optimization
         solver.SetInitialPoints(x0)
-        solver.Solve(wrapped_costfunc, term, StepMonitor=StepMonitor,\
-                    EvaluationMonitor=EvaluationMonitor,\
-                    sigint_callback=sigint_callback, **kwds)
+        solver.SetEvaluationMonitor(EvaluationMonitor)
+        solver.SetGenerationMonitor(StepMonitor)
+        solver.Solve(wrapped_costfunc, term, \
+                     sigint_callback=sigint_callback, **kwds)
         x = solver.Solution()
 
         # When a user sets maxiter and maxfun, that is actually the maxiter 

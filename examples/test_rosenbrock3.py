@@ -39,8 +39,9 @@ if __name__=='__main__':
     solver.SetInitialPoints(x0)
     solver.SetStrictRanges(min,max)
    #solver.SetEvaluationLimits(maxiter=13)
+    solver.SetGenerationMonitor(stepmon)
     solver.enable_signal_handler()
-    solver.Solve(rosen,termination=NCOG(tolerance=1e-4),StepMonitor=stepmon,disp=1, constraints=constrain)
+    solver.Solve(rosen, NCOG(tolerance=1e-4), disp=1, constraints=constrain)
     print solver.Solution()
    #print "Current function value: %s" % solver.bestEnergy
    #print "Iterations: %s" % solver.generations

@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+#
+# Null was adapted (and bugfixed) from the python cookbook
 """
 monitors: callable class instances that record data
 
@@ -15,6 +17,7 @@ monitors are available::
     - VerboseMonitor -- a verbose monitor; also writes to stdout/stderr
     - LoggingMonitor -- a logging monitor; also writes to a logfile
     - CustomMonitor  -- a customizable 'n-variable' version of Monitor
+    - Null           -- a null object, which reliably does nothing
 
 
 Usage
@@ -35,8 +38,9 @@ or bound to a cost function by a Solver.  The typical usage pattern is::
     >>> solver.SetInitialPoints(x0)
     >>>
     >>> # associate the monitor with a solver, then solve
-    >>> solver.Solve(rosen, CRT(), EvaluationMonitor=evalmon, \
-    ...                            StepMonitor=stepmon)
+    >>> solver.SetEvaluationMonitor(evalmon)
+    >>> solver.SetGenerationMonitor(stepmon)
+    >>> solver.Solve(rosen, CRT())
     >>>
     >>> # access the 'iteration' history
     >>> stepmon.x     # parameters after each iteration
@@ -48,6 +52,27 @@ or bound to a cost function by a Solver.  The typical usage pattern is::
 
 
 """
+
+class Null(object):
+    """A Null object
+
+Null objects always and reliably "do nothing." """
+    # optional optimization: ensure only one instance per subclass
+    # (essentially just to save memory, no functional difference)
+    #
+    # from the Python cookbook, but type.__new__ replaced by object.__new__
+    #
+    def __new__(cls, *args, **kwargs):
+        if '_inst' not in vars(cls):
+            cls._inst = object.__new__(cls) #, *args, **kwargs)
+        return cls._inst
+    def __init__(self, *args, **kwargs): pass
+    def __call__(self, *args, **kwargs): return self
+    def __repr__(self): return "Null( )"
+    def __nonzero__(self): return False
+    def __getattr__(self, name): return self
+    def __setattr__(self, name, value): return self
+    def __delattr__(self, name): return self
 
 class Monitor(object):
     """

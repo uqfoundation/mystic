@@ -48,6 +48,7 @@ def main(servers,ncpus):
     solver.SetMapper(pp_map)
     solver.SetRandomInitialPoints(min = [-100.0]*ND, max = [100.0]*ND)
     solver.SetEvaluationLimits(maxiter=MAX_GENERATIONS)
+    solver.SetGenerationMonitor(VerboseMonitor(30))
     solver.enable_signal_handler()
   
     strategy = Best1Exp
@@ -56,7 +57,7 @@ def main(servers,ncpus):
     solver.SelectServers(servers,ncpus)
     solver.Solve(ChebyshevCost, termination=VTR(0.01), strategy=strategy, \
                  CrossProbability=1.0, ScalingFactor=0.9 , \
-                 StepMonitor=VerboseMonitor(30), sigint_callback=plot_solution)
+                 sigint_callback=plot_solution)
 
     solution = solver.Solution()
 

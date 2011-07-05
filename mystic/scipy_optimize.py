@@ -58,7 +58,7 @@ __all__ = ['NelderMeadSimplexSolver','PowellDirectionalSolver',
            'fmin','fmin_powell']
 
 
-from mystic.tools import Null, wrap_function
+from mystic.tools import wrap_function
 from mystic.tools import wrap_bounds, wrap_nested
 
 import numpy
@@ -126,7 +126,7 @@ The size of the simplex is dim+1.
         return x0, val
 
     def Solve(self, func, termination, sigint_callback=None,
-              EvaluationMonitor=Null, StepMonitor=Null, ExtraArgs=(), **kwds):
+                                       ExtraArgs=(), **kwds):
         """Minimize a function using the downhill simplex algorithm.
 
 Description:
@@ -142,10 +142,6 @@ Inputs:
 Additional Inputs:
 
     sigint_callback -- callback function for signal handler.
-    EvaluationMonitor -- a callable object that will be passed x, fval
-        whenever the cost function is evaluated.
-    StepMonitor -- a callable object that will be passed x, fval
-        after the end of a simplex iteration.
     ExtraArgs -- extra arguments for func.
 
 Further Inputs:
@@ -171,12 +167,17 @@ Further Inputs:
         if kwds.has_key('radius'): radius = kwds['radius']
         if kwds.has_key('constraints'): constraints = kwds['constraints']
         if not constraints: constraints = lambda x: x
+        # backward compatibility
+        if kwds.has_key('EvaluationMonitor'): \
+           self._evalmon = kwds['EvaluationMonitor']
+        if kwds.has_key('StepMonitor'): \
+           self._stepmon = kwds['StepMonitor']
         #-------------------------------------------------------------
 
         import signal
         self._EARLYEXIT = False
 
-        self._fcalls, func = wrap_function(func, args, EvaluationMonitor)
+        self._fcalls, func = wrap_function(func, args, self._evalmon)
         if self._useStrictRange:
             x0 = self._clipGuessWithinRangeBoundary(x0)
             func = wrap_bounds(func, self._strictMin, self._strictMax)
@@ -213,7 +214,7 @@ Further Inputs:
         if retall:
             allvecs = [sim[0]]
         fsim[0] = func(x0)
-        StepMonitor(sim[0], fsim[0], id) # sim = all; "best" is sim[0]
+        self._stepmon(sim[0], fsim[0], id) # sim = all; "best" is sim[0]
 
         #--- ensure initial simplex is within bounds ---
         x0,val = self._setSimplexWithinRangeBoundary(x0,radius)
@@ -234,7 +235,7 @@ Further Inputs:
         self.population = sim
         self.popEnergy = fsim
         self.energy_history.append(self.bestEnergy)
-        StepMonitor(sim[0], fsim[0], id) # sim = all; "best" is sim[0]
+        self._stepmon(sim[0], fsim[0], id) # sim = all; "best" is sim[0]
 
         iterations = 1
 
@@ -305,7 +306,7 @@ Further Inputs:
             self.population = sim
             self.popEnergy = fsim
             self.energy_history.append(self.bestEnergy)
-            StepMonitor(sim[0], fsim[0],id) # sim = all; "best" is sim[0]
+            self._stepmon(sim[0], fsim[0],id) # sim = all; "best" is sim[0]
 
         self.generations = iterations
         signal.signal(signal.SIGINT,signal.default_int_handler)
@@ -398,8 +399,9 @@ Returns: (xopt, {fopt, iter, funcalls, warnflag}, {allvecs})
     solver.SetInitialPoints(x0)
     solver.enable_signal_handler()
     solver.SetEvaluationLimits(maxiter,maxfun)
+    solver.SetEvaluationMonitor(evalmon)
+    solver.SetGenerationMonitor(stepmon)
     solver.Solve(func,termination=CRT(xtol,ftol),\
-                 EvaluationMonitor=evalmon,StepMonitor=stepmon,\
                  disp=disp, ExtraArgs=args, callback=callback)
     solution = solver.Solution()
 
@@ -460,7 +462,7 @@ Takes one initial input:
 
 
     def Solve(self, func, termination, sigint_callback=None,
-              EvaluationMonitor=Null, StepMonitor=Null, ExtraArgs=(), **kwds):
+                                       ExtraArgs=(), **kwds):
         """Minimize a function using modified Powell's method.
 
 Description:
@@ -476,10 +478,6 @@ Inputs:
 Additional Inputs:
 
     sigint_callback -- callback function for signal handler.
-    EvaluationMonitor -- a callable object that will be passed x, fval
-        whenever the cost function is evaluated.
-    StepMonitor -- a callable object that will be passed x, fval
-        after the end of a simplex iteration.
     ExtraArgs -- extra arguments for func.
 
 Further Inputs:
@@ -509,12 +507,17 @@ Further Inputs:
         if kwds.has_key('disp'): disp = kwds['disp']
         if kwds.has_key('constraints'): constraints = kwds['constraints']
         if not constraints: constraints = lambda x: x
+        # backward compatibility
+        if kwds.has_key('EvaluationMonitor'): \
+           self._evalmon = kwds['EvaluationMonitor']
+        if kwds.has_key('StepMonitor'): \
+           self._stepmon = kwds['StepMonitor']
         #-------------------------------------------------------------
 
         import signal
         self._EARLYEXIT = False
 
-        self._fcalls, func = wrap_function(func, args, EvaluationMonitor)
+        self._fcalls, func = wrap_function(func, args, self._evalmon)
         if self._useStrictRange:
             x0 = self._clipGuessWithinRangeBoundary(x0)
             func = wrap_bounds(func, self._strictMin, self._strictMax)
@@ -554,7 +557,7 @@ Further Inputs:
         self.population[0] = x    #XXX: pointless?
         self.popEnergy[0] = fval  #XXX: pointless?
         self.energy_history.append(self.bestEnergy)
-        StepMonitor(x, fval, id) # get initial values
+        self._stepmon(x, fval, id) # get initial values
 
         iter = 0;
         ilist = range(N)
@@ -612,7 +615,7 @@ Further Inputs:
             self.bestEnergy = fval
             self.population[0] = x    #XXX: pointless
             self.popEnergy[0] = fval  #XXX: pointless
-            StepMonitor(x, fval, id) # get ith values
+            self._stepmon(x, fval, id) # get ith values
     
         self.generations = iter
         signal.signal(signal.SIGINT,signal.default_int_handler)
@@ -710,8 +713,9 @@ Returns: (xopt, {fopt, direc, iter, funcalls, warnflag}, {allvecs})
     solver.SetInitialPoints(x0)
     solver.enable_signal_handler()
     solver.SetEvaluationLimits(maxiter,maxfun)
+    solver.SetEvaluationMonitor(evalmon)
+    solver.SetGenerationMonitor(stepmon)
     solver.Solve(func,termination=NCOG(ftol),\
-                 EvaluationMonitor=evalmon,StepMonitor=stepmon,\
                  xtol=xtol, ExtraArgs=args, callback=callback, \
                  disp=disp, direc=direc)   #XXX: last two lines use **kwds
     solution = solver.Solution()

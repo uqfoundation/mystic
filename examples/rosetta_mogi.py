@@ -77,7 +77,9 @@ def mystic_optimize(point):
     simplex, esow = VerboseMonitor(50), Monitor()
     solver = fmin(len(point))
     solver.SetInitialPoints(point)
-    solver.Solve(cost_function, CRT(), EvaluationMonitor = esow, StepMonitor = simplex)
+    solver.SetEvaluationMonitor(esow)
+    solver.SetGenerationMonitor(simplex)
+    solver.Solve(cost_function, CRT())
     solution = solver.Solution()
     return solution
 # --- Mystic end ---
@@ -93,9 +95,10 @@ def mystic_optimize2(point):
     simplex, esow = VerboseMonitor(50), Monitor()
     solver = de(len(point),NPOP)
     solver.SetInitialPoints(point)
+    solver.SetEvaluationMonitor(esow)
+    solver.SetGenerationMonitor(simplex)
     solver.Solve(cost_function, COG(generations=100), \
-                 CrossProbability=0.5, ScalingFactor=0.5, \
-                 EvaluationMonitor = esow, StepMonitor = simplex)
+                 CrossProbability=0.5, ScalingFactor=0.5)
     solution = solver.Solution()
     return solution
 # --- Mystic end ---

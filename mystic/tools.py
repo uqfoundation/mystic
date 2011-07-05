@@ -3,7 +3,6 @@
 # Patrick Hung & Mike McKerns, Caltech
 #
 # flatten was adapted from the python cookbook
-# Null was adapted (and bugfixed) from the python cookbook
 # wrap_function was adapted from numpy
 # wrap_bounds was adapted from park
 # src & parse_from_history were copied from pathos.pyina.ez_map
@@ -14,7 +13,6 @@ Various python tools
 Main functions exported are:: 
     - flatten: flatten a sequence
     - flatten_array: flatten an array 
-    - Null: a Null object pattern
     - getch: provides "press any key to quit"
     - random_seed: sets the seed for calls to 'random()'
     - wrap_nested: nest a function call within a function object
@@ -78,27 +76,6 @@ example usage...
                  yield subitem
         else:
             yield item
-
-class Null(object):
-    """A Null object
-
-Null objects always and reliably "do nothing." """
-    # optional optimization: ensure only one instance per subclass
-    # (essentially just to save memory, no functional difference)
-    #
-    # from the Python cookbook, but type.__new__ replaced by object.__new__
-    #
-    def __new__(cls, *args, **kwargs):
-        if '_inst' not in vars(cls):
-            cls._inst = object.__new__(cls) #, *args, **kwargs)
-        return cls._inst
-    def __init__(self, *args, **kwargs): pass
-    def __call__(self, *args, **kwargs): return self
-    def __repr__(self): return "Null( )"
-    def __nonzero__(self): return False
-    def __getattr__(self, name): return self
-    def __setattr__(self, name, value): return self
-    def __delattr__(self, name): return self
 
 def getch(str="Press any key to continue"):
     "configurable pause of execution"
@@ -271,6 +248,7 @@ from monitors import Monitor as Sow
 from monitors import VerboseMonitor as VerboseSow
 from monitors import LoggingMonitor as LoggingSow
 from monitors import CustomMonitor as CustomSow
+from monitors import Null
 
 
 if __name__=='__main__':

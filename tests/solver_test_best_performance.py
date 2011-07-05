@@ -63,10 +63,11 @@ Time elapsed:  0.113857030869  seconds
     solver.SetInitialPoints(x0)
     solver.SetStrictRanges(lb, ub)
     solver.SetEvaluationLimits(maxiter=maxiter)
+    solver.SetEvaluationMonitor(esow)
+    solver.SetGenerationMonitor(ssow)
     term = COG(1e-10)
     time1 = time.time() # Is this an ok way of timing?
-    solver.Solve(costfunc, term, StepMonitor=ssow, EvaluationMonitor=esow, \
-                 strategy=Rand1Bin)
+    solver.Solve(costfunc, term, strategy=Rand1Bin)
     sol = solver.Solution()
     time_elapsed = time.time() - time1
     print "Solution: ", sol
@@ -87,10 +88,11 @@ Time elapsed:  0.113857030869  seconds
     solver.SetInitialPoints(x0)
     solver.SetStrictRanges(lb, ub)
     solver.SetEvaluationLimits(maxiter=maxiter)
+    solver.SetEvaluationMonitor(esow)
+    solver.SetGenerationMonitor(ssow)
     term = COG(1e-10)
     time1 = time.time() # Is this an ok way of timing?
-    solver.Solve(costfunc, term, StepMonitor=ssow, EvaluationMonitor=esow, \
-                 strategy=Rand1Bin)
+    solver.Solve(costfunc, term, strategy=Rand1Bin)
     sol = solver.Solution()
     time_elapsed = time.time() - time1
     print "Solution: ", sol
@@ -109,9 +111,11 @@ Time elapsed:  0.113857030869  seconds
     solver.SetInitialPoints(x0)
     solver.SetStrictRanges(lb, ub)
     solver.SetEvaluationLimits(maxiter=maxiter)
+    solver.SetEvaluationMonitor(esow)
+    solver.SetGenerationMonitor(ssow)
     term = CRT()
     time1 = time.time() # Is this an ok way of timing?
-    solver.Solve(costfunc, term, StepMonitor=ssow, EvaluationMonitor=esow)
+    solver.Solve(costfunc, term)
     sol = solver.Solution()
     time_elapsed = time.time() - time1
     print "Solution: ", sol
@@ -130,9 +134,11 @@ Time elapsed:  0.113857030869  seconds
     solver.SetInitialPoints(x0)
     solver.SetStrictRanges(lb, ub)
     solver.SetEvaluationLimits(maxiter=maxiter)
+    solver.SetEvaluationMonitor(esow)
+    solver.SetGenerationMonitor(ssow)
     term = NCOG(1e-10)
     time1 = time.time() # Is this an ok way of timing?
-    solver.Solve(costfunc, term, StepMonitor=ssow, EvaluationMonitor=esow)
+    solver.Solve(costfunc, term)
     sol = solver.Solution()
     time_elapsed = time.time() - time1
     print "Solution: ", sol
@@ -190,13 +196,15 @@ Time elapsed:  32.8412370682  seconds
     solver.SetRandomInitialPoints(lb, ub)
     solver.SetStrictRanges(lb, ub)
     solver.SetEvaluationLimits(maxiter=maxiter)
+    solver.SetEvaluationMonitor(esow)
+    solver.SetGenerationMonitor(ssow)
     solver.enable_signal_handler()
     #term = COG(1e-10)
     #term = CRT()
     term = VTR(0.)
     time1 = time.time() # Is this an ok way of timing?
-    solver.Solve(costfunc, term, StepMonitor=ssow, EvaluationMonitor=esow, \
-                 strategy=Rand1Exp, CrossProbability=0.3, ScalingFactor=1.0)
+    solver.Solve(costfunc, term, strategy=Rand1Exp, \
+                 CrossProbability=0.3, ScalingFactor=1.0)
     sol = solver.Solution()
     time_elapsed = time.time() - time1
     print "Solution: ", sol
@@ -220,12 +228,14 @@ Time elapsed:  32.8412370682  seconds
     solver.SetRandomInitialPoints(lb, ub)
     solver.SetStrictRanges(lb, ub)
     solver.SetEvaluationLimits(maxiter=maxiter)
+    solver.SetEvaluationMonitor(esow)
+    solver.SetGenerationMonitor(ssow)
     #term = COG(1e-10)
     #term = CRT()
     term = VTR(0.)
     time1 = time.time() # Is this an ok way of timing?
-    solver.Solve(costfunc, term, StepMonitor=ssow, EvaluationMonitor=esow, \
-                 strategy=Rand1Exp, CrossProbability=0.3, ScalingFactor=1.0)
+    solver.Solve(costfunc, term, strategy=Rand1Exp, \
+                 CrossProbability=0.3, ScalingFactor=1.0)
     sol = solver.Solution()
     time_elapsed = time.time() - time1
     print "Solution: ", sol

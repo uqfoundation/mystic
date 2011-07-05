@@ -23,11 +23,11 @@ def de_solve(CF):
     maxrange = [1000., 1000., 100., 1.]*2;
     solver.SetRandomInitialPoints(min = minrange, max = maxrange)
     solver.SetEvaluationLimits(maxiter=MAX_GENERATIONS)
+    solver.SetGenerationMonitor(stepmon)
 
-    solver.Solve(CF, \
-                 termination = ChangeOverGeneration(generations=300), \
+    solver.Solve(CF, termination = ChangeOverGeneration(generations=300), \
                  CrossProbability=0.5, ScalingFactor=0.5, \
-                 StepMonitor = stepmon, sigint_callback = plot_sol)
+                 sigint_callback = plot_sol)
 
     solution = solver.Solution()
   

@@ -5,7 +5,7 @@ See test_rosenbrock.py.
 
 This one uses Nelder-Mead plus matlab viz.
 
-It uses the StepMonitor option to track all simplices generated during 
+It uses a GenerationMonitor to track all simplices generated during 
 the search.
 """
 
@@ -45,7 +45,8 @@ def run_once(x0,x1):
 
     solver = fmin(len(xinit))
     solver.SetInitialPoints(xinit)
-    solver.Solve(rosen, termination=CRT(), StepMonitor = simplex)
+    solver.SetGenerationMonitor(simplex)
+    solver.Solve(rosen, termination=CRT())
     sol = solver.Solution()
     
     for x in simplex.x:

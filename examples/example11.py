@@ -101,10 +101,11 @@ if __name__ == '__main__':
     solver = NelderMeadSimplexSolver(ndim)
     solver.SetInitialPoints(x0)
     solver.SetEvaluationLimits(maxiter=999)
+    solver.SetEvaluationMonitor(evalmon)
+    solver.SetGenerationMonitor(stepmon)
     solver.SetStrictRanges(min_bounds,max_bounds)
     solver.enable_signal_handler()
-    solver.Solve(chebyshev8cost,termination=CRT(1e-4,1e-4), \
-                 StepMonitor=stepmon, EvaluationMonitor=evalmon,
+    solver.Solve(chebyshev8cost, termination=CRT(1e-4,1e-4), \
                  sigint_callback=plot_solution)
     solution = solver.Solution()
 

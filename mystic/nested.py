@@ -27,7 +27,7 @@ For more information, see `mystic.mystic.abstract_solver`.
 """
 __all__ = ['LatticeSolver','BuckshotSolver']
 
-from mystic.tools import Null, wrap_function
+from mystic.tools import wrap_function
 
 from abstract_nested_solver import AbstractNestedSolver
 
@@ -53,7 +53,7 @@ All important class members are inherited from AbstractNestedSolver.
 #       return
 
     def Solve(self, cost, termination, sigint_callback=None,
-              EvaluationMonitor=Null, StepMonitor=Null, ExtraArgs=(), **kwds):
+                                       ExtraArgs=(), **kwds):
         """Minimize a function using batch grid optimization.
 
 Description:
@@ -69,10 +69,6 @@ Inputs:
 Additional Inputs:
 
     sigint_callback -- callback function for signal handler.
-    EvaluationMonitor -- a callable object that will be passed x, fval
-        whenever the cost function is evaluated.
-    StepMonitor -- a callable object that will be passed x, fval
-        after the end of a solver iteration.
     ExtraArgs -- extra arguments for cost.
 
 Further Inputs:
@@ -87,6 +83,11 @@ Further Inputs:
         disp=0               #non-zero to print convergence messages
 #       if kwds.has_key('callback'): callback = kwds['callback']
         if kwds.has_key('disp'): disp = kwds['disp']
+        # backward compatibility
+        if kwds.has_key('EvaluationMonitor'): \
+           self._evalmon = kwds['EvaluationMonitor']
+        if kwds.has_key('StepMonitor'): \
+           self._stepmon = kwds['StepMonitor']
         #-------------------------------------------------------------
 
         import signal
@@ -97,7 +98,7 @@ Further Inputs:
         if self._map != python_map:
             self._fcalls = [0] #FIXME: temporary patch for removing the following line
         else:
-            self._fcalls, cost = wrap_function(cost, ExtraArgs, EvaluationMonitor)
+            self._fcalls, cost = wrap_function(cost, ExtraArgs, self._evalmon)
 
         #generate signal_handler
         self._generateHandler(sigint_callback) 
@@ -143,6 +144,8 @@ def local_optimize(cost, termination, x0, rank):
     solver = LocalSolver(ndim)
     solver.id = rank
     solver.SetInitialPoints(x0)
+    solver.SetEvaluationMonitor(evalmon)
+    solver.SetGenerationMonitor(stepmon)
 """ % (self._solver.__module__, self._solver.__name__)
         if self._useStrictRange:
             local_opt += """\n
@@ -150,7 +153,7 @@ def local_optimize(cost, termination, x0, rank):
 """ % (str(lower), str(upper))
         local_opt += """\n
     solver.SetEvaluationLimits(%s, %s)
-    solver.Solve(cost, termination, StepMonitor=stepmon, EvaluationMonitor=evalmon, disp=%s)
+    solver.Solve(cost, termination, disp=%s)
     solved_params = solver.Solution()
     solved_energy = solver.bestEnergy
     return solved_params, solved_energy, stepmon, evalmon
@@ -184,10 +187,10 @@ def local_optimize(cost, termination, x0, rank):
 
         # write 'bests' to monitors  #XXX: non-best monitors may be useful too
         for i in range(len(bestpath.y)):
-            StepMonitor(bestpath.x[i], bestpath.y[i], self.id)
+            self._stepmon(bestpath.x[i], bestpath.y[i], self.id)
             #XXX: could apply callback here, or in exec'd code
         for i in range(len(besteval.y)):
-            EvaluationMonitor(besteval.x[i], besteval.y[i])
+            self._evalmon(besteval.x[i], besteval.y[i])
 
         #-------------------------------------------------------------
 
@@ -234,7 +237,7 @@ All important class members are inherited from AbstractNestedSolver.
         super(BuckshotSolver, self).__init__(dim, npts=npts)
 
     def Solve(self, cost, termination, sigint_callback=None,
-              EvaluationMonitor=Null, StepMonitor=Null, ExtraArgs=(), **kwds):
+                                       ExtraArgs=(), **kwds):
         """Minimize a function using buckshot optimization.
 
 Description:
@@ -250,10 +253,6 @@ Inputs:
 Additional Inputs:
 
     sigint_callback -- callback function for signal handler.
-    EvaluationMonitor -- a callable object that will be passed x, fval
-        whenever the cost function is evaluated.
-    StepMonitor -- a callable object that will be passed x, fval
-        after the end of a solver iteration.
     ExtraArgs -- extra arguments for cost.
 
 Further Inputs:
@@ -268,6 +267,11 @@ Further Inputs:
         disp=0               #non-zero to print convergence messages
 #       if kwds.has_key('callback'): callback = kwds['callback']
         if kwds.has_key('disp'): disp = kwds['disp']
+        # backward compatibility
+        if kwds.has_key('EvaluationMonitor'): \
+           self._evalmon = kwds['EvaluationMonitor']
+        if kwds.has_key('StepMonitor'): \
+           self._stepmon = kwds['StepMonitor']
         #-------------------------------------------------------------
 
         import signal
@@ -278,7 +282,7 @@ Further Inputs:
         if self._map != python_map:
             self._fcalls = [0] #FIXME: temporary patch for removing the following line
         else:
-            self._fcalls, cost = wrap_function(cost, ExtraArgs, EvaluationMonitor)
+            self._fcalls, cost = wrap_function(cost, ExtraArgs, self._evalmon)
 
         #generate signal_handler
         self._generateHandler(sigint_callback) 
@@ -317,6 +321,8 @@ def local_optimize(cost, termination, x0, rank):
     solver = LocalSolver(ndim)
     solver.id = rank
     solver.SetInitialPoints(x0)
+    solver.SetEvaluationMonitor(evalmon)
+    solver.SetGenerationMonitor(stepmon)
 """ % (self._solver.__module__, self._solver.__name__)
         if self._useStrictRange:
             local_opt += """\n
@@ -324,7 +330,7 @@ def local_optimize(cost, termination, x0, rank):
 """ % (str(lower), str(upper))
         local_opt += """\n
     solver.SetEvaluationLimits(%s, %s)
-    solver.Solve(cost, termination, StepMonitor=stepmon, EvaluationMonitor=evalmon, disp=%s)
+    solver.Solve(cost, termination, disp=%s)
     solved_params = solver.Solution()
     solved_energy = solver.bestEnergy
     return solved_params, solved_energy, stepmon, evalmon
@@ -358,10 +364,10 @@ def local_optimize(cost, termination, x0, rank):
 
         # write 'bests' to monitors  #XXX: non-best monitors may be useful too
         for i in range(len(bestpath.y)):
-            StepMonitor(bestpath.x[i], bestpath.y[i], self.id)
+            self._stepmon(bestpath.x[i], bestpath.y[i], self.id)
             #XXX: could apply callback here, or in exec'd code
         for i in range(len(besteval.y)):
-            EvaluationMonitor(besteval.x[i], besteval.y[i])
+            self._evalmon(besteval.x[i], besteval.y[i])
 
         #-------------------------------------------------------------
 

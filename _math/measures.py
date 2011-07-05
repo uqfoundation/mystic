@@ -248,9 +248,10 @@ For example:
     solver.SetRandomInitialPoints(min=lb,max=ub)
     solver.SetStrictRanges(min=lb,max=ub)
     solver.SetEvaluationLimits(maxiter,maxfun)
+    solver.SetEvaluationMonitor(evalmon)
+    solver.SetGenerationMonitor(stepmon)
     solver.Solve(cost,termination=VTR(tolerance),strategy=Best1Exp, \
                  CrossProbability=crossover,ScalingFactor=percent_change, \
-                 StepMonitor=stepmon, EvaluationMonitor=evalmon, \
                  constraints = _constraints)
 
     solved = solver.Solution()

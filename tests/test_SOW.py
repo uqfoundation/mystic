@@ -78,10 +78,11 @@ def test2(monitor, diffenv=None):
   solver.SetRandomInitialPoints(min=lb,max=ub)
   solver.SetStrictRanges(min=lb,max=ub)
   solver.SetEvaluationLimits(maxiter,maxfun)
+  solver.SetEvaluationMonitor(monitor)
+ #solver.SetGenerationMonitor(monitor)
 
   tol = convergence_tol
- #solver.Solve(cost, termination=COG(tol,ngen), StepMonitor=monitor)
-  solver.Solve(cost, termination=COG(tol,ngen), EvaluationMonitor=monitor)
+  solver.Solve(cost, termination=COG(tol,ngen))
 
   solved = solver.Solution()
   print "solved: %s" % solver.Solution()
@@ -104,7 +105,7 @@ if __name__ == '__main__':
 
  #test0(monitor)
  #test1(monitor)
-  test2(monitor)                 # StepMonitor works like test0
+  test2(monitor)                 # GenerationMonitor works like test0
  #test2(monitor, diffenv=False)  # (to make like test1, add enclosing [])
  #test2(monitor, diffenv=True)
 

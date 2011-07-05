@@ -65,10 +65,11 @@ if __name__ == '__main__':
     solver = DifferentialEvolutionSolver2(ndim,npop)
     solver.SetRandomInitialPoints(min=[-100]*ndim, max=[100]*ndim)
     solver.SetEvaluationLimits(maxiter=999)
+    solver.SetEvaluationMonitor(evalmon)
+    solver.SetGenerationMonitor(stepmon)
     solver.enable_signal_handler()
-    solver.Solve(chebyshev8cost,termination=VTR(0.01),strategy=Best1Exp, \
-                 CrossProbability=1.0, ScalingFactor=0.9, \
-                 StepMonitor=stepmon, EvaluationMonitor=evalmon)
+    solver.Solve(chebyshev8cost, termination=VTR(0.01), strategy=Best1Exp, \
+                 CrossProbability=1.0, ScalingFactor=0.9)
     solution = solver.Solution()
 
     # print solved coefficients and Chi-Squared

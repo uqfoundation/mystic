@@ -59,7 +59,9 @@ def mystic_optimize(point):
     solver.SetInitialPoints(point)
     min = [-100,-100,-100]; max = [100,100,100]
     solver.SetStrictRanges(min,max)
-    solver.Solve(cost_function, CRT(1e-7,1e-7), EvaluationMonitor = esow, StepMonitor = simplex)
+    solver.SetEvaluationMonitor(esow)
+    solver.SetGenerationMonitor(simplex)
+    solver.Solve(cost_function, CRT(1e-7,1e-7))
     solution = solver.Solution()
     return solution
 # --- Mystic end ---

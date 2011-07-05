@@ -139,7 +139,7 @@ A Practical Approach to Global Optimization. Springer, 1st Edition, 2005
 __all__ = ['DifferentialEvolutionSolver','DifferentialEvolutionSolver2',\
            'diffev','diffev2']
 
-from mystic.tools import Null, wrap_function, unpair
+from mystic.tools import wrap_function, unpair
 from mystic.tools import wrap_bounds
 
 from abstract_solver import AbstractSolver
@@ -190,7 +190,7 @@ are logged.
         return
 
     def Solve(self, costfunction, termination, sigint_callback=None,
-              EvaluationMonitor=Null, StepMonitor=Null, ExtraArgs=(), **kwds):
+                                               ExtraArgs=(), **kwds):
         """Minimize a function using differential evolution.
 
 Description:
@@ -206,10 +206,6 @@ Inputs:
 Additional Inputs:
 
     sigint_callback -- callback function for signal handler.
-    EvaluationMonitor -- a callable object that will be passed x, fval
-        whenever the cost function is evaluated.
-    StepMonitor -- a callable object that will be passed x, fval
-        after the end of a simplex iteration.
     ExtraArgs -- extra arguments for func.
 
 Further Inputs:
@@ -239,12 +235,17 @@ Further Inputs:
         if kwds.has_key('ScalingFactor'): ScalingFactor = kwds['ScalingFactor']
         if kwds.has_key('callback'): callback = kwds['callback']
         if kwds.has_key('disp'): disp = kwds['disp']
+        # backward compatibility
+        if kwds.has_key('EvaluationMonitor'): \
+           self._evalmon = kwds['EvaluationMonitor']
+        if kwds.has_key('StepMonitor'): \
+           self._stepmon = kwds['StepMonitor']
         #-------------------------------------------------------------
 
         import signal
         self._EARLYEXIT = False
 
-        self._fcalls, costfunction = wrap_function(costfunction, ExtraArgs, EvaluationMonitor)
+        self._fcalls, costfunction = wrap_function(costfunction, ExtraArgs, self._evalmon)
         if self._useStrictRange:
             for i in range(self.nPop):
                 self.population[i] = self._clipGuessWithinRangeBoundary(self.population[i])
@@ -278,7 +279,7 @@ Further Inputs:
                     self.bestSolution[:] = self.trialSolution[:]
 
         self.energy_history.append(self.bestEnergy)
-        StepMonitor(self.bestSolution[:], self.bestEnergy, id)
+        self._stepmon(self.bestSolution[:], self.bestEnergy, id)
         self.generations = 0  #XXX: above currently *not* counted as an iteration
         if callback is not None:
             callback(self.bestSolution)
@@ -308,7 +309,7 @@ Further Inputs:
                         self.bestSolution[:] = self.trialSolution[:]
 
             self.energy_history.append(self.bestEnergy)
-            StepMonitor(self.bestSolution[:], self.bestEnergy, id)
+            self._stepmon(self.bestSolution[:], self.bestEnergy, id)
             self.generations += 1
             if callback is not None:
                 callback(self.bestSolution)
@@ -374,7 +375,7 @@ are logged.
         return
 
     def Solve(self, costfunction, termination, sigint_callback=None,
-              EvaluationMonitor=Null, StepMonitor=Null, ExtraArgs=(), **kwds):
+                                               ExtraArgs=(), **kwds):
         """Minimize a function using differential evolution.
 
 Description:
@@ -391,10 +392,6 @@ Inputs:
 Additional Inputs:
 
     sigint_callback -- callback function for signal handler.
-    EvaluationMonitor -- a callable object that will be passed x, fval
-        whenever the cost function is evaluated.
-    StepMonitor -- a callable object that will be passed x, fval
-        after the end of a simplex iteration.
     ExtraArgs -- extra arguments for func.
 
 Further Inputs:
@@ -433,6 +430,11 @@ Further Inputs:
         if kwds.has_key('constraints'): constraints = kwds['constraints']
         if not constraints: constraints = lambda x: x
         #XXX:[HACK] -end-
+        # backward compatibility
+        if kwds.has_key('EvaluationMonitor'): \
+           self._evalmon = kwds['EvaluationMonitor']
+        if kwds.has_key('StepMonitor'): \
+           self._stepmon = kwds['StepMonitor']
         #-------------------------------------------------------------
 
         import signal
@@ -443,7 +445,7 @@ Further Inputs:
         if self._map != python_map:
             self._fcalls = [0] #FIXME: temporary patch for removing the following line
         else:
-            self._fcalls, costfunction = wrap_function(costfunction, ExtraArgs, EvaluationMonitor)
+            self._fcalls, costfunction = wrap_function(costfunction, ExtraArgs, self._evalmon)
         if self._useStrictRange:
             for i in range(self.nPop):
                 self.population[i] = self._clipGuessWithinRangeBoundary(self.population[i])
@@ -489,7 +491,7 @@ Further Inputs:
 
         self.energy_history.append(self.bestEnergy)
        #FIXME: StepMonitor works for 'pp'?
-        StepMonitor(self.bestSolution[:], self.bestEnergy, id)
+        self._stepmon(self.bestSolution[:], self.bestEnergy, id)
         self.generations = 0  #XXX: above currently *not* counted as an iteration
         if callback is not None:
             callback(self.bestSolution)
@@ -531,7 +533,7 @@ Further Inputs:
 
             self.energy_history.append(self.bestEnergy)
            #FIXME: StepMonitor works for 'pp'?
-            StepMonitor(self.bestSolution[:], self.bestEnergy, id)
+            self._stepmon(self.bestSolution[:], self.bestEnergy, id)
             self.generations += 1
             if callback is not None:
                 callback(self.bestSolution)
@@ -688,6 +690,8 @@ Returns: (xopt, {fopt, iter, funcalls, warnflag}, {allvecs})
     else:
         solver = DifferentialEvolutionSolver(ND,npop)
     solver.SetEvaluationLimits(maxiter,maxfun)
+    solver.SetEvaluationMonitor(evalmon)
+    solver.SetGenerationMonitor(stepmon)
     if bounds:
         minb,maxb = unpair(bounds)
         solver.SetStrictRanges(minb,maxb)
@@ -703,7 +707,6 @@ Returns: (xopt, {fopt, iter, funcalls, warnflag}, {allvecs})
     solver.Solve(func,termination=termination,\
                 #strategy=strategy,sigint_callback=other_callback,\
                  CrossProbability=cross,ScalingFactor=scale,\
-                 EvaluationMonitor=evalmon,StepMonitor=stepmon,\
                  ExtraArgs=args,callback=callback)
     solution = solver.Solution()
 

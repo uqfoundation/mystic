@@ -48,7 +48,8 @@ A typical call to a 'nested' solver will roughly follow this example:
     >>> solver.SetStrictRanges(lb, ub)
     >>> solver.SetMapper(ez_map2)
     >>> solver.SetLauncher(mpirun_launcher, NNODES)
-    >>> solver.Solve(rosen, CRT(), StepMonitor=stepmon)
+    >>> solver.SetGenerationMonitor(stepmon)
+    >>> solver.Solve(rosen, CRT())
     >>> 
     >>> # obtain the solution
     >>> solution = solver.Solution()
@@ -74,7 +75,7 @@ when the solver has been launched in parallel.***
 __all__ = ['AbstractNestedSolver']
 
 
-from mystic.tools import Null
+from mystic.monitors import Null
 from mystic.abstract_map_solver import AbstractMapSolver
 
 

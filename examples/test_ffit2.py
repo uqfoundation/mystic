@@ -41,6 +41,7 @@ def main():
     solver = DifferentialEvolutionSolver(ND, NP)
     solver.SetRandomInitialPoints()
     solver.SetEvaluationLimits(maxiter=MAX_GENERATIONS)
+    solver.SetGenerationMonitor(VerboseMonitor(10))
   
     #strategy = Best1Exp
     #strategy = Best1Bin
@@ -48,7 +49,7 @@ def main():
     strategy = Best2Exp
 
     solver.Solve(ChebyshevCost, termination=VTR(0.0001), strategy=strategy, \
-                 StepMonitor=VerboseMonitor(10), CrossProbability=1.0, ScalingFactor=0.6)
+                 CrossProbability=1.0, ScalingFactor=0.6)
 
     solution = solver.Solution()
   

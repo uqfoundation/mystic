@@ -87,12 +87,13 @@ def de_solve():
     maxrange = [1000., 1000., 100., 10.];
     solver.SetRandomInitialPoints(min = minrange, max = maxrange)
     solver.SetEvaluationLimits(maxiter=MAX_GENERATIONS)
+    solver.SetGenerationMonitor(stepmon)
 
    #termination = VTR(0.0000029)
     termination = ChangeOverGeneration(generations=100)
 
     solver.Solve(cost_function, termination=termination, \
-                 CrossProbability=0.5, ScalingFactor=0.5, StepMonitor=stepmon)
+                 CrossProbability=0.5, ScalingFactor=0.5)
 
     solution = solver.Solution()
   
@@ -127,7 +128,9 @@ if __name__ == '__main__':
     simplex, esow = Monitor(), Monitor()
     solver = fmin(len(point))
     solver.SetInitialPoints(point)
-    solver.Solve(cost_function, CRT(), EvaluationMonitor = esow, StepMonitor = simplex)
+    solver.SetEvaluationMonitor(esow)
+    solver.SetGenerationMonitor(simplex)
+    solver.Solve(cost_function, CRT())
     sol = solver.Solution()
 
     print "\nsimplex solution: ", sol

@@ -32,9 +32,10 @@ A typical call to a mystic solver will roughly follow this example:
     >>> from mystic.solvers import NelderMeadSimplexSolver
     >>> solver = NelderMeadSimplexSolver(len(x0))
     >>> solver.SetInitialPoints(x0)
+    >>> solver.SetEvaluationMonitor(evalmon)
+    >>> solver.SetGenerationMonitor(stepmon)
     >>> solver.enable_signal_handler()
-    >>> solver.Solve(rosen, CRT(), EvaluationMonitor=evalmon,
-    ...                            StepMonitor=stepmon)
+    >>> solver.Solve(rosen, CRT())
     >>> 
     >>> # obtain the solution
     >>> solution = solver.Solution()
@@ -69,8 +70,6 @@ the solver is running.
 """
 __all__ = ['AbstractSolver']
 
-
-from mystic.tools import Null
 
 import numpy
 from numpy import inf, shape, asarray, absolute, asfarray
@@ -130,6 +129,10 @@ Important class members:
         self._maxiter         = None
         self._maxfun          = None
 
+        from mystic.monitors import Null
+        self._stepmon         = Null
+        self._evalmon         = Null
+
         import mystic.termination
         self._EARLYEXIT       = mystic.termination.EARLYEXIT
         return
@@ -141,6 +144,34 @@ Important class members:
     def __evaluations(self):
         """get the number of function calls"""
         return self._fcalls[0]
+
+    def SetGenerationMonitor(self, monitor):
+        """select a callable to monitor (x, f(x)) after each solver iteration"""
+        from mystic.monitors import Null, Monitor#, CustomMonitor
+        if isinstance(monitor, (Null, Monitor) ):  # is Monitor() or Null()
+            self._stepmon = monitor
+        elif monitor == Null:  # is Null
+            self._stepmon = monitor
+        elif hasattr(monitor, '__module__'):  # is CustomMonitor()
+            if monitor.__module__ in ['mystic._genSow']:
+                self._stepmon = monitor
+        else:
+            raise TypeError, "'%s' is not a monitor instance" % monitor
+        return
+
+    def SetEvaluationMonitor(self, monitor):
+        """select a callable to monitor (x, f(x)) after each cost function evaluation"""
+        from mystic.monitors import Null, Monitor#, CustomMonitor
+        if isinstance(monitor, (Null, Monitor) ):  # is Monitor() or Null()
+            self._evalmon = monitor
+        elif monitor == Null:  # is Null
+            self._evalmon = monitor
+        elif hasattr(monitor, '__module__'):  # is CustomMonitor()
+            if monitor.__module__ in ['mystic._genSow']:
+                self._evalmon = monitor
+        else:
+            raise TypeError, "'%s' is not a monitor instance" % monitor
+        return
 
     def SetStrictRanges(self, min=None, max=None):
         """ensure solution is within bounds
@@ -320,7 +351,7 @@ input::
         if kwds.has_key('maxfun'): self._maxfun = kwds['maxfun']
 
     def Solve(self, func, termination, sigint_callback=None,
-              EvaluationMonitor=Null, StepMonitor=Null, ExtraArgs=(), **kwds):
+                                       ExtraArgs=(), **kwds):
         """solve function 'func' with given termination conditions
 
 *** this method must be overwritten ***"""
@@ -329,7 +360,6 @@ input::
     # extensions to the solver interface
     evaluations = property(__evaluations )
     pass
-
 
 
 if __name__=='__main__':

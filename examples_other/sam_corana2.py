@@ -44,7 +44,8 @@ def run_once():
     simplex = Monitor()
     solver = fmin(2)
     solver.SetRandomInitialPoints([0,0],[2,2])
-    solver.Solve(Corana2, termination=CRT(), StepMonitor = simplex)
+    solver.SetGenerationMonitor(simplex)
+    solver.Solve(Corana2, termination=CRT())
     sol = solver.Solution()
     
     for x in simplex.x:

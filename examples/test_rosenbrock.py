@@ -80,7 +80,9 @@ if __name__ == '__main__':
     solver.SetInitialPoints(xinit)
     solver.SetStrictRanges(min,max)
     solver.SetEvaluationLimits(maxiter=MAX_GENERATIONS)
-    solver.Solve(rosen, VTR(0.0001), EvaluationMonitor=esow, StepMonitor=ssow,\
+    solver.SetEvaluationMonitor(esow)
+    solver.SetGenerationMonitor(ssow)
+    solver.Solve(rosen, VTR(0.0001), \
                  CrossProbability=0.5, ScalingFactor=0.6, disp=1)
     sol = solver.Solution()
     print sol

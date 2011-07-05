@@ -82,10 +82,11 @@ if __name__ == '__main__':
     solver = DifferentialEvolutionSolver2(ndim,npop)
     solver.SetRandomInitialPoints(min=[-100]*ndim, max=[100]*ndim)
     solver.SetEvaluationLimits(maxiter=999)
+    solver.SetGenerationMonitor(stepmon)
     solver.enable_signal_handler()
-    solver.Solve(chebyshev8cost,termination=VTR(0.01),strategy=Best1Exp, \
+    solver.Solve(chebyshev8cost, termination=VTR(0.01), strategy=Best1Exp, \
                  CrossProbability=0.8, ScalingFactor=0.5, \
-                 StepMonitor=stepmon, sigint_callback=plot_solution)
+                 sigint_callback=plot_solution)
     solution = solver.Solution()
 
     # use monitor to retrieve results information
