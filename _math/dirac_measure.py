@@ -39,9 +39,9 @@ class dirac_measure(list):  #FIXME: meant to only accept points...
   s.var  --  calculates mean( |positions - mean(positions)|**2 )
 
  settings:
-  s.weights = [w1, w2, ..., wn]  --  set weights
-  s.coords = [x1, x2, ..., xn]  --  set positions
-  s.normalize()  --  normalizes the weights to 1.0
+  s.weights = [w1, w2, ..., wn]  --  set the weights
+  s.coords = [x1, x2, ..., xn]  --  set the positions
+  s.normalize()  --  normalize the weights to 1.0
   s.mean(R)  --  set the mean
   s.range(R)  --  set the range
   s.var(R)  --  set the variance
@@ -124,14 +124,19 @@ class product_measure(list):  #FIXME: meant to only accept sets...
   c.weights   --  returns list of weights
   c.coords  --  returns list of position tuples
   c.mass  --  returns list of weight norms
+  c.pts  --  returns number of points for each discrete measure
+  c.wts  --  returns list of weights for each discrete measure
+  c.pos  --  returns list of positions for each discrete measure
 
  settings:
-  c.coords = [(x1,y1,z1),...]  --  set positions (propagates to each set member)
+  c.coords = [(x1,y1,z1),...]  --  set the positions (tuples in product measure)
 
  methods:
   c.pof(f)  --  calculate the probability of failure
   c.get_expect(f)  --  calculate the expectation
   c.set_expect((center,delta), f)  --  impose expectation by adjusting positions
+  c.flatten()  --  convert measure to a flat list of parameters
+  c.load(params, pts)  --  'fill' the measure from a flat list of parameters
 
  notes:
   - constraints impose expect (center - delta) <= E <= (center + delta)
@@ -140,34 +145,35 @@ class product_measure(list):  #FIXME: meant to only accept sets...
   - weight wxi should be same for each (yj,zk) at xi; similarly for wyi & wzi
 """
 
+  def __pts(self):
+    return [i.npts for i in self]
+
+  def __wts(self):
+    return [i.weights for i in self]
+
+  def __pos(self):
+    return [i.coords for i in self]
+
   def __n(self):
-    npts = 1
-    for i in self:
-      npts *= i.npts
-    return npts
+    from numpy import product
+    return product(self.pts)
 
   def __weights(self):
     from mystic.math.measures import _pack
-    weights = [i.weights for i in self]
-    weights = _pack(weights)
+    from numpy import product
+    weights = _pack(self.wts)
     _weights = []
     for wts in weights:
-      weight = 1.0
-      for w in wts:
-        weight *= w
-      _weights.append(weight)
+      _weights.append(product(wts))
     return _weights
 
   def __positions(self):
     from mystic.math.measures import _pack
-    coords = [i.coords for i in self]
-    coords = _pack(coords)
-    return coords
+    return _pack(self.pos)
 
   def __set_positions(self, coords):
     from mystic.math.measures import _unpack
-    npts = [i.npts for i in self]
-    coords = _unpack(coords,npts)
+    coords = _unpack(coords, self.pts)
     for i in range(len(coords)):
       self[i].coords = coords[i]
     return
@@ -197,14 +203,18 @@ Inputs:
     (m,D) -- tuple of expectation m and acceptable deviation D
     f -- a function that takes a list and returns a number
     bounds -- tuple of lists of bounds  (lower_bounds, upper_bounds)
-    constraints -- a function that takes a nested list of N x 1D discrete
-        measure positions and weights   x' = constraints(x, w)
+    constraints -- a function that takes a product_measure  c' = constraints(c)
 """
    #self.__center = m
    #self.__delta = D
-    npts = [i.npts for i in self]
-    self.coords = impose_expectation((m,D), f, npts, bounds, self.weights, \
-                                                     constraints=constraints) 
+    if constraints:  # then need to adjust interface for 'impose_expectation'
+      def cnstr(x, w):
+        c = compose(x,w)
+        c = constraints(c)
+        return decompose(c)[0]
+    else: cnstr = constraints  # 'should' be None
+    self.coords = impose_expectation((m,D), f, self.pts, bounds, self.weights, \
+                                                         constraints=cnstr) 
     return
 
   def pof(self, f):
@@ -257,6 +267,49 @@ Returns:
     from numpy import transpose
     return transpose(pts)  #XXX: assumes 'coords' is a list of floats
 
+  def load(self, params, pts):
+    """load a list of parameters corresponding to N x 1D discrete measures
+
+Inputs:
+    params -- a list of parameters (see 'notes')
+    pts -- number of points in each of the underlying discrete measures
+
+Notes:
+    To append len(pts) new discrete measures to product measure c, where
+    pts = (M, N, ...)
+    params = [wt_x1, ..., wt_xM, \
+                 x1, ..., xM,    \
+              wt_y1, ..., wt_yN, \
+                 y1, ..., yN,    \
+                     ...]
+    Thus, the provided list is M weights and the corresponding M positions,
+    followed by N weights and the corresponding N positions, with this
+    pattern followed for each new dimension desired for the product measure.
+"""
+    c = unflatten(params, pts)
+    for i in range(len(c)):
+      self.append(c[i]) 
+    return
+
+  def flatten(self):
+    """flatten the product_measure into a list of parameters
+
+Returns:
+    params -- a list of parameters (see 'notes')
+
+Notes:
+    For a product measure c where c.pts = (M, N, ...), then
+    params = [wt_x1, ..., wt_xM, \
+                 x1, ..., xM,    \
+              wt_y1, ..., wt_yN, \
+                 y1, ..., yN,    \
+                     ...]
+    Thus, the returned list is M weights and the corresponding M positions,
+    followed by N weights and the corresponding N positions, with this
+    pattern followed for each dimension of the product measure.
+"""
+    return flatten(self)
+
  #__center = None
  #__delta = None
 
@@ -268,6 +321,9 @@ Returns:
  #delta = property(__get_delta )   #       replace with c._params (e.g. (m,D))
  #expect = property(__expect, __set_expect )
   mass = property(__mass )
+  pts = property(__pts )
+  wts = property(__wts )
+  pos = property(__pos )
   pass
 
 
@@ -298,8 +354,8 @@ For example:
   return compose(x,w)
 
 
-def compose(samples, weights):
-  """Generate a product_measure object from a nested list of N x 1D
+def _list_of_measures(samples, weights):
+  """generate a list of N x 1D discrete measures from a nested list of N x 1D
 discrete measure positions and a nested list of N x 1D weights."""
   total = []
   for i in range(len(samples)):
@@ -307,6 +363,13 @@ discrete measure positions and a nested list of N x 1D weights."""
     for j in range(len(samples[i])):
       next.append(point( samples[i][j], weights[i][j] ))
     total.append(next)
+  return total
+
+
+def compose(samples, weights):
+  """Generate a product_measure object from a nested list of N x 1D
+discrete measure positions and a nested list of N x 1D weights."""
+  total = _list_of_measures(samples, weights)
   c = product_measure(total)
   return c
 
@@ -315,8 +378,7 @@ def decompose(c):
   """Decomposes a product_measure object into a nested list of
 N x 1D discrete measure positions and a nested list of N x 1D weights."""
   from mystic.math.measures import _nested_split
-  npts = [set.npts for set in c]
-  w, x = _nested_split(flatten(c), npts)
+  w, x = _nested_split(flatten(c), c.pts)
   return x, w
 
 

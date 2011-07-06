@@ -195,7 +195,7 @@ def test_collection_behavior():
   print "z_weights: %s" % c[2].weights
   print "randomly selected support:\n %s" % c.support(10)
 
-  print "npts: %s" % c.npts
+  print "npts: %s (i.e. %s)" % (c.npts, c.pts)
   print "weights: %s" % c.weights
   coords = c.coords
   print "coords: %s" % coords
@@ -246,13 +246,21 @@ def test_flatten_unflatten():
 
   # flatten and unflatten
   from mystic.math.dirac_measure import flatten, unflatten
-  npts = [s.npts for s in c]
-  d = unflatten(flatten(c), npts)
+  d = unflatten(flatten(c), c.pts)
 
   # check if the same
   assert c.npts == d.npts
   assert c.weights == d.weights
   assert c.coords == d.coords
+
+  # flatten() and load(...)
+  e = collection()
+  e.load(c.flatten(), c.pts)
+
+  # check if the same
+  assert c.npts == e.npts
+  assert c.weights == e.weights
+  assert c.coords == e.coords
 
   # decompose and compose
   from mystic.math.dirac_measure import decompose, compose
