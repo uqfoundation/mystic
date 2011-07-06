@@ -34,7 +34,7 @@ def main():
     solver.Solve(rosen, termination = VTR(0.0001), \
                  CrossProbability=0.5, ScalingFactor=0.6, disp=1)
 
-    solution = solver.Solution()
+    solution = solver.bestSolution
    #print "Current function value: %s" % solver.bestEnergy
    #print "Iterations: %s" % solver.generations
    #print "Function evaluations: %s" % solver.evaluations
@@ -84,7 +84,7 @@ if __name__ == '__main__':
     solver.SetGenerationMonitor(ssow)
     solver.Solve(rosen, VTR(0.0001), \
                  CrossProbability=0.5, ScalingFactor=0.6, disp=1)
-    sol = solver.Solution()
+    sol = solver.bestSolution
     print sol
    #print "Current function value: %s" % solver.bestEnergy
    #print "Iterations: %s" % solver.generations

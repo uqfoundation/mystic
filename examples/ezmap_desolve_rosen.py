@@ -65,7 +65,7 @@ if __name__=='__main__':
     solver.Solve(myCost, VTR(TOL), strategy=Best1Exp, \
                  CrossProbability=CROSS, ScalingFactor=SCALE, disp=1)
     print ""
-    print_solution( solver.Solution() )
+    print_solution( solver.bestSolution )
 
     random_seed(seed)
     print "\n and now parallel..."
@@ -79,6 +79,6 @@ if __name__=='__main__':
     solver2.Solve(myCost, VTR(TOL), strategy=Best1Exp, \
                   CrossProbability=CROSS, ScalingFactor=SCALE, disp=1)
     print ""
-    print_solution( solver2.Solution() )
+    print_solution( solver2.bestSolution )
 
 # end of file

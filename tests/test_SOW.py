@@ -85,7 +85,7 @@ def test2(monitor, diffenv=None):
   solver.Solve(cost, termination=COG(tol,ngen))
 
   solved = solver.Solution()
-  print "solved: %s" % solver.Solution()
+  print "solved: %s" % solved
   func_max = -solver.bestEnergy 
   return solved, func_max
 

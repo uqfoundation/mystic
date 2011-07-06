@@ -12,6 +12,7 @@ Demonstrates:
     - built-in random initial guess
     - customized monitors and termination conditions
     - customized DE mutation strategies
+    - use of monitor to retrieve results information
 """
 
 # Differential Evolution solver

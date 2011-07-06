@@ -12,6 +12,7 @@ Demonstrates:
     - built-in random initial guess
     - customized monitors and termination conditions
     - customized DE mutation strategies
+    - use of solver members to retrieve results information
 """
 
 # Differential Evolution solver
@@ -70,10 +71,10 @@ if __name__ == '__main__':
     solver.enable_signal_handler()
     solver.Solve(chebyshev8cost, termination=VTR(0.01), strategy=Best1Exp, \
                  CrossProbability=1.0, ScalingFactor=0.9)
-    solution = solver.Solution()
+    solution = solver.bestSolution
 
-    # print solved coefficients and Chi-Squared
-    iterations = len(stepmon.x)
+    # get solved coefficients and Chi-Squared (from solver members)
+    iterations = solver.generations
     cost = solver.bestEnergy
     print "\nGeneration %d has best Chi-Squared: %f" % (iterations, cost)
     print "Solved Coefficients:\n %s\n" % poly1d(solver.bestSolution)

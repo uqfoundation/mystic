@@ -38,7 +38,7 @@ if __name__=='__main__':
     solver.SetGenerationMonitor(stepmon)
     solver.enable_signal_handler()
     solver.Solve(rosen, CRT(xtol=4e-5), disp=1)
-    print solver.Solution()
+    print solver.bestSolution
    #print "Current function value: %s" % solver.bestEnergy
    #print "Iterations: %s" % solver.generations
    #print "Function evaluations: %s" % solver.evaluations

@@ -61,7 +61,7 @@ if __name__=='__main__':
     solver.Solve(ChebyshevCost, VTR(0.01), strategy=Best1Exp, \
                  CrossProbability=1.0, ScalingFactor=0.9, disp=1)
     print ""
-    print_solution( solver.Solution() )
+    print_solution( solver.bestSolution )
 
     #'''
     random_seed(seed)
@@ -75,7 +75,7 @@ if __name__=='__main__':
     solver2.Solve(ChebyshevCost, VTR(0.01), strategy=Best1Exp, \
                   CrossProbability=1.0, ScalingFactor=0.9, disp=1)
     print ""
-    print_solution( solver2.Solution() )
+    print_solution( solver2.bestSolution )
     #'''
 
 # end of file
