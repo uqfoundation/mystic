@@ -88,6 +88,9 @@ Further Inputs:
            self._evalmon = kwds['EvaluationMonitor']
         if kwds.has_key('StepMonitor'): \
            self._stepmon = kwds['StepMonitor']
+       #if kwds.has_key('constraints'): \
+       #   self._constraints = kwds['constraints']
+       #if not self._constraints: self._constraints = lambda x: x
         #-------------------------------------------------------------
 
         import signal
@@ -151,6 +154,9 @@ def local_optimize(cost, termination, x0, rank):
             local_opt += """\n
     solver.SetStrictRanges(min=%s, max=%s)
 """ % (str(lower), str(upper))
+#        local_opt += """\n
+#    solver.SetConstraints(%s)
+#""" % (self._solver._constraints)  #FIXME: needs to take a string
         local_opt += """\n
     solver.SetEvaluationLimits(%s, %s)
     solver.Solve(cost, termination, disp=%s)
@@ -272,6 +278,9 @@ Further Inputs:
            self._evalmon = kwds['EvaluationMonitor']
         if kwds.has_key('StepMonitor'): \
            self._stepmon = kwds['StepMonitor']
+       #if kwds.has_key('constraints'): \
+       #   self._constraints = kwds['constraints']
+       #if not self._constraints: self._constraints = lambda x: x
         #-------------------------------------------------------------
 
         import signal
@@ -328,6 +337,9 @@ def local_optimize(cost, termination, x0, rank):
             local_opt += """\n
     solver.SetStrictRanges(min=%s, max=%s)
 """ % (str(lower), str(upper))
+#        local_opt += """\n
+#    solver.SetConstraints(%s)
+#""" % (self._solver._constraints)  #FIXME: needs to take a string
         local_opt += """\n
     solver.SetEvaluationLimits(%s, %s)
     solver.Solve(cost, termination, disp=%s)

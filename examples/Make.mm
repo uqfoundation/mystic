@@ -78,6 +78,7 @@ EXPORT_BINS = \
     test_rosenbrock.py \
     test_rosenbrock2.py \
     test_rosenbrock3.py \
+    test_rosenbrock3b.py \
 ##  test_twistedgaussian.py \
 ##  test_twistedgaussian2.py \
 ##  test_twistedgaussian3.py \

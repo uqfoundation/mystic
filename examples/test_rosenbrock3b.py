@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-example of using PowellDirectionalSolver on the rosenbrock function
+example of using DifferentialEvolutionSolver on the rosenbrock function
 """
 
 from mystic.models import rosen
@@ -24,18 +24,19 @@ if __name__=='__main__':
   # max = [200.001, 100.001, numpy.inf]
  #  min = [-0.999, -0.999, 0.999]
  #  max = [2.001, 1.001, 1.001]
-    print "Powell Direction Set Method"
-    print "==========================="
+    npop = 5*len(x0)
+    print "Differential Evolution"
+    print "======================"
     start = time.time()
     from mystic.monitors import Monitor, VerboseMonitor
     stepmon = VerboseMonitor(1,1)
    #stepmon = Monitor() #VerboseMonitor(10)
     from mystic.termination import NormalizedChangeOverGeneration as NCOG
 
-   #from scipy.optimize import fmin_powell
-    from mystic.solvers import fmin_powell, PowellDirectionalSolver
-   #print fmin_powell(rosen,x0,retall=0,full_output=0)#,maxiter=14)
-    solver = PowellDirectionalSolver(len(x0))
+   #from mystic.solvers import diffev, DifferentialEvolutionSolver
+    from mystic.solvers import diffev2, DifferentialEvolutionSolver2
+   #print diffev2(rosen,x0,npop,retall=0,full_output=0)#,maxiter=14)
+    solver = DifferentialEvolutionSolver2(len(x0), npop)
     solver.SetInitialPoints(x0)
     solver.SetStrictRanges(min,max)
    #solver.SetEvaluationLimits(maxiter=13)
@@ -49,7 +50,7 @@ if __name__=='__main__':
    #print "Function evaluations: %s" % solver.evaluations
 
     times.append(time.time() - start)
-    algor.append("Powell's Method\t")
+    algor.append("Differential Evolution\t")
 
     for k in range(len(algor)):
         print algor[k], "\t -- took", times[k]

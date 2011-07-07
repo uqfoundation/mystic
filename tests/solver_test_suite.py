@@ -1,5 +1,5 @@
 #!/usr/bin/python
-"""A test suite for Mystic solvers and constraints.
+"""A test suite for Mystic solvers.
 Note: VTR termination with default tolerance shouldn't work for functions 
 whose value at the minimum is negative!
 Also, the two differential evolution solvers are global, while the other solvers

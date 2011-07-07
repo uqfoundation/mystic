@@ -161,17 +161,17 @@ Further Inputs:
         retall=0       #non-zero to return all steps
         callback=None  #user-supplied function, called after each step
         radius=0.05    #percentage change for initial simplex values
-        constraints = lambda x: x # Constraints function to be imposed
         if kwds.has_key('callback'): callback = kwds['callback']
         if kwds.has_key('disp'): disp = kwds['disp']
         if kwds.has_key('radius'): radius = kwds['radius']
-        if kwds.has_key('constraints'): constraints = kwds['constraints']
-        if not constraints: constraints = lambda x: x
         # backward compatibility
         if kwds.has_key('EvaluationMonitor'): \
            self._evalmon = kwds['EvaluationMonitor']
         if kwds.has_key('StepMonitor'): \
            self._stepmon = kwds['StepMonitor']
+        if kwds.has_key('constraints'): \
+           self._constraints = kwds['constraints']
+        if not self._constraints: self._constraints = lambda x: x
         #-------------------------------------------------------------
 
         import signal
@@ -188,11 +188,11 @@ Further Inputs:
         #-------------------------------------------------------------
 
         # wrap constraints function
-        func = wrap_nested(func, constraints)
+        func = wrap_nested(func, self._constraints)
 
         id = self.id
         x0 = asfarray(x0).flatten()
-        x0 = asfarray(constraints(x0))
+        x0 = asfarray(self._constraints(x0))
         N = len(x0) #XXX: this should be equal to self.nDim
         rank = len(x0.shape)
         if not -1 < rank < 2:
@@ -244,7 +244,7 @@ Further Inputs:
                 break
 
             # apply constraints  #XXX: is this the only appropriate place???
-            sim[0] = asfarray(constraints(sim[0]))
+            sim[0] = asfarray(self._constraints(sim[0]))
 
             xbar = numpy.add.reduce(sim[:-1],0) / N
             xr = (1+rho)*xbar - rho*sim[-1]
@@ -500,18 +500,18 @@ Further Inputs:
         direc=None
         callback=None  #user-supplied function, called after each step
         xtol=1e-4      #line-search error tolerance
-        constraints = lambda x: x # Constraints function to be imposed
         if kwds.has_key('callback'): callback = kwds['callback']
         if kwds.has_key('direc'): direc = kwds['direc']  #XXX: best interface?
         if kwds.has_key('xtol'): xtol = kwds['xtol']
         if kwds.has_key('disp'): disp = kwds['disp']
-        if kwds.has_key('constraints'): constraints = kwds['constraints']
-        if not constraints: constraints = lambda x: x
         # backward compatibility
         if kwds.has_key('EvaluationMonitor'): \
            self._evalmon = kwds['EvaluationMonitor']
         if kwds.has_key('StepMonitor'): \
            self._stepmon = kwds['StepMonitor']
+        if kwds.has_key('constraints'): \
+           self._constraints = kwds['constraints']
+        if not self._constraints: self._constraints = lambda x: x
         #-------------------------------------------------------------
 
         import signal
@@ -528,11 +528,11 @@ Further Inputs:
         #-------------------------------------------------------------
 
         # wrap constraints function
-        func = wrap_nested(func, constraints)
+        func = wrap_nested(func, self._constraints)
 
         id = self.id
         x = asfarray(x0).flatten()
-        x = asfarray(constraints(x))
+        x = asfarray(self._constraints(x))
         if retall:
             allvecs = [x]
         N = len(x) #XXX: this should be equal to self.nDim
@@ -576,7 +576,7 @@ Further Inputs:
                     bigind = i
 
                 # apply constraints
-                x = asfarray(constraints(x))
+                x = asfarray(self._constraints(x))
 
             iter += 1
             if callback is not None:
@@ -606,7 +606,7 @@ Further Inputs:
                         direc[bigind] = direc[-1]
                         direc[-1] = direc1
  
-               #        x = asfarray(constraints(x))
+               #        x = asfarray(self._constraints(x))
 
                 self.energy_history[-1] = fval #...update to 'best' energy
 

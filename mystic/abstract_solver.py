@@ -133,6 +133,9 @@ Important class members:
         self._stepmon         = Null
         self._evalmon         = Null
 
+        self._constraints     = lambda x: x
+       #self._penalty         = lambda x: x
+
         import mystic.termination
         self._EARLYEXIT       = mystic.termination.EARLYEXIT
         return
@@ -144,6 +147,22 @@ Important class members:
     def __evaluations(self):
         """get the number of function calls"""
         return self._fcalls[0]
+
+    def SetConstraints(self, constraints):
+        """apply a constraints function to the optimization
+
+input::
+    - a constraints function of the form: xk' = constraints(xk),
+      where xk is the current parameter vector. Ideally, this function
+      is constructed so the parameter vector it passes to the cost function
+      will satisfy the desired (i.e. encoded) constraints."""
+        if not constraints:
+            self._constraints = lambda x: x
+        elif not callable(constraints):
+            raise TypeError, "'%s' is not a callable function" % constraints
+        else: #XXX: check for format: x' = constraints(x) ?
+            self._constraints = constraints
+        return
 
     def SetGenerationMonitor(self, monitor):
         """select a callable to monitor (x, f(x)) after each solver iteration"""

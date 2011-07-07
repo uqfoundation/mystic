@@ -240,6 +240,9 @@ Further Inputs:
            self._evalmon = kwds['EvaluationMonitor']
         if kwds.has_key('StepMonitor'): \
            self._stepmon = kwds['StepMonitor']
+        if kwds.has_key('constraints'): \
+           self._constraints = kwds['constraints']
+        if not self._constraints: self._constraints = lambda x: x
         #-------------------------------------------------------------
 
         import signal
@@ -265,6 +268,9 @@ Further Inputs:
         for candidate in range(self.nPop):
             # generate trialSolution (within valid range)
             self.trialSolution[:] = self.population[candidate][:]
+            # -apply constraints-
+            self.trialSolution[:] = self._constraints(self.trialSolution[:])
+            # -end-
             trialEnergy = costfunction(self.trialSolution)
 
             if trialEnergy < self.popEnergy[candidate]:
@@ -295,6 +301,9 @@ Further Inputs:
             for candidate in range(self.nPop):
                 # generate trialSolution (within valid range)
                 strategy(self, candidate)
+                # -apply constraints-
+                self.trialSolution[:] = self._constraints(self.trialSolution[:])
+                # -end-
                 trialEnergy = costfunction(self.trialSolution)
 
                 if trialEnergy < self.popEnergy[candidate]:
@@ -405,11 +414,6 @@ Further Inputs:
     callback -- an optional user-supplied function to call after each
         iteration.  It is called as callback(xk), where xk is
         the current parameter vector.  [default = None]
-    constraints -- an optional user-supplied function to call just
-        prior to each function evaluation.  It is called as
-        xk' = constraints(xk), where xk is the current parameter vector.
-        Ideally, this function is used to ensure each function evaulation
-        encounters a parameter set that satisfies user-supplied constraints.
     disp -- non-zero to print convergence messages.
         """
         #allow for inputs that don't conform to AbstractSolver interface
@@ -425,16 +429,14 @@ Further Inputs:
         if kwds.has_key('ScalingFactor'): ScalingFactor = kwds['ScalingFactor']
         if kwds.has_key('callback'): callback = kwds['callback']
         if kwds.has_key('disp'): disp = kwds['disp']
-        #XXX:[HACK] accept constraints
-        constraints = lambda x: x
-        if kwds.has_key('constraints'): constraints = kwds['constraints']
-        if not constraints: constraints = lambda x: x
-        #XXX:[HACK] -end-
         # backward compatibility
         if kwds.has_key('EvaluationMonitor'): \
            self._evalmon = kwds['EvaluationMonitor']
         if kwds.has_key('StepMonitor'): \
            self._stepmon = kwds['StepMonitor']
+        if kwds.has_key('constraints'): \
+           self._constraints = kwds['constraints']
+        if not self._constraints: self._constraints = lambda x: x
         #-------------------------------------------------------------
 
         import signal
@@ -466,9 +468,9 @@ Further Inputs:
         for candidate in range(self.nPop):
             # generate trialSolution (within valid range)
             self.trialSolution[:] = self.population[candidate][:]
-            #XXX:[HACK] apply constraints
-            self.trialSolution[:] = constraints(self.trialSolution[:])
-            #XXX:[HACK] -end-
+            # -apply constraints-
+            self.trialSolution[:] = self._constraints(self.trialSolution[:])
+            # -end-
             trialPop[candidate][:] = self.trialSolution[:]
 
         mapconfig = dict(nnodes=self._nnodes, launcher=self._launcher, \
@@ -507,9 +509,9 @@ Further Inputs:
             for candidate in range(self.nPop):
                 # generate trialSolution (within valid range)
                 strategy(self, candidate)
-                #XXX:[HACK] apply constraints
-                self.trialSolution[:] = constraints(self.trialSolution[:])
-                #XXX:[HACK] -end-
+                # -apply constraints-
+                self.trialSolution[:] = self._constraints(self.trialSolution[:])
+                # -end-
                 trialPop[candidate][:] = self.trialSolution[:]
 
             trialEnergy = self._map(costfunction, trialPop, **mapconfig)
