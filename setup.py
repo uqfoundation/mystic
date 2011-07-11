@@ -52,7 +52,7 @@ setup_code += """
     scripts=['scripts/mystic_log_reader.py',
              'scripts/support_convergence.py',
              'scripts/support_hypercube.py',
-             'scripts/support_hypercube2.py'])
+             'scripts/support_hypercube_measures.py'])
 """
 
 # exec the 'setup' code

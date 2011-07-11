@@ -1,27 +1,24 @@
 #!/usr/bin/env python
 __doc__ = """
+support_hypercube.py [options] filename
+
 generate parameter support plots from file written with 'write_support_file'
 
-Usage: python support_hypercube.py [filename] [bounds] [xyz] [iters] [id]
-    [filename] - name of the python convergence logfile (e.g paramlog.py)
-    [bounds] - string indicator to set hypercube bounds (see note below)
-    [xyz] - string indicator to set which params belong to which axis
-    [iters] - string indicator to select iterations to plot [optional]
-    [id] - select the id'th of simultaneous points to plot [optional]
-
+The options "bounds", "axes", and "iters" all take indicator strings.
 The bounds should be given as a quoted list of tuples.  For example, using
 bounds = "[(60,105),(0,30),(2.1,2.8)]" will set the lower and upper bounds for
-x to be (60,105), y to be (0,30), and z to be (2.1,2.8).  Similarly, xyz accepts
-a quoted list of tuples. However, for xyz, the first tuple indicates which
-parameters are along the x direction, the second tuple for the y direction, and
-the third tuple for the z direction. Hence, xyz = "[(2,3),(6,7),(10,11)]"
-would set the 2nd and 3rd parameters along x. Iters is also similar, however
-accepts a list of strings instead of a list of tuples. For example,
+x to be (60,105), y to be (0,30), and z to be (2.1,2.8).  Similarly, axes
+also accepts a quoted list of tuples; however, for axes, the first tuple
+indicates which parameters are along the x direction, the second tuple for
+the y direction, and the third tuple for the z direction. Thus, axes =
+"[(2,3),(6,7),(10,11)]" would set the 2nd and 3rd parameters along x. Iters,
+however, accepts a list of strings instead of a list of tuples. For example,
 iters = "[':']" will plot all iters in a single plot. Alternatively,
 iters = "[':2','2:']" will split the iters into two plots, while
 iters = "['0']" will only plot the first iteration.
 
-CAN PLOT MULTIPLE ITERS IN ONE PLOT. IGNORES WEIGHTS. 
+Required Inputs:
+  filename            name of the python convergence logfile (e.g paramlog.py)
 """
 
 from support_convergence import best_dimensions
@@ -29,34 +26,49 @@ from support_convergence import best_dimensions
 
 if __name__ == '__main__':
 
-  import sys
-  if '--help' in sys.argv:
-    print __doc__
-    sys.exit(0)
+  #XXX: note that 'argparse' is new as of python2.7
+  from optparse import OptionParser
+  parser = OptionParser(usage=__doc__)
+  parser.add_option("-b","--bounds",action="store",dest="bounds",\
+                    metavar="STR",default="[(0,1),(0,1),(0,1)]",
+                    help="indicator string to set hypercube bounds")
+  parser.add_option("-a","--axes",action="store",dest="xyz",\
+                    metavar="STR",default="[(0,),(1,),(2,)]",
+                    help="indicator string to assign parameter to axis")
+  parser.add_option("-i","--iters",action="store",dest="iters",\
+                    metavar="STR",default="['-1']",
+                    help="indicator string to select iterations to plot")
+  parser.add_option("-n","--nid",action="store",dest="id",\
+                    metavar="INT",default=None,
+                    help="id # of the nth simultaneous points to plot")
+  parser.add_option("-f","--flat",action="store_true",dest="flatten",\
+                    default=False,help="show selected iterations in a single plot")
+  parsed_opts, parsed_args = parser.parse_args()
 
   try:  # get the name of the parameter log file
-    file = sys.argv[1]
+    file = parsed_args[0]
     import re
     file = re.sub('\.py*.$', '', file)  #XXX: strip off .py* extension
   except:
-    file = 'paramlog'
+    raise IOError, "please provide log file name"
+   #file = 'paramlog'
   exec "from %s import params" % file
   #exec "from %s import meta" % file
   # would be nice to use meta = ['wx','wx2','x','x2','wy',...]
 
   try: # select the bounds
-    bounds = eval(sys.argv[2])  # format is "[(60,105),(0,30),(2.1,2.8)]"
+    bounds = eval(parsed_opts.bounds)  # format is "[(60,105),(0,30),(2.1,2.8)]"
   except:
-    bounds = [(None,None),(None,None),(None,None)]
+    bounds = [(0,1),(0,1),(0,1)]
     
   try: # select which params are along which axes
-    xyz = eval(sys.argv[3])  # format is "[(0,1),(4,5),(8,9)]"
+    xyz = eval(parsed_opts.xyz)  # format is "[(0,1),(4,5),(8,9)]"
   except:
     xyz = [(0,),(1,),(2,)]
     
   x = params[max(xyz[0])]
   try: # select which iterations to plot
-    select = eval(sys.argv[4])  # format is "[':2','2:4','5','6:']"
+    select = eval(parsed_opts.iters)  # format is "[':2','2:4','5','6:']"
   except:
     select = ['-1']
    #select = [':']
@@ -65,15 +77,13 @@ if __name__ == '__main__':
    #select = [':1','1:2','2:3','3:']
    #select = ['0','1','2','3']
 
-  # would like to collapse non-consecutive iterations into a single plot...
-  #   "['1','100','300','700','*']", with '*' indicating 'flatten'
-  flatten = False
-  while select.count("*"):
-    flatten = True
-    select.remove("*")
+  try: # collapse non-consecutive iterations into a single plot...
+    flatten = parsed_opts.flatten
+  except:
+    flatten = False
 
   try: # select which 'id' to plot results for
-    id = int(sys.argv[5])
+    id = int(parsed_opts.id)
   except:
     id = None # i.e. 'all' **or** use id=0, which should be 'best' energy ?
 
@@ -117,14 +127,17 @@ if __name__ == '__main__':
     dim1,dim2 = best_dimensions(plots)
   else: dim1,dim2 = 1,1
 
-  # declare bounds 'invalid' (i.e. ignore them) if any member is "None"
-  invalid = [None in [i[j] for i in bounds] for j in range(len(bounds[0]))]
+  # use the default bounds where not specified
+  bounds = [list(i) for i in bounds]
+  for i in range(len(bounds)):
+    if bounds[i][0] is None: bounds[i][0] = 0
+    if bounds[i][1] is None: bounds[i][1] = 1
 
   # correctly bound the first plot.  there must be at least one plot
   fig = plt.figure()
   ax1 = Subplot3D(fig, dim1,dim2,1)
-  if not invalid[0]: ax1.plot([bounds[0][0]],[bounds[1][0]],[bounds[2][0]])
-  if not invalid[1]: ax1.plot([bounds[0][1]],[bounds[1][1]],[bounds[2][1]])
+  ax1.plot([bounds[0][0]],[bounds[1][0]],[bounds[2][0]])
+  ax1.plot([bounds[0][1]],[bounds[1][1]],[bounds[2][1]])
   if not flatten:
     exec "plt.title('iterations[%s]')" % select[0]
   else: 
@@ -138,10 +151,8 @@ if __name__ == '__main__':
   if not flatten:
     for i in range(2, plots + 1):
       exec "ax%d = Subplot3D(fig, dim1,dim2,%d)" % (i,i)
-      if not invalid[0]:
-        exec "ax%d.plot([bounds[0][0]],[bounds[1][0]],[bounds[2][0]])" % i
-      if not invalid[1]:
-        exec "ax%d.plot([bounds[0][1]],[bounds[1][1]],[bounds[2][1]])" % i
+      exec "ax%d.plot([bounds[0][0]],[bounds[1][0]],[bounds[2][0]])" % i
+      exec "ax%d.plot([bounds[0][1]],[bounds[1][1]],[bounds[2][1]])" % i
       exec "plt.title('iterations[%s]')" % select[i - 1]
       exec "ax%d.set_xlabel('x')" % i
       exec "ax%d.set_ylabel('y')" % i

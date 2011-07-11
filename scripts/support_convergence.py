@@ -1,16 +1,18 @@
 #!/usr/bin/env python
 __doc__ = """
+support_convergence.py [options] filename
+
 generate parameter convergence plots from file written with 'write_support_file'
 
-Usage: python support_convergence.py [filename] [maxiter] [params] [id]
-    [filename] - name of the python convergence logfile (e.g paramlog.py)
-    [maxiter] - the largest iteration to plot (from 1 to maxiter) [optional]
-    [params] - string indicator to select params (see following note) [optional]
-    [id] - select the id'th of simultaneous points to plot [optional]
+The option "param" takes an indicator string. This indicator string is a list
+of strings, with each entry in the list corresponding to an array slice.
+For example, params = "[':']" will plot all parameters in a single plot.
+Alternatively, params = "[':2','2:']" will split the parameters into two plots,
+while params = "['0']" will only plot the first parameter.
 
-For example, params = "[':']" will plot all params in a single plot.
-Alternatively, params = "[':2','2:']" will split the params into two plots,
-while params = "['0']" will only plot the first param.
+
+Required Inputs:
+  filename            name of the python convergence logfile (e.g paramlog.py)
 """
 
 def factor(n):
@@ -45,28 +47,49 @@ def best_dimensions(n):
 if __name__ == '__main__':
   #print __doc__
 
-  import sys
-  if '--help' in sys.argv:
-    print __doc__
-    sys.exit(0)
+  #XXX: note that 'argparse' is new as of python2.7
+  from optparse import OptionParser
+  parser = OptionParser(usage=__doc__)
+  parser.add_option("-i","--iter",action="store",dest="step",metavar="INT",\
+                    default=None,help="the largest iteration to plot")
+  parser.add_option("-p","--param",action="store",dest="param",\
+                    metavar="STR",default="[':']",
+                    help="indicator string to select parameters")
+  parser.add_option("-n","--nid",action="store",dest="id",\
+                    metavar="INT",default=None,
+                    help="id # of the nth simultaneous points to plot")
+  parser.add_option("-c","--cost",action="store_true",dest="cost",\
+                    default=False,help="also plot the parameter cost")
+  parser.add_option("-l","--legend",action="store_true",dest="legend",\
+                    default=False,help="show the legend")
+  parsed_opts, parsed_args = parser.parse_args()
 
   try:  # get the name of the parameter log file
-    file = sys.argv[1]
+    file = parsed_args[0]
     import re
     file = re.sub('\.py*.$', '', file)  #XXX: strip off .py* extension
   except:
-    file = 'paramlog'
+    raise IOError, "please provide log file name"
+   #file = 'paramlog'
   exec "from %s import params" % file
-  #exec "from %s import meta" % file
-  # no need to edit meta  ==>   meta = ['wx','wx2','x','x2','wy',...]
+
+  if parsed_opts.cost: # also plot the cost
+    exec "from %s import cost" % file
+  else:
+    cost = None
+
+  if parsed_opts.legend: # show the legend
+    legend = True
+  else:
+    legend = False
 
   try: # select which iteration to stop plotting at
-    step = int(sys.argv[2])
+    step = int(parsed_opts.step)
   except:
     step = None
 
   try: # select which parameters to plot
-    select = eval(sys.argv[3])  # format is "[':2','2:4','5','6:']"
+    select = eval(parsed_opts.param)  # format is "[':2','2:4','5','6:']"
   except:
     select = [':']
    #select = [':1']
@@ -75,7 +98,7 @@ if __name__ == '__main__':
    #select = ['0','1','2','3']
 
   try: # select which 'id' to plot results for
-    id = int(sys.argv[4])
+    id = int(parsed_opts.id)
   except:
     id = None # i.e. 'all' **or** use id=0, which should be 'best' energy ?
 
@@ -88,6 +111,8 @@ if __name__ == '__main__':
 
   # take only the first 'step' iterations
   params = [var[:step] for var in params]
+  if cost:
+    cost = cost[:step]
 
   # take only the selected 'id'
   if id != None:
@@ -99,19 +124,37 @@ if __name__ == '__main__':
   import matplotlib.pyplot as plt
 
   plots = len(select)
-  dim1,dim2 = best_dimensions(plots)
+  if cost: j = 1
+  else: j = 0
+  dim1,dim2 = best_dimensions(plots + j)
 
   fig = plt.figure()
   ax1 = fig.add_subplot(dim1,dim2,1)
   data = eval("params[%s]" % select[0])
+  try:
+    n = int(select[0][0])
+  except ValueError:
+    n = 0
   for line in data:
-    ax1.plot(line)#, marker='o')
+    ax1.plot(line,label=str(n))#, marker='o')
+    n += 1
+    if legend: plt.legend()
 
   for i in range(2, plots + 1):
     exec "ax%d = fig.add_subplot(dim1,dim2,%d, sharex=ax1)" % (i,i)
     data = eval("params[%s]" % select[i-1])
+    try:
+      n = int(select[i-1][0])
+    except ValueError:
+      n = 0
     for line in data:
-      exec  "ax%d.plot(line)#, marker='o')" % i
+      exec  "ax%d.plot(line,label='%s')#, marker='o')" % (i,n)
+      n += 1
+      if legend: plt.legend()
+  if cost:
+    exec "cx1 = fig.add_subplot(dim1,dim2,%d, sharex=ax1)" % int(plots+1)
+    exec "cx1.plot(cost,label='cost')#, marker='o')"
+    if legend: plt.legend()
 
   plt.show()
 

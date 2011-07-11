@@ -18,7 +18,7 @@ EXPORT_BINS = \
     mystic_log_reader.py \
     support_convergence.py \
     support_hypercube.py \
-    support_hypercube2.py \
+    support_hypercube_measures.py \
 
 export:: export-binaries release-binaries
 

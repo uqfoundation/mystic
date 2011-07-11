@@ -1,34 +1,44 @@
 #!/usr/bin/env python
 __doc__ = """
+mystic_log_reader.py [options] filename
+
 plot parameter convergence from file written with 'LoggingMonitor'
 
-Usage: python log_reader.py [filename] [maxiter]
-    [filename] - name of the convergence logfile (e.g log.txt)
-    [maxiter] - the largest iteration to plot (from 1 to maxiter) [optional]
+
+Required Inputs:
+  filename            name of the convergence logfile (e.g log.txt)
 """
-import sys
-if '--help' in sys.argv:
-  print __doc__
-  sys.exit(0)
+
+#XXX: note that 'argparse' is new as of python2.7
+from optparse import OptionParser
+parser = OptionParser(usage=__doc__)
+parser.add_option("-d","--dots",action="store_true",dest="dots",\
+                  default=False,help="show data points in plot")
+parser.add_option("-l","--line",action="store_true",dest="line",\
+                  default=False,help="connect data points in plot with a line")
+parser.add_option("-i","--iter",action="store",dest="stop",metavar="INT",\
+                  default=None,help="the largest iteration to plot")
+#parser.add_option("-f","--file",action="store",dest="filename",metavar="FILE",\
+#                  default='log.txt',help="log file name")
+parsed_opts, parsed_args = parser.parse_args()
+
 
 style = '-' # default linestyle
-if '--dots' in sys.argv:
+if parsed_opts.dots:
   mark = 'o'
-  sys.argv.remove('--dots')
   # when using 'dots', also can turn off 'line'
-  if '--noline' in sys.argv:
+  if not parsed_opts.line:
     style = 'None'
-    sys.argv.remove('--noline')
 else:
   mark = ''
 
 try: # get logfile name
-  filename = sys.argv[1]
+  filename = parsed_args[0]
 except:
-  filename = 'log.txt'
+  raise IOError, "please provide log file name"
 
 try: # select which iteration to stop plotting at
-  stop = int(sys.argv[2])
+  stop = int(parsed_opts.stop)
 except:
   stop = None
 
