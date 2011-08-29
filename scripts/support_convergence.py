@@ -60,7 +60,7 @@ if __name__ == '__main__':
                     help="id # of the nth simultaneous points to plot")
   parser.add_option("-c","--cost",action="store_true",dest="cost",\
                     default=False,help="also plot the parameter cost")
-  parser.add_option("-l","--legend",action="store_true",dest="legend",\
+  parser.add_option("-g","--legend",action="store_true",dest="legend",\
                     default=False,help="show the legend")
   parsed_opts, parsed_args = parser.parse_args()
 
@@ -70,11 +70,17 @@ if __name__ == '__main__':
     file = re.sub('\.py*.$', '', file)  #XXX: strip off .py* extension
   except:
     raise IOError, "please provide log file name"
-   #file = 'paramlog'
-  exec "from %s import params" % file
+  try:  # read standard logfile
+    from mystic.munge import logfile_reader, raw_to_support
+    _step, params, cost = logfile_reader(file)
+    params, cost = raw_to_support(params, cost)
+  except: 
+    exec "from %s import params" % file
+    exec "from %s import cost" % file
 
   if parsed_opts.cost: # also plot the cost
-    exec "from %s import cost" % file
+   #exec "from %s import cost" % file
+    pass
   else:
     cost = None
 

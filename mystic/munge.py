@@ -1,108 +1,128 @@
 from mystic.tools import list_or_tuple_or_ndarray as sequence
 
-def write_support_file(mon,log_file='paramlog.py'):
+# logfile reader
+
+def logfile_reader(filename):
+  f = open(filename,"r")
+  file = f.read()
+  f.close()
+  contents = file.split("\n")
+  # parse file contents to get (i,id), cost, and parameters
+  step = []; cost = []; param = [];
+  for line in contents[:-1]:
+    if line.startswith("#"): pass
+    else:
+      values = line.split("   ")
+      step.append(eval(values[0]))  #XXX: yields (i,id)
+      cost.append(eval(values[1]))
+      param.append(eval(values[2]))
+  return step, param, cost
+
+
+# read and write monitor (to and from raw data)
+
+def read_monitor(mon):
   steps = mon.x[:]
   energy = mon.y[:]
-  if not sequence(steps[0][0]):
-    steps = [[step] for step in steps]  # needed when steps = [1,2,3,...]
-  steps = [zip(*step) for step in steps]
+  return steps, energy 
+
+def write_monitor(steps, energy):
+  from mystic.montors import Monitor
+  mon = Monitor()
+  mon.x = steps[:]
+  mon.y = energy[:]
+  return mon
+
+# converters 
+
+def converge_to_support(steps, energy):
   steps = zip(*steps)
   steps = [list(i) for i in steps]
+  return steps, energy
+
+def raw_to_converge(steps, energy):
+  if not sequence(steps[0][0]):
+    steps = [[step] for step in steps]  # needed when steps = [1,2,3,...]
+  steps = [zip(*step) for step in steps] # also can be used to revert 'steps'
+  return steps, energy
+
+def raw_to_support(steps, energy):
+  return converge_to_support( *raw_to_converge(steps, energy) )
+
+# monitor to file (support file, converge file, raw file)
+
+def write_raw_file(mon,log_file='paramlog.py'):
+  steps, energy = read_monitor(mon)
   f = open(log_file,'w')
  #f.write('# %s\n' % energy[-1])
   f.write('params = %s' % steps)
   f.write('\ncost = %s\n' % energy)
   f.close()
+  return
+
+def write_support_file(mon,log_file='paramlog.py'):
+  monitor = write_monitor( *raw_to_support(read_monitor(mon)) )
+  write_raw_file(monitor,log_file)
   return
 
 def write_converge_file(mon,log_file='paramlog.py'):
-  steps = mon.x[:]
-  energy = mon.y[:]
-  if not sequence(steps[0][0]):
-    steps = [[step] for step in steps]  # needed when steps = [1,2,3,...]
-  steps = [zip(*step) for step in steps] # also can be used to revert 'steps'
-  f = open(log_file,'w')
- #f.write('# %s\n' % energy[-1])
-  f.write('params = %s' % steps)
-  f.write('\ncost = %s\n' % energy)
-  f.close()
+  monitor = write_monitor( *raw_to_converge(read_monitor(mon)) )
+  write_raw_file(monitor,log_file)
   return
 
-def write_raw_file(mon,log_file='paramlog.py'):
-  steps = mon.x[:]
-  energy = mon.y[:]
-  f = open(log_file,'w')
- #f.write('# %s\n' % energy[-1])
-  f.write('params = %s' % steps)
-  f.write('\ncost = %s\n' % energy)
-  f.close()
-  return
+# file to data (support file, converge file, raw file)
 
-def old_to_new_support_converter(file_in,file_out):
+def read_raw_file(file_in):
   import re
   file_in = re.sub('\.py*.$', '', file_in)  #XXX: strip off .py* extension
   exec "from %s import params as steps" % file_in
   exec "from %s import cost as energy" % file_in
-  steps = [[(i,) for i in steps[j]] for j in range(len(steps))]
-  energy = [(i,) for i in energy]
-  f = open(file_out,'w')
- #f.write('# %s\n' % energy[-1])
-  f.write('params = %s' % steps)
-  f.write('\ncost = %s\n' % energy)
-  f.close()
-  return
+  return steps, energy
+
+# file converters
 
 def raw_to_converge_converter(file_in,file_out):
-  import re
-  file_in = re.sub('\.py*.$', '', file_in)  #XXX: strip off .py* extension
-  exec "from %s import params as steps" % file_in
-  exec "from %s import cost as energy" % file_in
-  steps = [zip(*step) for step in steps] # also can be used to revert 'steps'
-  f = open(file_out,'w')
- #f.write('# %s\n' % energy[-1])
-  f.write('params = %s' % steps)
-  f.write('\ncost = %s\n' % energy)
-  f.close()
+  steps, energy = read_raw_file(file_in)
+ #steps = [zip(*step) for step in steps] # also can be used to revert 'steps'
+  steps, energy = raw_to_converge(steps, energy)
+  monitor = write_monitor(steps, energy)
+  write_raw_file(monitor,file_out)
   return
 
 def converge_to_support_converter(file_in,file_out):
-  import re
-  file_in = re.sub('\.py*.$', '', file_in)  #XXX: strip off .py* extension
-  exec "from %s import params as steps" % file_in
-  exec "from %s import cost as energy" % file_in
-  steps = zip(*steps)
-  steps = [list(i) for i in steps]
-  f = open(file_out,'w')
- #f.write('# %s\n' % energy[-1])
-  f.write('params = %s' % steps)
-  f.write('\ncost = %s\n' % energy)
-  f.close()
+  steps, energy = read_raw_file(file_in)
+  steps, energy = converge_to_support(steps, energy)
+  monitor = write_monitor(steps, energy)
+  write_raw_file(monitor,file_out)
   return
 
-def __orig_write_converge_file(mon,log_file='paramlog.py'):
-  steps = mon.x[:]
-  energy = mon.y[:]
-  f = open(log_file,'w')
- #f.write('# %s\n' % energy[-1])
-  f.write('params = %s' % steps)
-  f.write('\ncost = %s\n' % energy)
-  f.close()
+# old #
+
+def read_old_support_file(file_in):
+  steps, energy = read_raw_file(file_in)
+  steps = [[(i,) for i in steps[j]] for j in range(len(steps))]
+  energy = [(i,) for i in energy]
+  return write_monitor(steps, energy)
+
+def old_to_new_support_converter(file_in,file_out):
+  mon = read_old_support_file(file_in)
+  write_raw_file(mon,file_out)
   return
 
 def __orig_write_support_file(mon,log_file='paramlog.py'):
+  steps, energy = read_monitor(mon)
   log = []
-  steps = mon.x[:]
-  energy = mon.y[:]
   for p in range(len(steps[0])):
     q = []
     for s in range(len(steps)):
       q.append(steps[s][p])
     log.append(q)  
-  f = open(log_file,'w')
- #f.write('# %s\n' % energy[-1])
-  f.write('params = %s' % log)
-  f.write('\ncost = %s\n' % energy)
-  f.close()
+  monitor = write_monitor(log, energy)
+  write_raw_file(monitor,log_file)
+  return
+
+def __orig_write_converge_file(mon,log_file='paramlog.py'):
+  write_raw_file(mon,log_file)
   return
 
 

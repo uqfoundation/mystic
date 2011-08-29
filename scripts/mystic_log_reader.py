@@ -18,6 +18,8 @@ parser.add_option("-l","--line",action="store_true",dest="line",\
                   default=False,help="connect data points in plot with a line")
 parser.add_option("-i","--iter",action="store",dest="stop",metavar="INT",\
                   default=None,help="the largest iteration to plot")
+parser.add_option("-g","--legend",action="store_true",dest="legend",\
+                  default=False,help="show the legend")
 #parser.add_option("-f","--file",action="store",dest="filename",metavar="FILE",\
 #                  default='log.txt',help="log file name")
 parsed_opts, parsed_args = parser.parse_args()
@@ -42,12 +44,6 @@ try: # select which iteration to stop plotting at
 except:
   stop = None
 
-f = open(filename,"r")
-file = f.read()
-f.close()
-
-contents = file.split("\n")
-
 # == Possible results ==
 # iter = (i,id) or (i,) 
 # split => { (i,) then (i+1,) } or { (i,) then (0,) }
@@ -67,14 +63,8 @@ contents = file.split("\n")
 #   Plot should be discontinuous for (i,) then (0,)
 
 # parse file contents to get (i,id), cost, and parameters
-step = []; cost = []; param = [];
-for line in contents[:-1]:
-  if line.startswith("#"): pass
-  else:
-    values = line.split("   ")
-    step.append(eval(values[0]))  #XXX: yields (i,id)
-    cost.append(eval(values[1]))
-    param.append(eval(values[2]))
+from mystic.munge import logfile_reader
+step, param, cost = logfile_reader(filename)
 
 # ignore everything after 'stop'
 step = step[:stop]
@@ -124,12 +114,12 @@ for j in range(len(param[0])):
   for i in range(len(conv)):
     tag = "%d,%d" % (i,j)
     ax1.plot(iter_conv[i],conv[i][j],label="%s" % tag,marker=mark,linestyle=style)
-plt.legend()
+if parsed_opts.legend: plt.legend()
 
 ax2 = fig.add_subplot(2,1,2)
 for i in range(len(conv)):
   tag = "%d" % i
   ax2.plot(iter_conv[i],cost_conv[i],label='cost %s' % tag,marker=mark,linestyle=style)
-plt.legend()
+if parsed_opts.legend: plt.legend()
 
 plt.show()
