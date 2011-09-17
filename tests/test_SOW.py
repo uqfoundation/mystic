@@ -2,7 +2,8 @@
 #
 # Mike McKerns, Caltech
 
-from mystic.munge import write_support_file, write_converge_file
+from mystic.munge import write_support_file, write_converge_file, write_raw_file
+## FIXME: 'converge' and 'raw' files are virtually unused and unsupported
 
 def test0(monitor):
   from numpy import array
@@ -110,7 +111,8 @@ if __name__ == '__main__':
  #test2(monitor, diffenv=True)
 
   # these are for "MonitorPlotter(s)"; need to adapt log.py plotters for test1
-  write_support_file(monitor,'paramlog1.py')
- #write_converge_file(monitor,'paramlog2.py')
+  write_support_file(monitor,'paramlog1.py')  # plot with 'support_*.py'
+ #write_converge_file(monitor,'paramlog2.py') #XXX: no existing plotters?
+ #write_raw_file(monitor,'paramlog3.py') #XXX: no existing plotters?
 
 # EOF

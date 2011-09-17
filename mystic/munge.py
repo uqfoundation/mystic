@@ -21,16 +21,20 @@ def logfile_reader(filename):
 
 # read and write monitor (to and from raw data)
 
-def read_monitor(mon):
+def read_monitor(mon, id=False):
   steps = mon.x[:]
   energy = mon.y[:]
-  return steps, energy 
+  if not id:
+    return steps, energy
+  id = mon.id[:]
+  return steps, energy, id 
 
-def write_monitor(steps, energy):
-  from mystic.montors import Monitor
+def write_monitor(steps, energy, id=[]):
+  from mystic.monitors import Monitor
   mon = Monitor()
-  mon.x = steps[:]
-  mon.y = energy[:]
+  mon._x = steps[:]
+  mon._y = energy[:]
+  mon._id = id[:]
   return mon
 
 # converters 
@@ -50,10 +54,13 @@ def raw_to_support(steps, energy):
   return converge_to_support( *raw_to_converge(steps, energy) )
 
 # monitor to file (support file, converge file, raw file)
+## FIXME: 'converge' and 'raw' files are virtually unused and unsupported
 
-def write_raw_file(mon,log_file='paramlog.py'):
+def write_raw_file(mon,log_file='paramlog.py',**kwds):
   steps, energy = read_monitor(mon)
   f = open(log_file,'w')
+  if kwds.has_key('header'):
+    f.write('# %s\n' % kwds['header'])
  #f.write('# %s\n' % energy[-1])
   f.write('params = %s' % steps)
   f.write('\ncost = %s\n' % energy)
@@ -61,13 +68,13 @@ def write_raw_file(mon,log_file='paramlog.py'):
   return
 
 def write_support_file(mon,log_file='paramlog.py'):
-  monitor = write_monitor( *raw_to_support(read_monitor(mon)) )
-  write_raw_file(monitor,log_file)
+  monitor = write_monitor( *raw_to_support( *read_monitor(mon) ) )
+  write_raw_file(monitor,log_file,header="written in 'support' format")
   return
 
 def write_converge_file(mon,log_file='paramlog.py'):
-  monitor = write_monitor( *raw_to_converge(read_monitor(mon)) )
-  write_raw_file(monitor,log_file)
+  monitor = write_monitor( *raw_to_converge( *read_monitor(mon) ) )
+  write_raw_file(monitor,log_file,header="written in 'converge' format")
   return
 
 # file to data (support file, converge file, raw file)
@@ -79,21 +86,34 @@ def read_raw_file(file_in):
   exec "from %s import cost as energy" % file_in
   return steps, energy
 
+def read_converge_file(file_in):
+  steps, energy = read_raw_file(file_in)
+ #steps = [zip(*step) for step in steps] # also can be used to revert 'steps'
+  return raw_to_converge(steps,energy)
+
+def read_support_file(file_in):
+  steps, energy = read_raw_file(file_in)
+  return raw_to_support(steps,energy)
+ #return converge_to_support(steps,energy)
+
 # file converters
 
 def raw_to_converge_converter(file_in,file_out):
   steps, energy = read_raw_file(file_in)
- #steps = [zip(*step) for step in steps] # also can be used to revert 'steps'
-  steps, energy = raw_to_converge(steps, energy)
-  monitor = write_monitor(steps, energy)
-  write_raw_file(monitor,file_out)
+  write_raw_file(write_monitor( *raw_to_converge(steps,energy) ),
+                 file_out,header="written in 'converge' format")
+  return
+
+def raw_to_support_converter(file_in,file_out):
+  steps, energy = read_raw_file(file_in)
+  write_raw_file(write_monitor( *raw_to_support(steps,energy) ),
+                 file_out,header="written in 'support' format")
   return
 
 def converge_to_support_converter(file_in,file_out):
-  steps, energy = read_raw_file(file_in)
-  steps, energy = converge_to_support(steps, energy)
-  monitor = write_monitor(steps, energy)
-  write_raw_file(monitor,file_out)
+  steps, energy = read_converge_file(file_in)
+  write_raw_file(write_monitor( *converge_to_support(steps,energy) ),
+                 file_out,header="written in 'support' format")
   return
 
 # old #
