@@ -210,8 +210,8 @@ if __name__ == '__main__':
       for i in eval("[params[q][%s] for q in wxyz[0]]" % s):
         for j in eval("[params[q][%s] for q in wxyz[1]]" % s):
           for k in eval("[params[q][%s] for q in wxyz[2]]" % s):
-            t[v].append([str(i[q]*j[q]*k[q]) for q in range(len(i))])
-            if t[v][-1] > 1.0 or t[v][-1] < 0.0:
+            t[v].append([str(1.0 - i[q]*j[q]*k[q]) for q in range(len(i))])
+            if float(t[v][-1][-1]) > 1.0 or float(t[v][-1][-1]) < 0.0:
               raise ValueError, "Weights must be in range 0-1. Check normalization and/or assignment."
 
   # build all the plots
