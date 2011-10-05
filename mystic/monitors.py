@@ -14,8 +14,9 @@ for mystic's analysis viewers. Each of mystic's monitors are customizable,
 and provide the user with a different type of output. The following
 monitors are available::
     - Monitor        -- the basic monitor; only writes to internal state
-    - VerboseMonitor -- a verbose monitor; also writes to stdout/stderr
     - LoggingMonitor -- a logging monitor; also writes to a logfile
+    - VerboseMonitor -- a verbose monitor; also writes to stdout/stderr
+    - VerboseLoggingMonitor -- a verbose logging monitor; best of both worlds
     - CustomMonitor  -- a customizable 'n-variable' version of Monitor
     - Null           -- a null object, which reliably does nothing
 
@@ -219,6 +220,51 @@ Logs ChiSq and parameters to a file every 'interval'
             self._file.write("  %s     %s   %s\n" % (tuple(step), y, x))
         self._step += 1
         self._file.close()
+        return
+    pass
+
+class VerboseLoggingMonitor(LoggingMonitor):
+    """A Monitor that writes to a file and the screen at specified intervals.
+
+Logs ChiSq and parameters to a file every 'interval', print every 'yinterval'
+    """
+    import numpy
+    def __init__(self, interval=1, yinterval=10, xinterval=numpy.inf, filename='log.txt', new=False, all=True):
+        super(VerboseLoggingMonitor,self).__init__(interval,filename,new,all)
+        self._vyinterval = yinterval
+        self._vxinterval = xinterval
+        return
+    def __call__(self, x, y, id=None, best=0):
+        from mystic.tools import list_or_tuple_or_ndarray
+        super(VerboseLoggingMonitor,self).__call__(x, y, id, best)
+        self._step += -1  # rollback step counter (incremented in super call)
+        if int(self._step % self._vyinterval) == 0:
+            if not list_or_tuple_or_ndarray(y):
+                who = ''
+                y = " %f" % self._y[-1]
+            elif self._all:
+                who = ''
+                y = " %s" % self._y[-1]
+            else:
+                who = ' best'
+                y = " %f" % self._y[-1][best]
+            msg = "Generation %d has%s Chi-Squared:%s" % (self._step, who, y)
+            if id != None: msg = "[id: %d] " % (id) + msg
+            print msg
+        if int(self._step % self._vxinterval) == 0:
+            if not list_or_tuple_or_ndarray(x):
+                who = ''
+                x = " %f" % self._x[-1]
+            elif self._all:
+                who = ''
+                x = "\n %s" % self._x[-1]
+            else:
+                who = ' best'
+                x = "\n %s" % self._x[-1][best]
+            msg = "Generation %d has%s fit parameters:%s" % (self._step, who, x)
+            if id != None: msg = "[id: %d] " % (id) + msg
+            print msg
+        self._step += 1
         return
     pass
 
