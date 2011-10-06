@@ -310,8 +310,8 @@ Inputs:
 
 ##### packing / unpacking
 # >>> a = [1,2,3]; b = [4,5]
-# >>> zip(a[:],b) + zip(a[1:]+a[-1:],b) + zip(a[2:]+a[-2:],b)
-# [(1, 4), (2, 5), (2, 4), (3, 5), (3, 4), (2, 5)]
+# >>> zip(a[0:]+a[:0],b) + zip(a[1:]+a[:1],b) + zip(a[2:]+a[:2],b)
+# [(1, 4), (2, 5), (3, 6), (2, 4), (3, 5), (1, 6), (3, 4), (1, 5), (2, 6)]
 def _pack(samples):
   """'pack' a list of discrete measure sample points 
 into a list of product measure sample points

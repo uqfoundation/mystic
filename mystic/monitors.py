@@ -96,7 +96,12 @@ example usage...
         self._x = []
         self._y = []
         self._id = []
+        self._info = []
        #self._all = all
+
+    def info(self, message):
+        self._info.append("%s" % "".join(["",str(message)]))
+        return
 
     def __call__(self, x, y, id=None, **kwds):#, best=0):
         from mystic.tools import listify
@@ -117,6 +122,9 @@ example usage...
     def get_id(self):
         return self._id
 
+    def get_info(self):
+        return self._info
+
     x = property(get_x, doc = "Params")
     y = property(get_y, doc = "Costs")
     id = property(get_id, doc = "Id")
@@ -135,6 +143,10 @@ current parameters every 'xinterval'.
         self._yinterval = interval
         self._xinterval = xinterval
         self._all = all
+        return
+    def info(self, message):
+        super(VerboseMonitor,self).info(message)
+        print "%s" % "".join(["",str(message)])
         return
     def __call__(self, x, y, id=None, best=0):
         from mystic.tools import list_or_tuple_or_ndarray
@@ -190,6 +202,12 @@ Logs ChiSq and parameters to a file every 'interval'
         self._file.close()
         self._all = all
         return
+    def info(self, message):
+        super(LoggingMonitor,self).info(message)
+        self._file = open(self._filename,'a')
+        self._file.write("# %s\n" % str(message))
+        self._file.close()
+        return
     def __call__(self, x, y, id=None, best=0):
         from mystic.tools import list_or_tuple_or_ndarray
         self._file = open(self._filename,'a')
@@ -233,6 +251,10 @@ Logs ChiSq and parameters to a file every 'interval', print every 'yinterval'
         super(VerboseLoggingMonitor,self).__init__(interval,filename,new,all)
         self._vyinterval = yinterval
         self._vxinterval = xinterval
+        return
+    def info(self, message):
+        super(VerboseLoggingMonitor,self).info(message)
+        print "%s" % "".join(["",str(message)])
         return
     def __call__(self, x, y, id=None, best=0):
         from mystic.tools import list_or_tuple_or_ndarray

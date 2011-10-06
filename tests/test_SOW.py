@@ -86,7 +86,7 @@ def test2(monitor, diffenv=None):
   solver.Solve(cost, termination=COG(tol,ngen))
 
   solved = solver.Solution()
-  print "solved: %s" % solved
+  monitor.info("solved: %s" % solved)
   func_max = -solver.bestEnergy 
   return solved, func_max
 
@@ -94,15 +94,17 @@ def test2(monitor, diffenv=None):
 if __name__ == '__main__':
 
   from mystic.monitors import Monitor, VerboseMonitor, LoggingMonitor
+  from mystic.monitors import VerboseLoggingMonitor
  #monitor = Monitor()
  #monitor = Monitor(all=True)
  #monitor = Monitor(all=False)
  #monitor = VerboseMonitor(1,1) 
  #monitor = VerboseMonitor(1,1, all=True) 
  #monitor = VerboseMonitor(1,1, all=False) 
-  monitor = LoggingMonitor(1)
+ #monitor = LoggingMonitor(1)
  #monitor = LoggingMonitor(1, all=True)
  #monitor = LoggingMonitor(1, all=False)
+  monitor = VerboseLoggingMonitor(1)
 
  #test0(monitor)
  #test1(monitor)
