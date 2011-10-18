@@ -13,13 +13,13 @@ Inf = numpy.Inf
 EARLYEXIT = 0
 
 # Factories that give termination conditions
-def VTR(tolerance = 0.005):
+def VTR(tolerance = 0.005, target = 0.0):
     """cost of last iteration is < tolerance:
 
 cost[-1] <= tolerance"""
     def _VTR(inst):
          hist = inst.energy_history
-         return hist[-1] <= tolerance
+         return abs(hist[-1] - target) <= tolerance
     return _VTR
 
 def ChangeOverGeneration(tolerance = 1e-6, generations = 30):
@@ -96,7 +96,8 @@ abs(cost[-1] - fval)/fval <= tolerance *or* (cost[-1] - cost[-g]) = 0 """
          return abs(inst.bestEnergy-fval) <= abs(tolerance * fval)
     return _NormalizedCostTarget
 
-def VTRChangeOverGeneration(ftol = 0.005, gtol = 1e-6, generations = 30):
+def VTRChangeOverGeneration(ftol = 0.005, gtol = 1e-6, generations = 30,
+                                                            target = 0.0):
     """change in cost is < gtol over a number of generations,
 or cost of last iteration is < ftol:
 
@@ -106,7 +107,7 @@ cost[-g] - cost[-1] <= gtol, where g=generations *or* cost[-1] <= ftol."""
          lg = len(hist)
          #XXX: throws error when hist is shorter than generations ?
          return (lg > generations and (hist[-generations]-hist[-1]) <= gtol)\
-                or ( hist[-1] <= ftol )
+                or ( abs(hist[-1] - target) <= ftol )
     return _VTRChangeOverGeneration
 
 def PopulationSpread(tolerance = 1e-6):
