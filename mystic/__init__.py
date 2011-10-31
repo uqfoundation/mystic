@@ -247,7 +247,7 @@ from tools import *
 
 def copyright():
     """print copyright and reference"""
-    print __license__[-439:]
+    print __license__[-621:]
     return
 
 # end of file
