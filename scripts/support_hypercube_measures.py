@@ -4,19 +4,27 @@ support_hypercube_measures.py [options] filename
 
 generate measure support plots from file written with 'write_support_file'
 
-The options "bounds", "xyz", 'wxyz", and "iters" all take indicator strings.
+The options "bounds", "axes", 'weight", and "iters" all take indicator strings.
 The bounds should be given as a quoted list of tuples.  For example, using
 bounds = "[(60,105),(0,30),(2.1,2.8)]" will set the lower and upper bounds for
-x to be (60,105), y to be (0,30), and z to be (2.1,2.8).  Similarly, xyz
-also accepts a quoted list of tuples; however, for xyz, the first tuple
+x to be (60,105), y to be (0,30), and z to be (2.1,2.8).  Similarly, axes
+also accepts a quoted list of tuples; however, for axes, the first tuple
 indicates which parameters are along the x direction, the second tuple for
-the y direction, and the third tuple for the z direction. Thus, xyz =
+the y direction, and the third tuple for the z direction. Thus, axes =
 "[(2,3),(6,7),(10,11)]" would set the 2nd and 3rd parameters along x. The
-corresponding weights are given with wxyz, where wxyz = "[(0,1),(4,5),(8,9)]"
-would set the 0th and 1st parameters along x. Iters is also similar, however
-only accept a list of ints. Hence, iters = "[-1]" will plot the last iteration,
+corresponding weights are used to color the measure points, where 1.0 is black
+and 0.0 is white. For example, using weight = "[(0,1),(4,5),(8,9)]" would use
+the 0th and 1st parameters to weight x. Iters is also similar, however only
+accept a list of ints. Hence, iters = "[-1]" will plot the last iteration,
 while iters = "[0,300,700]" will plot the 0th, 300th, and 700th in three plots.
 ***Note that if weights are not normalized (to 1), an error will be thrown.***
+
+The option "label" takes a list of strings. For example, label = "['x','y','']"
+will place 'x' on the x-axis, 'y' on the y-axis, and nothing on the z-axis.
+LaTeX is also accepted. For example, label = "[r'$ h $',r'$ {\alpha}$',r'$ v$']"
+will label the axes with standard LaTeX math formatting. Note that the leading
+space is required, while the trailing space aligns the text with the axis
+instead of the plot frame.
 
 INTENDED FOR VISUALIZING WEIGHTED MEASURES (i.e. weights and positions)
 
@@ -35,15 +43,18 @@ if __name__ == '__main__':
   parser.add_option("-b","--bounds",action="store",dest="bounds",\
                     metavar="STR",default="[(0,1),(0,1),(0,1)]",
                     help="indicator string to set hypercube bounds")
-  parser.add_option("-x","--xyz",action="store",dest="xyz",\
+  parser.add_option("-x","--axes",action="store",dest="xyz",\
                     metavar="STR",default="[(1,),(3,),(5,)]",
                     help="indicator string to assign spatial parameter to axis")
-  parser.add_option("-w","--wxyz",action="store",dest="wxyz",\
+  parser.add_option("-w","--weight",action="store",dest="wxyz",\
                     metavar="STR",default="[(0,),(2,),(4,)]",
                     help="indicator string to assign weight parameter to axis")
   parser.add_option("-i","--iters",action="store",dest="iters",\
                     metavar="STR",default="['-1']",
                     help="indicator string to select iterations to plot")
+  parser.add_option("-l","--label",action="store",dest="label",\
+                    metavar="STR",default="['','','']",
+                    help="string to assign label to axis")
   parser.add_option("-n","--nid",action="store",dest="id",\
                     metavar="INT",default=None,
                     help="id # of the nth simultaneous points to plot")
@@ -80,6 +91,11 @@ if __name__ == '__main__':
     wxyz = eval(parsed_opts.wxyz)  # format is "[(0,1),(4,5),(8,9)]"
   except:
     wxyz = [(0,),(2,),(4,)]
+    
+  try: # select labels for the axes
+    label = eval(parsed_opts.label)  # format is "['x','y','z']"
+  except:
+    label = ['','','']
     
   x = params[max(xyz[0])]
   try: # select which iterations to plot
@@ -161,9 +177,9 @@ if __name__ == '__main__':
     exec "plt.title('iterations[%s]')" % select[0]
   else: 
     exec "plt.title('iterations[*]')"
-  ax1.set_xlabel('x')
-  ax1.set_ylabel('y')
-  ax1.set_zlabel('z')
+  ax1.set_xlabel(label[0])
+  ax1.set_ylabel(label[1])
+  ax1.set_zlabel(label[2])
   a = [ax1]
 
   # set up additional plots
@@ -173,9 +189,9 @@ if __name__ == '__main__':
       exec "ax%d.plot([bounds[0][0]],[bounds[1][0]],[bounds[2][0]])" % i
       exec "ax%d.plot([bounds[0][1]],[bounds[1][1]],[bounds[2][1]])" % i
       exec "plt.title('iterations[%s]')" % select[i - 1]
-      exec "ax%d.set_xlabel('x')" % i
-      exec "ax%d.set_ylabel('y')" % i
-      exec "ax%d.set_zlabel('z')" % i
+      exec "ax%d.set_xlabel(label[0])" % i
+      exec "ax%d.set_ylabel(label[1])" % i
+      exec "ax%d.set_zlabel(label[2])" % i
       exec "a.append(ax%d)" % i
 
   # turn each "n:m" in select to a list

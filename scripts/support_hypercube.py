@@ -17,6 +17,13 @@ iters = "[':']" will plot all iters in a single plot. Alternatively,
 iters = "[':2','2:']" will split the iters into two plots, while
 iters = "['0']" will only plot the first iteration.
 
+The option "label" takes a list of strings. For example, label = "['x','y','']"
+will place 'x' on the x-axis, 'y' on the y-axis, and nothing on the z-axis.
+LaTeX is also accepted. For example, label = "[r'$ h $',r'$ {\alpha}$',r'$ v$']"
+will label the axes with standard LaTeX math formatting. Note that the leading
+space is required, while the trailing space aligns the text with the axis
+instead of the plot frame.
+
 Required Inputs:
   filename            name of the python convergence logfile (e.g paramlog.py)
 """
@@ -32,12 +39,15 @@ if __name__ == '__main__':
   parser.add_option("-b","--bounds",action="store",dest="bounds",\
                     metavar="STR",default="[(0,1),(0,1),(0,1)]",
                     help="indicator string to set hypercube bounds")
-  parser.add_option("-a","--axes",action="store",dest="xyz",\
+  parser.add_option("-x","--axes",action="store",dest="xyz",\
                     metavar="STR",default="[(0,),(1,),(2,)]",
                     help="indicator string to assign parameter to axis")
   parser.add_option("-i","--iters",action="store",dest="iters",\
                     metavar="STR",default="['-1']",
                     help="indicator string to select iterations to plot")
+  parser.add_option("-l","--label",action="store",dest="label",\
+                    metavar="STR",default="['','','']",
+                    help="string to assign label to axis")
   parser.add_option("-n","--nid",action="store",dest="id",\
                     metavar="INT",default=None,
                     help="id # of the nth simultaneous points to plot")
@@ -69,6 +79,11 @@ if __name__ == '__main__':
     xyz = eval(parsed_opts.xyz)  # format is "[(0,1),(4,5),(8,9)]"
   except:
     xyz = [(0,),(1,),(2,)]
+    
+  try: # select labels for the axes
+    label = eval(parsed_opts.label)  # format is "['x','y','z']"
+  except:
+    label = ['','','']
     
   x = params[max(xyz[0])]
   try: # select which iterations to plot
@@ -146,9 +161,9 @@ if __name__ == '__main__':
     exec "plt.title('iterations[%s]')" % select[0]
   else: 
     exec "plt.title('iterations[*]')"
-  ax1.set_xlabel('x')
-  ax1.set_ylabel('y')
-  ax1.set_zlabel('z')
+  ax1.set_xlabel(label[0])
+  ax1.set_ylabel(label[1])
+  ax1.set_zlabel(label[2])
   a = [ax1]
 
   # set up additional plots
@@ -158,9 +173,9 @@ if __name__ == '__main__':
       exec "ax%d.plot([bounds[0][0]],[bounds[1][0]],[bounds[2][0]])" % i
       exec "ax%d.plot([bounds[0][1]],[bounds[1][1]],[bounds[2][1]])" % i
       exec "plt.title('iterations[%s]')" % select[i - 1]
-      exec "ax%d.set_xlabel('x')" % i
-      exec "ax%d.set_ylabel('y')" % i
-      exec "ax%d.set_zlabel('z')" % i
+      exec "ax%d.set_xlabel(label[0])" % i
+      exec "ax%d.set_ylabel(label[1])" % i
+      exec "ax%d.set_zlabel(label[2])" % i
       exec "a.append(ax%d)" % i
 
   # turn each "n:m" in select to a list
