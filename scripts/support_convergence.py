@@ -152,29 +152,29 @@ if __name__ == '__main__':
 
   fig = plt.figure()
   ax1 = fig.add_subplot(dim1,dim2,1)
+  ax1.set_ylabel(label[0])
   data = eval("params[%s]" % select[0])
   try:
-    n = int(select[0][0])
+    n = int(select[0].split(":")[0])
   except ValueError:
     n = 0
   for line in data:
     ax1.plot(line,label=str(n))#, marker='o')
-    ax1.set_ylabel(label[0])
     n += 1
-    if legend: plt.legend()
+  if legend: plt.legend()
 
   for i in range(2, plots + 1):
     exec "ax%d = fig.add_subplot(dim1,dim2,%d, sharex=ax1)" % (i,i)
     exec "ax%d.set_ylabel(label[%d])" % (i,i-1)
     data = eval("params[%s]" % select[i-1])
     try:
-      n = int(select[i-1][0])
+      n = int(select[i-1].split(":")[0])
     except ValueError:
       n = 0
     for line in data:
       exec "ax%d.plot(line,label='%s')#, marker='o')" % (i,n)
       n += 1
-      if legend: plt.legend()
+    if legend: plt.legend()
   if cost:
     exec "cx1 = fig.add_subplot(dim1,dim2,%d, sharex=ax1)" % int(plots+1)
     exec "cx1.plot(cost,label='cost')#, marker='o')"
