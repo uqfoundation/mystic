@@ -10,6 +10,13 @@ For example, params = "[':']" will plot all parameters in a single plot.
 Alternatively, params = "[':2','2:']" will split the parameters into two plots,
 while params = "['0']" will only plot the first parameter.
 
+The option "label" takes a list of strings. For example, label = "['x','y','']"
+will label the y-axis of the first plot with 'x', a second plot with 'y', and
+not add a label to a third or subsequent plots. If more labels are given than
+plots, then the last label will be used for the y-axis of the 'cost' plot.
+LaTeX is also accepted. For example, label = "[r'$ h$',r'$ {\alpha}$',r'$ v$']"
+will label the axes with standard LaTeX math formatting. Note that the leading
+space is required, and the text is aligned along the axis.
 
 Required Inputs:
   filename            name of the python convergence logfile (e.g paramlog.py)
@@ -55,6 +62,9 @@ if __name__ == '__main__':
   parser.add_option("-p","--param",action="store",dest="param",\
                     metavar="STR",default="[':']",
                     help="indicator string to select parameters")
+  parser.add_option("-l","--label",action="store",dest="label",\
+                    metavar="STR",default="['']",
+                    help="string to assign label to y-axis")
   parser.add_option("-n","--nid",action="store",dest="id",\
                     metavar="INT",default=None,
                     help="id # of the nth simultaneous points to plot")
@@ -102,14 +112,21 @@ if __name__ == '__main__':
    #select = [':2','2:']
    #select = [':1','1:2','2:3','3:']
    #select = ['0','1','2','3']
+  plots = len(select)
 
+  try: # select labels for the axes
+    label = eval(parsed_opts.label)  # format is "['x','y','z']"
+    label += [''] * max(0, plots - len(label))
+  except:
+    label = [''] * plots
+    
   try: # select which 'id' to plot results for
     id = int(parsed_opts.id)
   except:
     id = None # i.e. 'all' **or** use id=0, which should be 'best' energy ?
 
   # ensure all terms of select have a ":"
-  for i in range(len(select)):
+  for i in range(plots):
     if isinstance(select[i], int): select[i] = str(select[i])
     if select[i] == '-1': select[i] = 'len(params)-1:len(params)'
     elif not select[i].count(':'):
@@ -129,7 +146,6 @@ if __name__ == '__main__':
 
   import matplotlib.pyplot as plt
 
-  plots = len(select)
   if cost: j = 1
   else: j = 0
   dim1,dim2 = best_dimensions(plots + j)
@@ -143,23 +159,26 @@ if __name__ == '__main__':
     n = 0
   for line in data:
     ax1.plot(line,label=str(n))#, marker='o')
+    ax1.set_ylabel(label[0])
     n += 1
     if legend: plt.legend()
 
   for i in range(2, plots + 1):
     exec "ax%d = fig.add_subplot(dim1,dim2,%d, sharex=ax1)" % (i,i)
+    exec "ax%d.set_ylabel(label[%d])" % (i,i-1)
     data = eval("params[%s]" % select[i-1])
     try:
       n = int(select[i-1][0])
     except ValueError:
       n = 0
     for line in data:
-      exec  "ax%d.plot(line,label='%s')#, marker='o')" % (i,n)
+      exec "ax%d.plot(line,label='%s')#, marker='o')" % (i,n)
       n += 1
       if legend: plt.legend()
   if cost:
     exec "cx1 = fig.add_subplot(dim1,dim2,%d, sharex=ax1)" % int(plots+1)
     exec "cx1.plot(cost,label='cost')#, marker='o')"
+    if max(0, len(label) - plots): exec "cx1.set_ylabel(label[-1])"
     if legend: plt.legend()
 
   plt.show()
