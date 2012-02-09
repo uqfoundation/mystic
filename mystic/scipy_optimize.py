@@ -346,7 +346,7 @@ Further Inputs:
 
 
 def fmin(func, x0, args=(), xtol=1e-4, ftol=1e-4, maxiter=None, maxfun=None,
-         full_output=0, disp=1, retall=0, callback=None):
+         full_output=0, disp=1, retall=0, callback=None, **kwds):
     """Minimize a function using the downhill simplex algorithm.
     
 Description:
@@ -376,6 +376,7 @@ Additional Inputs:
     callback -- an optional user-supplied function to call after each
         iteration.  It is called as callback(xk), where xk is the
         current parameter vector.
+    handler -- boolean - enable/disable handling of interrupt signal
 
 Returns: (xopt, {fopt, iter, funcalls, warnflag}, {allvecs})
 
@@ -389,6 +390,9 @@ Returns: (xopt, {fopt, iter, funcalls, warnflag}, {allvecs})
     allvecs -- list - a list of solutions at each iteration
 
     """
+    handler = True
+    if kwds.has_key('handler'):
+        handler = kwds['handler']
 
     from mystic.monitors import Monitor
     stepmon = Monitor()
@@ -397,7 +401,7 @@ Returns: (xopt, {fopt, iter, funcalls, warnflag}, {allvecs})
 
     solver = NelderMeadSimplexSolver(len(x0))
     solver.SetInitialPoints(x0)
-    solver.enable_signal_handler()
+    if handler: solver.enable_signal_handler()
     solver.SetEvaluationLimits(maxiter,maxfun)
     solver.SetEvaluationMonitor(evalmon)
     solver.SetGenerationMonitor(stepmon)
@@ -655,7 +659,7 @@ Further Inputs:
 
 def fmin_powell(func, x0, args=(), xtol=1e-4, ftol=1e-4, maxiter=None,
                 maxfun=None, full_output=0, disp=1, retall=0, callback=None,
-                direc=None):
+                direc=None, **kwds):
     """Minimize a function using modified Powell's method.
     
 Description:
@@ -687,6 +691,7 @@ Additional Inputs:
         iteration.  It is called as callback(xk), where xk is the
         current parameter vector.
     direc -- initial direction set
+    handler -- boolean - enable/disable handling of interrupt signal
 
 Returns: (xopt, {fopt, direc, iter, funcalls, warnflag}, {allvecs})
 
@@ -704,6 +709,10 @@ Returns: (xopt, {fopt, direc, iter, funcalls, warnflag}, {allvecs})
     #FIXME: need to resolve "direc"
     #        - should just pass 'direc', and then hands-off ?  How return it ?
 
+    handler = True
+    if kwds.has_key('handler'):
+        handler = kwds['handler']
+
     from mystic.monitors import Monitor
     stepmon = Monitor()
     evalmon = Monitor()
@@ -711,7 +720,7 @@ Returns: (xopt, {fopt, direc, iter, funcalls, warnflag}, {allvecs})
 
     solver = PowellDirectionalSolver(len(x0))
     solver.SetInitialPoints(x0)
-    solver.enable_signal_handler()
+    if handler: solver.enable_signal_handler()
     solver.SetEvaluationLimits(maxiter,maxfun)
     solver.SetEvaluationMonitor(evalmon)
     solver.SetGenerationMonitor(stepmon)

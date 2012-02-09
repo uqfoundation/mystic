@@ -657,6 +657,7 @@ Additional Inputs:
     callback -- an optional user-supplied function to call after each
         iteration.  It is called as callback(xk), where xk is the
         current parameter vector.
+    handler -- boolean - enable/disable handling of interrupt signal
 
 Returns: (xopt, {fopt, iter, funcalls, warnflag}, {allvecs})
 
@@ -673,6 +674,9 @@ Returns: (xopt, {fopt, iter, funcalls, warnflag}, {allvecs})
     invariant_current = False
     if kwds.has_key('invariant_current'):
         invariant_current = kwds['invariant_current']
+    handler = True
+    if kwds.has_key('handler'):
+        handler = kwds['handler']
 
     from mystic.monitors import Monitor
     stepmon = Monitor()
@@ -704,7 +708,7 @@ Returns: (xopt, {fopt, iter, funcalls, warnflag}, {allvecs})
     except: #x0 passed as 1D array of initial parameter values
         solver.SetInitialPoints(x0)
 
-    solver.enable_signal_handler()
+    if handler: solver.enable_signal_handler()
     #TODO: allow sigint_callbacks for all minimal interfaces ?
     solver.Solve(func,termination=termination,\
                 #strategy=strategy,sigint_callback=other_callback,\
