@@ -46,6 +46,10 @@ class dirac_measure(list):  #FIXME: meant to only accept points...
   s.range(R)  --  set the range
   s.var(R)  --  set the variance
 
+ methods:
+  s.get_expect(f)  --  calculate the expectation
+  s.set_expect((center,delta), f)  --  impose expectation by adjusting positions
+
  notes:
   - constraints should impose that sum(weights) should be 1.0
   - assumes that s.n = len(s.coords) == len(s.weights)
@@ -101,6 +105,42 @@ class dirac_measure(list):  #FIXME: meant to only accept points...
 
   def __set_variance(self, v):
     self.coords = impose_variance(v, self.coords, self.weights)
+    return
+
+  def get_expect(self, f):
+    """calculate the expectation for a given function
+
+Inputs:
+    f -- a function that takes a list and returns a number
+""" #XXX: maybe more natural if f takes a positional value x, not a list x ?
+
+    from mystic.math.measures import expectation
+    coords = [(i,) for i in self.coords]
+    return expectation(f, coords, self.weights)
+
+  def set_expect(self, (m,D), f, bounds=None, constraints=None):
+    """impose a expectation on a dirac measure
+
+Inputs:
+    (m,D) -- tuple of expectation m and acceptable deviation D
+    f -- a function that takes a list and returns a number
+    bounds -- tuple of lists of bounds  (lower_bounds, upper_bounds)
+    constraints -- a function that takes a product_measure  c' = constraints(c)
+""" #XXX: maybe more natural if f takes a positional value x, not a list x ?
+#XXX: maybe also natural c' = constraints(c) where c is a dirac_measure ?
+
+    if constraints:  # then need to adjust interface for 'impose_expectation'
+      def cnstr(x, w):
+        c = compose(x,w)
+        c = constraints(c)
+        return decompose(c)[0]
+    else: cnstr = constraints  # 'should' be None
+    coords = impose_expectation((m,D), f, [self.npts], bounds, \
+                                           self.weights,  constraints=cnstr) 
+    from numpy import array
+    self.coords = list(array(coords)[:,0])
+   #from numpy import squeeze
+   #self.coords = list(squeeze(coords))
     return
 
   # interface

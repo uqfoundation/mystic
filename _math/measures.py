@@ -66,9 +66,7 @@ Inputs:
   if weights == None:
     weights = [1.0/float(len(samples))] * len(samples)
   # get weighted sum
-  ssum = 0.0
-  for i in range(len(samples)):
-    ssum += samples[i]*weights[i]
+  ssum = sum(i*j for i,j in zip(samples, weights))
   # normalize by sum of the weights
   wts = float(sum(weights))
   if wts: return ssum / wts
@@ -229,6 +227,7 @@ For example:
 
   # construct and configure optimizer
   debug = False
+  if kwds.has_key('debug'): debug = kwds['debug']
   npop = 200
   maxiter = 1000;  maxfun = 1e+6
   crossover = 0.9; percent_change = 0.9
