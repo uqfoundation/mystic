@@ -570,7 +570,7 @@ Further Inputs:
 
 def diffev2(func,x0,npop,args=(),bounds=None,ftol=5e-3,gtol=None,
             maxiter=None,maxfun=None,cross=0.9,scale=0.8,
-            full_output=0,disp=1,retall=0,callback=None):
+            full_output=0,disp=1,retall=0,callback=None,**kwds):
     """Minimize a function using Storn & Price's differential evolution.
 
 Description:
@@ -616,10 +616,14 @@ Returns: (xopt, {fopt, iter, funcalls, warnflag}, {allvecs})
     allvecs -- list - a list of solutions at each iteration
 
     """
-    return diffev(func,x0,npop,args=(),bounds=None,ftol=5e-3,gtol=None,
-                  maxiter=None,maxfun=None,cross=0.9,scale=0.8,
-                  full_output=0,disp=1,retall=0,callback=None,
-                  invariant_current=True)
+    invariant_current = True
+    if kwds.has_key('invariant_current'):
+        invariant_current = kwds['invariant_current']
+    kwds['invariant_current'] = invariant_current
+    return diffev(func,x0,npop,args=args,bounds=bounds,ftol=ftol,gtol=gtol,
+                  maxiter=maxiter,maxfun=maxfun,cross=cross,scale=scale,
+                  full_output=full_output,disp=disp,retall=retall,
+                  callback=callback,**kwds)
 
 
 def diffev(func,x0,npop,args=(),bounds=None,ftol=5e-3,gtol=None,
