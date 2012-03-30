@@ -377,6 +377,8 @@ Additional Inputs:
         iteration.  It is called as callback(xk), where xk is the
         current parameter vector.
     handler -- boolean - enable/disable handling of interrupt signal
+    itermon -- monitor - override the default GenerationMonitor
+    evalmon -- monitor - override the default EvaluationMonitor
 
 Returns: (xopt, {fopt, iter, funcalls, warnflag}, {allvecs})
 
@@ -397,8 +399,12 @@ Returns: (xopt, {fopt, iter, funcalls, warnflag}, {allvecs})
     from mystic.monitors import Monitor
     stepmon = Monitor()
     evalmon = Monitor()
-    from mystic.termination import CandidateRelativeTolerance as CRT
+    if kwds.has_key('itermon'):
+        stepmon = kwds['itermon']
+    if kwds.has_key('evalmon'):
+        stepmon = kwds['evalmon']
 
+    from mystic.termination import CandidateRelativeTolerance as CRT
     solver = NelderMeadSimplexSolver(len(x0))
     solver.SetInitialPoints(x0)
     if handler: solver.enable_signal_handler()
@@ -692,6 +698,8 @@ Additional Inputs:
         current parameter vector.
     direc -- initial direction set
     handler -- boolean - enable/disable handling of interrupt signal
+    itermon -- monitor - override the default GenerationMonitor
+    evalmon -- monitor - override the default EvaluationMonitor
 
 Returns: (xopt, {fopt, direc, iter, funcalls, warnflag}, {allvecs})
 
@@ -716,8 +724,12 @@ Returns: (xopt, {fopt, direc, iter, funcalls, warnflag}, {allvecs})
     from mystic.monitors import Monitor
     stepmon = Monitor()
     evalmon = Monitor()
-    from mystic.termination import NormalizedChangeOverGeneration as NCOG
+    if kwds.has_key('itermon'):
+        stepmon = kwds['itermon']
+    if kwds.has_key('evalmon'):
+        stepmon = kwds['evalmon']
 
+    from mystic.termination import NormalizedChangeOverGeneration as NCOG
     solver = PowellDirectionalSolver(len(x0))
     solver.SetInitialPoints(x0)
     if handler: solver.enable_signal_handler()

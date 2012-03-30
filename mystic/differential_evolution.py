@@ -603,6 +603,9 @@ Additional Inputs:
     callback -- an optional user-supplied function to call after each
         iteration.  It is called as callback(xk), where xk is the
         current parameter vector.
+    handler -- boolean - enable/disable handling of interrupt signal
+    itermon -- monitor - override the default GenerationMonitor
+    evalmon -- monitor - override the default EvaluationMonitor
 
 Returns: (xopt, {fopt, iter, funcalls, warnflag}, {allvecs})
 
@@ -662,6 +665,8 @@ Additional Inputs:
         iteration.  It is called as callback(xk), where xk is the
         current parameter vector.
     handler -- boolean - enable/disable handling of interrupt signal
+    itermon -- monitor - override the default GenerationMonitor
+    evalmon -- monitor - override the default EvaluationMonitor
 
 Returns: (xopt, {fopt, iter, funcalls, warnflag}, {allvecs})
 
@@ -685,6 +690,10 @@ Returns: (xopt, {fopt, iter, funcalls, warnflag}, {allvecs})
     from mystic.monitors import Monitor
     stepmon = Monitor()
     evalmon = Monitor()
+    if kwds.has_key('itermon'):
+        stepmon = kwds['itermon']
+    if kwds.has_key('evalmon'):
+        stepmon = kwds['evalmon']
    #from mystic.strategy import Best1Exp #, Best1Bin, Rand1Exp
    #strategy = Best1Exp
     if gtol: #if number of generations provided, use ChangeOverGeneration 
