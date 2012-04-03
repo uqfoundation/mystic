@@ -379,6 +379,10 @@ Additional Inputs:
     handler -- boolean - enable/disable handling of interrupt signal
     itermon -- monitor - override the default GenerationMonitor
     evalmon -- monitor - override the default EvaluationMonitor
+    constraints -- an optional user-supplied function.  It is called as
+        constraints(xk), where xk is the current parameter vector.
+        This function must return xk', a parameter vector that satisfies
+        the encoded constraints.
 
 Returns: (xopt, {fopt, iter, funcalls, warnflag}, {allvecs})
 
@@ -411,6 +415,9 @@ Returns: (xopt, {fopt, iter, funcalls, warnflag}, {allvecs})
     solver.SetEvaluationLimits(maxiter,maxfun)
     solver.SetEvaluationMonitor(evalmon)
     solver.SetGenerationMonitor(stepmon)
+    if kwds.has_key('constraints'):
+        constraints = kwds['constraints']
+        solver.SetConstraints(constraints)
     solver.Solve(func,termination=CRT(xtol,ftol),\
                  disp=disp, ExtraArgs=args, callback=callback)
     solution = solver.Solution()
@@ -700,6 +707,10 @@ Additional Inputs:
     handler -- boolean - enable/disable handling of interrupt signal
     itermon -- monitor - override the default GenerationMonitor
     evalmon -- monitor - override the default EvaluationMonitor
+    constraints -- an optional user-supplied function.  It is called as
+        constraints(xk), where xk is the current parameter vector.
+        This function must return xk', a parameter vector that satisfies
+        the encoded constraints.
 
 Returns: (xopt, {fopt, direc, iter, funcalls, warnflag}, {allvecs})
 
@@ -736,6 +747,9 @@ Returns: (xopt, {fopt, direc, iter, funcalls, warnflag}, {allvecs})
     solver.SetEvaluationLimits(maxiter,maxfun)
     solver.SetEvaluationMonitor(evalmon)
     solver.SetGenerationMonitor(stepmon)
+    if kwds.has_key('constraints'):
+        constraints = kwds['constraints']
+        solver.SetConstraints(constraints)
     solver.Solve(func,termination=NCOG(ftol),\
                  xtol=xtol, ExtraArgs=args, callback=callback, \
                  disp=disp, direc=direc)   #XXX: last two lines use **kwds
