@@ -40,7 +40,7 @@ if __name__ == '__main__':
             x[-1] = x[0]
             # constrain x such that mean(x) == target
             if not almostEqual(mean(x), target):
-                x = impose_mean(1.0, x)
+                x = impose_mean(target, x)
             return x
         return constraints
 
