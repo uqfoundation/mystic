@@ -58,7 +58,7 @@ __all__ = ['NelderMeadSimplexSolver','PowellDirectionalSolver',
            'fmin','fmin_powell']
 
 
-from mystic.tools import wrap_function
+from mystic.tools import wrap_function, unpair
 from mystic.tools import wrap_bounds, wrap_nested
 
 import numpy
@@ -345,8 +345,9 @@ Further Inputs:
         return #retlist
 
 
-def fmin(func, x0, args=(), xtol=1e-4, ftol=1e-4, maxiter=None, maxfun=None,
-         full_output=0, disp=1, retall=0, callback=None, **kwds):
+def fmin(func, x0, args=(), bounds=None, xtol=1e-4, ftol=1e-4,
+         maxiter=None, maxfun=None, full_output=0, disp=1, retall=0,
+         callback=None, **kwds):
     """Minimize a function using the downhill simplex algorithm.
     
 Description:
@@ -363,6 +364,7 @@ Inputs:
 Additional Inputs:
 
     args -- extra arguments for func.
+    bounds -- list - n pairs of bounds (min,max), one pair for each parameter.
     xtol -- number - acceptable relative error in xopt for convergence.
     ftol -- number - acceptable relative error in func(xopt) for
         convergence.
@@ -411,13 +413,17 @@ Returns: (xopt, {fopt, iter, funcalls, warnflag}, {allvecs})
     from mystic.termination import CandidateRelativeTolerance as CRT
     solver = NelderMeadSimplexSolver(len(x0))
     solver.SetInitialPoints(x0)
-    if handler: solver.enable_signal_handler()
     solver.SetEvaluationLimits(maxiter,maxfun)
     solver.SetEvaluationMonitor(evalmon)
     solver.SetGenerationMonitor(stepmon)
     if kwds.has_key('constraints'):
         constraints = kwds['constraints']
         solver.SetConstraints(constraints)
+    if bounds != None:
+        minb,maxb = unpair(bounds)
+        solver.SetStrictRanges(minb,maxb)
+
+    if handler: solver.enable_signal_handler()
     solver.Solve(func,termination=CRT(xtol,ftol),\
                  disp=disp, ExtraArgs=args, callback=callback)
     solution = solver.Solution()
@@ -670,9 +676,9 @@ Further Inputs:
         return #retlist
 
 
-def fmin_powell(func, x0, args=(), xtol=1e-4, ftol=1e-4, maxiter=None,
-                maxfun=None, full_output=0, disp=1, retall=0, callback=None,
-                direc=None, **kwds):
+def fmin_powell(func, x0, args=(), bounds=None, xtol=1e-4, ftol=1e-4,
+                maxiter=None, maxfun=None, full_output=0, disp=1, retall=0,
+                callback=None, direc=None, **kwds):
     """Minimize a function using modified Powell's method.
     
 Description:
@@ -689,6 +695,7 @@ Inputs:
 Additional Inputs:
 
     args -- extra arguments for func.
+    bounds -- list - n pairs of bounds (min,max), one pair for each parameter.
     xtol -- number - acceptable relative error in xopt for
         convergence.
     ftol -- number - acceptable relative error in func(xopt) for
@@ -748,13 +755,17 @@ Returns: (xopt, {fopt, direc, iter, funcalls, warnflag}, {allvecs})
     from mystic.termination import NormalizedChangeOverGeneration as NCOG
     solver = PowellDirectionalSolver(len(x0))
     solver.SetInitialPoints(x0)
-    if handler: solver.enable_signal_handler()
     solver.SetEvaluationLimits(maxiter,maxfun)
     solver.SetEvaluationMonitor(evalmon)
     solver.SetGenerationMonitor(stepmon)
     if kwds.has_key('constraints'):
         constraints = kwds['constraints']
         solver.SetConstraints(constraints)
+    if bounds != None:
+        minb,maxb = unpair(bounds)
+        solver.SetStrictRanges(minb,maxb)
+
+    if handler: solver.enable_signal_handler()
     solver.Solve(func,termination=NCOG(ftol, gtol),\
                  xtol=xtol, ExtraArgs=args, callback=callback, \
                  disp=disp, direc=direc)   #XXX: last two lines use **kwds

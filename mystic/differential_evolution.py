@@ -722,7 +722,7 @@ Returns: (xopt, {fopt, iter, funcalls, warnflag}, {allvecs})
     if kwds.has_key('constraints'):
         constraints = kwds['constraints']
         solver.SetConstraints(constraints)
-    if bounds:
+    if bounds != None:
         minb,maxb = unpair(bounds)
         solver.SetStrictRanges(minb,maxb)
 
