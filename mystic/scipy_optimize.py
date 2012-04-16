@@ -740,6 +740,10 @@ Returns: (xopt, {fopt, direc, iter, funcalls, warnflag}, {allvecs})
     if kwds.has_key('evalmon'):
         stepmon = kwds['evalmon']
 
+    gen = 10 # termination generations
+    if kwds.has_key('gen'):
+        gen = kwds['gen']
+
     from mystic.termination import NormalizedChangeOverGeneration as NCOG
     solver = PowellDirectionalSolver(len(x0))
     solver.SetInitialPoints(x0)
@@ -750,7 +754,7 @@ Returns: (xopt, {fopt, direc, iter, funcalls, warnflag}, {allvecs})
     if kwds.has_key('constraints'):
         constraints = kwds['constraints']
         solver.SetConstraints(constraints)
-    solver.Solve(func,termination=NCOG(ftol),\
+    solver.Solve(func,termination=NCOG(ftol, gen),\
                  xtol=xtol, ExtraArgs=args, callback=callback, \
                  disp=disp, direc=direc)   #XXX: last two lines use **kwds
     solution = solver.Solution()
