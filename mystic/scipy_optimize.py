@@ -693,6 +693,7 @@ Additional Inputs:
         convergence.
     ftol -- number - acceptable relative error in func(xopt) for
         convergence.
+    gtol -- number - maximum number of iterations to run without improvement.
     maxiter -- number - the maximum number of iterations to perform.
     maxfun -- number - the maximum number of function evaluations.
     full_output -- number - non-zero if fval and warnflag outputs
@@ -740,9 +741,9 @@ Returns: (xopt, {fopt, direc, iter, funcalls, warnflag}, {allvecs})
     if kwds.has_key('evalmon'):
         stepmon = kwds['evalmon']
 
-    gen = 10 # termination generations
-    if kwds.has_key('gen'):
-        gen = kwds['gen']
+    gtol = 10 # termination generations
+    if kwds.has_key('gtol'):
+        gtol = kwds['gtol']
 
     from mystic.termination import NormalizedChangeOverGeneration as NCOG
     solver = PowellDirectionalSolver(len(x0))
@@ -754,7 +755,7 @@ Returns: (xopt, {fopt, direc, iter, funcalls, warnflag}, {allvecs})
     if kwds.has_key('constraints'):
         constraints = kwds['constraints']
         solver.SetConstraints(constraints)
-    solver.Solve(func,termination=NCOG(ftol, gen),\
+    solver.Solve(func,termination=NCOG(ftol, gtol),\
                  xtol=xtol, ExtraArgs=args, callback=callback, \
                  disp=disp, direc=direc)   #XXX: last two lines use **kwds
     solution = solver.Solution()
