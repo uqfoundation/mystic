@@ -707,7 +707,7 @@ Returns: (xopt, {fopt, iter, funcalls, warnflag}, {allvecs})
     if kwds.has_key('itermon'):
         stepmon = kwds['itermon']
     if kwds.has_key('evalmon'):
-        stepmon = kwds['evalmon']
+        evalmon = kwds['evalmon']
     if gtol: #if number of generations provided, use ChangeOverGeneration 
         from mystic.termination import ChangeOverGeneration
         termination = ChangeOverGeneration(ftol,gtol)

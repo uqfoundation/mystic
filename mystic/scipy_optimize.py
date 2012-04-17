@@ -408,7 +408,7 @@ Returns: (xopt, {fopt, iter, funcalls, warnflag}, {allvecs})
     if kwds.has_key('itermon'):
         stepmon = kwds['itermon']
     if kwds.has_key('evalmon'):
-        stepmon = kwds['evalmon']
+        evalmon = kwds['evalmon']
 
     from mystic.termination import CandidateRelativeTolerance as CRT
     solver = NelderMeadSimplexSolver(len(x0))
@@ -746,7 +746,7 @@ Returns: (xopt, {fopt, direc, iter, funcalls, warnflag}, {allvecs})
     if kwds.has_key('itermon'):
         stepmon = kwds['itermon']
     if kwds.has_key('evalmon'):
-        stepmon = kwds['evalmon']
+        evalmon = kwds['evalmon']
 
     gtol = 10 # termination generations
     if kwds.has_key('gtol'):
