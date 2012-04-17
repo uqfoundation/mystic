@@ -604,6 +604,7 @@ Additional Inputs:
         iteration.  It is called as callback(xk), where xk is the
         current parameter vector.
     handler -- boolean - enable/disable handling of interrupt signal
+    strategy -- strategy - override the default mutation strategy
     itermon -- monitor - override the default GenerationMonitor
     evalmon -- monitor - override the default EvaluationMonitor
     constraints -- an optional user-supplied function.  It is called as
@@ -669,6 +670,7 @@ Additional Inputs:
         iteration.  It is called as callback(xk), where xk is the
         current parameter vector.
     handler -- boolean - enable/disable handling of interrupt signal
+    strategy -- strategy - override the default mutation strategy
     itermon -- monitor - override the default GenerationMonitor
     evalmon -- monitor - override the default EvaluationMonitor
     constraints -- an optional user-supplied function.  It is called as
@@ -695,6 +697,10 @@ Returns: (xopt, {fopt, iter, funcalls, warnflag}, {allvecs})
     if kwds.has_key('handler'):
         handler = kwds['handler']
 
+    from mystic.strategy import Best1Bin
+    strategy = Best1Bin
+    if kwds.has_key('strategy'):
+        strategy = kwds['strategy']
     from mystic.monitors import Monitor
     stepmon = Monitor()
     evalmon = Monitor()
@@ -702,8 +708,6 @@ Returns: (xopt, {fopt, iter, funcalls, warnflag}, {allvecs})
         stepmon = kwds['itermon']
     if kwds.has_key('evalmon'):
         stepmon = kwds['evalmon']
-   #from mystic.strategy import Best1Exp #, Best1Bin, Rand1Exp
-   #strategy = Best1Exp
     if gtol: #if number of generations provided, use ChangeOverGeneration 
         from mystic.termination import ChangeOverGeneration
         termination = ChangeOverGeneration(ftol,gtol)
@@ -734,8 +738,8 @@ Returns: (xopt, {fopt, iter, funcalls, warnflag}, {allvecs})
 
     if handler: solver.enable_signal_handler()
     #TODO: allow sigint_callbacks for all minimal interfaces ?
-    solver.Solve(func,termination=termination,\
-                #strategy=strategy,sigint_callback=other_callback,\
+    solver.Solve(func,termination=termination,strategy=strategy,\
+                #sigint_callback=other_callback,\
                  CrossProbability=cross,ScalingFactor=scale,\
                  ExtraArgs=args,callback=callback)
     solution = solver.Solution()
