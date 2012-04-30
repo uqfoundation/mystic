@@ -410,7 +410,12 @@ Returns: (xopt, {fopt, iter, funcalls, warnflag}, {allvecs})
     if kwds.has_key('evalmon'):
         evalmon = kwds['evalmon']
 
-    from mystic.termination import CandidateRelativeTolerance as CRT
+    if xtol: #if tolerance in x is provided, use CandidateRelativeTolerance
+        from mystic.termination import CandidateRelativeTolerance as CRT
+        termination = CRT(xtol,ftol)
+    else:
+        from mystic.termination import VTR
+        termination = VTR(ftol)
     solver = NelderMeadSimplexSolver(len(x0))
     solver.SetInitialPoints(x0)
     solver.SetEvaluationLimits(maxiter,maxfun)
@@ -424,7 +429,7 @@ Returns: (xopt, {fopt, iter, funcalls, warnflag}, {allvecs})
         solver.SetStrictRanges(minb,maxb)
 
     if handler: solver.enable_signal_handler()
-    solver.Solve(func,termination=CRT(xtol,ftol),\
+    solver.Solve(func,termination=termination,\
                  disp=disp, ExtraArgs=args, callback=callback)
     solution = solver.Solution()
 
@@ -751,8 +756,13 @@ Returns: (xopt, {fopt, direc, iter, funcalls, warnflag}, {allvecs})
     gtol = 10 # termination generations
     if kwds.has_key('gtol'):
         gtol = kwds['gtol']
+    if gtol: #if number of generations is provided, use NCOG
+        from mystic.termination import NormalizedChangeOverGeneration as NCOG
+        termination = NCOG(ftol,gtol)
+    else:
+        from mystic.termination import VTR
+        termination = VTR(ftol)
 
-    from mystic.termination import NormalizedChangeOverGeneration as NCOG
     solver = PowellDirectionalSolver(len(x0))
     solver.SetInitialPoints(x0)
     solver.SetEvaluationLimits(maxiter,maxfun)
@@ -766,7 +776,7 @@ Returns: (xopt, {fopt, direc, iter, funcalls, warnflag}, {allvecs})
         solver.SetStrictRanges(minb,maxb)
 
     if handler: solver.enable_signal_handler()
-    solver.Solve(func,termination=NCOG(ftol, gtol),\
+    solver.Solve(func,termination=termination,\
                  xtol=xtol, ExtraArgs=args, callback=callback, \
                  disp=disp, direc=direc)   #XXX: last two lines use **kwds
     solution = solver.Solution()
