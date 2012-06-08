@@ -37,9 +37,9 @@ Additionally, circle has been extended to provide three additional models,
 each with different packing densities::
     - dense_circle, sparse_circle, and minimal_circle
 
-Poly also provides two additional models, each for 8th and 16th order
+Poly also provides additional models for 2nd, 4th, 6th, 8th, and 16th order
 Chebyshev polynomials::
-    - chebyshev8, chebyshev16
+    - chebyshev2, chebyshev4, chebyshev6, chebyshev8, chebyshev16
 
 
 """
@@ -47,7 +47,7 @@ Chebyshev polynomials::
 from abstract_model import AbstractModel, AbstractFunction
 
 # models
-from poly import poly, chebyshev8, chebyshev16
+from poly import poly, chebyshev2,chebyshev4,chebyshev6,chebyshev8,chebyshev16
 from mogi import mogi
 from br8 import decay
 from lorentzian import lorentzian

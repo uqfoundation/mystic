@@ -41,18 +41,24 @@ using numpy.poly1d(coeffs)"""
 
 
 # coefficients for specific Chebyshev polynomials
+chebyshev2coeffs = [2., 0., -1.]
+chebyshev4coeffs = [8., 0., -8., 0., 1.]
+chebyshev6coeffs = [32., 0., -48., 0., 18., 0., -1.]
 chebyshev8coeffs = [128., 0., -256., 0., 160., 0., -32., 0., 1.]
 chebyshev16coeffs = [32768., 0., -131072., 0., 212992., 0., -180224., 0., 84480., 0., -21504., 0., 2688., 0., -128., 0., 1]
 
 class Chebyshev(Polynomial):
     """Chebyshev polynomial models and functions,
-including specific methods for T8(z) & T16(z), Equation (27-33) of [2]
+including specific methods for Tn(z) n=2,4,6,8,16, Equation (27-33) of [2]
 
 NOTE: default is T8(z)"""
 
     def __init__(self,order=8,name='poly',metric=lambda x: numpysum(x*x),sigma=1.0):
         Polynomial.__init__(self,name,metric,sigma)
-        if order == 8:  self.coeffs = chebyshev8coeffs
+        if order == 2:  self.coeffs = chebyshev2coeffs
+        elif order == 4:  self.coeffs = chebyshev4coeffs
+        elif order == 6:  self.coeffs = chebyshev6coeffs
+        elif order == 8:  self.coeffs = chebyshev8coeffs
         elif order == 16:  self.coeffs = chebyshev16coeffs
         else: raise NotImplementedError, "provide self.coeffs 'by hand'"
         return
@@ -112,9 +118,15 @@ M evaluation points between [-1, 1], and two end points"""
 
 # prepared instances
 poly = Polynomial()
+chebyshev2 = Chebyshev(2)
+chebyshev4 = Chebyshev(4)
+chebyshev6 = Chebyshev(6)
 chebyshev8 = Chebyshev(8)
 chebyshev16 = Chebyshev(16)
 
+chebyshev2cost = chebyshevcostfactory(chebyshev2coeffs)
+chebyshev4cost = chebyshevcostfactory(chebyshev4coeffs)
+chebyshev6cost = chebyshevcostfactory(chebyshev6coeffs)
 chebyshev8cost = chebyshevcostfactory(chebyshev8coeffs)
 chebyshev16cost = chebyshevcostfactory(chebyshev16coeffs)
 

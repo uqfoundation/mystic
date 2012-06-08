@@ -73,6 +73,6 @@ if __name__ == '__main__':
 
     # plot solution versus exact coefficients
     plot_solution(solution) 
-    getch()
+    getch() #XXX: or pylab.show() ?
 
 # end of file
