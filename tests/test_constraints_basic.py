@@ -22,6 +22,7 @@ def test_sumt1():
     ndim = 2
     x0 = [3., 2.]
     npop = 25
+    print "constraints equations:%s" % (constraints_string.rstrip(),)
 
     from mystic.solvers import DifferentialEvolutionSolver
     from mystic.solvers import NelderMeadSimplexSolver
@@ -35,7 +36,7 @@ def test_sumt1():
     soln = end_solver.Solution()
     print "final answer:", soln
     print "constraints satisfied:", issolution(constraints_string, soln)
-    print "expected: [1., 1.]"
+    print "expected: [1., 1.]", "\n"
 
 def test_sumt2():
     def costfunc(x):
@@ -47,6 +48,7 @@ def test_sumt2():
     4.*x1-5.*x3 < -1.
     (x1-10.)**2 + (x2+1.)**2 < 50. 
     """
+    print "constraints equations:%s" % (constraints_string.rstrip(),)
     from mystic.solvers import DifferentialEvolutionSolver
     from mystic.solvers import NelderMeadSimplexSolver
     from mystic.termination import VTR
@@ -59,19 +61,30 @@ def test_sumt2():
     soln = end_solver.Solution()
     print "final answer:", soln
     print "constraints satisfied:", issolution(constraints_string, soln)
-    print "expected: [ 6.25827968  4.999961    5.20662288]"
+    print "expected: [ 6.25827968  4.999961    5.20662288]", "\n"
 
 def test_form_constraints_function():
     # Test a nonlinear constraints example.
     string = """
-x2*x3 = 1.
-x3 = x1 - 3.
-"""
+    x2*x3 = 1.
+    x3 = x1 - 3.
+    """
+    print "building constraints function for:%s" % string.rstrip()
     x0 = [0.8,1.2,-0.7]
+    print 'initial parameters: %s' % asarray(x0)
+    print 'constraints satisfied?', issolution(string, x0)
     cf = parse(string)
     c = cf(x0)
-    print 'constraints satisfied:', issolution(string, c)
-    print 'strictly... constraints(x0) =', asarray(c)
+    print 'after imposing constraints: %s' % asarray(c)
+    print 'constraints satisfied?', issolution(string, c)
+
+    x0 = [1.,1.,1.]
+    print 'initial parameters: %s' % asarray(x0)
+    print 'constraints satisfied?', issolution(string, x0)
+    cf = parse(string)
+    c = cf(x0)
+    print 'after imposing constraints: %s' % asarray(c)
+    print 'constraints satisfied?', issolution(string, c), "\n"
 
 def test_matrix_interface():
     # Demonstrates linear_symbolic()
@@ -80,20 +93,30 @@ def test_matrix_interface():
     b = asarray([0., 0.])
     G = [1., 0., 0.]
     h = [5.]
+    print "equality constraints"
+    print "G: %s" % G
+    print "h: %s" % h
+    print "inequality constraints"
+    print "A:\n%s" % A
+    print "b: %s" % b
     costfunc = lambda x: sum(x)
     constraints_string = linear_symbolic(A=A, b=b, G=G, h=h)
-    print "symbolic string:"
-    print constraints_string
+    print "symbolic string:\n", constraints_string.rstrip()
     cf = wrap_constraints(constraints_string, costfunc)
-    print cf([1., 1., 1.])
+    print "c = wrap_constraints( constraints, sum(x) )"
+    x0 = [1., 1., 1.]
+    print "c(%s): %s\n" % (x0, cf(x0))
 
 def test_varnamelist():
     # Demonstrates usage of varnamelist
     varnamelist = ['length', 'width', 'height']
     string = "length = height**2 - 3.5*width"
     costfunc = lambda x: x[0]   
+    print "symbolic string:\n", string.rstrip()
     wrappedfunc = wrap_constraints(string, costfunc, variables=varnamelist)
-    print wrappedfunc([2., 2., 3.]) # Expected: 2.0
+    print "c = wrap_constraints( constraints, x[0] )"
+    x0 = [2., 2., 3.]
+    print "c(%s): %s\n" % (x0, wrappedfunc(x0)) # Expected: 2.0
 
 def test_feasible_pt():
     constraints = """x1 + x2 + x7 - 2*x4 > 3"""
@@ -101,14 +124,15 @@ def test_feasible_pt():
 x1 + x2 < 3.
 x1 + x2 > 4."""
     soln = solve(constraints, guess=[1.]*8)
-    print 'actual solution:', soln
+    print 'actual solution:', soln, "\n"
 
 def test_varnamelist2():
     # Test tricky cases of varnamelist
     varnamelist = ['x', 'y', 'x3']
     string = "x + y + x3 = 0"
+    print "symbolic string:\n", string.rstrip()
     newstring = substitute_symbolic(string, varnamelist, variables='x')
-    print newstring
+    print "new symbolic string:\n", newstring.rstrip()
 
 
 if __name__ == '__main__':
@@ -117,8 +141,8 @@ if __name__ == '__main__':
     test_form_constraints_function()
     test_matrix_interface()
     test_varnamelist()
-    test_feasible_pt()
     test_varnamelist2()
+####test_feasible_pt()
     pass
 
 #EOF

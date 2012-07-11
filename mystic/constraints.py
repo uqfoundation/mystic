@@ -933,6 +933,20 @@ Additional Inputs:
         exec code in globals(), locals()
       File "<string>", line 7, in <module>
     NameError: name 'x' is not defined
+
+    >>> constr = """
+      x1**2 = 2.5*x2 - 5.0
+      exp(x3/x1) >= 7.0"""
+    >>> simplify_symbolic(constr, target='x1')
+    'x1 = (-5.0 + 2.5*x2)**(1/2)'
+    >>> simplify_symbolic(constr, target='x2')
+    'x2 = 2.0 + 0.4*x1**2'
+    >>> simplify_symbolic(constr, target='x3')
+    Target variable is invalid. Returning None.
+    >>> print simplify_symbolic(constr)
+    x2 = 2.0 + 0.4*x1**2
+    x1 = (-5.0 + 2.5*x2)**(1/2)
+    x1 = -(-5.0 + 2.5*x2)**(1/2)
     '''
     warn = True  # if True, don't supress warning about old versions of sympy
     if kwds.has_key('warn'): warn = kwds['warn']
