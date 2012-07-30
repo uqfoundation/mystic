@@ -74,6 +74,7 @@ Null objects always and reliably "do nothing." """
     def __getattr__(self, name): return self
     def __setattr__(self, name, value): return self
     def __delattr__(self, name): return self
+    def __len__(self): return  #XXX ?
 
 class Monitor(object):
     """
@@ -98,6 +99,9 @@ example usage...
         self._id = []
         self._info = []
        #self._all = all
+
+    def __len__(self):
+        return len(self.x)
 
     def info(self, message):
         self._info.append("%s" % "".join(["",str(message)]))

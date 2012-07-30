@@ -1,4 +1,5 @@
 from mystic.tools import list_or_tuple_or_ndarray as sequence
+from mystic.tools import isNull
 
 # logfile reader
 
@@ -45,9 +46,10 @@ def converge_to_support(steps, energy):
   return steps, energy
 
 def raw_to_converge(steps, energy):
-  if not sequence(steps[0][0]):
-    steps = [[step] for step in steps]  # needed when steps = [1,2,3,...]
-  steps = [zip(*step) for step in steps] # also can be used to revert 'steps'
+  if len(steps) > 0:
+    if not sequence(steps[0][0]):
+      steps = [[step] for step in steps]  # needed when steps = [1,2,3,...]
+    steps = [zip(*step) for step in steps] # also can be used to revert 'steps'
   return steps, energy
 
 def raw_to_support(steps, energy):
@@ -57,6 +59,7 @@ def raw_to_support(steps, energy):
 ## FIXME: 'converge' and 'raw' files are virtually unused and unsupported
 
 def write_raw_file(mon,log_file='paramlog.py',**kwds):
+  if isNull(mon): return  #XXX: throw error? warning? ???
   steps, energy = read_monitor(mon)
   f = open(log_file,'w')
   if kwds.has_key('header'):
@@ -68,11 +71,13 @@ def write_raw_file(mon,log_file='paramlog.py',**kwds):
   return
 
 def write_support_file(mon,log_file='paramlog.py'):
+  if isNull(mon): return  #XXX: throw error? warning? ???
   monitor = write_monitor( *raw_to_support( *read_monitor(mon) ) )
   write_raw_file(monitor,log_file,header="written in 'support' format")
   return
 
 def write_converge_file(mon,log_file='paramlog.py'):
+  if isNull(mon): return  #XXX: throw error? warning? ???
   monitor = write_monitor( *raw_to_converge( *read_monitor(mon) ) )
   write_raw_file(monitor,log_file,header="written in 'converge' format")
   return
@@ -130,13 +135,15 @@ def old_to_new_support_converter(file_in,file_out):
   return
 
 def __orig_write_support_file(mon,log_file='paramlog.py'):
+  if isNull(mon): return  #XXX: throw error? warning? ???
   steps, energy = read_monitor(mon)
   log = []
-  for p in range(len(steps[0])):
-    q = []
-    for s in range(len(steps)):
-      q.append(steps[s][p])
-    log.append(q)  
+  if len(steps) > 0:
+    for p in range(len(steps[0])):
+      q = []
+      for s in range(len(steps)):
+        q.append(steps[s][p])
+      log.append(q)  
   monitor = write_monitor(log, energy)
   write_raw_file(monitor,log_file)
   return

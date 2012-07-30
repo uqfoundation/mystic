@@ -214,6 +214,7 @@ Further Inputs:
         if retall:
             allvecs = [sim[0]]
         fsim[0] = func(x0)
+        termination(self) #XXX: initialize termination conditions, if needed
         self._stepmon(sim[0], fsim[0], id) # sim = all; "best" is sim[0]
 
         #--- ensure initial simplex is within bounds ---
@@ -585,6 +586,7 @@ Further Inputs:
         self.population[0] = x    #XXX: pointless?
         self.popEnergy[0] = fval  #XXX: pointless?
         self.energy_history.append(self.bestEnergy)
+        termination(self) #XXX: initialize termination conditions, if needed
         self._stepmon(x, fval, id) # get initial values
 
         iter = 0;

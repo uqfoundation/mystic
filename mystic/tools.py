@@ -250,6 +250,13 @@ from monitors import LoggingMonitor as LoggingSow
 from monitors import CustomMonitor as CustomSow
 from monitors import Null
 
+def isNull(mon):
+    if isinstance(mon, Null): # is Null()
+        return True
+    if mon == Null:  # is Null
+        return True
+    return False
+
 
 if __name__=='__main__':
     import doctest

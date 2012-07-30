@@ -285,8 +285,9 @@ Further Inputs:
                     self.bestSolution[:] = self.trialSolution[:]
 
         self.energy_history.append(self.bestEnergy)
+        termination(self) #XXX: initialize termination conditions, if needed
         self._stepmon(self.bestSolution[:], self.bestEnergy, id)
-        self.generations = 0  #XXX: above currently *not* counted as an iteration
+        self.generations = 0 #XXX: above currently *not* counted as an iteration
         if callback is not None:
             callback(self.bestSolution)
          
@@ -492,6 +493,7 @@ Further Inputs:
                     self.bestSolution[:] = trialPop[candidate][:]
 
         self.energy_history.append(self.bestEnergy)
+        termination(self) #XXX: initialize termination conditions, if needed
        #FIXME: StepMonitor works for 'pp'?
         self._stepmon(self.bestSolution[:], self.bestEnergy, id)
         self.generations = 0  #XXX: above currently *not* counted as an iteration
