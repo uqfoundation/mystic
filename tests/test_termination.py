@@ -14,29 +14,29 @@ GradientNormTolerance(tolerance=1e-5, norm=Inf)
 from mystic.termination import *
 from numpy import inf
 
-def test_terminators(test, func=lambda x:x[0], verbose=False):
-  print test(lambda x:"", func, verbose) #XXX: just print settings
-  print "VTR():", test(VTR(), func)
-  print "VTR(inf):", test(VTR(inf), func)
-  print "COG():", test(ChangeOverGeneration(), func)
-  print "COG(gen=5):", test(ChangeOverGeneration(generations=5), func)
-  print "NCOG():", test(NormalizedChangeOverGeneration(), func)
-  print "NCOG(gen=5):", test(NormalizedChangeOverGeneration(generations=5),func)
-  print "CTR():", test(CandidateRelativeTolerance(), func)
-  print "CTR(ftol=inf):", test(CandidateRelativeTolerance(ftol=inf), func)
-  print "CTR(inf):", test(CandidateRelativeTolerance(inf), func)
-  print "SI():", test(SolutionImprovement(), func)
-  print "SI(inf):", test(SolutionImprovement(inf), func)
-  print "NCT():", test(NormalizedCostTarget(), func)
-  print "NCT(gen=5):", test(NormalizedCostTarget(generations=5), func)
-  print "NCT(gen=None):", test(NormalizedCostTarget(generations=None), func)
-  print "NCT(inf,inf):", test(NormalizedCostTarget(inf,inf), func)
-  print "VCOG():", test(VTRChangeOverGeneration(), func)
-  print "VCOG(gen=5):", test(VTRChangeOverGeneration(generations=5), func)
-  print "VCOG(inf):", test(VTRChangeOverGeneration(inf), func)
-  print "PS():", test(PopulationSpread(), func)
-  print "PS(inf):", test(PopulationSpread(inf), func)
- #print "GNT():", test(GradientNormTolerance(), func)
+def test_terminators(test, func=lambda x:x[0], info=False, verbose=False):
+  print test(lambda x,y:"", func, info, verbose) #XXX: just print settings
+  print "VTR():", test(VTR(), func, info)
+  print "VTR(inf):", test(VTR(inf), func, info)
+  print "COG():", test(ChangeOverGeneration(), func, info)
+  print "COG(gen=5):", test(ChangeOverGeneration(generations=5), func, info)
+  print "NCOG():", test(NormalizedChangeOverGeneration(), func, info)
+  print "NCOG(gen=5):", test(NormalizedChangeOverGeneration(generations=5), func, info)
+  print "CTR():", test(CandidateRelativeTolerance(), func, info)
+  print "CTR(ftol=inf):", test(CandidateRelativeTolerance(ftol=inf), func, info)
+  print "CTR(inf):", test(CandidateRelativeTolerance(inf), func, info)
+  print "SI():", test(SolutionImprovement(), func, info)
+  print "SI(inf):", test(SolutionImprovement(inf), func, info)
+  print "NCT():", test(NormalizedCostTarget(), func, info)
+  print "NCT(gen=5):", test(NormalizedCostTarget(generations=5), func, info)
+  print "NCT(gen=None):", test(NormalizedCostTarget(generations=None), func, info)
+  print "NCT(inf,inf):", test(NormalizedCostTarget(inf,inf), func, info)
+  print "VCOG():", test(VTRChangeOverGeneration(), func, info)
+  print "VCOG(gen=5):", test(VTRChangeOverGeneration(generations=5), func, info)
+  print "VCOG(inf):", test(VTRChangeOverGeneration(inf), func, info)
+  print "PS():", test(PopulationSpread(), func, info)
+  print "PS(inf):", test(PopulationSpread(inf), func, info)
+ #print "GNT():", test(GradientNormTolerance(), func, info)
   return
 
 def verbosity(solver):
@@ -48,16 +48,16 @@ def verbosity(solver):
     print "bestEnergy:", solver.bestEnergy
     return
 
-def test01(terminate, func=lambda x:x[0], debug=False):
+def test01(terminate, func=lambda x:x[0], info=False, debug=False):
   from mystic.solvers import DifferentialEvolutionSolver2 as DE2
   solver = DE2(3,5)
   solver.SetRandomInitialPoints()
   solver.SetEvaluationLimits(8)
   solver.Solve(func, VTR())
   if debug: verbosity(solver)
-  return terminate(solver)
+  return terminate(solver, info)
 
-def test02(terminate, func=lambda x:x[0], debug=False):
+def test02(terminate, func=lambda x:x[0], info=False, debug=False):
   from mystic.solvers import DifferentialEvolutionSolver2 as DE2
  #solver = DE2(3,1) #Solver throws ValueError "sample larger than population"
  #solver = DE2(1,1) #Solver throws ValueError "sample larger than population"
@@ -66,65 +66,66 @@ def test02(terminate, func=lambda x:x[0], debug=False):
   solver.SetEvaluationLimits(8)
   solver.Solve(func, VTR())
   if debug: verbosity(solver)
-  return terminate(solver)
+  return terminate(solver, info)
 
-def test03(terminate, func=lambda x:x[0], debug=False):
+def test03(terminate, func=lambda x:x[0], info=False, debug=False):
   from mystic.solvers import DifferentialEvolutionSolver as DE
   solver = DE(3,5)
   solver.SetRandomInitialPoints()
   solver.SetEvaluationLimits(8)
   solver.Solve(func, VTR())
   if debug: verbosity(solver)
-  return terminate(solver)
+  return terminate(solver, info)
 
-def test04(terminate, func=lambda x:x[0], debug=False):
+def test04(terminate, func=lambda x:x[0], info=False, debug=False):
   from mystic.solvers import DifferentialEvolutionSolver as DE
   solver = DE(1,5)
   solver.SetRandomInitialPoints()
   solver.SetEvaluationLimits(8)
   solver.Solve(func, VTR())
   if debug: verbosity(solver)
-  return terminate(solver)
+  return terminate(solver, info)
 
-def test05(terminate, func=lambda x:x[0], debug=False):
+def test05(terminate, func=lambda x:x[0], info=False, debug=False):
   from mystic.solvers import NelderMeadSimplexSolver as NM
   solver = NM(3)
   solver.SetRandomInitialPoints()
   solver.SetEvaluationLimits(8)
   solver.Solve(func, VTR())
   if debug: verbosity(solver)
-  return terminate(solver)
+  return terminate(solver, info)
 
-def test06(terminate, func=lambda x:x[0], debug=False):
+def test06(terminate, func=lambda x:x[0], info=False, debug=False):
   from mystic.solvers import NelderMeadSimplexSolver as NM
   solver = NM(1)
   solver.SetRandomInitialPoints()
   solver.SetEvaluationLimits(8)
   solver.Solve(func, VTR())
   if debug: verbosity(solver)
-  return terminate(solver)
+  return terminate(solver, info)
 
-def test07(terminate, func=lambda x:x[0], debug=False):
+def test07(terminate, func=lambda x:x[0], info=False, debug=False):
   from mystic.solvers import PowellDirectionalSolver as PDS
   solver = PDS(3)
   solver.SetRandomInitialPoints()
   solver.SetEvaluationLimits(8)
   solver.Solve(func, VTR())
   if debug: verbosity(solver)
-  return terminate(solver)
+  return terminate(solver, info)
 
-def test08(terminate, func=lambda x:x[0], debug=False):
+def test08(terminate, func=lambda x:x[0], info=False, debug=False):
   from mystic.solvers import PowellDirectionalSolver as PDS
   solver = PDS(1)
   solver.SetRandomInitialPoints()
   solver.SetEvaluationLimits(8)
   solver.Solve(func, VTR())
   if debug: verbosity(solver)
-  return terminate(solver)
+  return terminate(solver, info)
 
 
 if __name__ == "__main__":
   verbose = True
+  info = False
   """NOTES: For x:x[0], test01-test04 returns either lists or floats;
 while test05-test06 returns a ndarray for population, popEnergy, bestSolution;
 test07-test08 throw a RuntimeError "Too many iterations" due to "bracket()".
@@ -149,13 +150,13 @@ ISSUES:
  #function = lambda x:-10.0
  #function = lambda x:-inf
 
- #test_terminators(test01,function,verbose)
- #test_terminators(test02,function,verbose)
- #test_terminators(test03,function,verbose)
- #test_terminators(test04,function,verbose)
- #test_terminators(test05,function,verbose)
- #test_terminators(test06,function,verbose)
-  test_terminators(test07,function,verbose)
- #test_terminators(test08,function,verbose)
+ #test_terminators(test01,function,info,verbose)
+ #test_terminators(test02,function,info,verbose)
+ #test_terminators(test03,function,info,verbose)
+ #test_terminators(test04,function,info,verbose)
+ #test_terminators(test05,function,info,verbose)
+ #test_terminators(test06,function,info,verbose)
+  test_terminators(test07,function,info,verbose)
+ #test_terminators(test08,function,info,verbose)
 
 # EOF

@@ -6,7 +6,6 @@ Factories that provide termination conditions for a mystic.solver
 
 import numpy
 from numpy import absolute
-from __builtin__ import bool as _bool
 abs = absolute
 Inf = numpy.Inf
 null = ""
@@ -20,14 +19,13 @@ def VTR(tolerance = 0.005, target = 0.0):
 
 cost[-1] <= tolerance"""
     doc = "VTR with %s" % {'tolerance':tolerance, 'target':target}
-    def _VTR(inst, bool=True):
-         if bool: bool = _bool
-         else: bool = lambda x:x
-         hist = inst.energy_history
-         if not len(hist): return bool(null)
-         if abs(hist[-1] - target) <= tolerance: msg = doc
-         else: msg = null
-         return bool(msg)
+    def _VTR(inst, info=False):
+        if info: info = lambda x:x
+        else: info = bool
+        hist = inst.energy_history
+        if not len(hist): return info(null)
+        if abs(hist[-1] - target) <= tolerance: return info(doc)
+        return info(null)
    #_VTR.__doc__ = "%s(**%s)" % tuple(doc.split(" with "))
     _VTR.__doc__ = doc
     return _VTR
@@ -38,12 +36,14 @@ def ChangeOverGeneration(tolerance = 1e-6, generations = 30):
 cost[-g] - cost[-1] <= tolerance, where g=generations"""
     doc = "ChangeOverGeneration with %s" % {'tolerance':tolerance,
                                             'generations':generations}
-    def _ChangeOverGeneration(inst):
-         hist = inst.energy_history
-         lg = len(hist)
-         if lg <= generations: return ""
-         if (hist[-generations]-hist[-1]) <= tolerance: return doc
-         return ""
+    def _ChangeOverGeneration(inst, info=False):
+        if info: info = lambda x:x
+        else: info = bool
+        hist = inst.energy_history
+        lg = len(hist)
+        if lg <= generations: return info(null)
+        if (hist[-generations]-hist[-1]) <= tolerance: return info(doc)
+        return info(null)
     _ChangeOverGeneration.__doc__ = doc
     return _ChangeOverGeneration
 
@@ -54,13 +54,15 @@ def NormalizedChangeOverGeneration(tolerance = 1e-4, generations = 10):
     eta = 1e-20
     doc = "NormalizedChangeOverGeneration with %s" % {'tolerance':tolerance,
                                                       'generations':generations}
-    def _NormalizedChangeOverGeneration(inst):
-         hist = inst.energy_history
-         lg = len(hist)
-         if lg <= generations: return ""
-         diff = tolerance*(abs(hist[-generations])+abs(hist[-1])) + eta
-         if 2.0*(hist[-generations]-hist[-1]) <= diff: return doc
-         return ""
+    def _NormalizedChangeOverGeneration(inst, info=False):
+        if info: info = lambda x:x
+        else: info = bool
+        hist = inst.energy_history
+        lg = len(hist)
+        if lg <= generations: return info(null)
+        diff = tolerance*(abs(hist[-generations])+abs(hist[-1])) + eta
+        if 2.0*(hist[-generations]-hist[-1]) <= diff: return info(doc)
+        return info(null)
     _NormalizedChangeOverGeneration.__doc__ = doc
     return _NormalizedChangeOverGeneration
               
@@ -70,21 +72,23 @@ def CandidateRelativeTolerance(xtol = 1e-4, ftol = 1e-4):
 abs(xi-x0) <= xtol & abs(fi-f0) <= ftol, where x=params & f=cost"""
     #NOTE: this termination expects nPop > 1
     doc = "CandidateRelativeTolerance with %s" % {'xtol':xtol, 'ftol':ftol}
-    def _CandidateRelativeTolerance(inst):
-         sim = numpy.array(inst.population)
-         fsim = numpy.array(inst.popEnergy)
-         if not len(fsim[1:]):
-             warn = "Warning: Invalid termination condition (nPop < 2)"
-             print warn
-             return warn
-         #   raise ValueError, "Invalid termination condition (nPop < 2)"
-         #FIXME: abs(inf - inf) will raise a warning...
-         errdict = numpy.seterr(invalid='ignore') #FIXME: turn off warning 
-         answer = max(numpy.ravel(abs(sim[1:]-sim[0]))) <= xtol
-         answer = answer and max(abs(fsim[0]-fsim[1:])) <= ftol
-         numpy.seterr(invalid=errdict['invalid']) #FIXME: turn on warnings
-         if answer: return doc
-         return ""
+    def _CandidateRelativeTolerance(inst, info=False):
+        sim = numpy.array(inst.population)
+        fsim = numpy.array(inst.popEnergy)
+        if not len(fsim[1:]):
+            warn = "Warning: Invalid termination condition (nPop < 2)"
+            print warn
+            return warn
+        #   raise ValueError, "Invalid termination condition (nPop < 2)"
+        if info: info = lambda x:x
+        else: info = bool
+        #FIXME: abs(inf - inf) will raise a warning...
+        errdict = numpy.seterr(invalid='ignore') #FIXME: turn off warning 
+        answer = max(numpy.ravel(abs(sim[1:]-sim[0]))) <= xtol
+        answer = answer and max(abs(fsim[0]-fsim[1:])) <= ftol
+        numpy.seterr(invalid=errdict['invalid']) #FIXME: turn on warnings
+        if answer: return info(doc)
+        return info(null)
     _CandidateRelativeTolerance.__doc__ = doc
     return _CandidateRelativeTolerance
 
@@ -93,13 +97,15 @@ def SolutionImprovement(tolerance = 1e-5):
 
 sum(abs(last_params - current_params)) <= tolerance"""
     doc = "SolutionImprovement with %s" % {'tolerance':tolerance}
-    def _SolutionImprovement(inst):
+    def _SolutionImprovement(inst, info=False):
+        if info: info = lambda x:x
+        else: info = bool
         best = numpy.array(inst.bestSolution)
         trial = numpy.array(inst.trialSolution)
         update = best - trial #XXX: if inf - inf ?
         answer = numpy.add.reduce(abs(update)) <= tolerance
-        if answer: return doc
-        return ""
+        if answer: return info(doc)
+        return info(null)
     _SolutionImprovement.__doc__ = doc
     return _SolutionImprovement
 
@@ -113,17 +119,19 @@ abs(cost[-1] - fval)/fval <= tolerance *or* (cost[-1] - cost[-g]) = 0 """
     #           --> else: return fval != 0 and abs((best - fval)/fval) < tol
     doc = "NormalizedCostTarget with %s" % {'fval':fval, 'tolerance':tolerance,
                                             'generations':generations}
-    def _NormalizedCostTarget(inst):
-         if generations and fval == None:
-             hist = inst.energy_history
-             lg = len(hist)
-             #XXX: throws error when hist is shorter than generations ?
-             if lg > generations and (hist[-generations]-hist[-1]) <= 0:
-                 return doc
-             return ""
-         if not generations and fval == None: return doc
-         if abs(inst.bestEnergy-fval) <= abs(tolerance * fval): return doc
-         return ""
+    def _NormalizedCostTarget(inst, info=False):
+        if info: info = lambda x:x
+        else: info = bool
+        if generations and fval == None:
+            hist = inst.energy_history
+            lg = len(hist)
+            #XXX: throws error when hist is shorter than generations ?
+            if lg > generations and (hist[-generations]-hist[-1]) <= 0:
+                return info(doc)
+            return info(null)
+        if not generations and fval == None: return info(doc)
+        if abs(inst.bestEnergy-fval) <= abs(tolerance * fval): return info(doc)
+        return info(null)
     _NormalizedCostTarget.__doc__ = doc
     return _NormalizedCostTarget
 
@@ -136,13 +144,15 @@ cost[-g] - cost[-1] <= gtol, where g=generations *or* cost[-1] <= ftol."""
     doc = "VTRChangeOverGeneration with %s" % {'ftol':ftol, 'gtol':gtol,
                                                'generations':generations,
                                                'target':target}
-    def _VTRChangeOverGeneration(inst):
-         hist = inst.energy_history
-         lg = len(hist)
-         #XXX: throws error when hist is shorter than generations ?
-         if (lg > generations and (hist[-generations]-hist[-1]) <= gtol)\
-                or ( abs(hist[-1] - target) <= ftol ): return doc
-         return ""
+    def _VTRChangeOverGeneration(inst, info=False):
+        if info: info = lambda x:x
+        else: info = bool
+        hist = inst.energy_history
+        lg = len(hist)
+        #XXX: throws error when hist is shorter than generations ?
+        if (lg > generations and (hist[-generations]-hist[-1]) <= gtol)\
+               or ( abs(hist[-1] - target) <= ftol ): return info(doc)
+        return info(null)
     _VTRChangeOverGeneration.__doc__ = doc
     return _VTRChangeOverGeneration
 
@@ -151,13 +161,15 @@ def PopulationSpread(tolerance = 1e-6):
 
 abs(params - params[0]) <= tolerance"""
     doc = "PopulationSpread with %s" % {'tolerance':tolerance}
-    def _PopulationSpread(inst):
-         sim = numpy.array(inst.population)
-         #if not len(sim[1:]):
-         #    print "Warning: Invalid termination condition (nPop < 2)"
-         #    return True
-         if numpy.all(abs(sim - sim[0]) <= abs(tolerance * sim[0])): return doc
-         return ""
+    def _PopulationSpread(inst, info=False):
+        if info: info = lambda x:x
+        else: info = bool
+        sim = numpy.array(inst.population)
+        #if not len(sim[1:]):
+        #    print "Warning: Invalid termination condition (nPop < 2)"
+        #    return True
+        if numpy.all(abs(sim - sim[0]) <= abs(tolerance * sim[0])): return info(doc)
+        return info(null)
     _PopulationSpread.__doc__ = doc
     return _PopulationSpread
 
@@ -166,13 +178,15 @@ def GradientNormTolerance(tolerance = 1e-5, norm = Inf):
 
 sum( abs(gradient)**norm )**(1.0/norm) <= tolerance"""
     doc = "GradientNormTolerance with %s" % {'tolerance':tolerance, 'norm':norm}
-    def _GradientNormTolerance(inst):
+    def _GradientNormTolerance(inst, info=False):
         try:
             gfk = inst.gfk #XXX: need to ensure that gfk is an array ?
         except:
             warn = "Warning: Invalid termination condition (no gradient)"
             print warn
             return warn
+        if info: info = lambda x:x
+        else: info = bool
         if norm == Inf:
             gnorm = numpy.amax(abs(gfk))
         elif norm == -Inf:
@@ -181,8 +195,8 @@ sum( abs(gradient)**norm )**(1.0/norm) <= tolerance"""
            #XXX: as norm > large, gnorm approaches amax(abs(gfk)) --> then inf
            #XXX: as norm < -large, gnorm approaches amin(abs(gfk)) --> then -inf
             gnorm = numpy.sum(abs(gfk)**norm,axis=0)**(1.0/norm)
-        if gnorm <= tolerance: return doc
-        return ""
+        if gnorm <= tolerance: return info(doc)
+        return info(null)
     _GradientNormTolerance.__doc__ = doc
     return _GradientNormTolerance
 
