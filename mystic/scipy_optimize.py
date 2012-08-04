@@ -312,6 +312,11 @@ Further Inputs:
         self.generations = iterations
         signal.signal(signal.SIGINT,signal.default_int_handler)
 
+        # log any termination messages
+        msg = termination(self, info=True)
+        if msg: self._stepmon.info('STOP("%s")' % msg)
+       #else: self._stepmon.info('STOP()')
+
         # code below here is dead, unless disp!=0
         x = sim[0]
         fval = min(fsim)
@@ -649,6 +654,11 @@ Further Inputs:
     
         self.generations = iter
         signal.signal(signal.SIGINT,signal.default_int_handler)
+
+        # log any termination messages
+        msg = termination(self, info=True)
+        if msg: self._stepmon.info('STOP("%s")' % msg)
+       #else: self._stepmon.info('STOP()')
 
         # code below here is dead, unless disp!=0
         warnflag = 0

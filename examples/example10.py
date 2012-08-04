@@ -76,7 +76,7 @@ if __name__ == '__main__':
     # get solved coefficients and Chi-Squared (from solver members)
     iterations = solver.generations
     cost = solver.bestEnergy
-    print "\nGeneration %d has best Chi-Squared: %f" % (iterations, cost)
+    print "Generation %d has best Chi-Squared: %f" % (iterations, cost)
     print "Solved Coefficients:\n %s\n" % poly1d(solver.bestSolution)
 
     # plot convergence of coefficients per iteration

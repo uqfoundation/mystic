@@ -329,6 +329,11 @@ Further Inputs:
 
         signal.signal(signal.SIGINT,signal.default_int_handler)
 
+        # log any termination messages
+        msg = termination(self, info=True)
+        if msg: self._stepmon.info('STOP("%s")' % msg)
+       #else: self._stepmon.info('STOP()')
+
         # code below here pushes output to scipy.optimize.fmin interface
         fval = self.bestEnergy
         warnflag = 0
@@ -546,6 +551,11 @@ Further Inputs:
                 break
 
         signal.signal(signal.SIGINT,signal.default_int_handler)
+
+        # log any termination messages
+        msg = termination(self, info=True)
+        if msg: self._stepmon.info('STOP("%s")' % msg)
+       #else: self._stepmon.info('STOP()')
 
         # code below here pushes output to scipy.optimize.fmin interface
         fval = self.bestEnergy
