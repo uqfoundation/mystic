@@ -6,7 +6,6 @@ Factories that provide termination conditions for a mystic.solver
 
 import numpy
 from numpy import absolute
-from mystic.tools import flatten
 abs = absolute
 Inf = numpy.Inf
 null = ""
@@ -14,100 +13,108 @@ null = ""
 # a module level singleton.
 EARLYEXIT = 0
 
-# Factories that extend termintaion conditions
-class And(tuple):
+# Factories that extend termination conditions
+class When(tuple):
+  """provide a termination condition with more reporting options.
+
+Terminates when the given condition is satisfied."""
+  def __new__(self, arg):
+    """
+Takes a termination condition:
+    arg    -- termination condition
+
+Usage:
+    >>> from mystic.termination import When, VTR
+    >>> term = When( VTR() )
+    >>> term(solver)  # where solver is a mystic.solver instance"""
+    if not getattr(arg, '__len__', None): arg = [arg]
+    elif not isinstance(arg, When):
+      raise TypeError, "'%s' object is not a condition" % arg.__class__.__name__
+    #XXX: need better filter on inputs
+    return tuple.__new__(self, arg)
+
+  def __call__(self, solver, info=False):
+    """check if the termination conditions are satisfied.
+
+Inputs:
+    solver -- the solver instance
+
+Additional Inputs:
+    info   -- if True, return information about the satisfied conditions"""
+    stop = {}
+    [stop.update({f : f(solver, info)}) for f in self]
+    _all = all(stop.values())
+    # return T/F if the conditions are met
+    if not info: return _all
+    # return the satisfied conditions
+    if info == 'self': return tuple(set(stop.keys())) if _all else ()
+    if info == 'not':
+      return tuple(set([f for f in self if f not in self(solver, 'self')]))
+    # return info about the satisfied conditions
+    return "; ".join(set("; ".join(stop.values()).split("; "))) if _all else ""
+
+  def __repr__(self):
+    return "When(%s)" % str(self[0])
+
+class And(When):
   """couple termination conditions with "and".
 
 Terminates when all given conditions are satisfied."""
   def __new__(self, *args):
     """
 Takes one or more termination conditions:
-    args    -- tuple of termination conditions
+    args   -- tuple of termination conditions
 
 Usage:
     >>> from mystic.termination import And, VTR, ChangeOverGeneration
-    >>> term = And( VTR(), ChangeOverGeneration() )"""
+    >>> term = And( VTR(), ChangeOverGeneration() )
+    >>> term(solver)  # where solver is a mystic.solver instance"""
+    #XXX: need better filter on inputs
     return tuple.__new__(self, args)
 
-  def __call__(self, solver, info=False):
-    """check if the termination conditions are satisfied.
-
-Inputs:
-    solver  -- the solver instance
-
-Additional Inputs:
-    info    -- if True, return information about the satisfied conditions"""
-    stop = {}
-    [stop.update({f : f(solver, info)}) for f in self]
-    _all = all(stop.values())
-    # return T/F if the conditions are met
-    if not info: return _all
-    # return the satisfied conditions themselves
-    if info == 'self': return tuple(set(flatten(stop.keys()))) if _all else ()
-    # return info about the satisfied conditions
-    return "; ".join(set("; ".join(stop.values()).split("; "))) if _all else ""
-
   def __repr__(self):
-    return "And%s" % str(tuple([i for i in self]))
-  #XXX: need method to 'remove' satisfied conditions from all conditions
+    return "And%s" % str(tuple([f for f in self]))
 
 
-class Or(tuple):
+class Or(When):
   """couple termination conditions with "or".
 
 Terminates when any of the given conditions are satisfied."""
   def __new__(self, *args):
     """
 Takes one or more termination conditions:
-    args    -- tuple of termination conditions
+    args   -- tuple of termination conditions
 
 Usage:
     >>> from mystic.termination import Or, VTR, ChangeOverGeneration
-    >>> term = Or( VTR(), ChangeOverGeneration() )"""
+    >>> term = Or( VTR(), ChangeOverGeneration() )
+    >>> term(solver)  # where solver is a mystic.solver instance"""
+    #XXX: need better filter on inputs
     return tuple.__new__(self, args)
 
   def __call__(self, solver, info=False):
     """check if the termination conditions are satisfied.
 
 Inputs:
-    solver  -- the solver instance
+    solver -- the solver instance
 
 Additional Inputs:
-    info    -- if True, return information about the satisfied conditions"""
+    info   -- if True, return information about the satisfied conditions"""
     stop = {}
     [stop.update({f : f(solver, info)}) for f in self]
     _any = any(stop.values())
     # return T/F if the conditions are met
     if not info: return _any
     [stop.pop(cond) for (cond,met) in stop.items() if not met]
-    # return the satisfied conditions themselves
-    if info == 'self': return tuple(set(flatten(stop.keys())))
+    # return the satisfied conditions
+    if info == 'self': return tuple(set(stop.keys()))
+    if info == 'not':
+      return tuple(set([f for f in self if f not in self(solver, 'self')]))
     # return info about the satisfied conditions
     return "; ".join(set("; ".join(stop.values()).split("; ")))
 
   def __repr__(self):
-    return "Or%s" % str(tuple([i for i in self]))
-  #XXX: need method to 'remove' satisfied conditions from all conditions
-
-
-class When(And):
-  """provide a termination condition with more reporting options.
-
-Terminates when the given condition is satisfied."""
-  def __init__(self, arg):
-    """
-Takes a termination condition:
-    arg     -- termination condition
-
-Usage:
-    >>> from mystic.termination import When, VTR
-    >>> term = When( VTR() )"""
-    super(And, self).__init__(arg)
-    return
-
-  def __repr__(self):
-    return "When(%s)" % str(self[0])
-  #XXX: need method to 'remove' satisfied conditions from all conditions
+    return "Or%s" % str(tuple([f for f in self]))
 
 
 # Factories that give termination conditions

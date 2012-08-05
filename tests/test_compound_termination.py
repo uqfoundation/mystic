@@ -62,6 +62,9 @@ if __name__ == '__main__':
     vAc_On = _any(vAc,_n)
     vAc_Oc = _any(vAc,_c)
     vAn_On = _any(vAn,_n)
+    cAv = _all(c,v)
+    cOv = _any(c,v)
+    c_OcAv = _any(_c,cAv)
     print "_v:", _v
     print "_c:", _c
     print "_n:", _n
@@ -72,6 +75,9 @@ if __name__ == '__main__':
     print "vAc_On:", vAc_On
     print "vAc_Oc:", vAc_Oc
     print "vAn_On:", vAn_On
+    print "cAv:", cAv
+    print "cOv:", cOv
+    print "c_OcAv:", c_OcAv
 
     print "initial conditions..."
     print "vAc:", vAc(s, info)
@@ -95,5 +101,11 @@ if __name__ == '__main__':
     print "v:", _v(s, info)
     print "c:", _c(s, info)
     print "n:", _n(s, info)
+
+    print "conditions with false first..."
+    print "cAv:", cAv(s, info)
+    print "cOv:", cOv(s, info)
+    print "c_OcAv:", c_OcAv(s, info)
+
 
 # EOF
