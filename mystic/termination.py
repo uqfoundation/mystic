@@ -41,6 +41,10 @@ Inputs:
 
 Additional Inputs:
     info   -- if True, return information about the satisfied conditions"""
+    # return the unsatisfied conditions
+    if info == 'not':
+      return tuple(set([f for f in self if f not in self(solver, 'self')]))
+    # do some filtering...
     stop = {}
     [stop.update({f : f(solver, info)}) for f in self]
     _all = all(stop.values())
@@ -48,8 +52,6 @@ Additional Inputs:
     if not info: return _all
     # return the satisfied conditions
     if info == 'self': return tuple(set(stop.keys())) if _all else ()
-    if info == 'not':
-      return tuple(set([f for f in self if f not in self(solver, 'self')]))
     # return info about the satisfied conditions
     return "; ".join(set("; ".join(stop.values()).split("; "))) if _all else ""
 
@@ -100,6 +102,10 @@ Inputs:
 
 Additional Inputs:
     info   -- if True, return information about the satisfied conditions"""
+    # return the unsatisfied conditions
+    if info == 'not':
+      return tuple(set([f for f in self if f not in self(solver, 'self')]))
+    # do some filtering...
     stop = {}
     [stop.update({f : f(solver, info)}) for f in self]
     _any = any(stop.values())
@@ -108,8 +114,6 @@ Additional Inputs:
     [stop.pop(cond) for (cond,met) in stop.items() if not met]
     # return the satisfied conditions
     if info == 'self': return tuple(set(stop.keys()))
-    if info == 'not':
-      return tuple(set([f for f in self if f not in self(solver, 'self')]))
     # return info about the satisfied conditions
     return "; ".join(set("; ".join(stop.values()).split("; ")))
 
