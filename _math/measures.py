@@ -45,7 +45,7 @@ Inputs:
 """
   return mean(weights)
 
-def expectation(f, samples, weights=None):
+def expectation(f, samples, weights=None, weightTol=0.0):
   """calculate the (weighted) expectation of a function for a list of points
 
 Inputs:
@@ -53,7 +53,20 @@ Inputs:
     samples -- a list of sample points
     weights -- a list of sample weights
 """
-  y = [f(x) for x in samples]
+  if weights == None:
+    y = [f(x) for x in samples]
+  ## The following else added by TJS 2012-08-21 
+  ## to prevent function evaluation is weight is zero
+  ## Simply replace f(x) by 0.0 if the corresponding weight will be
+  ## less than or equal to weightTol, which defaults to 0.0
+  else:
+    y = [];  i = 0;
+    for x in samples:
+      if abs(weights[i]) > weightTol:
+        y.append(f(x))
+      else:
+        y.append(0.0)
+      i += 1
   return mean(y, weights)
 
 def mean(samples, weights=None):
