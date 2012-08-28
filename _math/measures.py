@@ -55,19 +55,19 @@ Inputs:
 """
   if weights == None:
     y = [f(x) for x in samples]
-  ## The following else added by TJS 2012-08-21 
-  ## to prevent function evaluation is weight is zero
-  ## Simply replace f(x) by 0.0 if the corresponding weight will be
+    return mean(y, weights)
+  ## The following else added by TJS 2012-08-28 
+  ## to prevent function evaluation is weight is "too small":
+  ## Simply skip evaluation of f(x) if the corresponding weight will be
   ## less than or equal to weightTol, which defaults to 0.0
   else:
-    y = [];  i = 0;
-    for x in samples:
+    new_weights = []
+    new_values = []
+    for i in range(len(weights)):
       if abs(weights[i]) > weightTol:
-        y.append(f(x))
-      else:
-        y.append(0.0)
-      i += 1
-  return mean(y, weights)
+        new_weights.append(weights[i])
+        new_values.append(f(samples[i]))
+    return mean(new_values, new_weights)
 
 def mean(samples, weights=None):
   """calculate the (weighted) mean for a list of points
