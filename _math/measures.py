@@ -45,29 +45,28 @@ Inputs:
 """
   return mean(weights)
 
-def expectation(f, samples, weights=None, weightTol=0.0):
+def expectation(f, samples, weights=None, tol=0.0):
   """calculate the (weighted) expectation of a function for a list of points
 
 Inputs:
     f -- a function that takes a list and returns a number
     samples -- a list of sample points
     weights -- a list of sample weights
+    tol -- weight tolerance, where any weight >= tol is ignored
 """
   if weights == None:
     y = [f(x) for x in samples]
     return mean(y, weights)
-  ## The following else added by TJS 2012-08-28 
-  ## to prevent function evaluation is weight is "too small":
-  ## Simply skip evaluation of f(x) if the corresponding weight will be
-  ## less than or equal to weightTol, which defaults to 0.0
-  else:
-    new_weights = []
-    new_values = []
-    for i in range(len(weights)):
-      if abs(weights[i]) > weightTol:
-        new_weights.append(weights[i])
-        new_values.append(f(samples[i]))
-    return mean(new_values, new_weights)
+  # contributed by TJS #
+  # to prevent function evaluation if weight is "too small":
+  # skip evaluation of f(x) if the corresponding weight <= tol
+  yw = [(f(x),w) for (x,w) in zip(samples, weights) if abs(w) > tol]
+  return mean(*zip(*yw))
+  ##XXX: at around len(samples) == 150, the following is faster
+  #aw = asarray(weights)
+  #ax = asarray(samples)
+  #w = aw > tol
+  #return mean(ax[w], aw[w])
 
 def mean(samples, weights=None):
   """calculate the (weighted) mean for a list of points
