@@ -334,17 +334,17 @@ Further Inputs:
         if msg: self._stepmon.info('STOP("%s")' % msg)
        #else: self._stepmon.info('STOP()')
 
-        # code below here pushes output to scipy.optimize.fmin interface
+       ## code below here pushes output to scipy.optimize.fmin interface
         fval = self.bestEnergy
-        warnflag = 0
+       #warnflag = 0
 
         if self._fcalls[0] >= self._maxfun:
-            warnflag = 1
+       #    warnflag = 1
             if disp:
                 print "Warning: Maximum number of function evaluations has "\
                       "been exceeded."
         elif self.generations >= self._maxiter:
-            warnflag = 2
+       #    warnflag = 2
             if disp:
                 print "Warning: Maximum number of iterations has been exceeded"
         else:
@@ -557,17 +557,17 @@ Further Inputs:
         if msg: self._stepmon.info('STOP("%s")' % msg)
        #else: self._stepmon.info('STOP()')
 
-        # code below here pushes output to scipy.optimize.fmin interface
+       ## code below here pushes output to scipy.optimize.fmin interface
         fval = self.bestEnergy
-        warnflag = 0
+       #warnflag = 0
 
         if self._fcalls[0] >= self._maxfun:
-            warnflag = 1
+       #    warnflag = 1
             if disp:
                 print "Warning: Maximum number of function evaluations has "\
                       "been exceeded."
         elif self.generations >= self._maxiter:
-            warnflag = 2
+       #    warnflag = 2
             if disp:
                 print "Warning: Maximum number of iterations has been exceeded"
         else:
@@ -738,7 +738,7 @@ Returns: (xopt, {fopt, iter, funcalls, warnflag}, {allvecs})
     if kwds.has_key('constraints'):
         constraints = kwds['constraints']
         solver.SetConstraints(constraints)
-    if bounds != None:
+    if bounds is not None:
         minb,maxb = unpair(bounds)
         solver.SetStrictRanges(minb,maxb)
 

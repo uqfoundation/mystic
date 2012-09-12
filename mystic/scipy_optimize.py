@@ -317,18 +317,18 @@ Further Inputs:
         if msg: self._stepmon.info('STOP("%s")' % msg)
        #else: self._stepmon.info('STOP()')
 
-        # code below here is dead, unless disp!=0
-        x = sim[0]
+       ## code below here is dead, unless disp!=0
+       #x = sim[0]
         fval = min(fsim)
-        warnflag = 0
+       #warnflag = 0
 
         if self._fcalls[0] >= self._maxfun:
-            warnflag = 1
+       #    warnflag = 1
             if disp:
                 print "Warning: Maximum number of function evaluations has "\
                   "been exceeded."
         elif iterations >= self._maxiter:
-            warnflag = 2
+       #    warnflag = 2
             if disp:
                 print "Warning: Maximum number of iterations has been exceeded"
         else:
@@ -339,14 +339,14 @@ Further Inputs:
                 print "         Function evaluations: %d" % self._fcalls[0]
 
 
-        if full_output:
-            retlist = x, fval, iterations, self._fcalls[0], warnflag
-            if retall:
-                retlist += (allvecs,)
-        else:
-            retlist = x
-            if retall:
-                retlist = (x, allvecs)
+       #if full_output:
+       #    retlist = x, fval, iterations, self._fcalls[0], warnflag
+       #    if retall:
+       #        retlist += (allvecs,)
+       #else:
+       #    retlist = x
+       #    if retall:
+       #        retlist = (x, allvecs)
 
         return #retlist
 
@@ -430,7 +430,7 @@ Returns: (xopt, {fopt, iter, funcalls, warnflag}, {allvecs})
     if kwds.has_key('constraints'):
         constraints = kwds['constraints']
         solver.SetConstraints(constraints)
-    if bounds != None:
+    if bounds is not None:
         minb,maxb = unpair(bounds)
         solver.SetStrictRanges(minb,maxb)
 
@@ -446,10 +446,7 @@ Returns: (xopt, {fopt, iter, funcalls, warnflag}, {allvecs})
     warnflag = 0
     fcalls = len(evalmon.x)
     iterations = len(stepmon.x)
-    allvecs = []
-    for i in range(iterations):
-       #allvecs.append(list(stepmon.x[i]))
-        allvecs.append(stepmon.x[i])
+    allvecs = stepmon.x
 
     if fcalls >= solver._maxfun:
         warnflag = 1
@@ -492,7 +489,7 @@ Takes one initial input:
     dim      -- dimensionality of the problem
         """
         AbstractSolver.__init__(self,dim)
-        self._direc = None #FIXME: this is the easy way to return 'direc'...
+        self._direc = None # this is the easy way to return 'direc'...
 
 
     def Solve(self, func, termination, sigint_callback=None,
@@ -535,7 +532,7 @@ Further Inputs:
         callback=None  #user-supplied function, called after each step
         xtol=1e-4      #line-search error tolerance
         if kwds.has_key('callback'): callback = kwds['callback']
-        if kwds.has_key('direc'): direc = kwds['direc']  #XXX: best interface?
+        if kwds.has_key('direc'): direc = kwds['direc']
         if kwds.has_key('xtol'): xtol = kwds['xtol']
         if kwds.has_key('disp'): disp = kwds['disp']
         # backward compatibility
@@ -660,16 +657,16 @@ Further Inputs:
         if msg: self._stepmon.info('STOP("%s")' % msg)
        #else: self._stepmon.info('STOP()')
 
-        # code below here is dead, unless disp!=0
-        warnflag = 0
+       ## code below here is dead, unless disp!=0
+       #warnflag = 0
 
         if self._fcalls[0] >= self._maxfun:
-            warnflag = 1
+       #    warnflag = 1
             if disp:
                 print "Warning: Maximum number of function evaluations has "\
                       "been exceeded."
         elif iter >= self._maxiter:
-            warnflag = 2
+       #    warnflag = 2
             if disp:
                 print "Warning: Maximum number of iterations has been exceeded"
         else:
@@ -679,16 +676,16 @@ Further Inputs:
                 print "         Iterations: %d" % iter
                 print "         Function evaluations: %d" % self._fcalls[0]
     
-        x = squeeze(x)
+       #x = squeeze(x)
 
-        if full_output:
-            retlist = x, fval, direc, iter, self._fcalls[0], warnflag
-            if retall:
-                retlist += (allvecs,)
-        else:
-            retlist = x
-            if retall:
-                retlist = (x, allvecs)
+       #if full_output:
+       #    retlist = x, fval, direc, iter, self._fcalls[0], warnflag
+       #    if retall:
+       #        retlist += (allvecs,)
+       #else:
+       #    retlist = x
+       #    if retall:
+       #        retlist = (x, allvecs)
 
         return #retlist
 
@@ -737,16 +734,16 @@ Additional Inputs:
         This function must return xk', a parameter vector that satisfies
         the encoded constraints.
 
-Returns: (xopt, {fopt, direc, iter, funcalls, warnflag}, {allvecs})
+Returns: (xopt, {fopt, iter, funcalls, warnflag, direc}, {allvecs})
 
     xopt -- ndarray - minimizer of function
     fopt -- number - value of function at minimum: fopt = func(xopt)
-    direc -- current direction set
     iter -- number - number of iterations
     funcalls -- number - number of function calls
     warnflag -- number - Integer warning flag:
         1 : 'Maximum number of function evaluations.'
         2 : 'Maximum number of iterations.'
+    direc -- current direction set
     allvecs -- list - a list of solutions at each iteration
 
     """
@@ -783,7 +780,7 @@ Returns: (xopt, {fopt, direc, iter, funcalls, warnflag}, {allvecs})
     if kwds.has_key('constraints'):
         constraints = kwds['constraints']
         solver.SetConstraints(constraints)
-    if bounds != None:
+    if bounds is not None:
         minb,maxb = unpair(bounds)
         solver.SetStrictRanges(minb,maxb)
 
@@ -800,11 +797,8 @@ Returns: (xopt, {fopt, direc, iter, funcalls, warnflag}, {allvecs})
     warnflag = 0
     fcalls = len(evalmon.x)
     iterations = len(stepmon.x) - 1
-    allvecs = []
-    for i in range(len(stepmon.x)):
-       #allvecs.append(list(stepmon.x[i]))
-        allvecs.append(stepmon.x[i])
-    direc = solver._direc #FIXME: better way to get direc from Solve() ?
+    allvecs = stepmon.x
+    direc = solver._direc #XXX: need better way to return direc ?
 
     if fcalls >= solver._maxfun:
         warnflag = 1
@@ -814,7 +808,7 @@ Returns: (xopt, {fopt, direc, iter, funcalls, warnflag}, {allvecs})
     x = squeeze(x) #FIXME: write squeezed x to stepmon instead?
 
     if full_output:
-        retlist = x, fval, direc, iterations, fcalls, warnflag
+        retlist = x, fval, iterations, fcalls, warnflag, direc
         if retall:
             retlist += (allvecs,)
     else:
