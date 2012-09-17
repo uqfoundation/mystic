@@ -58,6 +58,9 @@ if __name__ == '__main__':
   parser.add_option("-n","--nid",action="store",dest="id",\
                     metavar="INT",default=None,
                     help="id # of the nth simultaneous points to plot")
+  parser.add_option("-s","--scale",action="store",dest="scale",\
+                    metavar="FLOAT",default=1.0,
+                    help="multiplier for scaling color of weights in plot")
   parser.add_option("-f","--flat",action="store_true",dest="flatten",\
                     default=False,help="show selected iterations in a single plot")
   parsed_opts, parsed_args = parser.parse_args()
@@ -113,6 +116,11 @@ if __name__ == '__main__':
     id = int(parsed_opts.id)
   except:
     id = None # i.e. 'all' **or** use id=0, which should be 'best' energy ?
+
+  try: # scale the color in plotting the weights
+    scale = float(parsed_opts.scale)
+  except:
+    scale = 1.0 # color = color**scale
 
   # ensure all terms of bounds and xyz are tuples
   for bound in bounds:
@@ -218,6 +226,10 @@ if __name__ == '__main__':
     from mystic.tools import flatten
     steps = [list(flatten(steps))]
 
+  # adjust for logarithmic scaling of intensity
+  from numpy import e
+  scale = e**(scale - 1.0)
+
   # dot color is based on a product of weights
   t = []
   for v in range(len(steps)):
@@ -226,7 +238,7 @@ if __name__ == '__main__':
       for i in eval("[params[q][%s] for q in wxyz[0]]" % s):
         for j in eval("[params[q][%s] for q in wxyz[1]]" % s):
           for k in eval("[params[q][%s] for q in wxyz[2]]" % s):
-            t[v].append([str(1.0 - i[q]*j[q]*k[q]) for q in range(len(i))])
+            t[v].append([str((1.0 - i[q]*j[q]*k[q])**scale) for q in range(len(i))])
             if float(t[v][-1][-1]) > 1.0 or float(t[v][-1][-1]) < 0.0:
               raise ValueError, "Weights must be in range 0-1. Check normalization and/or assignment."
 
