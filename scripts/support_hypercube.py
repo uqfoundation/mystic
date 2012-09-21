@@ -51,6 +51,9 @@ if __name__ == '__main__':
   parser.add_option("-n","--nid",action="store",dest="id",\
                     metavar="INT",default=None,
                     help="id # of the nth simultaneous points to plot")
+  parser.add_option("-s","--scale",action="store",dest="scale",\
+                    metavar="FLOAT",default=1.0,
+                    help="multiplier for scaling color of points in plot")
   parser.add_option("-f","--flat",action="store_true",dest="flatten",\
                     default=False,help="show selected iterations in a single plot")
   parsed_opts, parsed_args = parser.parse_args()
@@ -105,6 +108,11 @@ if __name__ == '__main__':
     id = int(parsed_opts.id)
   except:
     id = None # i.e. 'all' **or** use id=0, which should be 'best' energy ?
+
+  try: # scale the color in plotting the weights
+    scale = float(parsed_opts.scale)
+  except:
+    scale = 1.0 # color = color**scale
 
   # ensure all terms of bounds and xyz are tuples
   for bound in bounds:
@@ -201,12 +209,14 @@ if __name__ == '__main__':
     steps = [list(flatten(steps))]
 
   # build all the plots
-  from numpy import inf
+  from numpy import inf, e
+  scale = e**(scale - 1.0)
   for v in range(len(steps)):
     if len(steps[v]) > 1: qp = float(max(steps[v]))
     else: qp = inf 
     for s in steps[v]:
-      t = str(s/qp) # dot color determined by number of simultaneous iterations
+      # dot color determined by number of simultaneous iterations
+      t = str((s/qp)**scale)
       for i in eval("[params[q][%s] for q in xyz[0]]" % s):
         for j in eval("[params[q][%s] for q in xyz[1]]" % s):
           for k in eval("[params[q][%s] for q in xyz[2]]" % s):
