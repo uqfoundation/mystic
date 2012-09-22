@@ -53,6 +53,12 @@ or bound to a cost function by a Solver.  The typical usage pattern is::
 
 
 """
+__all__ = ['Null','Monitor', 'VerboseMonitor', 'LoggingMonitor',
+           'VerboseLoggingMonitor', 'CustomMonitor']
+
+import numpy
+from mystic.tools import list_or_tuple_or_ndarray
+from mystic.tools import listify
 
 class Null(object):
     """A Null object
@@ -111,7 +117,6 @@ example usage...
         return
 
     def __call__(self, x, y, id=None, **kwds):#, best=0):
-        from mystic.tools import listify
         self._x.append(listify(x)) #XXX: better to save as-is?
         self._y.append(listify(y)) #XXX: better to save as-is?
         self._id.append(id)
@@ -143,10 +148,11 @@ class VerboseMonitor(Monitor):
 Prints ChiSq every 'interval', and optionally prints
 current parameters every 'xinterval'.
     """
-    import numpy
     def __init__(self, interval = 10, xinterval = numpy.inf, all=True):
         super(VerboseMonitor,self).__init__()
         self._step = 0
+        if not interval or interval is numpy.nan: interval = numpy.inf
+        if not xinterval or xinterval is numpy.nan: xinterval = numpy.inf
         self._yinterval = interval
         self._xinterval = xinterval
         self._all = all
@@ -156,9 +162,9 @@ current parameters every 'xinterval'.
         print "%s" % "".join(["",str(message)])
         return
     def __call__(self, x, y, id=None, best=0):
-        from mystic.tools import list_or_tuple_or_ndarray
         super(VerboseMonitor,self).__call__(x, y, id)
-        if int(self._step % self._yinterval) == 0:
+        if self._yinterval is not numpy.inf and \
+           int(self._step % self._yinterval) == 0:
             if not list_or_tuple_or_ndarray(y):
                 who = ''
                 y = " %f" % self._y[-1]
@@ -171,7 +177,8 @@ current parameters every 'xinterval'.
             msg = "Generation %d has%s Chi-Squared:%s" % (self._step, who, y)
             if id != None: msg = "[id: %d] " % (id) + msg
             print msg
-        if int(self._step % self._xinterval) == 0:
+        if self._xinterval is not numpy.inf and \
+           int(self._step % self._xinterval) == 0:
             if not list_or_tuple_or_ndarray(x):
                 who = ''
                 x = " %f" % self._x[-1]
@@ -193,12 +200,12 @@ class LoggingMonitor(Monitor):
 
 Logs ChiSq and parameters to a file every 'interval'
     """
-    import numpy
     def __init__(self, interval=1, filename='log.txt', new=False, all=True):
         import datetime
         super(LoggingMonitor,self).__init__()
         self._filename = filename
         self._step = 0
+        if not interval or interval is numpy.nan: interval = numpy.inf
         self._yinterval = interval
         self._xinterval = interval
         if new: ind = 'w'
@@ -216,10 +223,10 @@ Logs ChiSq and parameters to a file every 'interval'
         self._file.close()
         return
     def __call__(self, x, y, id=None, best=0):
-        from mystic.tools import list_or_tuple_or_ndarray
         self._file = open(self._filename,'a')
         super(LoggingMonitor,self).__call__(x, y, id)
-        if int(self._step % self._yinterval) == 0:
+        if self._yinterval is not numpy.inf and \
+           int(self._step % self._yinterval) == 0:
             if not list_or_tuple_or_ndarray(y):
                 y = "%f" % self._y[-1]
             elif self._all:
@@ -253,9 +260,10 @@ class VerboseLoggingMonitor(LoggingMonitor):
 
 Logs ChiSq and parameters to a file every 'interval', print every 'yinterval'
     """
-    import numpy
     def __init__(self, interval=1, yinterval=10, xinterval=numpy.inf, filename='log.txt', new=False, all=True):
         super(VerboseLoggingMonitor,self).__init__(interval,filename,new,all)
+        if not yinterval or yinterval is numpy.nan: yinterval = numpy.inf
+        if not xinterval or xinterval is numpy.nan: xinterval = numpy.inf
         self._vyinterval = yinterval
         self._vxinterval = xinterval
         return
@@ -264,10 +272,10 @@ Logs ChiSq and parameters to a file every 'interval', print every 'yinterval'
         print "%s" % "".join(["",str(message)])
         return
     def __call__(self, x, y, id=None, best=0):
-        from mystic.tools import list_or_tuple_or_ndarray
         super(VerboseLoggingMonitor,self).__call__(x, y, id, best)
         self._step += -1  # rollback step counter (incremented in super call)
-        if int(self._step % self._vyinterval) == 0:
+        if self._vyinterval is not numpy.inf and \
+           int(self._step % self._vyinterval) == 0:
             if not list_or_tuple_or_ndarray(y):
                 who = ''
                 y = " %f" % self._y[-1]
@@ -280,7 +288,8 @@ Logs ChiSq and parameters to a file every 'interval', print every 'yinterval'
             msg = "Generation %d has%s Chi-Squared:%s" % (self._step, who, y)
             if id != None: msg = "[id: %d] " % (id) + msg
             print msg
-        if int(self._step % self._vxinterval) == 0:
+        if self._vxinterval is not numpy.inf and \
+           int(self._step % self._vxinterval) == 0:
             if not list_or_tuple_or_ndarray(x):
                 who = ''
                 x = " %f" % self._x[-1]
