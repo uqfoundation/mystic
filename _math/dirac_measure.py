@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 """
 Classes for Dirac measure data objects.
-Includes point, dirac_measure, and product_measure classes.
+Includes point, dirac_measure, product_measure, and scenario classes.
 """
 # Adapted from seesaw2d.py in branches/UQ/math/examples2/ 
 # For usage example, see seesaw2d_inf_example.py .
@@ -11,7 +11,17 @@ from mystic.math.measures import impose_spread, impose_variance
 from mystic.math.measures import impose_weight_norm
 
 class point(object):
-  """ 1-d object with weight and position """
+  """ 1-d object with weight and position
+
+ queries:
+  p.weight   --  returns weight
+  p.position  --  returns position
+  p.rms  --  returns the square root of sum of squared position
+
+ settings:
+  p.weight = w1  --  set the weight
+  p.position = x1  --  set the position
+"""
 
   def __init__(self, position, weight):
     self.weight = weight
@@ -20,6 +30,13 @@ class point(object):
 
   def __repr__(self):
     return "(%s @%s)" % (self.weight, self.position)
+
+  def __rms(self): # square root of sum of squared positions
+    from math import sqrt
+    return sqrt(sum([i**2 for i in self.position]))
+
+  # interface
+  rms = property(__rms)
 
   pass
 
@@ -71,7 +88,7 @@ class dirac_measure(list):  #FIXME: meant to only accept points...
 
   def __mean(self):
     from mystic.math.measures import mean
-    return mean(self.coords, self.weights)
+    return mean(self.coords, self.weights) 
 
   def __range(self):
     from mystic.math.measures import spread
@@ -173,10 +190,12 @@ class product_measure(list):  #FIXME: meant to only accept sets...
 
  methods:
   c.pof(f)  --  calculate the probability of failure
+  c.sampled_pof(f, npts) -- calculate the pof using sampled points
   c.get_expect(f)  --  calculate the expectation
   c.set_expect((center,delta), f)  --  impose expectation by adjusting positions
   c.flatten()  --  convert measure to a flat list of parameters
   c.load(params, pts)  --  'fill' the measure from a flat list of parameters
+  c.update(params) -- 'update' the measure from a flat list of parameters
 
  notes:
   - constraints impose expect (center - delta) <= E <= (center + delta)
@@ -184,6 +203,8 @@ class product_measure(list):  #FIXME: meant to only accept sets...
   - assumes that c.npts = len(c.coords) == len(c.weights)
   - weight wxi should be same for each (yj,zk) at xi; similarly for wyi & wzi
 """
+  def __val(self):
+    raise NotImplementedError, "'value' is undefined in a dirac_measure"
 
   def __pts(self):
     return [i.npts for i in self]
@@ -275,7 +296,7 @@ Inputs:
   #   if f(self.coords[i]) <= 0.0:  #NOTE: f(x) <= 0.0 yields prob of failure
   #     u += self.weights[i]
   # return u  #XXX: does this need to be normalized?
-    
+
   def sampled_pof(self, f, npts=10000):
     """calculate probability of failure over a given function, f,
 where f takes a list of (product_measure) positions and returns a single value
@@ -307,6 +328,21 @@ Returns:
     from numpy import transpose
     return transpose(pts)  #XXX: assumes 'coords' is a list of floats
 
+  def update(self, params):
+    """update the product measure from a list of parameters
+
+The dimensions of the product measure will not change"""
+    pts = self.pts
+    _len = 2 * sum(pts)
+
+    if len(params)  >  _len:  # if Y-values are appended to params
+      params, values  =  params[:_len], params[_len:]
+
+    pm = unflatten(params, pts)
+    zo = pm.count([])
+    self[:] = pm[:len(self) - zo] + self[len(pm) - zo:]
+    return
+
   def load(self, params, pts):
     """load a list of parameters corresponding to N x 1D discrete measures
 
@@ -326,9 +362,11 @@ Notes:
     followed by N weights and the corresponding N positions, with this
     pattern followed for each new dimension desired for the product measure.
 """
-    c = unflatten(params, pts)
-    for i in range(len(c)):
-      self.append(c[i]) 
+    _len = 2 * sum(pts)
+    if len(params)  >  _len:  # if Y-values are appended to params
+      params, values  =  params[:_len], params[_len:]
+
+    self.extend( unflatten(params, pts) )
     return
 
   def flatten(self):
@@ -348,7 +386,40 @@ Notes:
     followed by N weights and the corresponding N positions, with this
     pattern followed for each dimension of the product measure.
 """
-    return flatten(self)
+    params = flatten(self)
+    return params
+
+  #XXX: name stinks... better as "non_redundant"? ...is really a helper
+  def differs_by_one(self, ith, all=True, index=True):
+    """get the product measure coordinates where the associated binary
+string differs by exactly one index
+
+  Inputs:
+    ith   = the target index
+    all   = if False, return only the results for indicies < i
+    index = if True, return the index of the results (not results themselves)
+"""
+    from mystic.math.compressed import index2binary, differs_by_one
+    b = index2binary(range(self.npts), self.npts)
+    return differs_by_one(ith, b, all, index) 
+
+  def select(self, *index, **kwds):
+    """generator for product measure coords due to selected position indicies
+ (NOTE: only works for product measures of dimension 2^K)
+
+  >>> r
+  [[9, 8], [1, 3], [4, 2]]
+  >>> r.select(*range(r.npts))
+  [(9, 1, 4), (8, 1, 4), (9, 3, 4), (8, 3, 4), (9, 1, 2), (8, 1, 2), (9, 3, 2), (8, 3, 2)]
+  >>>
+  >>> _pack(r)
+  [(9, 1, 4), (8, 1, 4), (9, 3, 4), (8, 3, 4), (9, 1, 2), (8, 1, 2), (9, 3, 2), (8, 3, 2)]
+"""
+    from mystic.math.compressed import index2binary, binary2coords
+    v = index2binary(list(index), self.npts)
+    return binary2coords(v, self.pos, **kwds)
+    #XXX: '_pack' requires resorting ([::-1]) so that indexing is wrong.
+    #     Better if modify mystic's pack to match sorting of binary strings ?
 
  #__center = None
  #__delta = None
@@ -367,11 +438,318 @@ Notes:
   pass
 
 
+class scenario(product_measure):  #FIXME: meant to only accept sets...
+  """ a N-d product measure (collection of dirac measures) with values
+  s = scenario(product_measure, [value1, value2, ..., valueN])  
+    where each point in the product measure is paried with a value
+    (essentially, a dataset in product_measure representation)
+
+ queries:
+  s.npts  --  returns total number of points
+  s.weights   --  returns list of weights
+  s.coords  --  returns list of position tuples
+  s.values  --  returns list of values
+  s.mass  --  returns list of weight norms
+  s.pts  --  returns number of points for each discrete measure
+  s.wts  --  returns list of weights for each discrete measure
+  s.pos  --  returns list of positions for each discrete measure
+
+ settings:
+  s.coords = [(x1,y1,z1),...]  --  set the positions (tuples in product measure)
+  s.values = [v1,v2,v3,...]  --  set the values (correspond to position tuples)
+
+ methods:
+  s.pof(f)  --  calculate the probability of failure
+  s.pof_value(f)  --  calculate the probability of failure using the values
+  s.sampled_pof(f, npts) -- calculate the pof using sampled points
+  s.get_expect(f)  --  calculate the expectation
+  s.set_expect((center,delta), f)  --  impose expectation by adjusting positions
+  s.get_mean_value()  --  calculate the mean values for a scenario
+  s.set_mean_value(m)  --  impose mean value by adjusting values
+  s.set_feasible(data)  --  impose shortness by adjusting positions and values
+  s.short_wrt_data(data) -- check for shortness with respect to data
+  s.short_wrt_self(L) -- check for shortness with respect to self
+  s.set_valid(model) -- impose validity by adjusting positions and values
+  s.valid_wrt_model(model) -- check for validity with respect to the model
+  s.flatten()  --  convert measure to a flat list of parameters
+  s.load(params, pts)  --  'fill' the measure from a flat list of parameters
+  s.update(params) -- 'update' the measure from a flat list of parameters
+
+ notes:
+  - constraints impose expect (center - delta) <= E <= (center + delta)
+  - constraints impose sum(weights) == 1.0 for each set
+  - assumes that s.npts = len(s.coords) == len(s.weights)
+  - weight wxi should be same for each (yj,zk) at xi; similarly for wyi & wzi
+"""
+  def __init__(self, pm=None, values=None):
+    super(product_measure,self).__init__()
+    if pm: 
+      pm = product_measure(pm)
+      self.load(pm.flatten(), pm.pts)
+    if not values: values = []
+    self.__Y = values # storage for values of s.coords
+    return
+
+  def __values(self):
+    return self.__Y
+
+  def __set_values(self, values):
+    self.__Y = values[:]
+    return
+
+  def get_mean_value(self):  # get mean of y's
+    """calculate the mean of the associated values for a scenario"""
+    from mystic.math.measures import mean
+    return mean(self.values, self.weights)
+
+  def set_mean_value(self, m):  # set mean of y's
+    """set the mean for the associated values of a scenario"""
+    from mystic.math.measures import impose_mean
+    self.values = impose_mean(m, self.values, self.weights)
+    return
+
+  def valid_wrt_model(self, model, blamelist=False, pairs=True, \
+                                   all=False, raw=False, **kwds):
+    """check for scenario validity with respect to the model
+
+Inputs:
+    model -- the model function, y' = F(x')
+    blamelist -- if True, report which points are infeasible
+    pairs -- if True, report indicies of infeasible points
+    all -- if True, report results for each point (opposed to all points)
+    raw -- if True, report numerical results (opposed to boolean results)
+
+Additional Inputs:
+    ytol -- maximum acceptable difference |y - F(x')|; a single value
+    xtol -- maximum acceptable difference |x - x'|; an iterable or single value
+    cutoff -- zero out distances less than cutoff; typically: ytol, 0.0, or None
+
+Notes:
+    xtol defines the n-dimensional base of a pilar of height ytol, centered at
+    each point. The region inside the pilar defines the space where a "valid"
+    model must intersect. If xtol is not specified, then the base of the pilar
+    will be a dirac at x' = x. This function performs an optimization for each
+    x to find an appropriate x'. While cutoff and ytol are very tightly related,
+    they play a distinct role; ytol is used to set the optimization termination
+    for an acceptable |y - F(x')|, while cutoff is applied post-optimization.
+"""
+    from mystic.math.legacydata import dataset 
+    data = dataset() 
+    data.load(self.coords, self.values)
+   #data.lipschitz = L
+    for i in range(len(data)):
+      data[i].id = i
+    return data.valid(model, blamelist=blamelist, pairs=pairs, \
+                                       all=all, raw=raw, **kwds)
+
+  def short_wrt_self(self, L, blamelist=False, pairs=True, \
+                              all=False, raw=False, **kwds):
+    """check for shortness with respect to the scenario itself
+
+Inputs:
+    L -- the lipschitz constant
+    blamelist -- if True, report which points are infeasible
+    pairs -- if True, report indicies of infeasible points
+    all -- if True, report results for each point (opposed to all points)
+    raw -- if True, report numerical results (opposed to boolean results)
+
+Additional Inputs:
+    tol -- maximum acceptable deviation from shortness
+    cutoff -- zero out distances less than cutoff; typically: tol, 0.0, or None
+
+Notes:
+    Each point x,y can be thought to have an associated double-cone with slope
+    equal to the lipschitz constant. Shortness with respect to another point is
+    defined by the first point not being inside the cone of the second. We can
+    allow for some error in shortness, a short tolerance 'tol', for which the
+    point x,y is some acceptable y-distance inside the cone. While very tightly
+    related, cutoff and tol play distinct roles; tol is subtracted from
+    calculation of the lipschitz_distance, while cutoff zeros out the value
+    of any element less than the cutoff.
+"""
+    from mystic.math.legacydata import dataset 
+    data = dataset() 
+    data.load(self.coords, self.values)
+    data.lipschitz = L
+    for i in range(len(data)):
+      data[i].id = i
+    return data.short(blamelist=blamelist, pairs=pairs, \
+                                           all=all, raw=raw, **kwds)
+
+  def short_wrt_data(self, data, L=None, blamelist=False, pairs=True, \
+                                         all=False, raw=False, **kwds):
+    """check for shortness with respect to the given data
+
+Inputs:
+    data -- a collection of data points
+    L -- the lipschitz constant, if different from that provided with data
+    blamelist -- if True, report which points are infeasible
+    pairs -- if True, report indicies of infeasible points
+    all -- if True, report results for each point (opposed to all points)
+    raw -- if True, report numerical results (opposed to boolean results)
+
+Additional Inputs:
+    tol -- maximum acceptable deviation from shortness
+    cutoff -- zero out distances less than cutoff; typically cutoff = tol or 0.0
+
+Notes:
+    Each point x,y can be thought to have an associated double-cone with slope
+    equal to the lipschitz constant. Shortness with respect to another point is
+    defined by the first point not being inside the cone of the second. We can
+    allow for some error in shortness, a short tolerance 'tol', for which the
+    point x,y is some acceptable y-distance inside the cone. While very tightly
+    related, cutoff and tol play distinct roles; tol is subtracted from
+    calculation of the lipschitz_distance, while cutoff zeros out the value
+    of any element less than the cutoff.
+"""
+    from mystic.math.legacydata import dataset 
+    _self = dataset() 
+    _self.load(self.coords, self.values)
+    _self.lipschitz = data.lipschitz
+    for i in range(len(_self)):
+      _self[i].id = i
+    return _self.short(data, L=L, blamelist=blamelist, pairs=pairs, \
+                                               all=all, raw=raw, **kwds)
+
+  def set_feasible(self, data, cutoff=0.0, bounds=None, constraints=None, \
+                                                  with_self=True, **kwds):
+    """impose shortness on a scenario with respect to given data points
+
+Inputs:
+    data -- a collection of data points
+    cutoff -- acceptable deviation from shortness
+
+Additional Inputs:
+    with_self -- if True, shortness will also be imposed with respect to self
+    tol -- acceptable optimizer termination before sum(infeasibility) = 0.
+    bounds -- a tuple of sample bounds:   bounds = (lower_bounds, upper_bounds)
+    constraints -- a function that takes a flat list parameters
+        x' = constraints(x)
+"""
+    # imposes: is_short(x, x'), is_short(x, z )
+    # use additional 'constraints' kwds to impose: y >= m, norm(wi) = 1.0
+    pm = impose_feasible(cutoff, data, guess=self.pts, bounds=bounds, \
+                         constraints=constraints, with_self=with_self, **kwds)
+    self.update( pm.flatten(all=True) )
+    return
+
+  def set_valid(self, model, cutoff=0.0, bounds=None, constraints=None, **kwds):
+    """impose validity on a scenario with respect to given data points
+
+Inputs:
+    model -- the model function, y' = F(x'), that approximates reality, y = G(x)
+    cutoff -- acceptable model invalidity |y - F(x')|
+
+Additional Inputs:
+    xtol -- acceptable pointwise graphical distance of model from reality
+    tol -- acceptable optimizer termination before sum(infeasibility) = 0.
+    bounds -- a tuple of sample bounds:   bounds = (lower_bounds, upper_bounds)
+    constraints -- a function that takes a flat list parameters
+        x' = constraints(x)
+
+Notes:
+    xtol defines the n-dimensional base of a pilar of height cutoff, centered at
+    each point. The region inside the pilar defines the space where a "valid"
+    model must intersect. If xtol is not specified, then the base of the pilar
+    will be a dirac at x' = x. This function performs an optimization to find
+    a set of points where the model is valid. Here, tol is used to set the
+    optimization termination for the sum(graphical_distances), while cutoff is
+    used in defining the graphical_distance between x,y and x',F(x').
+"""
+    # imposes is_feasible(R, Cv), where R = graphical_distance(model, pts)
+    # use additional 'constraints' kwds to impose: y >= m, norm(wi) = 1.0
+    pm = impose_valid(cutoff, model, guess=self, \
+                      bounds=bounds, constraints=constraints, **kwds)
+    self.update( pm.flatten(all=True) )
+    return
+ 
+  def pof_value(self, f):
+    """calculate probability of failure over a given function, f,
+where f takes a list of (scenario) values and returns a single value
+
+Inputs:
+    f -- a function that returns True for 'success' and False for 'failure'
+"""
+    u = 0
+    set = zip(self.values, self.weights)
+    for x in set:
+      if f(x[0]) <= 0.0:
+        u += x[1]
+    return u
+
+  def update(self, params): #XXX: overwritten.  create standalone instead ?
+    """update the scenario from a list of parameters
+
+The dimensions of the scenario will not change"""
+    pts = self.pts
+    _len = 2 * sum(pts)
+
+    if len(params)  >  _len:  # if Y-values are appended to params
+      params, values  =  params[:_len], params[_len:]
+      self.values = values[:len(self.values)] + self.values[len(values):] 
+
+    pm = unflatten(params, pts)
+    zo = pm.count([])
+    self[:] = pm[:len(self) - zo] + self[len(pm) - zo:]
+    return
+
+  def load(self, params, pts): #XXX: overwritten.  create standalone instead ?
+    """load a list of parameters corresponding to N x 1D discrete measures
+
+Inputs:
+    params -- a list of parameters (see 'notes')
+    pts -- number of points in each of the underlying discrete measures
+
+Notes:
+    To append len(pts) new discrete measures to scenario c, where
+    pts = (M, N, ...)
+    params = [wt_x1, ..., wt_xM, \
+                 x1, ..., xM,    \
+              wt_y1, ..., wt_yN, \
+                 y1, ..., yN,    \
+                     ...]
+    Thus, the provided list is M weights and the corresponding M positions,
+    followed by N weights and the corresponding N positions, with this
+    pattern followed for each new dimension desired for the scenario.
+"""
+    _len = 2 * sum(pts)
+    if len(params)  >  _len:  # if Y-values are appended to params
+      params, self.values  =  params[:_len], params[_len:]
+
+    self.extend( unflatten(params, pts) )
+    return
+
+  def flatten(self, all=True): #XXX: overwritten.  create standalone instead ?
+    """flatten the scenario into a list of parameters
+
+Returns:
+    params -- a list of parameters (see 'notes')
+
+Notes:
+    For a scenario c where c.pts = (M, N, ...), then
+    params = [wt_x1, ..., wt_xM, \
+                 x1, ..., xM,    \
+              wt_y1, ..., wt_yN, \
+                 y1, ..., yN,    \
+                     ...]
+    Thus, the returned list is M weights and the corresponding M positions,
+    followed by N weights and the corresponding N positions, with this
+    pattern followed for each dimension of the scenario.
+"""
+    params = flatten(self)
+    if all: params.extend(self.values) # if Y-values, return those as well
+    return params
+
+  # interface
+  values = property(__values, __set_values )
+  pass
+
+
 #---------------------------------------------
 # creators and destructors from parameter list
 
 def _mimic(samples, weights):
-  """Generate a product_measure object from a list N product measure
+  """Generate a product_measure object from a list of N product measure
 positions and a list of N weights. The resulting product measure will
 mimic the original product measure's statistics, but be larger in size.
 
@@ -394,10 +772,26 @@ For example:
   return compose(x,w)
 
 
-def _list_of_measures(samples, weights):
+def _uniform_weights(samples):
+  """generate a nested list of N x 1D weights from a nested list of N x 1D
+discrete measure positions, where the weights have norm 1.0 and are uniform.
+
+>>> c.pos
+[[1, 2, 3], [4, 5], [6]]
+>>> _uniform_weights(c.pos)
+[[0.333333333333333, 0.333333333333333, 0.333333333333333], [0.5, 0.5], [1.0]]
+"""
+  from mystic.math.measures import normalize
+  return [normalize([1.]*len(xi)) for xi in samples]
+
+
+def _list_of_measures(samples, weights=None):
   """generate a list of N x 1D discrete measures from a nested list of N x 1D
-discrete measure positions and a nested list of N x 1D weights."""
+discrete measure positions and a nested list of N x 1D weights.
+
+Note this function does not return a product measure, it returns a list."""
   total = []
+  if not weights: weights = _uniform_weights(samples)
   for i in range(len(samples)):
     next = dirac_measure()
     for j in range(len(samples[i])):
@@ -406,9 +800,11 @@ discrete measure positions and a nested list of N x 1D weights."""
   return total
 
 
-def compose(samples, weights):
+def compose(samples, weights=None):
   """Generate a product_measure object from a nested list of N x 1D
-discrete measure positions and a nested list of N x 1D weights."""
+discrete measure positions and a nested list of N x 1D weights. If weights
+are not provided, a uniform distribution with norm = 1.0 will be used."""
+  if not weights: weights = _uniform_weights(samples)
   total = _list_of_measures(samples, weights)
   c = product_measure(total)
   return c
@@ -422,6 +818,15 @@ N x 1D discrete measure positions and a nested list of N x 1D weights."""
   return x, w
 
 
+#def expand(data, npts):
+#  """Generate a scenario object from a dataset. The scenario will have
+#uniformly distributed weights and have dimensions given by pts."""
+#  coords,values = data.fetch()
+#  from mystic.math.measures import _unpack
+#  pm = compose( _unpack(coords, npts) )
+#  return scenario(pm, values[:pm.npts])
+
+
 def unflatten(params, npts):
   """Map a list of random variables to N x 1D discrete measures
 in a product_measure object."""
@@ -430,16 +835,403 @@ in a product_measure object."""
   return compose(x, w)
 
 
+from itertools import chain #XXX: faster, but sloppy to have as importable
 def flatten(c):
   """Flattens a product_measure object into a list."""
-  rv = []
-  for i in range(len(c)):
-    rv.append(c[i].weights)
-    rv.append(c[i].coords)
+  rv = [(i.weights,i.coords) for i in c]
   # now flatten list of lists into just a list
-  from itertools import chain
-  rv = list(chain(*rv))
-  return rv
+  return list(chain(*chain(*rv))) # faster than mystic.tools.flatten
+
+
+##### bounds-conserving-mean: borrowed from seismic/seismic.py #####
+def bounded_mean(mean_x, samples, xmin, xmax, wts=None):
+  from mystic.math.measures import impose_mean, impose_spread
+  from mystic.math.measures import spread, mean
+  from numpy import asarray
+  a = impose_mean(mean_x, samples, wts)
+  if min(a) < xmin:   # maintain the bound
+    #print "violate lo(a)"
+    s = spread(a) - 2*(xmin - min(a)) #XXX: needs compensation (as below) ?
+    a = impose_mean(mean_x, impose_spread(s, samples, wts), wts)
+  if max(a) > xmax:   # maintain the bound
+    #print "violate hi(a)"
+    s = spread(a) + 2*(xmax - max(a)) #XXX: needs compensation (as below) ?
+    a = impose_mean(mean_x, impose_spread(s, samples, wts), wts)
+  return asarray(a)
+#####################################################################
+
+
+#--------------------------------------------------
+# constraints solvers and factories for feasibility
+
+# used in self-consistent constraints function c(x) for
+#   is_short(x, x') and is_short(x, z)
+def norm_wts_constraintsFactory(pts):
+  """factory for a constraints function that:
+  - normalizes weights
+"""
+ #from dirac_measure import scenario
+  def constrain(rv):
+    "constrain:  sum(wi)_{k} = 1 for each k in K"
+    pm = scenario()
+    pm.load(rv, pts)      # here rv is param: w,x,y
+    #impose: sum(wi)_{k} = 1 for each k in K
+    norm = 1.0
+    for i in range(len(pm)):
+      w = pm[i].weights
+      w[-1] = norm - sum(w[:-1])
+      pm[i].weights = w
+    rv = pm.flatten(all=True)
+    return rv
+  return constrain
+
+# used in self-consistent constraints function c(x) for
+#   is_short(x, x'), is_short(x, z), and y >= m
+def mean_y_norm_wts_constraintsFactory(target, pts):
+  """factory for a constraints function that:
+  - imposes a mean on scenario values
+  - normalizes weights
+"""
+ #from dirac_measure import scenario
+  from mystic.math.measures import mean, impose_mean
+ #target[0] is target mean
+ #target[1] is acceptable deviation
+  def constrain(rv):
+    "constrain:  y >= m  and  sum(wi)_{k} = 1 for each k in K"
+    pm = scenario()
+    pm.load(rv, pts)      # here rv is param: w,x,y
+    #impose: sum(wi)_{k} = 1 for each k in K
+    norm = 1.0
+    for i in range(len(pm)):
+      w = pm[i].weights
+      w[-1] = norm - sum(w[:-1])
+      pm[i].weights = w
+    #impose: y >= m 
+    values, weights = pm.values, pm.weights
+    y = float(mean(values, weights))
+    if not (y >= float(target[0])):
+      pm.values = impose_mean(target[0]+target[1], values, weights)
+    rv = pm.flatten(all=True) 
+    return rv
+  return constrain
+
+def impose_feasible(cutoff, data, guess=None, **kwds):
+  """impose shortness on a given list of parameters w,x,y.
+
+Optimization on w,x,y over the given bounds seeks sum(infeasibility) = 0.
+  (this function is not ???-preserving)
+
+Inputs:
+    cutoff -- maximum acceptable deviation from shortness
+    data -- a dataset of observed points (these points are 'static')
+    guess -- the scenario providing an initial guess at feasibility,
+        or a tuple of dimensions of the target scenario
+
+Additional Inputs:
+    tol -- acceptable optimizer termination before sum(infeasibility) = 0.
+    bounds -- a tuple of sample bounds:   bounds = (lower_bounds, upper_bounds)
+    constraints -- a function that takes a flat list parameters
+        x' = constraints(x)
+
+Outputs:
+    pm -- a scenario with desired shortness
+"""
+  from numpy import sum, asarray
+  from mystic.math.legacydata import dataset
+  from mystic.math.paramtrans import lipschitz_distance, infeasibility, _npts
+  if guess is None:
+    message = "Requires a guess scenario, or a tuple of scenario dimensions."
+    raise TypeError, message
+  # get initial guess
+  if hasattr(guess, 'pts'): # guess is a scenario
+    pts = guess.pts    # number of x
+    guess = guess.flatten(all=True)
+  else:
+    pts = guess        # guess is given as a tuple of 'pts'
+    guess = None
+  npts = _npts(pts)    # number of Y
+  long_form = len(pts) - list(pts).count(2) # can use '2^K compressed format'
+
+  # prepare bounds for solver
+  bounds = kwds.pop('bounds', None)
+  # if bounds are not set, use the default optimizer bounds
+  if bounds is None:
+    lower_bounds = []; upper_bounds = []
+    for n in pts:  # bounds for n*x in each dimension  (x2 due to weights)
+      lower_bounds += [None]*n * 2
+      upper_bounds += [None]*n * 2
+    # also need bounds for npts*y values
+    lower_bounds += [None]*npts
+    upper_bounds += [None]*npts
+    bounds = lower_bounds, upper_bounds
+  bounds = asarray(bounds).T
+
+  # plug in the 'constraints' function:  param' = constraints(param)
+  # constraints should impose_mean(y,w), and possibly sum(weights)
+  constraints = kwds.pop('constraints', None) # default is no constraints
+  if not constraints:  # if None (default), there are no constraints
+    constraints = lambda x: x
+
+  _self = kwds.pop('with_self', True) # default includes self in shortness
+  if _self is not False: _self = True
+  # tolerance for optimization on sum(y)
+  tol = kwds.pop('tol', 0.0) # default
+  npop = kwds.pop('npop', 20) #XXX: tune npop?
+  maxiter = kwds.pop('maxiter', 1000) #XXX: tune maxiter?
+
+  # if no guess was made, then use bounds constraints
+  if guess is None:
+    if npop:
+      guess = bounds
+    else:  # fmin_powell needs a list params (not bounds)
+      guess = [(a + b)/2. for (a,b) in bounds]
+
+  # construct cost function to reduce sum(lipschitz_distance)
+  def cost(rv):
+    """compute cost from a 1-d array of model parameters,
+    where:  cost = | sum(lipschitz_distance) | """
+    _data = dataset()
+    _pm = scenario()
+    _pm.load(rv, pts)      # here rv is param: w,x,y
+    if not long_form:
+      coords = _pm.select(*range(npts))
+    else: coords = _pm.coords
+    _data.load( data.coords, data.values )                        # LOAD static
+    if _self:
+      _data.load( coords, _pm.values )                            # LOAD dynamic
+    _data.lipschitz = data.lipschitz                              # LOAD L
+    Rv = lipschitz_distance(_data.lipschitz, _pm, _data, tol=cutoff, **kwds)
+    v = infeasibility(Rv, cutoff)
+    return abs(sum(v))
+
+  # construct and configure optimizer
+  debug = False  #!!!
+  maxfun = 1e+6
+  crossover = 0.9; percent_change = 0.9
+  ftol = abs(tol); gtol = None
+
+  if debug:
+    print "lower bounds: %s" % bounds.T[0]
+    print "upper bounds: %s" % bounds.T[1]
+  # print "initial value: %s" % guess
+  # use optimization to get feasible points
+  from mystic.solvers import diffev2, fmin_powell
+  from mystic.monitors import Monitor, VerboseMonitor
+  from mystic.strategy import Best1Bin, Best1Exp
+  evalmon = Monitor();  stepmon = Monitor(); strategy = Best1Exp
+  if debug: stepmon = VerboseMonitor(10)  #!!!
+  if npop: # use VTR
+    results = diffev2(cost, guess, npop, ftol=ftol, gtol=gtol, bounds=bounds,\
+                      maxiter=maxiter, maxfun=maxfun, constraints=constraints,\
+                      cross=crossover, scale=percent_change, strategy=strategy,\
+                      evalmon=evalmon, itermon=stepmon,\
+                      full_output=1, disp=0, handler=False)
+  else: # use VTR
+    results = fmin_powell(cost, guess, ftol=ftol, gtol=gtol, bounds=bounds,\
+                      maxiter=maxiter, maxfun=maxfun, constraints=constraints,\
+                      evalmon=evalmon, itermon=stepmon,\
+                      full_output=1, disp=0, handler=False)
+  # repack the results
+  pm = scenario()
+  pm.load(results[0], pts)            # params: w,x,y
+ #if debug: print "final cost: %s" % results[1]
+  if debug and results[2] >= maxiter: # iterations
+    print "Warning: constraints solver terminated at maximum iterations"
+ #func_evals = results[3]           # evaluation
+  return pm
+
+
+def impose_valid(cutoff, model, guess=None, **kwds):
+  """impose model validity on a given list of parameters w,x,y
+
+Optimization on w,x,y over the given bounds seeks sum(infeasibility) = 0.
+  (this function is not ???-preserving)
+
+Inputs:
+    cutoff -- maximum acceptable model invalidity |y - F(x')|; a single value
+    model -- the model function, y' = F(x'), that approximates reality, y = G(x)
+    guess -- the scenario providing an initial guess at validity,
+        or a tuple of dimensions of the target scenario
+
+Additional Inputs:
+    xtol -- acceptable pointwise graphical distance of model from reality
+    tol -- acceptable optimizer termination before sum(infeasibility) = 0.
+    bounds -- a tuple of sample bounds:   bounds = (lower_bounds, upper_bounds)
+    constraints -- a function that takes a flat list parameters
+        x' = constraints(x)
+
+Outputs:
+    pm -- a scenario with desired model validity
+
+Notes:
+    xtol defines the n-dimensional base of a pilar of height cutoff, centered at
+    each point. The region inside the pilar defines the space where a "valid"
+    model must intersect. If xtol is not specified, then the base of the pilar
+    will be a dirac at x' = x. This function performs an optimization to find
+    a set of points where the model is valid. Here, tol is used to set the
+    optimization termination for the sum(graphical_distances), while cutoff is
+    used in defining the graphical_distance between x,y and x',F(x').
+"""
+  from numpy import sum as _sum, asarray
+  from mystic.math.paramtrans import graphical_distance, infeasibility, _npts
+  if guess is None:
+    message = "Requires a guess scenario, or a tuple of scenario dimensions."
+    raise TypeError, message
+  # get initial guess
+  if hasattr(guess, 'pts'): # guess is a scenario
+    pts = guess.pts    # number of x
+    guess = guess.flatten(all=True)
+  else:
+    pts = guess        # guess is given as a tuple of 'pts'
+    guess = None
+  npts = _npts(pts)    # number of Y
+
+  # prepare bounds for solver
+  bounds = kwds.pop('bounds', None)
+  # if bounds are not set, use the default optimizer bounds
+  if bounds is None:
+    lower_bounds = []; upper_bounds = []
+    for n in pts:  # bounds for n*x in each dimension  (x2 due to weights)
+      lower_bounds += [None]*n * 2
+      upper_bounds += [None]*n * 2
+    # also need bounds for npts*y values
+    lower_bounds += [None]*npts
+    upper_bounds += [None]*npts
+    bounds = lower_bounds, upper_bounds
+  bounds = asarray(bounds).T
+
+  # plug in the 'constraints' function:  param' = constraints(param)
+  constraints = kwds.pop('constraints', None) # default is no constraints
+  if not constraints:  # if None (default), there are no constraints
+    constraints = lambda x: x
+
+  # 'wiggle room' tolerances
+  ipop = kwds.pop('ipop', 10) #XXX: tune ipop (inner optimization)?
+  imax = kwds.pop('imax', 10) #XXX: tune imax (inner optimization)?
+  # tolerance for optimization on sum(y)
+  tol = kwds.pop('tol', 0.0) # default
+  npop = kwds.pop('npop', 20) #XXX: tune npop (outer optimization)?
+  maxiter = kwds.pop('maxiter', 1000) #XXX: tune maxiter (outer optimization)?
+
+  # if no guess was made, then use bounds constraints
+  if guess is None:
+    if npop:
+      guess = bounds
+    else:  # fmin_powell needs a list params (not bounds)
+      guess = [(a + b)/2. for (a,b) in bounds]
+
+  # construct cost function to reduce sum(infeasibility)
+  def cost(rv):
+    """compute cost from a 1-d array of model parameters,
+    where: cost = | sum( infeasibility ) | """
+    # converting rv to scenario
+    points = scenario()
+    points.load(rv, pts)
+    # calculate infeasibility
+    Rv = graphical_distance(model, points, ytol=cutoff, ipop=ipop, \
+                                                        imax=imax, **kwds)
+    v = infeasibility(Rv, cutoff)
+    # converting v to E
+    return _sum(v) #XXX: abs ?
+
+  # construct and configure optimizer
+  debug = False  #!!!
+  maxfun = 1e+6
+  crossover = 0.9; percent_change = 0.8
+  ftol = abs(tol); gtol = None #XXX: optimally, should be VTRCOG...
+
+  if debug:
+    print "lower bounds: %s" % bounds.T[0]
+    print "upper bounds: %s" % bounds.T[1]
+  # print "initial value: %s" % guess
+  # use optimization to get model-valid points
+  from mystic.solvers import diffev2, fmin_powell
+  from mystic.monitors import Monitor, VerboseMonitor
+  from mystic.strategy import Best1Bin, Best1Exp
+  evalmon = Monitor();  stepmon = Monitor(); strategy = Best1Exp
+  if debug: stepmon = VerboseMonitor(2)  #!!!
+  if npop: # use VTR
+    results = diffev2(cost, guess, npop, ftol=ftol, gtol=gtol, bounds=bounds,\
+                      maxiter=maxiter, maxfun=maxfun, constraints=constraints,\
+                      cross=crossover, scale=percent_change, strategy=strategy,\
+                      evalmon=evalmon, itermon=stepmon,\
+                      full_output=1, disp=0, handler=False)
+  else: # use VTR
+    results = fmin_powell(cost, guess, ftol=ftol, gtol=gtol, bounds=bounds,\
+                      maxiter=maxiter, maxfun=maxfun, constraints=constraints,\
+                      evalmon=evalmon, itermon=stepmon,\
+                      full_output=1, disp=0, handler=False)
+  # repack the results
+  pm = scenario()
+  pm.load(results[0], pts)            # params: w,x,y
+ #if debug: print "final cost: %s" % results[1]
+  if debug and results[2] >= maxiter: # iterations
+    print "Warning: constraints solver terminated at maximum iterations"
+ #func_evals = results[3]           # evaluation
+  return pm
+
+
+if __name__ == '__main__':
+  from mystic.math.paramtrans import *
+  model = lambda x:sum(x)
+  a = [0,1,9,8, 1,0,4,6, 1,0,1,2, 0,1,2,3,4,5,6,7]
+  feasability = 0.0; deviation = 0.01
+  validity = 5.0; wiggle = 1.0
+  y_mean = 5.0; y_buffer = 0.0
+  L = [.75,.5,.25]
+  bc = [(0,7,2),(3,0,2),(2,0,3),(1,0,3),(2,4,2)]
+  bv = [5,3,1,4,8]
+  pts = (2,2,2)
+  from mystic.math.legacydata import dataset
+  data = dataset()
+  data.load(bc, bv)
+  data.lipschitz = L
+  pm = scenario()
+  pm.load(a, pts)
+  pc = pm.coords
+  pv = pm.values
+  #---
+  _data = dataset()
+  _data.load(bc, bv)
+  _data.load(pc, pv)
+  _data.lipschitz = data.lipschitz
+  from numpy import sum
+  ans = sum(lipschitz_distance(L, pm, _data))
+  print "original: %s @ %s\n" % (ans, a)
+ #print "pm: %s" % pm
+ #print "data: %s" % data
+  #---
+  lb = [0,.5,-100,-100,  0,.5,-100,-100,  0,.5,-100,-100,   0,0,0,0,0,0,0,0]
+  ub = [.5,1, 100, 100,  .5,1, 100, 100,  .5,1, 100, 100,   9,9,9,9,9,9,9,9]
+  bounds = (lb,ub)
+
+  _constrain = mean_y_norm_wts_constraintsFactory((y_mean,y_buffer), pts)
+  results = impose_feasible(feasability, data, guess=pts, tol=deviation, \
+                            bounds=bounds, constraints=_constrain)
+  from mystic.math.measures import mean
+  print "solved: %s" % results.flatten(all=True)
+  print "mean(y): %s >= %s" % (mean(results.values, results.weights), y_mean)
+  print "sum(wi): %s == 1.0" % [sum(w) for w in results.wts]
+
+  print "\n---------------------------------------------------\n"
+
+  bc = bc[:-2]
+  ids = ['1','2','3']
+  t = dataset()
+  t.load(bc, map(model, bc), ids)
+  t.update(t.coords, map(model, t.coords))
+# r = dataset()
+# r.load(t.coords, t.values)
+# L = [0.1, 0.0, 0.0]
+  print "%s" % t
+  print "L: %s" % L
+  print "shortness:"
+  print lipschitz_distance(L, t, t, tol=0.0)
+  
+  print "\n---------------------------------------------------\n"
+
+  print "Y: %s" % str(results.values)
+  print "sum(wi): %s == 1.0" % [sum(w) for w in results.wts]
 
 
 # EOF
