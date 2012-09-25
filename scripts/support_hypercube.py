@@ -52,8 +52,8 @@ if __name__ == '__main__':
                     metavar="INT",default=None,
                     help="id # of the nth simultaneous points to plot")
   parser.add_option("-s","--scale",action="store",dest="scale",\
-                    metavar="FLOAT",default=1.0,
-                    help="multiplier for scaling color of points in plot")
+                    metavar="INT",default=1.0,
+                    help="grayscale contrast multiplier for points in plot")
   parser.add_option("-f","--flat",action="store_true",dest="flatten",\
                     default=False,help="show selected iterations in a single plot")
   parsed_opts, parsed_args = parser.parse_args()

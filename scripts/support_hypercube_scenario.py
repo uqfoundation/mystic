@@ -231,16 +231,16 @@ if __name__ == '__main__':
   parser.add_option("-d","--dim",action="store",dest="dim",\
                     metavar="STR",default="(1,1,1)",
                     help="indicator string set to scenario dimensions")
-  parser.add_option("-r","--replace",action="store",dest="replace",\
+  parser.add_option("-m","--mask",action="store",dest="replace",\
                     metavar="INT",default=None,
-                    help="id # of axis to plot values NOT coords")
+                    help="id # of the coordinate axis not to be plotted")
   parser.add_option("-n","--nid",action="store",dest="id",\
                     metavar="INT",default=None,
                     help="id # of the nth simultaneous points to plot")
   parser.add_option("-s","--scale",action="store",dest="scale",\
-                    metavar="FLOAT",default=1.0,
-                    help="multiplier for scaling color of points in plot")
-  parser.add_option("-o","--datapts",action="store_true",dest="legacy",\
+                    metavar="INT",default=1.0,
+                    help="grayscale contrast multiplier for points in plot")
+  parser.add_option("-o","--data",action="store_true",dest="legacy",\
                     default=False,help="plot legacy data, if provided")
   parser.add_option("-v","--cones",action="store_true",dest="cones",\
                     default=False,help="plot cones, if provided")
