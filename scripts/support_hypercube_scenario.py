@@ -46,7 +46,7 @@ def cone_builder(slope, bounds, strict=True):
   def cone_mesh(length):
     """ construct a conical mesh for a given length of cone """
     L1,L2,L3 = slope
-    radius = length / L3 * 0.5
+    radius = length / L3 #XXX: * 0.5
     r0 = ZERO
 
     if almostEqual(radius, r0, tol=r0): radius = r0
