@@ -22,7 +22,8 @@ will place 'x' on the x-axis, 'y' on the y-axis, and nothing on the z-axis.
 LaTeX is also accepted. For example, label = "[r'$ h $',r'$ {\alpha}$',r'$ v$']"
 will label the axes with standard LaTeX math formatting. Note that the leading
 space is required, while the trailing space aligns the text with the axis
-instead of the plot frame.
+instead of the plot frame.  The option 'filter' is used to select datapoints
+from a given dataset, and takes a quoted list.
 
 Required Inputs:
   filename            name of the python convergence logfile (e.g. paramlog.py)
@@ -31,6 +32,7 @@ Additional Inputs:
   datafile            name of the dataset textfile (e.g. StAlDataset.txt)
 """
 ZERO = 1.0e-6  # zero-ish
+_2D = False # use 2d plots
 
 #### building the cone primitive ####
 def cone_builder(slope, bounds, strict=True):
@@ -97,6 +99,27 @@ def cone_builder(slope, bounds, strict=True):
 
 
 #### plotting the cones ####
+def plot_bowtie(ax, data, slope, bounds, color='0.75', axis=None):
+  from numpy import asarray
+  data = asarray(data)
+  ylo = slope[axis] * (bounds[0][0] - data.T[0]) + data.T[1]
+  yhi = slope[axis] * (bounds[0][1] - data.T[0]) + data.T[1]
+  zhi = -slope[axis] * (bounds[0][0] - data.T[0]) + data.T[1]
+  zlo = -slope[axis] * (bounds[0][1] - data.T[0]) + data.T[1]
+  xlb = bounds[0][0]
+  xub = bounds[0][1]
+  ylb = bounds[1][0]
+  yub = bounds[1][1]
+
+  for pt,yl,yu,zl,zu in zip(data,ylo,yhi,zlo,zhi):
+   #ax.plot([xlb,pt[0],xub], [yl,pt[1],yu], color='black')
+   #ax.plot([xlb,pt[0],xub], [zu,pt[1],zl], color='black')
+    ax.fill_between([xlb,pt[0],xub], [ylb]*3, [yl,pt[1],zl], \
+                                     facecolor=color, alpha=0.2)
+    ax.fill_between([xlb,pt[0],xub], [yub]*3, [zu,pt[1],yu], \
+                                     facecolor=color, alpha=0.2)
+  return ax
+
 def plot_cones(ax, data, slope, bounds, color='0.75', axis=None, strict=True):
   """plot double cones for a given dataset
 
@@ -145,8 +168,12 @@ def plot_data(ax, data, bounds, color='red', strict=True):
     if strict and (any(d_hi < 0) or any(d_lo > 0)): #XXX: any or just in Y ?
       pass  # don't plot if datapt is out of bounds
     else:
-      ax.plot([datapt[0]], [datapt[1]], [datapt[2]], \
-              color=color, marker='o', markersize=10)
+      if _2D:
+        ax.plot([datapt[0]], [datapt[1]], \
+                color=color, marker='o', markersize=10)
+      else:
+        ax.plot([datapt[0]], [datapt[1]], [datapt[2]], \
+                color=color, marker='o', markersize=10)
   return ax
 
 def clip_axes(ax, bounds):
@@ -170,7 +197,8 @@ def label_axes(ax, labels):
 """
   ax.set_xlabel(labels[0])
   ax.set_ylabel(labels[1])
-  ax.set_zlabel(labels[2]) # cone "center" axis
+  if not _2D:
+    ax.set_zlabel(labels[2]) # cone "center" axis
   return ax
 
 def get_slope(data, replace=None):
@@ -214,8 +242,6 @@ from support_convergence import best_dimensions
 
 
 if __name__ == '__main__':
-  #FIXME: need to enable 2-D plots
-
   #XXX: note that 'argparse' is new as of python2.7
   from optparse import OptionParser
   parser = OptionParser(usage=__doc__)
@@ -231,6 +257,9 @@ if __name__ == '__main__':
   parser.add_option("-d","--dim",action="store",dest="dim",\
                     metavar="STR",default="(1,1,1)",
                     help="indicator string set to scenario dimensions")
+  parser.add_option("-p","--filter",action="store",dest="filter",\
+                    metavar="STR",default="None",
+                    help="filter to select datapoints to plot")
   parser.add_option("-m","--mask",action="store",dest="replace",\
                     metavar="INT",default=None,
                     help="id # of the coordinate axis not to be plotted")
@@ -277,10 +306,15 @@ if __name__ == '__main__':
   except:
     legacy = False
 
-  try:  # get the name of the dataset file
+  try: # get dataset filter
+    filter = eval(parsed_opts.filter) # should be an iterable
+  except:
+    filter = None
+
+  try: # get the name of the dataset file
     file = parsed_args[1]
     from mystic.math.legacydata import load_dataset
-    data = load_dataset(file)
+    data = load_dataset(file, filter)
   except:
 #   raise IOError, "please provide dataset file name"
     data = dataset()
@@ -380,10 +414,11 @@ if __name__ == '__main__':
  #  slope = []
  #  coords = []
 
-  from mpl_toolkits.mplot3d import Axes3D
   import matplotlib.pyplot as plt
-  from matplotlib.axes import subplot_class_factory
-  Subplot3D = subplot_class_factory(Axes3D)
+  if not _2D:
+    from mpl_toolkits.mplot3d import Axes3D
+    from matplotlib.axes import subplot_class_factory
+    Subplot3D = subplot_class_factory(Axes3D)
 
   plots = len(select)
   if not flatten:
@@ -410,15 +445,23 @@ if __name__ == '__main__':
 
   # correctly bound the first plot.  there must be at least one plot
   fig = plt.figure() 
-  ax1 = Subplot3D(fig, dim1,dim2,1)
-  ax1.plot([bounds[0][0]],[bounds[1][0]],[bounds[2][0]])
-  ax1.plot([bounds[0][1]],[bounds[1][1]],[bounds[2][1]])
+  if _2D:
+    ax1 = fig.add_subplot(dim1,dim2,1)
+    ax1.plot([bounds[0][0]],[bounds[1][0]])
+    ax1.plot([bounds[0][1]],[bounds[1][1]])
+  else:
+    ax1 = Subplot3D(fig, dim1,dim2,1)
+    ax1.plot([bounds[0][0]],[bounds[1][0]],[bounds[2][0]])
+    ax1.plot([bounds[0][1]],[bounds[1][1]],[bounds[2][1]])
   if not flatten:
     exec "plt.title('iterations[%s]')" % select[0]
   else:
     exec "plt.title('iterations[*]')"
   if cones and data and axis in range(len(bounds)):
-    plot_cones(ax1,coords,slope,bounds,axis=axis,strict=strict)
+    if _2D:
+      plot_bowtie(ax1,coords,slope,bounds,axis=axis)
+    else:
+      plot_cones(ax1,coords,slope,bounds,axis=axis,strict=strict)
   if legacy and data:
     plot_data(ax1,coords,bounds,strict=strict)
  #clip_axes(ax1,bounds)
@@ -428,12 +471,20 @@ if __name__ == '__main__':
   # set up additional plots
   if not flatten:
     for i in range(2, plots + 1):
-      exec "ax%d = Subplot3D(fig, dim1,dim2,%d)" % (i,i)
-      exec "ax%d.plot([bounds[0][0]],[bounds[1][0]],[bounds[2][0]])" % i
-      exec "ax%d.plot([bounds[0][1]],[bounds[1][1]],[bounds[2][1]])" % i
+      if _2D:
+        exec "ax%d = fig.add_subplot(dim1,dim2,%d)" % (i,i)
+        exec "ax%d.plot([bounds[0][0]],[bounds[1][0]])" % i
+        exec "ax%d.plot([bounds[0][1]],[bounds[1][1]])" % i
+      else:
+        exec "ax%d = Subplot3D(fig, dim1,dim2,%d)" % (i,i)
+        exec "ax%d.plot([bounds[0][0]],[bounds[1][0]],[bounds[2][0]])" % i
+        exec "ax%d.plot([bounds[0][1]],[bounds[1][1]],[bounds[2][1]])" % i
       exec "plt.title('iterations[%s]')" % select[i - 1]
       if cones and data and axis in range(len(bounds)):
-        exec "plot_cones(ax%d,coords,slope,bounds,axis=axis,strict=strict)" % i
+        if _2D:
+          exec "plot_bowtie(ax%d,coords,slope,bounds,axis=axis)" % i
+        else:
+          exec "plot_cones(ax%d,coords,slope,bounds,axis=axis,strict=strict)" % i
       if legacy and data:
         exec "plot_data(ax%d,coords,bounds,strict=strict)" % i
      #exec "clip_axes(ax%d,bounds)" % i
@@ -478,6 +529,9 @@ if __name__ == '__main__':
       # get and plot dataset coords for selected axes      
       plot_data(a[v], get_coords(d, xs), bounds, color=t, strict=strict)
 
+  if _2D: # strict = True
+    plt.xlim((bounds[0][0],bounds[0][1]))
+    plt.ylim((bounds[1][0],bounds[1][1]))
   plt.show() 
 
 # EOF
