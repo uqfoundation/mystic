@@ -100,6 +100,7 @@ def cone_builder(slope, bounds, strict=True):
 
 #### plotting the cones ####
 def plot_bowtie(ax, data, slope, bounds, color='0.75', axis=None):
+  if axis not in range(len(bounds)-1): return ax
   from numpy import asarray
   data = asarray(data)
   ylo = slope[axis] * (bounds[0][0] - data.T[0]) + data.T[1]
@@ -457,7 +458,7 @@ if __name__ == '__main__':
     exec "plt.title('iterations[%s]')" % select[0]
   else:
     exec "plt.title('iterations[*]')"
-  if cones and data and axis in range(len(bounds)):
+  if cones and data and xs in range(len(bounds)):
     if _2D:
       plot_bowtie(ax1,coords,slope,bounds,axis=axis)
     else:
@@ -480,7 +481,7 @@ if __name__ == '__main__':
         exec "ax%d.plot([bounds[0][0]],[bounds[1][0]],[bounds[2][0]])" % i
         exec "ax%d.plot([bounds[0][1]],[bounds[1][1]],[bounds[2][1]])" % i
       exec "plt.title('iterations[%s]')" % select[i - 1]
-      if cones and data and axis in range(len(bounds)):
+      if cones and data and xs in range(len(bounds)):
         if _2D:
           exec "plot_bowtie(ax%d,coords,slope,bounds,axis=axis)" % i
         else:
@@ -527,7 +528,11 @@ if __name__ == '__main__':
       # dot color determined by number of simultaneous iterations
       t = str((s/qp)**scale)
       # get and plot dataset coords for selected axes      
-      plot_data(a[v], get_coords(d, xs), bounds, color=t, strict=strict)
+      _coords = get_coords(d, xs)
+      if vertical_cones and xs in range(len(bounds)): # we are replacing an axis
+        if data: # adjust data so cone axis is last 
+          _coords = [swap(pt,xs) for pt in _coords]
+      plot_data(a[v], _coords, bounds, color=t, strict=strict)
 
   if _2D: # strict = True
     plt.xlim((bounds[0][0],bounds[0][1]))
