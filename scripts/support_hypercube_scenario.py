@@ -22,8 +22,11 @@ will place 'x' on the x-axis, 'y' on the y-axis, and nothing on the z-axis.
 LaTeX is also accepted. For example, label = "[r'$ h $',r'$ {\alpha}$',r'$ v$']"
 will label the axes with standard LaTeX math formatting. Note that the leading
 space is required, while the trailing space aligns the text with the axis
-instead of the plot frame.  The option 'filter' is used to select datapoints
-from a given dataset, and takes a quoted list.
+instead of the plot frame.  The option "filter" is used to select datapoints
+from a given dataset, and takes a quoted list.  A "mask" can be given as an
+integer or a tuple of integers; when the mask is a tuple, the plot will be 2D.  
+The option "vertical" will plot the dataset values on the vertical axis; for
+2D plots, cones are always plotted on the vertical axis.
 
 Required Inputs:
   filename            name of the python convergence logfile (e.g. paramlog.py)
@@ -32,7 +35,6 @@ Additional Inputs:
   datafile            name of the dataset textfile (e.g. StAlDataset.txt)
 """
 ZERO = 1.0e-6  # zero-ish
-_2D = False # use 2d plots
 
 #### building the cone primitive ####
 def cone_builder(slope, bounds, strict=True):
@@ -101,12 +103,13 @@ def cone_builder(slope, bounds, strict=True):
 #### plotting the cones ####
 def plot_bowtie(ax, data, slope, bounds, color='0.75', axis=None):
   if axis not in range(len(bounds)-1): return ax
-  from numpy import asarray
+  from numpy import asarray, inf
   data = asarray(data)
-  ylo = slope[axis] * (bounds[0][0] - data.T[0]) + data.T[1]
-  yhi = slope[axis] * (bounds[0][1] - data.T[0]) + data.T[1]
-  zhi = -slope[axis] * (bounds[0][0] - data.T[0]) + data.T[1]
-  zlo = -slope[axis] * (bounds[0][1] - data.T[0]) + data.T[1]
+  sl = slope[axis]
+  ylo = sl * (bounds[0][0] - data.T[0]) + data.T[1]
+  yhi = sl * (bounds[0][1] - data.T[0]) + data.T[1]
+  zhi = -sl * (bounds[0][0] - data.T[0]) + data.T[1]
+  zlo = -sl * (bounds[0][1] - data.T[0]) + data.T[1]
   xlb = bounds[0][0]
   xub = bounds[0][1]
   ylb = bounds[1][0]
@@ -202,7 +205,7 @@ def label_axes(ax, labels):
     ax.set_zlabel(labels[2]) # cone "center" axis
   return ax
 
-def get_slope(data, replace=None):
+def get_slope(data, replace=None, mask=None):
   """ replace one slope in a list of slopes with '1.0'
   (i.e. replace a slope from the dataset with the unit slope)
 
@@ -210,11 +213,13 @@ def get_slope(data, replace=None):
   replace -- selected axis (an int) to plot values NOT coords
   """
   slope = data.lipschitz
+  if mask in range(len(slope)):
+    slope = swap(slope, mask)
   if replace not in range(len(slope)):  # don't replace an axis
     return slope
   return slope[:replace] + [1.0] + slope[replace+1:]
 
-def get_coords(data, replace=None):
+def get_coords(data, replace=None, mask=None):
   """ replace one coordiate axis in a 3-D data set with 'data values'
   (i.e. replace an 'x' axis with the 'y' values of the data)
 
@@ -224,6 +229,8 @@ def get_coords(data, replace=None):
   slope = data.lipschitz
   coords = data.coords
   values = data.values
+  if mask in range(len(slope)):
+    coords = [swap(pt,mask) for pt in coords]
   if replace not in range(len(slope)):  # don't replace an axis
     return coords
   return [list(coords[i][:replace]) + [values[i]] + \
@@ -370,15 +377,27 @@ if __name__ == '__main__':
   except:
     scale = 1.0 # color = color**scale
 
-  try: # select which axis to plot 'values' on
+  _2D = False # if False, use 3D plots; if True, use 3D plots
+  cs = None
+  try: # select which axis to plot 'values' on  (3D plot)
     xs = int(parsed_opts.replace)
   except:
-    xs = None # don't plot values; plot values on 'x' axis with xs = 0
+    try: # select which axes to mask (2D plot)
+      xs = eval(parsed_opts.replace)  # format is "(1,2)"
+      xs = list(reversed(sorted(set(xs))))
+      cs = int(xs[-1]) if xs[-1] != xs[0] else None
+      xs = int(xs[0])
+      xs,cs = cs,xs # cs will swap coord axes; xs will swap with value axis
+      _2D = True #NOTE: always apply cs swap before xs swap
+    except:
+      xs = None # don't plot values; plot values on 'x' axis with xs = 0
 
   try: # always plot cones on vertical axis
     vertical_cones = parsed_opts.vertical
   except:
     vertical_cones = False
+  if _2D: # always plot cones on vertical axis
+    vertical_cones = True
 
   # ensure all terms of bounds are tuples
   for bound in bounds:
@@ -406,8 +425,8 @@ if __name__ == '__main__':
 
   # get dataset coords (and values) for selected axes
   if data:
-    slope = get_slope(data, xs)
-    coords = get_coords(data, xs)
+    slope = get_slope(data, xs, cs)
+    coords = get_coords(data, xs, cs)
     #print "bounds: %s" % bounds
     #print "slope: %s" % slope
     #print "coords: %s" % coords
@@ -432,8 +451,15 @@ if __name__ == '__main__':
     if bounds[i][0] is None: bounds[i][0] = 0
     if bounds[i][1] is None: bounds[i][1] = 1
 
-  # swap the axes appropriately when plotting cones
-  if vertical_cones and xs in range(len(bounds)): # we are replacing an axis
+  # swap the axes appropriately when plotting cones (when replacing an axis)
+  if _2D and xs == 0:
+    if data:
+      slope[0],slope[1] = slope[1],slope[0]
+      coords = [list(reversed(pt[:2]))+pt[2:] for pt in coords]
+   #bounds[0],bounds[1] = bounds[1],bounds[0]
+   #label[0],label[1] = label[1],label[0]
+    axis = xs #None
+  elif not _2D and vertical_cones and xs in range(len(bounds)):
     # adjust slope, bounds, and data so cone axis is last 
     if data:
       slope = swap(slope, xs) 
@@ -528,8 +554,12 @@ if __name__ == '__main__':
       # dot color determined by number of simultaneous iterations
       t = str((s/qp)**scale)
       # get and plot dataset coords for selected axes      
-      _coords = get_coords(d, xs)
-      if vertical_cones and xs in range(len(bounds)): # we are replacing an axis
+      _coords = get_coords(d, xs, cs)
+      # check if we are replacing an axis
+      if _2D and xs == 0:
+        if data: # adjust data so cone axis is last 
+          _coords = [list(reversed(pt[:2]))+pt[2:] for pt in _coords]
+      elif not _2D and vertical_cones and xs in range(len(bounds)):
         if data: # adjust data so cone axis is last 
           _coords = [swap(pt,xs) for pt in _coords]
       plot_data(a[v], _coords, bounds, color=t, strict=strict)
