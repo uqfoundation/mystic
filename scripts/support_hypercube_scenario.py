@@ -263,7 +263,7 @@ if __name__ == '__main__':
                     metavar="STR",default="['','','']",
                     help="string to assign label to axis")
   parser.add_option("-d","--dim",action="store",dest="dim",\
-                    metavar="STR",default="(1,1,1)",
+                    metavar="STR",default="None",
                     help="indicator string set to scenario dimensions")
   parser.add_option("-p","--filter",action="store",dest="filter",\
                     metavar="STR",default="None",
@@ -319,6 +319,13 @@ if __name__ == '__main__':
   except:
     filter = None
 
+  try: # select the scenario dimensions
+    npts = eval(parsed_opts.dim)  # format is "(1,1,1)"
+    if npts is None: # npts may have been logged
+      exec "from %s import npts" % file
+  except:
+    npts = (1,1,1) #XXX: better in parsed_args ?
+
   try: # get the name of the dataset file
     file = parsed_args[1]
     from mystic.math.legacydata import load_dataset
@@ -328,11 +335,6 @@ if __name__ == '__main__':
     data = dataset()
     cones = False
     legacy = False
-
-  try: # select the scenario dimensions
-    npts = eval(parsed_opts.dim)  # format is "(1,1,1)"
-  except:
-    npts = (1,1,1) #XXX: better in parsed_args ?
 
   try: # select the bounds
     _bounds = parsed_opts.bounds

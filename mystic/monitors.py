@@ -200,7 +200,7 @@ class LoggingMonitor(Monitor):
 
 Logs ChiSq and parameters to a file every 'interval'
     """
-    def __init__(self, interval=1, filename='log.txt', new=False, all=True):
+    def __init__(self, interval=1, filename='log.txt', new=False, all=True, info=None):
         import datetime
         super(LoggingMonitor,self).__init__()
         self._filename = filename
@@ -212,6 +212,7 @@ Logs ChiSq and parameters to a file every 'interval'
         else: ind = 'a'
         self._file = open(self._filename,ind)
         self._file.write("# %s\n" % datetime.datetime.now().ctime() )
+        if info: self._file.write("# %s\n" % str(info))
         self._file.write("# ___#___  __ChiSq__  __params__\n")
         self._file.close()
         self._all = all
@@ -260,8 +261,8 @@ class VerboseLoggingMonitor(LoggingMonitor):
 
 Logs ChiSq and parameters to a file every 'interval', print every 'yinterval'
     """
-    def __init__(self, interval=1, yinterval=10, xinterval=numpy.inf, filename='log.txt', new=False, all=True):
-        super(VerboseLoggingMonitor,self).__init__(interval,filename,new,all)
+    def __init__(self, interval=1, yinterval=10, xinterval=numpy.inf, filename='log.txt', new=False, all=True, info=None):
+        super(VerboseLoggingMonitor,self).__init__(interval,filename,new,all,info)
         if not yinterval or yinterval is numpy.nan: yinterval = numpy.inf
         if not xinterval or xinterval is numpy.nan: xinterval = numpy.inf
         self._vyinterval = yinterval
