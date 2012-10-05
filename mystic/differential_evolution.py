@@ -51,7 +51,6 @@ The corresponding solvers built on mystic's AbstractSolver are::
 Mystic solver behavior activated in diffev and diffev2::
     - EvaluationMonitor = Monitor()
     - StepMonitor = Monitor()
-    - enable_signal_handler()
     - strategy = Best1Exp
     - termination = ChangeOverGeneration(ftol,gtol), if gtol provided
           ''      = VTR(ftol), otherwise
@@ -705,7 +704,7 @@ Returns: (xopt, {fopt, iter, funcalls, warnflag}, {allvecs})
     invariant_current = False
     if kwds.has_key('invariant_current'):
         invariant_current = kwds['invariant_current']
-    handler = True
+    handler = False
     if kwds.has_key('handler'):
         handler = kwds['handler']
 

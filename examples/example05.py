@@ -34,7 +34,7 @@ if __name__ == '__main__':
     print_params(x0)
 
     # use Powell's method to minimize the Rosenbrock function
-    solution = fmin_powell(rosen,x0,disp=1,callback=print_params)
+    solution = fmin_powell(rosen,x0,disp=1,callback=print_params,handler=True)
     print solution
 
 # end of file

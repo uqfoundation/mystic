@@ -58,7 +58,7 @@ if __name__ == '__main__':
     plot_frame()
 
     # use Nelder-Mead to minimize the Rosenbrock function
-    solution = fmin(rosen,x0,disp=1,callback=plot_params)
+    solution = fmin(rosen,x0,disp=1,callback=plot_params,handler=True)
     print solution
 
     # don't exit until user is ready

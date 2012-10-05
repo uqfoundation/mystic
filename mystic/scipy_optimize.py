@@ -34,13 +34,11 @@ Mystic solver behavior activated in fmin::
    - EvaluationMonitor = Monitor()
    - StepMonitor = Monitor()
    - termination = CandidateRelativeTolerance(xtol,ftol)
-   - enable_signal_handler()
 
 Mystic solver behavior activated in fmin_powell::
    - EvaluationMonitor = Monitor()
    - StepMonitor = Monitor()
    - termination = NormalizedChangeOverGeneration(ftol)
-   - enable_signal_handler()
 
 
 Usage
@@ -156,7 +154,7 @@ Further Inputs:
         # set arg names to scipy.optimize.fmin names; set fixed inputs
         x0 = self.population[0]
         args = ExtraArgs
-        full_output=1  #non-zero if fval and warnflag outputs are desired.
+       #full_output=1  #non-zero if fval and warnflag outputs are desired.
         disp=0         #non-zero to print convergence messages.
         retall=0       #non-zero to return all steps
         callback=None  #user-supplied function, called after each step
@@ -404,7 +402,7 @@ Returns: (xopt, {fopt, iter, funcalls, warnflag}, {allvecs})
     allvecs -- list - a list of solutions at each iteration
 
     """
-    handler = True
+    handler = False
     if kwds.has_key('handler'):
         handler = kwds['handler']
 
@@ -525,7 +523,7 @@ Further Inputs:
         # set arg names to scipy.optimize.fmin_powell names; set fixed inputs
         x0 = self.population[0]
         args = ExtraArgs
-        full_output=1  #non-zero if fval and warnflag outputs are desired.
+       #full_output=1  #non-zero if fval and warnflag outputs are desired.
         disp=0         #non-zero to print convergence messages.
         retall=0       #non-zero to return all steps
         direc=None
@@ -750,7 +748,7 @@ Returns: (xopt, {fopt, iter, funcalls, warnflag, direc}, {allvecs})
     #FIXME: need to resolve "direc"
     #        - should just pass 'direc', and then hands-off ?  How return it ?
 
-    handler = True
+    handler = False
     if kwds.has_key('handler'):
         handler = kwds['handler']
 
