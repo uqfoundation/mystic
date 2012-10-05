@@ -101,11 +101,23 @@ def cone_builder(slope, bounds, strict=True):
 
 
 #### plotting the cones ####
-def plot_bowtie(ax, data, slope, bounds, color='0.75', axis=None):
+def plot_bowtie(ax, data, slope, bounds, color='0.75', axis=None, tol=0.0):
+  """plot (2D) double cones for a given dataset
+
+  ax -- matplotlib 'Axes3D' plot object
+  data -- list of datapoints, where datapoints are 3-tuples (i.e. x,y,z)
+  slope -- slope multiplier for cone on the X,Y,Z axes (for mesh construction)
+  bounds -- list of tuples of bounds for the plot; (lower,upper) for each axis
+  color -- string name (or rbg value) of color to use for datapoints
+  axis -- the axis of the cone
+  tol -- distance between center of mass of the double cones and a cone vertex
+"""
   if axis not in range(len(bounds)-1): return ax
   from numpy import asarray, inf
   data = asarray(data)
   sl = slope[axis]
+  gap = max(0., tol)
+  # find the endpoints of the cone:  y = slope * (x0 - x) + y0
   ylo = sl * (bounds[0][0] - data.T[0]) + data.T[1]
   yhi = sl * (bounds[0][1] - data.T[0]) + data.T[1]
   zhi = -sl * (bounds[0][0] - data.T[0]) + data.T[1]
@@ -116,16 +128,16 @@ def plot_bowtie(ax, data, slope, bounds, color='0.75', axis=None):
   yub = bounds[1][1]
 
   for pt,yl,yu,zl,zu in zip(data,ylo,yhi,zlo,zhi):
-   #ax.plot([xlb,pt[0],xub], [yl,pt[1],yu], color='black')
-   #ax.plot([xlb,pt[0],xub], [zu,pt[1],zl], color='black')
-    ax.fill_between([xlb,pt[0],xub], [ylb]*3, [yl,pt[1],zl], \
+   #ax.plot([xlb, pt[0], xub], [yl, pt[1], yu], color='black')
+   #ax.plot([xlb, pt[0], xub], [zu, pt[1], zl], color='black')
+    ax.fill_between([xlb, pt[0], xub], [ylb]*3, [yl-gap, pt[1]-gap, zl-gap], \
                                      facecolor=color, alpha=0.2)
-    ax.fill_between([xlb,pt[0],xub], [yub]*3, [zu,pt[1],yu], \
+    ax.fill_between([xlb, pt[0], xub], [yub]*3, [zu+gap, pt[1]+gap, yu+gap], \
                                      facecolor=color, alpha=0.2)
   return ax
 
-def plot_cones(ax, data, slope, bounds, color='0.75', axis=None, strict=True):
-  """plot double cones for a given dataset
+def plot_cones(ax, data, slope, bounds, color='0.75', axis=None, strict=True, tol=0.0):
+  """plot (3D) double cones for a given dataset
 
   ax -- matplotlib 'Axes3D' plot object
   data -- list of datapoints, where datapoints are 3-tuples (i.e. x,y,z)
@@ -133,20 +145,26 @@ def plot_cones(ax, data, slope, bounds, color='0.75', axis=None, strict=True):
   bounds -- list of tuples of bounds for the plot; (lower,upper) for each axis
   color -- string name (or rbg value) of color to use for datapoints
   axis -- the axis of the cone
+  tol -- distance between center of mass of the double cones and a cone vertex
 """
+  from numpy import asarray, zeros
   # adjust slope, bounds, and data so cone axis is last 
   slope = swap(slope, axis) 
   bounds = swap(bounds, axis) 
   data = [swap(pt,axis) for pt in data]
   cone = cone_builder(slope, bounds, strict=strict)
+  # prepare to apply the 'gap' tolerance
+  gap = zeros(len(slope))
+  gap[-1:] = [max(0., tol)] #XXX: bad behavior if len(slope) is 0
   # plot the upper and lower cone
   for datapt in data:
-    _cone = cone(datapt, top=True)
+    datapt = asarray(datapt)
+    _cone = cone(datapt + gap, top=True)
     if _cone:
       X,Z,Y = swap(_cone, axis) # 'unswap' the axes
       ax.plot_surface(X, Y,Z, rstride=1, cstride=1, color=color, \
                                          linewidths=0, alpha=.1)
-    _cone = cone(datapt, top=False)
+    _cone = cone(datapt - gap, top=False)
     if _cone:
       X,Z,Y = swap(_cone, axis) # 'unswap' the axes
       ax.plot_surface(X, Y,Z, rstride=1, cstride=1, color=color, \
@@ -277,6 +295,9 @@ if __name__ == '__main__':
   parser.add_option("-s","--scale",action="store",dest="scale",\
                     metavar="INT",default=1.0,
                     help="grayscale contrast multiplier for points in plot")
+  parser.add_option("-g","--gap",action="store",dest="gap",\
+                    metavar="INT",default=0.0,
+                    help="distance from double cone center to cone vertex")
   parser.add_option("-o","--data",action="store_true",dest="legacy",\
                     default=False,help="plot legacy data, if provided")
   parser.add_option("-v","--cones",action="store_true",dest="cones",\
@@ -379,6 +400,12 @@ if __name__ == '__main__':
   except:
     scale = 1.0 # color = color**scale
 
+  try: # gap between double cone center and cone vertex
+    gap = float(parsed_opts.gap)
+  except:
+    gap = 0.0
+
+  _2D = False # if False, use 3D plots; if True, use 3D plots
   _2D = False # if False, use 3D plots; if True, use 3D plots
   cs = None
   try: # select which axis to plot 'values' on  (3D plot)
@@ -488,9 +515,9 @@ if __name__ == '__main__':
     exec "plt.title('iterations[*]')"
   if cones and data and xs in range(len(bounds)):
     if _2D:
-      plot_bowtie(ax1,coords,slope,bounds,axis=axis)
+      plot_bowtie(ax1,coords,slope,bounds,axis=axis,tol=gap)
     else:
-      plot_cones(ax1,coords,slope,bounds,axis=axis,strict=strict)
+      plot_cones(ax1,coords,slope,bounds,axis=axis,strict=strict,tol=gap)
   if legacy and data:
     plot_data(ax1,coords,bounds,strict=strict)
  #clip_axes(ax1,bounds)
@@ -511,9 +538,9 @@ if __name__ == '__main__':
       exec "plt.title('iterations[%s]')" % select[i - 1]
       if cones and data and xs in range(len(bounds)):
         if _2D:
-          exec "plot_bowtie(ax%d,coords,slope,bounds,axis=axis)" % i
+          exec "plot_bowtie(ax%d,coords,slope,bounds,axis=axis,tol=gap)" % i
         else:
-          exec "plot_cones(ax%d,coords,slope,bounds,axis=axis,strict=strict)" % i
+          exec "plot_cones(ax%d,coords,slope,bounds,axis=axis,strict=strict,tol=gap)" % i
       if legacy and data:
         exec "plot_data(ax%d,coords,bounds,strict=strict)" % i
      #exec "clip_axes(ax%d,bounds)" % i
