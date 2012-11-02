@@ -288,6 +288,7 @@ Additional Inputs:
   ytol = maximum acceptable difference |y - F(x')|; a single value
   xtol = maximum acceptable difference |x - x'|; an iterable or single value
   cutoff = zero out distances less than cutoff; typically: ytol, 0.0, or None
+  hausdorff = if True, define ytol as |y - F(x')| + |x - x'|; boolean
 
 Returns:
   radius = minimum distance from x,G(x) to x',F(x') for each x
@@ -300,12 +301,15 @@ Notes:
   x to find an appropriate x'. While cutoff and ytol are very tightly related,
   they play a distinct role; ytol is used to set the optimization termination
   for an acceptable |y - F(x')|, while cutoff is applied post-optimization.
+  If we are using the hausdorff norm, then ytol will set the optimization
+  termination for an acceptable |y - F(x')| + |x - x'|, where the x values
+  are normalized by spread(x) for the given dataset.
 """
  #NotImplemented:
  #L = list of lipschitz constants, for use when lipschitz metric is desired
  #constraints = constraints function for finding minimum distance
   from mystic.math.legacydata import dataset
-  from numpy import asarray
+  from numpy import asarray, sum, isfinite, zeros, seterr
   from mystic.solvers import diffev2, fmin_powell
   from mystic.monitors import Monitor, VerboseMonitor
 
@@ -334,13 +338,24 @@ Notes:
   ipop = kwds.pop('ipop', min(20, 3*nxi)) #XXX: tune ipop?
   imax = kwds.pop('imax', 1000) #XXX: tune imax?
 
+  # get range for the dataset (normalization for hausdorff distance)
+  hausdorff = kwds.pop('hausdorff', False)
+  if hausdorff:
+    from mystic.math.measures import spread
+    ptp = [spread(xi) for xi in zip(*target.coords)]
+  else:
+    ptp = [0.0]*nxi
+
   #########################################################################
   def radius(model, point, ytol=0.0, xtol=0.0, ipop=None, imax=None):
     """graphical distance between a single point x,y and a model F(x')"""
-    # given a single point x,y: find the radius = |y - F(x')|
-    # radius is just a minimization over x' of |y - F(x')|
+    # given a single point x,y: find the radius = |y - F(x')| + delta
+    # radius is just a minimization over x' of |y - F(x')| + delta
     # where we apply a constraints function (of box constraints) of
     # |x - x'| <= xtol  (for each i in x)
+    #
+    # if hausdorff = True, delta = |x - x'|/spread(x)  using the dataset range
+    # if hausdorff = False, delta = 0.0
     #
     # if ipop, then DE else Powell; ytol is used in VTR(ytol)
     # and will terminate when cost <= ytol
@@ -348,9 +363,17 @@ Notes:
     y = asarray(y)
 
     # build the cost function
-    def cost(rv):
-      '''cost = |y - F(x')| for each x,y (point in dataset)'''
-      return abs(y - model(rv))
+    if hausdorff: # distance in all directions
+      def cost(rv):
+        '''cost = |y - F(x')| + |x - x'| for each x,y (point in dataset)'''
+        errs = seterr(invalid='ignore', divide='ignore') # turn off warning 
+        z = abs((asarray(x) - rv)/ptp)  # normalize by range
+        seterr(invalid=errs['invalid'], divide=errs['divide']) # turn on warning
+        return abs(y - model(rv)) + sum(z[isfinite(z)])
+    else:  # vertical distance only
+      def cost(rv):
+        '''cost = |y - F(x')| for each x,y (point in dataset)'''
+        return abs(y - model(rv))
 
     if debug:
       print "rv: %s" % str(x)

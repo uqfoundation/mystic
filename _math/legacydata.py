@@ -355,6 +355,7 @@ Additional Inputs:
     ytol -- maximum acceptable difference |y - F(x')|; a single value
     xtol -- maximum acceptable difference |x - x'|; an iterable or single value
     cutoff -- zero out distances less than cutoff; typically: ytol, 0.0, or None
+    hausdorff -- if True, define ytol as |y - F(x')| + |x - x'|; boolean
 
 Notes:
     xtol defines the n-dimensional base of a pilar of height ytol, centered at
@@ -364,6 +365,9 @@ Notes:
     x to find an appropriate x'. While cutoff and ytol are very tightly related,
     they play a distinct role; ytol is used to set the optimization termination
     for an acceptable |y - F(x')|, while cutoff is applied post-optimization.
+    If we are using the hausdorff norm, then ytol will set the optimization
+    termination for an acceptable |y - F(x')| + |x - x'|, where the x values
+    are normalized by spread(x) for the given dataset.
 """
     ytol = kwds.get('ytol', 0.0) # get tolerance in y
     # default is to zero out distances less than tolerance
