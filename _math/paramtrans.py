@@ -288,7 +288,7 @@ Additional Inputs:
   ytol = maximum acceptable difference |y - F(x')|; a single value
   xtol = maximum acceptable difference |x - x'|; an iterable or single value
   cutoff = zero out distances less than cutoff; typically: ytol, 0.0, or None
-  hausdorff = if True, define ytol as |y - F(x')| + |x - x'|; boolean
+  hausdorff = norm; where if given, ytol = |y - F(x')| + |x - x'|/norm
 
 Returns:
   radius = minimum distance from x,G(x) to x',F(x') for each x
@@ -302,8 +302,8 @@ Notes:
   they play a distinct role; ytol is used to set the optimization termination
   for an acceptable |y - F(x')|, while cutoff is applied post-optimization.
   If we are using the hausdorff norm, then ytol will set the optimization
-  termination for an acceptable |y - F(x')| + |x - x'|, where the x values
-  are normalized by spread(x) for the given dataset.
+  termination for an acceptable |y - F(x')| + |x - x'|/norm, where the x
+  values are normalized by norm = hausdorff.
 """
  #NotImplemented:
  #L = list of lipschitz constants, for use when lipschitz metric is desired
@@ -340,11 +340,17 @@ Notes:
 
   # get range for the dataset (normalization for hausdorff distance)
   hausdorff = kwds.pop('hausdorff', False)
-  if hausdorff:
+  if not hausdorff:  # False, (), None, ...
+    ptp = [0.0]*nxi
+  elif hausdorff is True:
     from mystic.math.measures import spread
     ptp = [spread(xi) for xi in zip(*target.coords)]
   else:
-    ptp = [0.0]*nxi
+    try: #iterables
+      ptp = len(hausdorff) == nxi #XXX: should be the same length
+      ptp = hausdorff
+    except TypeError: #non-iterables
+      ptp = [hausdorff]*nxi
 
   #########################################################################
   def radius(model, point, ytol=0.0, xtol=0.0, ipop=None, imax=None):
@@ -354,7 +360,8 @@ Notes:
     # where we apply a constraints function (of box constraints) of
     # |x - x'| <= xtol  (for each i in x)
     #
-    # if hausdorff = True, delta = |x - x'|/spread(x)  using the dataset range
+    # if hausdorff = some iterable, delta = |x - x'|/hausdorff
+    # if hausdorff = True, delta = |x - x'|/spread(x); using the dataset range
     # if hausdorff = False, delta = 0.0
     #
     # if ipop, then DE else Powell; ytol is used in VTR(ytol)
@@ -397,7 +404,7 @@ Notes:
     #XXX: edit settings?
     MINMAX = 1 #XXX: confirm MINMAX=1 is minimization
     if ipop: # use VTR
-      results = diffev2(cost, x, ipop, ftol=ytol, gtol=None, \
+      results = diffev2(cost, bounds, ipop, ftol=ytol, gtol=None, \
                         itermon = stepmon, maxiter=imax, bounds=bounds, \
                         full_output=1, disp=0, handler=False)
     else: # use VTR
