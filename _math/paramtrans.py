@@ -304,7 +304,7 @@ Notes:
   If we are using the hausdorff norm, then ytol will set the optimization
   termination for an acceptable |y - F(x')| + |x - x'|/norm, where the x
   values are normalized by norm = hausdorff.
-"""
+""" #FIXME: update docs to show normalization in y
  #NotImplemented:
  #L = list of lipschitz constants, for use when lipschitz metric is desired
  #constraints = constraints function for finding minimum distance
@@ -342,15 +342,20 @@ Notes:
   hausdorff = kwds.pop('hausdorff', False)
   if not hausdorff:  # False, (), None, ...
     ptp = [0.0]*nxi
+    yptp = 1.0
   elif hausdorff is True:
     from mystic.math.measures import spread
     ptp = [spread(xi) for xi in zip(*target.coords)]
+    yptp = spread(target.values)
   else:
     try: #iterables
-      ptp = len(hausdorff) == nxi #XXX: should be the same length
-      ptp = hausdorff
+      if len(hausdorff) < nxi+1:
+        hausdorff = list(hausdorff) + [0.0]*(nxi - len(hausdorff)) + [1.0]
+      ptp = hausdorff[:-1]  # all the x
+      yptp = hausdorff[-1]  # just the y
     except TypeError: #non-iterables
       ptp = [hausdorff]*nxi
+      yptp = hausdorff
 
   #########################################################################
   def radius(model, point, ytol=0.0, xtol=0.0, ipop=None, imax=None):
@@ -375,8 +380,10 @@ Notes:
         '''cost = |y - F(x')| + |x - x'| for each x,y (point in dataset)'''
         errs = seterr(invalid='ignore', divide='ignore') # turn off warning 
         z = abs((asarray(x) - rv)/ptp)  # normalize by range
+        m = abs(y - model(rv))/yptp     # normalize by range
+        m = m if isfinite(m) else 0.0
         seterr(invalid=errs['invalid'], divide=errs['divide']) # turn on warning
-        return abs(y - model(rv)) + sum(z[isfinite(z)])
+        return m + sum(z[isfinite(z)])
     else:  # vertical distance only
       def cost(rv):
         '''cost = |y - F(x')| for each x,y (point in dataset)'''
