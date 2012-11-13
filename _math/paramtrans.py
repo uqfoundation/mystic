@@ -346,7 +346,7 @@ Notes:
   elif hausdorff is True:
     from mystic.math.measures import spread
     ptp = [spread(xi) for xi in zip(*target.coords)]
-    yptp = spread(target.values)
+    yptp = spread(target.values)  #XXX: this can lead to bad bad things...
   else:
     try: #iterables
       if len(hausdorff) < nxi+1:
@@ -373,15 +373,19 @@ Notes:
     # and will terminate when cost <= ytol
     x,y = _get_xy(point)
     y = asarray(y)
+    # catch cases where yptp or y will cause issues in normalization
+   #if not isfinite(yptp): return 0.0 #FIXME: correct?  shouldn't happen
+   #if yptp == 0: from numpy import inf; return inf #FIXME: this is bad
 
     # build the cost function
     if hausdorff: # distance in all directions
       def cost(rv):
         '''cost = |y - F(x')| + |x - x'| for each x,y (point in dataset)'''
+        _y = model(rv)
+        if not isfinite(_y): return abs(_y)
         errs = seterr(invalid='ignore', divide='ignore') # turn off warning 
         z = abs((asarray(x) - rv)/ptp)  # normalize by range
-        m = abs(y - model(rv))/yptp     # normalize by range
-        m = m if isfinite(m) else 0.0
+        m = abs(y - _y)/yptp            # normalize by range
         seterr(invalid=errs['invalid'], divide=errs['divide']) # turn on warning
         return m + sum(z[isfinite(z)])
     else:  # vertical distance only
@@ -405,17 +409,23 @@ Notes:
     xtol = asarray(xtol)
     bounds = zip( x - xtol, x + xtol )
 
+    if debug:
+      print "lower: %s" % str(zip(*bounds)[0])
+      print "upper: %s" % str(zip(*bounds)[1])
+
     # optimize where initially x' = x
     stepmon = Monitor()
     if debug: stepmon = VerboseMonitor(1)
     #XXX: edit settings?
     MINMAX = 1 #XXX: confirm MINMAX=1 is minimization
-    if ipop: # use VTR
-      results = diffev2(cost, bounds, ipop, ftol=ytol, gtol=None, \
+    ftol = ytol
+    gtol = None  # use VTRCOG
+    if ipop:
+      results = diffev2(cost, bounds, ipop, ftol=ftol, gtol=gtol, \
                         itermon = stepmon, maxiter=imax, bounds=bounds, \
                         full_output=1, disp=0, handler=False)
-    else: # use VTR
-      results = fmin_powell(cost, x, ftol=ytol, gtol=None, \
+    else:
+      results = fmin_powell(cost, x, ftol=ftol, gtol=gtol, \
                             itermon = stepmon, maxiter=imax, bounds=bounds, \
                             full_output=1, disp=0, handler=False)
    #solved = results[0]            # x'
@@ -426,6 +436,7 @@ Notes:
 
     # get the minimum distance |y - F(x')|
     return func_opt
+   #return results[0], func_opt
   #########################################################################
 
   #XXX: better to do a single optimization rather than for each point ???

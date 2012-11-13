@@ -53,7 +53,7 @@ Mystic solver behavior activated in diffev and diffev2::
     - StepMonitor = Monitor()
     - strategy = Best1Exp
     - termination = ChangeOverGeneration(ftol,gtol), if gtol provided
-          ''      = VTR(ftol), otherwise
+          ''      = VTRChangeOverGenerations(ftol), otherwise
 
 Storn & Price's DE Solver has also been implemented to use the "map"
 interface. Mystic enables the user to override the standard python
@@ -723,8 +723,8 @@ Returns: (xopt, {fopt, iter, funcalls, warnflag}, {allvecs})
         from mystic.termination import ChangeOverGeneration
         termination = ChangeOverGeneration(ftol,gtol)
     else:
-        from mystic.termination import VTR
-        termination = VTR(ftol)
+        from mystic.termination import VTRChangeOverGeneration
+        termination = VTRChangeOverGeneration(ftol)
 
     ND = len(x0)
     if invariant_current: #use Solver2, not Solver1

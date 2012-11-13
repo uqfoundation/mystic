@@ -418,8 +418,8 @@ Returns: (xopt, {fopt, iter, funcalls, warnflag}, {allvecs})
         from mystic.termination import CandidateRelativeTolerance as CRT
         termination = CRT(xtol,ftol)
     else:
-        from mystic.termination import VTR
-        termination = VTR(ftol)
+        from mystic.termination import VTRChangeOverGeneration
+        termination = VTRChangeOverGeneration(ftol)
     solver = NelderMeadSimplexSolver(len(x0))
     solver.SetInitialPoints(x0)
     solver.SetEvaluationLimits(maxiter,maxfun)
@@ -767,8 +767,8 @@ Returns: (xopt, {fopt, iter, funcalls, warnflag, direc}, {allvecs})
         from mystic.termination import NormalizedChangeOverGeneration as NCOG
         termination = NCOG(ftol,gtol)
     else:
-        from mystic.termination import VTR
-        termination = VTR(ftol)
+        from mystic.termination import VTRChangeOverGeneration
+        termination = VTRChangeOverGeneration(ftol)
 
     solver = PowellDirectionalSolver(len(x0))
     solver.SetInitialPoints(x0)
