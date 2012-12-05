@@ -16,9 +16,10 @@ Main functions exported are::
     - getch: provides "press any key to quit"
     - random_seed: sets the seed for calls to 'random()'
     - wrap_nested: nest a function call within a function object
+    - wrap_penalty: append a function call to a function object
     - wrap_function: bind an EvaluationMonitor and an evaluation counter
         to a function object
-    - wrap_bounds: impose bounds on a funciton object
+    - wrap_bounds: impose bounds on a function object
     - unpair: convert a 1D array of N pairs to two 1D arrays of N values
     - src: extract source code from a python code object
 
@@ -114,6 +115,17 @@ thus, the constraints will be enforced at every cost function evaluation.
         return function(inner_function(_x))
     return function_wrapper
 
+def wrap_penalty(function, penalty_function):
+    """append a function call to a function object
+
+This is useful for binding a penalty function to a cost function;
+thus, the penalty will be evaluated at every cost function evaluation.
+    """
+    def function_wrapper(x):
+        _x = x[:] #XXX: trouble if x not a list or ndarray... maybe "deepcopy"?
+        return function(_x) + penalty_function(_x)
+    return function_wrapper
+
 def wrap_function(function, args, EvaluationMonitor):
     """bind an EvaluationMonitor and an evaluation counter
 to a function object"""
@@ -127,7 +139,7 @@ to a function object"""
     return ncalls, function_wrapper
 
 def wrap_bounds(function, min=None, max=None):
-    "impose bounds on a funciton object"
+    "impose bounds on a function object"
     from numpy import asarray, any, inf
     bounds = True
     if min is not None and max is not None: #has upper & lower bound

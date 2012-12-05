@@ -57,7 +57,7 @@ __all__ = ['NelderMeadSimplexSolver','PowellDirectionalSolver',
 
 
 from mystic.tools import wrap_function, unpair
-from mystic.tools import wrap_bounds, wrap_nested
+from mystic.tools import wrap_bounds, wrap_nested, wrap_penalty
 
 import numpy
 from numpy import eye, zeros, shape, asarray, absolute, asfarray
@@ -185,7 +185,8 @@ Further Inputs:
         if self._handle_sigint: signal.signal(signal.SIGINT, self.signal_handler)
         #-------------------------------------------------------------
 
-        # wrap constraints function
+        # wrap penalty and constraints functions
+        func = wrap_penalty(func, self._penalty)
         func = wrap_nested(func, self._constraints)
 
         id = self.id
@@ -389,6 +390,10 @@ Additional Inputs:
         constraints(xk), where xk is the current parameter vector.
         This function must return xk', a parameter vector that satisfies
         the encoded constraints.
+    penalty -- an optional user-supplied function.  It is called as
+        penalty(xk), where xk is the current parameter vector.
+        This function should return y', with y' == 0 when the encoded
+        constraints are satisfied, and y' > 0 otherwise.
 
 Returns: (xopt, {fopt, iter, funcalls, warnflag}, {allvecs})
 
@@ -425,6 +430,9 @@ Returns: (xopt, {fopt, iter, funcalls, warnflag}, {allvecs})
     solver.SetEvaluationLimits(maxiter,maxfun)
     solver.SetEvaluationMonitor(evalmon)
     solver.SetGenerationMonitor(stepmon)
+    if kwds.has_key('penalty'):
+        penalty = kwds['penalty']
+        solver.SetPenalty(penalty)
     if kwds.has_key('constraints'):
         constraints = kwds['constraints']
         solver.SetConstraints(constraints)
@@ -556,7 +564,8 @@ Further Inputs:
         if self._handle_sigint: signal.signal(signal.SIGINT, self.signal_handler)
         #-------------------------------------------------------------
 
-        # wrap constraints function
+        # wrap penalty and constraints functions
+        func = wrap_penalty(func, self._penalty)
         func = wrap_nested(func, self._constraints)
 
         id = self.id
@@ -731,6 +740,10 @@ Additional Inputs:
         constraints(xk), where xk is the current parameter vector.
         This function must return xk', a parameter vector that satisfies
         the encoded constraints.
+    penalty -- an optional user-supplied function.  It is called as
+        penalty(xk), where xk is the current parameter vector.
+        This function should return y', with y' == 0 when the encoded
+        constraints are satisfied, and y' > 0 otherwise.
 
 Returns: (xopt, {fopt, iter, funcalls, warnflag, direc}, {allvecs})
 
@@ -775,6 +788,9 @@ Returns: (xopt, {fopt, iter, funcalls, warnflag, direc}, {allvecs})
     solver.SetEvaluationLimits(maxiter,maxfun)
     solver.SetEvaluationMonitor(evalmon)
     solver.SetGenerationMonitor(stepmon)
+    if kwds.has_key('penalty'):
+        penalty = kwds['penalty']
+        solver.SetPenalty(penalty)
     if kwds.has_key('constraints'):
         constraints = kwds['constraints']
         solver.SetConstraints(constraints)

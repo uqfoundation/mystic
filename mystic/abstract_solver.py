@@ -134,7 +134,7 @@ Important class members:
         self._evalmon         = Null
 
         self._constraints     = lambda x: x
-       #self._penalty         = lambda x: x
+        self._penalty         = lambda x: 0.0
 
         import mystic.termination
         self._EARLYEXIT       = mystic.termination.EARLYEXIT
@@ -147,6 +147,25 @@ Important class members:
     def __evaluations(self):
         """get the number of function calls"""
         return self._fcalls[0]
+
+    def SetPenalty(self, penalty):
+        """apply a penalty function to the optimization
+
+input::
+    - a penalty function of the form: y' = penalty(xk), with y = cost(xk) + y',
+      where xk is the current parameter vector. Ideally, this function
+      is constructed so a penalty is applied when the desired (i.e. encoded)
+      constraints are violated. Equality constraints should be considered
+      satisfied when the penalty condition evaluates to zero, while
+      inequality constraints are satisfied when the penalty condition
+      evaluates to a non-positive number."""
+        if not penalty:
+            self._penalty = lambda x: 0.0
+        elif not callable(penalty):
+            raise TypeError, "'%s' is not a callable function" % penalty
+        else: #XXX: check for format: y' = penalty(x) ?
+            self._penalty = penalty
+        return
 
     def SetConstraints(self, constraints):
         """apply a constraints function to the optimization

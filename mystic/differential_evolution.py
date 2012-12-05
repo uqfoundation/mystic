@@ -139,7 +139,7 @@ __all__ = ['DifferentialEvolutionSolver','DifferentialEvolutionSolver2',\
            'diffev','diffev2']
 
 from mystic.tools import wrap_function, unpair
-from mystic.tools import wrap_bounds
+from mystic.tools import wrap_bounds, wrap_penalty
 
 from abstract_solver import AbstractSolver
 from abstract_map_solver import AbstractMapSolver
@@ -252,6 +252,7 @@ Further Inputs:
             for i in range(self.nPop):
                 self.population[i] = self._clipGuessWithinRangeBoundary(self.population[i])
             costfunction = wrap_bounds(costfunction, self._strictMin, self._strictMax)
+        costfunction = wrap_penalty(costfunction, self._penalty)
 
         #generate signal_handler
         self._generateHandler(sigint_callback) 
@@ -267,9 +268,11 @@ Further Inputs:
         for candidate in range(self.nPop):
             # generate trialSolution (within valid range)
             self.trialSolution[:] = self.population[candidate][:]
-            # -apply constraints-
+            # apply constraints
             self.trialSolution[:] = self._constraints(self.trialSolution[:])
-            # -end-
+            # apply penalty
+           #trialEnergy = self._penalty(self.trialSolution)
+            # calculate cost
             trialEnergy = costfunction(self.trialSolution)
 
             if trialEnergy < self.popEnergy[candidate]:
@@ -283,6 +286,7 @@ Further Inputs:
                     self.bestEnergy = trialEnergy
                     self.bestSolution[:] = self.trialSolution[:]
 
+        # log bestSolution and bestEnergy (includes penalty)
         self.energy_history.append(self.bestEnergy)
         termination(self) #XXX: initialize termination conditions, if needed
         self._stepmon(self.bestSolution[:], self.bestEnergy, id)
@@ -301,9 +305,11 @@ Further Inputs:
             for candidate in range(self.nPop):
                 # generate trialSolution (within valid range)
                 strategy(self, candidate)
-                # -apply constraints-
+                # apply constraints
                 self.trialSolution[:] = self._constraints(self.trialSolution[:])
-                # -end-
+                # apply penalty
+               #trialEnergy = self._penalty(self.trialSolution)
+                # calculate cost
                 trialEnergy = costfunction(self.trialSolution)
 
                 if trialEnergy < self.popEnergy[candidate]:
@@ -317,6 +323,7 @@ Further Inputs:
                         self.bestEnergy = trialEnergy
                         self.bestSolution[:] = self.trialSolution[:]
 
+            # log bestSolution and bestEnergy (includes penalty)
             self.energy_history.append(self.bestEnergy)
             self._stepmon(self.bestSolution[:], self.bestEnergy, id)
             self.generations += 1
@@ -457,6 +464,7 @@ Further Inputs:
             for i in range(self.nPop):
                 self.population[i] = self._clipGuessWithinRangeBoundary(self.population[i])
             costfunction = wrap_bounds(costfunction, self._strictMin, self._strictMax)
+        costfunction = wrap_penalty(costfunction, self._penalty)
 
         #generate signal_handler
         self._generateHandler(sigint_callback) 
@@ -473,15 +481,17 @@ Further Inputs:
         for candidate in range(self.nPop):
             # generate trialSolution (within valid range)
             self.trialSolution[:] = self.population[candidate][:]
-            # -apply constraints-
+            # apply constraints
             self.trialSolution[:] = self._constraints(self.trialSolution[:])
-            # -end-
             trialPop[candidate][:] = self.trialSolution[:]
 
         mapconfig = dict(nnodes=self._nnodes, launcher=self._launcher, \
                          mapper=self._mapper, queue=self._queue, \
                          timelimit=self._timelimit, scheduler=self._scheduler, \
                          ncpus=self._ncpus, servers=self._servers)
+        # apply penalty
+       #trialEnergy = map(self._penalty, trialPop)#, **mapconfig)
+        # calculate cost
         trialEnergy = self._map(costfunction, trialPop, **mapconfig)
 
         for candidate in range(self.nPop):
@@ -496,6 +506,7 @@ Further Inputs:
                     self.bestEnergy = trialEnergy[candidate]
                     self.bestSolution[:] = trialPop[candidate][:]
 
+        # log bestSolution and bestEnergy (includes penalty)
         self.energy_history.append(self.bestEnergy)
         termination(self) #XXX: initialize termination conditions, if needed
        #FIXME: StepMonitor works for 'pp'?
@@ -515,11 +526,13 @@ Further Inputs:
             for candidate in range(self.nPop):
                 # generate trialSolution (within valid range)
                 strategy(self, candidate)
-                # -apply constraints-
+                # apply constraints
                 self.trialSolution[:] = self._constraints(self.trialSolution[:])
-                # -end-
                 trialPop[candidate][:] = self.trialSolution[:]
 
+            # apply penalty
+           #trialEnergy = map(self._penalty, trialPop)#, **mapconfig)
+            # calculate cost
             trialEnergy = self._map(costfunction, trialPop, **mapconfig)
            ##XXX:[HACK] return trialPop b/c may be altered by constraints
            #trials = map(costfunction, trialPop)
@@ -539,6 +552,7 @@ Further Inputs:
                         self.bestEnergy = trialEnergy[candidate]
                         self.bestSolution[:] = trialPop[candidate][:]
 
+            # log bestSolution and bestEnergy (includes penalty)
             self.energy_history.append(self.bestEnergy)
            #FIXME: StepMonitor works for 'pp'?
             self._stepmon(self.bestSolution[:], self.bestEnergy, id)
@@ -622,6 +636,10 @@ Additional Inputs:
         constraints(xk), where xk is the current parameter vector.
         This function must return xk', a parameter vector that satisfies
         the encoded constraints.
+    penalty -- an optional user-supplied function.  It is called as
+        penalty(xk), where xk is the current parameter vector.
+        This function should return y', with y' == 0 when the encoded
+        constraints are satisfied, and y' > 0 otherwise.
 
 Returns: (xopt, {fopt, iter, funcalls, warnflag}, {allvecs})
 
@@ -688,6 +706,10 @@ Additional Inputs:
         constraints(xk), where xk is the current parameter vector.
         This function must return xk', a parameter vector that satisfies
         the encoded constraints.
+    penalty -- an optional user-supplied function.  It is called as
+        penalty(xk), where xk is the current parameter vector.
+        This function should return y', with y' == 0 when the encoded
+        constraints are satisfied, and y' > 0 otherwise.
 
 Returns: (xopt, {fopt, iter, funcalls, warnflag}, {allvecs})
 
@@ -734,6 +756,9 @@ Returns: (xopt, {fopt, iter, funcalls, warnflag}, {allvecs})
     solver.SetEvaluationLimits(maxiter,maxfun)
     solver.SetEvaluationMonitor(evalmon)
     solver.SetGenerationMonitor(stepmon)
+    if kwds.has_key('penalty'):
+        penalty = kwds['penalty']
+        solver.SetPenalty(penalty)
     if kwds.has_key('constraints'):
         constraints = kwds['constraints']
         solver.SetConstraints(constraints)
