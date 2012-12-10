@@ -167,6 +167,9 @@ Further Inputs:
            self._evalmon = kwds['EvaluationMonitor']
         if kwds.has_key('StepMonitor'): \
            self._stepmon = kwds['StepMonitor']
+        if kwds.has_key('penalty'): \
+           self._penalty = kwds['penalty']
+        if not self._penalty: self._penalty = lambda x: 0.0
         if kwds.has_key('constraints'): \
            self._constraints = kwds['constraints']
         if not self._constraints: self._constraints = lambda x: x
@@ -546,6 +549,9 @@ Further Inputs:
            self._evalmon = kwds['EvaluationMonitor']
         if kwds.has_key('StepMonitor'): \
            self._stepmon = kwds['StepMonitor']
+        if kwds.has_key('penalty'): \
+           self._penalty = kwds['penalty']
+        if not self._penalty: self._penalty = lambda x: 0.0
         if kwds.has_key('constraints'): \
            self._constraints = kwds['constraints']
         if not self._constraints: self._constraints = lambda x: x

@@ -53,7 +53,7 @@ from mystic.monitors import Null
 
 def linear_symbolic(A=None, b=None, G=None, h=None):
     """Convert linear equality and inequality constraints from matrices to a 
-symbolic string of the form required by mystic's solver.Solve method.
+symbolic string of the form required by mystic's constraint parser.
 
 Inputs:
     A -- (ndarray) matrix of coefficients of linear equality constraints
@@ -65,11 +65,15 @@ Inputs:
           where Ax = b and Gx <= h. 
 
     For example:
-        A = [[3., 4., 5.],
-             [1., 6., -9.]]
-        b = [0., 0.]
-        G = [1., 0., 0.]
-        h = [5.]
+    >>> A = [[3., 4., 5.],
+    ...      [1., 6., -9.]]
+    >>> b = [0., 0.]
+    >>> G = [1., 0., 0.]
+    >>> h = [5.]
+    >>> print linear_symbolic(A,b,G,h)
+    1.0*x1 + 0.0*x2 + 0.0*x3 <= 5.0
+    3.0*x1 + 4.0*x2 + 5.0*x3 = 0.0
+    1.0*x1 + 6.0*x2 + -9.0*x3 = 0.0
 """
     eqstring = ""
     # Equality constraints
@@ -651,7 +655,7 @@ Additional Inputs:
 """
     from mystic.tools import wrap_bounds
     wrapped = wrap_bounds(func, min=lower_bounds, max=upper_bounds)
-    if wrapped(func(x)) == inf:
+    if wrapped(x) == inf:
         return False    
     else:
         return True
