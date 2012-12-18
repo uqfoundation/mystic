@@ -316,6 +316,47 @@ Inputs:
   return list(mass * weights / w)  #FIXME: not "mean-preserving"
 
 
+##### misc methods #####
+def impose_sum(mass, weights, zsum=False, zmass=1.0):
+  """impose a sum on a list of points
+
+Inputs:
+    mass -- target sum of weights
+    weights -- a list of sample weights
+    zsum -- use counterbalance when mass = 0.0
+    zmass -- member scaling when mass = 0.0
+"""
+  return normalize(weights, mass, zsum, zmass)
+
+def impose_product(mass, weights, zsum=False, zmass=1.0):
+  """impose a product on a list of points
+
+Inputs:
+    mass -- target product of weights
+    weights -- a list of sample weights
+    zsum -- use counterbalance when mass = 0.0
+    zmass -- member scaling when mass = 0.0
+"""
+  from numpy import prod
+  weights = asarray(list(weights)) #XXX: faster to use x = array(x, copy=True) ?
+  w = float(prod(weights))
+  n = len(weights)
+  if not w:  #XXX: is this the best behavior?
+    from numpy import inf
+    return list(weights * inf)  # protect against ZeroDivision
+  if float(mass):
+    return list(weights / (w/mass)**(1./n))  #FIXME: not "mean-preserving"
+  # force selected member to satisfy product = 0.0
+  if not zsum:
+    return list(weights * 0.0)  #FIXME: not "mean-preserving"
+  zsum = -1
+  p, weights[zsum] = weights[zsum], 0.0
+  w = (w/p)
+  n = n-1
+  mass = zmass
+  return list(weights[:-1]/(w/mass)**(1./n))+[0.] #FIXME: not "mean-preserving"
+
+
 #--------------------------------------------------------------------
 # <helper methods>
 
