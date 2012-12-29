@@ -47,7 +47,7 @@ MAX_GENERATIONS = 100
 def main():
     solver = DifferentialEvolutionSolver(ND, NP)
     solver.SetRandomInitialPoints(min = [-100.0]*ND, max = [100.0]*ND)
-    solver.SetEvaluationLimits(maxiter=MAX_GENERATIONS)
+    solver.SetEvaluationLimits(generations=MAX_GENERATIONS)
 
     solver.enable_signal_handler()
 

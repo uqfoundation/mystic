@@ -56,7 +56,7 @@ if __name__=='__main__':
     print "first sequential..."
     solver = DifferentialEvolutionSolver2(ND,NP)  #XXX: sequential
     solver.SetRandomInitialPoints(min=[-100.0]*ND, max=[100.0]*ND)
-    solver.SetEvaluationLimits(maxiter=MAX_GENERATIONS)
+    solver.SetEvaluationLimits(generations=MAX_GENERATIONS)
     solver.SetGenerationMonitor(ssow)
     solver.Solve(ChebyshevCost, VTR(0.01), strategy=Best1Exp, \
                  CrossProbability=1.0, ScalingFactor=0.9, disp=1)
@@ -70,7 +70,7 @@ if __name__=='__main__':
     solver2.SetMapper(ez_map, equalportion_mapper)
     solver2.SetLauncher(mpirun_launcher, NNODES)
     solver2.SetRandomInitialPoints(min=[-100.0]*ND, max=[100.0]*ND)
-    solver2.SetEvaluationLimits(maxiter=MAX_GENERATIONS)
+    solver2.SetEvaluationLimits(generations=MAX_GENERATIONS)
     solver2.SetGenerationMonitor(psow)
     solver2.Solve(ChebyshevCost, VTR(0.01), strategy=Best1Exp, \
                   CrossProbability=1.0, ScalingFactor=0.9, disp=1)

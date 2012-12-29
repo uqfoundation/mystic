@@ -65,7 +65,7 @@ def de_solve():
     minrange = [-1000., -1000., -100., -1.]*2;
     maxrange = [1000., 1000., 100., 1.]*2;
     solver.SetRandomInitialPoints(min = minrange, max = maxrange)
-    solver.SetEvaluationLimits(maxiter=MAX_GENERATIONS)
+    solver.SetEvaluationLimits(generations=MAX_GENERATIONS)
     solver.SetGenerationMonitor(stepmon)
 
     solver.Solve(cost_function, \

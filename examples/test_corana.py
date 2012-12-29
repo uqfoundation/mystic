@@ -30,7 +30,7 @@ def main():
     solver = DifferentialEvolutionSolver(ND, NP)
 
     solver.SetRandomInitialPoints(min = [-1000]*ND, max = [1000]*ND)
-    solver.SetEvaluationLimits(maxiter=MAX_GENERATIONS)
+    solver.SetEvaluationLimits(generations=MAX_GENERATIONS)
 
     solver.Solve(Corana, termination=VTR(0.00000001), strategy=Rand1Exp,\
                  CrossProbability=0.5, ScalingFactor=0.9)

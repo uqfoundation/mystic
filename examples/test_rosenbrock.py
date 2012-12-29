@@ -29,7 +29,7 @@ def main():
     solver = DifferentialEvolutionSolver(ND, NP)
 
     solver.SetRandomInitialPoints(min = [0]*ND, max = [2]*ND)
-    solver.SetEvaluationLimits(maxiter=MAX_GENERATIONS)
+    solver.SetEvaluationLimits(generations=MAX_GENERATIONS)
 
     solver.Solve(rosen, termination = VTR(0.0001), \
                  CrossProbability=0.5, ScalingFactor=0.6, disp=1)
@@ -79,7 +79,7 @@ if __name__ == '__main__':
     solver = DifferentialEvolutionSolver(len(xinit), NP)
     solver.SetInitialPoints(xinit)
     solver.SetStrictRanges(min,max)
-    solver.SetEvaluationLimits(maxiter=MAX_GENERATIONS)
+    solver.SetEvaluationLimits(generations=MAX_GENERATIONS)
     solver.SetEvaluationMonitor(esow)
     solver.SetGenerationMonitor(ssow)
     solver.Solve(rosen, VTR(0.0001), \

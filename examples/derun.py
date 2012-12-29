@@ -44,7 +44,7 @@ class DerunApp(Script):
         termination = self.mod.termination
         MAX_GENERATIONS  = self.mod.MAX_GENERATIONS
         solver.SetRandomInitialPoints(min = self.mod.min, max = self.mod.max)
-        solver.SetEvaluationLimits(maxiter=MAX_GENERATIONS)
+        solver.SetEvaluationLimits(generations=MAX_GENERATIONS)
         solver.Solve(costfunction, termination, strategy=self.strategy,\
                      CrossProbability=self.probability, \
                      ScalingFactor=self.scale)

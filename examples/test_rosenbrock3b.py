@@ -39,7 +39,7 @@ if __name__=='__main__':
     solver = DifferentialEvolutionSolver2(len(x0), npop)
     solver.SetInitialPoints(x0)
     solver.SetStrictRanges(min,max)
-   #solver.SetEvaluationLimits(maxiter=13)
+   #solver.SetEvaluationLimits(generations=13)
     solver.SetGenerationMonitor(stepmon)
     solver.SetConstraints(constrain)
     solver.enable_signal_handler()

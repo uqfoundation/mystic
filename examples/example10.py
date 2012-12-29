@@ -65,7 +65,7 @@ if __name__ == '__main__':
     npop = 10*ndim
     solver = DifferentialEvolutionSolver2(ndim,npop)
     solver.SetRandomInitialPoints(min=[-100]*ndim, max=[100]*ndim)
-    solver.SetEvaluationLimits(maxiter=999)
+    solver.SetEvaluationLimits(generations=999)
     solver.SetEvaluationMonitor(evalmon)
     solver.SetGenerationMonitor(stepmon)
     solver.enable_signal_handler()

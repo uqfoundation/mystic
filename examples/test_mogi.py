@@ -86,7 +86,7 @@ def de_solve():
     minrange = [-1000., -1000., -100., -10.];
     maxrange = [1000., 1000., 100., 10.];
     solver.SetRandomInitialPoints(min = minrange, max = maxrange)
-    solver.SetEvaluationLimits(maxiter=MAX_GENERATIONS)
+    solver.SetEvaluationLimits(generations=MAX_GENERATIONS)
     solver.SetGenerationMonitor(stepmon)
 
    #termination = VTR(0.0000029)

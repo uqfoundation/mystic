@@ -82,7 +82,7 @@ if __name__ == '__main__':
     npop = 10*ndim
     solver = DifferentialEvolutionSolver2(ndim,npop)
     solver.SetRandomInitialPoints(min=[-100]*ndim, max=[100]*ndim)
-    solver.SetEvaluationLimits(maxiter=999)
+    solver.SetEvaluationLimits(generations=999)
     solver.SetGenerationMonitor(stepmon)
     solver.enable_signal_handler()
     solver.Solve(chebyshev8cost, termination=VTR(0.01), strategy=Best1Exp, \

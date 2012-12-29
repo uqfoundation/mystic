@@ -34,7 +34,7 @@ if __name__=='__main__':
     solver = NelderMeadSimplexSolver(len(x0))
     solver.SetInitialPoints(x0)
     solver.SetStrictRanges(min,max)
-    solver.SetEvaluationLimits(maxiter=146)
+    solver.SetEvaluationLimits(generations=146)
     solver.SetGenerationMonitor(stepmon)
     solver.enable_signal_handler()
     solver.Solve(rosen, CRT(xtol=4e-5), disp=1)

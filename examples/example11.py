@@ -100,7 +100,7 @@ if __name__ == '__main__':
     # use Nelder-Mead to solve 8th-order Chebyshev coefficients
     solver = NelderMeadSimplexSolver(ndim)
     solver.SetInitialPoints(x0)
-    solver.SetEvaluationLimits(maxiter=999)
+    solver.SetEvaluationLimits(generations=999)
     solver.SetEvaluationMonitor(evalmon)
     solver.SetGenerationMonitor(stepmon)
     solver.SetStrictRanges(min_bounds,max_bounds)

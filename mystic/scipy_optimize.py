@@ -199,10 +199,6 @@ Further Inputs:
         rank = len(x0.shape)
         if not -1 < rank < 2:
             raise ValueError, "Initial guess must be a scalar or rank-1 sequence."
-        if self._maxiter is None:
-            self._maxiter = N * 200
-        if self._maxfun is None:
-            self._maxfun = N * 200
 
         rho = 1; chi = 2; psi = 0.5; sigma = 0.5;
         one2np1 = range(1,N+1)
@@ -216,6 +212,11 @@ Further Inputs:
         if retall:
             allvecs = [sim[0]]
         fsim[0] = func(x0)
+
+        # if SetEvaluationLimits not applied, use the solver default
+        if self._maxiter is None: self._maxiter = N*200
+        if self._maxfun is None: self._maxfun = N*200
+
         termination(self) #XXX: initialize termination conditions, if needed
         self._stepmon(sim[0], fsim[0], id) # sim = all; "best" is sim[0]
 
@@ -240,10 +241,16 @@ Further Inputs:
         self.energy_history.append(self.bestEnergy)
         self._stepmon(sim[0], fsim[0], id) # sim = all; "best" is sim[0]
 
-        self.generations += 1 # was self.generations = 1
+        self.generations = 1
 
-        while (self._fcalls[0] < self._maxfun and self.generations < self._maxiter):
-            if self._EARLYEXIT or termination(self):
+        msj = None
+        while not termination(self):
+            if (self._fcalls[0] >= self._maxfun or \
+                self.generations >= self._maxiter):
+                msj = "EvaluationLimits with %s" % {'evaluations':self._maxfun,\
+                                                    'generations':self._maxiter}
+                break
+            if self._EARLYEXIT:
                 break
 
             # apply constraints  #XXX: is this the only appropriate place???
@@ -315,6 +322,7 @@ Further Inputs:
 
         # log any termination messages
         msg = termination(self, info=True)
+        if msj: msg = msj #XXX: prefer the default stop ?
         if msg: self._stepmon.info('STOP("%s")' % msg)
        #else: self._stepmon.info('STOP()')
 
@@ -582,10 +590,6 @@ Further Inputs:
         rank = len(x.shape)
         if not -1 < rank < 2:
             raise ValueError, "Initial guess must be a scalar or rank-1 sequence."
-        if self._maxiter is None:
-            self._maxiter = N * 1000
-        if self._maxfun is None:
-            self._maxfun = N * 1000
 
         if direc is None:
             direc = eye(N, dtype=float)
@@ -600,12 +604,18 @@ Further Inputs:
         self.population[0] = x    #XXX: pointless?
         self.popEnergy[0] = fval  #XXX: pointless?
         self.energy_history.append(self.bestEnergy)
+
+        self.generations = 0;
+        ilist = range(N)
+
+        # if SetEvaluationLimits not applied, use the solver default
+        if self._maxiter is None: self._maxiter = N*1000
+        if self._maxfun is None: self._maxfun = N*1000
+
         termination(self) #XXX: initialize termination conditions, if needed
         self._stepmon(x, fval, id) # get initial values
 
-       #self.generations = 0;
-        ilist = range(N)
-
+        msj = None
         CONTINUE = True
         while CONTINUE:
             fx = fval
@@ -630,9 +640,11 @@ Further Inputs:
 
             self.energy_history.append(fval) #XXX: the 'best' for now...
             if self._EARLYEXIT or termination(self): CONTINUE = False #break
-            elif self._fcalls[0] >= self._maxfun: CONTINUE = False #break
-            elif self.generations >= self._maxiter: CONTINUE = False #break
-
+            elif (self._fcalls[0] >= self._maxfun or \
+                  self.generations >= self._maxiter):
+                msj = "EvaluationLimits with %s" % {'evaluations':self._maxfun,\
+                                                    'generations':self._maxiter}
+                CONTINUE = False #break
             else: # Construct the extrapolated point
                 direc1 = x - x1
                 x2 = 2*x - x1
@@ -665,6 +677,7 @@ Further Inputs:
 
         # log any termination messages
         msg = termination(self, info=True)
+        if msj: msg = msj #XXX: prefer the default stop ?
         if msg: self._stepmon.info('STOP("%s")' % msg)
        #else: self._stepmon.info('STOP()')
 

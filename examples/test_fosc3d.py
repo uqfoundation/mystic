@@ -33,7 +33,7 @@ MAX_GENERATIONS = 2000
 def main():
     solver = DifferentialEvolutionSolver(ND, NP)
     solver.SetRandomInitialPoints(min = [-2.0]*ND, max = [2.0]*ND)
-    solver.SetEvaluationLimits(maxiter=MAX_GENERATIONS)
+    solver.SetEvaluationLimits(generations=MAX_GENERATIONS)
   
     strategy = Best1Exp
     #strategy = Best1Bin

@@ -297,14 +297,19 @@ Further Inputs:
         if callback is not None:
             callback(self.bestSolution)
          
+        # if SetEvaluationLimits not applied, use the solver default
         if self._maxiter is None:
-            self._maxiter = self.nDim * self.nPop * 10  #XXX: set better defaults?
+            self._maxiter = self.nDim * self.nPop * 10  #XXX: better defaults?
         if self._maxfun is None:
-            self._maxfun = self.nDim * self.nPop * 1000 #XXX: set better defaults?
+            self._maxfun = self.nDim * self.nPop * 1000 #XXX: better defaults?
 
-        #run for generations <= maxiter
-        for generation in range(self._maxiter - self.generations):
-            if self._fcalls[0] >= self._maxfun: break
+        msj = None
+        while not termination(self):
+            if (self._fcalls[0] >= self._maxfun or \
+                self.generations >= self._maxiter):
+                msj = "EvaluationLimits with %s" % {'evaluations':self._maxfun,\
+                                                    'generations':self._maxiter}
+                break
             for candidate in range(self.nPop):
                 # generate trialSolution (within valid range)
                 strategy(self, candidate)
@@ -333,13 +338,14 @@ Further Inputs:
             if callback is not None:
                 callback(self.bestSolution)
             
-            if self._EARLYEXIT or termination(self):
+            if self._EARLYEXIT:# or termination(self):
                 break
 
         signal.signal(signal.SIGINT,signal.default_int_handler)
 
         # log any termination messages
         msg = termination(self, info=True)
+        if msj: msg = msj #XXX: prefer the default stop ?
         if msg: self._stepmon.info('STOP("%s")' % msg)
        #else: self._stepmon.info('STOP()')
 
@@ -521,14 +527,19 @@ Further Inputs:
         if callback is not None:
             callback(self.bestSolution)
          
+        # if SetEvaluationLimits not applied, use the solver default
         if self._maxiter is None:
-            self._maxiter = self.nDim * self.nPop * 10  #XXX: set better defaults?
+            self._maxiter = self.nDim * self.nPop * 10  #XXX: better defaults?
         if self._maxfun is None:
-            self._maxfun = self.nDim * self.nPop * 1000 #XXX: set better defaults?
+            self._maxfun = self.nDim * self.nPop * 1000 #XXX: better defaults?
 
-        #run for generations <= maxiter
-        for generation in range(self._maxiter - self.generations):
-            if self._fcalls[0] >= self._maxfun: break
+        msj = None
+        while not termination(self):
+            if (self._fcalls[0] >= self._maxfun or \
+                self.generations >= self._maxiter):
+                msj = "EvaluationLimits with %s" % {'evaluations':self._maxfun,\
+                                                    'generations':self._maxiter}
+                break
             for candidate in range(self.nPop):
                 # generate trialSolution (within valid range)
                 strategy(self, candidate)
@@ -566,13 +577,14 @@ Further Inputs:
             if callback is not None:
                 callback(self.bestSolution)
             
-            if self._EARLYEXIT or termination(self):
+            if self._EARLYEXIT:# or termination(self):
                 break
 
         signal.signal(signal.SIGINT,signal.default_int_handler)
 
         # log any termination messages
         msg = termination(self, info=True)
+        if msj: msg = msj #XXX: prefer the default stop ?
         if msg: self._stepmon.info('STOP("%s")' % msg)
        #else: self._stepmon.info('STOP()')
 

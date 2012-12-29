@@ -40,7 +40,7 @@ class TestZimmermann(unittest.TestCase):
 
         solver = self.solver
         solver.SetRandomInitialPoints(min = self.min, max = self.max)
-        solver.SetEvaluationLimits(maxiter=self.maxiter)
+        solver.SetEvaluationLimits(generations=self.maxiter)
         solver.SetEvaluationMonitor(esow)
         solver.SetGenerationMonitor(ssow)
         solver.Solve(self.costfunction, self.term, **kwds)
@@ -250,7 +250,7 @@ class TestRosenbrock(unittest.TestCase):
         solver.SetRandomInitialPoints(min = self.min, max = self.max)
         if self.usebounds:
             solver.SetStrictRanges(self.min, self.max)
-        solver.SetEvaluationLimits(maxiter=self.maxiter)
+        solver.SetEvaluationLimits(generations=self.maxiter)
         solver.SetEvaluationMonitor(esow)
         solver.SetGenerationMonitor(ssow)
         solver.Solve(self.costfunction, self.term, **kwds)
@@ -450,7 +450,7 @@ minima."""
         solver = self.solver
         solver.SetRandomInitialPoints(self.min, self.max)
         solver.SetStrictRanges(self.min, self.max)
-        solver.SetEvaluationLimits(maxiter=self.maxiter)
+        solver.SetEvaluationLimits(generations=self.maxiter)
         solver.SetEvaluationMonitor(esow)
         solver.SetGenerationMonitor(ssow)
         solver.Solve(self.costfunction, self.term, **kwds)
@@ -651,7 +651,7 @@ class TestQuartic(unittest.TestCase):
         solver = self.solver
         solver.SetRandomInitialPoints(self.min, self.max)
         solver.SetStrictRanges(self.min, self.max)
-        solver.SetEvaluationLimits(maxiter=self.maxiter)
+        solver.SetEvaluationLimits(generations=self.maxiter)
         solver.SetEvaluationMonitor(esow)
         solver.SetGenerationMonitor(ssow)
         solver.Solve(self.costfunction, self.term, **kwds)
@@ -850,7 +850,7 @@ class TestShekel(unittest.TestCase):
         solver = self.solver
         solver.SetRandomInitialPoints(self.min, self.max)
         solver.SetStrictRanges(self.min, self.max)
-        solver.SetEvaluationLimits(maxiter=self.maxiter)
+        solver.SetEvaluationLimits(generations=self.maxiter)
         solver.SetEvaluationMonitor(esow)
         solver.SetGenerationMonitor(ssow)
         solver.Solve(self.costfunction, self.term, **kwds)
@@ -1050,7 +1050,7 @@ class TestStep(unittest.TestCase):
         solver = self.solver
         solver.SetRandomInitialPoints(self.min, self.max)
         solver.SetStrictRanges(self.min, self.max)
-        solver.SetEvaluationLimits(maxiter=self.maxiter)
+        solver.SetEvaluationLimits(generations=self.maxiter)
         solver.SetEvaluationMonitor(esow)
         solver.SetGenerationMonitor(ssow)
         solver.Solve(self.costfunction, self.term, **kwds)
@@ -1250,7 +1250,7 @@ class TestGriewangk(unittest.TestCase):
 
         solver = self.solver
         solver.SetRandomInitialPoints(self.min, self.max)
-        solver.SetEvaluationLimits(maxiter=self.maxiter)
+        solver.SetEvaluationLimits(generations=self.maxiter)
         solver.SetStrictRanges(self.min, self.max)
         solver.SetEvaluationMonitor(esow)
         solver.SetGenerationMonitor(ssow)
@@ -1463,7 +1463,7 @@ Source: http://www.nag.co.uk/numeric/FL/nagdoc_fl22/xhtml/E05/e05jbf.xml"""
 
         solver = self.solver
         solver.SetRandomInitialPoints(self.min, self.max)
-        solver.SetEvaluationLimits(maxiter=self.maxiter)
+        solver.SetEvaluationLimits(generations=self.maxiter)
         solver.SetStrictRanges(self.min, self.max)
         solver.SetEvaluationMonitor(esow)
         solver.SetGenerationMonitor(ssow)
@@ -1675,7 +1675,7 @@ Wiley, 2nd edition, 2009."""
 
         solver = self.solver
         solver.SetRandomInitialPoints(self.min, self.max)
-        solver.SetEvaluationLimits(maxiter=self.maxiter)
+        solver.SetEvaluationLimits(generations=self.maxiter)
         #solver.SetStrictRanges(self.min, self.max)
         solver.SetEvaluationMonitor(esow)
         solver.SetGenerationMonitor(ssow)
@@ -1884,7 +1884,7 @@ class TestSchwefel(unittest.TestCase):
 
         solver = self.solver
         solver.SetRandomInitialPoints(self.min, self.max)
-        solver.SetEvaluationLimits(maxiter=self.maxiter)
+        solver.SetEvaluationLimits(generations=self.maxiter)
         solver.SetStrictRanges(self.min, self.max)
         solver.SetEvaluationMonitor(esow)
         solver.SetGenerationMonitor(ssow)
@@ -2091,7 +2091,7 @@ class TestEasom(unittest.TestCase):
 
         solver = self.solver
         solver.SetRandomInitialPoints(self.min, self.max)
-        solver.SetEvaluationLimits(maxiter=self.maxiter)
+        solver.SetEvaluationLimits(generations=self.maxiter)
         solver.SetStrictRanges(self.min, self.max)
         solver.SetEvaluationMonitor(esow)
         solver.SetGenerationMonitor(ssow)
@@ -2303,7 +2303,7 @@ class TestRotatedEllipsoid(unittest.TestCase):
 
         solver = self.solver
         solver.SetRandomInitialPoints(self.min, self.max)
-        solver.SetEvaluationLimits(maxiter=self.maxiter)
+        solver.SetEvaluationLimits(generations=self.maxiter)
         solver.SetStrictRanges(self.min, self.max)
         solver.SetEvaluationMonitor(esow)
         solver.SetGenerationMonitor(ssow)
@@ -2510,7 +2510,7 @@ class TestAckley(unittest.TestCase):
 
         solver = self.solver
         solver.SetRandomInitialPoints(self.min, self.max)
-        solver.SetEvaluationLimits(maxiter=self.maxiter)
+        solver.SetEvaluationLimits(generations=self.maxiter)
         solver.SetStrictRanges(self.min, self.max)
         solver.SetEvaluationMonitor(esow)
         solver.SetGenerationMonitor(ssow)
@@ -2716,7 +2716,7 @@ one global minimum."""
 
         solver = self.solver
         solver.SetRandomInitialPoints(self.min, self.max)
-        solver.SetEvaluationLimits(maxiter=self.maxiter)
+        solver.SetEvaluationLimits(generations=self.maxiter)
         solver.SetStrictRanges(self.min, self.max)
         solver.SetEvaluationMonitor(esow)
         solver.SetGenerationMonitor(ssow)
@@ -2923,7 +2923,7 @@ class TestGoldsteinPrice(unittest.TestCase):
 
         solver = self.solver
         solver.SetRandomInitialPoints(self.min, self.max)
-        solver.SetEvaluationLimits(maxiter=self.maxiter)
+        solver.SetEvaluationLimits(generations=self.maxiter)
         solver.SetStrictRanges(self.min, self.max)
         solver.SetEvaluationMonitor(esow)
         solver.SetGenerationMonitor(ssow)
@@ -3134,7 +3134,7 @@ http://reference.wolfram.com/mathematica/tutorial/ConstrainedOptimizationGlobalN
 
         solver = self.solver
         solver.SetRandomInitialPoints(self.min, self.max)
-        solver.SetEvaluationLimits(maxiter=self.maxiter)
+        solver.SetEvaluationLimits(generations=self.maxiter)
         #solver.SetStrictRanges(self.min, self.max)
         solver.SetEvaluationMonitor(esow)
         solver.SetGenerationMonitor(ssow)
@@ -3349,7 +3349,7 @@ F(min) is negative, so VTR default can fail."""
 
         solver = self.solver
         solver.SetInitialPoints(self.x0)
-        solver.SetEvaluationLimits(maxiter=self.maxiter)
+        solver.SetEvaluationLimits(generations=self.maxiter)
         solver.SetStrictRanges(self.min, self.max)
         solver.SetEvaluationMonitor(esow)
         solver.SetGenerationMonitor(ssow)

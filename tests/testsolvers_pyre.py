@@ -74,7 +74,7 @@ class TestSolverApp(Script):
         # set maximum number of iterations
         try:
             maxiter = self.mod.maxiter
-            solver.SetEvaluationLimits(maxiter=maxiter)
+            solver.SetEvaluationLimits(generations=maxiter)
         except:
             pass
 

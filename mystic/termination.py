@@ -308,4 +308,29 @@ sum( abs(gradient)**norm )**(1.0/norm) <= tolerance"""
     _GradientNormTolerance.__doc__ = doc
     return _GradientNormTolerance
 
+def EvaluationLimits(generations = None, evaluations = None):
+    """number of iterations is > generations,
+or number of function calls is > evaluations:
+
+iterations >= generations *or* fcalls >= evaluations"""
+    #NOTE: default settings use solver defaults (_maxfun and _maxiter)
+    doc = "EvaluationLimits with %s" % {'generations':generations, \
+                                        'evaluations':evaluations}
+    maxfun = [evaluations]
+    maxiter = [generations]
+    if maxfun[0] is None: maxfun[0] = Inf 
+    if maxiter[0] is None: maxiter[0] = Inf
+    def _EvaluationLimits(inst, info=False):
+        if info: info = lambda x:x
+        else: info = bool
+        gens = inst.generations
+        eval = inst._fcalls[0]
+        if not gens and not eval:
+            return info(null)
+        if (eval >= maxfun[0]) or (gens >= maxiter[0]): return info(doc)
+        return info(null)
+   #_EvaluationLimits.__doc__ = "%s(**%s)" % tuple(doc.split(" with "))
+    _EvaluationLimits.__doc__ = doc
+    return _EvaluationLimits
+
 # end of file

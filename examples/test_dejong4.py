@@ -30,7 +30,7 @@ def main():
     solver = DifferentialEvolutionSolver(ND, NP)
 
     solver.SetRandomInitialPoints(min = [-1.28]*ND, max = [1.28]*ND)
-    solver.SetEvaluationLimits(maxiter=MAX_GENERATIONS)
+    solver.SetEvaluationLimits(generations=MAX_GENERATIONS)
 
     solver.Solve(DeJong4, termination=VTR(15), strategy=Rand1Exp, \
                  CrossProbability=0.3, ScalingFactor=1.0)

@@ -60,7 +60,7 @@ if __name__=='__main__':
     print "first sequential..."
     solver = DifferentialEvolutionSolver2(ND,NP)  #XXX: sequential
     solver.SetRandomInitialPoints(min=[-100.0]*ND, max=[100.0]*ND)
-    solver.SetEvaluationLimits(maxiter=MAX_GENERATIONS)
+    solver.SetEvaluationLimits(generations=MAX_GENERATIONS)
     solver.SetGenerationMonitor(ssow)
     solver.Solve(myCost, VTR(TOL), strategy=Best1Exp, \
                  CrossProbability=CROSS, ScalingFactor=SCALE, disp=1)
@@ -74,7 +74,7 @@ if __name__=='__main__':
     solver2.SetLauncher(mpirun_launcher, NNODES)
     solver2.SelectScheduler(torque_scheduler, QUEUE, TIMELIMIT)
     solver2.SetRandomInitialPoints(min=[-100.0]*ND, max=[100.0]*ND)
-    solver2.SetEvaluationLimits(maxiter=MAX_GENERATIONS)
+    solver2.SetEvaluationLimits(generations=MAX_GENERATIONS)
     solver2.SetGenerationMonitor(psow)
     solver2.Solve(myCost, VTR(TOL), strategy=Best1Exp, \
                   CrossProbability=CROSS, ScalingFactor=SCALE, disp=1)

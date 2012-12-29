@@ -34,7 +34,7 @@ def de_solve(CF):
     maxrange = [100., 100., 100.];
     solver.SetRandomInitialPoints(min = minrange, max = maxrange)
     solver.SetStrictRanges(min = minrange, max = maxrange)
-    solver.SetEvaluationLimits(maxiter=MAX_GENERATIONS)
+    solver.SetEvaluationLimits(generations=MAX_GENERATIONS)
     solver.SetGenerationMonitor(stepmon)
 
     solver.Solve(CF, termination=ChangeOverGeneration(generations=300),\

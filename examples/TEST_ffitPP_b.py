@@ -47,7 +47,7 @@ def main(servers,ncpus):
     solver = DifferentialEvolutionSolver2(ND, NP)
     solver.SetMapper(pp_map)
     solver.SetRandomInitialPoints(min = [-100.0]*ND, max = [100.0]*ND)
-    solver.SetEvaluationLimits(maxiter=MAX_GENERATIONS)
+    solver.SetEvaluationLimits(generations=MAX_GENERATIONS)
     solver.SetGenerationMonitor(VerboseMonitor(30))
     solver.enable_signal_handler()
   

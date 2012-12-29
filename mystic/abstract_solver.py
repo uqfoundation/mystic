@@ -374,19 +374,19 @@ Available switches::
         self.signal_handler = handler
         return
 
-    def SetEvaluationLimits(self,*args,**kwds):
-        """set limits for maxiter and/or maxfun
+    def SetEvaluationLimits(self, generations=None, evaluations=None, **kwds):
+        """set limits for generations and/or evaluations
 
 input::
-    - maxiter = maximum number of solver iterations (i.e. steps)
-    - maxfun  = maximum number of function evaluations"""
-       #self._maxiter,self._maxfun = None,None
-        if len(args) == 2:
-            self._maxiter,self._maxfun = args[0],args[1]
-        elif len(args) == 1:
-            self._maxiter = args[0]
-        if kwds.has_key('maxiter'): self._maxiter = kwds['maxiter']
-        if kwds.has_key('maxfun'): self._maxfun = kwds['maxfun']
+    - generations = maximum number of solver iterations (i.e. steps)
+    - evaluations  = maximum number of function evaluations"""
+        self._maxiter = generations
+        self._maxfun = evaluations
+        # backward compatibility
+        if kwds.has_key('maxiter'):
+            self._maxiter = kwds['maxiter']
+        if kwds.has_key('maxfun'):
+            self._maxfun = kwds['maxfun']
 
     def Solve(self, func, termination, sigint_callback=None,
                                        ExtraArgs=(), **kwds):

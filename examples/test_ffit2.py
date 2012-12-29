@@ -40,7 +40,7 @@ from test_ffit import plot_solution
 def main():
     solver = DifferentialEvolutionSolver(ND, NP)
     solver.SetRandomInitialPoints()
-    solver.SetEvaluationLimits(maxiter=MAX_GENERATIONS)
+    solver.SetEvaluationLimits(generations=MAX_GENERATIONS)
     solver.SetGenerationMonitor(VerboseMonitor(10))
   
     #strategy = Best1Exp

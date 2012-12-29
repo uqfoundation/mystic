@@ -47,7 +47,7 @@ from mystic.termination import ChangeOverGeneration, VTR
 solver = DifferentialEvolutionSolver(ND, NP)
 solver.enable_signal_handler()
 solver.SetRandomInitialPoints(min=minrange,max=maxrange)
-solver.SetEvaluationLimits(maxiter=MAX_GENERATIONS)
+solver.SetEvaluationLimits(generations=MAX_GENERATIONS)
 solver.Solve(cost, termination=ChangeOverGeneration(generations=100))
 
 
