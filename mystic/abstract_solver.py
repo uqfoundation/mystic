@@ -387,6 +387,33 @@ input::
             self._maxiter = kwds['maxiter']
         if kwds.has_key('maxfun'):
             self._maxfun = kwds['maxfun']
+        return
+
+    def _terminated(self, termination, disp=False, info=False):
+        # check for termination messages
+        msg = termination(self, info=True)
+        lim = "EvaluationLimits with %s" % {'evaluations':self._maxfun,
+                                            'generations':self._maxiter}
+
+        # push solver internals to scipy.optimize.fmin interface
+        if self._fcalls[0] >= self._maxfun and self._maxfun is not None:
+            msg = lim #XXX: prefer the default stop ?
+            if disp:
+                print "Warning: Maximum number of function evaluations has "\
+                      "been exceeded."
+        elif self.generations >= self._maxiter and self._maxiter is not None:
+            msg = lim #XXX: prefer the default stop ?
+            if disp:
+                print "Warning: Maximum number of iterations has been exceeded"
+        elif msg and disp:
+            print "Optimization terminated successfully."
+            print "         Current function value: %f" % self.bestEnergy
+            print "         Iterations: %d" % self.generations
+            print "         Function evaluations: %d" % self._fcalls[0]
+
+        if info:
+            return msg
+        return bool(msg)
 
     def Solve(self, func, termination, sigint_callback=None,
                                        ExtraArgs=(), **kwds):

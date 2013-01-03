@@ -79,11 +79,6 @@ if __name__ == '__main__':
     solver.Solve(chebyshev8cost, NCOG(1e-4), disp=1)
     solution = solver.Solution()
 
-    # use monitor to retrieve results information
-    iterations = len(stepmon.x)
-    cost = stepmon.y[-1]
-    print "Generation %d has best Chi-Squared: %f" % (iterations, cost)
-
     # use pretty print for polynomials
     print poly1d(solution)
 

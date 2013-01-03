@@ -303,13 +303,7 @@ Further Inputs:
         if self._maxfun is None:
             self._maxfun = self.nDim * self.nPop * 1000 #XXX: better defaults?
 
-        msj = None
-        while not termination(self):
-            if (self._fcalls[0] >= self._maxfun or \
-                self.generations >= self._maxiter):
-                msj = "EvaluationLimits with %s" % {'evaluations':self._maxfun,\
-                                                    'generations':self._maxiter}
-                break
+        while not self._terminated(termination):
             for candidate in range(self.nPop):
                 # generate trialSolution (within valid range)
                 strategy(self, candidate)
@@ -344,32 +338,9 @@ Further Inputs:
         signal.signal(signal.SIGINT,signal.default_int_handler)
 
         # log any termination messages
-        msg = termination(self, info=True)
-        if msj: msg = msj #XXX: prefer the default stop ?
+        msg = self._terminated(termination, disp=disp, info=True)
         if msg: self._stepmon.info('STOP("%s")' % msg)
-       #else: self._stepmon.info('STOP()')
-
-       ## code below here pushes output to scipy.optimize.fmin interface
-        fval = self.bestEnergy
-       #warnflag = 0
-
-        if self._fcalls[0] >= self._maxfun:
-       #    warnflag = 1
-            if disp:
-                print "Warning: Maximum number of function evaluations has "\
-                      "been exceeded."
-        elif self.generations >= self._maxiter:
-       #    warnflag = 2
-            if disp:
-                print "Warning: Maximum number of iterations has been exceeded"
-        else:
-            if disp:
-                print "Optimization terminated successfully."
-                print "         Current function value: %f" % fval
-                print "         Iterations: %d" % self.generations
-                print "         Function evaluations: %d" % self._fcalls[0]
-
-        return 
+        return
 
 
 
@@ -533,13 +504,7 @@ Further Inputs:
         if self._maxfun is None:
             self._maxfun = self.nDim * self.nPop * 1000 #XXX: better defaults?
 
-        msj = None
-        while not termination(self):
-            if (self._fcalls[0] >= self._maxfun or \
-                self.generations >= self._maxiter):
-                msj = "EvaluationLimits with %s" % {'evaluations':self._maxfun,\
-                                                    'generations':self._maxiter}
-                break
+        while not self._terminated(termination):
             for candidate in range(self.nPop):
                 # generate trialSolution (within valid range)
                 strategy(self, candidate)
@@ -583,31 +548,8 @@ Further Inputs:
         signal.signal(signal.SIGINT,signal.default_int_handler)
 
         # log any termination messages
-        msg = termination(self, info=True)
-        if msj: msg = msj #XXX: prefer the default stop ?
+        msg = self._terminated(termination, disp=disp, info=True)
         if msg: self._stepmon.info('STOP("%s")' % msg)
-       #else: self._stepmon.info('STOP()')
-
-       ## code below here pushes output to scipy.optimize.fmin interface
-        fval = self.bestEnergy
-       #warnflag = 0
-
-        if self._fcalls[0] >= self._maxfun:
-       #    warnflag = 1
-            if disp:
-                print "Warning: Maximum number of function evaluations has "\
-                      "been exceeded."
-        elif self.generations >= self._maxiter:
-       #    warnflag = 2
-            if disp:
-                print "Warning: Maximum number of iterations has been exceeded"
-        else:
-            if disp:
-                print "Optimization terminated successfully."
-                print "         Current function value: %f" % fval
-                print "         Iterations: %d" % self.generations
-                print "         Function evaluations: %d" % self._fcalls[0]
-
         return 
 
 

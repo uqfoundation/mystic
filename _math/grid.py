@@ -35,6 +35,26 @@ Inputs:
     return [list(i) for i in q]
 
 
+def randomly_bin(nbins, ndim):
+    """generate n bins randomly gridded across ndim dimensions"""
+    from itertools import chain
+    from random import random
+    def factors(n):
+        result = list()
+        for i in chain([2],xrange(3,n+1,2)):
+            s = 0
+            while n%i == 0:
+                n /= i
+                s += 1
+            result.extend([i]*s)
+            if n == 1:
+                return result
+    result = factors(nbins)
+    result += [1] * (ndim - (len(result) / ndim))
+    result = sorted(result, key=lambda v: random())
+    from numpy import prod
+    return [prod(result[i::ndim]) for i in range(ndim)]
+
 
 #######################################################################
 if __name__ == '__main__':

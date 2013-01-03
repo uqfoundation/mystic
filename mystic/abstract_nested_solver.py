@@ -114,12 +114,17 @@ Important class members:
         # default settings for nested optimization
         nbins = [1]*dim
         if kwds.has_key('nbins'): nbins = kwds['nbins']
+        if isinstance(nbins, int):
+            from mystic.math.grid import randomly_bin
+            nbins = randomly_bin(nbins, dim)
         self._nbins           = nbins
         npts = 1
         if kwds.has_key('npts'): npts = kwds['npts']
         self._npts            = npts
         from mystic.solvers import NelderMeadSimplexSolver
         self._solver          = NelderMeadSimplexSolver
+        self._bestSolver      = None # 'best' solver (after Solve)
+        self._total_evals     = 0 # total function calls (after Solve)
         return
 
     def SetNestedSolver(self, solver):
@@ -163,6 +168,38 @@ input::
 
 *** this method must be overwritten ***"""
         raise NotImplementedError, "must be overwritten..."
+
+    def _terminated(self, termination, disp=False, info=False):
+        if self._bestSolver:
+            solver = self._bestSolver
+        else:
+            solver = self
+
+        # check for termination messages
+        msg = termination(solver, info=True)
+        lim = "EvaluationLimits with %s" % {'evaluations':solver._maxfun,
+                                            'generations':solver._maxiter}
+
+        # push solver internals to scipy.optimize.fmin interface
+        if solver._fcalls[0] >= solver._maxfun and solver._maxfun is not None:
+            msg = lim #XXX: prefer the default stop ?
+            if disp:
+                print "Warning: Maximum number of function evaluations has "\
+                      "been exceeded."
+        elif solver.generations >= solver._maxiter and solver._maxiter is not None:
+            msg = lim #XXX: prefer the default stop ?
+            if disp:
+                print "Warning: Maximum number of iterations has been exceeded"
+        elif msg and disp:
+            print "Optimization terminated successfully."
+            print "         Current function value: %f" % solver.bestEnergy
+            print "         Iterations: %d" % solver.generations
+            print "         Function evaluations: %d" % solver._fcalls[0]
+            print "         Total Function evaluations: %d" % self._total_evals
+
+        if info:
+            return msg
+        return bool(msg)
 
 
 if __name__=='__main__':

@@ -83,6 +83,8 @@ Further Inputs:
         disp=0               #non-zero to print convergence messages
 #       if kwds.has_key('callback'): callback = kwds['callback']
         if kwds.has_key('disp'): disp = kwds['disp']
+        if disp in ['verbose', 'all']: verbose = True
+        else: verbose = False
         # backward compatibility
         if kwds.has_key('EvaluationMonitor'): \
            self._evalmon = kwds['EvaluationMonitor']
@@ -160,10 +162,8 @@ def local_optimize(cost, termination, x0, rank):
         local_opt += """\n
     solver.SetEvaluationLimits(%s, %s)
     solver.Solve(cost, termination, disp=%s)
-    solved_params = solver.Solution()
-    solved_energy = solver.bestEnergy
-    return solved_params, solved_energy, stepmon, evalmon
-""" % (str(self._maxiter), str(self._maxfun), str(disp))
+    return solver, stepmon, evalmon
+""" % (str(self._maxiter), str(self._maxfun), str(verbose))
         exec local_opt
 
         # map:: params, energy, smon, emon = local_optimize(cost,term,x0,id)
@@ -174,22 +174,24 @@ def local_optimize(cost, termination, x0, rank):
         results = self._map(local_optimize, cf, tm, initial_values, id, **mapconfig)
 
         # get the results with the lowest energy
-        best = list(results[0][0]), results[0][1]
-        bestpath = results[0][2]
-        besteval = results[0][3]
-        func_evals = len(besteval.y)
+        self._bestSolver = results[0][0]
+        bestpath = results[0][1]
+        besteval = results[0][2]
+        self._total_evals = len(besteval.y)
         for result in results[1:]:
-          func_evals += len((result[3]).y)  # add function evaluations
-          if result[1] < best[1]: # compare energy
-            best = list(result[0]), result[1]
-            bestpath = result[2]
-            besteval = result[3]
+          self._total_evals += len((result[2]).y)  # add function evaluations
+          if result[0].bestEnergy < self._bestSolver.bestEnergy:
+            self._bestSolver = result[0]
+            bestpath = result[1]
+            besteval = result[2]
 
         # return results to internals
-        self.bestSolution = best[0]
-        self.bestEnergy = best[1]
+        self.bestSolution = list(self._bestSolver.bestSolution)
+        self.bestEnergy = self._bestSolver.bestEnergy
         self.generations = len(bestpath.y)
         self._fcalls = [ len(besteval.y) ]
+        self._maxiter = self._bestSolver._maxiter
+        self._maxfun = self._bestSolver._maxfun
 
         # write 'bests' to monitors  #XXX: non-best monitors may be useful too
         for i in range(len(bestpath.y)):
@@ -202,30 +204,9 @@ def local_optimize(cost, termination, x0, rank):
 
         signal.signal(signal.SIGINT,signal.default_int_handler)
 
-        # code below here pushes output to scipy.optimize.fmin interface
-        fval = self.bestEnergy
-        warnflag = 0
-
-        # little hack to not set off Warnings when maxiter/maxfun not set
-        if self._maxiter is None: self._maxiter = self.nDim * 1e8
-        if self._maxfun is None: self._maxfun = self.nDim * 1e8
-
-        if self._fcalls[0] >= self._maxfun:
-            warnflag = 1
-            if disp:
-                print "Warning: Maximum number of function evaluations has "\
-                      "been exceeded."
-        elif self.generations >= self._maxiter:
-            warnflag = 2
-            if disp:
-                print "Warning: Maximum number of iterations has been exceeded"
-        else:
-            if disp:
-                print "Optimization terminated successfully."
-                print "         Current function value: %f" % fval
-                print "         Iterations: %d" % self.generations
-                print "         Function evaluations: %d" % self._fcalls[0]
-
+        # log any termination messages
+        msg = self._terminated(termination, disp=disp, info=True)
+        if msg: self._stepmon.info('STOP("%s")' % msg)
         return 
 
 class BuckshotSolver(AbstractNestedSolver):
@@ -273,6 +254,8 @@ Further Inputs:
         disp=0               #non-zero to print convergence messages
 #       if kwds.has_key('callback'): callback = kwds['callback']
         if kwds.has_key('disp'): disp = kwds['disp']
+        if disp in ['verbose', 'all']: verbose = True
+        else: verbose = False
         # backward compatibility
         if kwds.has_key('EvaluationMonitor'): \
            self._evalmon = kwds['EvaluationMonitor']
@@ -343,10 +326,8 @@ def local_optimize(cost, termination, x0, rank):
         local_opt += """\n
     solver.SetEvaluationLimits(%s, %s)
     solver.Solve(cost, termination, disp=%s)
-    solved_params = solver.Solution()
-    solved_energy = solver.bestEnergy
-    return solved_params, solved_energy, stepmon, evalmon
-""" % (str(self._maxiter), str(self._maxfun), str(disp))
+    return solver, stepmon, evalmon
+""" % (str(self._maxiter), str(self._maxfun), str(verbose))
         exec local_opt
 
         # map:: params, energy, smon, emon = local_optimize(cost,term,x0,id)
@@ -357,22 +338,24 @@ def local_optimize(cost, termination, x0, rank):
         results = self._map(local_optimize, cf, tm, initial_values, id, **mapconfig)
 
         # get the results with the lowest energy
-        best = list(results[0][0]), results[0][1]
-        bestpath = results[0][2]
-        besteval = results[0][3]
-        func_evals = len(besteval.y)
+        self._bestSolver = results[0][0]
+        bestpath = results[0][1]
+        besteval = results[0][2]
+        self._total_evals = len(besteval.y)
         for result in results[1:]:
-          func_evals += len((result[3]).y)  # add function evaluations
-          if result[1] < best[1]: # compare energy
-            best = list(result[0]), result[1]
-            bestpath = result[2]
-            besteval = result[3]
+          self._total_evals += len((result[2]).y)  # add function evaluations
+          if result[0].bestEnergy < self._bestSolver.bestEnergy:
+            self._bestSolver = result[0]
+            bestpath = result[1]
+            besteval = result[2]
 
         # return results to internals
-        self.bestSolution = best[0]
-        self.bestEnergy = best[1]
+        self.bestSolution = list(self._bestSolver.bestSolution)
+        self.bestEnergy = self._bestSolver.bestEnergy
         self.generations = len(bestpath.y)
         self._fcalls = [ len(besteval.y) ]
+        self._maxiter = self._bestSolver._maxiter
+        self._maxfun = self._bestSolver._maxfun
 
         # write 'bests' to monitors  #XXX: non-best monitors may be useful too
         for i in range(len(bestpath.y)):
@@ -385,30 +368,9 @@ def local_optimize(cost, termination, x0, rank):
 
         signal.signal(signal.SIGINT,signal.default_int_handler)
 
-        # code below here pushes output to scipy.optimize.fmin interface
-        fval = self.bestEnergy
-        warnflag = 0
-
-        # little hack to not set off Warnings when maxiter/maxfun not set
-        if self._maxiter is None: self._maxiter = self.nDim * 1e8
-        if self._maxfun is None: self._maxfun = self.nDim * 1e8
-
-        if self._fcalls[0] >= self._maxfun:
-            warnflag = 1
-            if disp:
-                print "Warning: Maximum number of function evaluations has "\
-                      "been exceeded."
-        elif self.generations >= self._maxiter:
-            warnflag = 2
-            if disp:
-                print "Warning: Maximum number of iterations has been exceeded"
-        else:
-            if disp:
-                print "Optimization terminated successfully."
-                print "         Current function value: %f" % fval
-                print "         Iterations: %d" % self.generations
-                print "         Function evaluations: %d" % self._fcalls[0]
-
+        # log any termination messages
+        msg = self._terminated(termination, disp=disp, info=True)
+        if msg: self._stepmon.info('STOP("%s")' % msg)
         return 
 
 # backward compatibility

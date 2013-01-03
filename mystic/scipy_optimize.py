@@ -243,13 +243,7 @@ Further Inputs:
 
         self.generations = 1
 
-        msj = None
-        while not termination(self):
-            if (self._fcalls[0] >= self._maxfun or \
-                self.generations >= self._maxiter):
-                msj = "EvaluationLimits with %s" % {'evaluations':self._maxfun,\
-                                                    'generations':self._maxiter}
-                break
+        while not self._terminated(termination):
             if self._EARLYEXIT:
                 break
 
@@ -321,43 +315,9 @@ Further Inputs:
         signal.signal(signal.SIGINT,signal.default_int_handler)
 
         # log any termination messages
-        msg = termination(self, info=True)
-        if msj: msg = msj #XXX: prefer the default stop ?
+        msg = self._terminated(termination, disp=disp, info=True)
         if msg: self._stepmon.info('STOP("%s")' % msg)
-       #else: self._stepmon.info('STOP()')
-
-       ## code below here is dead, unless disp!=0
-       #x = sim[0]
-        fval = min(fsim)
-       #warnflag = 0
-
-        if self._fcalls[0] >= self._maxfun:
-       #    warnflag = 1
-            if disp:
-                print "Warning: Maximum number of function evaluations has "\
-                  "been exceeded."
-        elif self.generations >= self._maxiter:
-       #    warnflag = 2
-            if disp:
-                print "Warning: Maximum number of iterations has been exceeded"
-        else:
-            if disp:
-                print "Optimization terminated successfully."
-                print "         Current function value: %f" % fval
-                print "         Iterations: %d" % self.generations
-                print "         Function evaluations: %d" % self._fcalls[0]
-
-
-       #if full_output:
-       #    retlist = x, fval, self.generations, self._fcalls[0], warnflag
-       #    if retall:
-       #        retlist += (allvecs,)
-       #else:
-       #    retlist = x
-       #    if retall:
-       #        retlist = (x, allvecs)
-
-        return #retlist
+        return
 
 
 def fmin(func, x0, args=(), bounds=None, xtol=1e-4, ftol=1e-4,
@@ -615,7 +575,6 @@ Further Inputs:
         termination(self) #XXX: initialize termination conditions, if needed
         self._stepmon(x, fval, id) # get initial values
 
-        msj = None
         CONTINUE = True
         while CONTINUE:
             fx = fval
@@ -639,11 +598,7 @@ Further Inputs:
                 allvecs.append(x)
 
             self.energy_history.append(fval) #XXX: the 'best' for now...
-            if self._EARLYEXIT or termination(self): CONTINUE = False #break
-            elif (self._fcalls[0] >= self._maxfun or \
-                  self.generations >= self._maxiter):
-                msj = "EvaluationLimits with %s" % {'evaluations':self._maxfun,\
-                                                    'generations':self._maxiter}
+            if self._EARLYEXIT or self._terminated(termination):
                 CONTINUE = False #break
             else: # Construct the extrapolated point
                 direc1 = x - x1
@@ -676,42 +631,9 @@ Further Inputs:
         signal.signal(signal.SIGINT,signal.default_int_handler)
 
         # log any termination messages
-        msg = termination(self, info=True)
-        if msj: msg = msj #XXX: prefer the default stop ?
+        msg = self._terminated(termination, disp=disp, info=True)
         if msg: self._stepmon.info('STOP("%s")' % msg)
-       #else: self._stepmon.info('STOP()')
-
-       ## code below here is dead, unless disp!=0
-       #warnflag = 0
-
-        if self._fcalls[0] >= self._maxfun:
-       #    warnflag = 1
-            if disp:
-                print "Warning: Maximum number of function evaluations has "\
-                      "been exceeded."
-        elif self.generations >= self._maxiter:
-       #    warnflag = 2
-            if disp:
-                print "Warning: Maximum number of iterations has been exceeded"
-        else:
-            if disp:
-                print "Optimization terminated successfully."
-                print "         Current function value: %f" % fval
-                print "         Iterations: %d" % self.generations
-                print "         Function evaluations: %d" % self._fcalls[0]
-    
-       #x = squeeze(x)
-
-       #if full_output:
-       #    retlist = x, fval, direc, self.generations, self._fcalls[0], warnflag
-       #    if retall:
-       #        retlist += (allvecs,)
-       #else:
-       #    retlist = x
-       #    if retall:
-       #        retlist = (x, allvecs)
-
-        return #retlist
+        return
 
 
 def fmin_powell(func, x0, args=(), bounds=None, xtol=1e-4, ftol=1e-4,
