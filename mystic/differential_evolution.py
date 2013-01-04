@@ -236,15 +236,13 @@ Further Inputs:
         if kwds.has_key('disp'): disp = kwds['disp']
         # backward compatibility
         if kwds.has_key('EvaluationMonitor'): \
-           self._evalmon = kwds['EvaluationMonitor']
+           self.SetEvaluationMonitor(kwds['EvaluationMonitor'])
         if kwds.has_key('StepMonitor'): \
-           self._stepmon = kwds['StepMonitor']
+           self.SetGenerationMonitor(kwds['StepMonitor'])
         if kwds.has_key('penalty'): \
-           self._penalty = kwds['penalty']
-        if not self._penalty: self._penalty = lambda x: 0.0
+           self.SetPenalty(kwds['penalty'])
         if kwds.has_key('constraints'): \
-           self._constraints = kwds['constraints']
-        if not self._constraints: self._constraints = lambda x: x
+           self.SetConstraints(kwds['constraints'])
         #-------------------------------------------------------------
 
         import signal
@@ -290,9 +288,8 @@ Further Inputs:
                     self.bestSolution[:] = self.trialSolution[:]
 
         # log bestSolution and bestEnergy (includes penalty)
-        self.energy_history.append(self.bestEnergy)
-        termination(self) #XXX: initialize termination conditions, if needed
         self._stepmon(self.bestSolution[:], self.bestEnergy, id)
+        termination(self) #XXX: initialize termination conditions, if needed
         self.generations = 0 #XXX: above currently *not* counted as an iteration
         if callback is not None:
             callback(self.bestSolution)
@@ -303,7 +300,7 @@ Further Inputs:
         if self._maxfun is None:
             self._maxfun = self.nDim * self.nPop * 1000 #XXX: better defaults?
 
-        while not self._terminated(termination):
+        while not self._terminated(termination) and not self._EARLYEXIT:
             for candidate in range(self.nPop):
                 # generate trialSolution (within valid range)
                 strategy(self, candidate)
@@ -326,14 +323,10 @@ Further Inputs:
                         self.bestSolution[:] = self.trialSolution[:]
 
             # log bestSolution and bestEnergy (includes penalty)
-            self.energy_history.append(self.bestEnergy)
             self._stepmon(self.bestSolution[:], self.bestEnergy, id)
             self.generations += 1
             if callback is not None:
                 callback(self.bestSolution)
-            
-            if self._EARLYEXIT:# or termination(self):
-                break
 
         signal.signal(signal.SIGINT,signal.default_int_handler)
 
@@ -423,15 +416,13 @@ Further Inputs:
         if kwds.has_key('disp'): disp = kwds['disp']
         # backward compatibility
         if kwds.has_key('EvaluationMonitor'): \
-           self._evalmon = kwds['EvaluationMonitor']
+           self.SetEvaluationMonitor(kwds['EvaluationMonitor'])
         if kwds.has_key('StepMonitor'): \
-           self._stepmon = kwds['StepMonitor']
+           self.SetGenerationMonitor(kwds['StepMonitor'])
         if kwds.has_key('penalty'): \
-           self._penalty = kwds['penalty']
-        if not self._penalty: self._penalty = lambda x: 0.0
+           self.SetPenalty(kwds['penalty'])
         if kwds.has_key('constraints'): \
-           self._constraints = kwds['constraints']
-        if not self._constraints: self._constraints = lambda x: x
+           self.SetConstraints(kwds['constraints'])
         #-------------------------------------------------------------
 
         import signal
@@ -490,10 +481,9 @@ Further Inputs:
                     self.bestSolution[:] = trialPop[candidate][:]
 
         # log bestSolution and bestEnergy (includes penalty)
-        self.energy_history.append(self.bestEnergy)
-        termination(self) #XXX: initialize termination conditions, if needed
        #FIXME: StepMonitor works for 'pp'?
         self._stepmon(self.bestSolution[:], self.bestEnergy, id)
+        termination(self) #XXX: initialize termination conditions, if needed
         self.generations = 0  #XXX: above currently *not* counted as an iteration
         if callback is not None:
             callback(self.bestSolution)
@@ -504,7 +494,7 @@ Further Inputs:
         if self._maxfun is None:
             self._maxfun = self.nDim * self.nPop * 1000 #XXX: better defaults?
 
-        while not self._terminated(termination):
+        while not self._terminated(termination) and not self._EARLYEXIT:
             for candidate in range(self.nPop):
                 # generate trialSolution (within valid range)
                 strategy(self, candidate)
@@ -535,15 +525,11 @@ Further Inputs:
                         self.bestSolution[:] = trialPop[candidate][:]
 
             # log bestSolution and bestEnergy (includes penalty)
-            self.energy_history.append(self.bestEnergy)
            #FIXME: StepMonitor works for 'pp'?
             self._stepmon(self.bestSolution[:], self.bestEnergy, id)
             self.generations += 1
             if callback is not None:
                 callback(self.bestSolution)
-            
-            if self._EARLYEXIT:# or termination(self):
-                break
 
         signal.signal(signal.SIGINT,signal.default_int_handler)
 

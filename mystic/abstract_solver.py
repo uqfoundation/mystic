@@ -89,18 +89,19 @@ Takes one initial input:
     dim      -- dimensionality of the problem.
 
 Additional inputs:
-    npop     -- size of the trial solution population.      [default = 1]
+    npop     -- size of the trial solution population.       [default = 1]
 
 Important class members:
-    nDim, nPop     = dim, npop
-    generations    - an iteration counter.
-    evaluations    - an evaluation counter.
-    bestEnergy     - current best energy.
-    bestSolution   - current best parameter set.            [size = dim]
-    popEnergy      - set of all trial energy solutions.     [size = npop]
-    population     - set of all trial parameter solutions.  [size = dim*npop]
-    energy_history - history of bestEnergy status.          [equivalent to StepMonitor]
-    signal_handler - catches the interrupt signal.
+    nDim, nPop       = dim, npop
+    generations      - an iteration counter.
+    evaluations      - an evaluation counter.
+    bestEnergy       - current best energy.
+    bestSolution     - current best parameter set.           [size = dim]
+    popEnergy        - set of all trial energy solutions.    [size = npop]
+    population       - set of all trial parameter solutions. [size = dim*npop]
+    solution_history - history of bestSolution status.       [StepMonitor.x]
+    energy_history   - history of bestEnergy status.         [StepMonitor.y]
+    signal_handler   - catches the interrupt signal.
         """
         NP = 1
         if kwds.has_key('npop'): NP = kwds['npop']
@@ -117,7 +118,6 @@ Important class members:
         self._init_popEnergy  = inf
         self.popEnergy	      = [self._init_popEnergy] * NP
         self.population	      = [[0.0 for i in range(dim)] for j in range(NP)]
-        self.energy_history   = []
         self.signal_handler   = None
 
         self._handle_sigint   = False
@@ -129,9 +129,11 @@ Important class members:
         self._maxiter         = None
         self._maxfun          = None
 
-        from mystic.monitors import Null
-        self._stepmon         = Null
-        self._evalmon         = Null
+        from mystic.monitors import Null, Monitor
+        self._evalmon         = Null()
+        self._stepmon         = Monitor()
+        self.energy_history   = self._stepmon.y
+        self.solution_history = self._stepmon.x
 
         self._constraints     = lambda x: x
         self._penalty         = lambda x: 0.0
@@ -186,15 +188,17 @@ input::
     def SetGenerationMonitor(self, monitor):
         """select a callable to monitor (x, f(x)) after each solver iteration"""
         from mystic.monitors import Null, Monitor#, CustomMonitor
-        if isinstance(monitor, (Null, Monitor) ):  # is Monitor() or Null()
+        if isinstance(monitor, Monitor):  # is Monitor()
             self._stepmon = monitor
-        elif monitor == Null:  # is Null
-            self._stepmon = monitor
+        elif isinstance(monitor, Null) or monitor == Null:  # is Null() or Null
+            self._stepmon = Monitor() #XXX: don't allow Null stepmon
         elif hasattr(monitor, '__module__'):  # is CustomMonitor()
             if monitor.__module__ in ['mystic._genSow']:
                 self._stepmon = monitor
         else:
             raise TypeError, "'%s' is not a monitor instance" % monitor
+        self.energy_history   = self._stepmon.y
+        self.solution_history = self._stepmon.x
         return
 
     def SetEvaluationMonitor(self, monitor):

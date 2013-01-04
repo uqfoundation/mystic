@@ -1814,7 +1814,7 @@ References:
         solver.trialSolution = [0.0] * solver.nDim
         solver._init_popEnergy  = 1.0E20 #XXX: or numpy.inf?
         solver.popEnergy = [solver._init_popEnergy] * solver.nPop
-        solver.energy_history = []
+       #solver.energy_history = []
 
         # Perform the 'inner' optimization
         solver.SetInitialPoints(x0)

@@ -88,18 +88,19 @@ Takes one initial input:
     dim      -- dimensionality of the problem.
 
 Additional inputs:
-    npop     -- size of the trial solution population.     [default = 1]
+    npop     -- size of the trial solution population.       [default = 1]
 
 Important class members:
-    nDim, nPop     = dim, npop
-    generations    - an iteration counter.
-    evaluations    - an evaluation counter.
-    bestEnergy     - current best energy.
-    bestSolution   - current best parameter set.           [size = dim]
-    popEnergy      - set of all trial energy solutions.    [size = npop]
-    population     - set of all trial parameter solutions. [size = dim*npop]
-    energy_history - history of bestEnergy status.         [equivalent to StepMonitor]
-    signal_handler - catches the interrupt signal.         [***disabled***]
+    nDim, nPop       = dim, npop
+    generations      - an iteration counter.
+    evaluations      - an evaluation counter.
+    bestEnergy       - current best energy.
+    bestSolution     - current best parameter set.           [size = dim]
+    popEnergy        - set of all trial energy solutions.    [size = npop]
+    population       - set of all trial parameter solutions. [size = dim*npop]
+    solution_history - history of bestSolution status.       [StepMonitor.x]
+    energy_history   - history of bestEnergy status.         [StepMonitor.y]
+    signal_handler   - catches the interrupt signal.         [***disabled***]
         """
         super(AbstractMapSolver, self).__init__(dim, **kwds)
        #AbstractSolver.__init__(self,dim,**kwds)

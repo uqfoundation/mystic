@@ -154,9 +154,7 @@ Further Inputs:
         # set arg names to scipy.optimize.fmin names; set fixed inputs
         x0 = self.population[0]
         args = ExtraArgs
-       #full_output=1  #non-zero if fval and warnflag outputs are desired.
         disp=0         #non-zero to print convergence messages.
-        retall=0       #non-zero to return all steps
         callback=None  #user-supplied function, called after each step
         radius=0.05    #percentage change for initial simplex values
         if kwds.has_key('callback'): callback = kwds['callback']
@@ -164,15 +162,13 @@ Further Inputs:
         if kwds.has_key('radius'): radius = kwds['radius']
         # backward compatibility
         if kwds.has_key('EvaluationMonitor'): \
-           self._evalmon = kwds['EvaluationMonitor']
+           self.SetEvaluationMonitor(kwds['EvaluationMonitor'])
         if kwds.has_key('StepMonitor'): \
-           self._stepmon = kwds['StepMonitor']
+           self.SetGenerationMonitor(kwds['StepMonitor'])
         if kwds.has_key('penalty'): \
-           self._penalty = kwds['penalty']
-        if not self._penalty: self._penalty = lambda x: 0.0
+           self.SetPenalty(kwds['penalty'])
         if kwds.has_key('constraints'): \
-           self._constraints = kwds['constraints']
-        if not self._constraints: self._constraints = lambda x: x
+           self.SetConstraints(kwds['constraints'])
         #-------------------------------------------------------------
 
         import signal
@@ -209,16 +205,14 @@ Further Inputs:
             sim = numpy.zeros((N+1,N), dtype=x0.dtype)
         fsim = numpy.zeros((N+1,), float)
         sim[0] = x0
-        if retall:
-            allvecs = [sim[0]]
         fsim[0] = func(x0)
 
         # if SetEvaluationLimits not applied, use the solver default
         if self._maxiter is None: self._maxiter = N*200
         if self._maxfun is None: self._maxfun = N*200
 
-        termination(self) #XXX: initialize termination conditions, if needed
         self._stepmon(sim[0], fsim[0], id) # sim = all; "best" is sim[0]
+        termination(self) #XXX: initialize termination conditions, if needed
 
         #--- ensure initial simplex is within bounds ---
         x0,val = self._setSimplexWithinRangeBoundary(x0,radius)
@@ -235,18 +229,14 @@ Further Inputs:
         # sort so sim[0,:] has the lowest function value
         sim = numpy.take(sim,ind,0)
         self.bestSolution = sim[0]
-        self.bestEnergy = min(fsim)
+        self.bestEnergy = fsim[0]
         self.population = sim
         self.popEnergy = fsim
-        self.energy_history.append(self.bestEnergy)
         self._stepmon(sim[0], fsim[0], id) # sim = all; "best" is sim[0]
 
         self.generations = 1
 
-        while not self._terminated(termination):
-            if self._EARLYEXIT:
-                break
-
+        while not self._terminated(termination) and not self._EARLYEXIT:
             # apply constraints  #XXX: is this the only appropriate place???
             sim[0] = asfarray(self._constraints(sim[0]))
 
@@ -302,14 +292,11 @@ Further Inputs:
             if callback is not None:
                 callback(sim[0])
             self.generations += 1
-            if retall:
-                allvecs.append(sim[0])
 
             self.bestSolution = sim[0]
-            self.bestEnergy = min(fsim)
+            self.bestEnergy = fsim[0]
             self.population = sim
             self.popEnergy = fsim
-            self.energy_history.append(self.bestEnergy)
             self._stepmon(sim[0], fsim[0],id) # sim = all; "best" is sim[0]
 
         signal.signal(signal.SIGINT,signal.default_int_handler)
@@ -501,9 +488,7 @@ Further Inputs:
         # set arg names to scipy.optimize.fmin_powell names; set fixed inputs
         x0 = self.population[0]
         args = ExtraArgs
-       #full_output=1  #non-zero if fval and warnflag outputs are desired.
         disp=0         #non-zero to print convergence messages.
-        retall=0       #non-zero to return all steps
         direc=None
         callback=None  #user-supplied function, called after each step
         xtol=1e-4      #line-search error tolerance
@@ -513,15 +498,13 @@ Further Inputs:
         if kwds.has_key('disp'): disp = kwds['disp']
         # backward compatibility
         if kwds.has_key('EvaluationMonitor'): \
-           self._evalmon = kwds['EvaluationMonitor']
+           self.SetEvaluationMonitor(kwds['EvaluationMonitor'])
         if kwds.has_key('StepMonitor'): \
-           self._stepmon = kwds['StepMonitor']
+           self.SetGenerationMonitor(kwds['StepMonitor'])
         if kwds.has_key('penalty'): \
-           self._penalty = kwds['penalty']
-        if not self._penalty: self._penalty = lambda x: 0.0
+           self.SetPenalty(kwds['penalty'])
         if kwds.has_key('constraints'): \
-           self._constraints = kwds['constraints']
-        if not self._constraints: self._constraints = lambda x: x
+           self.SetConstraints(kwds['constraints'])
         #-------------------------------------------------------------
 
         import signal
@@ -544,8 +527,6 @@ Further Inputs:
         id = self.id
         x = asfarray(x0).flatten()
         x = asfarray(self._constraints(x))
-        if retall:
-            allvecs = [x]
         N = len(x) #XXX: this should be equal to self.nDim
         rank = len(x.shape)
         if not -1 < rank < 2:
@@ -561,9 +542,8 @@ Further Inputs:
         self._direc = direc #XXX: instead, use a monitor?
         self.bestSolution = x
         self.bestEnergy = fval
-        self.population[0] = x    #XXX: pointless?
-        self.popEnergy[0] = fval  #XXX: pointless?
-        self.energy_history.append(self.bestEnergy)
+        self.population[0] = self.bestSolution
+        self.popEnergy[0] = self.bestEnergy
 
         self.generations = 0;
         ilist = range(N)
@@ -572,11 +552,58 @@ Further Inputs:
         if self._maxiter is None: self._maxiter = N*1000
         if self._maxfun is None: self._maxfun = N*1000
 
-        termination(self) #XXX: initialize termination conditions, if needed
         self._stepmon(x, fval, id) # get initial values
+        termination(self) #XXX: initialize termination conditions, if needed
 
-        CONTINUE = True
-        while CONTINUE:
+        # do initial "second half" of solver step 
+        fx = fval
+        bigind = 0
+        delta = 0.0
+        for i in ilist:
+            direc1 = direc[i]
+            fx2 = fval
+            fval, x, direc1 = _linesearch_powell(func, x, direc1, tol=xtol*100)
+            if (fx2 - fval) > delta:
+                delta = fx2 - fval
+                bigind = i
+
+            # apply constraints
+            x = asfarray(self._constraints(x))
+
+        self.generations += 1
+        if callback is not None:
+            callback(x)
+
+        self.energy_history += fval  #XXX: the 'best' for now...
+
+        while not self._terminated(termination) and not self._EARLYEXIT:
+            # Construct the extrapolated point
+            direc1 = x - x1
+            x2 = 2*x - x1
+            x1 = x.copy()
+            fx2 = squeeze(func(x2))
+
+            if (fx > fx2):
+                t = 2.0*(fx+fx2-2.0*fval)
+                temp = (fx-fval-delta)
+                t *= temp*temp
+                temp = fx-fx2
+                t -= delta*temp*temp
+                if t < 0.0:
+                    fval, x, direc1 = _linesearch_powell(func, x, direc1, tol=xtol*100)
+                    direc[bigind] = direc[-1]
+                    direc[-1] = direc1
+
+           #        x = asfarray(self._constraints(x))
+
+            self._direc = direc #XXX: instead, use a monitor?
+            self.bestSolution = x
+            self.bestEnergy = fval
+            self.population[0] = x    #XXX: pointless
+            self.popEnergy[0] = fval  #XXX: pointless
+            self._stepmon(x, fval, id) # get ith values
+            self.energy_history = self._stepmon.y # resync with 'best' energy
+
             fx = fval
             bigind = 0
             delta = 0.0
@@ -594,39 +621,16 @@ Further Inputs:
             self.generations += 1
             if callback is not None:
                 callback(x)
-            if retall:
-                allvecs.append(x)
 
-            self.energy_history.append(fval) #XXX: the 'best' for now...
-            if self._EARLYEXIT or self._terminated(termination):
-                CONTINUE = False #break
-            else: # Construct the extrapolated point
-                direc1 = x - x1
-                x2 = 2*x - x1
-                x1 = x.copy()
-                fx2 = squeeze(func(x2))
-    
-                if (fx > fx2):
-                    t = 2.0*(fx+fx2-2.0*fval)
-                    temp = (fx-fval-delta)
-                    t *= temp*temp
-                    temp = fx-fx2
-                    t -= delta*temp*temp
-                    if t < 0.0:
-                        fval, x, direc1 = _linesearch_powell(func, x, direc1, tol=xtol*100)
-                        direc[bigind] = direc[-1]
-                        direc[-1] = direc1
- 
-               #        x = asfarray(self._constraints(x))
-
-                self.energy_history[-1] = fval #...update to 'best' energy
-
+            self.energy_history += fval  #XXX: the 'best' for now...
+        else:
             self._direc = direc #XXX: instead, use a monitor?
             self.bestSolution = x
             self.bestEnergy = fval
             self.population[0] = x    #XXX: pointless
             self.popEnergy[0] = fval  #XXX: pointless
             self._stepmon(x, fval, id) # get ith values
+            self.energy_history = self._stepmon.y # resync with 'best' energy
     
         signal.signal(signal.SIGINT,signal.default_int_handler)
 
