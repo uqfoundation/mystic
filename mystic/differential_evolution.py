@@ -289,8 +289,8 @@ Further Inputs:
 
         # log bestSolution and bestEnergy (includes penalty)
         self._stepmon(self.bestSolution[:], self.bestEnergy, id)
-        termination(self) #XXX: initialize termination conditions, if needed
         self.generations = 0 #XXX: above currently *not* counted as an iteration
+        termination(self) #XXX: initialize termination conditions, if needed
         if callback is not None:
             callback(self.bestSolution)
          
@@ -731,8 +731,8 @@ Returns: (xopt, {fopt, iter, funcalls, warnflag}, {allvecs})
     x = solver.bestSolution
     fval = solver.bestEnergy
     warnflag = 0
-    fcalls = len(evalmon.x)
-    iterations = len(stepmon.x)
+    fcalls = solver.evaluations
+    iterations = solver.generations
     allvecs = stepmon.x
 
     if fcalls >= solver._maxfun:

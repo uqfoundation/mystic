@@ -96,7 +96,7 @@ The size of the simplex is dim+1.
             x0 = self._clipGuessWithinRangeBoundary(x0)
 
         val = x0*(1+radius)
-        val[val==0] = radius
+        val[val==0] = (radius**2) * 0.1 # zdelt=0.00025 update from scipy-0.9
         if not self._useStrictRange:
             return x0, val
 
@@ -407,8 +407,8 @@ Returns: (xopt, {fopt, iter, funcalls, warnflag}, {allvecs})
     x = solver.bestSolution
     fval = solver.bestEnergy
     warnflag = 0
-    fcalls = len(evalmon.x)
-    iterations = len(stepmon.x)
+    fcalls = solver.evaluations
+    iterations = solver.generations
     allvecs = stepmon.x
 
     if fcalls >= solver._maxfun:
@@ -752,8 +752,8 @@ Returns: (xopt, {fopt, iter, funcalls, warnflag, direc}, {allvecs})
     x = solver.bestSolution
     fval = solver.bestEnergy
     warnflag = 0
-    fcalls = len(evalmon.x)
-    iterations = len(stepmon.x) - 1
+    fcalls = solver.evaluations
+    iterations = solver.generations
     allvecs = stepmon.x
     direc = solver._direc #XXX: need better way to return direc ?
 

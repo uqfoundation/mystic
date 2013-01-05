@@ -230,15 +230,15 @@ abs(cost[-1] - fval)/fval <= tolerance *or* (cost[-1] - cost[-g]) = 0 """
     def _NormalizedCostTarget(inst, info=False):
         if info: info = lambda x:x
         else: info = bool
+        hist = inst.energy_history
         if generations and fval == None:
-            hist = inst.energy_history
             lg = len(hist)
             #XXX: throws error when hist is shorter than generations ?
             if lg > generations and (hist[-generations]-hist[-1]) <= 0:
                 return info(doc)
             return info(null)
         if not generations and fval == None: return info(doc)
-        if abs(inst.bestEnergy-fval) <= abs(tolerance * fval): return info(doc)
+        if abs(hist[-1]-fval) <= abs(tolerance * fval): return info(doc)
         return info(null)
     _NormalizedCostTarget.__doc__ = doc
     return _NormalizedCostTarget
@@ -325,8 +325,6 @@ iterations >= generations *or* fcalls >= evaluations"""
         else: info = bool
         gens = inst.generations
         eval = inst._fcalls[0]
-        if not gens and not eval:
-            return info(null)
         if (eval >= maxfun[0]) or (gens >= maxiter[0]): return info(doc)
         return info(null)
    #_EvaluationLimits.__doc__ = "%s(**%s)" % tuple(doc.split(" with "))
