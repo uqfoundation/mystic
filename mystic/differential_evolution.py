@@ -144,6 +144,8 @@ from mystic.tools import wrap_bounds, wrap_penalty
 from abstract_solver import AbstractSolver
 from abstract_map_solver import AbstractMapSolver
 
+from numpy import asfarray
+
 class DifferentialEvolutionSolver(AbstractSolver):
     """
 Differential Evolution optimization.
@@ -221,6 +223,7 @@ Further Inputs:
     disp -- non-zero to print convergence messages.
         """
         #allow for inputs that don't conform to AbstractSolver interface
+        self.population[0] = asfarray(self.population[0])
         from mystic.strategy import Best1Bin
         strategy=Best1Bin    #mutation strategy (see mystic.strategy)
         CrossProbability=0.9 #potential for parameter cross-mutation
@@ -401,6 +404,7 @@ Further Inputs:
     disp -- non-zero to print convergence messages.
         """
         #allow for inputs that don't conform to AbstractSolver interface
+        self.population[0] = asfarray(self.population[0])
         from mystic.strategy import Best1Bin
         strategy=Best1Bin    #mutation strategy (see mystic.strategy)
         CrossProbability=0.9 #potential for parameter cross-mutation

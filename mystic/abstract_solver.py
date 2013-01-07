@@ -322,7 +322,7 @@ input::
         max[max==0] = asarray([radius for i in range(numzeros)])
         self.SetRandomInitialPoints(min,max)
         #stick initial values in population[i], i=0
-        self.population[0] = x0 #FIXME: 0 is array, 1: is list
+        self.population[0] = x0.tolist()
     
     def SetRandomInitialPoints(self, min=None, max=None):
         """Generate Random Initial Points within given Bounds
@@ -343,7 +343,7 @@ input::
         import random
         #generate random initial values
         for i in range(len(self.population)):
-            for j in range(self.nDim): #FIXME: 0: are lists
+            for j in range(self.nDim):
                 self.population[i][j] = random.uniform(min[j],max[j])
 
     def SetMultinormalInitialPoints(self, mean, var = None):
@@ -367,7 +367,7 @@ input::
                 pass
             else:
                 var = var * numpy.eye(self.nDim)
-        for i in range(len(self.population)): #FIXME: 0: are lists
+        for i in range(len(self.population)):
             self.population[i] = multivariate_normal(mean, var).tolist()
         return
 
