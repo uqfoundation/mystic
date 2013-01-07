@@ -20,8 +20,8 @@ def test_solvers(solver1, solver2, x0, **kwds):
   s1_x = s1(rosen, x0, disp=0, full_output=True, **kwds)
   s2_x = s2(rosen, x0, disp=0, full_output=True, **kwds)
   # similar bestSolution and bestEnergy
-  print 's1:', s1_x[0:2]
-  print 's2:', s2_x[0:2]
+# print 's1:', s1_x[0:2]
+# print 's2:', s2_x[0:2]
   # print (iters, fcalls) and [maxiter, maxfun]
 # print s1_x[2:4], s2_x[2:4], [maxiter, maxfun]
   if maxiter is not None:
@@ -45,8 +45,8 @@ def test_compare(solvername, x0, **kwds):
 # itermon = kwds.pop('itermon',None)
   sp_x = sp(rosen, x0, disp=0, full_output=True, **kwds)
   # similar bestSolution and bestEnergy
-  print 'my:', my_x[0:2]
-  print 'sp:', sp_x[0:2]
+# print 'my:', my_x[0:2]
+# print 'sp:', sp_x[0:2]
   assert almostEqual(my_x[0], sp_x[0])
   assert almostEqual(my_x[1], sp_x[1])
   # print (iters, fcalls) and [maxiter, maxfun]
@@ -64,6 +64,17 @@ def test_compare(solvername, x0, **kwds):
 
 if __name__ == '__main__':
   x0 = [0,0,0]
+
+  # check solutions versus results based on the random_seed
+  print "comparing against known results"
+  sol = solvers.diffev(rosen, x0, npop=40, disp=0, full_output=True)
+  assert almostEqual(sol[1], 0.0020640145337293249, tol=1e-3)
+  sol = solvers.diffev2(rosen, x0, npop=40, disp=0, full_output=True)
+  assert almostEqual(sol[1], 0.0017516784703663288)
+  sol = solvers.fmin_powell(rosen, x0, disp=0, full_output=True)
+  assert almostEqual(sol[1], 8.3173488898295291e-23)
+  sol = solvers.fmin(rosen, x0, disp=0, full_output=True)
+  assert almostEqual(sol[1], 1.1605792769954724e-09)
 
   solver2 = 'diffev2'
   for solver in ['diffev']:
@@ -89,5 +100,6 @@ if __name__ == '__main__':
     test_compare(solver, x0, maxiter=1)
     test_compare(solver, x0, maxiter=2)#, itermon=VerboseMonitor(1,1))
     test_compare(solver, x0, maxiter=9)
+
 
 # EOF
