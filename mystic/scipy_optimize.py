@@ -228,8 +228,6 @@ Further Inputs:
         fsim = numpy.take(fsim,ind,0)
         # sort so sim[0,:] has the lowest function value
         sim = numpy.take(sim,ind,0)
-        self.bestSolution = sim[0]
-        self.bestEnergy = fsim[0]
         self.population = sim # bestSolution = sim[0]
         self.popEnergy = fsim # bestEnergy = fsim[0]
         self._stepmon(sim[0], fsim[0], id) # sim = all; "best" is sim[0]
@@ -290,8 +288,6 @@ Further Inputs:
             if callback is not None:
                 callback(sim[0])
 
-            self.bestSolution = sim[0]
-            self.bestEnergy = fsim[0]
             self.population = sim # bestSolution = sim[0]
             self.popEnergy = fsim # bestEnergy = fsim[0]
             self._stepmon(sim[0], fsim[0],id) # sim = all; "best" is sim[0]
@@ -537,8 +533,6 @@ Further Inputs:
         ilist = range(N)
 
         self._direc = direc
-        self.bestSolution = x
-        self.bestEnergy = fval
         self.population[0] = x   # bestSolution
         self.popEnergy[0] = fval # bestEnergy
 
@@ -591,8 +585,6 @@ Further Inputs:
            #        x = asfarray(self._constraints(x))
 
             self._direc = direc
-            self.bestSolution = x
-            self.bestEnergy = fval
             self.population[0] = x   # bestSolution
             self.popEnergy[0] = fval # bestEnergy
             self._stepmon(x, fval, id) # get ith values
@@ -619,8 +611,6 @@ Further Inputs:
             self.energy_history = self.energy_history + [fval]
         else:
             self._direc = direc
-            self.bestSolution = x
-            self.bestEnergy = fval
             self.population[0] = x   # bestSolution
             self.popEnergy[0] = fval # bestEnergy
             self._stepmon(x, fval, id) # get ith values

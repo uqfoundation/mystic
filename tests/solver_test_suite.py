@@ -31,7 +31,7 @@ class TestZimmermann(unittest.TestCase):
         from mystic.monitors import Monitor
         import numpy
         from mystic.tools import random_seed
-        random_seed(123) # Number of failures is quite dependent on random seed!
+        random_seed(321) # Number of failures is quite dependent on random seed!
         esow = Monitor()
         ssow = Monitor() 
 

@@ -186,9 +186,11 @@ def local_optimize(cost, termination, x0, rank):
             besteval = result[2]
 
         # return results to internals
-        self.bestSolution = list(self._bestSolver.bestSolution)
+        self.population = self._bestSolver.population #XXX: pointer? copy?
+        self.popEnergy = self._bestSolver.popEnergy #XXX: pointer? copy?
+        self.bestSolution = self._bestSolver.bestSolution #XXX: pointer? copy?
         self.bestEnergy = self._bestSolver.bestEnergy
-        self.generations = len(bestpath.y)
+        self.trialSolution = self._bestSolver.trialSolution #XXX: pointer? copy?
         self._fcalls = [ len(besteval.y) ]
         self._maxiter = self._bestSolver._maxiter
         self._maxfun = self._bestSolver._maxfun
@@ -350,9 +352,11 @@ def local_optimize(cost, termination, x0, rank):
             besteval = result[2]
 
         # return results to internals
-        self.bestSolution = list(self._bestSolver.bestSolution)
+        self.population = self._bestSolver.population #XXX: pointer? copy?
+        self.popEnergy = self._bestSolver.popEnergy #XXX: pointer? copy?
+        self.bestSolution = self._bestSolver.bestSolution #XXX: pointer? copy?
         self.bestEnergy = self._bestSolver.bestEnergy
-        self.generations = len(bestpath.y)
+        self.trialSolution = self._bestSolver.trialSolution #XXX: pointer? copy?
         self._fcalls = [ len(besteval.y) ]
         self._maxiter = self._bestSolver._maxiter
         self._maxfun = self._bestSolver._maxfun

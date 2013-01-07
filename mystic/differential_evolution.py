@@ -262,16 +262,16 @@ Further Inputs:
         self.probability = CrossProbability
         self.scale = ScalingFactor
 
-        # break link between population and popEnergy
-        self.bestSolution = self.population[0][:]
+        # decouple bestSolution from population and bestEnergy from popEnergy
+        self.bestSolution = self.population[0]
         self.bestEnergy = self.popEnergy[0]
 
         #set initial solution and energy by running a single iteration
         for candidate in range(self.nPop):
             # generate trialSolution (within valid range)
-            self.trialSolution[:] = self.population[candidate][:]
+            self.trialSolution[:] = self.population[candidate]
             # apply constraints
-            self.trialSolution[:] = self._constraints(self.trialSolution[:])
+            self.trialSolution[:] = self._constraints(self.trialSolution)
             # apply penalty
            #trialEnergy = self._penalty(self.trialSolution)
             # calculate cost
@@ -280,13 +280,13 @@ Further Inputs:
             if trialEnergy < self.popEnergy[candidate]:
                 # New low for this candidate
                 self.popEnergy[candidate] = trialEnergy
-                self.population[candidate][:] = self.trialSolution[:]
+                self.population[candidate][:] = self.trialSolution
                 self.UpdateGenealogyRecords(candidate, self.trialSolution[:])
 
                 # Check if all-time low
                 if trialEnergy < self.bestEnergy:
                     self.bestEnergy = trialEnergy
-                    self.bestSolution[:] = self.trialSolution[:]
+                    self.bestSolution[:] = self.trialSolution
 
         # log bestSolution and bestEnergy (includes penalty)
         self._stepmon(self.bestSolution[:], self.bestEnergy, id)
@@ -305,7 +305,7 @@ Further Inputs:
                 # generate trialSolution (within valid range)
                 strategy(self, candidate)
                 # apply constraints
-                self.trialSolution[:] = self._constraints(self.trialSolution[:])
+                self.trialSolution[:] = self._constraints(self.trialSolution)
                 # apply penalty
                #trialEnergy = self._penalty(self.trialSolution)
                 # calculate cost
@@ -314,13 +314,13 @@ Further Inputs:
                 if trialEnergy < self.popEnergy[candidate]:
                     # New low for this candidate
                     self.popEnergy[candidate] = trialEnergy
-                    self.population[candidate][:] = self.trialSolution[:]
+                    self.population[candidate][:] = self.trialSolution
                     self.UpdateGenealogyRecords(candidate, self.trialSolution[:])
 
                     # Check if all-time low
                     if trialEnergy < self.bestEnergy:
                         self.bestEnergy = trialEnergy
-                        self.bestSolution[:] = self.trialSolution[:]
+                        self.bestSolution[:] = self.trialSolution
 
             # log bestSolution and bestEnergy (includes penalty)
             self._stepmon(self.bestSolution[:], self.bestEnergy, id)
@@ -448,17 +448,17 @@ Further Inputs:
         self.scale = ScalingFactor
 
         # break link between population and popEnergy
-        self.bestSolution = self.population[0][:]
+        self.bestSolution = self.population[0]
         self.bestEnergy = self.popEnergy[0]
 
         trialPop = [[0.0 for i in range(self.nDim)] for j in range(self.nPop)]
         #set initial solution and energy by running a single iteration
         for candidate in range(self.nPop):
             # generate trialSolution (within valid range)
-            self.trialSolution[:] = self.population[candidate][:]
+            self.trialSolution[:] = self.population[candidate]
             # apply constraints
-            self.trialSolution[:] = self._constraints(self.trialSolution[:])
-            trialPop[candidate][:] = self.trialSolution[:]
+            self.trialSolution[:] = self._constraints(self.trialSolution)
+            trialPop[candidate][:] = self.trialSolution
 
         mapconfig = dict(nnodes=self._nnodes, launcher=self._launcher, \
                          mapper=self._mapper, queue=self._queue, \
@@ -473,13 +473,13 @@ Further Inputs:
             if trialEnergy[candidate] < self.popEnergy[candidate]:
                 # New low for this candidate
                 self.popEnergy[candidate] = trialEnergy[candidate]
-                self.population[candidate][:] = trialPop[candidate][:]
+                self.population[candidate][:] = trialPop[candidate]
                 self.UpdateGenealogyRecords(candidate, trialPop[candidate][:])
 
                 # Check if all-time low
                 if trialEnergy[candidate] < self.bestEnergy:
                     self.bestEnergy = trialEnergy[candidate]
-                    self.bestSolution[:] = trialPop[candidate][:]
+                    self.bestSolution[:] = trialPop[candidate]
 
         # log bestSolution and bestEnergy (includes penalty)
        #FIXME: StepMonitor works for 'pp'?
@@ -499,8 +499,8 @@ Further Inputs:
                 # generate trialSolution (within valid range)
                 strategy(self, candidate)
                 # apply constraints
-                self.trialSolution[:] = self._constraints(self.trialSolution[:])
-                trialPop[candidate][:] = self.trialSolution[:]
+                self.trialSolution[:] = self._constraints(self.trialSolution)
+                trialPop[candidate][:] = self.trialSolution
 
             # apply penalty
            #trialEnergy = map(self._penalty, trialPop)#, **mapconfig)
@@ -516,13 +516,13 @@ Further Inputs:
                 if trialEnergy[candidate] < self.popEnergy[candidate]:
                     # New low for this candidate
                     self.popEnergy[candidate] = trialEnergy[candidate]
-                    self.population[candidate][:] = trialPop[candidate][:]
+                    self.population[candidate][:] = trialPop[candidate]
                     self.UpdateGenealogyRecords(candidate, trialPop[candidate][:])
 
                     # Check if all-time low
                     if trialEnergy[candidate] < self.bestEnergy:
                         self.bestEnergy = trialEnergy[candidate]
-                        self.bestSolution[:] = trialPop[candidate][:]
+                        self.bestSolution[:] = trialPop[candidate]
 
             # log bestSolution and bestEnergy (includes penalty)
            #FIXME: StepMonitor works for 'pp'?
