@@ -106,6 +106,9 @@ Important class members:
        #AbstractSolver.__init__(self,dim,**kwds)
        #self.signal_handler   = None
        #self._handle_sigint   = False
+        trialPop = [[0.0 for i in range(dim)] for j in range(self.nPop)]
+        self.trialSolution    = trialPop
+        self._map_solver      = True
 
         # import 'map' defaults
         from python_map import serial_launcher

@@ -210,8 +210,11 @@ sum(abs(last_params - current_params)) <= tolerance"""
         else: info = bool
         best = numpy.array(inst.bestSolution)
         trial = numpy.array(inst.trialSolution)
-        update = best - trial #XXX: if inf - inf ?
-        answer = numpy.add.reduce(abs(update)) <= tolerance
+        update = abs(best - trial) #XXX: if inf - inf ?
+        answer = numpy.add.reduce(update.T)
+        if isinstance(answer, numpy.ndarray): # if trialPop, take 'best' answer
+            answer = max(answer)              #XXX: is this 'best' or 'worst'?
+        answer = answer <= tolerance
         if answer: return info(doc)
         return info(null)
     _SolutionImprovement.__doc__ = doc

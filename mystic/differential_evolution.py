@@ -190,6 +190,89 @@ are logged.
         self.genealogy[id].append(newchild)
         return
 
+    def _SetEvaluationLimits(self, iterscale=None, evalscale=None):
+        """set the evaluation limits"""
+        if iterscale is None: iterscale = 10
+        if evalscale is None: evalscale = 1000
+        # if SetEvaluationLimits not applied, use the solver default
+        if self._maxiter is None:
+            self._maxiter = self.nDim * self.nPop * iterscale
+        if self._maxfun is None:
+            self._maxfun = self.nDim * self.nPop * evalscale
+        return
+
+    def _Decorate(self, costfunction, ExtraArgs=None):
+        """decorate cost function with bounds, penalties, monitors, etc"""
+        self._fcalls, costfunction = wrap_function(costfunction, ExtraArgs, self._evalmon)
+        if self._useStrictRange:
+            for i in range(self.nPop):
+                self.population[i] = self._clipGuessWithinRangeBoundary(self.population[i])
+            costfunction = wrap_bounds(costfunction, self._strictMin, self._strictMax)
+        costfunction = wrap_penalty(costfunction, self._penalty)
+        return costfunction
+
+    def Step(self, costfunction, strategy=None):
+        """perform a single optimization iteration"""
+        if not self.generations: # this is the first iteration
+            self.population[0] = asfarray(self.population[0])
+            # decouple bestSolution from population and bestEnergy from popEnergy
+            self.bestSolution = self.population[0]
+            self.bestEnergy = self.popEnergy[0]
+
+        for candidate in range(self.nPop):
+            if not self.generations:
+                # generate trialSolution (within valid range)
+                self.trialSolution[:] = self.population[candidate]
+            if strategy:
+                # generate trialSolution (within valid range)
+                strategy(self, candidate)
+            # apply constraints
+            self.trialSolution[:] = self._constraints(self.trialSolution)
+            # apply penalty
+           #trialEnergy = self._penalty(self.trialSolution)
+            # calculate cost
+            trialEnergy = costfunction(self.trialSolution)
+
+            if trialEnergy < self.popEnergy[candidate]:
+                # New low for this candidate
+                self.popEnergy[candidate] = trialEnergy
+                self.population[candidate][:] = self.trialSolution
+                self.UpdateGenealogyRecords(candidate, self.trialSolution[:])
+
+                # Check if all-time low
+                if trialEnergy < self.bestEnergy:
+                    self.bestEnergy = trialEnergy
+                    self.bestSolution[:] = self.trialSolution
+
+        # log bestSolution and bestEnergy (includes penalty)
+        self._stepmon(self.bestSolution[:], self.bestEnergy, self.id)
+        return
+
+    def _process_inputs(self, kwds):
+        """process and activate input settings"""
+        #allow for inputs that don't conform to AbstractSolver interface
+        from mystic.strategy import Best1Bin
+        strategy=Best1Bin    #mutation strategy (see mystic.strategy)
+        callback=None        #user-supplied function, called after each step
+        disp=0               #non-zero to print convergence messages
+        probability=0.9      #potential for parameter cross-mutation
+        scale=0.8            #multiplier for mutation impact
+        if not kwds.has_key('strategy'): kwds['strategy'] = strategy
+        if not kwds.has_key('callback'): kwds['callback'] = callback
+        if not kwds.has_key('disp'): kwds['disp'] = disp
+        self.probability = kwds.pop('CrossProbability', probability)
+        self.scale = kwds.pop('ScalingFactor', scale)
+        # backward compatibility
+        if kwds.has_key('EvaluationMonitor'): \
+           self.SetEvaluationMonitor(kwds.pop('EvaluationMonitor'))
+        if kwds.has_key('StepMonitor'): \
+           self.SetGenerationMonitor(kwds.pop('StepMonitor'))
+        if kwds.has_key('penalty'): \
+           self.SetPenalty(kwds.pop('penalty'))
+        if kwds.has_key('constraints'): \
+           self.SetConstraints(kwds.pop('constraints'))
+        return kwds
+
     def Solve(self, costfunction, termination, sigint_callback=None,
                                                ExtraArgs=(), **kwds):
         """Minimize a function using differential evolution.
@@ -222,114 +305,39 @@ Further Inputs:
         the current parameter vector.  [default = None]
     disp -- non-zero to print convergence messages.
         """
-        #allow for inputs that don't conform to AbstractSolver interface
-        self.population[0] = asfarray(self.population[0])
-        from mystic.strategy import Best1Bin
-        strategy=Best1Bin    #mutation strategy (see mystic.strategy)
-        CrossProbability=0.9 #potential for parameter cross-mutation
-        ScalingFactor=0.8    #multiplier for mutation impact
-        callback=None        #user-supplied function, called after each step
-        disp=0               #non-zero to print convergence messages
-        if kwds.has_key('strategy'): strategy = kwds['strategy']
-        if kwds.has_key('CrossProbability'): \
-           CrossProbability = kwds['CrossProbability']
-        if kwds.has_key('ScalingFactor'): ScalingFactor = kwds['ScalingFactor']
-        if kwds.has_key('callback'): callback = kwds['callback']
-        if kwds.has_key('disp'): disp = kwds['disp']
-        # backward compatibility
-        if kwds.has_key('EvaluationMonitor'): \
-           self.SetEvaluationMonitor(kwds['EvaluationMonitor'])
-        if kwds.has_key('StepMonitor'): \
-           self.SetGenerationMonitor(kwds['StepMonitor'])
-        if kwds.has_key('penalty'): \
-           self.SetPenalty(kwds['penalty'])
-        if kwds.has_key('constraints'): \
-           self.SetConstraints(kwds['constraints'])
-        #-------------------------------------------------------------
+        # process and activate input settings
+        settings = {}
+        settings.update(self._process_inputs(kwds))
+        disp = settings['disp']
+        callback = settings['callback']
+        strategy = settings['strategy'] #XXX: specific to diffev* ?
 
+        # set up signal handler
         import signal
         self._EARLYEXIT = False
-
-        self._fcalls, costfunction = wrap_function(costfunction, ExtraArgs, self._evalmon)
-        if self._useStrictRange:
-            for i in range(self.nPop):
-                self.population[i] = self._clipGuessWithinRangeBoundary(self.population[i])
-            costfunction = wrap_bounds(costfunction, self._strictMin, self._strictMax)
-        costfunction = wrap_penalty(costfunction, self._penalty)
-
-        #generate signal_handler
         self._generateHandler(sigint_callback) 
         if self._handle_sigint: signal.signal(signal.SIGINT, self.signal_handler)
 
-        id = self.id
-        self.probability = CrossProbability
-        self.scale = ScalingFactor
+        # decorate cost function with bounds, penalties, monitors, etc
+        costfunction = self._Decorate(costfunction, ExtraArgs)
 
-        # decouple bestSolution from population and bestEnergy from popEnergy
-        self.bestSolution = self.population[0]
-        self.bestEnergy = self.popEnergy[0]
-
-        #set initial solution and energy by running a single iteration
-        for candidate in range(self.nPop):
-            # generate trialSolution (within valid range)
-            self.trialSolution[:] = self.population[candidate]
-            # apply constraints
-            self.trialSolution[:] = self._constraints(self.trialSolution)
-            # apply penalty
-           #trialEnergy = self._penalty(self.trialSolution)
-            # calculate cost
-            trialEnergy = costfunction(self.trialSolution)
-
-            if trialEnergy < self.popEnergy[candidate]:
-                # New low for this candidate
-                self.popEnergy[candidate] = trialEnergy
-                self.population[candidate][:] = self.trialSolution
-                self.UpdateGenealogyRecords(candidate, self.trialSolution[:])
-
-                # Check if all-time low
-                if trialEnergy < self.bestEnergy:
-                    self.bestEnergy = trialEnergy
-                    self.bestSolution[:] = self.trialSolution
-
-        # log bestSolution and bestEnergy (includes penalty)
-        self._stepmon(self.bestSolution[:], self.bestEnergy, id)
-        termination(self) #XXX: initialize termination conditions, if needed
+        # the initital optimization iteration
+        self.Step(costfunction)
+        # initialize termination conditions, if needed
+        termination(self)
         if callback is not None:
             callback(self.bestSolution)
          
-        # if SetEvaluationLimits not applied, use the solver default
-        if self._maxiter is None:
-            self._maxiter = self.nDim * self.nPop * 10  #XXX: better defaults?
-        if self._maxfun is None:
-            self._maxfun = self.nDim * self.nPop * 1000 #XXX: better defaults?
+        # impose the evaluation limits
+        self._SetEvaluationLimits()
 
+        # the main optimization loop
         while not self._terminated(termination) and not self._EARLYEXIT:
-            for candidate in range(self.nPop):
-                # generate trialSolution (within valid range)
-                strategy(self, candidate)
-                # apply constraints
-                self.trialSolution[:] = self._constraints(self.trialSolution)
-                # apply penalty
-               #trialEnergy = self._penalty(self.trialSolution)
-                # calculate cost
-                trialEnergy = costfunction(self.trialSolution)
-
-                if trialEnergy < self.popEnergy[candidate]:
-                    # New low for this candidate
-                    self.popEnergy[candidate] = trialEnergy
-                    self.population[candidate][:] = self.trialSolution
-                    self.UpdateGenealogyRecords(candidate, self.trialSolution[:])
-
-                    # Check if all-time low
-                    if trialEnergy < self.bestEnergy:
-                        self.bestEnergy = trialEnergy
-                        self.bestSolution[:] = self.trialSolution
-
-            # log bestSolution and bestEnergy (includes penalty)
-            self._stepmon(self.bestSolution[:], self.bestEnergy, id)
+            self.Step(costfunction, strategy=strategy)
             if callback is not None:
                 callback(self.bestSolution)
 
+        # handle signal interrupts
         signal.signal(signal.SIGINT,signal.default_int_handler)
 
         # log any termination messages
@@ -370,6 +378,102 @@ are logged.
         self.genealogy[id].append(newchild)
         return
 
+    def _SetEvaluationLimits(self, iterscale=None, evalscale=None):
+        """set the evaluation limits"""
+        if iterscale is None: iterscale = 10
+        if evalscale is None: evalscale = 1000
+        # if SetEvaluationLimits not applied, use the solver default
+        if self._maxiter is None:
+            self._maxiter = self.nDim * self.nPop * iterscale
+        if self._maxfun is None:
+            self._maxfun = self.nDim * self.nPop * evalscale
+        return
+
+    def _Decorate(self, costfunction, ExtraArgs=None):
+        """decorate cost function with bounds, penalties, monitors, etc"""
+       #FIXME: EvaluationMonitor fails for MPI, throws error for 'pp'
+        from python_map import python_map
+        if self._map != python_map:
+            self._fcalls = [0] #FIXME: temporary patch for removing the following line
+        else:
+            self._fcalls, costfunction = wrap_function(costfunction, ExtraArgs, self._evalmon)
+        if self._useStrictRange:
+            for i in range(self.nPop):
+                self.population[i] = self._clipGuessWithinRangeBoundary(self.population[i])
+            costfunction = wrap_bounds(costfunction, self._strictMin, self._strictMax)
+        costfunction = wrap_penalty(costfunction, self._penalty)
+        return costfunction
+
+    def Step(self, costfunction, strategy=None):
+        """perform a single optimization iteration"""
+        if not self.generations: # this is the first iteration
+            self.population[0] = asfarray(self.population[0])
+            # decouple bestSolution from population and bestEnergy from popEnergy
+            self.bestSolution = self.population[0]
+            self.bestEnergy = self.popEnergy[0]
+
+        for candidate in range(self.nPop):
+            if not self.generations:
+                # generate trialSolution (within valid range)
+                self.trialSolution[candidate][:] = self.population[candidate]
+            if strategy:
+                # generate trialSolution (within valid range)
+                strategy(self, candidate)
+            # apply constraints
+            self.trialSolution[candidate][:] = self._constraints(self.trialSolution[candidate])
+
+        mapconfig = dict(nnodes=self._nnodes, launcher=self._launcher, \
+                         mapper=self._mapper, queue=self._queue, \
+                         timelimit=self._timelimit, scheduler=self._scheduler, \
+                         ncpus=self._ncpus, servers=self._servers)
+
+        # apply penalty
+       #trialEnergy = map(self._penalty, self.trialSolution)#, **mapconfig)
+        # calculate cost
+        trialEnergy = self._map(costfunction, self.trialSolution, **mapconfig)
+
+        for candidate in range(self.nPop):
+            if trialEnergy[candidate] < self.popEnergy[candidate]:
+                # New low for this candidate
+                self.popEnergy[candidate] = trialEnergy[candidate]
+                self.population[candidate][:] = self.trialSolution[candidate]
+                self.UpdateGenealogyRecords(candidate, self.trialSolution[candidate][:])
+
+                # Check if all-time low
+                if trialEnergy[candidate] < self.bestEnergy:
+                    self.bestEnergy = trialEnergy[candidate]
+                    self.bestSolution[:] = self.trialSolution[candidate]
+
+        # log bestSolution and bestEnergy (includes penalty)
+       #FIXME: StepMonitor works for 'pp'?
+        self._stepmon(self.bestSolution[:], self.bestEnergy, self.id)
+        return
+
+    def _process_inputs(self, kwds):
+        """process and activate input settings"""
+        #allow for inputs that don't conform to AbstractSolver interface
+        from mystic.strategy import Best1Bin
+        strategy=Best1Bin    #mutation strategy (see mystic.strategy)
+        callback=None        #user-supplied function, called after each step
+        disp=0               #non-zero to print convergence messages
+        probability=0.9      #potential for parameter cross-mutation
+        scale=0.8            #multiplier for mutation impact
+        if not kwds.has_key('strategy'): kwds['strategy'] = strategy
+        if not kwds.has_key('callback'): kwds['callback'] = callback
+        if not kwds.has_key('disp'): kwds['disp'] = disp
+        self.probability = kwds.pop('CrossProbability', probability)
+        self.scale = kwds.pop('ScalingFactor', scale)
+        # backward compatibility
+        if kwds.has_key('EvaluationMonitor'): \
+           self.SetEvaluationMonitor(kwds.pop('EvaluationMonitor'))
+        if kwds.has_key('StepMonitor'): \
+           self.SetGenerationMonitor(kwds.pop('StepMonitor'))
+        if kwds.has_key('penalty'): \
+           self.SetPenalty(kwds.pop('penalty'))
+        if kwds.has_key('constraints'): \
+           self.SetConstraints(kwds.pop('constraints'))
+        return kwds
+
     def Solve(self, costfunction, termination, sigint_callback=None,
                                                ExtraArgs=(), **kwds):
         """Minimize a function using differential evolution.
@@ -403,137 +507,39 @@ Further Inputs:
         the current parameter vector.  [default = None]
     disp -- non-zero to print convergence messages.
         """
-        #allow for inputs that don't conform to AbstractSolver interface
-        self.population[0] = asfarray(self.population[0])
-        from mystic.strategy import Best1Bin
-        strategy=Best1Bin    #mutation strategy (see mystic.strategy)
-        CrossProbability=0.9 #potential for parameter cross-mutation
-        ScalingFactor=0.8    #multiplier for mutation impact
-        callback=None        #user-supplied function, called after each step
-        disp=0               #non-zero to print convergence messages
-        if kwds.has_key('strategy'): strategy = kwds['strategy']
-        if kwds.has_key('CrossProbability'): \
-           CrossProbability = kwds['CrossProbability']
-        if kwds.has_key('ScalingFactor'): ScalingFactor = kwds['ScalingFactor']
-        if kwds.has_key('callback'): callback = kwds['callback']
-        if kwds.has_key('disp'): disp = kwds['disp']
-        # backward compatibility
-        if kwds.has_key('EvaluationMonitor'): \
-           self.SetEvaluationMonitor(kwds['EvaluationMonitor'])
-        if kwds.has_key('StepMonitor'): \
-           self.SetGenerationMonitor(kwds['StepMonitor'])
-        if kwds.has_key('penalty'): \
-           self.SetPenalty(kwds['penalty'])
-        if kwds.has_key('constraints'): \
-           self.SetConstraints(kwds['constraints'])
-        #-------------------------------------------------------------
+        # process and activate input settings
+        settings = {}
+        settings.update(self._process_inputs(kwds))
+        disp = settings['disp']
+        callback = settings['callback']
+        strategy = settings['strategy'] #XXX: specific to diffev* ?
 
+        # set up signal handler
         import signal
         self._EARLYEXIT = False
-
-       #FIXME: EvaluationMonitor fails for MPI, throws error for 'pp'
-        from python_map import python_map
-        if self._map != python_map:
-            self._fcalls = [0] #FIXME: temporary patch for removing the following line
-        else:
-            self._fcalls, costfunction = wrap_function(costfunction, ExtraArgs, self._evalmon)
-        if self._useStrictRange:
-            for i in range(self.nPop):
-                self.population[i] = self._clipGuessWithinRangeBoundary(self.population[i])
-            costfunction = wrap_bounds(costfunction, self._strictMin, self._strictMax)
-        costfunction = wrap_penalty(costfunction, self._penalty)
-
-        #generate signal_handler
         self._generateHandler(sigint_callback) 
         if self._handle_sigint: signal.signal(signal.SIGINT, self.signal_handler)
 
-        id = self.id
-        self.probability = CrossProbability
-        self.scale = ScalingFactor
+        # decorate cost function with bounds, penalties, monitors, etc
+        costfunction = self._Decorate(costfunction, ExtraArgs)
 
-        # break link between population and popEnergy
-        self.bestSolution = self.population[0]
-        self.bestEnergy = self.popEnergy[0]
-
-        trialPop = [[0.0 for i in range(self.nDim)] for j in range(self.nPop)]
-        #set initial solution and energy by running a single iteration
-        for candidate in range(self.nPop):
-            # generate trialSolution (within valid range)
-            self.trialSolution[:] = self.population[candidate]
-            # apply constraints
-            self.trialSolution[:] = self._constraints(self.trialSolution)
-            trialPop[candidate][:] = self.trialSolution
-
-        mapconfig = dict(nnodes=self._nnodes, launcher=self._launcher, \
-                         mapper=self._mapper, queue=self._queue, \
-                         timelimit=self._timelimit, scheduler=self._scheduler, \
-                         ncpus=self._ncpus, servers=self._servers)
-        # apply penalty
-       #trialEnergy = map(self._penalty, trialPop)#, **mapconfig)
-        # calculate cost
-        trialEnergy = self._map(costfunction, trialPop, **mapconfig)
-
-        for candidate in range(self.nPop):
-            if trialEnergy[candidate] < self.popEnergy[candidate]:
-                # New low for this candidate
-                self.popEnergy[candidate] = trialEnergy[candidate]
-                self.population[candidate][:] = trialPop[candidate]
-                self.UpdateGenealogyRecords(candidate, trialPop[candidate][:])
-
-                # Check if all-time low
-                if trialEnergy[candidate] < self.bestEnergy:
-                    self.bestEnergy = trialEnergy[candidate]
-                    self.bestSolution[:] = trialPop[candidate]
-
-        # log bestSolution and bestEnergy (includes penalty)
-       #FIXME: StepMonitor works for 'pp'?
-        self._stepmon(self.bestSolution[:], self.bestEnergy, id)
-        termination(self) #XXX: initialize termination conditions, if needed
+        # the initital optimization iteration
+        self.Step(costfunction)
+        # initialize termination conditions, if needed
+        termination(self)
         if callback is not None:
             callback(self.bestSolution)
          
-        # if SetEvaluationLimits not applied, use the solver default
-        if self._maxiter is None:
-            self._maxiter = self.nDim * self.nPop * 10  #XXX: better defaults?
-        if self._maxfun is None:
-            self._maxfun = self.nDim * self.nPop * 1000 #XXX: better defaults?
+        # impose the evaluation limits
+        self._SetEvaluationLimits()
 
+        # the main optimization loop
         while not self._terminated(termination) and not self._EARLYEXIT:
-            for candidate in range(self.nPop):
-                # generate trialSolution (within valid range)
-                strategy(self, candidate)
-                # apply constraints
-                self.trialSolution[:] = self._constraints(self.trialSolution)
-                trialPop[candidate][:] = self.trialSolution
-
-            # apply penalty
-           #trialEnergy = map(self._penalty, trialPop)#, **mapconfig)
-            # calculate cost
-            trialEnergy = self._map(costfunction, trialPop, **mapconfig)
-           ##XXX:[HACK] return trialPop b/c may be altered by constraints
-           #trials = map(costfunction, trialPop)
-           #trialEnergy = [i for i,j in trials]
-           #trialPop = [j for i,j in trials] #FIXME: breaks on inf (out of bounds)
-           ##XXX:[HACK] -end-
-
-            for candidate in range(self.nPop):
-                if trialEnergy[candidate] < self.popEnergy[candidate]:
-                    # New low for this candidate
-                    self.popEnergy[candidate] = trialEnergy[candidate]
-                    self.population[candidate][:] = trialPop[candidate]
-                    self.UpdateGenealogyRecords(candidate, trialPop[candidate][:])
-
-                    # Check if all-time low
-                    if trialEnergy[candidate] < self.bestEnergy:
-                        self.bestEnergy = trialEnergy[candidate]
-                        self.bestSolution[:] = trialPop[candidate]
-
-            # log bestSolution and bestEnergy (includes penalty)
-           #FIXME: StepMonitor works for 'pp'?
-            self._stepmon(self.bestSolution[:], self.bestEnergy, id)
+            self.Step(costfunction, strategy=strategy)
             if callback is not None:
                 callback(self.bestSolution)
 
+        # handle signal interrupts
         signal.signal(signal.SIGINT,signal.default_int_handler)
 
         # log any termination messages

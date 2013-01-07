@@ -112,6 +112,7 @@ Important class members:
         self.popEnergy	      = [self._init_popEnergy] * NP
         self.population	      = [[0.0 for i in range(dim)] for j in range(NP)]
         self.trialSolution    = [0.0] * dim
+        self._map_solver      = False
         self._bestEnergy      = None
         self._bestSolution    = None
 
