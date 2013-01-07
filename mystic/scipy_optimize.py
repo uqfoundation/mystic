@@ -8,7 +8,7 @@
 #
 # adapted from function to class (& added bounds)
 # adapted scipy.optimize.fmin_powell
-# updated solvers to scipy version 0.6.0
+# updated solvers to scipy version 0.9.0
 # by mmckerns@caltech.edu
 
 """
@@ -84,8 +84,8 @@ The size of the simplex is dim+1.
         simplex = dim+1
         #XXX: cleaner to set npop=simplex, and use 'population' as simplex
         AbstractSolver.__init__(self,dim) #,npop=simplex)
-        self.popEnergy	   = [0.0] * simplex
-        self.population	   = [[0.0 for i in range(dim)] for j in range(simplex)]
+        self.popEnergy.append(self._init_popEnergy)
+        self.population.append([0.0 for i in range(dim)])
 
     def _setSimplexWithinRangeBoundary(self, x0, radius): #XXX: use population?
         """ensure that initial simplex is set within bounds
@@ -230,11 +230,9 @@ Further Inputs:
         sim = numpy.take(sim,ind,0)
         self.bestSolution = sim[0]
         self.bestEnergy = fsim[0]
-        self.population = sim
-        self.popEnergy = fsim
+        self.population = sim # bestSolution = sim[0]
+        self.popEnergy = fsim # bestEnergy = fsim[0]
         self._stepmon(sim[0], fsim[0], id) # sim = all; "best" is sim[0]
-
-        self.generations = 1
 
         while not self._terminated(termination) and not self._EARLYEXIT:
             # apply constraints  #XXX: is this the only appropriate place???
@@ -291,12 +289,11 @@ Further Inputs:
             fsim = numpy.take(fsim,ind,0)
             if callback is not None:
                 callback(sim[0])
-            self.generations += 1
 
             self.bestSolution = sim[0]
             self.bestEnergy = fsim[0]
-            self.population = sim
-            self.popEnergy = fsim
+            self.population = sim # bestSolution = sim[0]
+            self.popEnergy = fsim # bestEnergy = fsim[0]
             self._stepmon(sim[0], fsim[0],id) # sim = all; "best" is sim[0]
 
         signal.signal(signal.SIGINT,signal.default_int_handler)
@@ -484,7 +481,6 @@ Further Inputs:
     disp -- non-zero to print convergence messages.
 
 """
-
         # set arg names to scipy.optimize.fmin_powell names; set fixed inputs
         x0 = self.population[0]
         args = ExtraArgs
@@ -538,15 +534,13 @@ Further Inputs:
             direc = asarray(direc, dtype=float)
         fval = squeeze(func(x))
         x1 = x.copy()
+        ilist = range(N)
 
-        self._direc = direc #XXX: instead, use a monitor?
+        self._direc = direc
         self.bestSolution = x
         self.bestEnergy = fval
-        self.population[0] = self.bestSolution
-        self.popEnergy[0] = self.bestEnergy
-
-        self.generations = 0;
-        ilist = range(N)
+        self.population[0] = x   # bestSolution
+        self.popEnergy[0] = fval # bestEnergy
 
         # if SetEvaluationLimits not applied, use the solver default
         if self._maxiter is None: self._maxiter = N*1000
@@ -570,11 +564,11 @@ Further Inputs:
             # apply constraints
             x = asfarray(self._constraints(x))
 
-        self.generations += 1
         if callback is not None:
             callback(x)
 
-        self.energy_history += fval  #XXX: the 'best' for now...
+        # decouple from 'best' energy
+        self.energy_history = self.energy_history + [fval]
 
         while not self._terminated(termination) and not self._EARLYEXIT:
             # Construct the extrapolated point
@@ -596,13 +590,13 @@ Further Inputs:
 
            #        x = asfarray(self._constraints(x))
 
-            self._direc = direc #XXX: instead, use a monitor?
+            self._direc = direc
             self.bestSolution = x
             self.bestEnergy = fval
-            self.population[0] = x    #XXX: pointless
-            self.popEnergy[0] = fval  #XXX: pointless
+            self.population[0] = x   # bestSolution
+            self.popEnergy[0] = fval # bestEnergy
             self._stepmon(x, fval, id) # get ith values
-            self.energy_history = self._stepmon.y # resync with 'best' energy
+            self.energy_history = None # resync with 'best' energy
 
             fx = fval
             bigind = 0
@@ -618,19 +612,19 @@ Further Inputs:
                 # apply constraints
                 x = asfarray(self._constraints(x))
 
-            self.generations += 1
             if callback is not None:
                 callback(x)
 
-            self.energy_history += fval  #XXX: the 'best' for now...
+            # decouple from 'best' energy
+            self.energy_history = self.energy_history + [fval]
         else:
-            self._direc = direc #XXX: instead, use a monitor?
+            self._direc = direc
             self.bestSolution = x
             self.bestEnergy = fval
-            self.population[0] = x    #XXX: pointless
-            self.popEnergy[0] = fval  #XXX: pointless
+            self.population[0] = x   # bestSolution
+            self.popEnergy[0] = fval # bestEnergy
             self._stepmon(x, fval, id) # get ith values
-            self.energy_history = self._stepmon.y # resync with 'best' energy
+            self.energy_history = None # resync with 'best' energy
     
         signal.signal(signal.SIGINT,signal.default_int_handler)
 
@@ -716,7 +710,7 @@ Returns: (xopt, {fopt, iter, funcalls, warnflag, direc}, {allvecs})
     if kwds.has_key('evalmon'):
         evalmon = kwds['evalmon']
 
-    gtol = 10 # termination generations
+    gtol = 2 # termination generations (scipy: 2, default: 10)
     if kwds.has_key('gtol'):
         gtol = kwds['gtol']
     if gtol: #if number of generations is provided, use NCOG
@@ -755,7 +749,7 @@ Returns: (xopt, {fopt, iter, funcalls, warnflag, direc}, {allvecs})
     fcalls = solver.evaluations
     iterations = solver.generations
     allvecs = stepmon.x
-    direc = solver._direc #XXX: need better way to return direc ?
+    direc = solver._direc
 
     if fcalls >= solver._maxfun:
         warnflag = 1

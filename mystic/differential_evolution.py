@@ -219,7 +219,6 @@ Further Inputs:
         iteration.  It is called as callback(xk), where xk is
         the current parameter vector.  [default = None]
     disp -- non-zero to print convergence messages.
-
         """
         #allow for inputs that don't conform to AbstractSolver interface
         from mystic.strategy import Best1Bin
@@ -263,9 +262,11 @@ Further Inputs:
         self.probability = CrossProbability
         self.scale = ScalingFactor
 
-        #set initial solution and energy by running a single iteration
+        # break link between population and popEnergy
         self.bestSolution = self.population[0][:]
         self.bestEnergy = self.popEnergy[0]
+
+        #set initial solution and energy by running a single iteration
         for candidate in range(self.nPop):
             # generate trialSolution (within valid range)
             self.trialSolution[:] = self.population[candidate][:]
@@ -289,7 +290,6 @@ Further Inputs:
 
         # log bestSolution and bestEnergy (includes penalty)
         self._stepmon(self.bestSolution[:], self.bestEnergy, id)
-        self.generations = 0 #XXX: above currently *not* counted as an iteration
         termination(self) #XXX: initialize termination conditions, if needed
         if callback is not None:
             callback(self.bestSolution)
@@ -324,7 +324,6 @@ Further Inputs:
 
             # log bestSolution and bestEnergy (includes penalty)
             self._stepmon(self.bestSolution[:], self.bestEnergy, id)
-            self.generations += 1
             if callback is not None:
                 callback(self.bestSolution)
 
@@ -448,10 +447,12 @@ Further Inputs:
         self.probability = CrossProbability
         self.scale = ScalingFactor
 
-        #set initial solution and energy by running a single iteration
+        # break link between population and popEnergy
         self.bestSolution = self.population[0][:]
         self.bestEnergy = self.popEnergy[0]
+
         trialPop = [[0.0 for i in range(self.nDim)] for j in range(self.nPop)]
+        #set initial solution and energy by running a single iteration
         for candidate in range(self.nPop):
             # generate trialSolution (within valid range)
             self.trialSolution[:] = self.population[candidate][:]
@@ -484,7 +485,6 @@ Further Inputs:
        #FIXME: StepMonitor works for 'pp'?
         self._stepmon(self.bestSolution[:], self.bestEnergy, id)
         termination(self) #XXX: initialize termination conditions, if needed
-        self.generations = 0  #XXX: above currently *not* counted as an iteration
         if callback is not None:
             callback(self.bestSolution)
          
@@ -527,7 +527,6 @@ Further Inputs:
             # log bestSolution and bestEnergy (includes penalty)
            #FIXME: StepMonitor works for 'pp'?
             self._stepmon(self.bestSolution[:], self.bestEnergy, id)
-            self.generations += 1
             if callback is not None:
                 callback(self.bestSolution)
 

@@ -106,20 +106,16 @@ Important class members:
         NP = 1
         if kwds.has_key('npop'): NP = kwds['npop']
 
-        self._fcalls          = [0]
         self.nDim             = dim
         self.nPop             = NP
-        self.generations      = 0
-        self.bestEnergy       = 0.0
-        self.bestSolution     = [0.0] * dim
-        self.trialSolution    = [0.0] * dim
-        self.id               = None     # identifier (use like "rank" for MPI)
-
         self._init_popEnergy  = inf
         self.popEnergy	      = [self._init_popEnergy] * NP
         self.population	      = [[0.0 for i in range(dim)] for j in range(NP)]
-        self.signal_handler   = None
+        self.trialSolution    = [0.0] * dim
+        self._bestEnergy      = None
+        self._bestSolution    = None
 
+        self.signal_handler   = None
         self._handle_sigint   = False
         self._useStrictRange  = False
         self._defaultMin      = [-1e3] * dim
@@ -132,8 +128,10 @@ Important class members:
         from mystic.monitors import Null, Monitor
         self._evalmon         = Null()
         self._stepmon         = Monitor()
-        self.energy_history   = self._stepmon.y
-        self.solution_history = self._stepmon.x
+        self._fcalls          = [0]
+        self._energy_history  = None
+        self._solution_history= None
+        self.id               = None     # identifier (use like "rank" for MPI)
 
         self._constraints     = lambda x: x
         self._penalty         = lambda x: 0.0
@@ -149,6 +147,51 @@ Important class members:
     def __evaluations(self):
         """get the number of function calls"""
         return self._fcalls[0]
+
+    def __generations(self):
+        """get the number of iterations"""
+        return max(0,len(self.energy_history)-1)
+       #return max(0,len(self._stepmon)-1)
+
+    def __energy_history(self):
+        """get the energy_history (default: energy_history = _stepmon.y)"""
+        if self._energy_history is None: return self._stepmon.y
+        return self._energy_history
+
+    def __set_energy_history(self, energy):
+        """set the energy_history (energy=None will sync with _stepmon.y)"""
+        self._energy_history = energy
+        return
+
+    def __solution_history(self):
+        """get the solution_history (default: solution_history = _stepmon.x)"""
+        if self._solution_history is None: return self._stepmon.x
+        return self._solution_history
+
+    def __set_solution_history(self, params):
+        """set the solution_history (params=None will sync with _stepmon.x)"""
+        self._solution_history = params
+        return
+
+    def __bestSolution(self):
+        """get the bestSolution (default: bestSolution = population[0])"""
+        if self._bestSolution is None: return self.population[0]
+        return self._bestSolution
+
+    def __set_bestSolution(self, params):
+        """set the bestSolution (params=None will sync with population[0])"""
+        self._bestSolution = params
+        return
+
+    def __bestEnergy(self):
+        """get the bestEnergy (default: bestEnergy = popEnergy[0])"""
+        if self._bestEnergy is None: return self.popEnergy[0]
+        return self._bestEnergy
+
+    def __set_bestEnergy(self, energy):
+        """set the bestEnergy (energy=None will sync with popEnergy[0])"""
+        self._bestEnergy = energy
+        return
 
     def SetPenalty(self, penalty):
         """apply a penalty function to the optimization
@@ -279,7 +322,7 @@ input::
         max[max==0] = asarray([radius for i in range(numzeros)])
         self.SetRandomInitialPoints(min,max)
         #stick initial values in population[i], i=0
-        self.population[0] = x0
+        self.population[0] = x0 #FIXME: 0 is array, 1: is list
     
     def SetRandomInitialPoints(self, min=None, max=None):
         """Generate Random Initial Points within given Bounds
@@ -299,8 +342,8 @@ input::
             if max[i] == None: max[i] = self._defaultMax[0]
         import random
         #generate random initial values
-        for i in range(self.nPop):
-            for j in range(self.nDim):
+        for i in range(len(self.population)):
+            for j in range(self.nDim): #FIXME: 0: are lists
                 self.population[i][j] = random.uniform(min[j],max[j])
 
     def SetMultinormalInitialPoints(self, mean, var = None):
@@ -324,7 +367,7 @@ input::
                 pass
             else:
                 var = var * numpy.eye(self.nDim)
-        for i in range(self.nPop):
+        for i in range(len(self.population)): #FIXME: 0: are lists
             self.population[i] = multivariate_normal(mean, var).tolist()
         return
 
@@ -428,6 +471,11 @@ input::
 
     # extensions to the solver interface
     evaluations = property(__evaluations )
+    generations = property(__generations )
+    energy_history = property(__energy_history,__set_energy_history )
+    solution_history = property(__solution_history,__set_solution_history )
+    bestEnergy = property(__bestEnergy,__set_bestEnergy )
+    bestSolution = property(__bestSolution,__set_bestSolution )
     pass
 
 
