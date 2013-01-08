@@ -252,26 +252,25 @@ are logged.
         """process and activate input settings"""
         #allow for inputs that don't conform to AbstractSolver interface
         from mystic.strategy import Best1Bin
-        strategy=Best1Bin    #mutation strategy (see mystic.strategy)
-        callback=None        #user-supplied function, called after each step
-        disp=0               #non-zero to print convergence messages
+        settings = \
+       {'callback':None,     #user-supplied function, called after each step
+        'disp':0,            #non-zero to print convergence messages
+        'strategy':Best1Bin} #mutation strategy (see mystic.strategy)
         probability=0.9      #potential for parameter cross-mutation
         scale=0.8            #multiplier for mutation impact
-        if not kwds.has_key('strategy'): kwds['strategy'] = strategy
-        if not kwds.has_key('callback'): kwds['callback'] = callback
-        if not kwds.has_key('disp'): kwds['disp'] = disp
-        self.probability = kwds.pop('CrossProbability', probability)
-        self.scale = kwds.pop('ScalingFactor', scale)
+        [settings.update({i:j}) for (i,j) in kwds.items() if i in settings]
+        self.probability = kwds.get('CrossProbability', probability)
+        self.scale = kwds.get('ScalingFactor', scale)
         # backward compatibility
         if kwds.has_key('EvaluationMonitor'): \
-           self.SetEvaluationMonitor(kwds.pop('EvaluationMonitor'))
+           self.SetEvaluationMonitor(kwds.get('EvaluationMonitor'))
         if kwds.has_key('StepMonitor'): \
-           self.SetGenerationMonitor(kwds.pop('StepMonitor'))
+           self.SetGenerationMonitor(kwds.get('StepMonitor'))
         if kwds.has_key('penalty'): \
-           self.SetPenalty(kwds.pop('penalty'))
+           self.SetPenalty(kwds.get('penalty'))
         if kwds.has_key('constraints'): \
-           self.SetConstraints(kwds.pop('constraints'))
-        return kwds
+           self.SetConstraints(kwds.get('constraints'))
+        return settings
 
     def Solve(self, cost, termination, sigint_callback=None,
                                                ExtraArgs=(), **kwds):
@@ -306,11 +305,9 @@ Further Inputs:
     disp -- non-zero to print convergence messages.
         """
         # process and activate input settings
-        settings = {}
-        settings.update(self._process_inputs(kwds))
-        disp = settings['disp']
-        callback = settings['callback']
-        strategy = settings['strategy'] #XXX: specific to diffev* ?
+        settings = self._process_inputs(kwds)
+        for key in settings:
+            exec "%s = settings['%s']" % (key,key)
 
         # set up signal handler
         import signal
@@ -453,26 +450,25 @@ are logged.
         """process and activate input settings"""
         #allow for inputs that don't conform to AbstractSolver interface
         from mystic.strategy import Best1Bin
-        strategy=Best1Bin    #mutation strategy (see mystic.strategy)
-        callback=None        #user-supplied function, called after each step
-        disp=0               #non-zero to print convergence messages
+        settings = \
+       {'callback':None,     #user-supplied function, called after each step
+        'disp':0,            #non-zero to print convergence messages
+        'strategy':Best1Bin} #mutation strategy (see mystic.strategy)
         probability=0.9      #potential for parameter cross-mutation
         scale=0.8            #multiplier for mutation impact
-        if not kwds.has_key('strategy'): kwds['strategy'] = strategy
-        if not kwds.has_key('callback'): kwds['callback'] = callback
-        if not kwds.has_key('disp'): kwds['disp'] = disp
-        self.probability = kwds.pop('CrossProbability', probability)
-        self.scale = kwds.pop('ScalingFactor', scale)
+        [settings.update({i:j}) for (i,j) in kwds.items() if i in settings]
+        self.probability = kwds.get('CrossProbability', probability)
+        self.scale = kwds.get('ScalingFactor', scale)
         # backward compatibility
         if kwds.has_key('EvaluationMonitor'): \
-           self.SetEvaluationMonitor(kwds.pop('EvaluationMonitor'))
+           self.SetEvaluationMonitor(kwds.get('EvaluationMonitor'))
         if kwds.has_key('StepMonitor'): \
-           self.SetGenerationMonitor(kwds.pop('StepMonitor'))
+           self.SetGenerationMonitor(kwds.get('StepMonitor'))
         if kwds.has_key('penalty'): \
-           self.SetPenalty(kwds.pop('penalty'))
+           self.SetPenalty(kwds.get('penalty'))
         if kwds.has_key('constraints'): \
-           self.SetConstraints(kwds.pop('constraints'))
-        return kwds
+           self.SetConstraints(kwds.get('constraints'))
+        return settings
 
     def Solve(self, cost, termination, sigint_callback=None,
                                                ExtraArgs=(), **kwds):
@@ -508,11 +504,9 @@ Further Inputs:
     disp -- non-zero to print convergence messages.
         """
         # process and activate input settings
-        settings = {}
-        settings.update(self._process_inputs(kwds))
-        disp = settings['disp']
-        callback = settings['callback']
-        strategy = settings['strategy'] #XXX: specific to diffev* ?
+        settings = self._process_inputs(kwds)
+        for key in settings:
+            exec "%s = settings['%s']" % (key,key)
 
         # set up signal handler
         import signal

@@ -254,22 +254,21 @@ The size of the simplex is dim+1.
     def _process_inputs(self, kwds):
         """process and activate input settings"""
         #allow for inputs that don't conform to AbstractSolver interface
-        callback=None        #user-supplied function, called after each step
-        disp=0               #non-zero to print convergence messages
-        radius=0.05          #percentage change for initial simplex values
-        if not kwds.has_key('callback'): kwds['callback'] = callback
-        if not kwds.has_key('disp'): kwds['disp'] = disp
-        if not kwds.has_key('radius'): kwds['radius'] = radius
+        settings = \
+       {'callback':None,     #user-supplied function, called after each step
+        'disp':0,            #non-zero to print convergence messages
+        'radius':0.05}       #percentage change for initial simplex values
+        [settings.update({i:j}) for (i,j) in kwds.items() if i in settings]
         # backward compatibility
         if kwds.has_key('EvaluationMonitor'): \
-           self.SetEvaluationMonitor(kwds.pop('EvaluationMonitor'))
+           self.SetEvaluationMonitor(kwds.get('EvaluationMonitor'))
         if kwds.has_key('StepMonitor'): \
-           self.SetGenerationMonitor(kwds.pop('StepMonitor'))
+           self.SetGenerationMonitor(kwds.get('StepMonitor'))
         if kwds.has_key('penalty'): \
-           self.SetPenalty(kwds.pop('penalty'))
+           self.SetPenalty(kwds.get('penalty'))
         if kwds.has_key('constraints'): \
-           self.SetConstraints(kwds.pop('constraints'))
-        return kwds
+           self.SetConstraints(kwds.get('constraints'))
+        return settings
 
     def Solve(self, cost, termination, sigint_callback=None,
                                        ExtraArgs=(), **kwds):
@@ -300,11 +299,9 @@ Further Inputs:
 
 """
         # process and activate input settings
-        settings = {}
-        settings.update(self._process_inputs(kwds))
-        disp = settings['disp']
-        callback = settings['callback']
-        radius = settings['radius'] #XXX: specific to simplex?
+        settings = self._process_inputs(kwds)
+        for key in settings:
+            exec "%s = settings['%s']" % (key,key)
 
         # set up signal handler
         import signal
@@ -517,24 +514,22 @@ Takes one initial input:
     def _process_inputs(self, kwds):
         """process and activate input settings"""
         #allow for inputs that don't conform to AbstractSolver interface
-        callback=None        #user-supplied function, called after each step
-        disp=0               #non-zero to print convergence messages
-        xtol=1e-4            #line-search error tolerance
-        direc=None
-        if not kwds.has_key('callback'): kwds['callback'] = callback
-        if not kwds.has_key('disp'): kwds['disp'] = disp
-        if not kwds.has_key('xtol'): kwds['xtol'] = xtol
-        if not kwds.has_key('direc'): kwds['direc'] = direc
+        settings = \
+       {'callback':None,     #user-supplied function, called after each step
+        'disp':0,            #non-zero to print convergence messages
+        'xtol':1e-4,         #line-search error tolerance
+        'direc':None}
+        [settings.update({i:j}) for (i,j) in kwds.items() if i in settings]
         # backward compatibility
         if kwds.has_key('EvaluationMonitor'): \
-           self.SetEvaluationMonitor(kwds.pop('EvaluationMonitor'))
+           self.SetEvaluationMonitor(kwds.get('EvaluationMonitor'))
         if kwds.has_key('StepMonitor'): \
-           self.SetGenerationMonitor(kwds.pop('StepMonitor'))
+           self.SetGenerationMonitor(kwds.get('StepMonitor'))
         if kwds.has_key('penalty'): \
-           self.SetPenalty(kwds.pop('penalty'))
+           self.SetPenalty(kwds.get('penalty'))
         if kwds.has_key('constraints'): \
-           self.SetConstraints(kwds.pop('constraints'))
-        return kwds
+           self.SetConstraints(kwds.get('constraints'))
+        return settings
 
     def Solve(self, cost, termination, sigint_callback=None,
                                        ExtraArgs=(), **kwds):
@@ -566,12 +561,9 @@ Further Inputs:
 
 """
         # process and activate input settings
-        settings = {}
-        settings.update(self._process_inputs(kwds))
-        disp = settings['disp']
-        callback = settings['callback']
-        xtol = settings['xtol']   #XXX: specific to powell?
-        direc = settings['direc'] #XXX: specific to powell?
+        settings = self._process_inputs(kwds)
+        for key in settings:
+            exec "%s = settings['%s']" % (key,key)
 
         # set up signal handler
         import signal
