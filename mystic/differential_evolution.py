@@ -201,26 +201,26 @@ are logged.
             self._maxfun = self.nDim * self.nPop * evalscale
         return
 
-    def _Decorate(self, costfunction, ExtraArgs=None):
+    def _Decorate(self, cost, ExtraArgs=None):
         """decorate cost function with bounds, penalties, monitors, etc"""
-        self._fcalls, costfunction = wrap_function(costfunction, ExtraArgs, self._evalmon)
+        self._fcalls, cost = wrap_function(cost, ExtraArgs, self._evalmon)
         if self._useStrictRange:
             for i in range(self.nPop):
                 self.population[i] = self._clipGuessWithinRangeBoundary(self.population[i])
-            costfunction = wrap_bounds(costfunction, self._strictMin, self._strictMax)
-        costfunction = wrap_penalty(costfunction, self._penalty)
-        return costfunction
+            cost = wrap_bounds(cost, self._strictMin, self._strictMax)
+        cost = wrap_penalty(cost, self._penalty)
+        return cost
 
-    def Step(self, costfunction, strategy=None):
+    def Step(self, cost, strategy=None):
         """perform a single optimization iteration"""
-        if not self.generations: # this is the first iteration
+        if not len(self._stepmon): # do generation = 0
             self.population[0] = asfarray(self.population[0])
             # decouple bestSolution from population and bestEnergy from popEnergy
             self.bestSolution = self.population[0]
             self.bestEnergy = self.popEnergy[0]
 
         for candidate in range(self.nPop):
-            if not self.generations:
+            if not len(self._stepmon):
                 # generate trialSolution (within valid range)
                 self.trialSolution[:] = self.population[candidate]
             if strategy:
@@ -231,7 +231,7 @@ are logged.
             # apply penalty
            #trialEnergy = self._penalty(self.trialSolution)
             # calculate cost
-            trialEnergy = costfunction(self.trialSolution)
+            trialEnergy = cost(self.trialSolution)
 
             if trialEnergy < self.popEnergy[candidate]:
                 # New low for this candidate
@@ -273,7 +273,7 @@ are logged.
            self.SetConstraints(kwds.pop('constraints'))
         return kwds
 
-    def Solve(self, costfunction, termination, sigint_callback=None,
+    def Solve(self, cost, termination, sigint_callback=None,
                                                ExtraArgs=(), **kwds):
         """Minimize a function using differential evolution.
 
@@ -284,13 +284,13 @@ Description:
 
 Inputs:
 
-    costfunction -- the Python function or method to be minimized.
+    cost -- the Python function or method to be minimized.
     termination -- callable object providing termination conditions.
 
 Additional Inputs:
 
     sigint_callback -- callback function for signal handler.
-    ExtraArgs -- extra arguments for func.
+    ExtraArgs -- extra arguments for cost.
 
 Further Inputs:
 
@@ -319,10 +319,10 @@ Further Inputs:
         if self._handle_sigint: signal.signal(signal.SIGINT, self.signal_handler)
 
         # decorate cost function with bounds, penalties, monitors, etc
-        costfunction = self._Decorate(costfunction, ExtraArgs)
+        cost = self._Decorate(cost, ExtraArgs)
 
         # the initital optimization iteration
-        self.Step(costfunction)
+        self.Step(cost)
         # initialize termination conditions, if needed
         termination(self)
         if callback is not None:
@@ -333,7 +333,7 @@ Further Inputs:
 
         # the main optimization loop
         while not self._terminated(termination) and not self._EARLYEXIT:
-            self.Step(costfunction, strategy=strategy)
+            self.Step(cost, strategy=strategy)
             if callback is not None:
                 callback(self.bestSolution)
 
@@ -389,31 +389,31 @@ are logged.
             self._maxfun = self.nDim * self.nPop * evalscale
         return
 
-    def _Decorate(self, costfunction, ExtraArgs=None):
+    def _Decorate(self, cost, ExtraArgs=None):
         """decorate cost function with bounds, penalties, monitors, etc"""
        #FIXME: EvaluationMonitor fails for MPI, throws error for 'pp'
         from python_map import python_map
         if self._map != python_map:
             self._fcalls = [0] #FIXME: temporary patch for removing the following line
         else:
-            self._fcalls, costfunction = wrap_function(costfunction, ExtraArgs, self._evalmon)
+            self._fcalls, cost = wrap_function(cost, ExtraArgs, self._evalmon)
         if self._useStrictRange:
             for i in range(self.nPop):
                 self.population[i] = self._clipGuessWithinRangeBoundary(self.population[i])
-            costfunction = wrap_bounds(costfunction, self._strictMin, self._strictMax)
-        costfunction = wrap_penalty(costfunction, self._penalty)
-        return costfunction
+            cost = wrap_bounds(cost, self._strictMin, self._strictMax)
+        cost = wrap_penalty(cost, self._penalty)
+        return cost
 
-    def Step(self, costfunction, strategy=None):
+    def Step(self, cost, strategy=None):
         """perform a single optimization iteration"""
-        if not self.generations: # this is the first iteration
+        if not len(self._stepmon): # do generation = 0
             self.population[0] = asfarray(self.population[0])
             # decouple bestSolution from population and bestEnergy from popEnergy
             self.bestSolution = self.population[0]
             self.bestEnergy = self.popEnergy[0]
 
         for candidate in range(self.nPop):
-            if not self.generations:
+            if not len(self._stepmon):
                 # generate trialSolution (within valid range)
                 self.trialSolution[candidate][:] = self.population[candidate]
             if strategy:
@@ -430,7 +430,7 @@ are logged.
         # apply penalty
        #trialEnergy = map(self._penalty, self.trialSolution)#, **mapconfig)
         # calculate cost
-        trialEnergy = self._map(costfunction, self.trialSolution, **mapconfig)
+        trialEnergy = self._map(cost, self.trialSolution, **mapconfig)
 
         for candidate in range(self.nPop):
             if trialEnergy[candidate] < self.popEnergy[candidate]:
@@ -474,7 +474,7 @@ are logged.
            self.SetConstraints(kwds.pop('constraints'))
         return kwds
 
-    def Solve(self, costfunction, termination, sigint_callback=None,
+    def Solve(self, cost, termination, sigint_callback=None,
                                                ExtraArgs=(), **kwds):
         """Minimize a function using differential evolution.
 
@@ -486,13 +486,13 @@ Description:
 
 Inputs:
 
-    costfunction -- the Python function or method to be minimized.
+    cost -- the Python function or method to be minimized.
     termination -- callable object providing termination conditions.
 
 Additional Inputs:
 
     sigint_callback -- callback function for signal handler.
-    ExtraArgs -- extra arguments for func.
+    ExtraArgs -- extra arguments for cost.
 
 Further Inputs:
 
@@ -521,10 +521,10 @@ Further Inputs:
         if self._handle_sigint: signal.signal(signal.SIGINT, self.signal_handler)
 
         # decorate cost function with bounds, penalties, monitors, etc
-        costfunction = self._Decorate(costfunction, ExtraArgs)
+        cost = self._Decorate(cost, ExtraArgs)
 
         # the initital optimization iteration
-        self.Step(costfunction)
+        self.Step(cost)
         # initialize termination conditions, if needed
         termination(self)
         if callback is not None:
@@ -535,7 +535,7 @@ Further Inputs:
 
         # the main optimization loop
         while not self._terminated(termination) and not self._EARLYEXIT:
-            self.Step(costfunction, strategy=strategy)
+            self.Step(cost, strategy=strategy)
             if callback is not None:
                 callback(self.bestSolution)
 
@@ -548,7 +548,7 @@ Further Inputs:
         return 
 
 
-def diffev2(func,x0,npop,args=(),bounds=None,ftol=5e-3,gtol=None,
+def diffev2(cost,x0,npop,args=(),bounds=None,ftol=5e-3,gtol=None,
             maxiter=None,maxfun=None,cross=0.9,scale=0.8,
             full_output=0,disp=1,retall=0,callback=None,**kwds):
     """Minimize a function using Storn & Price's differential evolution.
@@ -561,7 +561,7 @@ Description:
 
 Inputs:
 
-    func -- the Python function or method to be minimized.
+    cost -- the Python function or method to be minimized.
     x0 -- the initial guess (ndarray), if desired to start from a
         set point; otherwise takes an array of (min,max) bounds,
         for when random initial points are desired
@@ -569,9 +569,9 @@ Inputs:
 
 Additional Inputs:
 
-    args -- extra arguments for func.
+    args -- extra arguments for cost.
     bounds -- list - n pairs of bounds (min,max), one pair for each parameter.
-    ftol -- number - acceptable relative error in func(xopt) for convergence.
+    ftol -- number - acceptable relative error in cost(xopt) for convergence.
     gtol -- number - maximum number of iterations to run without improvement.
     maxiter -- number - the maximum number of iterations to perform.
     maxfun -- number - the maximum number of function evaluations.
@@ -599,7 +599,7 @@ Additional Inputs:
 Returns: (xopt, {fopt, iter, funcalls, warnflag}, {allvecs})
 
     xopt -- ndarray - minimizer of function
-    fopt -- number - value of function at minimum: fopt = func(xopt)
+    fopt -- number - value of function at minimum: fopt = cost(xopt)
     iter -- number - number of iterations
     funcalls -- number - number of function calls
     warnflag -- number - Integer warning flag:
@@ -612,13 +612,13 @@ Returns: (xopt, {fopt, iter, funcalls, warnflag}, {allvecs})
     if kwds.has_key('invariant_current'):
         invariant_current = kwds['invariant_current']
     kwds['invariant_current'] = invariant_current
-    return diffev(func,x0,npop,args=args,bounds=bounds,ftol=ftol,gtol=gtol,
+    return diffev(cost,x0,npop,args=args,bounds=bounds,ftol=ftol,gtol=gtol,
                   maxiter=maxiter,maxfun=maxfun,cross=cross,scale=scale,
                   full_output=full_output,disp=disp,retall=retall,
                   callback=callback,**kwds)
 
 
-def diffev(func,x0,npop,args=(),bounds=None,ftol=5e-3,gtol=None,
+def diffev(cost,x0,npop,args=(),bounds=None,ftol=5e-3,gtol=None,
            maxiter=None,maxfun=None,cross=0.9,scale=0.8,
            full_output=0,disp=1,retall=0,callback=None,**kwds):
     """Minimize a function using differential evolution.
@@ -631,7 +631,7 @@ Description:
 
 Inputs:
 
-    func -- the Python function or method to be minimized.
+    cost -- the Python function or method to be minimized.
     x0 -- the initial guess (ndarray), if desired to start from a
         set point; otherwise takes an array of (min,max) bounds,
         for when random initial points are desired
@@ -639,9 +639,9 @@ Inputs:
 
 Additional Inputs:
 
-    args -- extra arguments for func.
+    args -- extra arguments for cost.
     bounds -- list - n pairs of bounds (min,max), one pair for each parameter.
-    ftol -- number - acceptable relative error in func(xopt) for convergence.
+    ftol -- number - acceptable relative error in cost(xopt) for convergence.
     gtol -- number - maximum number of iterations to run without improvement.
     maxiter -- number - the maximum number of iterations to perform.
     maxfun -- number - the maximum number of function evaluations.
@@ -669,7 +669,7 @@ Additional Inputs:
 Returns: (xopt, {fopt, iter, funcalls, warnflag}, {allvecs})
 
     xopt -- ndarray - minimizer of function
-    fopt -- number - value of function at minimum: fopt = func(xopt)
+    fopt -- number - value of function at minimum: fopt = cost(xopt)
     iter -- number - number of iterations
     funcalls -- number - number of function calls
     warnflag -- number - Integer warning flag:
@@ -729,7 +729,7 @@ Returns: (xopt, {fopt, iter, funcalls, warnflag}, {allvecs})
 
     if handler: solver.enable_signal_handler()
     #TODO: allow sigint_callbacks for all minimal interfaces ?
-    solver.Solve(func,termination=termination,strategy=strategy,\
+    solver.Solve(cost,termination=termination,strategy=strategy,\
                 #sigint_callback=other_callback,\
                  CrossProbability=cross,ScalingFactor=scale,\
                  ExtraArgs=args,callback=callback)

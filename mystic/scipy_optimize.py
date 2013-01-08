@@ -87,18 +87,20 @@ The size of the simplex is dim+1.
         self.popEnergy.append(self._init_popEnergy)
         self.population.append([0.0 for i in range(dim)])
 
-    def _setSimplexWithinRangeBoundary(self, x0, radius): #XXX: use population?
+    def _setSimplexWithinRangeBoundary(self, radius=None):
         """ensure that initial simplex is set within bounds
-    - x0: must be a sequence of length self.nDim
-    - radius: size of the initial simplex"""
+    - radius: size of the initial simplex [default=0.05]"""
+        x0 = self.population[0]
         #code modified from park-1.2/park/simplex.py (version 1257)
         if self._useStrictRange:
             x0 = self._clipGuessWithinRangeBoundary(x0)
 
+        if radius is None: radius = 0.05 # nonzdelt=0.05 from scipy-0.9
         val = x0*(1+radius)
         val[val==0] = (radius**2) * 0.1 # zdelt=0.00025 update from scipy-0.9
         if not self._useStrictRange:
-            return x0, val
+            self.population[0] = x0
+            return val
 
         lo = self._strictMin
         hi = self._strictMax
@@ -121,129 +123,86 @@ The size of the simplex is dim+1.
      #  tol = numpy.ones(x0.shape)*xtol
      #  tol[bounded] = (hi[bounded]-lo[bounded])*xtol
      #  xtol = tol
-        return x0, val
+        self.population[0] = x0
+        return val
 
-    def Solve(self, func, termination, sigint_callback=None,
-                                       ExtraArgs=(), **kwds):
-        """Minimize a function using the downhill simplex algorithm.
-
-Description:
-
-    Uses a Nelder-Mead simplex algorithm to find the minimum of
-    a function of one or more variables.
-
-Inputs:
-
-    func -- the Python function or method to be minimized.
-    termination -- callable object providing termination conditions.
-
-Additional Inputs:
-
-    sigint_callback -- callback function for signal handler.
-    ExtraArgs -- extra arguments for func.
-
-Further Inputs:
-
-    callback -- an optional user-supplied function to call after each
-        iteration.  It is called as callback(xk), where xk is the
-        current parameter vector.                           [default = None]
-    disp -- non-zero to print convergence messages.         [default = 0]
-    radius -- percentage change for initial simplex values. [default = 0.05]
-
-"""
-        # set arg names to scipy.optimize.fmin names; set fixed inputs
-        x0 = self.population[0]
-        args = ExtraArgs
-        disp=0         #non-zero to print convergence messages.
-        callback=None  #user-supplied function, called after each step
-        radius=0.05    #percentage change for initial simplex values
-        if kwds.has_key('callback'): callback = kwds['callback']
-        if kwds.has_key('disp'): disp = kwds['disp']
-        if kwds.has_key('radius'): radius = kwds['radius']
-        # backward compatibility
-        if kwds.has_key('EvaluationMonitor'): \
-           self.SetEvaluationMonitor(kwds['EvaluationMonitor'])
-        if kwds.has_key('StepMonitor'): \
-           self.SetGenerationMonitor(kwds['StepMonitor'])
-        if kwds.has_key('penalty'): \
-           self.SetPenalty(kwds['penalty'])
-        if kwds.has_key('constraints'): \
-           self.SetConstraints(kwds['constraints'])
-        #-------------------------------------------------------------
-
-        import signal
-        self._EARLYEXIT = False
-
-        self._fcalls, func = wrap_function(func, args, self._evalmon)
-        if self._useStrictRange:
-            x0 = self._clipGuessWithinRangeBoundary(x0)
-            func = wrap_bounds(func, self._strictMin, self._strictMax)
-
-        #generate signal_handler
-        self._generateHandler(sigint_callback) 
-        if self._handle_sigint: signal.signal(signal.SIGINT, self.signal_handler)
-        #-------------------------------------------------------------
-
-        # wrap penalty and constraints functions
-        func = wrap_penalty(func, self._penalty)
-        func = wrap_nested(func, self._constraints)
-
-        id = self.id
-        x0 = asfarray(x0).flatten()
-        x0 = asfarray(self._constraints(x0))
-        N = len(x0) #XXX: this should be equal to self.nDim
-        rank = len(x0.shape)
-        if not -1 < rank < 2:
-            raise ValueError, "Initial guess must be a scalar or rank-1 sequence."
-
-        rho = 1; chi = 2; psi = 0.5; sigma = 0.5;
-        one2np1 = range(1,N+1)
-
-        if rank == 0:
-            sim = numpy.zeros((N+1,), dtype=x0.dtype)
-        else:
-            sim = numpy.zeros((N+1,N), dtype=x0.dtype)
-        fsim = numpy.zeros((N+1,), float)
-        sim[0] = x0
-        fsim[0] = func(x0)
-
+    def _SetEvaluationLimits(self, iterscale=None, evalscale=None):
+        """set the evaluation limits"""
+        if iterscale is None: iterscale = 200
+        if evalscale is None: evalscale = 200
+        N = len(self.population[0]) #XXX: self.nDim
         # if SetEvaluationLimits not applied, use the solver default
-        if self._maxiter is None: self._maxiter = N*200
-        if self._maxfun is None: self._maxfun = N*200
+        if self._maxiter is None: self._maxiter = N * iterscale
+        if self._maxfun is None: self._maxfun = N * evalscale
+        return
 
-        self._stepmon(sim[0], fsim[0], id) # sim = all; "best" is sim[0]
-        termination(self) #XXX: initialize termination conditions, if needed
+    def _Decorate(self, cost, ExtraArgs=None):
+        """decorate cost function with bounds, penalties, monitors, etc"""
+        self._fcalls, cost = wrap_function(cost, ExtraArgs, self._evalmon)
+        if self._useStrictRange:
+            x0 = self.population[0]
+            x0[:] = self._clipGuessWithinRangeBoundary(x0)
+            cost = wrap_bounds(cost, self._strictMin, self._strictMax)
+        # wrap penalty and constraints functions
+        cost = wrap_penalty(cost, self._penalty)
+        cost = wrap_nested(cost, self._constraints)
+        return cost
 
-        #--- ensure initial simplex is within bounds ---
-        x0,val = self._setSimplexWithinRangeBoundary(x0,radius)
-        #--- end bounds code ---
-        for k in range(0,N):
-            y = numpy.array(x0,copy=True)
-            y[k] = val[k]
-            sim[k+1] = y
-            f = func(y)
-            fsim[k+1] = f
-    
-        ind = numpy.argsort(fsim)
-        fsim = numpy.take(fsim,ind,0)
-        # sort so sim[0,:] has the lowest function value
-        sim = numpy.take(sim,ind,0)
-        self.population = sim # bestSolution = sim[0]
-        self.popEnergy = fsim # bestEnergy = fsim[0]
-        self._stepmon(sim[0], fsim[0], id) # sim = all; "best" is sim[0]
+    def Step(self, cost, radius=None):
+        """perform a single optimization iteration"""
+        rho = 1; chi = 2; psi = 0.5; sigma = 0.5;
 
-        while not self._terminated(termination) and not self._EARLYEXIT:
+        if not len(self._stepmon): # do generation = 0
+            x0 = self.population[0]
+            x0 = asfarray(x0).flatten()
+            x0 = asfarray(self._constraints(x0))
+            #####XXX: this blows away __init__, so replace __init__ with this?
+            N = len(x0)
+            rank = len(x0.shape)
+            if not -1 < rank < 2:
+                raise ValueError, "Initial guess must be a scalar or rank-1 sequence."
+            if rank == 0:
+                sim = numpy.zeros((N+1,), dtype=x0.dtype)
+            else:
+                sim = numpy.zeros((N+1,N), dtype=x0.dtype)
+            fsim = numpy.zeros((N+1,), float)
+            ####################################################
+            sim[0] = x0
+            fsim[0] = cost(x0)
+
+        elif not self.generations: # do generations = 1
+            #--- ensure initial simplex is within bounds ---
+            val = self._setSimplexWithinRangeBoundary(radius)
+            #--- end bounds code ---
+            sim = self.population
+            fsim = self.popEnergy
+            x0 = sim[0]
+            N = len(x0)
+            # populate the simplex
+            for k in range(0,N):
+                y = numpy.array(x0,copy=True)
+                y[k] = val[k]
+                sim[k+1] = y
+                f = cost(y)
+                fsim[k+1] = f
+
+        else: # do generations > 1
+            sim = self.population
+            fsim = self.popEnergy
+            N = len(sim[0])
+            one2np1 = range(1,N+1)
+
             # apply constraints  #XXX: is this the only appropriate place???
             sim[0] = asfarray(self._constraints(sim[0]))
 
             xbar = numpy.add.reduce(sim[:-1],0) / N
             xr = (1+rho)*xbar - rho*sim[-1]
-            fxr = func(xr)
+            fxr = cost(xr)
             doshrink = 0
 
             if fxr < fsim[0]:
                 xe = (1+rho*chi)*xbar - rho*chi*sim[-1]
-                fxe = func(xe)
+                fxe = cost(xe)
 
                 if fxe < fxr:
                     sim[-1] = xe
@@ -259,7 +218,7 @@ Further Inputs:
                     # Perform contraction
                     if fxr < fsim[-1]:
                         xc = (1+psi*rho)*xbar - psi*rho*sim[-1]
-                        fxc = func(xc)
+                        fxc = cost(xc)
     
                         if fxc <= fxr:
                             sim[-1] = xc
@@ -269,7 +228,7 @@ Further Inputs:
                     else:
                         # Perform an inside contraction
                         xcc = (1-psi)*xbar + psi*sim[-1]
-                        fxcc = func(xcc)
+                        fxcc = cost(xcc)
 
                         if fxcc < fsim[-1]:
                             sim[-1] = xcc
@@ -280,18 +239,104 @@ Further Inputs:
                     if doshrink:
                         for j in one2np1:
                             sim[j] = sim[0] + sigma*(sim[j] - sim[0])
-                            fsim[j] = func(sim[j])
+                            fsim[j] = cost(sim[j])
 
+        if len(self._stepmon):
+            # sort so sim[0,:] has the lowest function value
             ind = numpy.argsort(fsim)
             sim = numpy.take(sim,ind,0)
             fsim = numpy.take(fsim,ind,0)
+        self.population = sim # bestSolution = sim[0]
+        self.popEnergy = fsim # bestEnergy = fsim[0]
+        self._stepmon(sim[0], fsim[0], self.id) # sim = all; "best" is sim[0]
+        return
+
+    def _process_inputs(self, kwds):
+        """process and activate input settings"""
+        #allow for inputs that don't conform to AbstractSolver interface
+        callback=None        #user-supplied function, called after each step
+        disp=0               #non-zero to print convergence messages
+        radius=0.05          #percentage change for initial simplex values
+        if not kwds.has_key('callback'): kwds['callback'] = callback
+        if not kwds.has_key('disp'): kwds['disp'] = disp
+        if not kwds.has_key('radius'): kwds['radius'] = radius
+        # backward compatibility
+        if kwds.has_key('EvaluationMonitor'): \
+           self.SetEvaluationMonitor(kwds.pop('EvaluationMonitor'))
+        if kwds.has_key('StepMonitor'): \
+           self.SetGenerationMonitor(kwds.pop('StepMonitor'))
+        if kwds.has_key('penalty'): \
+           self.SetPenalty(kwds.pop('penalty'))
+        if kwds.has_key('constraints'): \
+           self.SetConstraints(kwds.pop('constraints'))
+        return kwds
+
+    def Solve(self, cost, termination, sigint_callback=None,
+                                       ExtraArgs=(), **kwds):
+        """Minimize a function using the downhill simplex algorithm.
+
+Description:
+
+    Uses a Nelder-Mead simplex algorithm to find the minimum of
+    a function of one or more variables.
+
+Inputs:
+
+    cost -- the Python function or method to be minimized.
+    termination -- callable object providing termination conditions.
+
+Additional Inputs:
+
+    sigint_callback -- callback function for signal handler.
+    ExtraArgs -- extra arguments for cost.
+
+Further Inputs:
+
+    callback -- an optional user-supplied function to call after each
+        iteration.  It is called as callback(xk), where xk is the
+        current parameter vector.                           [default = None]
+    disp -- non-zero to print convergence messages.         [default = 0]
+    radius -- percentage change for initial simplex values. [default = 0.05]
+
+"""
+        # process and activate input settings
+        settings = {}
+        settings.update(self._process_inputs(kwds))
+        disp = settings['disp']
+        callback = settings['callback']
+        radius = settings['radius'] #XXX: specific to simplex?
+
+        # set up signal handler
+        import signal
+        self._EARLYEXIT = False
+        self._generateHandler(sigint_callback) 
+        if self._handle_sigint: signal.signal(signal.SIGINT, self.signal_handler)
+
+        # decorate cost function with bounds, penalties, monitors, etc
+        cost = self._Decorate(cost, ExtraArgs)
+
+        # the initital optimization iteration
+        self.Step(cost)
+        # initialize termination conditions, if needed
+        termination(self)
+        if callback is not None:
+            callback(self.bestSolution)
+
+        # impose the evaluation limits
+        self._SetEvaluationLimits()
+
+        # the first optimization iteration
+        self.Step(cost, radius=radius)
+        if callback is not None:
+            callback(self.bestSolution)
+
+        # the main optimization loop
+        while not self._terminated(termination) and not self._EARLYEXIT:
+            self.Step(cost, radius=radius)
             if callback is not None:
-                callback(sim[0])
+                callback(self.bestSolution)
 
-            self.population = sim # bestSolution = sim[0]
-            self.popEnergy = fsim # bestEnergy = fsim[0]
-            self._stepmon(sim[0], fsim[0],id) # sim = all; "best" is sim[0]
-
+        # handle signal interrupts
         signal.signal(signal.SIGINT,signal.default_int_handler)
 
         # log any termination messages
@@ -300,7 +345,7 @@ Further Inputs:
         return
 
 
-def fmin(func, x0, args=(), bounds=None, xtol=1e-4, ftol=1e-4,
+def fmin(cost, x0, args=(), bounds=None, xtol=1e-4, ftol=1e-4,
          maxiter=None, maxfun=None, full_output=0, disp=1, retall=0,
          callback=None, **kwds):
     """Minimize a function using the downhill simplex algorithm.
@@ -313,15 +358,15 @@ Description:
 
 Inputs:
 
-    func -- the Python function or method to be minimized.
+    cost -- the Python function or method to be minimized.
     x0 -- ndarray - the initial guess.
 
 Additional Inputs:
 
-    args -- extra arguments for func.
+    args -- extra arguments for cost.
     bounds -- list - n pairs of bounds (min,max), one pair for each parameter.
     xtol -- number - acceptable relative error in xopt for convergence.
-    ftol -- number - acceptable relative error in func(xopt) for
+    ftol -- number - acceptable relative error in cost(xopt) for
         convergence.
     maxiter -- number - the maximum number of iterations to perform.
     maxfun -- number - the maximum number of function evaluations.
@@ -348,7 +393,7 @@ Additional Inputs:
 Returns: (xopt, {fopt, iter, funcalls, warnflag}, {allvecs})
 
     xopt -- ndarray - minimizer of function
-    fopt -- number - value of function at minimum: fopt = func(xopt)
+    fopt -- number - value of function at minimum: fopt = cost(xopt)
     iter -- number - number of iterations
     funcalls -- number - number of function calls
     warnflag -- number - Integer warning flag:
@@ -391,7 +436,7 @@ Returns: (xopt, {fopt, iter, funcalls, warnflag}, {allvecs})
         solver.SetStrictRanges(minb,maxb)
 
     if handler: solver.enable_signal_handler()
-    solver.Solve(func,termination=termination,\
+    solver.Solve(cost,termination=termination,\
                  disp=disp, ExtraArgs=args, callback=callback)
     solution = solver.Solution()
 
@@ -447,8 +492,51 @@ Takes one initial input:
         AbstractSolver.__init__(self,dim)
         self._direc = None # this is the easy way to return 'direc'...
 
+    def _SetEvaluationLimits(self, iterscale=None, evalscale=None):
+        """set the evaluation limits"""
+        if iterscale is None: iterscale = 1000
+        if evalscale is None: evalscale = 1000
+        N = len(self.population[0]) #XXX: self.nDim
+        # if SetEvaluationLimits not applied, use the solver default
+        if self._maxiter is None: self._maxiter = N * iterscale
+        if self._maxfun is None: self._maxfun = N * evalscale
+        return
 
-    def Solve(self, func, termination, sigint_callback=None,
+    def _Decorate(self, cost, ExtraArgs=None):
+        """decorate cost function with bounds, penalties, monitors, etc"""
+        self._fcalls, cost = wrap_function(cost, ExtraArgs, self._evalmon)
+        if self._useStrictRange:
+            x0 = self.population[0]
+            x0[:] = self._clipGuessWithinRangeBoundary(x0)
+            cost = wrap_bounds(cost, self._strictMin, self._strictMax)
+        # wrap penalty and constraints functions
+        cost = wrap_penalty(cost, self._penalty)
+        cost = wrap_nested(cost, self._constraints)
+        return cost
+
+    def _process_inputs(self, kwds):
+        """process and activate input settings"""
+        #allow for inputs that don't conform to AbstractSolver interface
+        callback=None        #user-supplied function, called after each step
+        disp=0               #non-zero to print convergence messages
+        xtol=1e-4            #line-search error tolerance
+        direc=None
+        if not kwds.has_key('callback'): kwds['callback'] = callback
+        if not kwds.has_key('disp'): kwds['disp'] = disp
+        if not kwds.has_key('xtol'): kwds['xtol'] = xtol
+        if not kwds.has_key('direc'): kwds['direc'] = direc
+        # backward compatibility
+        if kwds.has_key('EvaluationMonitor'): \
+           self.SetEvaluationMonitor(kwds.pop('EvaluationMonitor'))
+        if kwds.has_key('StepMonitor'): \
+           self.SetGenerationMonitor(kwds.pop('StepMonitor'))
+        if kwds.has_key('penalty'): \
+           self.SetPenalty(kwds.pop('penalty'))
+        if kwds.has_key('constraints'): \
+           self.SetConstraints(kwds.pop('constraints'))
+        return kwds
+
+    def Solve(self, cost, termination, sigint_callback=None,
                                        ExtraArgs=(), **kwds):
         """Minimize a function using modified Powell's method.
 
@@ -459,13 +547,13 @@ Description:
 
 Inputs:
 
-    func -- the Python function or method to be minimized.
+    cost -- the Python function or method to be minimized.
     termination -- callable object providing termination conditions.
 
 Additional Inputs:
 
     sigint_callback -- callback function for signal handler.
-    ExtraArgs -- extra arguments for func.
+    ExtraArgs -- extra arguments for cost.
 
 Further Inputs:
 
@@ -477,46 +565,26 @@ Further Inputs:
     disp -- non-zero to print convergence messages.
 
 """
-        # set arg names to scipy.optimize.fmin_powell names; set fixed inputs
-        x0 = self.population[0]
-        args = ExtraArgs
-        disp=0         #non-zero to print convergence messages.
-        direc=None
-        callback=None  #user-supplied function, called after each step
-        xtol=1e-4      #line-search error tolerance
-        if kwds.has_key('callback'): callback = kwds['callback']
-        if kwds.has_key('direc'): direc = kwds['direc']
-        if kwds.has_key('xtol'): xtol = kwds['xtol']
-        if kwds.has_key('disp'): disp = kwds['disp']
-        # backward compatibility
-        if kwds.has_key('EvaluationMonitor'): \
-           self.SetEvaluationMonitor(kwds['EvaluationMonitor'])
-        if kwds.has_key('StepMonitor'): \
-           self.SetGenerationMonitor(kwds['StepMonitor'])
-        if kwds.has_key('penalty'): \
-           self.SetPenalty(kwds['penalty'])
-        if kwds.has_key('constraints'): \
-           self.SetConstraints(kwds['constraints'])
-        #-------------------------------------------------------------
+        # process and activate input settings
+        settings = {}
+        settings.update(self._process_inputs(kwds))
+        disp = settings['disp']
+        callback = settings['callback']
+        xtol = settings['xtol']   #XXX: specific to powell?
+        direc = settings['direc'] #XXX: specific to powell?
 
+        # set up signal handler
         import signal
         self._EARLYEXIT = False
-
-        self._fcalls, func = wrap_function(func, args, self._evalmon)
-        if self._useStrictRange:
-            x0 = self._clipGuessWithinRangeBoundary(x0)
-            func = wrap_bounds(func, self._strictMin, self._strictMax)
-
-        #generate signal_handler
         self._generateHandler(sigint_callback) 
         if self._handle_sigint: signal.signal(signal.SIGINT, self.signal_handler)
-        #-------------------------------------------------------------
 
-        # wrap penalty and constraints functions
-        func = wrap_penalty(func, self._penalty)
-        func = wrap_nested(func, self._constraints)
+        # decorate cost function with bounds, penalties, monitors, etc
+        cost = self._Decorate(cost, ExtraArgs)
 
         id = self.id
+        x0 = self.population[0]
+        args = ExtraArgs
         x = asfarray(x0).flatten()
         x = asfarray(self._constraints(x))
         N = len(x) #XXX: this should be equal to self.nDim
@@ -528,7 +596,7 @@ Further Inputs:
             direc = eye(N, dtype=float)
         else:
             direc = asarray(direc, dtype=float)
-        fval = squeeze(func(x))
+        fval = squeeze(cost(x))
         x1 = x.copy()
         ilist = range(N)
 
@@ -536,9 +604,15 @@ Further Inputs:
         self.population[0] = x   # bestSolution
         self.popEnergy[0] = fval # bestEnergy
 
-        # if SetEvaluationLimits not applied, use the solver default
-        if self._maxiter is None: self._maxiter = N*1000
-        if self._maxfun is None: self._maxfun = N*1000
+#       # the initital optimization iteration
+#       self.Step(cost)
+#       # initialize termination conditions, if needed
+#       termination(self)
+#       if callback is not None:
+#           callback(self.bestSolution)
+
+        # impose the evaluation limits
+        self._SetEvaluationLimits()
 
         self._stepmon(x, fval, id) # get initial values
         termination(self) #XXX: initialize termination conditions, if needed
@@ -550,7 +624,7 @@ Further Inputs:
         for i in ilist:
             direc1 = direc[i]
             fx2 = fval
-            fval, x, direc1 = _linesearch_powell(func, x, direc1, tol=xtol*100)
+            fval, x, direc1 = _linesearch_powell(cost, x, direc1, tol=xtol*100)
             if (fx2 - fval) > delta:
                 delta = fx2 - fval
                 bigind = i
@@ -569,7 +643,7 @@ Further Inputs:
             direc1 = x - x1
             x2 = 2*x - x1
             x1 = x.copy()
-            fx2 = squeeze(func(x2))
+            fx2 = squeeze(cost(x2))
 
             if (fx > fx2):
                 t = 2.0*(fx+fx2-2.0*fval)
@@ -578,7 +652,7 @@ Further Inputs:
                 temp = fx-fx2
                 t -= delta*temp*temp
                 if t < 0.0:
-                    fval, x, direc1 = _linesearch_powell(func, x, direc1, tol=xtol*100)
+                    fval, x, direc1 = _linesearch_powell(cost, x, direc1, tol=xtol*100)
                     direc[bigind] = direc[-1]
                     direc[-1] = direc1
 
@@ -596,7 +670,7 @@ Further Inputs:
             for i in ilist:
                 direc1 = direc[i]
                 fx2 = fval
-                fval, x, direc1 = _linesearch_powell(func, x, direc1, tol=xtol*100)
+                fval, x, direc1 = _linesearch_powell(cost, x, direc1, tol=xtol*100)
                 if (fx2 - fval) > delta:
                     delta = fx2 - fval
                     bigind = i
@@ -616,6 +690,13 @@ Further Inputs:
             self._stepmon(x, fval, id) # get ith values
             self.energy_history = None # resync with 'best' energy
     
+#       # the main optimization loop
+#       while not self._terminated(termination) and not self._EARLYEXIT:
+#           self.Step(cost, strategy=strategy)
+#           if callback is not None:
+#               callback(self.bestSolution)
+
+        # handle signal interrupts
         signal.signal(signal.SIGINT,signal.default_int_handler)
 
         # log any termination messages
@@ -624,7 +705,7 @@ Further Inputs:
         return
 
 
-def fmin_powell(func, x0, args=(), bounds=None, xtol=1e-4, ftol=1e-4,
+def fmin_powell(cost, x0, args=(), bounds=None, xtol=1e-4, ftol=1e-4,
                 maxiter=None, maxfun=None, full_output=0, disp=1, retall=0,
                 callback=None, direc=None, **kwds):
     """Minimize a function using modified Powell's method.
@@ -637,16 +718,16 @@ Description:
 
 Inputs:
 
-    func -- the Python function or method to be minimized.
+    cost -- the Python function or method to be minimized.
     x0 -- ndarray - the initial guess.
 
 Additional Inputs:
 
-    args -- extra arguments for func.
+    args -- extra arguments for cost.
     bounds -- list - n pairs of bounds (min,max), one pair for each parameter.
     xtol -- number - acceptable relative error in xopt for
         convergence.
-    ftol -- number - acceptable relative error in func(xopt) for
+    ftol -- number - acceptable relative error in cost(xopt) for
         convergence.
     gtol -- number - maximum number of iterations to run without improvement.
     maxiter -- number - the maximum number of iterations to perform.
@@ -675,7 +756,7 @@ Additional Inputs:
 Returns: (xopt, {fopt, iter, funcalls, warnflag, direc}, {allvecs})
 
     xopt -- ndarray - minimizer of function
-    fopt -- number - value of function at minimum: fopt = func(xopt)
+    fopt -- number - value of function at minimum: fopt = cost(xopt)
     iter -- number - number of iterations
     funcalls -- number - number of function calls
     warnflag -- number - Integer warning flag:
@@ -726,7 +807,7 @@ Returns: (xopt, {fopt, iter, funcalls, warnflag, direc}, {allvecs})
         solver.SetStrictRanges(minb,maxb)
 
     if handler: solver.enable_signal_handler()
-    solver.Solve(func,termination=termination,\
+    solver.Solve(cost,termination=termination,\
                  xtol=xtol, ExtraArgs=args, callback=callback, \
                  disp=disp, direc=direc)   #XXX: last two lines use **kwds
     solution = solver.Solution()

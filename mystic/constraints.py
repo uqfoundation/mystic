@@ -1808,11 +1808,10 @@ References:
         # 'Clear' some of the attributes of the solver
         solver = solverinstance
         solver.population = [[0.0 for i in range(solver.nDim)] for j in range(solver.nPop)]
-        solver.generations = 0
-        solver.bestEnergy = 0.0
-        solver.bestSolution = [0.0] * solver.nDim
+       #solver.generations = 0
+        solver.bestEnergy = None
+        solver.bestSolution = None
         solver.trialSolution = [0.0] * solver.nDim
-        solver._init_popEnergy  = 1.0E20 #XXX: or numpy.inf?
         solver.popEnergy = [solver._init_popEnergy] * solver.nPop
        #solver.energy_history = []
 
@@ -1897,8 +1896,8 @@ References:
 
     # Return the last solver, which contains all of the important information
     # First modify the solver to include total data.
-    solver.generations = total_iterations
-    solver.energy_history = total_energy_history
+   #solver.generations = total_iterations
+   #solver.energy_history = total_energy_history
 
     #XXX solver.bestEnergy is not exactly costfunc(solver.bestSolution),
     # since it is wrapped_costfunc(bestSolution). Compensate for that

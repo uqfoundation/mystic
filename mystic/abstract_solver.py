@@ -463,9 +463,9 @@ input::
             return msg
         return bool(msg)
 
-    def Solve(self, func, termination, sigint_callback=None,
+    def Solve(self, cost, termination, sigint_callback=None,
                                        ExtraArgs=(), **kwds):
-        """solve function 'func' with given termination conditions
+        """solve function 'cost' with given termination conditions
 
 *** this method must be overwritten ***"""
         raise NotImplementedError, "must be overwritten..."
