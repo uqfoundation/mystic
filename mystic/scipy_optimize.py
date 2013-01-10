@@ -488,6 +488,10 @@ Takes one initial input:
         """
         AbstractSolver.__init__(self,dim)
         self._direc = None # this is the easy way to return 'direc'...
+        x1 = self.population[0]
+        fx = self.popEnergy[0]
+        #                  [x1, fx, bigind, delta]
+        self.__internals = [x1, fx,      0,   0.0]
 
     def _SetEvaluationLimits(self, iterscale=None, evalscale=None):
         """set the evaluation limits"""
@@ -510,6 +514,98 @@ Takes one initial input:
         cost = wrap_penalty(cost, self._penalty)
         cost = wrap_nested(cost, self._constraints)
         return cost
+
+    def Step(self, cost, xtol=None):
+        """perform a single optimization iteration"""
+        direc = self._direc
+        x = self.population[0]   # bestSolution
+        fval = self.popEnergy[0] # bestEnergy
+        x1, fx, bigind, delta = self.__internals
+
+        if not len(self._stepmon): # do generation = 0
+            x = asfarray(x).flatten()
+            x = asfarray(self._constraints(x))
+            N = len(x) #XXX: this should be equal to self.nDim
+            rank = len(x.shape)
+            if not -1 < rank < 2:
+                raise ValueError, "Initial guess must be a scalar or rank-1 sequence."
+
+            if direc is None:
+                direc = eye(N, dtype=float)
+            else:
+                direc = asarray(direc, dtype=float)
+            fval = squeeze(cost(x))
+            self._stepmon(x, fval, self.id) # get initial values
+
+        elif not self.generations: # do generations = 1
+            ilist = range(len(x))
+            x1 = x.copy()
+            # do initial "second half" of solver step 
+            fx = fval
+            bigind = 0
+            delta = 0.0
+            for i in ilist:
+                direc1 = direc[i]
+                fx2 = fval
+                fval, x, direc1 = _linesearch_powell(cost, x, direc1, tol=xtol*100)
+                if (fx2 - fval) > delta:
+                    delta = fx2 - fval
+                    bigind = i
+
+                # apply constraints
+                x = asfarray(self._constraints(x))
+            # decouple from 'best' energy
+            self.energy_history = self.energy_history + [fval]
+
+        else: # do generations > 1
+            # Construct the extrapolated point
+            direc1 = x - x1
+            x2 = 2*x - x1
+            x1 = x.copy()
+            fx2 = squeeze(cost(x2))
+
+            if (fx > fx2):
+                t = 2.0*(fx+fx2-2.0*fval)
+                temp = (fx-fval-delta)
+                t *= temp*temp
+                temp = fx-fx2
+                t -= delta*temp*temp
+                if t < 0.0:
+                    fval, x, direc1 = _linesearch_powell(cost, x, direc1, tol=xtol*100)
+                    direc[bigind] = direc[-1]
+                    direc[-1] = direc1
+
+           #        x = asfarray(self._constraints(x))
+
+            self._direc = direc
+            self.population[0] = x   # bestSolution
+            self.popEnergy[0] = fval # bestEnergy
+            self.energy_history = None # resync with 'best' energy
+            self._stepmon(x, fval, self.id) # get ith values
+
+            fx = fval
+            bigind = 0
+            delta = 0.0
+            ilist = range(len(x))
+            for i in ilist:
+                direc1 = direc[i]
+                fx2 = fval
+                fval, x, direc1 = _linesearch_powell(cost, x, direc1, tol=xtol*100)
+                if (fx2 - fval) > delta:
+                    delta = fx2 - fval
+                    bigind = i
+
+                # apply constraints
+                x = asfarray(self._constraints(x))
+
+            # decouple from 'best' energy
+            self.energy_history = self.energy_history + [fval]
+
+        self.__internals = [x1, fx, bigind, delta]
+        self._direc = direc
+        self.population[0] = x   # bestSolution
+        self.popEnergy[0] = fval # bestEnergy
+        return
 
     def _process_inputs(self, kwds):
         """process and activate input settings"""
@@ -574,120 +670,30 @@ Further Inputs:
         # decorate cost function with bounds, penalties, monitors, etc
         cost = self._Decorate(cost, ExtraArgs)
 
-        id = self.id
-        x0 = self.population[0]
-        args = ExtraArgs
-        x = asfarray(x0).flatten()
-        x = asfarray(self._constraints(x))
-        N = len(x) #XXX: this should be equal to self.nDim
-        rank = len(x.shape)
-        if not -1 < rank < 2:
-            raise ValueError, "Initial guess must be a scalar or rank-1 sequence."
-
-        if direc is None:
-            direc = eye(N, dtype=float)
-        else:
-            direc = asarray(direc, dtype=float)
-        fval = squeeze(cost(x))
-        x1 = x.copy()
-        ilist = range(N)
-
-        self._direc = direc
-        self.population[0] = x   # bestSolution
-        self.popEnergy[0] = fval # bestEnergy
-
-#       # the initital optimization iteration
-#       self.Step(cost)
-#       # initialize termination conditions, if needed
-#       termination(self)
-#       if callback is not None:
-#           callback(self.bestSolution)
+        # the initital optimization iteration
+        self.Step(cost)
+        # initialize termination conditions, if needed
+        termination(self)
+        if callback is not None:
+            callback(self.bestSolution)
 
         # impose the evaluation limits
         self._SetEvaluationLimits()
 
-        self._stepmon(x, fval, id) # get initial values
-        termination(self) #XXX: initialize termination conditions, if needed
-
-        # do initial "second half" of solver step 
-        fx = fval
-        bigind = 0
-        delta = 0.0
-        for i in ilist:
-            direc1 = direc[i]
-            fx2 = fval
-            fval, x, direc1 = _linesearch_powell(cost, x, direc1, tol=xtol*100)
-            if (fx2 - fval) > delta:
-                delta = fx2 - fval
-                bigind = i
-
-            # apply constraints
-            x = asfarray(self._constraints(x))
-
+        # the first optimization iteration
+        self.Step(cost, xtol=xtol)
         if callback is not None:
-            callback(x)
+            callback(self.bestSolution)
 
-        # decouple from 'best' energy
-        self.energy_history = self.energy_history + [fval]
-
+        # the main optimization loop
         while not self._terminated(termination) and not self._EARLYEXIT:
-            # Construct the extrapolated point
-            direc1 = x - x1
-            x2 = 2*x - x1
-            x1 = x.copy()
-            fx2 = squeeze(cost(x2))
-
-            if (fx > fx2):
-                t = 2.0*(fx+fx2-2.0*fval)
-                temp = (fx-fval-delta)
-                t *= temp*temp
-                temp = fx-fx2
-                t -= delta*temp*temp
-                if t < 0.0:
-                    fval, x, direc1 = _linesearch_powell(cost, x, direc1, tol=xtol*100)
-                    direc[bigind] = direc[-1]
-                    direc[-1] = direc1
-
-           #        x = asfarray(self._constraints(x))
-
-            self._direc = direc
-            self.population[0] = x   # bestSolution
-            self.popEnergy[0] = fval # bestEnergy
-            self._stepmon(x, fval, id) # get ith values
-            self.energy_history = None # resync with 'best' energy
-
-            fx = fval
-            bigind = 0
-            delta = 0.0
-            for i in ilist:
-                direc1 = direc[i]
-                fx2 = fval
-                fval, x, direc1 = _linesearch_powell(cost, x, direc1, tol=xtol*100)
-                if (fx2 - fval) > delta:
-                    delta = fx2 - fval
-                    bigind = i
-
-                # apply constraints
-                x = asfarray(self._constraints(x))
-
+            self.Step(cost, xtol=xtol)
             if callback is not None:
-                callback(x)
-
-            # decouple from 'best' energy
-            self.energy_history = self.energy_history + [fval]
+                callback(self.bestSolution)
         else:
-            self._direc = direc
-            self.population[0] = x   # bestSolution
-            self.popEnergy[0] = fval # bestEnergy
-            self._stepmon(x, fval, id) # get ith values
             self.energy_history = None # resync with 'best' energy
+            self._stepmon(self.bestSolution, self.bestEnergy, self.id)
     
-#       # the main optimization loop
-#       while not self._terminated(termination) and not self._EARLYEXIT:
-#           self.Step(cost, strategy=strategy)
-#           if callback is not None:
-#               callback(self.bestSolution)
-
         # handle signal interrupts
         signal.signal(signal.SIGINT,signal.default_int_handler)
 

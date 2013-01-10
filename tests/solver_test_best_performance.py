@@ -3,6 +3,7 @@
 adjusted to achieve the best results.
 """
 from mystic.monitors import Monitor
+from mystic.math import almostEqual
 from mystic.tools import random_seed
 random_seed(123)
 import time
@@ -70,11 +71,13 @@ Time elapsed:  0.113857030869  seconds
     solver.Solve(costfunc, term, strategy=Rand1Bin)
     sol = solver.Solution()
     time_elapsed = time.time() - time1
+    fx = solver.bestEnergy
     print "Solution: ", sol
-    print "f value: ", solver.bestEnergy
+    print "f value: ", fx
     print "Iterations: ", solver.generations
     print "Function evaluations: ", len(esow.x)
     print "Time elapsed: ", time_elapsed, " seconds"
+    assert almostEqual(fx, 2.29478683682e-13, tol=3e-3)
 
     # DifferentialEvolutionSolver2
     print "\nUsing DifferentialEvolutionSolver2:"
@@ -95,11 +98,13 @@ Time elapsed:  0.113857030869  seconds
     solver.Solve(costfunc, term, strategy=Rand1Bin)
     sol = solver.Solution()
     time_elapsed = time.time() - time1
+    fx = solver.bestEnergy
     print "Solution: ", sol
-    print "f value: ", solver.bestEnergy
+    print "f value: ", fx
     print "Iterations: ", solver.generations
     print "Function evaluations: ", len(esow.x)
     print "Time elapsed: ", time_elapsed, " seconds"
+    assert almostEqual(fx, 3.84824937598e-15, tol=3e-3)
 
     # NelderMeadSimplexSolver
     print "\nUsing NelderMeadSimplexSolver:"
@@ -118,11 +123,13 @@ Time elapsed:  0.113857030869  seconds
     solver.Solve(costfunc, term)
     sol = solver.Solution()
     time_elapsed = time.time() - time1
+    fx = solver.bestEnergy
     print "Solution: ", sol
-    print "f value: ", solver.bestEnergy
+    print "f value: ", fx
     print "Iterations: ", solver.generations
     print "Function evaluations: ", len(esow.x)
     print "Time elapsed: ", time_elapsed, " seconds"
+    assert almostEqual(fx, 1.08732211477e-09, tol=3e-3)
 
     # PowellDirectionalSolver
     print "\nUsing PowellDirectionalSolver:"
@@ -141,11 +148,13 @@ Time elapsed:  0.113857030869  seconds
     solver.Solve(costfunc, term)
     sol = solver.Solution()
     time_elapsed = time.time() - time1
+    fx = solver.bestEnergy
     print "Solution: ", sol
-    print "f value: ", solver.bestEnergy
+    print "f value: ", fx
     print "Iterations: ", solver.generations
     print "Function evaluations: ", len(esow.x)
     print "Time elapsed: ", time_elapsed, " seconds"
+    assert almostEqual(fx, 0.0, tol=3e-3)
 
 def test_griewangk():
     """Test Griewangk's function, which has many local minima.
@@ -207,11 +216,13 @@ Time elapsed:  32.8412370682  seconds
                  CrossProbability=0.3, ScalingFactor=1.0)
     sol = solver.Solution()
     time_elapsed = time.time() - time1
+    fx = solver.bestEnergy
     print "Solution: ", sol
-    print "f value: ", solver.bestEnergy
+    print "f value: ", fx
     print "Iterations: ", solver.generations
     print "Function evaluations: ", len(esow.x)
     print "Time elapsed: ", time_elapsed, " seconds"
+    assert almostEqual(fx, 0.0, tol=3e-3)
 
     # DifferentialEvolutionSolver2
     print "\nUsing DifferentialEvolutionSolver2:"
@@ -238,12 +249,14 @@ Time elapsed:  32.8412370682  seconds
                  CrossProbability=0.3, ScalingFactor=1.0)
     sol = solver.Solution()
     time_elapsed = time.time() - time1
+    fx = solver.bestEnergy
     print "Solution: ", sol
-    print "f value: ", solver.bestEnergy
+    print "f value: ", fx
     print "Iterations: ", solver.generations
     print "Function evaluations: ", len(esow.x)
     print "Time elapsed: ", time_elapsed, " seconds"
+    assert almostEqual(fx, 0.0, tol=3e-3)
 
 if __name__ == '__main__':
     test_rosenbrock()
-    #test_griewangk()
+   #test_griewangk()

@@ -57,7 +57,7 @@ if __name__ == '__main__':
     # set range for random initial guess
     ndim = 9
     x0 = [(-100,100)]*ndim
-    random_seed(123)
+    random_seed(321)
 
     # draw frame and exact coefficients
     plot_exact()
