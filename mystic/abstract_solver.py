@@ -73,6 +73,8 @@ __all__ = ['AbstractSolver']
 
 import numpy
 from numpy import inf, shape, asarray, absolute, asfarray
+from mystic.tools import wrap_function, wrap_nested
+from mystic.tools import wrap_bounds, wrap_penalty
 
 abs = absolute
 
@@ -437,6 +439,18 @@ input::
             self._maxfun = kwds['maxfun']
         return
 
+    def _SetEvaluationLimits(self, iterscale=None, evalscale=None):
+        """set the evaluation limits"""
+        if iterscale is None: iterscale = 10
+        if evalscale is None: evalscale = 1000
+        N = len(self.population[0]) # usually self.nDim
+        # if SetEvaluationLimits not applied, use the solver default
+        if self._maxiter is None:
+            self._maxiter = N * self.nPop * iterscale
+        if self._maxfun is None:
+            self._maxfun = N * self.nPop * evalscale
+        return
+
     def _terminated(self, termination, disp=False, info=False):
         # check for termination messages
         msg = termination(self, info=True)
@@ -463,12 +477,104 @@ input::
             return msg
         return bool(msg)
 
-    def Solve(self, cost, termination, sigint_callback=None,
-                                       ExtraArgs=(), **kwds):
-        """solve function 'cost' with given termination conditions
+    def _Decorate(self, cost, ExtraArgs=None):
+        """decorate cost function with bounds, penalties, monitors, etc"""
+        self._fcalls, cost = wrap_function(cost, ExtraArgs, self._evalmon)
+        if self._useStrictRange:
+            for i in range(self.nPop):
+                self.population[i] = self._clipGuessWithinRangeBoundary(self.population[i])
+            cost = wrap_bounds(cost, self._strictMin, self._strictMax)
+        cost = wrap_penalty(cost, self._penalty)
+        cost = wrap_nested(cost, self._constraints)
+        return cost
+
+    def Step(self, cost, strategy=None):
+        """perform a single optimization iteration
 
 *** this method must be overwritten ***"""
-        raise NotImplementedError, "must be overwritten..."
+        raise NotImplementedError, "an optimization algorithm was not provided"
+
+    def _process_inputs(self, kwds):
+        """process and activate input settings"""
+        #allow for inputs that don't conform to AbstractSolver interface
+        settings = \
+       {'callback':None,     #user-supplied function, called after each step
+        'disp':0}            #non-zero to print convergence messages
+        [settings.update({i:j}) for (i,j) in kwds.items() if i in settings]
+        # backward compatibility
+        if kwds.has_key('EvaluationMonitor'): \
+           self.SetEvaluationMonitor(kwds.get('EvaluationMonitor'))
+        if kwds.has_key('StepMonitor'): \
+           self.SetGenerationMonitor(kwds.get('StepMonitor'))
+        if kwds.has_key('penalty'): \
+           self.SetPenalty(kwds.get('penalty'))
+        if kwds.has_key('constraints'): \
+           self.SetConstraints(kwds.get('constraints'))
+        return settings
+
+    def Solve(self, cost, termination, sigint_callback=None,
+                                       ExtraArgs=(), **kwds):
+        """Minimize a 'cost' function with given termination conditions.
+
+Description:
+
+    Uses an optimization algorith to find the minimum of
+    a function of one or more variables.
+
+Inputs:
+
+    cost -- the Python function or method to be minimized.
+    termination -- callable object providing termination conditions.
+
+Additional Inputs:
+
+    sigint_callback -- callback function for signal handler.
+    ExtraArgs -- extra arguments for cost.
+
+Further Inputs:
+
+    callback -- an optional user-supplied function to call after each
+        iteration.  It is called as callback(xk), where xk is
+        the current parameter vector.  [default = None]
+    disp -- non-zero to print convergence messages.
+        """
+        # process and activate input settings
+        settings = self._process_inputs(kwds)
+        for key in settings:
+            exec "%s = settings['%s']" % (key,key)
+
+        # set up signal handler
+        import signal
+        self._EARLYEXIT = False
+        self._generateHandler(sigint_callback) 
+        if self._handle_sigint: signal.signal(signal.SIGINT, self.signal_handler)
+
+        # decorate cost function with bounds, penalties, monitors, etc
+        cost = self._Decorate(cost, ExtraArgs)
+
+        # the initital optimization iteration
+        self.Step(cost)
+        # initialize termination conditions, if needed
+        termination(self)
+        if callback is not None:
+            callback(self.bestSolution)
+         
+        # impose the evaluation limits
+        self._SetEvaluationLimits()
+
+        # the main optimization loop
+        while not self._terminated(termination) and not self._EARLYEXIT:
+            self.Step(cost, strategy=strategy)
+            if callback is not None:
+                callback(self.bestSolution)
+
+        # handle signal interrupts
+        signal.signal(signal.SIGINT,signal.default_int_handler)
+
+        # log any termination messages
+        msg = self._terminated(termination, disp=disp, info=True)
+        if msg: self._stepmon.info('STOP("%s")' % msg)
+        return
 
     # extensions to the solver interface
     evaluations = property(__evaluations )

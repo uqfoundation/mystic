@@ -190,17 +190,6 @@ are logged.
         self.genealogy[id].append(newchild)
         return
 
-    def _SetEvaluationLimits(self, iterscale=None, evalscale=None):
-        """set the evaluation limits"""
-        if iterscale is None: iterscale = 10
-        if evalscale is None: evalscale = 1000
-        # if SetEvaluationLimits not applied, use the solver default
-        if self._maxiter is None:
-            self._maxiter = self.nDim * self.nPop * iterscale
-        if self._maxfun is None:
-            self._maxfun = self.nDim * self.nPop * evalscale
-        return
-
     def _Decorate(self, cost, ExtraArgs=None):
         """decorate cost function with bounds, penalties, monitors, etc"""
         self._fcalls, cost = wrap_function(cost, ExtraArgs, self._evalmon)
@@ -251,25 +240,15 @@ are logged.
     def _process_inputs(self, kwds):
         """process and activate input settings"""
         #allow for inputs that don't conform to AbstractSolver interface
+        settings = super(DifferentialEvolutionSolver, self)._process_inputs(kwds)
         from mystic.strategy import Best1Bin
-        settings = \
-       {'callback':None,     #user-supplied function, called after each step
-        'disp':0,            #non-zero to print convergence messages
-        'strategy':Best1Bin} #mutation strategy (see mystic.strategy)
+        settings.update({\
+        'strategy':Best1Bin})#mutation strategy (see mystic.strategy)
         probability=0.9      #potential for parameter cross-mutation
         scale=0.8            #multiplier for mutation impact
         [settings.update({i:j}) for (i,j) in kwds.items() if i in settings]
         self.probability = kwds.get('CrossProbability', probability)
         self.scale = kwds.get('ScalingFactor', scale)
-        # backward compatibility
-        if kwds.has_key('EvaluationMonitor'): \
-           self.SetEvaluationMonitor(kwds.get('EvaluationMonitor'))
-        if kwds.has_key('StepMonitor'): \
-           self.SetGenerationMonitor(kwds.get('StepMonitor'))
-        if kwds.has_key('penalty'): \
-           self.SetPenalty(kwds.get('penalty'))
-        if kwds.has_key('constraints'): \
-           self.SetConstraints(kwds.get('constraints'))
         return settings
 
     def Solve(self, cost, termination, sigint_callback=None,
@@ -304,42 +283,8 @@ Further Inputs:
         the current parameter vector.  [default = None]
     disp -- non-zero to print convergence messages.
         """
-        # process and activate input settings
-        settings = self._process_inputs(kwds)
-        for key in settings:
-            exec "%s = settings['%s']" % (key,key)
-
-        # set up signal handler
-        import signal
-        self._EARLYEXIT = False
-        self._generateHandler(sigint_callback) 
-        if self._handle_sigint: signal.signal(signal.SIGINT, self.signal_handler)
-
-        # decorate cost function with bounds, penalties, monitors, etc
-        cost = self._Decorate(cost, ExtraArgs)
-
-        # the initital optimization iteration
-        self.Step(cost)
-        # initialize termination conditions, if needed
-        termination(self)
-        if callback is not None:
-            callback(self.bestSolution)
-         
-        # impose the evaluation limits
-        self._SetEvaluationLimits()
-
-        # the main optimization loop
-        while not self._terminated(termination) and not self._EARLYEXIT:
-            self.Step(cost, strategy=strategy)
-            if callback is not None:
-                callback(self.bestSolution)
-
-        # handle signal interrupts
-        signal.signal(signal.SIGINT,signal.default_int_handler)
-
-        # log any termination messages
-        msg = self._terminated(termination, disp=disp, info=True)
-        if msg: self._stepmon.info('STOP("%s")' % msg)
+        super(DifferentialEvolutionSolver, self).Solve(cost, termination,\
+                                      sigint_callback, ExtraArgs, **kwds)
         return
 
 
@@ -373,17 +318,6 @@ Override me for more refined behavior. Currently all changes
 are logged.
         """
         self.genealogy[id].append(newchild)
-        return
-
-    def _SetEvaluationLimits(self, iterscale=None, evalscale=None):
-        """set the evaluation limits"""
-        if iterscale is None: iterscale = 10
-        if evalscale is None: evalscale = 1000
-        # if SetEvaluationLimits not applied, use the solver default
-        if self._maxiter is None:
-            self._maxiter = self.nDim * self.nPop * iterscale
-        if self._maxfun is None:
-            self._maxfun = self.nDim * self.nPop * evalscale
         return
 
     def _Decorate(self, cost, ExtraArgs=None):
@@ -449,25 +383,15 @@ are logged.
     def _process_inputs(self, kwds):
         """process and activate input settings"""
         #allow for inputs that don't conform to AbstractSolver interface
+        settings = super(DifferentialEvolutionSolver2, self)._process_inputs(kwds)
         from mystic.strategy import Best1Bin
-        settings = \
-       {'callback':None,     #user-supplied function, called after each step
-        'disp':0,            #non-zero to print convergence messages
-        'strategy':Best1Bin} #mutation strategy (see mystic.strategy)
+        settings.update({\
+        'strategy':Best1Bin})#mutation strategy (see mystic.strategy)
         probability=0.9      #potential for parameter cross-mutation
         scale=0.8            #multiplier for mutation impact
         [settings.update({i:j}) for (i,j) in kwds.items() if i in settings]
         self.probability = kwds.get('CrossProbability', probability)
         self.scale = kwds.get('ScalingFactor', scale)
-        # backward compatibility
-        if kwds.has_key('EvaluationMonitor'): \
-           self.SetEvaluationMonitor(kwds.get('EvaluationMonitor'))
-        if kwds.has_key('StepMonitor'): \
-           self.SetGenerationMonitor(kwds.get('StepMonitor'))
-        if kwds.has_key('penalty'): \
-           self.SetPenalty(kwds.get('penalty'))
-        if kwds.has_key('constraints'): \
-           self.SetConstraints(kwds.get('constraints'))
         return settings
 
     def Solve(self, cost, termination, sigint_callback=None,
@@ -503,42 +427,8 @@ Further Inputs:
         the current parameter vector.  [default = None]
     disp -- non-zero to print convergence messages.
         """
-        # process and activate input settings
-        settings = self._process_inputs(kwds)
-        for key in settings:
-            exec "%s = settings['%s']" % (key,key)
-
-        # set up signal handler
-        import signal
-        self._EARLYEXIT = False
-        self._generateHandler(sigint_callback) 
-        if self._handle_sigint: signal.signal(signal.SIGINT, self.signal_handler)
-
-        # decorate cost function with bounds, penalties, monitors, etc
-        cost = self._Decorate(cost, ExtraArgs)
-
-        # the initital optimization iteration
-        self.Step(cost)
-        # initialize termination conditions, if needed
-        termination(self)
-        if callback is not None:
-            callback(self.bestSolution)
-         
-        # impose the evaluation limits
-        self._SetEvaluationLimits()
-
-        # the main optimization loop
-        while not self._terminated(termination) and not self._EARLYEXIT:
-            self.Step(cost, strategy=strategy)
-            if callback is not None:
-                callback(self.bestSolution)
-
-        # handle signal interrupts
-        signal.signal(signal.SIGINT,signal.default_int_handler)
-
-        # log any termination messages
-        msg = self._terminated(termination, disp=disp, info=True)
-        if msg: self._stepmon.info('STOP("%s")' % msg)
+        super(DifferentialEvolutionSolver2, self).Solve(cost, termination,\
+                                      sigint_callback, ExtraArgs, **kwds)
         return 
 
 

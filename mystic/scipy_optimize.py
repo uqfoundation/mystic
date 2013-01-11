@@ -56,8 +56,7 @@ __all__ = ['NelderMeadSimplexSolver','PowellDirectionalSolver',
            'fmin','fmin_powell']
 
 
-from mystic.tools import wrap_function, unpair
-from mystic.tools import wrap_bounds, wrap_nested, wrap_penalty
+from mystic.tools import unpair
 
 import numpy
 from numpy import eye, zeros, shape, asarray, absolute, asfarray
@@ -126,27 +125,9 @@ The size of the simplex is dim+1.
         self.population[0] = x0
         return val
 
-    def _SetEvaluationLimits(self, iterscale=None, evalscale=None):
-        """set the evaluation limits"""
-        if iterscale is None: iterscale = 200
-        if evalscale is None: evalscale = 200
-        N = len(self.population[0]) #XXX: self.nDim
-        # if SetEvaluationLimits not applied, use the solver default
-        if self._maxiter is None: self._maxiter = N * iterscale
-        if self._maxfun is None: self._maxfun = N * evalscale
+    def _SetEvaluationLimits(self, iterscale=200, evalscale=200):
+        super(NelderMeadSimplexSolver, self)._SetEvaluationLimits(iterscale,evalscale)
         return
-
-    def _Decorate(self, cost, ExtraArgs=None):
-        """decorate cost function with bounds, penalties, monitors, etc"""
-        self._fcalls, cost = wrap_function(cost, ExtraArgs, self._evalmon)
-        if self._useStrictRange:
-            x0 = self.population[0]
-            x0[:] = self._clipGuessWithinRangeBoundary(x0)
-            cost = wrap_bounds(cost, self._strictMin, self._strictMax)
-        # wrap penalty and constraints functions
-        cost = wrap_penalty(cost, self._penalty)
-        cost = wrap_nested(cost, self._constraints)
-        return cost
 
     def Step(self, cost, radius=None):
         """perform a single optimization iteration"""
@@ -254,20 +235,10 @@ The size of the simplex is dim+1.
     def _process_inputs(self, kwds):
         """process and activate input settings"""
         #allow for inputs that don't conform to AbstractSolver interface
-        settings = \
-       {'callback':None,     #user-supplied function, called after each step
-        'disp':0,            #non-zero to print convergence messages
-        'radius':0.05}       #percentage change for initial simplex values
+        settings = super(NelderMeadSimplexSolver, self)._process_inputs(kwds)
+        settings.update({\
+        'radius':0.05})      #percentage change for initial simplex values
         [settings.update({i:j}) for (i,j) in kwds.items() if i in settings]
-        # backward compatibility
-        if kwds.has_key('EvaluationMonitor'): \
-           self.SetEvaluationMonitor(kwds.get('EvaluationMonitor'))
-        if kwds.has_key('StepMonitor'): \
-           self.SetGenerationMonitor(kwds.get('StepMonitor'))
-        if kwds.has_key('penalty'): \
-           self.SetPenalty(kwds.get('penalty'))
-        if kwds.has_key('constraints'): \
-           self.SetConstraints(kwds.get('constraints'))
         return settings
 
     def Solve(self, cost, termination, sigint_callback=None,
@@ -493,27 +464,9 @@ Takes one initial input:
         #                  [x1, fx, bigind, delta]
         self.__internals = [x1, fx,      0,   0.0]
 
-    def _SetEvaluationLimits(self, iterscale=None, evalscale=None):
-        """set the evaluation limits"""
-        if iterscale is None: iterscale = 1000
-        if evalscale is None: evalscale = 1000
-        N = len(self.population[0]) #XXX: self.nDim
-        # if SetEvaluationLimits not applied, use the solver default
-        if self._maxiter is None: self._maxiter = N * iterscale
-        if self._maxfun is None: self._maxfun = N * evalscale
+    def _SetEvaluationLimits(self, iterscale=1000, evalscale=1000):
+        super(PowellDirectionalSolver, self)._SetEvaluationLimits(iterscale,evalscale)
         return
-
-    def _Decorate(self, cost, ExtraArgs=None):
-        """decorate cost function with bounds, penalties, monitors, etc"""
-        self._fcalls, cost = wrap_function(cost, ExtraArgs, self._evalmon)
-        if self._useStrictRange:
-            x0 = self.population[0]
-            x0[:] = self._clipGuessWithinRangeBoundary(x0)
-            cost = wrap_bounds(cost, self._strictMin, self._strictMax)
-        # wrap penalty and constraints functions
-        cost = wrap_penalty(cost, self._penalty)
-        cost = wrap_nested(cost, self._constraints)
-        return cost
 
     def Step(self, cost, xtol=None):
         """perform a single optimization iteration"""
@@ -610,21 +563,11 @@ Takes one initial input:
     def _process_inputs(self, kwds):
         """process and activate input settings"""
         #allow for inputs that don't conform to AbstractSolver interface
-        settings = \
-       {'callback':None,     #user-supplied function, called after each step
-        'disp':0,            #non-zero to print convergence messages
+        settings = super(PowellDirectionalSolver, self)._process_inputs(kwds)
+        settings.update({\
         'xtol':1e-4,         #line-search error tolerance
-        'direc':None}
+        'direc':None})
         [settings.update({i:j}) for (i,j) in kwds.items() if i in settings]
-        # backward compatibility
-        if kwds.has_key('EvaluationMonitor'): \
-           self.SetEvaluationMonitor(kwds.get('EvaluationMonitor'))
-        if kwds.has_key('StepMonitor'): \
-           self.SetGenerationMonitor(kwds.get('StepMonitor'))
-        if kwds.has_key('penalty'): \
-           self.SetPenalty(kwds.get('penalty'))
-        if kwds.has_key('constraints'): \
-           self.SetConstraints(kwds.get('constraints'))
         return settings
 
     def Solve(self, cost, termination, sigint_callback=None,
