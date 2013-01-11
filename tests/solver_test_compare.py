@@ -47,8 +47,9 @@ def test_compare(solvername, x0, **kwds):
   # similar bestSolution and bestEnergy
 # print 'my:', my_x[0:2]
 # print 'sp:', sp_x[0:2]
-  assert almostEqual(my_x[0], sp_x[0])
-  assert almostEqual(my_x[1], sp_x[1])
+  if maxiter != 0: # mystic can stop at iter=0, scipy can't
+    assert almostEqual(my_x[0], sp_x[0])
+    assert almostEqual(my_x[1], sp_x[1])
   # print (iters, fcalls) and [maxiter, maxfun]
 # print my_x[2:4], (sp_x[-3],sp_x[-2]), [maxiter, maxfun]
   # test same number of iters and fcalls
@@ -59,7 +60,7 @@ def test_compare(solvername, x0, **kwds):
 #   assert my_x[3] <= maxfun
   if maxiter is not None:
     # test iters <= maxiter
-    if maxiter != 0: assert my_x[2] <= maxiter #FIXME: scipy* never stops at 0
+    assert my_x[2] <= maxiter
   return 
 
 if __name__ == '__main__':

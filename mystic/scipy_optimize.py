@@ -129,7 +129,7 @@ The size of the simplex is dim+1.
         super(NelderMeadSimplexSolver, self)._SetEvaluationLimits(iterscale,evalscale)
         return
 
-    def Step(self, cost, radius=None):
+    def Step(self, cost, radius=None, **kwds):
         """perform a single optimization iteration"""
         rho = 1; chi = 2; psi = 0.5; sigma = 0.5;
 
@@ -146,7 +146,7 @@ The size of the simplex is dim+1.
                 sim = numpy.zeros((N+1,), dtype=x0.dtype)
             else:
                 sim = numpy.zeros((N+1,N), dtype=x0.dtype)
-            fsim = numpy.zeros((N+1,), float)
+            fsim = numpy.ones((N+1,), float) * self._init_popEnergy
             ####################################################
             sim[0] = x0
             fsim[0] = cost(x0)
@@ -267,49 +267,9 @@ Further Inputs:
         current parameter vector.                           [default = None]
     disp -- non-zero to print convergence messages.         [default = 0]
     radius -- percentage change for initial simplex values. [default = 0.05]
-
 """
-        # process and activate input settings
-        settings = self._process_inputs(kwds)
-        for key in settings:
-            exec "%s = settings['%s']" % (key,key)
-
-        # set up signal handler
-        import signal
-        self._EARLYEXIT = False
-        self._generateHandler(sigint_callback) 
-        if self._handle_sigint: signal.signal(signal.SIGINT, self.signal_handler)
-
-        # decorate cost function with bounds, penalties, monitors, etc
-        cost = self._Decorate(cost, ExtraArgs)
-
-        # the initital optimization iteration
-        self.Step(cost)
-        # initialize termination conditions, if needed
-        termination(self)
-        if callback is not None:
-            callback(self.bestSolution)
-
-        # impose the evaluation limits
-        self._SetEvaluationLimits()
-
-        # the first optimization iteration
-        self.Step(cost, radius=radius)
-        if callback is not None:
-            callback(self.bestSolution)
-
-        # the main optimization loop
-        while not self._terminated(termination) and not self._EARLYEXIT:
-            self.Step(cost, radius=radius)
-            if callback is not None:
-                callback(self.bestSolution)
-
-        # handle signal interrupts
-        signal.signal(signal.SIGINT,signal.default_int_handler)
-
-        # log any termination messages
-        msg = self._terminated(termination, disp=disp, info=True)
-        if msg: self._stepmon.info('STOP("%s")' % msg)
+        super(NelderMeadSimplexSolver, self).Solve(cost, termination,\
+                                  sigint_callback, ExtraArgs, **kwds)
         return
 
 
@@ -468,7 +428,7 @@ Takes one initial input:
         super(PowellDirectionalSolver, self)._SetEvaluationLimits(iterscale,evalscale)
         return
 
-    def Step(self, cost, xtol=None):
+    def Step(self, cost, xtol=None, **kwds):
         """perform a single optimization iteration"""
         direc = self._direc
         x = self.population[0]   # bestSolution
@@ -488,7 +448,7 @@ Takes one initial input:
             else:
                 direc = asarray(direc, dtype=float)
             fval = squeeze(cost(x))
-            self._stepmon(x, fval, self.id) # get initial values
+            if self._maxiter != 0: self._stepmon(x, fval, self.id) # get initial values
 
         elif not self.generations: # do generations = 1
             ilist = range(len(x))
@@ -560,14 +520,21 @@ Takes one initial input:
         self.popEnergy[0] = fval # bestEnergy
         return
 
+    def _exitMain(self, **kwds):
+        """cleanup upon exiting the main optimization loop"""
+        self.energy_history = None # resync with 'best' energy
+        self._stepmon(self.bestSolution, self.bestEnergy, self.id)
+        return
+
     def _process_inputs(self, kwds):
         """process and activate input settings"""
         #allow for inputs that don't conform to AbstractSolver interface
         settings = super(PowellDirectionalSolver, self)._process_inputs(kwds)
         settings.update({\
-        'xtol':1e-4,         #line-search error tolerance
-        'direc':None})
+        'xtol':1e-4})        #line-search error tolerance
+        direc=None           #initial direction set
         [settings.update({i:j}) for (i,j) in kwds.items() if i in settings]
+        self._direc = kwds.get('direc', direc)
         return settings
 
     def Solve(self, cost, termination, sigint_callback=None,
@@ -597,52 +564,9 @@ Further Inputs:
     direc -- initial direction set
     xtol -- line-search error tolerance.
     disp -- non-zero to print convergence messages.
-
 """
-        # process and activate input settings
-        settings = self._process_inputs(kwds)
-        for key in settings:
-            exec "%s = settings['%s']" % (key,key)
-
-        # set up signal handler
-        import signal
-        self._EARLYEXIT = False
-        self._generateHandler(sigint_callback) 
-        if self._handle_sigint: signal.signal(signal.SIGINT, self.signal_handler)
-
-        # decorate cost function with bounds, penalties, monitors, etc
-        cost = self._Decorate(cost, ExtraArgs)
-
-        # the initital optimization iteration
-        self.Step(cost)
-        # initialize termination conditions, if needed
-        termination(self)
-        if callback is not None:
-            callback(self.bestSolution)
-
-        # impose the evaluation limits
-        self._SetEvaluationLimits()
-
-        # the first optimization iteration
-        self.Step(cost, xtol=xtol)
-        if callback is not None:
-            callback(self.bestSolution)
-
-        # the main optimization loop
-        while not self._terminated(termination) and not self._EARLYEXIT:
-            self.Step(cost, xtol=xtol)
-            if callback is not None:
-                callback(self.bestSolution)
-        else:
-            self.energy_history = None # resync with 'best' energy
-            self._stepmon(self.bestSolution, self.bestEnergy, self.id)
-    
-        # handle signal interrupts
-        signal.signal(signal.SIGINT,signal.default_int_handler)
-
-        # log any termination messages
-        msg = self._terminated(termination, disp=disp, info=True)
-        if msg: self._stepmon.info('STOP("%s")' % msg)
+        super(PowellDirectionalSolver, self).Solve(cost, termination,\
+                                  sigint_callback, ExtraArgs, **kwds)
         return
 
 

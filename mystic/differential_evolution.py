@@ -200,7 +200,7 @@ are logged.
         cost = wrap_penalty(cost, self._penalty)
         return cost
 
-    def Step(self, cost, strategy=None):
+    def Step(self, cost, strategy=None, **kwds):
         """perform a single optimization iteration"""
         if not len(self._stepmon): # do generation = 0
             self.population[0] = asfarray(self.population[0])
@@ -335,7 +335,7 @@ are logged.
         cost = wrap_penalty(cost, self._penalty)
         return cost
 
-    def Step(self, cost, strategy=None):
+    def Step(self, cost, strategy=None, **kwds):
         """perform a single optimization iteration"""
         if not len(self._stepmon): # do generation = 0
             self.population[0] = asfarray(self.population[0])

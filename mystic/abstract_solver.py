@@ -488,11 +488,15 @@ input::
         cost = wrap_nested(cost, self._constraints)
         return cost
 
-    def Step(self, cost, strategy=None):
+    def Step(self, cost, **kwds):
         """perform a single optimization iteration
 
 *** this method must be overwritten ***"""
         raise NotImplementedError, "an optimization algorithm was not provided"
+
+    def _exitMain(self, **kwds):
+        """cleanup upon exiting the main optimization loop"""
+        pass
 
     def _process_inputs(self, kwds):
         """process and activate input settings"""
@@ -564,9 +568,10 @@ Further Inputs:
 
         # the main optimization loop
         while not self._terminated(termination) and not self._EARLYEXIT:
-            self.Step(cost, strategy=strategy)
+            self.Step(cost, **settings)
             if callback is not None:
                 callback(self.bestSolution)
+        else: self._exitMain()
 
         # handle signal interrupts
         signal.signal(signal.SIGINT,signal.default_int_handler)
