@@ -6,6 +6,9 @@ Methods to support discrete measures
 from mystic.math.stats import *
 from mystic.math.samples import *
 from mystic.math.integrate import *
+from mystic.symbolic import generate_solvers, generate_constraint, solve
+from mystic.symbolic import generate_conditions, generate_penalty
+from mystic.math import almostEqual
 
 def weighted_select(samples, weights, mass=1.0):
   """randomly select a sample from weighted set of samples
@@ -293,6 +296,7 @@ Inputs:
   wts = normalize(weights,mass) #NOTE: not "mean-preserving", until next line
   return impose_mean(m, samples, wts), wts
 
+
 def normalize(weights, mass=1.0, zsum=False, zmass=1.0):
   """normalize a list of points to unity (i.e. normalize to 1.0)
 
@@ -314,6 +318,96 @@ Inputs:
   weights[zsum] = -(w - weights[zsum])
   mass = zmass
   return list(mass * weights / w)  #FIXME: not "mean-preserving"
+
+
+def impose_reweighted_mean(m, samples, weights=None, solver=None):
+    """impose a mean on a list of points, using reweighting"""
+    ndim = len(samples)
+    if weights == None:
+        weights = [1.0/ndim] * ndim
+    if solver is None or solver == 'fmin':
+        from mystic.solvers import fmin as solver
+    elif solver == 'fmin_powell':
+        from mystic.solvers import fmin_powell as solver
+    elif solver == 'diffev':
+        from mystic.solvers import diffev as solver
+    elif solver == 'diffev2':
+        from mystic.solvers import diffev2 as solver
+    norm = sum(weights)
+
+    inequality = ""; equality = ""; equality2 = ""
+    for i in range(ndim):
+        inequality += "x%s >= 0.0\n" % (i+1) # positive
+        equality += "x%s + " % (i+1)         # normalized
+        equality2 += "%s * x%s + " % (float(samples[i]),(i+1)) # mean
+
+    equality += "0.0 = %s\n" % float(norm)
+    equality += equality2 + "0.0 = %s*%s\n" % (float(norm),m)
+
+    penalties = generate_penalty(generate_conditions(inequality))
+    constrain = generate_constraint(generate_solvers(solve(equality)))
+
+    def cost(x): return sum(x)
+
+    results = solver(cost, weights, constraints=constrain, \
+                     penalty=penalties, disp=False, full_output=True)
+    wts = list(results[0])
+    _norm = results[1] # should have _norm == norm
+    warn = results[4]  # nonzero if didn't converge
+
+    #XXX: better to fail immediately if xlo < m < xhi... or the below?
+    if warn or not almostEqual(_norm, norm):
+        print "Warning: could not impose mean through reweighting"
+        return impose_mean(m, samples, weights), weights
+
+    return samples, wts
+
+
+def impose_reweighted_variance(v, samples, weights=None, solver=None):
+    """impose a variance on a list of points, using reweighting"""
+    ndim = len(samples)
+    if weights == None:
+        weights = [1.0/ndim] * ndim
+    if solver is None or solver == 'fmin':
+        from mystic.solvers import fmin as solver
+    elif solver == 'fmin_powell':
+        from mystic.solvers import fmin_powell as solver
+    elif solver == 'diffev':
+        from mystic.solvers import diffev as solver
+    elif solver == 'diffev2':
+        from mystic.solvers import diffev2 as solver
+    norm = sum(weights)
+    m = mean(samples, weights)
+
+    inequality = ""
+    equality = ""; equality2 = ""; equality3 = ""
+    for i in range(ndim):
+        inequality += "x%s >= 0.0\n" % (i+1) # positive
+        equality += "x%s + " % (i+1)         # normalized
+        equality2 += "%s * x%s + " % (float(samples[i]),(i+1)) # mean
+        equality3 += "x%s*(%s-%s)**2 + " % ((i+1),float(samples[i]),m) # var
+
+    equality += "0.0 = %s\n" % float(norm)
+    equality += equality2 + "0.0 = %s*%s\n" % (float(norm),m)
+    equality += equality3 + "0.0 = %s*%s\n" % (float(norm),v)
+
+    penalties = generate_penalty(generate_conditions(inequality))
+    constrain = generate_constraint(generate_solvers(solve(equality)))
+
+    def cost(x): return sum(x)
+
+    results = solver(cost, weights, constraints=constrain, \
+                     penalty=penalties, disp=False, full_output=True)
+    wts = list(results[0])
+    _norm = results[1] # should have _norm == norm
+    warn = results[4]  # nonzero if didn't converge
+
+    #XXX: better to fail immediately if xlo < m < xhi... or the below?
+    if warn or not almostEqual(_norm, norm):
+        print "Warning: could not impose mean through reweighting"
+        return impose_variance(v, samples, weights), weights
+
+    return samples, wts  # "mean-preserving"
 
 
 ##### misc methods #####

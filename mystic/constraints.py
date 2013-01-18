@@ -5,7 +5,7 @@
 
 __all__ = ['with_penalty','with_constraint','as_penalty','as_constraint',
            'with_mean','with_variance','with_spread','normalized',
-           'issolution','solve']
+           'issolution','solve','discrete']
 
 from mystic.math.measures import *
 from mystic.math import almostEqual
@@ -347,6 +347,78 @@ Additional Inputs:
         return 0.0
 
     return penalty
+
+
+from numpy import asarray, vectorize, choose, zeros, ones, ndarray
+#from random import sample, choice
+def discrete(samples, index=None):
+    """impose a discrete set of input values for the selected function
+
+The function's input will be mapped to the given discrete set
+
+>>> @discrete([1.0, 2.0])
+... def identity(x):
+...     return x
+
+>>> identity([0.123, 1.789, 4.000])
+[1.0, 2.0, 2.0]
+
+>>> @discrete([1,3,5,7], index=(0,3))
+... def squared(x):
+....    return [i**2 for i in x]
+
+>>> squared([0,2,4,6,8,10])
+[1, 4, 16, 25, 64, 100]"""
+    samples = [asarray(samples)]
+    samples[0].sort()
+    if isinstance(index, int): index = (index,)
+    index = [index]
+
+    #XXX: refactor to use points_factory(samples)
+    def _points(alist):
+        alist = asarray(alist)
+        alist.sort()
+        samples[0] = alist
+
+    def _index(alist=None):
+        index[0] = alist
+
+    #XXX: refactor to use argnear_factory(samples)
+    def _argnear(xi):
+        arghi = sum(xi > samples[0])
+        arglo = max(0, arghi - 1) # minimum = x[0]
+        if arghi == len(samples[0]): 
+            arghi = arglo         # maximum = x[-1]
+        return arglo, arghi
+
+    def _near(xi, lo, hi):
+        if hi - xi < xi - lo: 
+            return hi
+        return lo
+
+    argnear = vectorize(_argnear)
+    near = vectorize(_near)
+
+    def dec(f):
+        def func(x, *args, **kwds):
+            if isinstance(x, ndarray): xtype = asarray
+            else: xtype = type(x)
+            arglo, arghi = argnear(x)
+            xp = near(x, samples[0][arglo], samples[0][arghi])
+            # create a choice array from given indices
+            #FIXME: better ways to do the following
+            if index[0] is None: 
+                mask = ones(xp.size, dtype=bool)
+            else:
+                mask = zeros(xp.size, dtype=bool)
+                try: mask[sorted(index[0], key=abs)] = True
+                except IndexError: pass
+            xp = xtype(choose(mask, (x,xp)))
+            return f(xp, *args, **kwds)
+        func.samples = _points
+        func.index = _index
+        return func
+    return dec
 
 
 # EOF

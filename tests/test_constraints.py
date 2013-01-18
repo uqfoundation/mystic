@@ -215,6 +215,21 @@ def test_with_constraint():
   assert mean_of_squared(x) == y
 
 
+def test_discrete():
+
+  @discrete([1.0, 3.5, 5.5, 7.0])
+  def discrete_squared(x):
+    return x**2
+
+  from numpy import asarray
+  assert discrete_squared(5.6) == 5.5**2
+  assert all(discrete_squared(asarray([1, 3])) == asarray([1.0, 3.5])**2)
+  discrete_squared.samples([1.0, 7.0])
+  assert discrete_squared(5.6) == 7.0**2
+  discrete_squared.index([0, -1])
+  assert all(discrete_squared(asarray([0, 3, 6])) == asarray([1.0, 3.0, 7.0])**2)
+
+
 if __name__ == '__main__':
   test_penalize()
   test_solve()
@@ -226,6 +241,7 @@ if __name__ == '__main__':
   test_with_mean_spread()
   test_constrained_solve()
   test_with_constraint()
+  test_discrete()
 
 
 # EOF
