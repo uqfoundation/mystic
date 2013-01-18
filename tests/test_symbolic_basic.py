@@ -2,9 +2,9 @@
 #
 # coded by Alta Fang, 2010
 """
-A few basic constraints tests, but definitely not a comprehensive suite.
+A few basic symbolic constraints tests, but in no way a comprehensive suite.
 """
-from mystic.constraints import *
+from mystic.symbolic import *
 from mystic.tools import random_seed
 random_seed(123)
 
