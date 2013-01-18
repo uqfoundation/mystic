@@ -4,6 +4,10 @@
 """
 A few basic symbolic constraints tests, but in no way a comprehensive suite.
 """
+from numpy import asarray
+#from mystic.restarts import sumt
+from mystic.constraints import issolution, as_constraint
+from mystic.coupler import inner
 from mystic.symbolic import *
 from mystic.tools import random_seed
 random_seed(123)
@@ -31,6 +35,7 @@ def test_sumt1():
     solver = NelderMeadSimplexSolver(ndim)
     solver.SetInitialPoints(x0)
     term = VTR()
+    #FIXME: sumt, issolution no longer take constraints strings
     end_solver = sumt(constraints_string, ndim, costfunc, solver,\
                                 term, disp=True)
     soln = end_solver.Solution()
@@ -56,6 +61,7 @@ def test_sumt2():
     solver = NelderMeadSimplexSolver(ndim)
     solver.SetInitialPoints(x0)
     term = VTR()
+    #FIXME: sumt, issolution no longer take constraints strings
     end_solver = sumt(constraints_string, ndim, costfunc, solver,\
                                 term, disp=True)
     soln = end_solver.Solution()
@@ -72,19 +78,18 @@ def test_form_constraints_function():
     print "building constraints function for:%s" % string.rstrip()
     x0 = [0.8,1.2,-0.7]
     print 'initial parameters: %s' % asarray(x0)
-    print 'constraints satisfied?', issolution(string, x0)
-    cf = parse(string)
-    c = cf(x0)
-    print 'after imposing constraints: %s' % asarray(c)
-    print 'constraints satisfied?', issolution(string, c)
+    cf = generate_constraint(generate_solvers(solve(string)))
+    print 'constraints satisfied?', issolution(cf, x0)
+    x = cf(x0)
+    print 'after imposing constraints: %s' % asarray(x)
+    print 'constraints satisfied?', issolution(cf, x)
 
     x0 = [1.,1.,1.]
     print 'initial parameters: %s' % asarray(x0)
-    print 'constraints satisfied?', issolution(string, x0)
-    cf = parse(string)
-    c = cf(x0)
-    print 'after imposing constraints: %s' % asarray(c)
-    print 'constraints satisfied?', issolution(string, c), "\n"
+    print 'constraints satisfied?', issolution(cf, x0)
+    x = cf(x0)
+    print 'after imposing constraints: %s' % asarray(x)
+    print 'constraints satisfied?', issolution(cf, x), "\n"
 
 def test_matrix_interface():
     # Demonstrates linear_symbolic()
@@ -99,11 +104,16 @@ def test_matrix_interface():
     print "inequality constraints"
     print "A:\n%s" % A
     print "b: %s" % b
-    costfunc = lambda x: sum(x)
     constraints_string = linear_symbolic(A=A, b=b, G=G, h=h)
     print "symbolic string:\n", constraints_string.rstrip()
-    cf = wrap_constraints(constraints_string, costfunc)
-    print "c = wrap_constraints( constraints, sum(x) )"
+    pf = generate_penalty(generate_conditions(constraints_string))
+
+    @inner(as_constraint(pf))
+    def cf(x):
+        return sum(x)
+
+    #XXX: implement: wrap_constraint( as_constraint(pf), sum, ctype='inner') ?
+    print "c = constraints wrapped around sum(x)"
     x0 = [1., 1., 1.]
     print "c(%s): %s\n" % (x0, cf(x0))
 
@@ -111,33 +121,36 @@ def test_varnamelist():
     # Demonstrates usage of varnamelist
     varnamelist = ['length', 'width', 'height']
     string = "length = height**2 - 3.5*width"
-    costfunc = lambda x: x[0]   
     print "symbolic string:\n", string.rstrip()
-    wrappedfunc = wrap_constraints(string, costfunc, variables=varnamelist)
-    print "c = wrap_constraints( constraints, x[0] )"
+    string = replace_variables(string, varnamelist, 'x')
+    cf = generate_constraint(generate_solvers(string))
+
+    @inner(cf)
+    def wrappedfunc(x):
+        return x[0]
+
+    #XXX: implement: wrap_constraint( cf, lambda x: x[0], ctype='inner') ?
+    print "c = constraints wrapped around x[0]"
     x0 = [2., 2., 3.]
     print "c(%s): %s\n" % (x0, wrappedfunc(x0)) # Expected: 2.0
 
 def test_feasible_pt():
     constraints = """x1 + x2 + x7 - 2*x4 > 3"""
-    bad_constraints = """
-x1 + x2 < 3.
-x1 + x2 > 4."""
-    soln = solve(constraints, guess=[1.]*8)
-    print 'actual solution:', soln, "\n"
+    soln = solve(constraints, guess=[1.]*8) #FIXME: either constraints.solve
+    print 'actual solution:', soln, "\n"    #       or symbolic.solve ... ?
 
 def test_varnamelist2():
     # Test tricky cases of varnamelist
     varnamelist = ['x', 'y', 'x3']
     string = "x + y + x3 = 0"
     print "symbolic string:\n", string.rstrip()
-    newstring = substitute_symbolic(string, varnamelist, variables='x')
+    newstring = replace_variables(string, varnamelist, 'x')
     print "new symbolic string:\n", newstring.rstrip()
 
 
 if __name__ == '__main__':
-    test_sumt1()
-    test_sumt2()
+####test_sumt1()
+####test_sumt2()
     test_form_constraints_function()
     test_matrix_interface()
     test_varnamelist()

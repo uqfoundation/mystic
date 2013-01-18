@@ -32,18 +32,8 @@ if __name__ == '__main__':
     # initial guess
     x0 = [0.8,1.2,0.7]
 
-    # define mean constraints factory decorator
-    def with_mean(target):
-        def decorate(constraints):
-            def factory(x):
-                # apply decorated constraints function
-                x = constraints(x)
-                # constrain x such that mean(x) == target
-                if not almostEqual(mean(x), target):
-                    x = impose_mean(target, x)
-                return x
-            return factory
-        return decorate
+    # use the mean constraints factory decorator
+    from mystic.constraints import with_mean
 
     # define constraints function
     @with_mean(1.0)

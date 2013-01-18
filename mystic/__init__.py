@@ -24,7 +24,8 @@ __doc__ = """
 __license__ = """
 """ + __license__
 
-__all__ = ['solvers', 'termination', 'strategy', 'munge', 'tools']
+__all__ = ['solvers', 'termination', 'strategy', 'munge', 'tools', \
+           'constraints', 'penalty', 'coupler', 'symbolic']
 
 # solvers
 import solvers
@@ -34,8 +35,10 @@ import termination
 import strategy
 
 # constraints and penalties
-# import constraints
-# import penalties
+import constraints
+import penalty
+import coupler
+import symbolic
 
 # monitors, function wrappers, and other tools
 import monitors
