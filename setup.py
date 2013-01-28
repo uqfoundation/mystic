@@ -23,10 +23,11 @@ except ImportError:
 # generate version number
 if os.path.exists('mystic/info.py'):
     # is a source distribution, so use existing version
-    from mystic.info import this_version
+   #from mystic.info import this_version #FIXME?
+    this_version = stable_version
 elif stable_version == target_version:
     # we are building a stable release
-    this_version = target_version
+    this_version = stable_version
 else:
     # we are building a distribution
     this_version = target_version + '.dev'

@@ -75,7 +75,7 @@ Null objects always and reliably "do nothing." """
         return cls._inst
     def __init__(self, *args, **kwargs): pass
     def __call__(self, *args, **kwargs): return self
-    def __repr__(self): return "Null( )"
+    def __repr__(self): return "Null()"
     def __nonzero__(self): return False
     def __getattr__(self, name): return self
     def __setattr__(self, name, value): return self
