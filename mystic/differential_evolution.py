@@ -151,7 +151,7 @@ class DifferentialEvolutionSolver(AbstractSolver):
 Differential Evolution optimization.
     """
     
-    def __init__(self, dim, NP):
+    def __init__(self, dim, NP=None):
         """
 Takes two initial inputs: 
     dim  -- dimensionality of the problem
@@ -159,7 +159,7 @@ Takes two initial inputs:
 
 All important class members are inherited from AbstractSolver.
         """
-        #XXX: raise Error if npop <= 4?
+        NP = max(NP, dim, 4) #XXX: raise Error if npop <= 4?
         AbstractSolver.__init__(self,dim,npop=NP)
         self.genealogy     = [ [] for j in range(NP)]
         self.scale         = 0.8
@@ -190,18 +190,25 @@ are logged.
         self.genealogy[id].append(newchild)
         return
 
-    def _Decorate(self, cost, ExtraArgs=None):
+    def _RegisterCost(self, cost, ExtraArgs=None):
         """decorate cost function with bounds, penalties, monitors, etc"""
+        if ExtraArgs == None: ExtraArgs = ()
         self._fcalls, cost = wrap_function(cost, ExtraArgs, self._evalmon)
         if self._useStrictRange:
             for i in range(self.nPop):
                 self.population[i] = self._clipGuessWithinRangeBoundary(self.population[i])
             cost = wrap_bounds(cost, self._strictMin, self._strictMax)
         cost = wrap_penalty(cost, self._penalty)
+        # hold on to the 'wrapped' cost function
+        self._cost = (cost, ExtraArgs)
         return cost
 
-    def Step(self, cost, strategy=None, **kwds):
-        """perform a single optimization iteration"""
+    def Step(self, cost=None, ExtraArgs=None, strategy=None, **kwds):
+        """perform a single optimization iteration
+        Note that ExtraArgs should be a *tuple* of extra arguments"""
+        # HACK to enable not explicitly calling _RegisterCost
+        cost = self._bootstrap_decorate(cost, ExtraArgs)
+
         if not len(self._stepmon): # do generation = 0
             self.population[0] = asfarray(self.population[0])
             # decouple bestSolution from population and bestEnergy from popEnergy
@@ -298,7 +305,7 @@ Alternate implementation:
     - both a current and a next generation are kept, while the current
       generation is invariant during the main DE logic
     """
-    def __init__(self, dim, NP):
+    def __init__(self, dim, NP=None):
         """
 Takes two initial inputs: 
     dim  -- dimensionality of the problem
@@ -320,8 +327,9 @@ are logged.
         self.genealogy[id].append(newchild)
         return
 
-    def _Decorate(self, cost, ExtraArgs=None):
+    def _RegisterCost(self, cost, ExtraArgs=None):
         """decorate cost function with bounds, penalties, monitors, etc"""
+        if ExtraArgs == None: ExtraArgs = ()
        #FIXME: EvaluationMonitor fails for MPI, throws error for 'pp'
         from python_map import python_map
         if self._map != python_map:
@@ -333,10 +341,16 @@ are logged.
                 self.population[i] = self._clipGuessWithinRangeBoundary(self.population[i])
             cost = wrap_bounds(cost, self._strictMin, self._strictMax)
         cost = wrap_penalty(cost, self._penalty)
+        # hold on to the 'wrapped' cost function
+        self._cost = (cost, ExtraArgs)
         return cost
 
-    def Step(self, cost, strategy=None, **kwds):
-        """perform a single optimization iteration"""
+    def Step(self, cost=None, ExtraArgs=None, strategy=None, **kwds):
+        """perform a single optimization iteration
+        Note that ExtraArgs should be a *tuple* of extra arguments"""
+        # HACK to enable not explicitly calling _RegisterCost
+        cost = self._bootstrap_decorate(cost, ExtraArgs)
+
         if not len(self._stepmon): # do generation = 0
             self.population[0] = asfarray(self.population[0])
             # decouple bestSolution from population and bestEnergy from popEnergy

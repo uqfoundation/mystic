@@ -67,4 +67,33 @@ from scipy_optimize import PowellDirectionalSolver
 from scipy_optimize import fmin, fmin_powell
 
 
+# load a solver from a restart file
+def LoadSolver(filename=None, **kwds):
+    """load solver state from a restart file"""
+    if filename == None: filename = kwds.get('_state', None)
+    #XXX: only allow a list override keys (lookup values from self)
+#   if filename == None: filename = self._state
+#   if filename == None:
+#       solver = self
+#   else:
+    import dill
+    f = file(filename, 'rb')
+    try:
+        solver = dill.load(f)
+        _locals = {}
+        _locals['solver'] = solver
+        code = "from mystic.solvers import %s;" % solver._type
+        code += "self = %s(solver.nDim);" % solver._type
+        code = compile(code, '<string>', 'exec')
+        exec code in _locals
+        self = _locals['self']
+    finally:
+        f.close()
+    # transfer state from solver to self, allowing overrides
+    self._AbstractSolver__load_state(solver, **kwds)
+    self._state = filename
+    self._stepmon.info('LOADED("%s")' % filename)
+    return self
+
+
 # end of file

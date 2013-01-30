@@ -79,7 +79,6 @@ from mystic.tools import wrap_bounds, wrap_penalty
 abs = absolute
 
 
-
 class AbstractSolver(object):
     """
 AbstractSolver base class for mystic optimizers.
@@ -117,6 +116,8 @@ Important class members:
         self._map_solver      = False
         self._bestEnergy      = None
         self._bestSolution    = None
+        self._state           = None
+        self._type            = self.__class__.__name__
 
         self.signal_handler   = None
         self._handle_sigint   = False
@@ -138,6 +139,7 @@ Important class members:
 
         self._constraints     = lambda x: x
         self._penalty         = lambda x: 0.0
+        self._cost            = (None, None)
 
         import mystic.termination
         self._EARLYEXIT       = mystic.termination.EARLYEXIT
@@ -477,8 +479,9 @@ input::
             return msg
         return bool(msg)
 
-    def _Decorate(self, cost, ExtraArgs=None):
+    def _RegisterCost(self, cost, ExtraArgs=None):
         """decorate cost function with bounds, penalties, monitors, etc"""
+        if ExtraArgs == None: ExtraArgs = ()
         self._fcalls, cost = wrap_function(cost, ExtraArgs, self._evalmon)
         if self._useStrictRange:
             for i in range(self.nPop):
@@ -486,13 +489,49 @@ input::
             cost = wrap_bounds(cost, self._strictMin, self._strictMax)
         cost = wrap_penalty(cost, self._penalty)
         cost = wrap_nested(cost, self._constraints)
+        # hold on to the 'wrapped' cost function
+        self._cost = (cost, ExtraArgs)
         return cost
 
-    def Step(self, cost, **kwds):
+    def _bootstrap_decorate(self, cost=None, ExtraArgs=None):
+        """HACK to enable not explicitly calling _RegisterCost"""
+        args = None
+        if cost == None: # 'use existing cost'
+            cost,args = self._cost # use args, unless override with ExtraArgs
+        if ExtraArgs != None: args = ExtraArgs
+        if self._cost[0] == None: # '_RegisterCost not yet called'
+            if args is None: args = ()
+            cost = self._RegisterCost(cost, args)
+        return cost
+
+    def Step(self, cost=None, ExtraArgs=None, **kwds):
         """perform a single optimization iteration
 
 *** this method must be overwritten ***"""
         raise NotImplementedError, "an optimization algorithm was not provided"
+
+    def SaveSolver(self, filename=None, **kwds):
+        """save solver state to a restart file"""
+        import dill
+        if filename == None: # then check if already has registered file
+            if self._state == None: # then create a new one
+                import tempfile
+                self._state = tempfile.mkstemp(suffix='.pkl')[-1]
+            filename = self._state
+        self._state = filename
+        f = file(filename, 'wb')
+        try:
+            dill.dump(self, f, **kwds)
+            self._stepmon.info('DUMPED("%s")' % filename) #XXX: before / after ?
+        finally:
+            f.close()
+        return
+
+    def __load_state(self, solver, **kwds):
+        """load solver.__dict__ into self.__dict__; override with kwds"""
+        #XXX: should do some filtering on kwds ?
+        self.__dict__.update(solver.__dict__, **kwds)
+        return
 
     def _exitMain(self, **kwds):
         """cleanup upon exiting the main optimization loop"""
@@ -541,7 +580,8 @@ Further Inputs:
         iteration.  It is called as callback(xk), where xk is
         the current parameter vector.  [default = None]
     disp -- non-zero to print convergence messages.
-        """
+        """ #FIXME: edit so "Solve" can be called anytime to "finish" the solve
+        #FIXME: needs to respect when evals/iters have been done already
         # process and activate input settings
         settings = self._process_inputs(kwds)
         for key in settings:
@@ -554,10 +594,10 @@ Further Inputs:
         if self._handle_sigint: signal.signal(signal.SIGINT, self.signal_handler)
 
         # decorate cost function with bounds, penalties, monitors, etc
-        cost = self._Decorate(cost, ExtraArgs)
+        self._RegisterCost(cost, ExtraArgs)
 
         # the initital optimization iteration
-        self.Step(cost)
+        self.Step()
         # initialize termination conditions, if needed
         termination(self)
         if callback is not None:
@@ -568,7 +608,7 @@ Further Inputs:
 
         # the main optimization loop
         while not self._terminated(termination) and not self._EARLYEXIT:
-            self.Step(cost, **settings)
+            self.Step(**settings)
             if callback is not None:
                 callback(self.bestSolution)
         else: self._exitMain()

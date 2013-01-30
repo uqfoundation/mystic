@@ -81,6 +81,7 @@ Null objects always and reliably "do nothing." """
     def __setattr__(self, name, value): return self
     def __delattr__(self, name): return self
     def __len__(self): return
+    def __getnewargs__(self): return ()
 # comply with monitor interface
 Null.info = Null()
 

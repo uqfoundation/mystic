@@ -129,8 +129,12 @@ The size of the simplex is dim+1.
         super(NelderMeadSimplexSolver, self)._SetEvaluationLimits(iterscale,evalscale)
         return
 
-    def Step(self, cost, radius=None, **kwds):
-        """perform a single optimization iteration"""
+    def Step(self, cost=None, ExtraArgs=None, radius=None, **kwds):
+        """perform a single optimization iteration
+        Note that ExtraArgs should be a *tuple* of extra arguments"""
+        # HACK to enable not explicitly calling _RegisterCost
+        cost = self._bootstrap_decorate(cost, ExtraArgs)
+
         rho = 1; chi = 2; psi = 0.5; sigma = 0.5;
 
         if not len(self._stepmon): # do generation = 0
@@ -428,8 +432,12 @@ Takes one initial input:
         super(PowellDirectionalSolver, self)._SetEvaluationLimits(iterscale,evalscale)
         return
 
-    def Step(self, cost, xtol=None, **kwds):
-        """perform a single optimization iteration"""
+    def Step(self, cost=None, ExtraArgs=None, xtol=None, **kwds):
+        """perform a single optimization iteration
+        Note that ExtraArgs should be a *tuple* of extra arguments"""
+        # HACK to enable not explicitly calling _RegisterCost
+        cost = self._bootstrap_decorate(cost, ExtraArgs)
+
         direc = self._direc
         x = self.population[0]   # bestSolution
         fval = self.popEnergy[0] # bestEnergy

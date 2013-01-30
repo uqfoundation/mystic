@@ -125,7 +125,7 @@ download the tarball, unzip, and run the installer::
     $ python setup py install
 
 You will be warned of any missing dependencies and/or settings
-after you run the "build" step above. Mystic depends on numpy
+after you run the "build" step above. Mystic depends on dill, numpy
 and sympy, so you should install them first. There are several
 functions within mystic where scipy is used if it is available;
 however, scipy is an optional dependency. Having matplotlib installed
@@ -153,6 +153,7 @@ Mystic requires::
     - python, version >= 2.5, version < 3.0
     - numpy, version >= 1.0
     - sympy, version >= 0.6.7
+    - dill, version >= 0.2a.dev
 
 Optional requirements::
 
@@ -299,12 +300,13 @@ setup(name='mystic',
 # add dependencies
 numpy_version = '>=1.0'
 sympy_version = '>=0.6.7'
+dill_version = '>=0.2a.dev'
 scipy_version = '>=0.6.0'
 matplotlib_version = '>=0.91'
 if has_setuptools:
     setup_code += """
-      install_requires = ('numpy%s', 'sympy%s'),
-""" % (numpy_version, sympy_version)
+      install_requires = ('numpy%s', 'sympy%s', 'dill%s'),
+""" % (numpy_version, sympy_version, dill_version)
 
 # close 'setup' call
 setup_code += """    
@@ -327,6 +329,7 @@ exec setup_code
 try:
     import numpy
     import sympy
+    import dill
     #import scipy
     #import matplotlib #XXX: has issues being zip_safe
 except ImportError:
@@ -334,6 +337,7 @@ except ImportError:
     print "WARNING: One of the following dependencies is unresolved:"
     print "    numpy %s" % numpy_version
     print "    sympy %s" % sympy_version
+    print "    dill %s" % dill_version
     print "    scipy %s (optional)" % scipy_version
     print "    matplotlib %s (optional)" % matplotlib_version
     print "***********************************************************\n"
