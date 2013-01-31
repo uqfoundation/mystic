@@ -151,7 +151,7 @@ class DifferentialEvolutionSolver(AbstractSolver):
 Differential Evolution optimization.
     """
     
-    def __init__(self, dim, NP=None):
+    def __init__(self, dim, NP=4):
         """
 Takes two initial inputs: 
     dim  -- dimensionality of the problem
@@ -307,7 +307,7 @@ Alternate implementation:
     - both a current and a next generation are kept, while the current
       generation is invariant during the main DE logic
     """
-    def __init__(self, dim, NP=None):
+    def __init__(self, dim, NP=4):
         """
 Takes two initial inputs: 
     dim  -- dimensionality of the problem
