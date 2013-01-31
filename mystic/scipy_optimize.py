@@ -234,6 +234,8 @@ The size of the simplex is dim+1.
         self.population = sim # bestSolution = sim[0]
         self.popEnergy = fsim # bestEnergy = fsim[0]
         self._stepmon(sim[0], fsim[0], self.id) # sim = all; "best" is sim[0]
+        # if savefrequency matches, then save state
+        self._AbstractSolver__save_state()
         return
 
     def _process_inputs(self, kwds):
@@ -456,7 +458,10 @@ Takes one initial input:
             else:
                 direc = asarray(direc, dtype=float)
             fval = squeeze(cost(x))
-            if self._maxiter != 0: self._stepmon(x, fval, self.id) # get initial values
+            if self._maxiter != 0:
+                self._stepmon(x, fval, self.id) # get initial values
+                # if savefrequency matches, then save state
+                self._AbstractSolver__save_state()
 
         elif not self.generations: # do generations = 1
             ilist = range(len(x))
@@ -503,6 +508,8 @@ Takes one initial input:
             self.popEnergy[0] = fval # bestEnergy
             self.energy_history = None # resync with 'best' energy
             self._stepmon(x, fval, self.id) # get ith values
+            # if savefrequency matches, then save state
+            self._AbstractSolver__save_state()
 
             fx = fval
             bigind = 0
@@ -532,6 +539,8 @@ Takes one initial input:
         """cleanup upon exiting the main optimization loop"""
         self.energy_history = None # resync with 'best' energy
         self._stepmon(self.bestSolution, self.bestEnergy, self.id)
+        # if savefrequency matches, then save state
+        self._AbstractSolver__save_state()
         return
 
     def _process_inputs(self, kwds):

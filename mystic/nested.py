@@ -173,6 +173,8 @@ def local_optimize(cost, termination, x0, rank):
                          ncpus=self._ncpus, servers=self._servers)
         results = self._map(local_optimize, cf, tm, initial_values, id, **mapconfig)
 
+        # save initial state
+        self.AbstractSolver__save_state()
         # get the results with the lowest energy
         self._bestSolver = results[0][0]
         bestpath = results[0][1]
@@ -209,6 +211,8 @@ def local_optimize(cost, termination, x0, rank):
         # log any termination messages
         msg = self._terminated(termination, disp=disp, info=True)
         if msg: self._stepmon.info('STOP("%s")' % msg)
+        # save final state
+        self.AbstractSolver__save_state(force=True)
         return 
 
 class BuckshotSolver(AbstractNestedSolver):
@@ -339,6 +343,8 @@ def local_optimize(cost, termination, x0, rank):
                          ncpus=self._ncpus, servers=self._servers)
         results = self._map(local_optimize, cf, tm, initial_values, id, **mapconfig)
 
+        # save initial state
+        self.AbstractSolver__save_state()
         # get the results with the lowest energy
         self._bestSolver = results[0][0]
         bestpath = results[0][1]
@@ -375,6 +381,8 @@ def local_optimize(cost, termination, x0, rank):
         # log any termination messages
         msg = self._terminated(termination, disp=disp, info=True)
         if msg: self._stepmon.info('STOP("%s")' % msg)
+        # save final state
+        self.AbstractSolver__save_state(force=True)
         return 
 
 # backward compatibility

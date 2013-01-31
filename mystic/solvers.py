@@ -77,7 +77,8 @@ def LoadSolver(filename=None, **kwds):
 #       solver = self
 #   else:
     import dill
-    f = file(filename, 'rb')
+    if filename: f = file(filename, 'rb')
+    else: return
     try:
         solver = dill.load(f)
         _locals = {}

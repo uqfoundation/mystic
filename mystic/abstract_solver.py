@@ -128,6 +128,8 @@ Important class members:
         self._strictMax       = []
         self._maxiter         = None
         self._maxfun          = None
+        self._saveiter        = None
+       #self._saveeval        = None
 
         from mystic.monitors import Null, Monitor
         self._evalmon         = Null()
@@ -140,6 +142,7 @@ Important class members:
         self._constraints     = lambda x: x
         self._penalty         = lambda x: 0.0
         self._cost            = (None, None)
+       #self._termination     = lambda x: False
 
         import mystic.termination
         self._EARLYEXIT       = mystic.termination.EARLYEXIT
@@ -426,6 +429,13 @@ Available switches::
         self.signal_handler = handler
         return
 
+    def SetSaveFrequency(self, generations=None, filename=None, **kwds):
+        """set frequency for saving solver restart file"""
+        self._saveiter = generations
+       #self._saveeval = evaluations
+        self._state = filename
+        return
+
     def SetEvaluationLimits(self, generations=None, evaluations=None, **kwds):
         """set limits for generations and/or evaluations
 
@@ -479,6 +489,12 @@ input::
             return msg
         return bool(msg)
 
+   #def _RegisterTermination(self, termination):
+   #    """register a termination function"""
+   #    #FIXME: issues with pickling, unless save as string: _term = "VTR(tol)"
+   #    self._termination = termination
+   #    return
+
     def _RegisterCost(self, cost, ExtraArgs=None):
         """decorate cost function with bounds, penalties, monitors, etc"""
         if ExtraArgs == None: ExtraArgs = ()
@@ -525,6 +541,23 @@ input::
             self._stepmon.info('DUMPED("%s")' % filename) #XXX: before / after ?
         finally:
             f.close()
+        return
+
+    def __save_state(self, force=False):
+        """save the solver state, if chosen save frequency is met"""
+        # save the last iteration
+        if force and bool(self._state):
+            self.SaveSolver()
+            return
+        # save the zeroth iteration
+        nonzero = True #XXX: or bool(self.generations) ?
+        # after _saveiter generations, then save state
+        iters = self._saveiter
+        saveiter = bool(iters) and not bool(self.generations % iters)
+        if nonzero and saveiter:
+            self.SaveSolver()
+        #FIXME: if _saveeval (or more) since last check, then save state
+       #save = self.evaluations % self._saveeval
         return
 
     def __load_state(self, solver, **kwds):
@@ -595,14 +628,16 @@ Further Inputs:
 
         # decorate cost function with bounds, penalties, monitors, etc
         self._RegisterCost(cost, ExtraArgs)
+        # register termination function
+       #self._RegisterTermination(termination)
 
         # the initital optimization iteration
         self.Step()
-        # initialize termination conditions, if needed
-        termination(self)
         if callback is not None:
             callback(self.bestSolution)
          
+        # initialize termination conditions, if needed
+        termination(self)
         # impose the evaluation limits
         self._SetEvaluationLimits()
 
@@ -619,6 +654,8 @@ Further Inputs:
         # log any termination messages
         msg = self._terminated(termination, disp=disp, info=True)
         if msg: self._stepmon.info('STOP("%s")' % msg)
+        # save final state
+        self.__save_state(force=True)
         return
 
     # extensions to the solver interface

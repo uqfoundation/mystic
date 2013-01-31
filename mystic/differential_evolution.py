@@ -242,6 +242,8 @@ are logged.
 
         # log bestSolution and bestEnergy (includes penalty)
         self._stepmon(self.bestSolution[:], self.bestEnergy, self.id)
+        # if savefrequency matches, then save state
+        self._AbstractSolver__save_state()
         return
 
     def _process_inputs(self, kwds):
@@ -392,6 +394,8 @@ are logged.
         # log bestSolution and bestEnergy (includes penalty)
        #FIXME: StepMonitor works for 'pp'?
         self._stepmon(self.bestSolution[:], self.bestEnergy, self.id)
+        # if savefrequency matches, then save state
+        self._AbstractSolver__save_state()
         return
 
     def _process_inputs(self, kwds):
