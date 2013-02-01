@@ -349,7 +349,8 @@ Additional Inputs:
     return penalty
 
 
-from numpy import asarray, vectorize, choose, zeros, ones, ndarray
+from numpy import asfarray, asarray, choose, zeros, ones, ndarray
+from numpy import vectorize, shape, broadcast, empty, atleast_1d
 #from random import sample, choice
 def discrete(samples, index=None):
     """impose a discrete set of input values for the selected function
@@ -396,8 +397,32 @@ The function's input will be mapped to the given discrete set
             return hi
         return lo
 
-    argnear = vectorize(_argnear)
-    near = vectorize(_near)
+#   argnear = vectorize(_argnear)  #XXX: doesn't pickle well in all cases
+#   near = vectorize(_near)        #XXX: doesn't pickle well in all cases
+    def argnear(x):
+        #RESULT: (array([0,0,1]),array([0,1,2])) *or* (array(0),array(1))
+        flatten = False
+        if not len(shape(x)):
+            flatten = True
+            x = [x]
+        result = tuple(i for i in asarray(map(_argnear, x)).T)
+        if flatten:
+            result = tuple(asarray(i[0]) for i in result)
+        return result
+    def near(x, l, h):
+        #RESULT: array(3) & array([3, 4])
+        a = broadcast(x,l,h)
+        has_iterable = a.shape
+        x,l,h = tuple(atleast_1d(i) for i in (x,l,h))
+        b = broadcast(x,l,h)
+        _x,_l,_h = (empty(b.shape), empty(b.shape), empty(b.shape))
+        _x.flat = [i for i in x]
+        _l.flat = [i for i in l]
+        _h.flat = [i for i in h]
+        result = asarray(map(_near, x, l, h))
+        if not has_iterable:
+            result = asarray(result[0])
+        return result
 
     def dec(f):
         def func(x, *args, **kwds):
