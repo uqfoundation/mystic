@@ -27,10 +27,11 @@ Usage:
     >>> from mystic.termination import When, VTR
     >>> term = When( VTR() )
     >>> term(solver)  # where solver is a mystic.solver instance"""
-    if not getattr(arg, '__len__', None): arg = [arg]
-    elif not isinstance(arg, When):
-      raise TypeError, "'%s' object is not a condition" % arg.__class__.__name__
+    if isinstance(arg, tuple) and len(arg) == 1: arg = arg[0] # for pickling
     #XXX: need better filter on inputs
+    if getattr(arg, '__module__', None) != self.__module__:
+      raise TypeError, "'%s' object is not a condition" % arg.__class__.__name__
+    if not getattr(arg, '__len__', None): arg = [arg]
     return tuple.__new__(self, arg)
 
   def __call__(self, solver, info=False):
@@ -71,7 +72,10 @@ Usage:
     >>> from mystic.termination import And, VTR, ChangeOverGeneration
     >>> term = And( VTR(), ChangeOverGeneration() )
     >>> term(solver)  # where solver is a mystic.solver instance"""
+    if isinstance(args, tuple) and len(args) == 1: args = args[0] # for pickling
     #XXX: need better filter on inputs
+    if not getattr(args, '__len__', None): args = [args]
+    #XXX: check if every arg in args has __module__ == self.__module__ ?
     return tuple.__new__(self, args)
 
   def __repr__(self):
@@ -91,7 +95,10 @@ Usage:
     >>> from mystic.termination import Or, VTR, ChangeOverGeneration
     >>> term = Or( VTR(), ChangeOverGeneration() )
     >>> term(solver)  # where solver is a mystic.solver instance"""
+    if isinstance(args, tuple) and len(args) == 1: args = args[0] # for pickling
     #XXX: need better filter on inputs
+    if not getattr(args, '__len__', None): args = [args]
+    #XXX: check if every arg in args has __module__ == self.__module__ ?
     return tuple.__new__(self, args)
 
   def __call__(self, solver, info=False):
