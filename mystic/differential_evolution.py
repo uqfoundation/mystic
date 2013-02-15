@@ -141,8 +141,8 @@ __all__ = ['DifferentialEvolutionSolver','DifferentialEvolutionSolver2',\
 from mystic.tools import wrap_function, unpair
 from mystic.tools import wrap_bounds, wrap_penalty
 
-from abstract_solver import AbstractSolver
-from abstract_map_solver import AbstractMapSolver
+from mystic.abstract_solver import AbstractSolver
+from mystic.abstract_map_solver import AbstractMapSolver
 
 from numpy import asfarray
 
@@ -164,6 +164,9 @@ All important class members are inherited from AbstractSolver.
         self.genealogy     = [ [] for j in range(NP)]
         self.scale         = 0.8
         self.probability   = 0.9
+        ftol = 5e-3
+        from mystic.termination import VTRChangeOverGeneration
+        self._termination = VTRChangeOverGeneration(ftol)
         
 ### XXX: OBSOLETED by wrap_bounds ###
 #   def _keepSolutionWithinRangeBoundary(self, base):
@@ -190,7 +193,7 @@ are logged.
         self.genealogy[id].append(newchild)
         return
 
-    def _RegisterCost(self, cost, ExtraArgs=None):
+    def _RegisterObjective(self, cost, ExtraArgs=None):
         """decorate cost function with bounds, penalties, monitors, etc"""
         if ExtraArgs == None: ExtraArgs = ()
         self._fcalls, cost = wrap_function(cost, ExtraArgs, self._evalmon)
@@ -206,7 +209,7 @@ are logged.
     def Step(self, cost=None, ExtraArgs=None, strategy=None, **kwds):
         """perform a single optimization iteration
         Note that ExtraArgs should be a *tuple* of extra arguments"""
-        # HACK to enable not explicitly calling _RegisterCost
+        # HACK to enable not explicitly calling _RegisterObjective
         cost = self._bootstrap_decorate(cost, ExtraArgs)
 
         if not len(self._stepmon): # do generation = 0
@@ -244,7 +247,7 @@ are logged.
         self._stepmon(self.bestSolution[:], self.bestEnergy, self.id)
         # if savefrequency matches, then save state
         self._AbstractSolver__save_state()
-        return
+        return #XXX: call CheckTermination ?
 
     def _process_inputs(self, kwds):
         """process and activate input settings"""
@@ -260,8 +263,8 @@ are logged.
         self.scale = kwds.get('ScalingFactor', scale)
         return settings
 
-    def Solve(self, cost, termination, sigint_callback=None,
-                                               ExtraArgs=(), **kwds):
+    def Solve(self, cost, termination=None, sigint_callback=None,
+                                            ExtraArgs=(), **kwds):
         """Minimize a function using differential evolution.
 
 Description:
@@ -272,10 +275,10 @@ Description:
 Inputs:
 
     cost -- the Python function or method to be minimized.
-    termination -- callable object providing termination conditions.
 
 Additional Inputs:
 
+    termination -- callable object providing termination conditions.
     sigint_callback -- callback function for signal handler.
     ExtraArgs -- extra arguments for cost.
 
@@ -329,7 +332,7 @@ are logged.
         self.genealogy[id].append(newchild)
         return
 
-    def _RegisterCost(self, cost, ExtraArgs=None):
+    def _RegisterObjective(self, cost, ExtraArgs=None):
         """decorate cost function with bounds, penalties, monitors, etc"""
         if ExtraArgs == None: ExtraArgs = ()
        #FIXME: EvaluationMonitor fails for MPI, throws error for 'pp'
@@ -350,7 +353,7 @@ are logged.
     def Step(self, cost=None, ExtraArgs=None, strategy=None, **kwds):
         """perform a single optimization iteration
         Note that ExtraArgs should be a *tuple* of extra arguments"""
-        # HACK to enable not explicitly calling _RegisterCost
+        # HACK to enable not explicitly calling _RegisterObjective
         cost = self._bootstrap_decorate(cost, ExtraArgs)
 
         if not len(self._stepmon): # do generation = 0
@@ -396,7 +399,7 @@ are logged.
         self._stepmon(self.bestSolution[:], self.bestEnergy, self.id)
         # if savefrequency matches, then save state
         self._AbstractSolver__save_state()
-        return
+        return #XXX: call CheckTermination ?
 
     def _process_inputs(self, kwds):
         """process and activate input settings"""
@@ -412,8 +415,8 @@ are logged.
         self.scale = kwds.get('ScalingFactor', scale)
         return settings
 
-    def Solve(self, cost, termination, sigint_callback=None,
-                                               ExtraArgs=(), **kwds):
+    def Solve(self, cost, termination=None, sigint_callback=None,
+                                            ExtraArgs=(), **kwds):
         """Minimize a function using differential evolution.
 
 Description:
@@ -425,10 +428,10 @@ Description:
 Inputs:
 
     cost -- the Python function or method to be minimized.
-    termination -- callable object providing termination conditions.
 
 Additional Inputs:
 
+    termination -- callable object providing termination conditions.
     sigint_callback -- callback function for signal handler.
     ExtraArgs -- extra arguments for cost.
 

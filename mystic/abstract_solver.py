@@ -35,7 +35,8 @@ A typical call to a mystic solver will roughly follow this example:
     >>> solver.SetEvaluationMonitor(evalmon)
     >>> solver.SetGenerationMonitor(stepmon)
     >>> solver.enable_signal_handler()
-    >>> solver.Solve(rosen, CRT())
+    >>> solver.SetTermination(CRT())
+    >>> solver.Solve(rosen)
     >>> 
     >>> # obtain the solution
     >>> solution = solver.Solution()
@@ -142,7 +143,8 @@ Important class members:
         self._constraints     = lambda x: x
         self._penalty         = lambda x: 0.0
         self._cost            = (None, None)
-       #self._termination     = lambda x: False
+        self._termination     = lambda *x: False if len(x) < 2 or x[-1] is False else '' #XXX: better default termination?
+        # (get termination details with self._termination.__doc__)
 
         import mystic.termination
         self._EARLYEXIT       = mystic.termination.EARLYEXIT
@@ -463,7 +465,20 @@ input::
             self._maxfun = N * self.nPop * evalscale
         return
 
-    def _terminated(self, termination, disp=False, info=False):
+    def CheckTermination(self, disp=False, info=False, termination=None):
+        """check if the solver meets the given termination conditions
+
+Input::
+    - disp = if True, print termination statistics and/or warnings
+    - info = if True, return termination message (instead of boolean)
+    - termination = termination conditions to check against
+
+Note::
+    If no termination conditions are given, the solver's stored
+    termination conditions will be used.
+        """
+        if termination == None:
+            termination = self._termination
         # check for termination messages
         msg = termination(self, info=True)
         lim = "EvaluationLimits with %s" % {'evaluations':self._maxfun,
@@ -489,13 +504,13 @@ input::
             return msg
         return bool(msg)
 
-   #def _RegisterTermination(self, termination):
-   #    """register a termination function"""
-   #    #FIXME: issues with pickling, unless save as string: _term = "VTR(tol)"
-   #    self._termination = termination
-   #    return
+    def SetTermination(self, termination):
+        """set the termination conditions"""
+        #XXX: validate that termination is a 'condition' ?
+        self._termination = termination
+        return
 
-    def _RegisterCost(self, cost, ExtraArgs=None):
+    def _RegisterObjective(self, cost, ExtraArgs=None):
         """decorate cost function with bounds, penalties, monitors, etc"""
         if ExtraArgs == None: ExtraArgs = ()
         self._fcalls, cost = wrap_function(cost, ExtraArgs, self._evalmon)
@@ -510,14 +525,14 @@ input::
         return cost
 
     def _bootstrap_decorate(self, cost=None, ExtraArgs=None):
-        """HACK to enable not explicitly calling _RegisterCost"""
+        """HACK to enable not explicitly calling _RegisterObjective"""
         args = None
         if cost == None: # 'use existing cost'
             cost,args = self._cost # use args, unless override with ExtraArgs
         if ExtraArgs != None: args = ExtraArgs
-        if self._cost[0] == None: # '_RegisterCost not yet called'
+        if self._cost[0] == None: # '_RegisterObjective not yet called'
             if args is None: args = ()
-            cost = self._RegisterCost(cost, args)
+            cost = self._RegisterObjective(cost, args)
         return cost
 
     def Step(self, cost=None, ExtraArgs=None, **kwds):
@@ -588,8 +603,8 @@ input::
            self.SetConstraints(kwds.get('constraints'))
         return settings
 
-    def Solve(self, cost, termination, sigint_callback=None,
-                                       ExtraArgs=(), **kwds):
+    def Solve(self, cost, termination=None, sigint_callback=None,
+                                            ExtraArgs=(), **kwds):
         """Minimize a 'cost' function with given termination conditions.
 
 Description:
@@ -600,10 +615,10 @@ Description:
 Inputs:
 
     cost -- the Python function or method to be minimized.
-    termination -- callable object providing termination conditions.
 
 Additional Inputs:
 
+    termination -- callable object providing termination conditions.
     sigint_callback -- callback function for signal handler.
     ExtraArgs -- extra arguments for cost.
 
@@ -627,9 +642,10 @@ Further Inputs:
         if self._handle_sigint: signal.signal(signal.SIGINT, self.signal_handler)
 
         # decorate cost function with bounds, penalties, monitors, etc
-        self._RegisterCost(cost, ExtraArgs)
+        self._RegisterObjective(cost, ExtraArgs)    #XXX: SetObjective ?
         # register termination function
-       #self._RegisterTermination(termination)
+        if termination is not None:
+            self.SetTermination(termination)
 
         # the initital optimization iteration
         self.Step()
@@ -637,12 +653,12 @@ Further Inputs:
             callback(self.bestSolution)
          
         # initialize termination conditions, if needed
-        termination(self)
+        self._termination(self)
         # impose the evaluation limits
         self._SetEvaluationLimits()
 
         # the main optimization loop
-        while not self._terminated(termination) and not self._EARLYEXIT:
+        while not self.CheckTermination() and not self._EARLYEXIT:
             self.Step(**settings)
             if callback is not None:
                 callback(self.bestSolution)
@@ -652,7 +668,7 @@ Further Inputs:
         signal.signal(signal.SIGINT,signal.default_int_handler)
 
         # log any termination messages
-        msg = self._terminated(termination, disp=disp, info=True)
+        msg = self.CheckTermination(disp=disp, info=True)
         if msg: self._stepmon.info('STOP("%s")' % msg)
         # save final state
         self.__save_state(force=True)

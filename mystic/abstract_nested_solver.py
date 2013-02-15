@@ -49,7 +49,8 @@ A typical call to a 'nested' solver will roughly follow this example:
     >>> solver.SetMapper(ez_map2)
     >>> solver.SetLauncher(mpirun_launcher, NNODES)
     >>> solver.SetGenerationMonitor(stepmon)
-    >>> solver.Solve(rosen, CRT())
+    >>> solver.SetTermination(CRT())
+    >>> solver.Solve(rosen)
     >>> 
     >>> # obtain the solution
     >>> solution = solver.Solution()
@@ -170,11 +171,24 @@ input::
 *** this method must be overwritten ***"""
         raise NotImplementedError, "must be overwritten..."
 
-    def _terminated(self, termination, disp=False, info=False):
+    def CheckTermination(self, disp=False, info=False, termination=None):
+        """check if the solver meets the given termination conditions
+
+Input::
+    - disp = if True, print termination statistics and/or warnings
+    - info = if True, return termination message (instead of boolean)
+    - termination = termination conditions to check against
+
+Note::
+    If no termination conditions are given, the solver's stored
+    termination conditions will be used.
+        """
         if self._bestSolver:
             solver = self._bestSolver
         else:
             solver = self
+        if termination == None:
+            termination = solver._termination
 
         # check for termination messages
         msg = termination(solver, info=True)

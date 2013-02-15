@@ -29,7 +29,7 @@ __all__ = ['LatticeSolver','BuckshotSolver']
 
 from mystic.tools import wrap_function
 
-from abstract_nested_solver import AbstractNestedSolver
+from mystic.abstract_nested_solver import AbstractNestedSolver
 
 
 class LatticeSolver(AbstractNestedSolver):
@@ -52,8 +52,8 @@ All important class members are inherited from AbstractNestedSolver.
 #       """
 #       return
 
-    def Solve(self, cost, termination, sigint_callback=None,
-                                       ExtraArgs=(), **kwds):
+    def Solve(self, cost, termination=None, sigint_callback=None,
+                                            ExtraArgs=(), **kwds):
         """Minimize a function using batch grid optimization.
 
 Description:
@@ -64,10 +64,10 @@ Description:
 Inputs:
 
     cost -- the Python function or method to be minimized.
-    termination -- callable object providing termination conditions.
 
 Additional Inputs:
 
+    termination -- callable object providing termination conditions.
     sigint_callback -- callback function for signal handler.
     ExtraArgs -- extra arguments for cost.
 
@@ -108,6 +108,10 @@ Further Inputs:
         #generate signal_handler
         self._generateHandler(sigint_callback) 
         if self._handle_sigint: signal.signal(signal.SIGINT,self.signal_handler)
+
+        # register termination function
+        if termination is not None:
+            self.SetTermination(termination)
 
         #-------------------------------------------------------------
 
@@ -132,7 +136,7 @@ Further Inputs:
 
         # run optimizer for each grid point
         cf = [cost for i in range(len(initial_values))]
-        tm = [termination for i in range(len(initial_values))]
+        tm = [self._termination for i in range(len(initial_values))]
         id = range(len(initial_values))
 
         # generate the local_optimize function
@@ -161,7 +165,8 @@ def local_optimize(cost, termination, x0, rank):
 #""" % (self._solver._constraints)  #FIXME: needs to take a string
         local_opt += """\n
     solver.SetEvaluationLimits(%s, %s)
-    solver.Solve(cost, termination, disp=%s)
+    solver.SetTermination(termination)
+    solver.Solve(cost, disp=%s)
     return solver, stepmon, evalmon
 """ % (str(self._maxiter), str(self._maxfun), str(verbose))
         exec local_opt
@@ -209,7 +214,7 @@ def local_optimize(cost, termination, x0, rank):
         signal.signal(signal.SIGINT,signal.default_int_handler)
 
         # log any termination messages
-        msg = self._terminated(termination, disp=disp, info=True)
+        msg = self.CheckTermination(disp=disp, info=True)
         if msg: self._stepmon.info('STOP("%s")' % msg)
         # save final state
         self.AbstractSolver__save_state(force=True)
@@ -229,8 +234,8 @@ All important class members are inherited from AbstractNestedSolver.
         """
         super(BuckshotSolver, self).__init__(dim, npts=npts)
 
-    def Solve(self, cost, termination, sigint_callback=None,
-                                       ExtraArgs=(), **kwds):
+    def Solve(self, cost, termination=None, sigint_callback=None,
+                                            ExtraArgs=(), **kwds):
         """Minimize a function using buckshot optimization.
 
 Description:
@@ -241,10 +246,10 @@ Description:
 Inputs:
 
     cost -- the Python function or method to be minimized.
-    termination -- callable object providing termination conditions.
 
 Additional Inputs:
 
+    termination -- callable object providing termination conditions.
     sigint_callback -- callback function for signal handler.
     ExtraArgs -- extra arguments for cost.
 
@@ -286,6 +291,10 @@ Further Inputs:
         self._generateHandler(sigint_callback) 
         if self._handle_sigint: signal.signal(signal.SIGINT,self.signal_handler)
 
+        # register termination function
+        if termination is not None:
+            self.SetTermination(termination)
+
         #-------------------------------------------------------------
 
         npts = self._npts
@@ -302,7 +311,7 @@ Further Inputs:
 
         # run optimizer for each grid point
         cf = [cost for i in range(len(initial_values))]
-        tm = [termination for i in range(len(initial_values))]
+        tm = [self._termination for i in range(len(initial_values))]
         id = range(len(initial_values))
 
         # generate the local_optimize function
@@ -331,7 +340,8 @@ def local_optimize(cost, termination, x0, rank):
 #""" % (self._solver._constraints)  #FIXME: needs to take a string
         local_opt += """\n
     solver.SetEvaluationLimits(%s, %s)
-    solver.Solve(cost, termination, disp=%s)
+    solver.SetTermination(termination)
+    solver.Solve(cost, disp=%s)
     return solver, stepmon, evalmon
 """ % (str(self._maxiter), str(self._maxfun), str(verbose))
         exec local_opt
@@ -379,7 +389,7 @@ def local_optimize(cost, termination, x0, rank):
         signal.signal(signal.SIGINT,signal.default_int_handler)
 
         # log any termination messages
-        msg = self._terminated(termination, disp=disp, info=True)
+        msg = self.CheckTermination(disp=disp, info=True)
         if msg: self._stepmon.info('STOP("%s")' % msg)
         # save final state
         self.AbstractSolver__save_state(force=True)

@@ -5,7 +5,7 @@ except ImportError:
   print "Warning: scipy not installed; comparison tests skipped"
   scipy_solvers = []
 
-from mystic import solvers
+import mystic.solvers as solvers
 from mystic.models import rosen
 from mystic.math import almostEqual
 from mystic.monitors import VerboseMonitor

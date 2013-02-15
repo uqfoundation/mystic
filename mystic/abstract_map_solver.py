@@ -47,7 +47,8 @@ A typical call to a 'map' solver will roughly follow this example:
     >>> solver.SetMapper(ez_map2, equalportion_mapper)
     >>> solver.SetLauncher(mpirun_launcher, NNODES)
     >>> solver.SetGenerationMonitor(stepmon)
-    >>> solver.Solve(rosen, CRT())
+    >>> solver.SetTermination(CRT())
+    >>> solver.Solve(rosen)
     >>> 
     >>> # obtain the solution
     >>> solution = solver.Solution()

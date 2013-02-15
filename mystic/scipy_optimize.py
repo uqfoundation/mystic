@@ -66,7 +66,7 @@ abs = absolute
 
 from _scipy060optimize import brent #XXX: local copy to avoid dependency!
 
-from abstract_solver import AbstractSolver
+from mystic.abstract_solver import AbstractSolver
 
 class NelderMeadSimplexSolver(AbstractSolver):
     """
@@ -85,6 +85,9 @@ The size of the simplex is dim+1.
         AbstractSolver.__init__(self,dim) #,npop=simplex)
         self.popEnergy.append(self._init_popEnergy)
         self.population.append([0.0 for i in range(dim)])
+        xtol, ftol = 1e-4, 1e-4
+        from mystic.termination import CandidateRelativeTolerance as CRT
+        self._termination = CRT(xtol,ftol)
 
     def _setSimplexWithinRangeBoundary(self, radius=None):
         """ensure that initial simplex is set within bounds
@@ -132,7 +135,7 @@ The size of the simplex is dim+1.
     def Step(self, cost=None, ExtraArgs=None, radius=None, **kwds):
         """perform a single optimization iteration
         Note that ExtraArgs should be a *tuple* of extra arguments"""
-        # HACK to enable not explicitly calling _RegisterCost
+        # HACK to enable not explicitly calling _RegisterObjective
         cost = self._bootstrap_decorate(cost, ExtraArgs)
 
         rho = 1; chi = 2; psi = 0.5; sigma = 0.5;
@@ -236,7 +239,7 @@ The size of the simplex is dim+1.
         self._stepmon(sim[0], fsim[0], self.id) # sim = all; "best" is sim[0]
         # if savefrequency matches, then save state
         self._AbstractSolver__save_state()
-        return
+        return #XXX: call CheckTermination ?
 
     def _process_inputs(self, kwds):
         """process and activate input settings"""
@@ -247,8 +250,8 @@ The size of the simplex is dim+1.
         [settings.update({i:j}) for (i,j) in kwds.items() if i in settings]
         return settings
 
-    def Solve(self, cost, termination, sigint_callback=None,
-                                       ExtraArgs=(), **kwds):
+    def Solve(self, cost, termination=None, sigint_callback=None,
+                                            ExtraArgs=(), **kwds):
         """Minimize a function using the downhill simplex algorithm.
 
 Description:
@@ -259,10 +262,10 @@ Description:
 Inputs:
 
     cost -- the Python function or method to be minimized.
-    termination -- callable object providing termination conditions.
 
 Additional Inputs:
 
+    termination -- callable object providing termination conditions.
     sigint_callback -- callback function for signal handler.
     ExtraArgs -- extra arguments for cost.
 
@@ -429,6 +432,9 @@ Takes one initial input:
         fx = self.popEnergy[0]
         #                  [x1, fx, bigind, delta]
         self.__internals = [x1, fx,      0,   0.0]
+        ftol, gtol = 1e-4, 2
+        from mystic.termination import NormalizedChangeOverGeneration as NCOG
+        self._termination = NCOG(ftol,gtol)
 
     def _SetEvaluationLimits(self, iterscale=1000, evalscale=1000):
         super(PowellDirectionalSolver, self)._SetEvaluationLimits(iterscale,evalscale)
@@ -437,7 +443,7 @@ Takes one initial input:
     def Step(self, cost=None, ExtraArgs=None, xtol=None, **kwds):
         """perform a single optimization iteration
         Note that ExtraArgs should be a *tuple* of extra arguments"""
-        # HACK to enable not explicitly calling _RegisterCost
+        # HACK to enable not explicitly calling _RegisterObjective
         cost = self._bootstrap_decorate(cost, ExtraArgs)
 
         direc = self._direc
@@ -533,7 +539,7 @@ Takes one initial input:
         self._direc = direc
         self.population[0] = x   # bestSolution
         self.popEnergy[0] = fval # bestEnergy
-        return
+        return #XXX: call CheckTermination ?
 
     def _exitMain(self, **kwds):
         """cleanup upon exiting the main optimization loop"""
@@ -554,8 +560,8 @@ Takes one initial input:
         self._direc = kwds.get('direc', direc)
         return settings
 
-    def Solve(self, cost, termination, sigint_callback=None,
-                                       ExtraArgs=(), **kwds):
+    def Solve(self, cost, termination=None, sigint_callback=None,
+                                            ExtraArgs=(), **kwds):
         """Minimize a function using modified Powell's method.
 
 Description:
@@ -566,10 +572,10 @@ Description:
 Inputs:
 
     cost -- the Python function or method to be minimized.
-    termination -- callable object providing termination conditions.
 
 Additional Inputs:
 
+    termination -- callable object providing termination conditions.
     sigint_callback -- callback function for signal handler.
     ExtraArgs -- extra arguments for cost.
 

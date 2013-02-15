@@ -1,6 +1,6 @@
 from mystic.solvers import DifferentialEvolutionSolver
 from mystic.solvers import NelderMeadSimplexSolver, PowellDirectionalSolver
-from mystic.termination import VTR
+from mystic.termination import VTR, ChangeOverGeneration, When, Or
 from mystic.models import rosen
 from mystic.solvers import LoadSolver
 import os
@@ -127,5 +127,31 @@ x = solver.bestSolution
 y = solver.bestEnergy  
 assert solver._state == None
 assert LoadSolver(solver._state) == None
+
+solver = DifferentialEvolutionSolver(3,40)
+solver.SetRandomInitialPoints([0.,0.,0.],[10.,10.,10.])
+term = When( VTR() )
+solver.SetSaveFrequency(10, tmpfile)
+solver.SetTermination(term)
+solver.Solve(rosen)
+x = solver.bestSolution
+y = solver.bestEnergy  
+_solver = LoadSolver(tmpfile)
+os.remove(tmpfile)
+assert all(x == _solver.bestSolution)
+assert y == _solver.bestEnergy  
+
+solver = DifferentialEvolutionSolver(3,40)
+solver.SetRandomInitialPoints([0.,0.,0.],[10.,10.,10.])
+term = Or( VTR(), ChangeOverGeneration() )
+solver.SetSaveFrequency(10, tmpfile)
+solver.SetTermination(term)
+solver.Solve(rosen)
+x = solver.bestSolution
+y = solver.bestEnergy  
+_solver = LoadSolver(tmpfile)
+os.remove(tmpfile)
+assert all(x == _solver.bestSolution)
+assert y == _solver.bestEnergy  
 
 # EOF
