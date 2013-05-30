@@ -25,7 +25,7 @@ __license__ = """
 """ + __license__
 
 __all__ = ['solvers', 'termination', 'strategy', 'munge', 'tools', \
-           'constraints', 'penalty', 'coupler', 'symbolic']
+           'cache', 'constraints', 'penalty', 'coupler', 'symbolic']
 
 # solvers
 import solvers
@@ -43,6 +43,7 @@ import symbolic
 # monitors, function wrappers, and other tools
 import monitors
 import munge
+import cache
 import tools
 
 # backward compatibility
