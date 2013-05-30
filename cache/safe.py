@@ -3,7 +3,9 @@
 # on http://code.activestate.com/recipes/498245-lru-and-lfu-cache-decorators
 # and subsequent forks as well as the version available in python3.3
 """
-a selection of caching decorators
+'safe' versions of selected caching decorators
+
+If a hashing error occurs, the cached function will be evaluated.
 """
 
 try:
@@ -18,15 +20,11 @@ from itertools import ifilterfalse
 from functools import update_wrapper
 from threading import RLock
 from mystic.math.rounding import deep_round, simple_round
+from mystic.cache.archives import archive_dict
+from mystic.cache.keymaps import stringmap
 
-import safecache as safe
-import archives
-import keymaps
-archive_dict = archives.archive_dict
-hashmap = keymaps.hashmap
-
-__all__ = ['safe','archives','keymaps','no_cache','inf_cache',\
-           'lfu_cache','lru_cache','mru_cache','rr_cache']
+__all__ = ['no_cache','inf_cache','lfu_cache',\
+           'lru_cache','mru_cache','rr_cache']
 
 _CacheInfo = namedtuple("CacheInfo", ['hit','miss','load','maxsize','size'])
 
@@ -36,10 +34,10 @@ class Counter(dict):
         return 0
 
 #XXX: what about caches that expire due to time, calls, etc...
-#XXX: check the impact of not serializing by default, and hashmap by default
+#XXX: check the impact of not serializing by default, and stringmap by default
 
 def no_cache(*arg, **kwd):
-    '''empty (NO) cache decorator.
+    ''''safe' version of the empty (NO) cache decorator.
 
     Unlike other cache decorators, this decorator does not cache.  It is a
     dummy that collects statistics and conforms to the caching interface.  This
@@ -47,13 +45,14 @@ def no_cache(*arg, **kwd):
     places to which it will round off floats, and a bool 'deep' for whether the
     rounding on inputs will be 'shallow' or 'deep'.
 
-    keymap = cache key encoder (default is keymaps.hashmap(flat=True))
+    keymap = cache key encoder (default is keymaps.stringmap(flat=False))
     tol = integer tolerance for rounding (default is None)
     deep = boolean for rounding depth (default is False, i.e. 'shallow')
 
     If *keymap* is given, it will replace the hashing algorithm for generating
     cache keys.  Several hashing algorithms are available in 'keymaps'. The
-    default keymap requires arguments to the cached function to be hashable.
+    default keymap does not require arguments to the cached function to be
+    hashable.  If a hashing error occurs, the cached function will be evaluated.
 
     If the keymap retains type information, then arguments of different types
     will be cached separately.  For example, f(3.0) and f(3) will be treated
@@ -69,7 +68,7 @@ def no_cache(*arg, **kwd):
     maxsize = 0
 
     keymap = kwd.get('keymap', None)
-    if keymap is None: keymap = hashmap(flat=True)
+    if keymap is None: keymap = stringmap(flat=False)
     cache = archive_dict()
 
     tol = kwd.get('tol', None)
@@ -90,8 +89,12 @@ def no_cache(*arg, **kwd):
        #lock = RLock()                  # linkedlist updates aren't threadsafe
 
         def wrapper(*args, **kwds):
-            _args, _kwds = rounded_args(*args, **kwds)
-            key = keymap(*_args, **_kwds)
+            try:
+                _args, _kwds = rounded_args(*args, **kwds)
+                key = keymap(*_args, **_kwds)
+            except: #TypeError
+                result = user_function(*args, **kwds)
+                return result
 
             # look in archive
             if cache.archived():
@@ -145,7 +148,7 @@ def no_cache(*arg, **kwd):
 
 
 def inf_cache(*arg, **kwd):
-    '''infinitely-growing (INF) cache decorator.
+    ''''safe' version of the infinitely-growing (INF) cache decorator.
 
     This decorator memoizes a function's return value each time it is called.
     If called later with the same arguments, the cached value is returned, and
@@ -156,13 +159,14 @@ def inf_cache(*arg, **kwd):
     rounding on inputs will be 'shallow' or 'deep'.
 
     cache = storage hashmap (default is {})
-    keymap = cache key encoder (default is keymaps.hashmap(flat=True))
+    keymap = cache key encoder (default is keymaps.stringmap(flat=False))
     tol = integer tolerance for rounding (default is None)
     deep = boolean for rounding depth (default is False, i.e. 'shallow')
 
     If *keymap* is given, it will replace the hashing algorithm for generating
     cache keys.  Several hashing algorithms are available in 'keymaps'. The
-    default keymap requires arguments to the cached function to be hashable.
+    default keymap does not require arguments to the cached function to be
+    hashable.  If a hashing error occurs, the cached function will be evaluated.
 
     If the keymap retains type information, then arguments of different types
     will be cached separately.  For example, f(3.0) and f(3) will be treated
@@ -177,7 +181,7 @@ def inf_cache(*arg, **kwd):
     maxsize = None
 
     keymap = kwd.get('keymap', None)
-    if keymap is None: keymap = hashmap(flat=True)
+    if keymap is None: keymap = stringmap(flat=False)
     cache = kwd.get('cache', None)
     if cache is None: cache = archive_dict()
     elif type(cache) is dict: cache = archive_dict(cache)
@@ -201,8 +205,12 @@ def inf_cache(*arg, **kwd):
        #lock = RLock()                  # linkedlist updates aren't threadsafe
 
         def wrapper(*args, **kwds):
-            _args, _kwds = rounded_args(*args, **kwds)
-            key = keymap(*_args, **_kwds)
+            try:
+                _args, _kwds = rounded_args(*args, **kwds)
+                key = keymap(*_args, **_kwds)
+            except: #TypeError
+                result = user_function(*args, **kwds)
+                return result
 
             try:
                 # get cache entry
@@ -255,7 +263,7 @@ def inf_cache(*arg, **kwd):
 
 
 def lfu_cache(maxsize=100, cache=None, keymap=None, tol=None, deep=False):
-    '''least-frequenty-used (LFU) cache decorator.
+    ''''safe' version of the least-frequenty-used (LFU) cache decorator.
 
     This decorator memoizes a function's return value each time it is called.
     If called later with the same arguments, the cached value is returned, and
@@ -268,7 +276,7 @@ def lfu_cache(maxsize=100, cache=None, keymap=None, tol=None, deep=False):
 
     maxsize = maximum cache size
     cache = storage hashmap (default is {})
-    keymap = cache key encoder (default is keymaps.hashmap(flat=True))
+    keymap = cache key encoder (default is keymaps.stringmap(flat=False))
     tol = integer tolerance for rounding (default is None)
     deep = boolean for rounding depth (default is False, i.e. 'shallow')
 
@@ -276,7 +284,8 @@ def lfu_cache(maxsize=100, cache=None, keymap=None, tol=None, deep=False):
 
     If *keymap* is given, it will replace the hashing algorithm for generating
     cache keys.  Several hashing algorithms are available in 'keymaps'. The
-    default keymap requires arguments to the cached function to be hashable.
+    default keymap does not require arguments to the cached function to be
+    hashable.  If a hashing error occurs, the cached function will be evaluated.
 
     If the keymap retains type information, then arguments of different types
     will be cached separately.  For example, f(3.0) and f(3) will be treated
@@ -295,7 +304,7 @@ def lfu_cache(maxsize=100, cache=None, keymap=None, tol=None, deep=False):
     if maxsize is None:
         return inf_cache(cache=cache, keymap=keymap, tol=tol, deep=deep)
 
-    if keymap is None: keymap = hashmap(flat=True)
+    if keymap is None: keymap = stringmap(flat=False)
     if cache is None: cache = archive_dict()
     elif type(cache) is dict: cache = archive_dict(cache)
     # does archive make sense with database, file, ?... (requires more thought)
@@ -317,8 +326,12 @@ def lfu_cache(maxsize=100, cache=None, keymap=None, tol=None, deep=False):
        #lock = RLock()                  # linkedlist updates aren't threadsafe
 
         def wrapper(*args, **kwds):
-            _args, _kwds = rounded_args(*args, **kwds)
-            key = keymap(*_args, **_kwds)
+            try:
+                _args, _kwds = rounded_args(*args, **kwds)
+                key = keymap(*_args, **_kwds)
+            except: #TypeError
+                result = user_function(*args, **kwds)
+                return result
 
             try:
                 # get cache entry
@@ -387,7 +400,7 @@ def lfu_cache(maxsize=100, cache=None, keymap=None, tol=None, deep=False):
 
 
 def lru_cache(maxsize=100, cache=None, keymap=None, tol=None, deep=False):
-    '''least-recently-used (LRU) cache decorator.
+    ''''safe' version of the least-recently-used (LRU) cache decorator.
 
     This decorator memoizes a function's return value each time it is called.
     If called later with the same arguments, the cached value is returned, and
@@ -400,7 +413,7 @@ def lru_cache(maxsize=100, cache=None, keymap=None, tol=None, deep=False):
 
     maxsize = maximum cache size
     cache = storage hashmap (default is {})
-    keymap = cache key encoder (default is keymaps.hashmap(flat=True))
+    keymap = cache key encoder (default is keymaps.stringmap(flat=False))
     tol = integer tolerance for rounding (default is None)
     deep = boolean for rounding depth (default is False, i.e. 'shallow')
 
@@ -408,7 +421,8 @@ def lru_cache(maxsize=100, cache=None, keymap=None, tol=None, deep=False):
 
     If *keymap* is given, it will replace the hashing algorithm for generating
     cache keys.  Several hashing algorithms are available in 'keymaps'. The
-    default keymap requires arguments to the cached function to be hashable.
+    default keymap does not require arguments to the cached function to be
+    hashable.  If a hashing error occurs, the cached function will be evaluated.
 
     If the keymap retains type information, then arguments of different types
     will be cached separately.  For example, f(3.0) and f(3) will be treated
@@ -428,7 +442,7 @@ def lru_cache(maxsize=100, cache=None, keymap=None, tol=None, deep=False):
         return inf_cache(cache=cache, keymap=keymap, tol=tol, deep=deep)
     maxqueue = maxsize * 10 #XXX: user settable? confirm this works as expected
 
-    if keymap is None: keymap = hashmap(flat=True)
+    if keymap is None: keymap = stringmap(flat=False)
     if cache is None: cache = archive_dict()
     elif type(cache) is dict: cache = archive_dict(cache)
     # does archive make sense with database, file, ?... (requires more thought)
@@ -456,8 +470,12 @@ def lru_cache(maxsize=100, cache=None, keymap=None, tol=None, deep=False):
         queue_appendleft, queue_pop = queue.appendleft, queue.pop
 
         def wrapper(*args, **kwds):
-            _args, _kwds = rounded_args(*args, **kwds)
-            key = keymap(*_args, **_kwds)
+            try:
+                _args, _kwds = rounded_args(*args, **kwds)
+                key = keymap(*_args, **_kwds)
+            except: #TypeError
+                result = user_function(*args, **kwds)
+                return result
 
             try:
                 # get cache entry
@@ -546,7 +564,7 @@ def lru_cache(maxsize=100, cache=None, keymap=None, tol=None, deep=False):
 
 
 def mru_cache(maxsize=100, cache=None, keymap=None, tol=None, deep=False):
-    '''most-recently-used (MRU) cache decorator.
+    ''''safe' version of the most-recently-used (MRU) cache decorator.
 
     This decorator memoizes a function's return value each time it is called.
     If called later with the same arguments, the cached value is returned, and
@@ -559,7 +577,7 @@ def mru_cache(maxsize=100, cache=None, keymap=None, tol=None, deep=False):
 
     maxsize = maximum cache size
     cache = storage hashmap (default is {})
-    keymap = cache key encoder (default is keymaps.hashmap(flat=True))
+    keymap = cache key encoder (default is keymaps.stringmap(flat=False))
     tol = integer tolerance for rounding (default is None)
     deep = boolean for rounding depth (default is False, i.e. 'shallow')
 
@@ -567,7 +585,8 @@ def mru_cache(maxsize=100, cache=None, keymap=None, tol=None, deep=False):
 
     If *keymap* is given, it will replace the hashing algorithm for generating
     cache keys.  Several hashing algorithms are available in 'keymaps'. The
-    default keymap requires arguments to the cached function to be hashable.
+    default keymap does not require arguments to the cached function to be
+    hashable.  If a hashing error occurs, the cached function will be evaluated.
 
     If the keymap retains type information, then arguments of different types
     will be cached separately.  For example, f(3.0) and f(3) will be treated
@@ -586,7 +605,7 @@ def mru_cache(maxsize=100, cache=None, keymap=None, tol=None, deep=False):
     if maxsize is None:
         return inf_cache(cache=cache, keymap=keymap, tol=tol, deep=deep)
 
-    if keymap is None: keymap = hashmap(flat=True)
+    if keymap is None: keymap = stringmap(flat=False)
     if cache is None: cache = archive_dict()
     elif type(cache) is dict: cache = archive_dict(cache)
     # does archive make sense with database, file, ?... (requires more thought)
@@ -612,8 +631,12 @@ def mru_cache(maxsize=100, cache=None, keymap=None, tol=None, deep=False):
         queue_appendleft, queue_pop = queue.appendleft, queue.pop
 
         def wrapper(*args, **kwds):
-            _args, _kwds = rounded_args(*args, **kwds)
-            key = keymap(*_args, **_kwds)
+            try:
+                _args, _kwds = rounded_args(*args, **kwds)
+                key = keymap(*_args, **_kwds)
+            except: #TypeError
+                result = user_function(*args, **kwds)
+                return result
 
             try:
                 # get cache entry
@@ -680,7 +703,7 @@ def mru_cache(maxsize=100, cache=None, keymap=None, tol=None, deep=False):
 
 
 def rr_cache(maxsize=100, cache=None, keymap=None, tol=None, deep=False):
-    '''random-replacement (RR) cache decorator.
+    ''''safe' version of the random-replacement (RR) cache decorator.
 
     This decorator memoizes a function's return value each time it is called.
     If called later with the same arguments, the cached value is returned, and
@@ -693,7 +716,7 @@ def rr_cache(maxsize=100, cache=None, keymap=None, tol=None, deep=False):
 
     maxsize = maximum cache size
     cache = storage hashmap (default is {})
-    keymap = cache key encoder (default is keymaps.hashmap(flat=True))
+    keymap = cache key encoder (default is keymaps.stringmap(flat=False))
     tol = integer tolerance for rounding (default is None)
     deep = boolean for rounding depth (default is False, i.e. 'shallow')
 
@@ -701,7 +724,8 @@ def rr_cache(maxsize=100, cache=None, keymap=None, tol=None, deep=False):
 
     If *keymap* is given, it will replace the hashing algorithm for generating
     cache keys.  Several hashing algorithms are available in 'keymaps'. The
-    default keymap requires arguments to the cached function to be hashable.
+    default keymap does not require arguments to the cached function to be
+    hashable.  If a hashing error occurs, the cached function will be evaluated.
 
     If the keymap retains type information, then arguments of different types
     will be cached separately.  For example, f(3.0) and f(3) will be treated
@@ -720,7 +744,7 @@ def rr_cache(maxsize=100, cache=None, keymap=None, tol=None, deep=False):
     if maxsize is None:
         return inf_cache(cache=cache, keymap=keymap, tol=tol, deep=deep)
 
-    if keymap is None: keymap = hashmap(flat=True)
+    if keymap is None: keymap = stringmap(flat=False)
     if cache is None: cache = archive_dict()
     elif type(cache) is dict: cache = archive_dict(cache)
     # does archive make sense with database, file, ?... (requires more thought)
@@ -741,8 +765,12 @@ def rr_cache(maxsize=100, cache=None, keymap=None, tol=None, deep=False):
        #lock = RLock()                  # linkedlist updates aren't threadsafe
 
         def wrapper(*args, **kwds):
-            _args, _kwds = rounded_args(*args, **kwds)
-            key = keymap(*_args, **_kwds)
+            try:
+                _args, _kwds = rounded_args(*args, **kwds)
+                key = keymap(*_args, **_kwds)
+            except: #TypeError
+                result = user_function(*args, **kwds)
+                return result
 
             try:
                 # get cache entry

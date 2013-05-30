@@ -20,8 +20,8 @@ called
 78
 """
 
-#from mystic.cache.safe import inf_cache as memoized
-from mystic.cache import inf_cache as memoized
+from mystic.cache.safe import inf_cache as memoized
+#from mystic.cache import inf_cache as memoized
 from mystic.cache.keymaps import picklemap
 dumps = picklemap(flat=False)
 
