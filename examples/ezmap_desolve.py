@@ -17,10 +17,7 @@ python ezmap_desolve.py
 """
 
 try:
-  import pyina.launchers as launchers
-  from pyina.launchers import mpirun_launcher
-  from pyina.mappers import equalportion_mapper
-  from pyina.ez_map import ez_map2 as ez_map
+  from pyina.launchers import Mpi as Pool
 except:
   print __doc__
 
@@ -32,9 +29,9 @@ from mystic.monitors import VerboseMonitor
 from mystic.tools import random_seed
 from mystic.math import poly1d
 
-from raw_chebyshev8 import chebyshev8cost as ChebyshevCost      # no globals
+#from raw_chebyshev8 import chebyshev8cost as ChebyshevCost     # no globals
 #from raw_chebyshev8b import chebyshev8cost as ChebyshevCost    # use globals
-#from mystic.models.poly import chebyshev8cost as ChebyshevCost # no helper
+from mystic.models.poly import chebyshev8cost as ChebyshevCost  # no helper
 
 ND = 9
 NP = 40
@@ -67,8 +64,7 @@ if __name__=='__main__':
     random_seed(seed)
     print "\n and now parallel..."
     solver2 = DifferentialEvolutionSolver2(ND,NP)  #XXX: parallel
-    solver2.SetMapper(ez_map, equalportion_mapper)
-    solver2.SetLauncher(mpirun_launcher, NNODES)
+    solver2.SetMapper(Pool(NNODES).map)
     solver2.SetRandomInitialPoints(min=[-100.0]*ND, max=[100.0]*ND)
     solver2.SetEvaluationLimits(generations=MAX_GENERATIONS)
     solver2.SetGenerationMonitor(psow)

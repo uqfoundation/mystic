@@ -42,7 +42,9 @@ M evaluation points between [-1, 1], and two end points"""
 
 def main(servers,ncpus):
     from mystic.solvers import DifferentialEvolutionSolver2
-    from pathos.pp_map import pp_map
+   #from pathos.multiprocessing import ProcessingPool as Pool
+    from pathos.pp import ParallelPythonPool as Pool
+    pp_map = Pool().map
 
     solver = DifferentialEvolutionSolver2(ND, NP)
     solver.SetMapper(pp_map)

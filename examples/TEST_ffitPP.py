@@ -15,7 +15,9 @@ from test_ffit import *
 
 def main():
     from mystic.solvers import DifferentialEvolutionSolver2
-    from pathos.pp_map import pp_map
+   #from pathos.multiprocessing import ProcessingPool as Pool
+    from pathos.pp import ParallelPythonPool as Pool
+    pp_map = Pool().map
 
     solver = DifferentialEvolutionSolver2(ND, NP)
     solver.SetMapper(pp_map)

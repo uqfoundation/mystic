@@ -2,7 +2,7 @@
 #Adapted from parallel_desolve.py by mmckerns@caltech.edu
 
 __doc__ = """
-# Tests MPI version of Storn and Price's Polynomial 'Fitting' Problem.
+# Tests MP version of Storn and Price's Polynomial 'Fitting' Problem.
 # 
 # Exact answer: [1,1,1]
   
@@ -12,13 +12,12 @@ __doc__ = """
 # Heuristic for Global Optimization over Continuous Spaces. Journal of Global
 # Optimization 11: 341-359, 1997.
 
-# To run in parallel:  (must install 'pyina')
-python ezmap_desolve_rosen.py
+# To run in parallel:  (must install 'pathos')
+python mpmap_desolve_rosen.py
 """
 
 try:
-  from pyina.launchers import Mpi as Pool
-# from pyina.launchers import TorqueMpi as Pool
+  from pathos.multiprocessing import ProcessingPool as Pool
 except:
   print __doc__
 
@@ -35,9 +34,7 @@ from mystic.models import rosen as myCost  # ez_map2 doesn't require help
 ND = 3
 NP = 20
 MAX_GENERATIONS = NP*NP
-NNODES = "5:ppn=4"
-QUEUE = "weekdayQ"
-TIMELIMIT = "00:30:00"
+NNODES = 20
 
 TOL = 0.01
 CROSS = 0.9
@@ -68,7 +65,6 @@ if __name__=='__main__':
     print "\n and now parallel..."
     solver2 = DifferentialEvolutionSolver2(ND,NP)  #XXX: parallel
     solver2.SetMapper(Pool(NNODES).map)
-#   solver2.SetMapper(Pool(NNODES, queue=QUEUE, timelimit=TIMELIMIT).map)
     solver2.SetRandomInitialPoints(min=[-100.0]*ND, max=[100.0]*ND)
     solver2.SetEvaluationLimits(generations=MAX_GENERATIONS)
     solver2.SetGenerationMonitor(psow)

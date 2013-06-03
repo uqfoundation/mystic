@@ -47,6 +47,7 @@ def gendata(params,xmin,xmax,npts=4000):
     """Generate a lorentzian dataset of npts between [min,max] from given params"""
     F = lorentzian.ForwardFactory
     def gensample(F, xmin, xmax):
+        from numpy import arange, random
         a = arange(xmin, xmax, (xmax-xmin)/200.)
         ymin = 0
         ymax = F(a).max()

@@ -2,9 +2,9 @@
 #Adapted from parallel_desolve.py by mmckerns@caltech.edu
 
 __doc__ = """
-# Tests MPI version of Storn and Price's Polynomial 'Fitting' Problem.
+# Tests MP version of Storn and Price's Polynomial 'Fitting' Problem.
 # 
-# Exact answer: [1,1,1]
+# Exact answer: Chebyshev Polynomial of the first kind. T8(x)
   
 # Reference:
 #
@@ -12,13 +12,12 @@ __doc__ = """
 # Heuristic for Global Optimization over Continuous Spaces. Journal of Global
 # Optimization 11: 341-359, 1997.
 
-# To run in parallel:  (must install 'pyina')
-python ezmap_desolve_rosen.py
+# To run in parallel:  (must install 'pathos')
+python mpmap_desolve.py
 """
 
 try:
-  from pyina.launchers import Mpi as Pool
-# from pyina.launchers import TorqueMpi as Pool
+  from pathos.multiprocessing import ProcessingPool as Pool
 except:
   print __doc__
 
@@ -28,26 +27,23 @@ from mystic.termination import ChangeOverGeneration, VTR
 from mystic.strategy import Best1Exp
 from mystic.monitors import VerboseMonitor
 from mystic.tools import random_seed
+from mystic.math import poly1d
 
-#from raw_rosen import rosen as myCost     # ez_map needs a helper function
-from mystic.models import rosen as myCost  # ez_map2 doesn't require help
+#from raw_chebyshev8 import chebyshev8cost as ChebyshevCost     # no globals
+#from raw_chebyshev8b import chebyshev8cost as ChebyshevCost    # use globals
+from mystic.models.poly import chebyshev8cost as ChebyshevCost  # no helper
 
-ND = 3
-NP = 20
+ND = 9
+NP = 40
 MAX_GENERATIONS = NP*NP
-NNODES = "5:ppn=4"
-QUEUE = "weekdayQ"
-TIMELIMIT = "00:30:00"
+NNODES = NP/5
 
-TOL = 0.01
-CROSS = 0.9
-SCALE = 0.8
 seed = 100
 
 
 if __name__=='__main__':
     def print_solution(func):
-        print func
+        print poly1d(func)
         return
 
     psow = VerboseMonitor(10)
@@ -59,22 +55,23 @@ if __name__=='__main__':
     solver.SetRandomInitialPoints(min=[-100.0]*ND, max=[100.0]*ND)
     solver.SetEvaluationLimits(generations=MAX_GENERATIONS)
     solver.SetGenerationMonitor(ssow)
-    solver.Solve(myCost, VTR(TOL), strategy=Best1Exp, \
-                 CrossProbability=CROSS, ScalingFactor=SCALE, disp=1)
+    solver.Solve(ChebyshevCost, VTR(0.01), strategy=Best1Exp, \
+                 CrossProbability=1.0, ScalingFactor=0.9, disp=1)
     print ""
     print_solution( solver.bestSolution )
 
+    #'''
     random_seed(seed)
     print "\n and now parallel..."
     solver2 = DifferentialEvolutionSolver2(ND,NP)  #XXX: parallel
     solver2.SetMapper(Pool(NNODES).map)
-#   solver2.SetMapper(Pool(NNODES, queue=QUEUE, timelimit=TIMELIMIT).map)
     solver2.SetRandomInitialPoints(min=[-100.0]*ND, max=[100.0]*ND)
     solver2.SetEvaluationLimits(generations=MAX_GENERATIONS)
     solver2.SetGenerationMonitor(psow)
-    solver2.Solve(myCost, VTR(TOL), strategy=Best1Exp, \
-                  CrossProbability=CROSS, ScalingFactor=SCALE, disp=1)
+    solver2.Solve(ChebyshevCost, VTR(0.01), strategy=Best1Exp, \
+                  CrossProbability=1.0, ScalingFactor=0.9, disp=1)
     print ""
     print_solution( solver2.bestSolution )
+    #'''
 
 # end of file
