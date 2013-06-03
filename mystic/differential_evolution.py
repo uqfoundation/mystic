@@ -372,15 +372,10 @@ are logged.
             # apply constraints
             self.trialSolution[candidate][:] = self._constraints(self.trialSolution[candidate])
 
-        mapconfig = dict(nnodes=self._nnodes, launcher=self._launcher, \
-                         mapper=self._mapper, queue=self._queue, \
-                         timelimit=self._timelimit, scheduler=self._scheduler, \
-                         ncpus=self._ncpus, servers=self._servers)
-
         # apply penalty
-       #trialEnergy = map(self._penalty, self.trialSolution)#, **mapconfig)
+       #trialEnergy = map(self._penalty, self.trialSolution)#,**self._mapconfig)
         # calculate cost
-        trialEnergy = self._map(cost, self.trialSolution, **mapconfig)
+        trialEnergy = self._map(cost, self.trialSolution, **self._mapconfig)
 
         for candidate in range(self.nPop):
             if trialEnergy[candidate] < self.popEnergy[candidate]:

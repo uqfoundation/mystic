@@ -118,17 +118,21 @@ Important class members:
         from python_map import defaults
 
         # default settings for parallel and distributed computing
-        self._launcher        = serial_launcher   # launcher
-        self._map             = python_map        # map
-        self._mapper          = carddealer_mapper # map_strategy
-        self._nnodes          = int(defaults['nodes'])
-        self._scheduler       = defaults['scheduler'] # scheduler
-        self._queue           = defaults['queue'] # scheduler_queue
-        self._timelimit       = defaults['timelimit']
-        self._servers         = ('*',) #<detect>  # hostname:port
-        self._ncpus           = None   #<detect>  # local processors
-       #self._servers         = ()     #<None>    # hostname:port
-       #self._ncpus           = 0      #<None>    # local processors
+        launcher        = serial_launcher   # launcher
+        mapper          = carddealer_mapper # map_strategy
+        nnodes          = int(defaults['nodes'])
+        scheduler       = defaults['scheduler'] # scheduler
+        queue           = defaults['queue'] # scheduler_queue
+        timelimit       = defaults['timelimit']
+        servers         = ('*',) #<detect>  # hostname:port
+        ncpus           = None   #<detect>  # local processors
+       #servers         = ()     #<None>    # hostname:port
+       #ncpus           = 0      #<None>    # local processors
+        self._mapconfig = dict(nnodes=nnodes, launcher=launcher, \
+                               mapper=mapper, queue=queue, \
+                               timelimit=timelimit, scheduler=scheduler, \
+                               ncpus=ncpus, servers=servers)
+        self._map        = python_map        # map
         return
 
     def SelectServers(self, servers, ncpus=None): #XXX: needs some thought...
@@ -148,15 +152,11 @@ Inputs:
 Additional inputs:
     ncpus -- number of local processors  [DEFAULT: autodetect]
         """
-        self._servers = servers
-        self._ncpus = ncpus  #XXX: merge with nnodes, somehow ???
+        self._mapconfig['servers'] = servers
+        self._mapconfig['ncpus'] = ncpus  #XXX: merge with nnodes, somehow ???
        #print "known servers: %s" % str(servers)
        #print "known # of local processors: %s" % str(ncpus)
         return
-
-#   def SetFormat(self, format): #XXX: pickled versus source ???
-#       self._format = format
-#       return
 
     def SetMapper(self, map, strategy=None): #XXX: use strategy+format ?
         """Set the map function and the mapping strategy.
@@ -173,7 +173,7 @@ Inputs:
         """
         self._map = map
         if strategy:
-          self._mapper = strategy
+          self._mapconfig['mapper'] = strategy
         #FIXME: not a true mapping function... just a dummy interface to a str
         # a real mapper has map(func,*args) interface... this expects map().
         # should be...
@@ -200,11 +200,11 @@ Additional inputs:
     nnodes -- number of parallel compute nodes  [DEFAULT: 1]
         """
        #XXX: should be a Launcher class, not a function (see pathos.SSHLauncher)
-        self._launcher = launcher
+        self._mapconfig['launcher'] = launcher
        #if launcher != python_map: #FIXME: CANNOT currently change to ez_map!!!
        #    exec("import pyina")   #FIXME: launcher should provide launcher.map
        #    exec("self._map = pyina.ez_map")
-        self._nnodes = nnodes
+        self._mapconfig['nnodes'] = nnodes
         return
 
     def SelectScheduler(self, scheduler, queue, timelimit=None):
@@ -225,9 +225,9 @@ Inputs:
 Additional inputs:
     timelimit -- time string HH:MM:SS format  [DEFAULT: '00:05:00']
         """
-        self._scheduler = scheduler
-        self._queue = queue
-        self._timelimit = timelimit
+        self._mapconfig['scheduler'] = scheduler
+        self._mapconfig['queue'] = queue
+        self._mapconfig['timelimit'] = timelimit
         return
 
 

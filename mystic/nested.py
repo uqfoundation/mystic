@@ -172,11 +172,7 @@ def local_optimize(cost, termination, x0, rank):
         exec local_opt
 
         # map:: params, energy, smon, emon = local_optimize(cost,term,x0,id)
-        mapconfig = dict(nnodes=self._nnodes, launcher=self._launcher, \
-                         mapper=self._mapper, queue=self._queue, \
-                         timelimit=self._timelimit, scheduler=self._scheduler, \
-                         ncpus=self._ncpus, servers=self._servers)
-        results = self._map(local_optimize, cf, tm, initial_values, id, **mapconfig)
+        results = self._map(local_optimize, cf, tm, initial_values, id, **self._mapconfig)
 
         # save initial state
         self.AbstractSolver__save_state()
@@ -347,11 +343,7 @@ def local_optimize(cost, termination, x0, rank):
         exec local_opt
 
         # map:: params, energy, smon, emon = local_optimize(cost,term,x0,id)
-        mapconfig = dict(nnodes=self._nnodes, launcher=self._launcher, \
-                         mapper=self._mapper, queue=self._queue, \
-                         timelimit=self._timelimit, scheduler=self._scheduler, \
-                         ncpus=self._ncpus, servers=self._servers)
-        results = self._map(local_optimize, cf, tm, initial_values, id, **mapconfig)
+        results = self._map(local_optimize, cf, tm, initial_values, id, **self._mapconfig)
 
         # save initial state
         self.AbstractSolver__save_state()
