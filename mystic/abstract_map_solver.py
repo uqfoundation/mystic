@@ -35,17 +35,14 @@ A typical call to a 'map' solver will roughly follow this example:
     >>> from mystic.termination import CandidateRelativeTolerance as CRT
     >>> 
     >>> # select the parallel launch configuration
-    >>> from pyina.launchers import mpirun_launcher
-    >>> from pyina.mappers import equalportion_mapper
-    >>> from pyina.ez_map import ez_map2
+    >>> from pyina.launchers import Mpi as Pool
     >>> NNODES = 4
     >>>> npts = 20
     >>>
     >>> # instantiate and configure the solver
     >>> from mystic.solvers import ScattershotSolver
     >>> solver = ScattershotSolver(len(lb), npts)
-    >>> solver.SetMapper(ez_map2, equalportion_mapper)
-    >>> solver.SetLauncher(mpirun_launcher, NNODES)
+    >>> solver.SetMapper(Pool(NNODES).map)
     >>> solver.SetGenerationMonitor(stepmon)
     >>> solver.SetTermination(CRT())
     >>> solver.Solve(rosen)

@@ -35,8 +35,7 @@ A typical call to a 'nested' solver will roughly follow this example:
     >>> from mystic.termination import CandidateRelativeTolerance as CRT
     >>> 
     >>> # select the parallel launch configuration
-    >>> from pyina.launchers import mpirun_launcher
-    >>> from pyina.ez_map import ez_map2
+    >>> from pyina.launchers import Mpi as Pool
     >>> NNODES = 4
     >>> nbins = [4,4,4]
     >>>
@@ -46,8 +45,7 @@ A typical call to a 'nested' solver will roughly follow this example:
     >>> solver = BatchGridSolver(len(nbins), nbins)
     >>> solver.SetNestedSolver(NelderMeadSimplexSolver)
     >>> solver.SetStrictRanges(lb, ub)
-    >>> solver.SetMapper(ez_map2)
-    >>> solver.SetLauncher(mpirun_launcher, NNODES)
+    >>> solver.SetMapper(Pool(NNODES).map)
     >>> solver.SetGenerationMonitor(stepmon)
     >>> solver.SetTermination(CRT())
     >>> solver.Solve(rosen)

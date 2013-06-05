@@ -17,10 +17,9 @@ def main():
     from mystic.solvers import DifferentialEvolutionSolver2
    #from pathos.multiprocessing import ProcessingPool as Pool
     from pathos.pp import ParallelPythonPool as Pool
-    pp_map = Pool().map
 
     solver = DifferentialEvolutionSolver2(ND, NP)
-    solver.SetMapper(pp_map)
+    solver.SetMapper(Pool().map)
     solver.SetRandomInitialPoints(min = [-100.0]*ND, max = [100.0]*ND)
     solver.SetEvaluationLimits(generations=MAX_GENERATIONS)
     solver.SetGenerationMonitor(VerboseMonitor(30))

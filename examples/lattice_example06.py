@@ -74,7 +74,8 @@ if __name__ == '__main__':
     # use lattice-Powell to solve 8th-order Chebyshev coefficients
     solver = LatticeSolver(ndim, nbins)
     solver.SetNestedSolver(PowellDirectionalSolver)
-   #solver.SetMapper(ez_map)
+   #from pathos.multiprocessing import ProcessingPool as Pool
+   #solver.SetMapper(Pool().map)
     solver.SetGenerationMonitor(stepmon)
     solver.SetStrictRanges(min=[-300]*ndim, max=[300]*ndim)
     solver.Solve(chebyshev8cost, NCOG(1e-4), disp=1)

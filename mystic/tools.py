@@ -5,7 +5,6 @@
 # flatten was adapted from the python cookbook
 # wrap_function was adapted from numpy
 # wrap_bounds was adapted from park
-# src & parse_from_history were copied from pathos.pyina.ez_map
 
 """
 Various python tools

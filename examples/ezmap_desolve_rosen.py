@@ -29,8 +29,8 @@ from mystic.strategy import Best1Exp
 from mystic.monitors import VerboseMonitor
 from mystic.tools import random_seed
 
-#from raw_rosen import rosen as myCost     # ez_map needs a helper function
-from mystic.models import rosen as myCost  # ez_map2 doesn't require help
+#from raw_rosen import rosen as myCost     # with a helper function
+from mystic.models import rosen as myCost  # without a helper function
 
 ND = 3
 NP = 20
