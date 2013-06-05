@@ -143,7 +143,7 @@ Important class members:
         self._constraints     = lambda x: x
         self._penalty         = lambda x: 0.0
         self._cost            = (None, None)
-        self._termination     = lambda *x: False if len(x) < 2 or x[-1] is False else '' #XXX: better default termination?
+        self._termination     = lambda x, *ar, **kw: False if len(ar) < 1 or ar[0] is False or kw.get('info',True) == False else '' #XXX: better default ?
         # (get termination details with self._termination.__doc__)
 
         import mystic.termination
