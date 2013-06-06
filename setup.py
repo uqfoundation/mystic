@@ -305,13 +305,10 @@ scipy_version = '>=0.6.0'
 matplotlib_version = '>=0.91'
 if has_setuptools:
     setup_code += """
+      zip_safe=True,
+      dependency_links = ['http://dev.danse.us/packages/'],
       install_requires = ('numpy%s', 'sympy%s', 'dill%s'),
 """ % (numpy_version, sympy_version, dill_version)
-
-# close 'setup' call
-setup_code += """    
-      zip_safe=True,
-"""
 
 # add the scripts, and close 'setup' call
 setup_code += """
