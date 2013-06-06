@@ -84,6 +84,7 @@ Null objects always and reliably "do nothing." """
     def __getnewargs__(self): return ()
 # comply with monitor interface
 Null.info = Null()
+#XXX: should also have Null.x, Null.y ?
 
 
 class Monitor(object):

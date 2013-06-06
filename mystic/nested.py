@@ -45,11 +45,11 @@ Takes two initial inputs:
 All important class members are inherited from AbstractNestedSolver.
         """
         super(LatticeSolver, self).__init__(dim, nbins=nbins)
+        from mystic.termination import NormalizedChangeOverGeneration
+        convergence_tol = 1e-4
+        self._termination = NormalizedChangeOverGeneration(convergence_tol)
 
 #   def SetGridBins(self, nbins):
-#   def ConfigureNestedSolver(self, **kwds):
-#       """Override me for more refined behavior.
-#       """
 #       return
 
     def Solve(self, cost, termination=None, sigint_callback=None,
@@ -78,21 +78,13 @@ Further Inputs:
         current parameter vector.                           [default = None]
     disp -- non-zero to print convergence messages.         [default = 0]
         """
-        #allow for inputs that don't conform to AbstractSolver interface
-#       callback=None        #user-supplied function, called after each step
-        disp=0               #non-zero to print convergence messages
-#       if kwds.has_key('callback'): callback = kwds['callback']
-        if kwds.has_key('disp'): disp = kwds['disp']
+        # process and activate input settings
+        settings = self._process_inputs(kwds)
+        disp=0
+#       for key in settings:
+#           exec "%s = settings['%s']" % (key,key)
         if disp in ['verbose', 'all']: verbose = True
         else: verbose = False
-        # backward compatibility
-        if kwds.has_key('EvaluationMonitor'): \
-           self._evalmon = kwds['EvaluationMonitor']
-        if kwds.has_key('StepMonitor'): \
-           self._stepmon = kwds['StepMonitor']
-       #if kwds.has_key('constraints'): \
-       #   self._constraints = kwds['constraints']
-       #if not self._constraints: self._constraints = lambda x: x
         #-------------------------------------------------------------
 
         import signal
@@ -113,6 +105,8 @@ Further Inputs:
         if termination is not None:
             self.SetTermination(termination)
 
+        # get the nested solver instance
+        solver = self._AbstractNestedSolver__get_solver_instance()
         #-------------------------------------------------------------
 
         nbins = self._nbins
@@ -135,58 +129,39 @@ Further Inputs:
         initial_values = gridpts(bins)
 
         # run optimizer for each grid point
-        cf = [cost for i in range(len(initial_values))]
-        tm = [self._termination for i in range(len(initial_values))]
+        from copy import deepcopy as copy
+        op = [copy(solver) for i in range(len(initial_values))]
+       #cf = [cost for i in range(len(initial_values))]
+       #vb = [verbose for i in range(len(initial_values))]
         id = range(len(initial_values))
 
         # generate the local_optimize function
-        local_opt = """\n
-def local_optimize(cost, termination, x0, rank):
-    from %s import %s as LocalSolver
-    from mystic.monitors import Monitor
+        def local_optimize(solver, x0, rank=None, disp=verbose):
+            solver.id = rank
+            solver.SetInitialPoints(x0)
+            if solver._useStrictRange: #XXX: always, settable, or sync'd ?
+                solver.SetStrictRanges(min=solver._strictMin, \
+                                       max=solver._strictMax) # or lower,upper ?
+            solver.Solve(cost, disp=disp)
+            return solver
 
-    stepmon = Monitor()
-    evalmon = Monitor()
-
-    ndim = len(x0)
-
-    solver = LocalSolver(ndim)
-    solver.id = rank
-    solver.SetInitialPoints(x0)
-    solver.SetEvaluationMonitor(evalmon)
-    solver.SetGenerationMonitor(stepmon)
-""" % (self._solver.__module__, self._solver.__name__)
-        if self._useStrictRange:
-            local_opt += """\n
-    solver.SetStrictRanges(min=%s, max=%s)
-""" % (str(lower), str(upper))
-#        local_opt += """\n
-#    solver.SetConstraints(%s)
-#""" % (self._solver._constraints)  #FIXME: needs to take a string
-        local_opt += """\n
-    solver.SetEvaluationLimits(%s, %s)
-    solver.SetTermination(termination)
-    solver.Solve(cost, disp=%s)
-    return solver, stepmon, evalmon
-""" % (str(self._maxiter), str(self._maxfun), str(verbose))
-        exec local_opt
-
-        # map:: params, energy, smon, emon = local_optimize(cost,term,x0,id)
-        results = self._map(local_optimize, cf, tm, initial_values, id, **self._mapconfig)
+        # map:: solver = local_optimize(solver, x0, id, verbose)
+        results = self._map(local_optimize, op, initial_values, id, \
+                                                **self._mapconfig)
 
         # save initial state
         self._AbstractSolver__save_state()
         # get the results with the lowest energy
-        self._bestSolver = results[0][0]
-        bestpath = results[0][1]
-        besteval = results[0][2]
-        self._total_evals = len(besteval.y)
-        for result in results[1:]:
-          self._total_evals += len((result[2]).y)  # add function evaluations
-          if result[0].bestEnergy < self._bestSolver.bestEnergy:
-            self._bestSolver = result[0]
-            bestpath = result[1]
-            besteval = result[2]
+        self._bestSolver = results[0]
+        bestpath = self._bestSolver._stepmon
+        besteval = self._bestSolver._evalmon
+        self._total_evals = self._bestSolver.evaluations
+        for solver in results[1:]:
+            self._total_evals += solver.evaluations # add func evals
+            if solver.bestEnergy < self._bestSolver.bestEnergy:
+                self._bestSolver = solver
+                bestpath = solver._stepmon
+                besteval = solver._evalmon
 
         # return results to internals
         self.population = self._bestSolver.population #XXX: pointer? copy?
@@ -194,17 +169,25 @@ def local_optimize(cost, termination, x0, rank):
         self.bestSolution = self._bestSolver.bestSolution #XXX: pointer? copy?
         self.bestEnergy = self._bestSolver.bestEnergy
         self.trialSolution = self._bestSolver.trialSolution #XXX: pointer? copy?
-        self._fcalls = [ len(besteval.y) ]
+        self._fcalls = self._bestSolver._fcalls #XXX: pointer? copy?
         self._maxiter = self._bestSolver._maxiter
         self._maxfun = self._bestSolver._maxfun
 
         # write 'bests' to monitors  #XXX: non-best monitors may be useful too
-        for i in range(len(bestpath.y)):
-            self._stepmon(bestpath.x[i], bestpath.y[i], self.id)
-            #XXX: could apply callback here, or in exec'd code
-        for i in range(len(besteval.y)):
-            self._evalmon(besteval.x[i], besteval.y[i])
-
+        self._stepmon = bestpath #XXX: pointer? copy?
+        self._evalmon = besteval #XXX: pointer? copy?
+       #from mystic.tools import isNull
+       #if isNull(bestpath):
+       #    self._stepmon = bestpath
+       #else:
+       #    for i in range(len(bestpath.y)):
+       #        self._stepmon(bestpath.x[i], bestpath.y[i], self.id)
+       #        #XXX: could apply callback here, or in exec'd code
+       #if isNull(besteval):
+       #    self._evalmon = besteval
+       #else:
+       #    for i in range(len(besteval.y)):
+       #        self._evalmon(besteval.x[i], besteval.y[i])
         #-------------------------------------------------------------
 
         signal.signal(signal.SIGINT,signal.default_int_handler)
@@ -229,6 +212,9 @@ Takes two initial inputs:
 All important class members are inherited from AbstractNestedSolver.
         """
         super(BuckshotSolver, self).__init__(dim, npts=npts)
+        from mystic.termination import NormalizedChangeOverGeneration
+        convergence_tol = 1e-4
+        self._termination = NormalizedChangeOverGeneration(convergence_tol)
 
     def Solve(self, cost, termination=None, sigint_callback=None,
                                             ExtraArgs=(), **kwds):
@@ -256,21 +242,13 @@ Further Inputs:
         current parameter vector.                           [default = None]
     disp -- non-zero to print convergence messages.         [default = 0]
         """
-        #allow for inputs that don't conform to AbstractSolver interface
-#       callback=None        #user-supplied function, called after each step
-        disp=0               #non-zero to print convergence messages
-#       if kwds.has_key('callback'): callback = kwds['callback']
-        if kwds.has_key('disp'): disp = kwds['disp']
+        # process and activate input settings
+        settings = self._process_inputs(kwds)
+        disp=0
+#       for key in settings:
+#           exec "%s = settings['%s']" % (key,key)
         if disp in ['verbose', 'all']: verbose = True
         else: verbose = False
-        # backward compatibility
-        if kwds.has_key('EvaluationMonitor'): \
-           self._evalmon = kwds['EvaluationMonitor']
-        if kwds.has_key('StepMonitor'): \
-           self._stepmon = kwds['StepMonitor']
-       #if kwds.has_key('constraints'): \
-       #   self._constraints = kwds['constraints']
-       #if not self._constraints: self._constraints = lambda x: x
         #-------------------------------------------------------------
 
         import signal
@@ -291,6 +269,8 @@ Further Inputs:
         if termination is not None:
             self.SetTermination(termination)
 
+        # get the nested solver instance
+        solver = self._AbstractNestedSolver__get_solver_instance()
         #-------------------------------------------------------------
 
         npts = self._npts
@@ -306,58 +286,39 @@ Further Inputs:
         initial_values = samplepts(lower,upper,npts)
 
         # run optimizer for each grid point
-        cf = [cost for i in range(len(initial_values))]
-        tm = [self._termination for i in range(len(initial_values))]
+        from copy import deepcopy as copy
+        op = [copy(solver) for i in range(len(initial_values))]
+       #cf = [cost for i in range(len(initial_values))]
+       #vb = [verbose for i in range(len(initial_values))]
         id = range(len(initial_values))
 
         # generate the local_optimize function
-        local_opt = """\n
-def local_optimize(cost, termination, x0, rank):
-    from %s import %s as LocalSolver
-    from mystic.monitors import Monitor
+        def local_optimize(solver, x0, rank=None, disp=verbose):
+            solver.id = rank
+            solver.SetInitialPoints(x0)
+            if solver._useStrictRange: #XXX: always, settable, or sync'd ?
+                solver.SetStrictRanges(min=solver._strictMin, \
+                                       max=solver._strictMax) # or lower,upper ?
+            solver.Solve(cost, disp=disp)
+            return solver
 
-    stepmon = Monitor()
-    evalmon = Monitor()
-
-    ndim = len(x0)
-
-    solver = LocalSolver(ndim)
-    solver.id = rank
-    solver.SetInitialPoints(x0)
-    solver.SetEvaluationMonitor(evalmon)
-    solver.SetGenerationMonitor(stepmon)
-""" % (self._solver.__module__, self._solver.__name__)
-        if self._useStrictRange:
-            local_opt += """\n
-    solver.SetStrictRanges(min=%s, max=%s)
-""" % (str(lower), str(upper))
-#        local_opt += """\n
-#    solver.SetConstraints(%s)
-#""" % (self._solver._constraints)  #FIXME: needs to take a string
-        local_opt += """\n
-    solver.SetEvaluationLimits(%s, %s)
-    solver.SetTermination(termination)
-    solver.Solve(cost, disp=%s)
-    return solver, stepmon, evalmon
-""" % (str(self._maxiter), str(self._maxfun), str(verbose))
-        exec local_opt
-
-        # map:: params, energy, smon, emon = local_optimize(cost,term,x0,id)
-        results = self._map(local_optimize, cf, tm, initial_values, id, **self._mapconfig)
+        # map:: solver = local_optimize(solver, x0, id, verbose)
+        results = self._map(local_optimize, op, initial_values, id, \
+                                                **self._mapconfig)
 
         # save initial state
         self._AbstractSolver__save_state()
         # get the results with the lowest energy
-        self._bestSolver = results[0][0]
-        bestpath = results[0][1]
-        besteval = results[0][2]
-        self._total_evals = len(besteval.y)
-        for result in results[1:]:
-          self._total_evals += len((result[2]).y)  # add function evaluations
-          if result[0].bestEnergy < self._bestSolver.bestEnergy:
-            self._bestSolver = result[0]
-            bestpath = result[1]
-            besteval = result[2]
+        self._bestSolver = results[0]
+        bestpath = self._bestSolver._stepmon
+        besteval = self._bestSolver._evalmon
+        self._total_evals = self._bestSolver.evaluations
+        for solver in results[1:]:
+            self._total_evals += solver.evaluations # add func evals
+            if solver.bestEnergy < self._bestSolver.bestEnergy:
+                self._bestSolver = solver
+                bestpath = solver._stepmon
+                besteval = solver._evalmon
 
         # return results to internals
         self.population = self._bestSolver.population #XXX: pointer? copy?
@@ -365,17 +326,25 @@ def local_optimize(cost, termination, x0, rank):
         self.bestSolution = self._bestSolver.bestSolution #XXX: pointer? copy?
         self.bestEnergy = self._bestSolver.bestEnergy
         self.trialSolution = self._bestSolver.trialSolution #XXX: pointer? copy?
-        self._fcalls = [ len(besteval.y) ]
+        self._fcalls = self._bestSolver._fcalls #XXX: pointer? copy?
         self._maxiter = self._bestSolver._maxiter
         self._maxfun = self._bestSolver._maxfun
 
         # write 'bests' to monitors  #XXX: non-best monitors may be useful too
-        for i in range(len(bestpath.y)):
-            self._stepmon(bestpath.x[i], bestpath.y[i], self.id)
-            #XXX: could apply callback here, or in exec'd code
-        for i in range(len(besteval.y)):
-            self._evalmon(besteval.x[i], besteval.y[i])
-
+        self._stepmon = bestpath #XXX: pointer? copy?
+        self._evalmon = besteval #XXX: pointer? copy?
+       #from mystic.tools import isNull
+       #if isNull(bestpath):
+       #    self._stepmon = bestpath
+       #else:
+       #    for i in range(len(bestpath.y)):
+       #        self._stepmon(bestpath.x[i], bestpath.y[i], self.id)
+       #        #XXX: could apply callback here, or in exec'd code
+       #if isNull(besteval):
+       #    self._evalmon = besteval
+       #else:
+       #    for i in range(len(besteval.y)):
+       #        self._evalmon(besteval.x[i], besteval.y[i])
         #-------------------------------------------------------------
 
         signal.signal(signal.SIGINT,signal.default_int_handler)

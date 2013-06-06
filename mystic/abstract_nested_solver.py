@@ -131,9 +131,38 @@ Important class members:
         """set the nested solver
 
 input::
-    - solver: a mystic solver class (e.g. NelderMeadSimplexSolver)"""
+    - solver: a mystic solver instance (e.g. NelderMeadSimplexSolver(3) )"""
         self._solver = solver
         return
+
+    def __get_solver_instance(self):
+        """ensure the solver is a solver instance"""
+        solver = self._solver
+
+        # if a configured solver is not given, then build one of the given type
+        from mystic.abstract_solver import AbstractSolver
+        if isinstance(solver, AbstractSolver): # is a configured solver instance
+            return solver
+        if not hasattr(solver, "Solve"):       # is an Error...
+            raise TypeError, "%s is not a valid solver" % solver
+
+        # otherwise, this is a solver class and needs configuring
+       #from mystic.monitors import Monitor
+       #stepmon = Monitor()
+       #evalmon = Monitor()
+       #maxiter = 1000
+       #maxfun = 1e+6
+        solver = solver(self.nDim)
+        solver.SetRandomInitialPoints() #FIXME: set population; will override
+        if self._useStrictRange: #XXX: always, settable, or sync'd ?
+            solver.SetStrictRanges(min=self._strictMin, max=self._strictMax)
+        solver.SetEvaluationLimits(self._maxiter, self._maxfun)
+        solver.SetEvaluationMonitor(self._evalmon) #XXX: or copy or set?
+        solver.SetGenerationMonitor(self._stepmon) #XXX: or copy or set?
+        solver.SetTermination(self._termination)
+        solver.SetConstraints(self._constraints)
+        solver.SetPenalty(self._penalty)
+        return solver
 
     def SetInitialPoints(self, x0, radius=0.05):
         """Set Initial Points with Guess (x0)

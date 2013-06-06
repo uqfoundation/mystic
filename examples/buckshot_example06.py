@@ -73,6 +73,7 @@ if __name__ == '__main__':
     # use buckshot-Powell to solve 8th-order Chebyshev coefficients
     solver = BuckshotSolver(ndim, npts)
     solver.SetNestedSolver(PowellDirectionalSolver)
+   #from pyina.launchers import Mpi as Pool
    #from pathos.multiprocessing import ProcessingPool as Pool
    #solver.SetMapper(Pool().map)
     solver.SetGenerationMonitor(stepmon)
