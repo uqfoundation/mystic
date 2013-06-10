@@ -448,7 +448,7 @@ Further Inputs:
         return 
 
 
-def diffev2(cost,x0,npop,args=(),bounds=None,ftol=5e-3,gtol=None,
+def diffev2(cost,x0,npop=4,args=(),bounds=None,ftol=5e-3,gtol=None,
             maxiter=None,maxfun=None,cross=0.9,scale=0.8,
             full_output=0,disp=1,retall=0,callback=None,**kwds):
     """Minimize a function using Storn & Price's differential evolution.
@@ -518,7 +518,7 @@ Returns: (xopt, {fopt, iter, funcalls, warnflag}, {allvecs})
                   callback=callback,**kwds)
 
 
-def diffev(cost,x0,npop,args=(),bounds=None,ftol=5e-3,gtol=None,
+def diffev(cost,x0,npop=4,args=(),bounds=None,ftol=5e-3,gtol=None,
            maxiter=None,maxfun=None,cross=0.9,scale=0.8,
            full_output=0,disp=1,retall=0,callback=None,**kwds):
     """Minimize a function using differential evolution.
