@@ -41,8 +41,8 @@ A typical call to a 'nested' solver will roughly follow this example:
     >>>
     >>> # instantiate and configure the solver
     >>> from mystic.solvers import NelderMeadSimplexSolver
-    >>> from mystic.solvers import BatchGridSolver
-    >>> solver = BatchGridSolver(len(nbins), nbins)
+    >>> from mystic.solvers import LatticeSolver
+    >>> solver = LatticeSolver(len(nbins), nbins)
     >>> solver.SetNestedSolver(NelderMeadSimplexSolver)
     >>> solver.SetStrictRanges(lb, ub)
     >>> solver.SetMapper(Pool(NNODES).map)
