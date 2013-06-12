@@ -1,12 +1,12 @@
 # The following code attempts to construct something like:
 # >>> from sympy import Eq, Symbol
 # >>> from sympy import solve as symsol
+# >>> x0 = Symbol('x0')
 # >>> x1 = Symbol('x1')
 # >>> x2 = Symbol('x2')
-# >>> x3 = Symbol('x3')
-# >>> eq1 = Eq(x2, x1 - 2.)
-# >>> eq2 = Eq(x2, x3*2.)
-# >>> soln = symsol([eq2, eq1], [x1, x2, x3])
+# >>> eq1 = Eq(x1, x0 - 2.)
+# >>> eq2 = Eq(x1, x2*2.)
+# >>> soln = symsol([eq2, eq1], [x0, x1, x2])
 
 from mystic.tools import permutations
 from mystic.tools import list_or_tuple_or_ndarray
@@ -26,20 +26,20 @@ Inputs:
 
     For example:
         >>> constraints = '''
-        ...     x1 = x5**2
-        ...     x3 = x4 + x5'''
+        ...     x0 = x4**2
+        ...     x2 = x3 + x4'''
         >>> _classify_variables(constraints, nvars=5)
-        {'dependent':['x1','x3'], 'independent':['x4','x5'], 'unconstrained':['x2']}
+        {'dependent':['x0','x2'], 'independent':['x3','x4'], 'unconstrained':['x1']}
         >>> constraints = '''
-        ...     x1 = x5**2
-        ...     x5 - x4 = 0.
-        ...     x5 - x1 = x3'''
+        ...     x0 = x4**2
+        ...     x4 - x3 = 0.
+        ...     x4 - x0 = x2'''
         >>> _classify_variables(constraints, nvars=5)
-        {'dependent': ['x1','x3','x5'], 'independent': ['x4'], 'unconstrained': ['x2']}
+        {'dependent': ['x0','x2','x4'], 'independent': ['x3'], 'unconstrained': ['x1']}
 
 Additional Inputs:
     nvars -- number of variables. Includes variables not explicitly
-        given by the constraint equations (e.g. 'x2' in the example above).
+        given by the constraint equations (e.g. 'x1' in the example above).
     variables -- desired variable name. Default is 'x'. A list of variable
         name strings is also accepted for when desired variable names
         don't have the same base, and can include variables that are not
@@ -51,24 +51,24 @@ Additional Inputs:
     from mystic.symbolic import replace_variables, get_variables
     #XXX: use solve? or first if not in form xi = ... ?
     if list_or_tuple_or_ndarray(variables):
-        if nvars: variables = variables[:nvars]
+        if nvars != None: variables = variables[:nvars]
         constraints = replace_variables(constraints, variables)
         varname = '$'
         ndim = len(variables)
     else:
         varname = variables # varname used below instead of variables
         myvar = get_variables(constraints, variables)
-        if myvar: ndim = max([int(v.strip(varname)) for v in myvar])
+        if myvar: ndim = max([int(v.strip(varname)) for v in myvar]) + 1
         else: ndim = 0
-    if nvars: ndim = nvars
+    if nvars != None: ndim = nvars
 
     eqns = constraints.splitlines()
-    indices = range(1, ndim+1)
+    indices = range(ndim)
     dep = []
     indep = []
     for eqn in eqns: # find which variables are used
         if eqn:
-            for var in range(1, ndim+1):
+            for var in range(ndim):
                 if indices.count(var) != 0:
                     if eqn.find(varname + str(var)) != -1:
                         indep.append(var)
@@ -96,34 +96,34 @@ Additional Inputs:
         if _dep:
             dep.append(_dep[0])
             indep.remove(_dep[0])
-    #FIXME: 'equivalent' equations not ignored (e.g. x3=x3; or x3=1, 2*x3=2)
+    #FIXME: 'equivalent' equations not ignored (e.g. x2=x2; or x2=1, 2*x2=2)
     """These are good:
     >>> constraints = '''
-    ...     x1 = x5**2
-    ...     x3 - x5 - x4 = 0.'''
+    ...     x0 = x4**2
+    ...     x2 - x4 - x3 = 0.'''
     >>> _classify_variables(constraints, nvars=5)
-    {'dependent': ['x1','x3'], 'independent': ['x4','x5'], 'unconstrained': ['x2']}
+    {'dependent': ['x0','x2'], 'independent': ['x3','x4'], 'unconstrained': ['x1']}
     >>> constraints = '''
-    ...     x1 + x3 = 0.
-    ...     x1 + 2*x3 = 0.'''
+    ...     x0 + x2 = 0.
+    ...     x0 + 2*x2 = 0.'''
     >>> _classify_variables(constraints, nvars=5)
-    {'dependent': ['x1','x3'], 'independent': [], 'unconstrained': ['x2','x4','x5']}
+    {'dependent': ['x0','x2'], 'independent': [], 'unconstrained': ['x1','x3','x4']}
 
     This is a bug:
     >>> constraints = '''
-    ...     x1 + x3 = 0.
-    ...     2*x1 + 2*x3 = 0.'''
+    ...     x0 + x2 = 0.
+    ...     2*x0 + 2*x2 = 0.'''
     >>> _classify_variables(constraints, nvars=5)
-    {'dependent': ['x1','x3'], 'independent': [], 'unconstrained': ['x2','x4','x5']}
+    {'dependent': ['x0','x2'], 'independent': [], 'unconstrained': ['x1','x3','x4']}
     """ #XXX: should simplify first?
     dep.sort()
     indep.sort()
     # return the actual variable names (not the indicies)
     if varname == variables: # then was single variable
-        variables = [varname+str(i) for i in range(1,ndim+1)]
-    dep = [variables[i-1] for i in dep]
-    indep = [variables[i-1] for i in indep]
-    indices = [variables[i-1] for i in indices]
+        variables = [varname+str(i) for i in range(ndim)]
+    dep = [variables[i] for i in dep]
+    indep = [variables[i] for i in indep]
+    indices = [variables[i] for i in indices]
     d = {'dependent':dep, 'independent':indep, 'unconstrained':indices}
     return d
 
@@ -142,25 +142,25 @@ Inputs:
 
     For example:
         >>> constraints = '''
-        ...     x1 = x5**2
-        ...     x5 - x4 = 0.
-        ...     x5 - x1 = x3'''
+        ...     x0 = x4**2
+        ...     x4 - x3 = 0.
+        ...     x4 - x0 = x2'''
         >>> code, lhs, rhs, vars, neqn = _prepare_sympy(constraints, nvars=5)
         >>> print code
+        x0=Symbol('x0')
         x1=Symbol('x1')
         x2=Symbol('x2')
         x3=Symbol('x3')
         x4=Symbol('x4')
-        x5=Symbol('x5')
         rand = Symbol('rand')
         >>> print lhs, rhs
-        ['x1 ', 'x5 - x4 ', 'x5 - x1 '] [' x5**2', ' 0.', ' x3']
+        ['x0 ', 'x4 - x3 ', 'x4 - x0 '] [' x4**2', ' 0.', ' x2']
         print "%s in %s eqns" % (vars, neqn)        
-        x1,x2,x3,x4,x5, in 3 eqns
+        x0,x1,x2,x3,x4, in 3 eqns
 
 Additional Inputs:
     nvars -- number of variables. Includes variables not explicitly
-        given by the constraint equations (e.g. 'x2' in the example above).
+        given by the constraint equations (e.g. 'x1' in the example above).
     variables -- desired variable name. Default is 'x'. A list of variable
         name strings is also accepted for when desired variable names
         don't have the same base, and can include variables that are not
@@ -170,18 +170,18 @@ Additional Inputs:
         raise NotImplementedError, "cannot simplify inequalities" 
 
     from mystic.symbolic import replace_variables, get_variables
-    #XXX: if constraints contain x1,x2,x4 for 'x', should x3 be in code,xlist?
+    #XXX: if constraints contain x0,x1,x3 for 'x', should x2 be in code,xlist?
     if list_or_tuple_or_ndarray(variables):
-        if nvars: variables = variables[:nvars]
+        if nvars != None: variables = variables[:nvars]
         constraints = replace_variables(constraints, variables, markers='_')
         varname = '_'
         ndim = len(variables)
     else:
         varname = variables # varname used below instead of variables
         myvar = get_variables(constraints, variables)
-        if myvar: ndim = max([int(v.strip(varname)) for v in myvar])
+        if myvar: ndim = max([int(v.strip(varname)) for v in myvar]) + 1
         else: ndim = 0
-    if nvars: ndim = nvars
+    if nvars != None: ndim = nvars
 
     # split constraints_str into lists of left hand sides and right hand sides
     eacheqn = constraints.splitlines()
@@ -206,13 +206,13 @@ Additional Inputs:
 
     # First create list of x variables
     xlist = ""
-    for i in range(1, ndim + 1):
+    for i in range(ndim):
         xn = varname + str(i)
         xlist += xn + ","
 
     # Start constructing the code string
     code = ""
-    for i in range(1, ndim + 1):
+    for i in range(ndim):
         xn = varname + str(i)
         code += xn + '=' + "Symbol('" + xn + "')\n"
 
@@ -230,9 +230,9 @@ Inputs:
         modules already imported).
 
     For example:
-        >>> equation = "x2 - 3. = x1*x3"
+        >>> equation = "x1 - 3. = x0*x2"
         >>> print _solve_single(equation)
-        x1 = -(3.0 - x2)/x3
+        x0 = -(3.0 - x1)/x2
 
 Additional Inputs:
     variables -- desired variable name. Default is 'x'. A list of variable
@@ -243,9 +243,9 @@ Additional Inputs:
         By default, increasing order is used.
 
     For example:
-        >>> equation = "x2 - 3. = x1*x3"
-        >>> print _solve_single(equation, target='x2')
-        x2 = 3.0 + x1*x3
+        >>> equation = "x1 - 3. = x0*x2"
+        >>> print _solve_single(equation, target='x1')
+        x1 = 3.0 + x0*x2
 
 Further Inputs:
     locals -- a dictionary of additional variables used in the symbolic
@@ -275,7 +275,7 @@ Further Inputs:
 
     from mystic.symbolic import replace_variables, get_variables
     if list_or_tuple_or_ndarray(variables):
-        if nvars: variables = variables[:nvars]
+        if nvars != None: variables = variables[:nvars]
         constraints = replace_variables(constraint, variables, markers='_')
         varname = '_'
         ndim = len(variables)
@@ -286,15 +286,15 @@ Further Inputs:
         constraints = constraint # constraints used below
         varname = variables # varname used below instead of variables
         myvar = get_variables(constraint, variables)
-        if myvar: ndim = max([int(v.strip(varname)) for v in myvar])
+        if myvar: ndim = max([int(v.strip(varname)) for v in myvar]) + 1
         else: ndim = 0
-    if nvars: ndim = nvars
+    if nvars != None: ndim = nvars
 
     # create function to replace "_" with original variables
     def restore(variables, mystring):
         if list_or_tuple_or_ndarray(variables):
             vars = get_variables(mystring,'_')
-            indices = [int(v.strip('_'))-1 for v in vars]
+            indices = [int(v.strip('_')) for v in vars]
             for i in range(len(vars)):
                 mystring = mystring.replace(vars[i],variables[indices[i]])
         return mystring
@@ -342,8 +342,8 @@ Further Inputs:
     targeted = tuple(targeted)
 
     ########################################################################
-    # solve each xi: symsol(single_equation, [x1,x2,...,xi,...,xn])
-    # returns: {x1: f(xn,...), x2: f(xn,...), ..., xn: f(...,x1)}
+    # solve each xi: symsol(single_equation, [x0,x1,...,xi,...,xn])
+    # returns: {x0: f(xn,...), x1: f(xn,...), ..., xn: f(...,x0)}
     if permute or not target: #XXX: the goal is solving *only one* equation
         code += '_xlist = %s\n' % ','.join(targeted)
         code += '_xlist = [symsol(['+eqlist+'], [i]) for i in _xlist]\n'
@@ -395,11 +395,11 @@ Inputs:
 
     For example:
         >>> constraints = '''
-        ...     x1 - x3 = 2.
-        ...     x3 = x4*2.'''
+        ...     x0 - x2 = 2.
+        ...     x2 = x3*2.'''
         >>> print _solve_linear(constraints)
-        x3 = 2.0*x4
-        x1 = 2.0 + 2.0*x4
+        x2 = 2.0*x3
+        x0 = 2.0 + 2.0*x3
 
 Additional Inputs:
     variables -- desired variable name. Default is 'x'. A list of variable
@@ -413,11 +413,11 @@ Additional Inputs:
 
     For example:
         >>> constraints = '''
-        ...     x1 - x3 = 2.
-        ...     x3 = x4*2.'''
-        >>> print _solve_linear(constraints, target=['x4','x3'])
-        x4 = -1.0 + 0.5*x1
-        x3 = -2.0 + x1
+        ...     x0 - x2 = 2.
+        ...     x2 = x3*2.'''
+        >>> print _solve_linear(constraints, target=['x3','x2'])
+        x3 = -1.0 + 0.5*x0
+        x2 = -2.0 + x0
 
 Further Inputs:
     locals -- a dictionary of additional variables used in the symbolic
@@ -441,7 +441,7 @@ Further Inputs:
 
     from mystic.symbolic import replace_variables, get_variables
     if list_or_tuple_or_ndarray(variables):
-        if nvars: variables = variables[:nvars]
+        if nvars != None: variables = variables[:nvars]
         _constraints = replace_variables(constraints, variables, '_')
         varname = '_'
         ndim = len(variables)
@@ -452,15 +452,15 @@ Further Inputs:
         _constraints = constraints
         varname = variables # varname used below instead of variables
         myvar = get_variables(constraints, variables)
-        if myvar: ndim = max([int(v.strip(varname)) for v in myvar])
+        if myvar: ndim = max([int(v.strip(varname)) for v in myvar]) + 1
         else: ndim = 0
-    if nvars: ndim = nvars
+    if nvars != None: ndim = nvars
 
     # create function to replace "_" with original variables
     def restore(variables, mystring):
         if list_or_tuple_or_ndarray(variables):
             vars = get_variables(mystring,'_')
-            indices = [int(v.strip('_'))-1 for v in vars]
+            indices = [int(v.strip('_')) for v in vars]
             for i in range(len(vars)):
                 mystring = mystring.replace(vars[i],variables[indices[i]])
         return mystring
@@ -523,8 +523,8 @@ Further Inputs:
     for perm in xperms: 
         _code = code
         xlist = ','.join(perm).rstrip(',') #XXX: if not all, use target ?
-        # solve dependent xi: symsol([linear_system], [x1,x2,...,xi,...,xn])
-        # returns: {x1: f(xn,...), x2: f(xn,...), ...}
+        # solve dependent xi: symsol([linear_system], [x0,x1,...,xi,...,xn])
+        # returns: {x0: f(xn,...), x1: f(xn,...), ...}
         _code += 'soln = symsol([' + eqlist + '], [' + xlist + '])'
         if verbose: print _code
         _code = compile(_code, '<string>', 'exec')
@@ -586,17 +586,17 @@ Inputs:
 
     For example:
         >>> constraints = '''
-        ...     x1 - x3 = 2.
-        ...     x3 = x4*2.'''
+        ...     x0 - x2 = 2.
+        ...     x2 = x3*2.'''
         >>> print solve(constraints)
-        x3 = 2.0*x4
-        x1 = 2.0 + 2.0*x4
+        x2 = 2.0*x3
+        x0 = 2.0 + 2.0*x3
         >>> constraints = '''
-        ...     spread([x1,x2]) - 1.0 = mean([x1,x2])   
-        ...     mean([x1,x2,x3]) = x3'''
+        ...     spread([x0,x1]) - 1.0 = mean([x0,x1])   
+        ...     mean([x0,x1,x2]) = x2'''
         >>> print solve(constraints)
-        x1 = -0.5 + 0.5*x3
-        x2 = 0.5 + 1.5*x3
+        x0 = -0.5 + 0.5*x2
+        x1 = 0.5 + 1.5*x2
 
 Additional Inputs:
     variables -- desired variable name. Default is 'x'. A list of variable
@@ -610,11 +610,11 @@ Additional Inputs:
 
     For example:
         >>> constraints = '''
-        ...     x1 - x3 = 2.
-        ...     x3 = x4*2.'''
-        >>> print solve(constraints, target=['x4','x3'])
-        x4 = -1.0 + 0.5*x1
-        x3 = -2.0 + x1
+        ...     x0 - x2 = 2.
+        ...     x2 = x3*2.'''
+        >>> print solve(constraints, target=['x3','x2'])
+        x3 = -1.0 + 0.5*x0
+        x2 = -2.0 + x0
 
 Further Inputs:
     locals -- a dictionary of additional variables used in the symbolic
@@ -650,15 +650,15 @@ Inputs:
         modules already imported).
 
     For example:
-        >>> constraints = '''x2 = x4*3. + x1*x3'''
+        >>> constraints = '''x1 = x3*3. + x0*x2'''
         >>> print _solve_nonlinear(constraints)
-        x1 = (x2 - 3.0*x4)/x3
+        x0 = (x1 - 3.0*x3)/x2
         >>> constraints = '''
-        ...     spread([x1,x2]) - 1.0 = mean([x1,x2])   
-        ...     mean([x1,x2,x3]) = x3'''
+        ...     spread([x0,x1]) - 1.0 = mean([x0,x1])   
+        ...     mean([x0,x1,x2]) = x2'''
         >>> print _solve_nonlinear(constraints)
-        x1 = -0.5 + 0.5*x3
-        x2 = 0.5 + 1.5*x3
+        x0 = -0.5 + 0.5*x2
+        x1 = 0.5 + 1.5*x2
 
 Additional Inputs:
     variables -- desired variable name. Default is 'x'. A list of variable
@@ -672,11 +672,11 @@ Additional Inputs:
 
     For example:
         >>> constraints = '''
-        ...     spread([x1,x2]) - 1.0 = mean([x1,x2])   
-        ...     mean([x1,x2,x3]) = x3'''
-        >>> print _solve_nonlinear(constraints, target=['x2'])
-        x2 = -0.833333333333333 + 0.166666666666667*x3
-        x1 = -0.5 + 0.5*x3
+        ...     spread([x0,x1]) - 1.0 = mean([x0,x1])   
+        ...     mean([x0,x1,x2]) = x2'''
+        >>> print _solve_nonlinear(constraints, target=['x1'])
+        x1 = -0.833333333333333 + 0.166666666666667*x2
+        x0 = -0.5 + 0.5*x2
 
 Further Inputs:
     locals -- a dictionary of additional variables used in the symbolic
@@ -700,22 +700,22 @@ Further Inputs:
 
     from mystic.symbolic import replace_variables, get_variables
     if list_or_tuple_or_ndarray(variables):
-        if nvars: variables = variables[:nvars]
+        if nvars != None: variables = variables[:nvars]
         constraints = replace_variables(constraints, variables, '_')
         varname = '_'
         ndim = len(variables)
     else:
         varname = variables # varname used below instead of variables
         myvar = get_variables(constraints, variables)
-        if myvar: ndim = max([int(v.strip(varname)) for v in myvar])
+        if myvar: ndim = max([int(v.strip(varname)) for v in myvar]) + 1
         else: ndim = 0
-    if nvars: ndim = nvars
+    if nvars != None: ndim = nvars
 
     # create function to replace "_" with original variables
     def restore(variables, mystring):
         if list_or_tuple_or_ndarray(variables):
             vars = get_variables(mystring,'_')
-            indices = [int(v.strip('_'))-1 for v in vars]
+            indices = [int(v.strip('_')) for v in vars]
             for i in range(len(vars)):
                 mystring = mystring.replace(vars[i],variables[indices[i]])
         return mystring
@@ -733,7 +733,7 @@ Further Inputs:
 
     neqns = len(actual_eqns)
 
-    xperms = [varname+str(i+1) for i in range(ndim)]
+    xperms = [varname+str(i) for i in range(ndim)]
     if target:
         [target.remove(i) for i in target if i not in xperms]
         [target.append(i) for i in xperms if i not in target]
@@ -753,7 +753,7 @@ Further Inputs:
     # Some of the permutations will give the same answer;
     # look into reducing the number of repeats?
     for perm in xperms:
-        # Sort the list actual_eqns so any equation containing x1 is first, etc.
+        # Sort the list actual_eqns so any equation containing x0 is first, etc.
         sorted_eqns = []
         actual_eqns_copy = orig_eqns[:]
         usedvars = []
@@ -773,7 +773,7 @@ Further Inputs:
         tempusedvar = usedvars[:]
         tempusedvar.sort()
         nmissing = ndim - len(tempusedvar)
-        for m in range(1, nmissing+1):
+        for m in range(nmissing):
             usedvars.append(varname + str(len(tempusedvar) + m))
 
         for i in range(neqns):
@@ -818,7 +818,7 @@ Further Inputs:
     if warn: print warning
     if verbose:
         print _classify_variables(simplified, variables, ndim)
-    if permute: #FIXME: target='x4,x2' may order correct, while 'x2,x4' doesn't
+    if permute: #FIXME: target='x3,x1' may order correct, while 'x1,x3' doesn't
         filter = []; results = []
         for i in complete_list:
             _eqs = '\n'.join(sorted(i.split('\n')))

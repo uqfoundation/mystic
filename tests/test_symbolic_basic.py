@@ -72,8 +72,8 @@ def test_sumt2():
 def test_form_constraints_function():
     # Test a nonlinear constraints example.
     string = """
-    x2*x3 = 1.
-    x3 = x1 - 3.
+    x1*x2 = 1.
+    x2 = x0 - 3.
     """
     print "building constraints function for:%s" % string.rstrip()
     x0 = [0.8,1.2,-0.7]
@@ -135,7 +135,7 @@ def test_varnamelist():
     print "c(%s): %s\n" % (x0, wrappedfunc(x0)) # Expected: 2.0
 
 def test_feasible_pt():
-    constraints = """x1 + x2 + x7 - 2*x4 > 3"""
+    constraints = """x0 + x1 + x6 - 2*x3 > 3"""
     soln = solve(constraints, guess=[1.]*8) #FIXME: either constraints.solve
     print 'actual solution:', soln, "\n"    #       or symbolic.solve ... ?
 

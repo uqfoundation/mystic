@@ -337,9 +337,9 @@ def impose_reweighted_mean(m, samples, weights=None, solver=None):
 
     inequality = ""; equality = ""; equality2 = ""
     for i in range(ndim):
-        inequality += "x%s >= 0.0\n" % (i+1) # positive
-        equality += "x%s + " % (i+1)         # normalized
-        equality2 += "%s * x%s + " % (float(samples[i]),(i+1)) # mean
+        inequality += "x%s >= 0.0\n" % (i) # positive
+        equality += "x%s + " % (i)         # normalized
+        equality2 += "%s * x%s + " % (float(samples[i]),(i)) # mean
 
     equality += "0.0 = %s\n" % float(norm)
     equality += equality2 + "0.0 = %s*%s\n" % (float(norm),m)
@@ -382,10 +382,10 @@ def impose_reweighted_variance(v, samples, weights=None, solver=None):
     inequality = ""
     equality = ""; equality2 = ""; equality3 = ""
     for i in range(ndim):
-        inequality += "x%s >= 0.0\n" % (i+1) # positive
-        equality += "x%s + " % (i+1)         # normalized
-        equality2 += "%s * x%s + " % (float(samples[i]),(i+1)) # mean
-        equality3 += "x%s*(%s-%s)**2 + " % ((i+1),float(samples[i]),m) # var
+        inequality += "x%s >= 0.0\n" % (i) # positive
+        equality += "x%s + " % (i)         # normalized
+        equality2 += "%s * x%s + " % (float(samples[i]),(i)) # mean
+        equality3 += "x%s*(%s-%s)**2 + " % ((i),float(samples[i]),m) # var
 
     equality += "0.0 = %s\n" % float(norm)
     equality += equality2 + "0.0 = %s*%s\n" % (float(norm),m)

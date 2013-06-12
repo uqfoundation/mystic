@@ -5,8 +5,8 @@ from mystic.constraints import as_constraint
 def test_generate_penalty():
 
   constraints = """
-  x1**2 = 2.5*x4 - a
-  exp(x3/x1) >= b"""
+  x0**2 = 2.5*x3 - a
+  exp(x2/x0) >= b"""
 
   ineq,eq = generate_conditions(constraints, nvars=4, locals={'a':5.0, 'b':7.0})
   assert ineq[0]([4,0,0,1,0]) == 6.0
@@ -23,8 +23,8 @@ def test_generate_penalty():
 def test_numpy_penalty():
 
   constraints = """
-  mean([x1, x2, x3]) = 5.0
-  x1 = x2 + x3"""
+  mean([x0, x1, x2]) = 5.0
+  x0 = x1 + x2"""
 
   ineq,eq = generate_conditions(constraints)
   assert eq[0]([7,5,3]) == 0.0
@@ -40,8 +40,8 @@ def test_numpy_penalty():
 def test_generate_constraint():
 
   constraints = """
-  mean([x1, x2, x3]) = 5.0
-  spread([x1, x2, x3]) = 10.0"""
+  mean([x0, x1, x2]) = 5.0
+  spread([x0, x1, x2]) = 10.0"""
 
   from mystic.math.measures import mean, spread
   solv = generate_solvers(constraints)
@@ -54,8 +54,8 @@ def test_generate_constraint():
 def test_solve_constraint():
 
   constraints = """
-  spread([x1,x2]) - 1.0 = mean([x1,x2])   
-  mean([x1,x2,x3]) = x3"""
+  spread([x0,x1]) - 1.0 = mean([x0,x1])   
+  mean([x0,x1,x2]) = x2"""
 
   from mystic.math.measures import mean, spread
   _constraints = solve(constraints)

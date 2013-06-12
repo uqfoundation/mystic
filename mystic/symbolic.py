@@ -35,9 +35,9 @@ Inputs:
     >>> G = [1., 0., 0.]
     >>> h = [5.]
     >>> print linear_symbolic(A,b,G,h)
-    1.0*x1 + 0.0*x2 + 0.0*x3 <= 5.0
-    3.0*x1 + 4.0*x2 + 5.0*x3 = 0.0
-    1.0*x1 + 6.0*x2 + -9.0*x3 = 0.0
+    1.0*x0 + 0.0*x1 + 0.0*x2 <= 5.0
+    3.0*x0 + 4.0*x1 + 5.0*x2 = 0.0
+    1.0*x0 + 6.0*x1 + -9.0*x2 = 0.0
 """
     eqstring = ""
     # Equality constraints
@@ -61,7 +61,7 @@ Inputs:
         for i in range(len(b)):
             Asum = ""
             for j in range(ndim):
-                Asum += str(A[i][j]) + '*x' + str(j+1) + ' + '
+                Asum += str(A[i][j]) + '*x' + str(j) + ' + '
             eqstring += Asum.rstrip(' + ') + ' = ' + str(b[i]) + '\n'
 
     # Inequality constraints
@@ -86,7 +86,7 @@ Inputs:
         for i in range(len(h)):
             Gsum = ""
             for j in range(ndim):
-                Gsum += str(G[i][j]) + '*x' + str(j+1) + ' + '
+                Gsum += str(G[i][j]) + '*x' + str(j) + ' + '
             ineqstring += Gsum.rstrip(' + ') + ' <= ' + str(h[i]) + '\n'
     totalconstraints = ineqstring + eqstring
     return totalconstraints 
@@ -104,13 +104,13 @@ Inputs:
     variables -- list of variable name strings. The variable names will
         be replaced in the order that they are provided, where if the
         default marker "$i" is used, the first variable will be replaced
-        with "$1", the second with "$2", and so on.
+        with "$0", the second with "$1", and so on.
 
     For example:
         >>> variables = ['spam', 'eggs']
         >>> constraints = '''spam + eggs - 42'''
         >>> print replace_variables(constraints, variables, 'x')
-        'x1 + x2 - 42'
+        'x0 + x1 - 42'
 
 Additional Inputs:
     markers -- desired variable name. Default is '$'. A list of variable
@@ -130,7 +130,7 @@ Additional Inputs:
     if list_or_tuple_or_ndarray(markers):
         equations = replace_variables(constraints,variables,'_')
         vars = get_variables(equations,'_')
-        indices = [int(v.strip('_'))-1 for v in vars]
+        indices = [int(v.strip('_')) for v in vars]
         for i in range(len(vars)):
             equations = equations.replace(vars[i],markers[indices[i]])
         return equations
@@ -161,7 +161,7 @@ Additional Inputs:
     $4 = ma$1($2,$1) + $1
     ''' #FIXME: don't parse if __name__ in __builtins__, globals, or locals?
     for i in indices: #FIXME: or better, use 're' pattern matching
-        constraints = constraints.replace(variables[i], marker + str(i+1))
+        constraints = constraints.replace(variables[i], marker + str(i))
     return constraints.replace(marker, markers)
 
 
@@ -198,7 +198,7 @@ Additional Inputs:
     if list_or_tuple_or_ndarray(variables):
         equations = replace_variables(constraints,variables,'_')
         vars = get_variables(equations,'_')
-        indices = [int(v.strip('_'))-1 for v in vars]
+        indices = [int(v.strip('_')) for v in vars]
         varnamelist = []
         from numpy import sort
         for i in sort(indices):
@@ -229,8 +229,8 @@ Inputs:
 
     For example:
         >>> constraints = '''
-        ...     x3 = x1/2.
-        ...     x1 >= 0.'''
+        ...     x2 = x0/2.
+        ...     x0 >= 0.'''
         >>> penalty_parser(constraints, nvars=3)
         (('-(x[0] - (0.))',), ('x[2] - (x[0]/2.)',))
 
@@ -245,16 +245,16 @@ Additional Inputs:
    #from mystic.tools import src
    #ndim = len(get_variables(src(func), variables))
     if list_or_tuple_or_ndarray(variables):
-        if nvars: variables = variables[:nvars]
+        if nvars != None: variables = variables[:nvars]
         constraints = replace_variables(constraints, variables)
         varname = '$'
         ndim = len(variables)
     else:
         varname = variables # varname used below instead of variables
         myvar = get_variables(constraints, variables)
-        if myvar: ndim = max([int(v.strip(varname)) for v in myvar])
+        if myvar: ndim = max([int(v.strip(varname)) for v in myvar]) + 1
         else: ndim = 0
-    if nvars: ndim = nvars
+    if nvars != None: ndim = nvars
 
     # Parse the constraints string
     lines = constraints.splitlines()
@@ -264,10 +264,10 @@ Additional Inputs:
         if line.strip():
             fixed = line
             # Iterate in reverse in case ndim > 9.
-            indices = list(range(1, ndim+1))
+            indices = list(range(ndim))
             indices.reverse()
             for i in indices:
-                fixed = fixed.replace(varname + str(i), 'x[' + str(i-1) + ']') 
+                fixed = fixed.replace(varname + str(i), 'x[' + str(i) + ']') 
             constraint = fixed.strip()
 
             # Replace 'spread', 'mean', and 'variance' (uses numpy, not mystic)
@@ -316,8 +316,8 @@ Inputs:
 
     For example:
         >>> constraints = '''
-        ...     x3 = x1/2.
-        ...     x1 >= 0.'''
+        ...     x2 = x0/2.
+        ...     x0 >= 0.'''
         >>> constraints_parser(constraints, nvars=3)
         ('x[2] = x[0]/2.', 'x[0] = max(0., x[0])')
 
@@ -332,16 +332,16 @@ Additional Inputs:
    #from mystic.tools import src
    #ndim = len(get_variables(src(func), variables))
     if list_or_tuple_or_ndarray(variables):
-        if nvars: variables = variables[:nvars]
+        if nvars != None: variables = variables[:nvars]
         constraints = replace_variables(constraints, variables)
         varname = '$'
         ndim = len(variables)
     else:
         varname = variables # varname used below instead of variables
         myvar = get_variables(constraints, variables)
-        if myvar: ndim = max([int(v.strip(varname)) for v in myvar])
+        if myvar: ndim = max([int(v.strip(varname)) for v in myvar]) + 1
         else: ndim = 0
-    if nvars: ndim = nvars
+    if nvars != None: ndim = nvars
 
     # Parse the constraints string
     lines = constraints.splitlines()
@@ -350,10 +350,10 @@ Additional Inputs:
         if line.strip():
             fixed = line
             # Iterate in reverse in case ndim > 9.
-            indices = list(range(1, ndim+1))
+            indices = list(range(ndim))
             indices.reverse()
             for i in indices:
-                fixed = fixed.replace(varname + str(i), 'x[' + str(i-1) + ']') 
+                fixed = fixed.replace(varname + str(i), 'x[' + str(i) + ']') 
             constraint = fixed.strip()
 
             # Replace 'ptp', 'average', and 'var' (uses mystic, not numpy)
@@ -417,8 +417,8 @@ Inputs:
 
     For example:
         >>> constraints = '''
-        ...     x1**2 = 2.5*x4 - 5.0
-        ...     exp(x3/x1) >= 7.0'''
+        ...     x0**2 = 2.5*x3 - 5.0
+        ...     exp(x2/x0) >= 7.0'''
         >>> ineqf,eqf = generate_conditions(constraints, nvars=4)
         >>> print ineqf[0].__doc__
         '-(exp(x[2]/x[0]) - (7.0))'
@@ -489,8 +489,8 @@ Inputs:
 
     For example:
         >>> constraints = '''
-        ...     x3 = x1/2.
-        ...     x1 >= 0.'''
+        ...     x2 = x0/2.
+        ...     x0 >= 0.'''
         >>> solv = generate_solvers(constraints, nvars=3)
         >>> print solv[0].__doc__
         'x[2] = x[0]/2.'
@@ -563,8 +563,8 @@ Inputs:
 
     For example:
         >>> constraints = '''
-        ...     x3 = x1/2.
-        ...     x1 >= 0.'''
+        ...     x2 = x0/2.
+        ...     x0 >= 0.'''
         >>> ineqf,eqf = generate_conditions(constraints, nvars=3)
         >>> penalty = generate_penalty((ineqf,eqf))
         >>> penalty([1.,2.,0.])
@@ -626,8 +626,8 @@ NOTES:
 
     For example:
         >>> constraints = '''
-        ...     x1 = cos(x2) + 2.
-        ...     x2 = x3*2.'''
+        ...     x0 = cos(x1) + 2.
+        ...     x1 = x2*2.'''
         >>> solv = generate_solvers(constraints)
         >>> constraint = generate_constraint(solv)
         >>> constraint([1.0, 0.0, 1.0])
@@ -639,8 +639,8 @@ NOTES:
 
     For example:
         >>> constraints = '''
-        ...     x3 = x1/2.
-        ...     x1 >= 0.'''
+        ...     x2 = x0/2.
+        ...     x0 >= 0.'''
         >>> solv = generate_solvers(constraints, nvars=3)
         >>> print solv[0].__doc__
         'x[2] = x[0]/2.'
