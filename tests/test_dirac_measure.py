@@ -26,7 +26,7 @@ def test_calculate_methods(npts=2):
   print "generate random points and weights"
   coordinates = samplepts(lower_bounds, upper_bounds, npts)
   D = [i[0] for i in coordinates]
-  print "coords: %s" % D
+  print "positions: %s" % D
 
   # calculate sample range
   R = spread(D)
@@ -50,7 +50,7 @@ def test_calculate_methods(npts=2):
   # modify coordinates, maintaining mean & range 
   # -------------------------------------
   # get new random distribution
-  print "modify coords, maintaining mean and range"
+  print "modify positions, maintaining mean and range"
   coordinates = samplepts(lower_bounds, upper_bounds, npts)
   D = [i[0] for i in coordinates]
 
@@ -59,7 +59,7 @@ def test_calculate_methods(npts=2):
   D = impose_mean(m, D, weights)
 
   # print results
-  print "coords: %s" % D
+  print "positions: %s" % D
   R = spread(D)
   print "range: %s" % R
   m = mean(D, weights)
@@ -87,7 +87,7 @@ def test_calculate_methods(npts=2):
   print "weights: %s" % weights
   w = norm(weights)
   print "norm: %s" % w
-  print "coords: %s" % DD
+  print "positions: %s" % DD
   R = spread(DD)
   print "range: %s" % R
   sm = mean(DD, weights)
@@ -187,9 +187,9 @@ def test_collection_behavior():
 
   # build a collection
   c = collection([sx,sy,sz])
-  print "x_coords: %s" % c[0].coords
-  print "y_coords: %s" % c[1].coords
-  print "z_coords: %s" % c[2].coords
+  print "x_positions: %s" % c[0].positions
+  print "y_positions: %s" % c[1].positions
+  print "z_positions: %s" % c[2].positions
   print "x_weights: %s" % c[0].weights
   print "y_weights: %s" % c[1].weights
   print "z_weights: %s" % c[2].weights
@@ -197,8 +197,8 @@ def test_collection_behavior():
 
   print "npts: %s (i.e. %s)" % (c.npts, c.pts)
   print "weights: %s" % c.weights
-  coords = c.coords
-  print "coords: %s" % coords
+  positions = c.positions
+  print "positions: %s" % positions
 
   print "mass: %s" % c.mass
   print "expect: %s" % c.expect(f)
@@ -206,17 +206,17 @@ def test_collection_behavior():
  #print "center: %s" % c.center
  #print "delta: %s" % c.delta
 
-  # change the coords in the collection
-  coords[::3]
-  points = [ list(i) for i in coords[::3] ]
+  # change the positions in the collection
+  positions[::3]
+  points = [ list(i) for i in positions[::3] ]
   for i in range(len(points)):
     points[i][0] = 0.5
 
-  coords[::3] = points
-  c.coords = coords
-  print "x_coords: %s" % c[0].coords
-  print "y_coords: %s" % c[1].coords
-  print "z_coords: %s" % c[2].coords
+  positions[::3] = points
+  c.positions = positions
+  print "x_positions: %s" % c[0].positions
+  print "y_positions: %s" % c[1].positions
+  print "z_positions: %s" % c[2].positions
   print "expect: %s" % c.expect(f)
 
   _mean = 85.0
@@ -251,7 +251,7 @@ def test_flatten_unflatten():
   # check if the same
   assert c.npts == d.npts
   assert c.weights == d.weights
-  assert c.coords == d.coords
+  assert c.positions == d.positions
 
   # flatten() and load(...)
   e = collection()
@@ -260,7 +260,7 @@ def test_flatten_unflatten():
   # check if the same
   assert c.npts == e.npts
   assert c.weights == e.weights
-  assert c.coords == e.coords
+  assert c.positions == e.positions
 
   # decompose and compose
   from mystic.math.discrete import decompose, compose
@@ -269,7 +269,7 @@ def test_flatten_unflatten():
   # check if the same
   assert c.npts == b.npts
   assert c.weights == b.weights
-  assert c.coords == b.coords
+  assert c.positions == b.positions
   return
 
 
