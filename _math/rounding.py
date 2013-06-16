@@ -5,18 +5,7 @@ decorators that provide rounding
 
 __all__ = ['deep_round', 'shallow_round', 'simple_round']
 
-def isiterable(x):
-  """check if an object is iterable"""
- #try:
- #    from collections import Iterable
- #    return isinstance(x, Iterable)
- #except ImportError:
-  try:
-    iter(x)
-    return True
-  except TypeError: return False
- #return hasattr(x, '__len__') or hasattr(x, '__iter__')
-
+from mystic.tools import isiterable
 #FIXME: these seem *slow*... and a bit convoluted.  Maybe rewrite as classes?
 
 def deep_round_factory(tol):

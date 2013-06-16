@@ -327,7 +327,7 @@ Notes:
 
     if L is None: L = self.lipschitz
     if data is None: data = self
-    from mystic.math.paramtrans import lipschitz_distance, is_feasible
+    from mystic.math.distance import lipschitz_distance, is_feasible
     # calculate the shortness
     Rv = lipschitz_distance(L, self, data, **kwds)
     ld = is_feasible(Rv, cutoff)
@@ -375,7 +375,7 @@ Notes:
     if cutoff is True: cutoff = ytol
     elif cutoff is False: cutoff = None
 
-    from mystic.math.paramtrans import graphical_distance, is_feasible
+    from mystic.math.distance import graphical_distance, is_feasible
     # calculate the model validity
     Rv = graphical_distance(model, self, **kwds)
     ld = is_feasible(Rv, cutoff)

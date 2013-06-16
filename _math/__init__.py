@@ -34,5 +34,7 @@ from approx import almostEqual
 
 # backward compatibility
 from approx import approx_equal
+import discrete as dirac_measure
+import distance as paramtrans
 
 # end of file

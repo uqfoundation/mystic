@@ -9,6 +9,8 @@ from mystic.math.integrate import *
 from mystic.symbolic import generate_solvers, generate_constraint, solve
 from mystic.symbolic import generate_conditions, generate_penalty
 from mystic.math import almostEqual
+from __builtin__ import max as _max
+from __builtin__ import min as _min
 
 def weighted_select(samples, weights, mass=1.0):
   """randomly select a sample from weighted set of samples
@@ -38,7 +40,7 @@ def spread(samples):
 Inputs:
     samples -- a list of sample points
 """
-  return max(samples) - min(samples)
+  return _max(samples) - _min(samples)
 
 def norm(weights):
   """calculate the norm of a list of points   [norm(x) = mean(x)]
@@ -48,6 +50,44 @@ Inputs:
 """
   return mean(weights)
 
+def max(f, samples):
+  """calculate the max of function for the given list of points
+
+Inputs: 
+    f -- a function that takes a list and returns a number
+    samples -- a list of sample points
+"""
+  y = [f(x) for x in samples]
+  return _max(y)
+
+def ess_max(f, samples, weights=None, tol=0.):
+  """calculate the max of function for support on the given list of points
+
+Inputs: 
+    f -- a function that takes a list and returns a number
+    samples -- a list of sample points
+    weights -- a list of sample weights
+    tol -- weight tolerance, where any weight <= tol is considered zero
+"""
+  if weights == None:
+    return max(f, samples)
+  return max(f, support(samples, weights, tol))
+
+def min(f, samples):
+  """calculate the min of function for the given list of points
+
+Inputs: 
+    f -- a function that takes a list and returns a number
+    samples -- a list of sample points
+"""
+  y = [f(x) for x in samples]
+  return _min(y)
+
+def ess_min(f, samples, weights=None, tol=0.):
+  if weights == None:
+    return min(f, samples)
+  return min(f, support(samples, weights, tol))
+
 def expectation(f, samples, weights=None, tol=0.0):
   """calculate the (weighted) expectation of a function for a list of points
 
@@ -55,7 +95,7 @@ Inputs:
     f -- a function that takes a list and returns a number
     samples -- a list of sample points
     weights -- a list of sample weights
-    tol -- weight tolerance, where any weight >= tol is ignored
+    tol -- weight tolerance, where any weight <= tol is ignored
 """
   if weights == None:
     y = [f(x) for x in samples]
@@ -87,6 +127,12 @@ Inputs:
   if wts: return ssum / wts
   from numpy import inf
   return ssum * inf  # protect against ZeroDivision
+
+def support_index(weights, tol=0):
+  return [i for (i,w) in enumerate(weights) if w > tol]
+
+def support(samples, weights, tol=0):
+  return [samples[i] for (i,w) in enumerate(weights) if w > tol]
 
 def variance(samples, weights=None): #, _mean=None):
   """calculate the (weighted) variance for a list of points

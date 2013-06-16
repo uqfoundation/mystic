@@ -1,14 +1,14 @@
 #! /usr/bin/env python
 """
 TESTS for Dirac measure data objects.
-Includes point, dirac_measure, and product_measure classes.
+Includes point_mass, measure, and product_measure classes.
 """
 # Adapted from seesaw2d.py in branches/UQ/math/examples2/ 
 # For usage example, see seesaw2d_inf_example.py .
 
-from mystic.math.dirac_measure import point
-from mystic.math.dirac_measure import dirac_measure as set
-from mystic.math.dirac_measure import product_measure as collection
+from mystic.math.discrete import point_mass as point
+from mystic.math.discrete import measure as set
+from mystic.math.discrete import product_measure as collection
 from mystic.math.samples import random_samples
 from mystic.math.grid import samplepts
 
@@ -201,7 +201,7 @@ def test_collection_behavior():
   print "coords: %s" % coords
 
   print "mass: %s" % c.mass
-  print "expect: %s" % c.get_expect(f)
+  print "expect: %s" % c.expect(f)
 
  #print "center: %s" % c.center
  #print "delta: %s" % c.delta
@@ -217,7 +217,7 @@ def test_collection_behavior():
   print "x_coords: %s" % c[0].coords
   print "y_coords: %s" % c[1].coords
   print "z_coords: %s" % c[2].coords
-  print "expect: %s" % c.get_expect(f)
+  print "expect: %s" % c.expect(f)
 
   _mean = 85.0
   _range = 0.25
@@ -225,7 +225,7 @@ def test_collection_behavior():
   c.set_expect((_mean,_range), f)
   print "mean: %s" % _mean
   print "range: %s" % _range
-  print "expect: %s" % c.get_expect(f)
+  print "expect: %s" % c.expect(f)
 
   # a test function for probability of failure
   def g(x):
@@ -245,7 +245,7 @@ def test_flatten_unflatten():
   c = collection([sx,sy,sz])
 
   # flatten and unflatten
-  from mystic.math.dirac_measure import flatten, unflatten
+  from mystic.math.discrete import flatten, unflatten
   d = unflatten(flatten(c), c.pts)
 
   # check if the same
@@ -263,7 +263,7 @@ def test_flatten_unflatten():
   assert c.coords == e.coords
 
   # decompose and compose
-  from mystic.math.dirac_measure import decompose, compose
+  from mystic.math.discrete import decompose, compose
   b = compose(*decompose(c))
 
   # check if the same
@@ -274,11 +274,11 @@ def test_flatten_unflatten():
 
 
 if __name__ == '__main__':
-  #test_calculate_methods(npts=2)
-  #test_set_behavior()
-  #test_pack_unpack()
+  test_calculate_methods(npts=2)
+  test_set_behavior()
+  test_pack_unpack()
   test_collection_behavior()
-  #test_flatten_unflatten()
+  test_flatten_unflatten()
   pass
 
 

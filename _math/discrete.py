@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 """
-Classes for Dirac measure data objects.
-Includes point, dirac_measure, product_measure, and scenario classes.
+Classes for discrete measure data objects.
+Includes point_mass, measure, product_measure, and scenario classes.
 """
 # Adapted from seesaw2d.py in branches/UQ/math/examples2/ 
 # For usage example, see seesaw2d_inf_example.py .
@@ -9,9 +9,11 @@ Includes point, dirac_measure, product_measure, and scenario classes.
 from mystic.math.measures import impose_mean, impose_expectation
 from mystic.math.measures import impose_spread, impose_variance
 from mystic.math.measures import impose_weight_norm
+from __builtin__ import max as _max
+from __builtin__ import min as _min
 
-class point(object):
-  """ 1-d object with weight and position
+class point_mass(object):
+  """ a point_mass object with weight and position
 
  queries:
   p.weight   --  returns weight
@@ -23,7 +25,7 @@ class point(object):
   p.position = x1  --  set the position
 """
 
-  def __init__(self, position, weight):
+  def __init__(self, position, weight=1.0):
     self.weight = weight
     self.position = position
     return
@@ -40,37 +42,60 @@ class point(object):
 
   pass
 
-
-class dirac_measure(list):  #FIXME: meant to only accept points...
-  """ a 1-d collection of points forming a 'discrete_measure'
-  s = dirac_measure([point1, point2, ..., pointN])  
-    where a point has weight and position
+class measure(list):  #FIXME: meant to only accept point_masses...
+  """ a 1-d collection of point_masses forming a 'discrete_measure'
+  s = measure([point_mass1, point_mass2, ..., point_massN])  
+    where a point_mass has weight and position
 
  queries:
   s.weights   --  returns list of weights
-  s.coords  --  returns list of positions
-  s.npts  --  returns the number of points
+  s.positions  --  returns list of positions
+  s.npts  --  returns the number of point_masses
   s.mass  --  calculates sum of weights
-  s.mean  --  calculates sum of weights*positions
+  s.center_mass  --  calculates sum of weights*positions
   s.range  --  calculates |max - min| for positions
   s.var  --  calculates mean( |positions - mean(positions)|**2 )
 
  settings:
   s.weights = [w1, w2, ..., wn]  --  set the weights
-  s.coords = [x1, x2, ..., xn]  --  set the positions
+  s.positions = [x1, x2, ..., xn]  --  set the positions
   s.normalize()  --  normalize the weights to 1.0
-  s.mean(R)  --  set the mean
+  s.center_mass(R)  --  set the center of mass
   s.range(R)  --  set the range
   s.var(R)  --  set the variance
 
  methods:
-  s.get_expect(f)  --  calculate the expectation
+  s.support()  -- get the positions that have corresponding non-zero weights
+  s.support_index()  --  get the indicies of positions that have support
+  s.max(f)  --  calculate the maximum for a given function
+  s.min(f)  --  calculate the minimum for a given function
+  s.ess_max(f)  --  calculate the maximum for the support of a given function
+  s.ess_min(f)  --  calculate the minimum for the support of a given function
+  s.expect(f)  --  calculate the expectation
   s.set_expect((center,delta), f)  --  impose expectation by adjusting positions
 
  notes:
   - constraints should impose that sum(weights) should be 1.0
-  - assumes that s.n = len(s.coords) == len(s.weights)
+  - assumes that s.n = len(s.positions) == len(s.weights)
 """
+
+  def support_index(self, tol=0):
+    """get the indicies of the positions which have non-zero weight
+
+Inputs:
+    tol -- weight tolerance, where any weight <= tol is considered zero
+"""
+    from measures import support_index
+    return support_index(self.weights, tol)
+
+  def support(self, tol=0):
+    """get the positions which have non-zero weight
+
+Inputs:
+    tol -- weight tolerance, where any weight <= tol is considered zero
+"""
+    from measures import support
+    return support(self.positions, self.weights, tol)
 
   def __weights(self):
     return [i.weight for i in self]
@@ -88,15 +113,15 @@ class dirac_measure(list):  #FIXME: meant to only accept points...
 
   def __mean(self):
     from mystic.math.measures import mean
-    return mean(self.coords, self.weights) 
+    return mean(self.positions, self.weights) 
 
   def __range(self):
     from mystic.math.measures import spread
-    return spread(self.coords)
+    return spread(self.positions)
 
   def __variance(self):
     from mystic.math.measures import variance
-    return variance(self.coords, self.weights)
+    return variance(self.positions, self.weights)
 
   def __set_weights(self, weights):
     for i in range(len(weights)):
@@ -109,31 +134,69 @@ class dirac_measure(list):  #FIXME: meant to only accept points...
     return
 
   def normalize(self):
-    self.coords, self.weights = impose_weight_norm(self.coords, self.weights)
+    """normalize the weights"""
+    self.positions, self.weights = impose_weight_norm(self.positions, self.weights)
     return
 
   def __set_mean(self, m):
-    self.coords = impose_mean(m, self.coords, self.weights)
+    self.positions = impose_mean(m, self.positions, self.weights)
     return
 
   def __set_range(self, r):
-    self.coords = impose_spread(r, self.coords, self.weights)
+    self.positions = impose_spread(r, self.positions, self.weights)
     return
 
   def __set_variance(self, v):
-    self.coords = impose_variance(v, self.coords, self.weights)
+    self.positions = impose_variance(v, self.positions, self.weights)
     return
 
-  def get_expect(self, f):
+  def max(self, f):
+    """calculate the maximum for a given function
+
+Inputs:
+    f -- a function that takes a list and returns a number
+"""
+    from measures import max
+    return max(f, self.positions)
+
+  def ess_max(self, f, tol=0.):
+    """calculate the maximum for the support of a given function
+
+Inputs:
+    f -- a function that takes a list and returns a number
+    tol -- weight tolerance, where any weight <= tol is considered zero
+"""
+    from measures import ess_max
+    return ess_max(f, self.positions, self.weights, tol)
+
+  def min(self, f):
+    """calculate the minimum for a given function
+
+Inputs:
+    f -- a function that takes a list and returns a number
+"""
+    from measures import min
+    return min(f, self.positions)
+
+  def ess_min(self, f, tol=0.):
+    """calculate the minimum for the support of a given function
+
+Inputs:
+    f -- a function that takes a list and returns a number
+    tol -- weight tolerance, where any weight <= tol is considered zero
+"""
+    from measures import ess_min
+    return ess_min(f, self.positions, self.weights, tol)
+
+  def expect(self, f):
     """calculate the expectation for a given function
 
 Inputs:
     f -- a function that takes a list and returns a number
 """ #XXX: maybe more natural if f takes a positional value x, not a list x ?
-
     from mystic.math.measures import expectation
-    coords = [(i,) for i in self.coords]
-    return expectation(f, coords, self.weights)
+    positions = [(i,) for i in self.positions]
+    return expectation(f, positions, self.weights)
 
   def set_expect(self, (m,D), f, bounds=None, constraints=None):
     """impose a expectation on a dirac measure
@@ -144,7 +207,7 @@ Inputs:
     bounds -- tuple of lists of bounds  (lower_bounds, upper_bounds)
     constraints -- a function that takes a product_measure  c' = constraints(c)
 """ #XXX: maybe more natural if f takes a positional value x, not a list x ?
-#XXX: maybe also natural c' = constraints(c) where c is a dirac_measure ?
+    #XXX: maybe also natural c' = constraints(c) where c is a measure ?
 
     if constraints:  # then need to adjust interface for 'impose_expectation'
       def cnstr(x, w):
@@ -152,46 +215,51 @@ Inputs:
         c = constraints(c)
         return decompose(c)[0]
     else: cnstr = constraints  # 'should' be None
-    coords = impose_expectation((m,D), f, [self.npts], bounds, \
+    positions = impose_expectation((m,D), f, [self.npts], bounds, \
                                            self.weights,  constraints=cnstr) 
     from numpy import array
-    self.coords = list(array(coords)[:,0])
+    self.positions = list(array(positions)[:,0])
    #from numpy import squeeze
-   #self.coords = list(squeeze(coords))
+   #self.positions = list(squeeze(positions))
     return
 
   # interface
   weights = property(__weights, __set_weights)
-  coords = property(__positions, __set_positions)
+  positions = property(__positions, __set_positions)
   ###XXX: why not use 'points' also/instead?
   npts = property(__n )
   mass = property(__mass )
   range = property(__range, __set_range)
-  mean = property(__mean, __set_mean)
+  center_mass = property(__mean, __set_mean)
   var = property(__variance, __set_variance)
+
+  # backward compatibility
+  coords = positions
+  get_expect = expect
+  mean = center_mass
   pass
 
 class product_measure(list):  #FIXME: meant to only accept sets...
-  """ a N-d product measure, a collection of dirac measures
+  """ a N-d measure-theoretic product of discrete measures
   c = product_measure([measure1, measure2, ..., measureN])  
     where all measures are orthogonal
 
  queries:
-  c.npts  --  returns total number of points
+  c.npts  --  returns total number of point_masses
   c.weights   --  returns list of weights
-  c.coords  --  returns list of position tuples
+  c.positions  --  returns list of position tuples
   c.mass  --  returns list of weight norms
-  c.pts  --  returns number of points for each discrete measure
+  c.pts  --  returns number of point_masses for each discrete measure
   c.wts  --  returns list of weights for each discrete measure
   c.pos  --  returns list of positions for each discrete measure
 
  settings:
-  c.coords = [(x1,y1,z1),...]  --  set the positions (tuples in product measure)
+  c.positions = [(x1,y1,z1),...]  --  set positions (tuples in product measure)
 
  methods:
   c.pof(f)  --  calculate the probability of failure
-  c.sampled_pof(f, npts) -- calculate the pof using sampled points
-  c.get_expect(f)  --  calculate the expectation
+  c.sampled_pof(f, npts) -- calculate the pof using sampled point_masses
+  c.expect(f)  --  calculate the expectation
   c.set_expect((center,delta), f)  --  impose expectation by adjusting positions
   c.flatten()  --  convert measure to a flat list of parameters
   c.load(params, pts)  --  'fill' the measure from a flat list of parameters
@@ -200,11 +268,11 @@ class product_measure(list):  #FIXME: meant to only accept sets...
  notes:
   - constraints impose expect (center - delta) <= E <= (center + delta)
   - constraints impose sum(weights) == 1.0 for each set
-  - assumes that c.npts = len(c.coords) == len(c.weights)
+  - assumes that c.npts = len(c.positions) == len(c.weights)
   - weight wxi should be same for each (yj,zk) at xi; similarly for wyi & wzi
 """
   def __val(self):
-    raise NotImplementedError, "'value' is undefined in a dirac_measure"
+    raise NotImplementedError, "'value' is undefined in a measure"
 
   def __pts(self):
     return [i.npts for i in self]
@@ -213,11 +281,28 @@ class product_measure(list):  #FIXME: meant to only accept sets...
     return [i.weights for i in self]
 
   def __pos(self):
-    return [i.coords for i in self]
+    return [i.positions for i in self]
+
+  def __mean(self):
+    return [i.center_mass for i in self]
+
+  def __set_mean(self, center_masses):
+    [i._measure__set_mean(center_masses[m]) for (m,i) in enumerate(self)]
+   #for i in range(len(center_masses)):
+   #  self[i].center_mass = center_masses[i]
+    return
 
   def __n(self):
     from numpy import product
     return product(self.pts)
+
+  def support_index(self, tol=0):
+    from measures import support_index
+    return support_index(self.weights, tol)
+
+  def support(self, tol=0): #XXX: better if generated positions only when needed
+    from measures import support
+    return support(self.positions, self.weights, tol)
 
   def __weights(self):
     from mystic.math.measures import _pack
@@ -232,11 +317,11 @@ class product_measure(list):  #FIXME: meant to only accept sets...
     from mystic.math.measures import _pack
     return _pack(self.pos)
 
-  def __set_positions(self, coords):
+  def __set_positions(self, positions):
     from mystic.math.measures import _unpack
-    coords = _unpack(coords, self.pts)
-    for i in range(len(coords)):
-      self[i].coords = coords[i]
+    positions = _unpack(positions, self.pts)
+    for i in range(len(positions)):
+      self[i].positions = positions[i]
     return
 
  #def __get_center(self):
@@ -248,14 +333,26 @@ class product_measure(list):  #FIXME: meant to only accept sets...
   def __mass(self):
     return [self[i].mass for i in range(len(self))]
 
-  def get_expect(self, f):
+  def max(self, f): #XXX: return max of all or return all max?
+    return _max([i.max(f) for i in self])
+
+  def min(self, f): #XXX: return min of all or return all min?
+    return _min([i.min(f) for i in self])
+
+  def ess_max(self, f, tol=0.): #XXX: return max of all or return all max?
+    return _max([i.ess_max(f, tol) for i in self])
+
+  def ess_min(self, f, tol=0.): #XXX: return min of all or return all min?
+    return _min([i.ess_min(f, tol) for i in self])
+
+  def expect(self, f):
     """calculate the expectation for a given function
 
 Inputs:
     f -- a function that takes a list and returns a number
 """
     from mystic.math.measures import expectation
-    return expectation(f, self.coords, self.weights)
+    return expectation(f, self.positions, self.weights)
 
   def set_expect(self, (m,D), f, bounds=None, constraints=None):
     """impose a expectation on a product measure
@@ -274,8 +371,8 @@ Inputs:
         c = constraints(c)
         return decompose(c)[0]
     else: cnstr = constraints  # 'should' be None
-    self.coords = impose_expectation((m,D), f, self.pts, bounds, self.weights, \
-                                                         constraints=cnstr) 
+    self.positions = impose_expectation((m,D), f, self.pts, bounds, \
+                                        self.weights, constraints=cnstr) 
     return
 
   def pof(self, f):
@@ -286,14 +383,14 @@ Inputs:
     f -- a function that returns True for 'success' and False for 'failure'
 """
     u = 0
-    set = zip(self.coords, self.weights)
+    set = zip(self.positions, self.weights)
     for x in set:
       if f(x[0]) <= 0.0:
         u += x[1]
     return u
   # for i in range(self.npts):
-  #   #if f(self.coords[i]) > 0.0:  #NOTE: f(x) > 0.0 yields prob of success
-  #   if f(self.coords[i]) <= 0.0:  #NOTE: f(x) <= 0.0 yields prob of failure
+  #   #if f(self.positions[i]) > 0.0:  #NOTE: f(x) > 0.0 yields prob of success
+  #   if f(self.positions[i]) <= 0.0:  #NOTE: f(x) <= 0.0 yields prob of failure
   #     u += self.weights[i]
   # return u  #XXX: does this need to be normalized?
 
@@ -303,13 +400,13 @@ where f takes a list of (product_measure) positions and returns a single value
 
 Inputs:
     f -- a function that returns True for 'success' and False for 'failure'
-    npts -- number of points sampled from the underlying discrete measures
+    npts -- number of point_masses sampled from the underlying discrete measures
 """
     from mystic.math.samples import _pof_given_samples
-    pts = self.support(npts)
+    pts = self.sampled_support(npts)
     return _pof_given_samples(f, pts)
 
-  def support(self, npts=10000):
+  def sampled_support(self, npts=10000): ##XXX: was 'def support'
     """randomly select support points from the underlying discrete measures
 
 Inputs:
@@ -321,12 +418,12 @@ Returns:
     from mystic.math.measures import weighted_select as _select
     pts = []
     for i in range(npts):
-      # for a single trial, select coords from all sets
-      pts.append( [_select(set.coords, set.weights) for set in self] )
+      # for a single trial, select positions from all sets
+      pts.append( [_select(set.positions, set.weights) for set in self] )
 
     # convert pts to len(prod_meas) lists, each of len(npts)
     from numpy import transpose
-    return transpose(pts)  #XXX: assumes 'coords' is a list of floats
+    return transpose(pts)  #XXX: assumes 'positions' is a list of floats
 
   def update(self, params):
     """update the product measure from a list of parameters
@@ -348,7 +445,7 @@ The dimensions of the product measure will not change"""
 
 Inputs:
     params -- a list of parameters (see 'notes')
-    pts -- number of points in each of the underlying discrete measures
+    pts -- number of point_masses in each of the underlying discrete measures
 
 Notes:
     To append len(pts) new discrete measures to product measure c, where
@@ -404,7 +501,7 @@ string differs by exactly one index
     return differs_by_one(ith, b, all, index) 
 
   def select(self, *index, **kwds):
-    """generator for product measure coords due to selected position indicies
+    """generator for product measure positions due to selected position indicies
  (NOTE: only works for product measures of dimension 2^K)
 
   >>> r
@@ -427,7 +524,8 @@ string differs by exactly one index
   # interface
   npts = property(__n )
   weights = property(__weights )
-  coords = property(__positions, __set_positions )
+  positions = property(__positions, __set_positions )
+  center_mass = property(__mean, __set_mean)
  #center = property(__get_center ) #FIXME: remove c.center and c.delta... or
  #delta = property(__get_delta )   #       replace with c._params (e.g. (m,D))
  #expect = property(__expect, __set_expect )
@@ -435,36 +533,40 @@ string differs by exactly one index
   pts = property(__pts )
   wts = property(__wts )
   pos = property(__pos )
+
+  # backward compatibility
+  coords = positions
+  get_expect = expect
   pass
 
 
 class scenario(product_measure):  #FIXME: meant to only accept sets...
   """ a N-d product measure (collection of dirac measures) with values
   s = scenario(product_measure, [value1, value2, ..., valueN])  
-    where each point in the product measure is paried with a value
+    where each point_mass in the product measure is paried with a value
     (essentially, a dataset in product_measure representation)
 
  queries:
-  s.npts  --  returns total number of points
+  s.npts  --  returns total number of point_masse
   s.weights   --  returns list of weights
-  s.coords  --  returns list of position tuples
+  s.positions  --  returns list of position tuples
   s.values  --  returns list of values
   s.mass  --  returns list of weight norms
-  s.pts  --  returns number of points for each discrete measure
+  s.pts  --  returns number of point_masses for each discrete measure
   s.wts  --  returns list of weights for each discrete measure
   s.pos  --  returns list of positions for each discrete measure
 
  settings:
-  s.coords = [(x1,y1,z1),...]  --  set the positions (tuples in product measure)
+  s.positions = [(x1,y1,z1),...]  --  set positions (tuples in product measure)
   s.values = [v1,v2,v3,...]  --  set the values (correspond to position tuples)
 
  methods:
   s.pof(f)  --  calculate the probability of failure
   s.pof_value(f)  --  calculate the probability of failure using the values
   s.sampled_pof(f, npts) -- calculate the pof using sampled points
-  s.get_expect(f)  --  calculate the expectation
+  s.expect(f)  --  calculate the expectation
   s.set_expect((center,delta), f)  --  impose expectation by adjusting positions
-  s.get_mean_value()  --  calculate the mean values for a scenario
+  s.mean_value()  --  calculate the mean values for a scenario
   s.set_mean_value(m)  --  impose mean value by adjusting values
   s.set_feasible(data)  --  impose shortness by adjusting positions and values
   s.short_wrt_data(data) -- check for shortness with respect to data
@@ -478,7 +580,7 @@ class scenario(product_measure):  #FIXME: meant to only accept sets...
  notes:
   - constraints impose expect (center - delta) <= E <= (center + delta)
   - constraints impose sum(weights) == 1.0 for each set
-  - assumes that s.npts = len(s.coords) == len(s.weights)
+  - assumes that s.npts = len(s.positions) == len(s.weights)
   - weight wxi should be same for each (yj,zk) at xi; similarly for wyi & wzi
 """
   def __init__(self, pm=None, values=None):
@@ -487,7 +589,7 @@ class scenario(product_measure):  #FIXME: meant to only accept sets...
       pm = product_measure(pm)
       self.load(pm.flatten(), pm.pts)
     if not values: values = []
-    self.__Y = values # storage for values of s.coords
+    self.__Y = values # storage for values of s.positions
     return
 
   def __values(self):
@@ -497,7 +599,7 @@ class scenario(product_measure):  #FIXME: meant to only accept sets...
     self.__Y = values[:]
     return
 
-  def get_mean_value(self):  # get mean of y's
+  def mean_value(self):  # get mean of y's
     """calculate the mean of the associated values for a scenario"""
     from mystic.math.measures import mean
     return mean(self.values, self.weights)
@@ -539,7 +641,7 @@ Notes:
 """
     from mystic.math.legacydata import dataset 
     data = dataset() 
-    data.load(self.coords, self.values)
+    data.load(self.positions, self.values)
    #data.lipschitz = L
     for i in range(len(data)):
       data[i].id = i
@@ -573,7 +675,7 @@ Notes:
 """
     from mystic.math.legacydata import dataset 
     data = dataset() 
-    data.load(self.coords, self.values)
+    data.load(self.positions, self.values)
     data.lipschitz = L
     for i in range(len(data)):
       data[i].id = i
@@ -608,7 +710,7 @@ Notes:
 """
     from mystic.math.legacydata import dataset 
     _self = dataset() 
-    _self.load(self.coords, self.values)
+    _self.load(self.positions, self.values)
     _self.lipschitz = data.lipschitz
     for i in range(len(_self)):
       _self[i].id = i
@@ -747,6 +849,7 @@ Notes:
 
   # interface
   values = property(__values, __set_values )
+  get_mean_value = mean_value
   pass
 
 
@@ -762,8 +865,8 @@ For example:
     >>> smp = [[-6,3,6],[-2,4],[1]]
     >>> wts = [[.4,.2,.4],[.5,.5],[1.]]
     >>> c = compose(samples, weights)
-    >>> d = _mimic(c.coords, c.weights)
-    >>> c[0].mean == d[0].mean
+    >>> d = _mimic(c.positions, c.weights)
+    >>> c[0].center_mass == d[0].center_mass
     True
     >>> c[1].range == d[1].range
     True
@@ -798,9 +901,9 @@ Note this function does not return a product measure, it returns a list."""
   total = []
   if not weights: weights = _uniform_weights(samples)
   for i in range(len(samples)):
-    next = dirac_measure()
+    next = measure()
     for j in range(len(samples[i])):
-      next.append(point( samples[i][j], weights[i][j] ))
+      next.append(point_mass( samples[i][j], weights[i][j] ))
     total.append(next)
   return total
 
@@ -826,9 +929,9 @@ N x 1D discrete measure positions and a nested list of N x 1D weights."""
 #def expand(data, npts):
 #  """Generate a scenario object from a dataset. The scenario will have
 #uniformly distributed weights and have dimensions given by pts."""
-#  coords,values = data.fetch()
+#  positions,values = data.fetch()
 #  from mystic.math.measures import _unpack
-#  pm = compose( _unpack(coords, npts) )
+#  pm = compose( _unpack(positions, npts) )
 #  return scenario(pm, values[:pm.npts])
 
 
@@ -843,7 +946,7 @@ in a product_measure object."""
 from itertools import chain #XXX: faster, but sloppy to have as importable
 def flatten(c):
   """Flattens a product_measure object into a list."""
-  rv = [(i.weights,i.coords) for i in c]
+  rv = [(i.weights,i.positions) for i in c]
   # now flatten list of lists into just a list
   return list(chain(*chain(*rv))) # faster than mystic.tools.flatten
 
@@ -875,7 +978,7 @@ def norm_wts_constraintsFactory(pts):
   """factory for a constraints function that:
   - normalizes weights
 """
- #from dirac_measure import scenario
+ #from measure import scenario
   def constrain(rv):
     "constrain:  sum(wi)_{k} = 1 for each k in K"
     pm = scenario()
@@ -897,7 +1000,7 @@ def mean_y_norm_wts_constraintsFactory(target, pts):
   - imposes a mean on scenario values
   - normalizes weights
 """
- #from dirac_measure import scenario
+ #from measure import scenario
   from mystic.math.measures import mean, impose_mean
  #target[0] is target mean
  #target[1] is acceptable deviation
@@ -943,7 +1046,7 @@ Outputs:
 """
   from numpy import sum, asarray
   from mystic.math.legacydata import dataset
-  from mystic.math.paramtrans import lipschitz_distance, infeasibility, _npts
+  from mystic.math.distance import lipschitz_distance, infeasibility, _npts
   if guess is None:
     message = "Requires a guess scenario, or a tuple of scenario dimensions."
     raise TypeError, message
@@ -999,12 +1102,12 @@ Outputs:
     _pm = scenario()
     _pm.load(rv, pts)      # here rv is param: w,x,y
     if not long_form:
-      coords = _pm.select(*range(npts))
-    else: coords = _pm.coords
-    _data.load( data.coords, data.values )                        # LOAD static
+      positions = _pm.select(*range(npts))
+    else: positions = _pm.positions
+    _data.load( data.coords, data.values )                   # LOAD static
     if _self:
-      _data.load( coords, _pm.values )                            # LOAD dynamic
-    _data.lipschitz = data.lipschitz                              # LOAD L
+      _data.load( positions, _pm.values )                    # LOAD dynamic
+    _data.lipschitz = data.lipschitz                         # LOAD L
     Rv = lipschitz_distance(_data.lipschitz, _pm, _data, tol=cutoff, **kwds)
     v = infeasibility(Rv, cutoff)
     return abs(sum(v))
@@ -1079,7 +1182,7 @@ Notes:
     used in defining the graphical_distance between x,y and x',F(x').
 """
   from numpy import sum as _sum, asarray
-  from mystic.math.paramtrans import graphical_distance, infeasibility, _npts
+  from mystic.math.distance import graphical_distance, infeasibility, _npts
   if guess is None:
     message = "Requires a guess scenario, or a tuple of scenario dimensions."
     raise TypeError, message
@@ -1177,8 +1280,13 @@ Notes:
   return pm
 
 
+# backward compatibility
+point = point_mass
+dirac_measure = measure
+
+
 if __name__ == '__main__':
-  from mystic.math.paramtrans import *
+  from mystic.math.distance import *
   model = lambda x:sum(x)
   a = [0,1,9,8, 1,0,4,6, 1,0,1,2, 0,1,2,3,4,5,6,7]
   feasability = 0.0; deviation = 0.01
@@ -1194,7 +1302,7 @@ if __name__ == '__main__':
   data.lipschitz = L
   pm = scenario()
   pm.load(a, pts)
-  pc = pm.coords
+  pc = pm.positions
   pv = pm.values
   #---
   _data = dataset()

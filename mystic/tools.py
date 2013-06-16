@@ -10,6 +10,7 @@
 Various python tools
 
 Main functions exported are:: 
+    - isiterable: check if an object is iterable
     - flatten: flatten a sequence
     - flatten_array: flatten an array 
     - getch: provides "press any key to quit"
@@ -25,6 +26,18 @@ Main functions exported are::
 Other tools of interest are in::
     `mystic.mystic.filters` and `mystic.models.poly`
 """
+
+def isiterable(x):
+    """check if an object is iterable"""
+   #try:
+   #    from collections import Iterable
+   #    return isinstance(x, Iterable)
+   #except ImportError:
+    try:
+        iter(x)
+        return True
+    except TypeError: return False
+   #return hasattr(x, '__len__') or hasattr(x, '__iter__')
 
 def list_or_tuple(x):
     "True if x is a list or a tuple"

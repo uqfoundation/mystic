@@ -323,7 +323,7 @@ if __name__ == '__main__':
     #exec "from %s import meta" % file
     # would be nice to use meta = ['wx','wx2','x','x2','wy',...]
 
-  from mystic.math.dirac_measure import scenario
+  from mystic.math.discrete import scenario
   from mystic.math.legacydata import dataset
   try: # select whether to plot the cones
     cones = parsed_opts.cones

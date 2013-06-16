@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 """
-...associated transformations for legacy data module
+distances and norms for the legacy data module
 
 lipschitz_distance: ...
 
@@ -469,7 +469,7 @@ if __name__ == '__main__':
  
   print "\nbuilding a scenario from the params..."
   # [store Y as 'values' OR register(F) for Y=F(X) OR points store y as 'val' ?]
-  from mystic.math.dirac_measure import scenario
+  from mystic.math.discrete import scenario
   pm = scenario()
   pm.load(param1, pts)
   print "pm.wts: %s" % str(pm.wts)
@@ -578,9 +578,9 @@ if __name__ == '__main__':
 
   # member calls #
   print "\ntesting mean_value..."
-  print "mean_value: %s" % pm.get_mean_value()
+  print "mean_value: %s" % pm.mean_value()
   pm.set_mean_value(5.0)
-  print "mean_value: %s" % pm.get_mean_value()
+  print "mean_value: %s" % pm.mean_value()
 
   print "\ntesting shortness, feasibility, validity..."
   assert pm.short_wrt_data(b) == True

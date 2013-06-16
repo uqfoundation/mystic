@@ -110,7 +110,7 @@ if __name__ == '__main__':
     print "impose: mean[x] = %s +/- %s" % (str(h_mean),str(h_error))
     print "impose: mean[z] = %s +/- %s" % (str(v_mean),str(v_error))
     def constraints(x, w):
-      from mystic.math.dirac_measure import compose, decompose
+      from mystic.math.discrete import compose, decompose
       c = compose(x,w)
       E = float(c[0].mean)
       if not (E <= float(h_mean+h_error)) or not (float(h_mean-h_error) <= E):
