@@ -9,8 +9,6 @@ from mystic.math.integrate import *
 from mystic.symbolic import generate_solvers, generate_constraint, solve
 from mystic.symbolic import generate_conditions, generate_penalty
 from mystic.math import almostEqual
-from __builtin__ import max as _max
-from __builtin__ import min as _min
 
 def weighted_select(samples, weights, mass=1.0):
   """randomly select a sample from weighted set of samples
@@ -40,7 +38,7 @@ def spread(samples):
 Inputs:
     samples -- a list of sample points
 """
-  return _max(samples) - _min(samples)
+  return max(samples) - min(samples)
 
 def norm(weights):
   """calculate the norm of a list of points   [norm(x) = mean(x)]
@@ -50,7 +48,7 @@ Inputs:
 """
   return mean(weights)
 
-def max(f, samples):
+def maximum(f, samples):
   """calculate the max of function for the given list of points
 
 Inputs: 
@@ -58,9 +56,9 @@ Inputs:
     samples -- a list of sample points
 """
   y = [f(x) for x in samples]
-  return _max(y)
+  return max(y)
 
-def ess_max(f, samples, weights=None, tol=0.):
+def ess_maximum(f, samples, weights=None, tol=0.):
   """calculate the max of function for support on the given list of points
 
 Inputs: 
@@ -70,10 +68,10 @@ Inputs:
     tol -- weight tolerance, where any weight <= tol is considered zero
 """
   if weights == None:
-    return max(f, samples)
-  return max(f, support(samples, weights, tol))
+    return maximum(f, samples)
+  return maximum(f, support(samples, weights, tol))
 
-def min(f, samples):
+def minimum(f, samples):
   """calculate the min of function for the given list of points
 
 Inputs: 
@@ -81,12 +79,12 @@ Inputs:
     samples -- a list of sample points
 """
   y = [f(x) for x in samples]
-  return _min(y)
+  return min(y)
 
-def ess_min(f, samples, weights=None, tol=0.):
+def ess_minimum(f, samples, weights=None, tol=0.):
   if weights == None:
-    return min(f, samples)
-  return min(f, support(samples, weights, tol))
+    return minimum(f, samples)
+  return minimum(f, support(samples, weights, tol))
 
 def expectation(f, samples, weights=None, tol=0.0):
   """calculate the (weighted) expectation of a function for a list of points

@@ -9,8 +9,6 @@ Includes point_mass, measure, product_measure, and scenario classes.
 from mystic.math.measures import impose_mean, impose_expectation
 from mystic.math.measures import impose_spread, impose_variance
 from mystic.math.measures import impose_weight_norm
-from __builtin__ import max as _max
-from __builtin__ import min as _min
 
 class point_mass(object):
   """ a point_mass object with weight and position
@@ -67,10 +65,10 @@ class measure(list):  #FIXME: meant to only accept point_masses...
  methods:
   s.support()  -- get the positions that have corresponding non-zero weights
   s.support_index()  --  get the indicies of positions that have support
-  s.max(f)  --  calculate the maximum for a given function
-  s.min(f)  --  calculate the minimum for a given function
-  s.ess_max(f)  --  calculate the maximum for the support of a given function
-  s.ess_min(f)  --  calculate the minimum for the support of a given function
+  s.maximum(f)  --  calculate the maximum for a given function
+  s.minimum(f)  --  calculate the minimum for a given function
+  s.ess_maximum(f)  --  calculate the maximum for support of a given function
+  s.ess_minimum(f)  --  calculate the minimum for support of a given function
   s.expect(f)  --  calculate the expectation
   s.set_expect((center,delta), f)  --  impose expectation by adjusting positions
 
@@ -150,43 +148,43 @@ Inputs:
     self.positions = impose_variance(v, self.positions, self.weights)
     return
 
-  def max(self, f):
+  def maximum(self, f):
     """calculate the maximum for a given function
 
 Inputs:
     f -- a function that takes a list and returns a number
 """
-    from measures import max
-    return max(f, self.positions)
+    from measures import maximum
+    return maximum(f, self.positions)
 
-  def ess_max(self, f, tol=0.):
+  def ess_maximum(self, f, tol=0.):
     """calculate the maximum for the support of a given function
 
 Inputs:
     f -- a function that takes a list and returns a number
     tol -- weight tolerance, where any weight <= tol is considered zero
 """
-    from measures import ess_max
-    return ess_max(f, self.positions, self.weights, tol)
+    from measures import ess_maximum
+    return ess_maximum(f, self.positions, self.weights, tol)
 
-  def min(self, f):
+  def minimum(self, f):
     """calculate the minimum for a given function
 
 Inputs:
     f -- a function that takes a list and returns a number
 """
-    from measures import min
-    return min(f, self.positions)
+    from measures import minimum
+    return minimum(f, self.positions)
 
-  def ess_min(self, f, tol=0.):
+  def ess_minimum(self, f, tol=0.):
     """calculate the minimum for the support of a given function
 
 Inputs:
     f -- a function that takes a list and returns a number
     tol -- weight tolerance, where any weight <= tol is considered zero
 """
-    from measures import ess_min
-    return ess_min(f, self.positions, self.weights, tol)
+    from measures import ess_minimum
+    return ess_minimum(f, self.positions, self.weights, tol)
 
   def expect(self, f):
     """calculate the expectation for a given function
@@ -333,17 +331,17 @@ class product_measure(list):  #FIXME: meant to only accept sets...
   def __mass(self):
     return [self[i].mass for i in range(len(self))]
 
-  def max(self, f): #XXX: return max of all or return all max?
-    return _max([i.max(f) for i in self])
+  def maximum(self, f): #XXX: return max of all or return all max?
+    return max([i.maximum(f) for i in self])
 
-  def min(self, f): #XXX: return min of all or return all min?
-    return _min([i.min(f) for i in self])
+  def minimum(self, f): #XXX: return min of all or return all min?
+    return min([i.minimum(f) for i in self])
 
-  def ess_max(self, f, tol=0.): #XXX: return max of all or return all max?
-    return _max([i.ess_max(f, tol) for i in self])
+  def ess_maximum(self, f, tol=0.): #XXX: return max of all or return all max?
+    return max([i.ess_maximum(f, tol) for i in self])
 
-  def ess_min(self, f, tol=0.): #XXX: return min of all or return all min?
-    return _min([i.ess_min(f, tol) for i in self])
+  def ess_minimum(self, f, tol=0.): #XXX: return min of all or return all min?
+    return min([i.ess_minimum(f, tol) for i in self])
 
   def expect(self, f):
     """calculate the expectation for a given function
