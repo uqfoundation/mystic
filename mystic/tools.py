@@ -92,13 +92,13 @@ example usage...
 
 def getch(str="Press any key to continue"):
     "configurable pause of execution"
-    import os, sys
+    import sys, subprocess
     if sys.stdin.isatty():
        if str != None:
           print str
-       os.system('stty raw')
+       subprocess.call('stty raw', shell=True)
        a = sys.stdin.read(1)
-       os.system('stty cooked')
+       subprocess.call('stty cooked', shell=True)
        return a
     else:
        if str != None:

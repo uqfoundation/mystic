@@ -66,9 +66,9 @@ if __name__=='__main__':
     f = lambda x:x**2
     print python_map(f,range(5),nnodes=10)
 
-    import os
+    import subprocess
     d = {'progargs': """-c "print('hello')" """}
-    os.system(serial_launcher(d))
+    subprocess.call(serial_launcher(d), shell=True)
 
 
 # End of file
