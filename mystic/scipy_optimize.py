@@ -132,11 +132,15 @@ The size of the simplex is dim+1.
         super(NelderMeadSimplexSolver, self)._SetEvaluationLimits(iterscale,evalscale)
         return
 
-    def Step(self, cost=None, ExtraArgs=None, radius=None, **kwds):
+    def Step(self, cost=None, ExtraArgs=None, **kwds):
         """perform a single optimization iteration
         Note that ExtraArgs should be a *tuple* of extra arguments"""
         # HACK to enable not explicitly calling _RegisterObjective
         cost = self._bootstrap_decorate(cost, ExtraArgs)
+        # process and activate input settings
+        settings = self._process_inputs(kwds)
+        for key in settings:
+            exec "%s = settings['%s']" % (key,key)
 
         rho = 1; chi = 2; psi = 0.5; sigma = 0.5;
 
@@ -440,11 +444,15 @@ Takes one initial input:
         super(PowellDirectionalSolver, self)._SetEvaluationLimits(iterscale,evalscale)
         return
 
-    def Step(self, cost=None, ExtraArgs=None, xtol=None, **kwds):
+    def Step(self, cost=None, ExtraArgs=None, **kwds):
         """perform a single optimization iteration
         Note that ExtraArgs should be a *tuple* of extra arguments"""
         # HACK to enable not explicitly calling _RegisterObjective
         cost = self._bootstrap_decorate(cost, ExtraArgs)
+        # process and activate input settings
+        settings = self._process_inputs(kwds)
+        for key in settings:
+            exec "%s = settings['%s']" % (key,key)
 
         direc = self._direc
         x = self.population[0]   # bestSolution
@@ -477,7 +485,7 @@ Takes one initial input:
             bigind = 0
             delta = 0.0
             for i in ilist:
-                direc1 = direc[i]
+                direc1 = self._direc[i]
                 fx2 = fval
                 fval, x, direc1 = _linesearch_powell(cost, x, direc1, tol=xtol*100)
                 if (fx2 - fval) > delta:
@@ -555,7 +563,7 @@ Takes one initial input:
         settings = super(PowellDirectionalSolver, self)._process_inputs(kwds)
         settings.update({\
         'xtol':1e-4})        #line-search error tolerance
-        direc=None           #initial direction set
+        direc=self._direc    #initial direction set
         [settings.update({i:j}) for (i,j) in kwds.items() if i in settings]
         self._direc = kwds.get('direc', direc)
         return settings
