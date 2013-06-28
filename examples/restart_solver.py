@@ -41,7 +41,10 @@ def runme():
     # run the optimizer
     solver.Solve(rosen)
     os.remove(tmpfile)
-    return solver
+    # check the solver serializes
+    _s = dill.dumps(solver)
+    return dill.loads(_s)
+
 
 solver = runme()
 
