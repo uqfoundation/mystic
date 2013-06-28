@@ -121,12 +121,7 @@ if __name__ == '__main__':
 
     # 2D (a fine mesh solution can be computed by test_br8_mpi.py)
     try:
-	# found error scipy no longer uses this method
-        #import scipy.io, pylab
         import numpy, pylab
-        #X = scipy.io.read_array(open('test_br8_mpi.out.X'))
-        #Y = scipy.io.read_array(open('test_br8_mpi.out.Y'))
-        #V = scipy.io.read_array(open('test_br8_mpi.out.V'))
         X = numpy.loadtxt('test_br8_mpi.out.X')
         Y = numpy.loadtxt('test_br8_mpi.out.Y')
         V = numpy.loadtxt('test_br8_mpi.out.V')
