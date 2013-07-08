@@ -603,8 +603,8 @@ Note::
            self.SetConstraints(kwds.get('constraints'))
         return settings
 
-    def Solve(self, cost, termination=None, sigint_callback=None,
-                                            ExtraArgs=(), **kwds):
+    def Solve(self, cost=None, termination=None, sigint_callback=None,
+                                                 ExtraArgs=None, **kwds):
         """Minimize a 'cost' function with given termination conditions.
 
 Description:
@@ -628,8 +628,9 @@ Further Inputs:
         iteration.  It is called as callback(xk), where xk is
         the current parameter vector.  [default = None]
     disp -- non-zero to print convergence messages.
-        """ #FIXME: edit so "Solve" can be called anytime to "finish" the solve
-        #FIXME: needs to respect when evals/iters have been done already
+        """
+        # HACK to enable not explicitly calling _RegisterObjective
+        cost = self._bootstrap_decorate(cost, ExtraArgs)
         # process and activate input settings
         settings = self._process_inputs(kwds)
         for key in settings:
@@ -641,19 +642,20 @@ Further Inputs:
         self._generateHandler(sigint_callback) 
         if self._handle_sigint: signal.signal(signal.SIGINT, self.signal_handler)
 
-        # decorate cost function with bounds, penalties, monitors, etc
-        self._RegisterObjective(cost, ExtraArgs)    #XXX: SetObjective ?
+       ## decorate cost function with bounds, penalties, monitors, etc
+       #self._RegisterObjective(cost, ExtraArgs)    #XXX: SetObjective ?
         # register termination function
         if termination is not None:
             self.SetTermination(termination)
 
         # the initital optimization iteration
-        self.Step()
-        if callback is not None:
-            callback(self.bestSolution)
+        if not len(self._stepmon): # do generation = 0
+            self.Step()
+            if callback is not None:
+                callback(self.bestSolution)
          
-        # initialize termination conditions, if needed
-        self._termination(self)
+            # initialize termination conditions, if needed
+            self._termination(self) #XXX: call at generation 0 or always?
         # impose the evaluation limits
         self._SetEvaluationLimits()
 

@@ -263,8 +263,8 @@ are logged.
         self.scale = kwds.get('ScalingFactor', scale)
         return settings
 
-    def Solve(self, cost, termination=None, sigint_callback=None,
-                                            ExtraArgs=(), **kwds):
+    def Solve(self, cost=None, termination=None, sigint_callback=None,
+                                                 ExtraArgs=None, **kwds):
         """Minimize a function using differential evolution.
 
 Description:
@@ -410,8 +410,8 @@ are logged.
         self.scale = kwds.get('ScalingFactor', scale)
         return settings
 
-    def Solve(self, cost, termination=None, sigint_callback=None,
-                                            ExtraArgs=(), **kwds):
+    def Solve(self, cost=None, termination=None, sigint_callback=None,
+                                                 ExtraArgs=None, **kwds):
         """Minimize a function using differential evolution.
 
 Description:

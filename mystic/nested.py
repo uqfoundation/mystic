@@ -52,6 +52,7 @@ All important class members are inherited from AbstractNestedSolver.
 #   def SetGridBins(self, nbins):
 #       return
 
+    #FIXME: should take cost=None, ExtraArgs=None... and utilize Step
     def Solve(self, cost, termination=None, sigint_callback=None,
                                             ExtraArgs=(), **kwds):
         """Minimize a function using batch grid optimization.

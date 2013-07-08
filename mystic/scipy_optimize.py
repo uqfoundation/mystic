@@ -254,8 +254,8 @@ The size of the simplex is dim+1.
         [settings.update({i:j}) for (i,j) in kwds.items() if i in settings]
         return settings
 
-    def Solve(self, cost, termination=None, sigint_callback=None,
-                                            ExtraArgs=(), **kwds):
+    def Solve(self, cost=None, termination=None, sigint_callback=None,
+                                                 ExtraArgs=None, **kwds):
         """Minimize a function using the downhill simplex algorithm.
 
 Description:
@@ -568,8 +568,8 @@ Takes one initial input:
         self._direc = kwds.get('direc', direc)
         return settings
 
-    def Solve(self, cost, termination=None, sigint_callback=None,
-                                            ExtraArgs=(), **kwds):
+    def Solve(self, cost=None, termination=None, sigint_callback=None,
+                                                 ExtraArgs=None, **kwds):
         """Minimize a function using modified Powell's method.
 
 Description:
