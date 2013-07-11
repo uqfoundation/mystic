@@ -32,19 +32,21 @@ issues is maintained at http://trac.mystic.cacr.caltech.edu/project/mystic/query
 Major Features
 --------------
 Mystic provides a stock set of configurable, controllable solvers with::
-    * a common interface
-    * the ability to impose solver-independent bounds constraints
-    * the ability to apply solver-independent monitors
-    * the ability to configure solver-independent termination conditions
-    * a control handler yielding: [pause, continue, exit, and user_callback]
-    * ease in selecting initial conditions: [initial_guess, random]
-    * ease in selecting mutation strategies (for differential evolution)
+
+* a common interface
+* the ability to impose solver-independent bounds constraints
+* the ability to apply solver-independent monitors
+* the ability to configure solver-independent termination conditions
+* a control handler yielding: [pause, continue, exit, and user_callback]
+* ease in selecting initial conditions: [initial_guess, random]
+* ease in selecting mutation strategies (for differential evolution)
 
 To get up and running quickly, mystic also provides infrastructure to::
-    * easily generate a fit model (several example models are included)
-    * configure and auto-generate a cost function from a model
-    * extend fit jobs to parallel & distributed resources
-    * couple models with optimization parameter constraints [COMING SOON]
+
+* easily generate a fit model (several example models are included)
+* configure and auto-generate a cost function from a model
+* extend fit jobs to parallel & distributed resources
+* couple models with optimization parameter constraints [COMING SOON]
 
 
 Current Release
