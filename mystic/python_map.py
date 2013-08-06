@@ -6,33 +6,39 @@ available as a minimal (dependency-free) pure-python
 install from pathos::
     - serial_launcher:   syntax for standard python execution
     - python_map:        wrapper around the standard python map
-    - carddealer_mapper: the carddealer map strategy
+    - worker_pool:       the worker_pool map strategy
 """
 
-defaults = { 'timelimit' : '00:05:00',
-             'file' : '',
-             'progname' : '',
-             'outfile' : './results.out',
-             'errfile' : './errors.out',
-             'jobfile' : './jobid',
-             'queue' : '',
-             'python' : '`which python`' ,
-             'nodes' : '1',
-             'progargs' : '',
-             'scheduler' : ''
-           }
+import os
+_pid = '.' + str(os.getpid()) + '.'
+defaults = {
+    'nodes' : '1',
+    'program' : '',
+    'python' : '`which python`' ,
+    'progargs' : '',
+
+    'outfile' : 'results%sout' % _pid,
+    'errfile' : 'errors%sout' % _pid,
+    'jobfile' : 'job%sid' % _pid,
+
+    'scheduler' : '',
+    'timelimit' : '00:02',
+    'queue' : '',
+
+    'workdir' : '.'
+    }
 
 def serial_launcher(kdict={}):
     """
 prepare launch for standard execution
-syntax:  (python) (file) (progargs)
+syntax:  (python) (program) (progargs)
 
 NOTES:
     run non-python commands with: {'python':'', ...} 
     """
     mydict = defaults.copy()
     mydict.update(kdict)
-    str = """ %(python)s %(file)s %(progargs)s""" % mydict
+    str = """ %(python)s %(program)s %(progargs)s""" % mydict
     return str
 
 def python_map(func, *arglist, **kwds):
@@ -40,10 +46,10 @@ def python_map(func, *arglist, **kwds):
 
 maps function 'func' across arguments 'arglist'.  Provides the
 standard python map function, however also accepts **kwds in order
-to conform with the pathos.pyina.map interface.
+to conform with the (deprecated) pathos.pyina.ez_map interface.
 
 Further Input: [***disabled***]
-    nnodes -- the number of parallel nodes
+    nodes -- the number of parallel nodes
     launcher -- the launcher object
     scheduler -- the scheduler object
     mapper -- the mapper object
@@ -54,17 +60,20 @@ Further Input: [***disabled***]
     result = map(func, *arglist) #     see pathos.pyina.ez_map
     return result
 
-def carddealer_mapper():
-    """deal work out to all available resources,
-then deal out the next new work item when a node completes its work """
-    #from parallel_map import parallel_map as map
+def worker_pool():
+    """use the 'worker pool' strategy; hence one job is allocated to each
+worker, and the next new work item is provided when a node completes its work"""
+    #from mpi_pool import parallel_map as map
     #return map
-    return "parallel_map"
+    return "mpi_pool"
+
+# backward compatibility
+carddealer_mapper = worker_pool
 
 
 if __name__=='__main__':
     f = lambda x:x**2
-    print python_map(f,range(5),nnodes=10)
+    print python_map(f,range(5),nodes=10)
 
     import subprocess
     d = {'progargs': """-c "print('hello')" """}

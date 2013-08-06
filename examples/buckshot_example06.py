@@ -20,10 +20,16 @@ from mystic.solvers import PowellDirectionalSolver
 from mystic.models.poly import chebyshev8, chebyshev8cost
 from mystic.models.poly import chebyshev8coeffs
 
+# if available, use a multiprocessing worker pool
+try:
+    from pathos.multiprocessing import ProcessingPool as Pool
+except ImportError:
+    from mystic.python import PythonSerial as Pool
+
 # tools
 from mystic.termination import NormalizedChangeOverGeneration as NCOG
 from mystic.math import poly1d
-from mystic.monitors import VerboseMonitor
+from mystic.monitors import VerboseLoggingMonitor
 from mystic.tools import getch
 import pylab
 pylab.ion()
@@ -68,18 +74,20 @@ if __name__ == '__main__':
     plot_exact()
 
     # configure monitor
-    stepmon = VerboseMonitor(1)
+    stepmon = VerboseLoggingMonitor(1,2)
 
     # use buckshot-Powell to solve 8th-order Chebyshev coefficients
     solver = BuckshotSolver(ndim, npts)
     solver.SetNestedSolver(PowellDirectionalSolver)
-   #from pyina.launchers import Mpi as Pool
-   #from pathos.multiprocessing import ProcessingPool as Pool
-   #solver.SetMapper(Pool().map)
+    solver.SetMapper(Pool().map)
     solver.SetGenerationMonitor(stepmon)
     solver.SetStrictRanges(min=[-300]*ndim, max=[300]*ndim)
     solver.Solve(chebyshev8cost, NCOG(1e-4), disp=1)
     solution = solver.Solution()
+
+    # write 'convergence' support file
+    from mystic.munge import write_support_file
+    write_support_file(solver._stepmon) #XXX: only saves the 'best'
 
     # use pretty print for polynomials
     print poly1d(solution)

@@ -20,6 +20,12 @@ from mystic.solvers import PowellDirectionalSolver
 from mystic.models.poly import chebyshev8, chebyshev8cost
 from mystic.models.poly import chebyshev8coeffs
 
+# if available, use a multiprocessing worker pool
+try:
+    from pathos.multiprocessing import ProcessingPool as Pool
+except ImportError:
+    from mystic.python import PythonSerial as Pool
+
 # tools
 from mystic.termination import NormalizedChangeOverGeneration as NCOG
 from mystic.math import poly1d
@@ -74,9 +80,7 @@ if __name__ == '__main__':
     # use lattice-Powell to solve 8th-order Chebyshev coefficients
     solver = LatticeSolver(ndim, nbins)
     solver.SetNestedSolver(PowellDirectionalSolver)
-   #from pyina.launchers import Mpi as Pool
-   #from pathos.multiprocessing import ProcessingPool as Pool
-   #solver.SetMapper(Pool().map)
+    solver.SetMapper(Pool().map)
     solver.SetGenerationMonitor(stepmon)
     solver.SetStrictRanges(min=[-300]*ndim, max=[300]*ndim)
     solver.Solve(chebyshev8cost, NCOG(1e-4), disp=1)

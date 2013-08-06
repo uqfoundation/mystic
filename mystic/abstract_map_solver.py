@@ -111,13 +111,13 @@ Important class members:
         # import 'map' defaults
         from python_map import serial_launcher
         from python_map import python_map
-        from python_map import carddealer_mapper
+        from python_map import worker_pool
         from python_map import defaults
 
         # default settings for parallel and distributed computing
         launcher        = serial_launcher   # launcher
-        mapper          = carddealer_mapper # map_strategy
-        nnodes          = int(defaults['nodes'])
+        mapper          = worker_pool       # map_strategy
+        nodes           = int(defaults['nodes'])
         scheduler       = defaults['scheduler'] # scheduler
         queue           = defaults['queue'] # scheduler_queue
         timelimit       = defaults['timelimit']
@@ -125,11 +125,11 @@ Important class members:
         ncpus           = None   #<detect>  # local processors
        #servers         = ()     #<None>    # hostname:port
        #ncpus           = 0      #<None>    # local processors
-        self._mapconfig = dict(nnodes=nnodes, launcher=launcher, \
+        self._mapconfig = dict(nodes=nodes, launcher=launcher, \
                                mapper=mapper, queue=queue, \
                                timelimit=timelimit, scheduler=scheduler, \
                                ncpus=ncpus, servers=servers)
-        self._map        = python_map        # map
+        self._map       = python_map        # map
         return
 
     def SelectServers(self, servers, ncpus=None): #XXX: needs some thought...
@@ -150,7 +150,7 @@ Additional inputs:
     ncpus -- number of local processors  [DEFAULT: autodetect]
         """
         self._mapconfig['servers'] = servers
-        self._mapconfig['ncpus'] = ncpus  #XXX: merge with nnodes, somehow ???
+        self._mapconfig['ncpus'] = ncpus  #XXX: merge with nodes, somehow ???
        #print "known servers: %s" % str(servers)
        #print "known # of local processors: %s" % str(ncpus)
         return
@@ -166,7 +166,7 @@ Description:
 
 Inputs:
     map -- the mapping function [DEFAULT: python_map]
-    strategy -- map strategy (see pyina.mappers) [DEFAULT: carddealer_mapper]
+    strategy -- map strategy (see pyina.mappers) [DEFAULT: worker_pool]
         """
         self._map = map
         if strategy:
@@ -201,7 +201,7 @@ Additional inputs:
        #if launcher != python_map: #FIXME: CANNOT currently change to ez_map!!!
        #    exec("import pyina")   #FIXME: launcher should provide launcher.map
        #    exec("self._map = pyina.ez_map")
-        self._mapconfig['nnodes'] = nnodes
+        self._mapconfig['nodes'] = nnodes
         return
 
     def SelectScheduler(self, scheduler, queue, timelimit=None):
