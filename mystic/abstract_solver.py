@@ -238,32 +238,38 @@ input::
             self._constraints = constraints
         return
 
-    def SetGenerationMonitor(self, monitor):
+    def SetGenerationMonitor(self, monitor, new=False):
         """select a callable to monitor (x, f(x)) after each solver iteration"""
         from mystic.monitors import Null, Monitor#, CustomMonitor
+        current = Null() if new else self._stepmon
         if isinstance(monitor, Monitor):  # is Monitor()
             self._stepmon = monitor
-        elif isinstance(monitor, Null) or monitor == Null:  # is Null() or Null
-            self._stepmon = Monitor() #XXX: don't allow Null stepmon
+            self._stepmon.prepend(current)
+        elif isinstance(monitor, Null) or monitor == Null: # is Null() or Null
+            self._stepmon = Monitor()  #XXX: don't allow Null
+            self._stepmon.prepend(current)
         elif hasattr(monitor, '__module__'):  # is CustomMonitor()
             if monitor.__module__ in ['mystic._genSow']:
-                self._stepmon = monitor
+                self._stepmon = monitor #FIXME: need .prepend(current)
         else:
             raise TypeError, "'%s' is not a monitor instance" % monitor
         self.energy_history   = self._stepmon.y
         self.solution_history = self._stepmon.x
         return
 
-    def SetEvaluationMonitor(self, monitor):
+    def SetEvaluationMonitor(self, monitor, new=False):
         """select a callable to monitor (x, f(x)) after each cost function evaluation"""
         from mystic.monitors import Null, Monitor#, CustomMonitor
+        current = Null() if new else self._evalmon
         if isinstance(monitor, (Null, Monitor) ):  # is Monitor() or Null()
             self._evalmon = monitor
+            self._evalmon.prepend(current)
         elif monitor == Null:  # is Null
-            self._evalmon = monitor
+            self._evalmon = monitor()
+            self._evalmon.prepend(current)
         elif hasattr(monitor, '__module__'):  # is CustomMonitor()
             if monitor.__module__ in ['mystic._genSow']:
-                self._evalmon = monitor
+                self._evalmon = monitor #FIXME: need .prepend(current)
         else:
             raise TypeError, "'%s' is not a monitor instance" % monitor
         return
@@ -273,7 +279,13 @@ input::
 
 input::
     - min, max: must be a sequence of length self.nDim
-    - each min[i] should be <= the corresponding max[i]"""
+    - each min[i] should be <= the corresponding max[i]
+
+note::
+    SetStrictRanges(None) will remove strict range constraints"""
+        if min is False or max is False:
+            self._useStrictRange = False
+            return
         #XXX: better to use 'defaultMin,defaultMax' or '-inf,inf' ???
         if min == None: min = self._defaultMin
         if max == None: max = self._defaultMax
@@ -432,7 +444,14 @@ Available switches::
         return
 
     def SetSaveFrequency(self, generations=None, filename=None, **kwds):
-        """set frequency for saving solver restart file"""
+        """set frequency for saving solver restart file
+
+input::
+    - generations = number of solver iterations before next save of state
+    - filename = name of file in which to save solver state
+
+note::
+    SetSaveFrequency(None) will disable saving solver restart file"""
         self._saveiter = generations
        #self._saveeval = evaluations
         self._state = filename

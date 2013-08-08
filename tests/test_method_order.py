@@ -140,11 +140,11 @@ _solution2 =  _solver2.bestSolution
 _population2 = _solver2.population
 
 _term2 = VTRChangeOverGeneration(generations=200)
-_solver2.SetStrictRanges(lb,ub) #XXX: nice to be able to UnsetStrictRanges
+_solver2.SetStrictRanges(lb,ub)
 _solver2.SetEvaluationLimits(10000, 100000) #XXX: nice if continued and/or reset
-_solver2.SetGenerationMonitor(_stepmon2) #FIXME: generations best not reset to 0
-_solver2.SetTermination(_term2)          #       better... take existing monitor
-_solver2.Solve()                         #       and append the new one to it
+_solver2.SetGenerationMonitor(_stepmon2)
+_solver2.SetTermination(_term2)
+_solver2.Solve()
 
 _energy2 = _solver2.bestEnergy
 _solution2 = _solver2.bestSolution

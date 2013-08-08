@@ -127,6 +127,40 @@ example usage...
        #if not self._all and list_or_tuple_or_ndarray(y):
        #    self._y[-1] = self._y[-1][best]
 
+    def extend(self, monitor):
+        """append the contents of the given monitor"""
+        if isinstance(monitor, Monitor): # is Monitor()
+            pass
+        elif (monitor == Null) or isinstance(monitor, Null): # is Null or Null()
+            monitor = Monitor()
+        elif hasattr(monitor, '__module__') and \
+            monitor.__module__ in ['mystic._genSow']: # is CustomMonitor()
+                pass #XXX: CustomMonitor may fail...
+        else:
+            raise TypeError, "'%s' is not a monitor instance" % monitor
+        self._x.extend(monitor._x)
+        self._y.extend(monitor._y)
+        self._id.extend(monitor._id)
+        self._info.extend(monitor._info)
+
+    def prepend(self, monitor):
+        """prepend the contents of the given monitor"""
+        if isinstance(monitor, Monitor): # is Monitor()
+            pass
+        elif (monitor == Null) or isinstance(monitor, Null): # is Null or Null()
+            monitor = Monitor()
+        elif hasattr(monitor, '__module__') and \
+            monitor.__module__ in ['mystic._genSow']: # is CustomMonitor()
+                pass #XXX: CustomMonitor may fail...
+        else:
+            raise TypeError, "'%s' is not a monitor instance" % monitor
+        [self._x.insert(i,j) for (i,j) in list(enumerate(monitor._x))]
+        [self._y.insert(i,j) for (i,j) in list(enumerate(monitor._y))]
+        [self._id.insert(i,j) for (i,j) in list(enumerate(monitor._id))]
+        [self._info.insert(i,j) for (i,j) in list(enumerate(monitor._info))]
+        #XXX: may be faster ways of doing the above...
+        #     (e.g. deepcopy(monitor) allows enumerate w/o list())
+
     def get_x(self):
         return self._x
 
@@ -139,6 +173,9 @@ example usage...
     def get_info(self):
         return self._info
 
+    def __step(self):
+        return len(self.x)
+    _step = property(__step)
     x = property(get_x, doc = "Params")
     y = property(get_y, doc = "Costs")
     id = property(get_id, doc = "Id")
@@ -152,7 +189,6 @@ current parameters every 'xinterval'.
     """
     def __init__(self, interval = 10, xinterval = numpy.inf, all=True):
         super(VerboseMonitor,self).__init__()
-        self._step = 0
         if not interval or interval is numpy.nan: interval = numpy.inf
         if not xinterval or xinterval is numpy.nan: xinterval = numpy.inf
         self._yinterval = interval
@@ -166,7 +202,7 @@ current parameters every 'xinterval'.
     def __call__(self, x, y, id=None, best=0):
         super(VerboseMonitor,self).__call__(x, y, id)
         if self._yinterval is not numpy.inf and \
-           int(self._step % self._yinterval) == 0:
+           int((self._step-1) % self._yinterval) == 0:
             if not list_or_tuple_or_ndarray(y):
                 who = ''
                 y = " %f" % self._y[-1]
@@ -176,11 +212,11 @@ current parameters every 'xinterval'.
             else:
                 who = ' best'
                 y = " %f" % self._y[-1][best]
-            msg = "Generation %d has%s Chi-Squared:%s" % (self._step, who, y)
+            msg = "Generation %d has%s Chi-Squared:%s" % (self._step-1,who,y)
             if id != None: msg = "[id: %d] " % (id) + msg
             print msg
         if self._xinterval is not numpy.inf and \
-           int(self._step % self._xinterval) == 0:
+           int((self._step-1) % self._xinterval) == 0:
             if not list_or_tuple_or_ndarray(x):
                 who = ''
                 x = " %f" % self._x[-1]
@@ -190,10 +226,9 @@ current parameters every 'xinterval'.
             else:
                 who = ' best'
                 x = "\n %s" % self._x[-1][best]
-            msg = "Generation %d has%s fit parameters:%s" % (self._step, who, x)
+            msg = "Generation %d has%s fit parameters:%s" % (self._step-1,who,x)
             if id != None: msg = "[id: %d] " % (id) + msg
             print msg
-        self._step += 1
         return
     pass
 
@@ -206,7 +241,6 @@ Logs ChiSq and parameters to a file every 'interval'
         import datetime
         super(LoggingMonitor,self).__init__()
         self._filename = filename
-        self._step = 0
         if not interval or interval is numpy.nan: interval = numpy.inf
         self._yinterval = interval
         self._xinterval = interval
@@ -229,7 +263,7 @@ Logs ChiSq and parameters to a file every 'interval'
         self._file = open(self._filename,'a')
         super(LoggingMonitor,self).__call__(x, y, id)
         if self._yinterval is not numpy.inf and \
-           int(self._step % self._yinterval) == 0:
+           int((self._step-1) % self._yinterval) == 0:
             if not list_or_tuple_or_ndarray(y):
                 y = "%f" % self._y[-1]
             elif self._all:
@@ -250,10 +284,9 @@ Logs ChiSq and parameters to a file every 'interval'
                   x = "[%f]" % xb
                 else:
                   x = "%s" % xb
-            step = [self._step]
+            step = [self._step-1]
             if id != None: step.append(id)
             self._file.write("  %s     %s   %s\n" % (tuple(step), y, x))
-        self._step += 1
         self._file.close()
         return
     pass
@@ -276,9 +309,8 @@ Logs ChiSq and parameters to a file every 'interval', print every 'yinterval'
         return
     def __call__(self, x, y, id=None, best=0):
         super(VerboseLoggingMonitor,self).__call__(x, y, id, best)
-        self._step += -1  # rollback step counter (incremented in super call)
         if self._vyinterval is not numpy.inf and \
-           int(self._step % self._vyinterval) == 0:
+           int((self._step-1) % self._vyinterval) == 0:
             if not list_or_tuple_or_ndarray(y):
                 who = ''
                 y = " %f" % self._y[-1]
@@ -288,11 +320,11 @@ Logs ChiSq and parameters to a file every 'interval', print every 'yinterval'
             else:
                 who = ' best'
                 y = " %f" % self._y[-1][best]
-            msg = "Generation %d has%s Chi-Squared:%s" % (self._step, who, y)
+            msg = "Generation %d has%s Chi-Squared:%s" % (self._step-1,who,y)
             if id != None: msg = "[id: %d] " % (id) + msg
             print msg
         if self._vxinterval is not numpy.inf and \
-           int(self._step % self._vxinterval) == 0:
+           int((self._step-1) % self._vxinterval) == 0:
             if not list_or_tuple_or_ndarray(x):
                 who = ''
                 x = " %f" % self._x[-1]
@@ -302,10 +334,9 @@ Logs ChiSq and parameters to a file every 'interval', print every 'yinterval'
             else:
                 who = ' best'
                 x = "\n %s" % self._x[-1][best]
-            msg = "Generation %d has%s fit parameters:%s" % (self._step, who, x)
+            msg = "Generation %d has%s fit parameters:%s" % (self._step-1,who,x)
             if id != None: msg = "[id: %d] " % (id) + msg
             print msg
-        self._step += 1
         return
     pass
 
