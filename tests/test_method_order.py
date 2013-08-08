@@ -141,7 +141,7 @@ _population2 = _solver2.population
 
 _term2 = VTRChangeOverGeneration(generations=200)
 _solver2.SetStrictRanges(lb,ub)
-_solver2.SetEvaluationLimits(10000, 100000) #XXX: nice if continued and/or reset
+_solver2.SetEvaluationLimits(new=True)
 _solver2.SetGenerationMonitor(_stepmon2)
 _solver2.SetTermination(_term2)
 _solver2.Solve()
@@ -170,7 +170,7 @@ population2 = solver2.population
 term2 = VTRChangeOverGeneration(generations=200)
 solver2.SetTermination(term2)
 solver2.SetGenerationMonitor(stepmon2)
-solver2.SetEvaluationLimits(10000, 100000)
+solver2.SetEvaluationLimits(new=True)
 solver2.SetStrictRanges(lb,ub)
 solver2.Solve()
 
@@ -205,7 +205,7 @@ _lb, _ub = [-10.]*3, [10]*3
 _term3 = VTRChangeOverGeneration(generations=200)
 _solver3.SetRandomInitialPoints(_lb,_ub) #FIXME: pretty much causes a flatline
 _solver3.SetStrictRanges(lb,ub)          #       regardless of _lb,_ub value
-_solver3.SetEvaluationLimits(10000, 100000)#     check if pop is uniform
+_solver3.SetEvaluationLimits(200, 2000, new=True)# check if pop is uniform
 _solver3.SetTermination(_term3)
 _solver3.Solve()
 
@@ -235,7 +235,7 @@ population3 = solver3.population
 
 term3 = VTRChangeOverGeneration(generations=200)
 solver3.SetTermination(term3)
-solver3.SetEvaluationLimits(10000, 100000)
+solver3.SetEvaluationLimits(200, 2000, new=True)
 solver3.SetStrictRanges(lb,ub)
 solver3.SetRandomInitialPoints(_lb,_ub)
 solver3.Solve()

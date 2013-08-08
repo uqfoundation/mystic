@@ -457,12 +457,13 @@ note::
         self._state = filename
         return
 
-    def SetEvaluationLimits(self, generations=None, evaluations=None, **kwds):
+    def SetEvaluationLimits(self, generations=None, evaluations=None, \
+                                                    new=False, **kwds):
         """set limits for generations and/or evaluations
 
 input::
     - generations = maximum number of solver iterations (i.e. steps)
-    - evaluations  = maximum number of function evaluations"""
+    - evaluations = maximum number of function evaluations"""
         self._maxiter = generations
         self._maxfun = evaluations
         # backward compatibility
@@ -470,6 +471,16 @@ input::
             self._maxiter = kwds['maxiter']
         if kwds.has_key('maxfun'):
             self._maxfun = kwds['maxfun']
+        # handle if new (reset counter, instead of extend counter)
+        if new:
+            if generations is not None:
+                self._maxiter += self.generations
+            else:
+                self._maxiter = "*" #XXX: better as self._newmax = True ?
+            if evaluations is not None:
+                self._maxfun += self.evaluations
+            else:
+                self._maxfun = "*"
         return
 
     def _SetEvaluationLimits(self, iterscale=None, evalscale=None):
@@ -480,8 +491,12 @@ input::
         # if SetEvaluationLimits not applied, use the solver default
         if self._maxiter is None:
             self._maxiter = N * self.nPop * iterscale
+        elif self._maxiter == "*": # (i.e. None, but 'reset counter') 
+            self._maxiter = (N * self.nPop * iterscale) + self.generations
         if self._maxfun is None:
             self._maxfun = N * self.nPop * evalscale
+        elif self._maxiter == "*":
+            self._maxfun = (N * self.nPop * evalscale) + self.evaluations
         return
 
     def CheckTermination(self, disp=False, info=False, termination=None):
