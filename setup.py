@@ -154,6 +154,7 @@ Mystic requires::
     - numpy, version >= 1.0
     - sympy, version >= 0.6.7
     - dill, version >= 0.2a.dev
+    - klepto, version >= 0.1a.dev
 
 Optional requirements::
 
@@ -173,7 +174,7 @@ set of scripts that demonstrate the configuration and launching of
 optimization jobs for one of the sample models in `mystic.models`.
 Many of the included examples are standard optimization test problems.
 
-Instructions on building a new model are in `mystic.models.abstract_model`.
+Instr1ctions on building a new model are in `mystic.models.abstract_model`.
 Mystic provides base classes for two types of models::
 
     - AbstractFunction   [evaluates f(x) for given evaluation points x]
@@ -301,14 +302,15 @@ setup(name='mystic',
 numpy_version = '>=1.0'
 sympy_version = '>=0.6.7'
 dill_version = '>=0.2a.dev'
+klepto_version = '>=0.1a.dev'
 scipy_version = '>=0.6.0'
 matplotlib_version = '>=0.91'
 if has_setuptools:
     setup_code += """
       zip_safe=True,
       dependency_links = ['http://dev.danse.us/packages/'],
-      install_requires = ('numpy%s', 'sympy%s', 'dill%s'),
-""" % (numpy_version, sympy_version, dill_version)
+      install_requires = ('numpy%s', 'sympy%s', 'klepto%s', 'dill%s'),
+""" % (numpy_version, sympy_version, klepto_version, dill_version)
 
 # add the scripts, and close 'setup' call
 setup_code += """
@@ -326,6 +328,7 @@ exec setup_code
 try:
     import numpy
     import sympy
+    import klepto
     import dill
     #import scipy
     #import matplotlib #XXX: has issues being zip_safe
@@ -334,6 +337,7 @@ except ImportError:
     print "WARNING: One of the following dependencies is unresolved:"
     print "    numpy %s" % numpy_version
     print "    sympy %s" % sympy_version
+    print "    klepto %s" % klepto_version
     print "    dill %s" % dill_version
     print "    scipy %s (optional)" % scipy_version
     print "    matplotlib %s (optional)" % matplotlib_version
