@@ -11,7 +11,6 @@ Dependencies:
 Exceptions to the rule:
  - The following examples also require scipy to be installed. (tested on version 0.4.8 and 0.7.0):
     . cg_rosenbrock.py
-    . test_br8.py
     . test_lorentzian.py
     . test_mogi.py
     . test_mogi_anneal.py,

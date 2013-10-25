@@ -20,10 +20,15 @@ from mystic.models.br8 import data
 # evalpts = data[:,0], observations = data[:,1]
 
 def myshow():
-    import pylab, Image
-    pylab.savefig('test_br8_out',dpi=72)
-    im = Image.open('test_br8_out.png')
-    im.show()
+    import pylab
+    try:
+        import Image
+        pylab.savefig('test_br8_out',dpi=72)
+        im = Image.open('test_br8_out.png')
+        im.show()
+    except ImportError:
+        pass
+    pylab.show()
     
 def plot_sol(solver=None, linestyle='k-'):
     import pylab
@@ -121,10 +126,10 @@ if __name__ == '__main__':
 
     # 2D (a fine mesh solution can be computed by test_br8_mpi.py)
     try:
-        import scipy.io, pylab
-        X = scipy.io.read_array(open('test_br8_mpi.out.X'))
-        Y = scipy.io.read_array(open('test_br8_mpi.out.Y'))
-        V = scipy.io.read_array(open('test_br8_mpi.out.V'))
+        import pylab
+        X = loadtxt.read_array(open('test_br8_mpi.out.X'))
+        Y = loadtxt.read_array(open('test_br8_mpi.out.Y'))
+        V = loadtxt.read_array(open('test_br8_mpi.out.V'))
         pylab.clf()
         pylab.plot([[a4]],[[a5]],'k+')
         pylab.xlabel('a4')
