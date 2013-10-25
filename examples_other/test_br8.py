@@ -127,9 +127,9 @@ if __name__ == '__main__':
     # 2D (a fine mesh solution can be computed by test_br8_mpi.py)
     try:
         import pylab
-        X = loadtxt.read_array(open('test_br8_mpi.out.X'))
-        Y = loadtxt.read_array(open('test_br8_mpi.out.Y'))
-        V = loadtxt.read_array(open('test_br8_mpi.out.V'))
+        X = numpy.loadtxt('test_br8_mpi.out.X')
+        Y = numpy.loadtxt('test_br8_mpi.out.Y')
+        V = numpy.loadtxt('test_br8_mpi.out.V')
         pylab.clf()
         pylab.plot([[a4]],[[a5]],'k+')
         pylab.xlabel('a4')
