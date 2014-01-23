@@ -153,16 +153,16 @@ Mystic requires::
     - python, version >= 2.5, version < 3.0
     - numpy, version >= 1.0
     - sympy, version >= 0.6.7
-    - dill, version >= 0.2a.dev
-    - klepto, version >= 0.1a.dev
+    - dill, version >= 0.2b2.dev
+    - klepto, version >= 0.1a1.dev
 
 Optional requirements::
 
     - setuptools, version >= 0.6
     - matplotlib, version >= 0.91
     - scipy, version >= 0.6.0
-    - pathos, version >= 0.2a.dev
-    - pyina, version >= 0.2a.dev
+    - pathos, version >= 0.2a1.dev
+    - pyina, version >= 0.2a1.dev
 
 
 Usage Notes
@@ -301,8 +301,8 @@ setup(name='mystic',
 # add dependencies
 numpy_version = '>=1.0'
 sympy_version = '>=0.6.7'
-dill_version = '>=0.2a.dev'
-klepto_version = '>=0.1a.dev'
+dill_version = '>=0.2b2.dev'
+klepto_version = '>=0.1a1.dev'
 scipy_version = '>=0.6.0'
 matplotlib_version = '>=0.91'
 if has_setuptools:

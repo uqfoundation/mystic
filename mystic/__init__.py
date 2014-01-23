@@ -1,12 +1,10 @@
 #!/usr/bin/env python
-#
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#
-#                 Mike McKerns, Alta Fang, & Patrick Hung, Caltech
-#                        (C) 1997-2012  All Rights Reserved
-#
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#
+
+# Author: Mike McKerns (mmckerns @caltech and @uqfoundation)
+# Author: Alta Fang (altafang @caltech and alta @princeton)
+# Author: Patrick Hung (patrickh @caltech)
+# Copyright (c) 1997-2014 Caltech
+# License: 3-clause BSD
 
 # get version numbers, license, and long description
 try:
