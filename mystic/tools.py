@@ -236,7 +236,7 @@ For example,
 
 
 # backward compatibility
-from dill.source import getblocks_from_history as parse_from_history
+from dill.source import getblocks as parse_from_history
 from dill.source import getsource as src
 from monitors import Monitor as Sow
 from monitors import VerboseMonitor as VerboseSow
