@@ -1,4 +1,16 @@
 #!/usr/bin/env python
+# ******NOTICE***************
+# optimize.py module by Travis E. Oliphant
+#
+# You may copy and use this module as you see fit with no
+# guarantee implied provided you keep this notice in all copies.
+# *****END NOTICE************
+#
+# Forked by: Mike McKerns (February 2009)
+# Author: Mike McKerns (mmckerns @caltech and @uqfoundation)
+# Copyright (c) 2009-2014 California Institute of Technology.
+# License: 3-clause BSD.  The full license text is available at:
+#  - http://trac.mystic.cacr.caltech.edu/project/mystic/browser/mystic/LICENSE
 """modified algorithms from local copy of scipy.optimize"""
 
 #__all__ = ['fmin', 'fmin_powell', 'fmin_ncg', 'fmin_cg', 'fmin_bfgs',

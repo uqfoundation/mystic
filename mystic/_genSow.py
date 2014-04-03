@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 #
-# Mike McKerns, Caltech
- 
+# Author: Mike McKerns (mmckerns @caltech and @uqfoundation)
+# Copyright (c) 1997-2014 California Institute of Technology.
+# License: 3-clause BSD.  The full license text is available at:
+#  - http://trac.mystic.cacr.caltech.edu/project/mystic/browser/mystic/LICENSE
 """a helper class for the CustomMonitor function"""
 
 class genSow(object):

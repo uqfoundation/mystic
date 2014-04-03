@@ -1,8 +1,12 @@
 #!/usr/bin/env python
-
+#
+# Author: Patrick Hung (patrickh @caltech)
+# Copyright (c) 1997-2014 California Institute of Technology.
+# License: 3-clause BSD.  The full license text is available at:
+#  - http://trac.mystic.cacr.caltech.edu/project/mystic/browser/mystic/LICENSE
+#
 # This example is a derivative of vtk's ClipCow
 # It is a visualization of Prince Rupert's problem
-
 
 import vtk, Tkinter
 from vtk.tk.vtkTkRenderWindowInteractor import \

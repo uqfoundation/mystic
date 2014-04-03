@@ -1,3 +1,11 @@
+#!/usr/bin/env python
+#
+# Author: Mike McKerns (mmckerns @caltech and @uqfoundation)
+# Author: Alta Fang (altafang @caltech and alta @princeton)
+# Copyright (c) 2008-2014 California Institute of Technology.
+# License: 3-clause BSD.  The full license text is available at:
+#  - http://trac.mystic.cacr.caltech.edu/project/mystic/browser/mystic/LICENSE
+
 # The following code attempts to construct something like:
 # >>> from sympy import Eq, Symbol
 # >>> from sympy import solve as symsol

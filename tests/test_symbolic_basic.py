@@ -1,5 +1,10 @@
 #!/usr/bin/env python
 #
+# Author: Alta Fang (altafang @caltech and alta @princeton)
+# Author: Mike McKerns (mmckerns @caltech and @uqfoundation)
+# Copyright (c) 2010-2014 California Institute of Technology.
+# License: 3-clause BSD.  The full license text is available at:
+#
 # coded by Alta Fang, 2010
 """
 A few basic symbolic constraints tests, but in no way a comprehensive suite.

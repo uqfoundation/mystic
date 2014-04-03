@@ -1,8 +1,11 @@
 #!/usr/bin/env python
 #
-## Abstract Nested Solver Class
-# by mmckerns@caltech.edu
-
+# Author: Mike McKerns (mmckerns @caltech and @uqfoundation)
+# Copyright (c) 1997-2014 California Institute of Technology.
+# License: 3-clause BSD.  The full license text is available at:
+#  - http://trac.mystic.cacr.caltech.edu/project/mystic/browser/mystic/LICENSE
+#
+# Abstract Nested Solver Class
 """
 This module contains the base class for launching several mystic solvers
 instances -- utilizing a parallel "map" function to enable parallel

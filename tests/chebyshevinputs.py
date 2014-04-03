@@ -1,7 +1,10 @@
 #!/usr/bin/env python
 #
-# Alta Fang & Mike McKerns, Caltech
-
+# Author: Alta Fang (altafang @caltech and alta @princeton)
+# Author: Mike McKerns (mmckerns @caltech and @uqfoundation)
+# Copyright (c) 1997-2014 California Institute of Technology.
+# License: 3-clause BSD.  The full license text is available at:
+#  - http://trac.mystic.cacr.caltech.edu/project/mystic/browser/mystic/LICENSE
 """
 chebyshevinputs.py -- cost function container module for NelderMeadSimplexSolver 
 and PowellDirectionalSolver for testsolvers_pyre.py

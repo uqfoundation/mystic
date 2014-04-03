@@ -9,7 +9,13 @@
 # adapted from function to class (& added bounds)
 # adapted scipy.optimize.fmin_powell
 # updated solvers to scipy version 0.9.0
-# by mmckerns@caltech.edu
+# by Mike McKerns
+#
+# Author: Patrick Hung (patrickh @caltech)
+# Author: Mike McKerns (mmckerns @caltech and @uqfoundation)
+# Copyright (c) 1997-2014 California Institute of Technology.
+# License: 3-clause BSD.  The full license text is available at:
+#  - http://trac.mystic.cacr.caltech.edu/project/mystic/browser/mystic/LICENSE
 
 """
 Solvers

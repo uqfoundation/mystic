@@ -1,9 +1,12 @@
 #!/usr/bin/env python
 #
+# Author: Mike McKerns (mmckerns @caltech and @uqfoundation)
+# Copyright (c) 1997-2014 California Institute of Technology.
+# License: 3-clause BSD.  The full license text is available at:
+#  - http://trac.mystic.cacr.caltech.edu/project/mystic/browser/mystic/LICENSE
+#
 ## Abstract Solver Class
 # derived from Patrick Hung's original DifferentialEvolutionSolver
-# by mmckerns@caltech.edu
-
 """
 This module contains the base class for mystic solvers, and describes
 the mystic solver interface.  The "Solve" method must be overwritten

@@ -1,4 +1,10 @@
-#!/usr/bin/python
+#!/usr/bin/env python
+#
+# Author: Alta Fang (altafang @caltech and alta @princeton)
+# Author: Mike McKerns (mmckerns @caltech and @uqfoundation)
+# Copyright (c) 1997-2014 California Institute of Technology.
+# License: 3-clause BSD.  The full license text is available at:
+#  - http://trac.mystic.cacr.caltech.edu/project/mystic/browser/mystic/LICENSE
 """Test Mystic's performance on some benchmark problems, with Mystic's settings
 adjusted to achieve the best results.
 """

@@ -2,6 +2,12 @@
 #
 # almostEqual is a repackaging of numpy.allclose, but at different 'tol'
 # approx_equal is similar to almostEqual, and can be treated as deprecated
+#
+# Forked by: Mike McKerns (May 2010)
+# Author: Mike McKerns (mmckerns @caltech and @uqfoundation)
+# Copyright (c) 2010-2014 California Institute of Technology.
+# License: 3-clause BSD.  The full license text is available at:
+#  - http://trac.mystic.cacr.caltech.edu/project/mystic/browser/mystic/LICENSE
 """
 tools for measuring equality
 """

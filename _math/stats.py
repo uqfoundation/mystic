@@ -1,4 +1,10 @@
-#!/usr/bin/python
+#!/usr/bin/env python
+#
+# Author: Mike McKerns (mmckerns @caltech and @uqfoundation)
+# Author: Alta Fang (altafang @caltech and alta @princeton)
+# Copyright (c) 1997-2014 California Institute of Technology.
+# License: 3-clause BSD.  The full license text is available at:
+#  - http://trac.mystic.cacr.caltech.edu/project/mystic/browser/mystic/LICENSE
 """
 shortcut (?) math tools related to statistics;
 also, math tools related to gaussian distributions

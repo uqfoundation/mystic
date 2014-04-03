@@ -1,5 +1,11 @@
 #!/usr/bin/env python
-#Adapted from parallel_desolve.py by mmckerns@caltech.edu
+#
+# Author: Mike McKerns (mmckerns @caltech and @uqfoundation)
+# Copyright (c) 1997-2014 California Institute of Technology.
+# License: 3-clause BSD.  The full license text is available at:
+#  - http://trac.mystic.cacr.caltech.edu/project/mystic/browser/mystic/LICENSE
+#
+# Adapted from parallel_desolve.py
 
 __doc__ = """
 # Tests MP version of Storn and Price's Polynomial 'Fitting' Problem.

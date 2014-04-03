@@ -1,4 +1,10 @@
-#!/usr/bin/python
+#!/usr/bin/env python
+#
+# Author: Alta Fang (altafang @caltech and alta @princeton)
+# Author: Mike McKerns (mmckerns @caltech and @uqfoundation)
+# Copyright (c) 1997-2014 California Institute of Technology.
+# License: 3-clause BSD.  The full license text is available at:
+#  - http://trac.mystic.cacr.caltech.edu/project/mystic/browser/mystic/LICENSE
 """A test suite for Mystic solvers.
 Note: VTR termination with default tolerance shouldn't work for functions 
 whose value at the minimum is negative!

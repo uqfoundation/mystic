@@ -1,10 +1,16 @@
-#! /usr/bin/env python
+#!/usr/bin/env python
+#
+# Author: Mike McKerns (mmckerns @caltech and @uqfoundation)
+# Copyright (c) 1997-2014 California Institute of Technology.
+# License: 3-clause BSD.  The full license text is available at:
+#  - http://trac.mystic.cacr.caltech.edu/project/mystic/browser/mystic/LICENSE
+#
+# Adapted from seesaw2d.py in branches/UQ/math/examples2/ 
+# For usage example, see seesaw2d_inf_example.py .
 """
 TESTS for Dirac measure data objects.
 Includes point_mass, measure, and product_measure classes.
 """
-# Adapted from seesaw2d.py in branches/UQ/math/examples2/ 
-# For usage example, see seesaw2d_inf_example.py .
 
 from mystic.math.discrete import point_mass as point
 from mystic.math.discrete import measure as set

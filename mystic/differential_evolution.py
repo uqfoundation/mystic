@@ -18,10 +18,16 @@
 ## DE Solver modified and cleaned by Patrick Hung, May 2006.
 ## additional DE Solver (DESolver2) added by Patrick Hung.
 ##
-## bounds (and minimal interface) added by mmckerns@caltech.edu
-## adapted to AbstractSolver interface by mmckerns@caltech.edu
+## bounds (and minimal interface) added by Mike McKerns
+## adapted to AbstractSolver interface by Mike McKerns
 ##
-## modified for AbstractMapSolver interface by mmckerns@caltech.edu 
+## modified for AbstractMapSolver interface by Mike McKerns
+#
+# Author: Patrick Hung (patrickh @caltech)
+# Author: Mike McKerns (mmckerns @caltech and @uqfoundation)
+# Copyright (c) 2006-2014 California Institute of Technology.
+# License: 3-clause BSD.  The full license text is available at:
+#  - http://trac.mystic.cacr.caltech.edu/project/mystic/browser/mystic/LICENSE
 
 """
 Solvers

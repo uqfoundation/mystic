@@ -1,7 +1,13 @@
 #!/usr/bin/env python
 #
+# Author: Alta Fang (altafang @caltech and alta @princeton)
+# Author: Mike McKerns (mmckerns @caltech and @uqfoundation)
+# Copyright (c) 2010-2014 California Institute of Technology.
+# License: 3-clause BSD.  The full license text is available at:
+#  - http://trac.mystic.cacr.caltech.edu/project/mystic/browser/mystic/LICENSE
+#
 # originally coded by Alta Fang, 2010
-# refactored by mmckerns@caltech.edu, 2012
+# refactored by Mike McKerns, 2012
 """Tools for working with symbolic constraints.
 """
 from __future__ import division
