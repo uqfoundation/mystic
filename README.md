@@ -54,7 +54,7 @@ Current Release
 The latest released version of mystic is available from::
     http://trac.mystic.cacr.caltech.edu/project/mystic
 
-Mystic is distributed under a modified BSD license.
+Mystic is distributed under a 3-clause BSD license.
 
 Development Release
 -------------------

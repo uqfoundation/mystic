@@ -8,12 +8,12 @@
 Solvers
 =======
 
-This module contains a collection of optimization that use map-reduce
+This module contains a collection of optimization routines that use "map"
 to distribute several optimizer instances over parameter space. Each
 solver accepts a imported solver object as the "nested" solver, which
 becomes the target of the map function.
 
-The set of solvers built on mystic's AbstractNestdSolver are::
+The set of solvers built on mystic's AbstractEnsembleSolver are::
    LatticeSolver -- start from center of N grid points
    BuckshotSolver -- start from N random points in parameter space
 
@@ -32,10 +32,10 @@ __all__ = ['LatticeSolver','BuckshotSolver']
 
 from mystic.tools import wrap_function
 
-from mystic.abstract_nested_solver import AbstractNestedSolver
+from mystic.abstract_ensemble_solver import AbstractEnsembleSolver
 
 
-class LatticeSolver(AbstractNestedSolver):
+class LatticeSolver(AbstractEnsembleSolver):
     """
 parallel mapped optimization starting from the center of N grid points
     """
@@ -45,7 +45,7 @@ Takes two initial inputs:
     dim   -- dimensionality of the problem
     nbins -- tuple of number of bins in each dimension
 
-All important class members are inherited from AbstractNestedSolver.
+All important class members are inherited from AbstractEnsembleSolver.
         """
         super(LatticeSolver, self).__init__(dim, nbins=nbins)
         from mystic.termination import NormalizedChangeOverGeneration
@@ -110,7 +110,7 @@ Further Inputs:
             self.SetTermination(termination)
 
         # get the nested solver instance
-        solver = self._AbstractNestedSolver__get_solver_instance()
+        solver = self._AbstractEnsembleSolver__get_solver_instance()
         #-------------------------------------------------------------
 
         nbins = self._nbins
@@ -203,7 +203,7 @@ Further Inputs:
         self._AbstractSolver__save_state(force=True)
         return 
 
-class BuckshotSolver(AbstractNestedSolver):
+class BuckshotSolver(AbstractEnsembleSolver):
     """
 parallel mapped optimization starting from the N random points
     """
@@ -213,7 +213,7 @@ Takes two initial inputs:
     dim   -- dimensionality of the problem
     npts  -- number of parallel solver instances
 
-All important class members are inherited from AbstractNestedSolver.
+All important class members are inherited from AbstractEnsembleSolver.
         """
         super(BuckshotSolver, self).__init__(dim, npts=npts)
         from mystic.termination import NormalizedChangeOverGeneration
@@ -274,7 +274,7 @@ Further Inputs:
             self.SetTermination(termination)
 
         # get the nested solver instance
-        solver = self._AbstractNestedSolver__get_solver_instance()
+        solver = self._AbstractEnsembleSolver__get_solver_instance()
         #-------------------------------------------------------------
 
         npts = self._npts

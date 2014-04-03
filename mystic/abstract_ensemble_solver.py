@@ -5,11 +5,11 @@
 # License: 3-clause BSD.  The full license text is available at:
 #  - http://trac.mystic.cacr.caltech.edu/project/mystic/browser/mystic/LICENSE
 #
-# Abstract Nested Solver Class
+# Abstract Ensemble Solver Class
 """
 This module contains the base class for launching several mystic solvers
 instances -- utilizing a parallel "map" function to enable parallel
-computing.  This module describes the nested solver interface.  As with
+computing.  This module describes the ensemble solver interface.  As with
 the AbstractSolver, the "Solve" method must be overwritten with the derived
 solver's optimization algorithm. Similar to AbstractMapSolver, a call to
 self.map is required.  In many cases, a minimal function call interface for a
@@ -25,7 +25,7 @@ can be obtained within the "pathos" package, found here::
 Usage
 =====
 
-A typical call to a 'nested' solver will roughly follow this example:
+A typical call to a 'ensemble' solver will roughly follow this example:
 
     >>> # the function to be minimized and the initial values
     >>> from mystic.models import rosen
@@ -74,16 +74,16 @@ the solver is running.  ***NOTE: The handler currently is disabled
 when the solver has been launched in parallel.*** 
 
 """
-__all__ = ['AbstractNestedSolver']
+__all__ = ['AbstractEnsembleSolver']
 
 
 from mystic.monitors import Null
 from mystic.abstract_map_solver import AbstractMapSolver
 
 
-class AbstractNestedSolver(AbstractMapSolver):
+class AbstractEnsembleSolver(AbstractMapSolver):
     """
-AbstractNestedSolver base class for mystic optimizers that are nested within
+AbstractEnsembleSolver base class for mystic optimizers that are called within
 a parallel map.  This allows pseudo-global coverage of parameter space using
 non-global optimizers.
     """
@@ -110,7 +110,7 @@ Important class members:
     energy_history   - history of bestEnergy status.         [StepMonitor.y]
     signal_handler   - catches the interrupt signal.         [***disabled***]
         """
-        super(AbstractNestedSolver, self).__init__(dim, **kwds)
+        super(AbstractEnsembleSolver, self).__init__(dim, **kwds)
        #self.signal_handler   = None
        #self._handle_sigint   = False
 

@@ -202,32 +202,32 @@ of serial python and the built-in python map function. Mystic solvers
 built on map-reduce can utilize the distributed and parallel tools provided
 by the `pathos` package, and thus with little new code solvers are
 extended to high-performance computing. For more information, see
-`mystic.mystic.abstract_map_solver`, `mystic.mystic.abstract_nested_solver`,
+`mystic.mystic.abstract_map_solver`, `mystic.mystic.abstract_ensemble_solver`,
 and the pathos documentation at http://dev.danse.us/trac/pathos.
 
 Important classes and functions are found here::
 
-    - mystic.mystic.solvers                [solver optimization algorithms]
-    - mystic.mystic.termination            [solver termination conditions]
-    - mystic.mystic.strategy               [solver population mutation strategies]
-    - mystic.mystic.monitors               [optimization monitors]
-    - mystic.mystic.tools                  [function wrappers, etc]
-    - mystic.mystic.forward_model          [cost function generator]
-    - mystic.models                        [a collection of standard models]
-    - mystic.math                          [some mathematical functions and tools]
+    - mystic.mystic.solvers                  [solver optimization algorithms]
+    - mystic.mystic.termination              [solver termination conditions]
+    - mystic.mystic.strategy                 [solver population mutation strategies]
+    - mystic.mystic.monitors                 [optimization monitors]
+    - mystic.mystic.tools                    [function wrappers, etc]
+    - mystic.mystic.forward_model            [cost function generator]
+    - mystic.models                          [a collection of standard models]
+    - mystic.math                            [some mathematical functions and tools]
 
 Solver and model API definitions are found here::
 
-    - mystic.mystic.abstract_solver        [the solver API definition]
-    - mystic.mystic.abstract_map_solver    [the parallel solver API]
-    - mystic.mystic.abstract_nested_solver [the nested solver API]
-    - mystic.models.abstract_model         [the model API definition]
+    - mystic.mystic.abstract_solver          [the solver API definition]
+    - mystic.mystic.abstract_map_solver      [the parallel solver API]
+    - mystic.mystic.abstract_ensemble_solver [the ensemble solver API]
+    - mystic.models.abstract_model           [the model API definition]
 
 
 License
 =======
 
-Mystic is distributed under a modified BSD license.
+Mystic is distributed under a 3-clause BSD license.
 
     >>> import mystic
     >>> print mystic.license()

@@ -46,14 +46,14 @@ More Information
 ================
 
 For more information, please see the solver documentation found here::
-    - mystic.mystic.differential_evolution [differential evolution solvers]
-    - mystic.mystic.scipy_optimize         [scipy local-search solvers]
-    - mystic.mystic.nested                 [pseudo-global solvers]
+    - mystic.mystic.differential_evolution   [differential evolution solvers]
+    - mystic.mystic.scipy_optimize           [scipy local-search solvers]
+    - mystic.mystic.ensemble                 [pseudo-global solvers]
 
 or the API documentation found here::
-    - mystic.mystic.abstract_solver        [the solver API definition]
-    - mystic.mystic.abstract_map_solver    [the parallel solver API]
-    - mystic.mystic.abstract_nested_solver [the nested solver API]
+    - mystic.mystic.abstract_solver          [the solver API definition]
+    - mystic.mystic.abstract_map_solver      [the parallel solver API]
+    - mystic.mystic.abstract_ensemble_solver [the ensemble solver API]
 
 
 """
@@ -63,8 +63,8 @@ from differential_evolution import DifferentialEvolutionSolver2
 from differential_evolution import diffev, diffev2
 
 # pseudo-global optimizers
-from nested import BuckshotSolver
-from nested import LatticeSolver
+from ensemble import BuckshotSolver
+from ensemble import LatticeSolver
 
 # local-search optimizers
 from scipy_optimize import NelderMeadSimplexSolver
