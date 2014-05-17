@@ -156,7 +156,7 @@ Mystic requires::
     - numpy, version >= 1.0
     - sympy, version >= 0.6.7
     - dill, version >= 0.2
-    - klepto, version >= 0.1a1.dev
+    - klepto, version >= 0.1
 
 Optional requirements::
 
@@ -304,7 +304,7 @@ setup(name='mystic',
 numpy_version = '>=1.0'
 sympy_version = '>=0.6.7'
 dill_version = '>=0.2'
-klepto_version = '>=0.1a1.dev'
+klepto_version = '>=0.1
 scipy_version = '>=0.6.0'
 matplotlib_version = '>=0.91'
 if has_setuptools:
