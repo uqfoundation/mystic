@@ -304,7 +304,7 @@ setup(name='mystic',
 numpy_version = '>=1.0'
 sympy_version = '>=0.6.7'
 dill_version = '>=0.2'
-klepto_version = '>=0.1
+klepto_version = '>=0.1'
 scipy_version = '>=0.6.0'
 matplotlib_version = '>=0.91'
 if has_setuptools:
