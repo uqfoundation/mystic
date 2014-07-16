@@ -46,8 +46,9 @@ def cost_function(params):
 def plot_noisy_data():
     import pylab
     pylab.plot(stations[0,:],-data[2,:]+noise[2,:],'k.')
+    pylab.draw()
 
-def plot_sol(params, linestyle = 'b-'):
+def plot_sol(params,linestyle='b-'):
     import pylab
     s0 = ForwardMogiFactory(params[0:4])
     s1 = ForwardMogiFactory(params[4:])
@@ -56,6 +57,7 @@ def plot_sol(params, linestyle = 'b-'):
     ss  = array((xx, yy))
     dd = s0(ss) + s1(ss)
     pylab.plot(ss[0,:],-dd[2,:],'%s'%linestyle,linewidth=2.0)
+    pylab.draw()
 
 ND = 8
 NP = 80
@@ -91,7 +93,6 @@ if __name__ == '__main__':
    #plot_sol(dstepmon.x[-100],'k-')
 
     plot_sol(desol,'r-')
-    pylab.show()
 
     getch()
 

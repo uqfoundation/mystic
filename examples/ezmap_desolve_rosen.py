@@ -8,7 +8,9 @@
 # Adapted from parallel_desolve.py
 
 __doc__ = """
-# Tests MPI version of Storn and Price's Polynomial 'Fitting' Problem.
+# Tests MPI version of Storn and Price's Polynomial 'Fitting' Problem,
+# using a single solver with the population launched in parallel.
+# This can be much slower, due to overhead of repeatedly setting up MPI.
 # 
 # Exact answer: [1,1,1]
   

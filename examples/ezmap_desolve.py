@@ -8,7 +8,9 @@
 # Adapted from parallel_desolve.py
 
 __doc__ = """
-# Tests MPI version of Storn and Price's Polynomial 'Fitting' Problem.
+# Tests MPI version of Storn and Price's Polynomial 'Fitting' Problem,
+# using a single solver with the population launched in parallel.
+# This can be much slower, due to overhead of repeatedly setting up MPI.
 # 
 # Exact answer: Chebyshev Polynomial of the first kind. T8(x)
   
@@ -44,7 +46,7 @@ NP = 40
 MAX_GENERATIONS = NP*NP
 NNODES = NP/5
 
-seed = 100
+seed = 321
 
 
 if __name__=='__main__':

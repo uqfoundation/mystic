@@ -32,6 +32,7 @@ def plot_frame():
     pylab.title("Rosenbrock parameter convergence")
     pylab.xlabel("Nelder-Mead solver iterations")
     pylab.ylabel("parameter value")
+    pylab.draw()
     return
  
 iter = 0
@@ -47,6 +48,7 @@ def plot_params(params):
     pylab.plot(step,yval,'g-')
     pylab.plot(step,zval,'r-')
     pylab.legend(["x", "y", "z"])
+    pylab.draw()
     iter += 1
     return
 

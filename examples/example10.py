@@ -41,6 +41,7 @@ def plot_frame(label=None):
     pylab.title("8th-order Chebyshev coefficient convergence")
     pylab.xlabel("Differential Evolution %s" % label)
     pylab.ylabel("Chi-Squared")
+    pylab.draw()
     return
  
 # plot the polynomial trajectories
@@ -48,6 +49,7 @@ def plot_params(monitor):
     x = range(len(monitor.y))
     pylab.plot(x,monitor.y,'b-')
     pylab.axis([1,0.5*x[-1],0,monitor.y[1]],'k-')
+    pylab.draw()
     return
 
 
@@ -85,12 +87,12 @@ if __name__ == '__main__':
 
     # plot convergence of coefficients per iteration
     plot_frame('iterations')
-    plot_params(stepmon) 
+    plot_params(stepmon)
     getch()
 
     # plot convergence of coefficients per function call
     plot_frame('function calls')
-    plot_params(evalmon) 
+    plot_params(evalmon)
     getch()
 
 # end of file

@@ -54,6 +54,7 @@ def plot_sol(params,linestyle='b-'):
     d = data(params)
     pylab.plot(d[0],d[1],'%s'%linestyle,linewidth=2.0)
     pylab.axis(plotview)
+    pylab.draw()
     return
 
 from numpy import sum as numpysum

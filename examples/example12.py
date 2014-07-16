@@ -62,18 +62,21 @@ def plot_frame(label=None):
     pylab.title("fitting noisy 5th-order polynomial coefficients")
     pylab.xlabel("x")
     pylab.ylabel("f(x)")
+    pylab.draw()
     return
  
 # plot the polynomial
 def plot_data(evalpts,datapts,style='k.'):
     pylab.plot(evalpts,datapts,'%s' % style)
     pylab.axis([0,5,0,50],'k-')
+    pylab.draw()
     return
     
 def plot_solution(params,style='b-'):
     x,y = data(params)
     plot_data(x,y,style)
     pylab.legend(["Data","Fitted"])
+    pylab.draw()
     return
 
 

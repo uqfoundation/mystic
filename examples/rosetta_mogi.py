@@ -15,6 +15,17 @@ for help, type "python rosetta_mogi_example.py --help"
 from math import pi
 from numpy import array
 
+try: # check if park is installed
+    import park
+   #import park.parksnob
+    import park.parkde
+    Model = park.Model
+    __park = True
+except ImportError:
+    Model = object
+    __park = False
+
+
 def ForwardMogiFactory(params):
     x0,y0,z0,dV = params
     def forward_mogi(evalpts):
@@ -55,7 +66,7 @@ def vec_cost_function2(params):
 
 # --- Plotting stuff ---
 import pylab
-def plot_sol(params, linestyle = 'b-'):
+def plot_sol(params,linestyle='b-'):
     forward_solution = ForwardMogiFactory(params)
     xx = arange(-30,30,0.1)+actual_params[0]
     yy = 0*xx + actual_params[1]
@@ -106,8 +117,7 @@ def mystic_optimize2(point):
 # --- Mystic end ---
 
 # --- Call to Park ---
-import park
-class MogiModel(park.Model):
+class MogiModel(Model):
     """a park model:
  - parameters are passed as named strings to set them as class attributes
  - function that does the evaluation must be named "eval"
@@ -136,10 +146,6 @@ class Data2D(object):
 
 
 def park_optimize(point):
-    import park
-   #import park.parksnob
-    import park.parkde
-
     # build the data instance
     data2d = Data2D(data_z)
 
@@ -219,8 +225,12 @@ if __name__ == '__main__':
 
     # DO OPTIMIZATION STUFF HERE TO GET SOLUTION
     if parsed_opts.park:     #solve with park's DE
-        print "Solving with park's DE optimizer..."
-        solution = park_optimize(point)
+        if __park:
+            print "Solving with park's DE optimizer..."
+            solution = park_optimize(point)
+        else:
+            print('This option requires park to be installed')
+            exit()
     elif parsed_opts.mystic: #solve with mystic's DE
         print "Solving with mystic's DE optimizer..."
         solution = mystic_optimize2(point)

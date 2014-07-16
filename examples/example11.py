@@ -40,6 +40,7 @@ def plot_frame(label=None):
     pylab.title("8th-order Chebyshev coefficient convergence")
     pylab.xlabel("Nelder-Mead Simplex Solver %s" % label)
     pylab.ylabel("Chi-Squared")
+    pylab.draw()
     return
  
 # plot the polynomial trajectories
@@ -48,6 +49,7 @@ def plot_params(monitor):
     y = monitor.y
     pylab.plot(x,y,'b-')
     pylab.axis([1,0.5*x[-1],0,y[1]],'k-')
+    pylab.draw()
     return
 
 # draw the plot
@@ -61,17 +63,19 @@ def plot_exact():
     pylab.plot(x,exact,'b-')
     pylab.legend(["Exact"])
     pylab.axis([-1.4,1.4,-2,8],'k-')
+    pylab.draw()
     return
  
 # plot the polynomial
-def plot_solution(params):
+def plot_solution(params,style='y-'):
     import numpy
     x = numpy.arange(-1.2, 1.2001, 0.01)
     f = poly1d(params)
     y = f(x)
-    pylab.plot(x,y,'y-')
+    pylab.plot(x,y,style)
     pylab.legend(["Exact","Fitted"])
     pylab.axis([-1.4,1.4,-2,8],'k-')
+    pylab.draw()
     return
 
 if __name__ == '__main__':
@@ -123,17 +127,17 @@ if __name__ == '__main__':
     print "Actual Coefficients:\n %s\n" % poly1d(chebyshev8coeffs)
 
     # plot solution versus exact coefficients
-    plot_solution(solution) 
+    plot_solution(solution)
     getch()
 
     # plot convergence of coefficients per iteration
     plot_frame('iterations')
-    plot_params(stepmon) 
+    plot_params(stepmon)
     getch()
 
     # plot convergence of coefficients per function call
     plot_frame('function calls')
-    plot_params(evalmon) 
+    plot_params(evalmon)
     getch()
 
 # end of file

@@ -16,6 +16,17 @@ from math import pi
 from numpy import array, real, conjugate
 import numpy
 
+try: # check if park is installed
+    import park
+   #import park.parksnob
+    import park.parkde
+    Model = park.Model
+    __park = True
+except ImportError:
+    Model = object
+    __park = False
+
+
 def ForwardPolyFactory(params):
     a,b,c = params
     def forward_poly(x):
@@ -70,8 +81,7 @@ def mystic_optimize(point):
 
 
 # --- Call to Park ---
-import park
-class PolyModel(park.Model):
+class PolyModel(Model):
     """a park model:
  - parameters are passed as named strings to set them as class attributes
  - function that does the evaluation must be named "eval"
@@ -99,10 +109,6 @@ class Data1D(object):
 
 
 def park_optimize(point):
-    import park
-   #import park.parksnob
-    import park.parkde
-
     # build the data instance
     data1d = Data1D(datapts)
 
@@ -158,14 +164,19 @@ if __name__ == '__main__':
     x,datapts = data(target)
     pylab.ion()
     plot_sol(target,'r-')
+    pylab.draw()
 
     # initial values
     point = [100,-100,0]
 
     # DO OPTIMIZATION STUFF HERE TO GET SOLUTION
     if parsed_opts.park:
-        print "Solving with park's DE optimizer..."
-        solution = park_optimize(point)
+        if __park:
+            print "Solving with park's DE optimizer..."
+            solution = park_optimize(point)
+        else:
+            print('This option requires park to be installed')
+            exit()
     else:
         print "Solving with mystic's fmin optimizer..."
         solution = mystic_optimize(point)
@@ -173,6 +184,7 @@ if __name__ == '__main__':
 
     # plot the solution
     plot_sol(solution,'g-')
+    pylab.draw()
 
     getch()
 
