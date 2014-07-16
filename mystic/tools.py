@@ -156,7 +156,7 @@ to a function object"""
 
 def wrap_bounds(function, min=None, max=None):
     "impose bounds on a function object"
-    from numpy import asarray, any, inf
+    from numpy import asarray, any, inf, seterr
     bounds = True
     if min is not None and max is not None: #has upper & lower bound
         min = asarray(min)
@@ -171,8 +171,11 @@ def wrap_bounds(function, min=None, max=None):
         bounds = False
     if bounds:
         def function_wrapper(x):
+            settings = seterr(all='ignore') #XXX: slow to supress warnings?
             if any((x<min)|(x>max)): #if violate bounds, evaluate as inf
+                seterr(**settings)
                 return inf
+            seterr(**settings)
             return function(x)
     else:
         def function_wrapper(x):

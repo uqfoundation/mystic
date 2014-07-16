@@ -9,23 +9,28 @@
 Alternate fitting of a lorentzian peak (see test_lorentzian2.py)
 """
 
-import pylab, matplotlib, Image
+import pylab, matplotlib
 from numpy import *
 
 from mystic.models import lorentzian
 from test_lorentzian2 import *
+import warnings
 
 def F(alpha):
     "lorentzian, with norm calcualted"
     alpha[-1] = 1. # always set norm = 1
     f = lorentzian.ForwardFactory(alpha)
     from scipy.integrate import romberg
-    n = romberg(f, 0, 3) #NOTE: this step is _SLOW_
+    with warnings.catch_warnings():
+        # suppress: "AccuracyWarning: divmax (10) exceeded"
+        warnings.simplefilter('ignore')
+        n = romberg(f,0,3,divmax=5) #NOTE: this step is _SLOW_ (tweak divmax)
     def _(x):
         return f(x)/n
     return _
 
 def show():
+    import Image
     pylab.savefig('test_lorentzian_out',dpi=72)
     im = Image.open('test_lorentzian_out.png')
     im.show()
@@ -41,7 +46,8 @@ def plot_sol(solver=None):
         pylab.plot(x, F(params)(x)*N,'r-')
         pylab.xlabel('E (GeV)')
         pylab.ylabel('Counts')
-        show()
+        try: show()
+        except ImportError: pylab.show()
         if solver is not None:
             signal.signal(signal.SIGINT, solver.signal_handler)
     return _

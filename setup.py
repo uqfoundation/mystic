@@ -7,6 +7,7 @@
 
 from __future__ import with_statement
 import os
+import sys
 
 # set version numbers
 stable_version = '0.2a1'
@@ -301,15 +302,19 @@ setup(name='mystic',
 """ % (target_version, long_description)
 
 # add dependencies
-numpy_version = '>=1.0'
-sympy_version = '>=0.6.7, <0.7.4'
+if sys.version_info[:2] < (2.6):
+    numpy_version = '>=1.0, <1.8.0'
+    sympy_version = '>=0.6.7, <0.7.1'
+else:
+    numpy_version = '>=1.0'
+    sympy_version = '>=0.6.7, <0.7.4'
 dill_version = '>=0.2.1'
 klepto_version = '>=0.1.1'
 scipy_version = '>=0.6.0'
 matplotlib_version = '>=0.91'
 if has_setuptools:
     setup_code += """
-      zip_safe=True,
+      zip_safe=False,
       dependency_links = ['http://dev.danse.us/packages/'],
       install_requires = ('numpy%s', 'sympy%s', 'klepto%s', 'dill%s'),
 """ % (numpy_version, sympy_version, klepto_version, dill_version)

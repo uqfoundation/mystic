@@ -12,7 +12,7 @@ This is MUCH faster than test_lorentzian because the cost function no
 longer has to do an "integral" as an intermediate step
 """
 
-import pylab, matplotlib, Image
+import pylab, matplotlib
 from numpy import *
 from mystic.solvers import DifferentialEvolutionSolver
 from mystic.termination import ChangeOverGeneration, VTR
@@ -28,6 +28,7 @@ from mystic.models import lorentzian
 F = lorentzian.ForwardFactory
 
 def show():
+    import Image
     pylab.savefig('test_lorentzian_out',dpi=72)
     im = Image.open('test_lorentzian_out.png')
     im.show()
@@ -43,7 +44,8 @@ def plot_sol(solver=None):
         pylab.plot(x, F(params)(x)*N,'r-')
         pylab.xlabel('E (GeV)')
         pylab.ylabel('Counts')
-        show()
+        try: show()
+        except ImportError: pylab.show()
         if solver is not None:
             signal.signal(signal.SIGINT, solver.signal_handler)
     return _
@@ -83,7 +85,8 @@ if __name__ == '__main__':
     data = gendata(target, xmin, xmax, npts)
     pylab.plot(data[1:N],0*data[1:N],'k.')
     pylab.title('Samples drawn from density to be estimated.')
-    show()
+    try: show()
+    except ImportError: pylab.show()
     pylab.clf()
 
     binsc, histo = histogram(data, binwidth, xmin,xmax)

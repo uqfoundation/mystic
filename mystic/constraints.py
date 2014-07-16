@@ -292,7 +292,10 @@ NOTE: The resulting constraints will likely be more expensive to evaluate
         solver.SetPenalty(constraints) #i.e. is a penalty function
     else: # is a constraints solver
         solver.SetConstraints(constraints)
+    from numpy import seterr
+    settings = seterr(all='ignore')
     solver.Solve(cost, termination)
+    seterr(**settings)
     soln = solver.bestSolution
 
     from numpy import ndarray, array

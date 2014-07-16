@@ -24,7 +24,7 @@ expanded version of the following can be found in `mystic.examples.example12`.
     >>> # get a forward model factory, and generate some evaluation points
     >>> from numpy import array, sum, poly1d, random
     >>> ForwardFactory = poly1d
-    >>> pts = 0.1*(numpy.array([range(101)])-50.)[0]
+    >>> pts = 0.1*(array([range(101)])-50.)[0]
     >>> 
     >>> # we don't have real data, so generate some fake data from the model
     >>> target = [2.,-5.,3.]
@@ -35,7 +35,7 @@ expanded version of the following can be found in `mystic.examples.example12`.
     >>> F = CostFactory()
     >>> 
     >>> # generate a cost function for the model factory
-    >>> costmetric = lambda x: numpy.sum(x*x)
+    >>> costmetric = lambda x: sum(x*x)
     >>> F.addModel(ForwardFactory, name='example', inputs=len(target))
     >>> costfunction = F.getCostFunction(evalpts=pts, observations=datapts,
     ...                                  sigma=1.0, metric=costmetric)

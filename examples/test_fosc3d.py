@@ -21,7 +21,7 @@ random.seed(123)
 from mystic.models import fosc3d as fOsc3D
 
 def draw_contour():
-    import pylab, numpy, Image
+    import pylab, numpy
     x, y = numpy.mgrid[-1:2:0.02,-0.5:2:0.02]
     c = 0*x
     s,t = x.shape
@@ -51,7 +51,7 @@ def main():
 
 
 if __name__ == '__main__':
-    import pylab, Image
+    import pylab
     from mystic.solvers import fmin
    #from scipy.optimize import fmin
     draw_contour()
@@ -80,8 +80,13 @@ if __name__ == '__main__':
 
     pylab.title('White dot: DE, Red dots: Nelder-Mead')
 
-    pylab.savefig('test_fosc3d_out',dpi=72)
-    im = Image.open('test_fosc3d_out.png')
-    im.show()
+    try:
+        import Image
+        pylab.savefig('test_fosc3d_out',dpi=72)
+        im = Image.open('test_fosc3d_out.png')
+        im.show()
+    except ImportError:
+        pylab.show()
+
 
 # end of file

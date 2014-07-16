@@ -44,7 +44,7 @@ NP = 40
 MAX_GENERATIONS = NP*NP
 NNODES = NP/5
 
-seed = 100
+seed = 321
 
 
 if __name__=='__main__':

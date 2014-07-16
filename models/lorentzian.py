@@ -76,7 +76,7 @@ return bins of given binwidth (and histogram) generated between [xmin,xmax]"""
         histo = numpyhisto(data, bins, new=False)[0]
     except:
         histo = numpyhisto(data, bins)[0]
-    return binsc, histo
+    return binsc[:len(histo)], histo
 
 
 # End of file
