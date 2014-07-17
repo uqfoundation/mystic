@@ -19,7 +19,7 @@ from TEST_ffitPP_b import ChebyshevCost
 
 if __name__ == '__main__':
     from mystic.solvers import fmin
-   #from scipy.optimize import fmin
+   #from mystic._scipyoptimize import fmin
     import random
     random.seed(123)
 

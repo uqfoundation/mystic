@@ -37,7 +37,7 @@ if __name__=='__main__':
    #stepmon = Monitor() #VerboseMonitor(10)
     from mystic.termination import NormalizedChangeOverGeneration as NCOG
 
-   #from scipy.optimize import fmin_powell
+   #from mystic._scipyoptimize import fmin_powell
     from mystic.solvers import fmin_powell, PowellDirectionalSolver
    #print fmin_powell(rosen,x0,retall=0,full_output=0)#,maxiter=14)
     solver = PowellDirectionalSolver(len(x0))

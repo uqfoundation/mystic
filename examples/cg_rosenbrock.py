@@ -15,7 +15,7 @@ cg works well on this problem.
 import pylab
 from test_rosenbrock import *
 from numpy import log
-from scipy.optimize import fmin_cg
+from mystic._scipyoptimize import fmin_cg
 import numpy
 from mystic.tools import getch
 

@@ -10,11 +10,8 @@ Dependencies:
 
 Exceptions to the rule:
  - The following examples also require scipy to be installed. (tested on version 0.4.8 and 0.7.0):
-    . cg_rosenbrock.py
     . test_lorentzian.py
-    . test_mogi.py
     . test_mogi_anneal.py,
-    . test_mogi_leastsq.py
     . test_twistedgaussian.py
     . test_twistedgaussian2.py
 
@@ -36,7 +33,6 @@ Notes on the "ffit" tests/examples:
 Notes on the "mogi" tests/examples:
  - test_mogi.py: One mogi source with noise, comparison between DE and Conjugate Gradient, Simplex, and least squares (Levenberg Marquardt). CG / lsq don't work very well. lsq should work when bounds on the parameters are given, but minpack (wrapped by scipy) version doesn't seem to support bounds.
  - sam_mogi.py: charts the progress of scipy's Nelder Mead and draws with matlab
- - test_mogi_leastsq.py: tests with scipy (minpack's) leastsq, but hasn't been tuned so it doesn't work at all.
  - test_mogi_anneal.py: tests with scipy simulated annealing, but hasn't been tuned, so again, doesn't work at all.
  - test_mogi2.py: two mogi sources
  - test_mogi3.py: reimplements test_mogi 

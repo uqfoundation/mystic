@@ -54,7 +54,7 @@ if __name__ == '__main__':
 
     try:
         from mystic.solvers import fmin
-       #from scipy.optimize import fmin
+       #from mystic._scipyoptimize import fmin
         import random
         print  "\nScipy: "
         sol = fmin(Corana, [random.random() for j in range(4)], full_output=0, retall=1)

@@ -18,7 +18,7 @@ from test_ffit import Chebyshev8, ChebyshevCost, plot_solution, print_solution
 
 if __name__ == '__main__':
     from mystic.solvers import fmin
-   #from scipy.optimize import fmin
+   #from mystic._scipyoptimize import fmin
     import random
     random.seed(123)
 

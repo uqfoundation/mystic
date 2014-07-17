@@ -16,7 +16,7 @@ from mystic.monitors import VerboseMonitor
 from mystic.tools import getch
 from numpy import arange
 from mystic.solvers import fmin
-#from scipy.optimize import fmin
+#from mystic._scipyoptimize import fmin
 
 import random
 random.seed(123)

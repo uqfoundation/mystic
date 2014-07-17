@@ -33,7 +33,7 @@ if __name__=='__main__':
     stepmon = Monitor() #VerboseMonitor(10)
     from mystic.termination import CandidateRelativeTolerance as CRT
 
-   #from scipy.optimize import fmin
+   #from mystic._scipyoptimize import fmin
     from mystic.solvers import fmin, NelderMeadSimplexSolver
    #print fmin(rosen,x0,retall=0,full_output=0,maxiter=121)
     solver = NelderMeadSimplexSolver(len(x0))

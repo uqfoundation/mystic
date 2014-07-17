@@ -117,7 +117,11 @@ if __name__ == '__main__':
 
     from mystic.solvers import NelderMeadSimplexSolver as fmin
     from mystic.termination import CandidateRelativeTolerance as CRT
-    from scipy.optimize import leastsq, fmin_cg
+    try:
+        from scipy.optimize import leastsq, fmin_cg
+    except ImportError:
+        from mystic._scipyoptimize import fmin_cg
+        leastsq = None
     #
     desol, dstepmon = de_solve()
     print "desol: ", desol
@@ -143,16 +147,20 @@ if __name__ == '__main__':
     solcg = fmin_cg(cost_function, point)
     print "\nConjugate-Gradient (Polak Rubiere) : ", solcg
     #
-    sollsq = leastsq(vec_cost_function, point)
-    sollsq = sollsq[0]
-    print "\nLeast Squares (Levenberg Marquardt) : ", sollsq
+    if leastsq:
+        sollsq = leastsq(vec_cost_function, point)
+        sollsq = sollsq[0]
+        print "\nLeast Squares (Levenberg Marquardt) : ", sollsq
     #
+    legend = ['Noisy data', 'Differential Evolution', 'Nelder Mead', 'Polak Ribiere']
     plot_noisy_data()
     plot_sol(desol,'r-')
     plot_sol(sol,'k--')
     plot_sol(solcg,'b-.')
-    plot_sol(sollsq,'g-.')
-    pylab.legend(('Noisy data', 'Differential Evolution', 'Nelder Mead', 'Polak Ribiere','Levenberg Marquardt')) 
+    if leastsq:
+        plot_sol(sollsq,'g-.')
+        legend += ['Levenberg Marquardt']
+    pylab.legend(legend) 
     pylab.show()
 
 # end of file

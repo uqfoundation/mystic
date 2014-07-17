@@ -92,8 +92,9 @@ if __name__ == '__main__':
     legend.append('Nelder-Mead : %f' % ar)
 
     # solve with scipy.brute
+   #from mystic._scipyoptimize import brute
    #ranges = tuple(zip(minrange,maxrange))
-   #sol = scipy.optimize.brute(cost, ranges, Ns=NP)
+   #sol = brute(cost, ranges, Ns=NP)
    #print "scipy.brute sol: ", sol
    #bx, by, br = sol
 
