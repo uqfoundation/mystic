@@ -420,7 +420,9 @@ def _linesearch_powell(func, p, xi, tol=1e-3):
     #  func(x0+ alpha*direc)
     def myfunc(alpha):
         return func(p + alpha * xi)
+    settings = numpy.seterr(all='ignore')
     alpha_min, fret, iter, num = brent(myfunc, full_output=1, tol=tol)
+    numpy.seterr(**settings)
     xi = alpha_min*xi
     return squeeze(fret), p+xi, xi
 

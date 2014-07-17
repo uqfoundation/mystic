@@ -10,6 +10,12 @@ mystic_log_reader.py [options] filename
 
 plot parameter convergence from file written with 'LoggingMonitor'
 
+The option "param" takes an indicator string. This indicator string is a list
+of strings, with each entry in the list corresponding to an array slice.
+For example, params = "[':']" will plot all parameters.  Alternatively,
+params = "[':2','3:']" will plot all parameters except for the third parameter,
+while params = "['0']" will only plot the first parameter.
+
 
 Required Inputs:
   filename            name of the convergence logfile (e.g log.txt)
@@ -26,6 +32,12 @@ parser.add_option("-i","--iter",action="store",dest="stop",metavar="INT",\
                   default=None,help="the largest iteration to plot")
 parser.add_option("-g","--legend",action="store_true",dest="legend",\
                   default=False,help="show the legend")
+parser.add_option("-n","--nid",action="store",dest="id",\
+                  metavar="INT",default=None,
+                  help="id # of the nth simultaneous points to plot")
+parser.add_option("-p","--param",action="store",dest="param",\
+                  metavar="STR",default="[':']",
+                  help="indicator string to select parameters")
 #parser.add_option("-f","--file",action="store",dest="filename",metavar="FILE",\
 #                  default='log.txt',help="log file name")
 parsed_opts, parsed_args = parser.parse_args()
@@ -49,6 +61,24 @@ try: # select which iteration to stop plotting at
   stop = int(parsed_opts.stop)
 except:
   stop = None
+
+try: # select which 'id' to plot results for
+  runs = (int(parsed_opts.id),) #XXX: allow selecting more than one id ?
+except:
+  runs = None # i.e. 'all' **or** use id=0, which should be 'best' energy ?
+
+try: # select which parameters to plot
+  select = eval(parsed_opts.param)  # format is "[':2','2:4','5','6:']"
+except:
+  select = [':']
+
+# ensure all terms of select have a ":"
+for i in range(len(select)):
+  if isinstance(select[i], int): select[i] = str(select[i])
+  if select[i] == '-1': select[i] = 'len(params)-1:len(params)'
+  elif not select[i].count(':'):
+    select[i] += ':' + str(int(select[i])+1)
+
 
 # == Possible results ==
 # iter = (i,id) or (i,) 
@@ -85,11 +115,19 @@ if multinode:
 else:
   id = [0 for i in step]
 
+# build the list of selected parameters
+params = range(len(param[0]))
+selected = []
+for i in select:
+  selected.extend(eval("params[%s]" % i))
+selected = list(set(selected))
+
 results = [[] for i in range(max(id) + 1)]
 
 # populate results for each id with the corresponding (iter,cost,param)
 for i in range(len(id)):
-  results[id[i]].append((iter[i],cost[i],param[i]))
+  if runs is None or id[i] in runs: # take only the selected 'id'
+    results[id[i]].append((iter[i],cost[i],param[i]))
 # NOTE: for example...  results = [[(0,...)],[(0,...),(1,...)],[],[(0,...)]]
 
 # build list of parameter (and cost) convergences for each id
@@ -116,16 +154,19 @@ fig = plt.figure()
 
 #FIXME: These may fail when conv[i][j] = [[],[],[]] and cost = []. Verify this.
 ax1 = fig.add_subplot(2,1,1)
-for j in range(len(param[0])):
-  for i in range(len(conv)):
-    tag = "%d,%d" % (i,j)
-    ax1.plot(iter_conv[i],conv[i][j],label="%s" % tag,marker=mark,linestyle=style)
+for i in range(len(conv)):
+  if runs is None or i in runs: # take only the selected 'id'
+    for j in range(len(param[0])):
+      if j in selected: # take only the selected 'params'
+        tag = "%d,%d" % (j,i) # label is 'parameter,id'
+        ax1.plot(iter_conv[i],conv[i][j],label="%s" % tag,marker=mark,linestyle=style)
 if parsed_opts.legend: plt.legend()
 
 ax2 = fig.add_subplot(2,1,2)
 for i in range(len(conv)):
-  tag = "%d" % i
-  ax2.plot(iter_conv[i],cost_conv[i],label='cost %s' % tag,marker=mark,linestyle=style)
+  if runs is None or i in runs: # take only the selected 'id'
+    tag = "%d" % i # label is 'cost id'
+    ax2.plot(iter_conv[i],cost_conv[i],label='cost %s' % tag,marker=mark,linestyle=style)
 if parsed_opts.legend: plt.legend()
 
 plt.show()
