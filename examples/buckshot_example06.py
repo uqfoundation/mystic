@@ -49,17 +49,19 @@ def plot_exact():
     pylab.plot(x,exact,'b-')
     pylab.legend(["Exact"])
     pylab.axis([-1.4,1.4,-2,8],'k-')
+    pylab.draw()
     return
  
 # plot the polynomial
-def plot_solution(params):
+def plot_solution(params,style='y-'):
     import numpy
     x = numpy.arange(-1.2, 1.2001, 0.01)
     f = poly1d(params)
     y = f(x)
-    pylab.plot(x,y,'y-')
+    pylab.plot(x,y,style)
     pylab.legend(["Exact","Fitted"])
     pylab.axis([-1.4,1.4,-2,8],'k-')
+    pylab.draw()
     return
 
 

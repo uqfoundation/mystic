@@ -295,6 +295,13 @@ Logs ChiSq and parameters to a file every 'interval'
             self._file.write("  %s     %s   %s\n" % (tuple(step), y, x))
         self._file.close()
         return
+    def __reduce__(self):
+        interval = self._yinterval        
+        filename = self._filename
+        new=False
+        all=self._all
+        info=None
+        return (self.__class__, (interval, filename, new, all, info))
     pass
 
 class VerboseLoggingMonitor(LoggingMonitor):
@@ -344,6 +351,15 @@ Logs ChiSq and parameters to a file every 'interval', print every 'yinterval'
             if id != None: msg = "[id: %d] " % (id) + msg
             print msg
         return
+    def __reduce__(self):
+        interval = self._yinterval        
+        yinterval =  self._vyinterval
+        xinterval =  self._vxinterval
+        filename = self._filename
+        new=False
+        all=self._all
+        info=None
+        return (self.__class__, (interval, yinterval, xinterval, filename, new, all, info))
     pass
 
 def CustomMonitor(*args,**kwds):
