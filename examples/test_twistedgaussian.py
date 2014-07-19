@@ -83,12 +83,10 @@ if __name__=='__main__':
     print "2D Metropolis for x[%d] took %0.3f ms" % (len(x), (t2-t1)*1000)
     x = array(x)
 
-    # have a look at vrugt.nb for reading and postprocessing
-    # the datafile below
-    from scipy.io import write_array
-    #write_array(open('twisted1.dat','w'),x)
-    write_array(open('twisted1.dat','w'),Sk)
-    
+    #import dill
+    #dill.dump(x, open('twisted1.pkl','w'))
+    #dill.dump(Sk, open('twisted1.pkl','w'))
+
     import pylab
     pylab.plot(Sk[:,0],Sk[:,1],'r.')
     pylab.plot(x[:,0] + 30,x[:,1],'b.')

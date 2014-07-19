@@ -120,7 +120,7 @@ def random_seed(s):
         pass
     return
 
-def wrap_nested(function, inner_function):
+def wrap_nested(outer_function, inner_function):
     """nest a function call within a function object
 
 This is useful for nesting a constraints function in a cost function;
@@ -128,10 +128,10 @@ thus, the constraints will be enforced at every cost function evaluation.
     """
     def function_wrapper(x):
         _x = x[:] #XXX: trouble if x not a list or ndarray... maybe "deepcopy"?
-        return function(inner_function(_x))
+        return outer_function(inner_function(_x))
     return function_wrapper
 
-def wrap_penalty(function, penalty_function):
+def wrap_penalty(cost_function, penalty_function):
     """append a function call to a function object
 
 This is useful for binding a penalty function to a cost function;
@@ -139,22 +139,22 @@ thus, the penalty will be evaluated at every cost function evaluation.
     """
     def function_wrapper(x):
         _x = x[:] #XXX: trouble if x not a list or ndarray... maybe "deepcopy"?
-        return function(_x) + penalty_function(_x)
+        return cost_function(_x) + penalty_function(_x)
     return function_wrapper
 
-def wrap_function(function, args, EvaluationMonitor):
-    """bind an EvaluationMonitor and an evaluation counter
-to a function object"""
+# slight break to backward compatability: renamed 'args' to 'extra_args'
+def wrap_function(the_function, extra_args, EvaluationMonitor):
+    """bind an EvaluationMonitor and evaluation counter to a function object"""
     ncalls = [0]
     from numpy import array
     def function_wrapper(x):
         ncalls[0] += 1
-        fval =  function(x, *args)
+        fval = the_function(x, *extra_args)
         EvaluationMonitor(x, fval)
         return fval
     return ncalls, function_wrapper
 
-def wrap_bounds(function, min=None, max=None):
+def wrap_bounds(target_function, min=None, max=None):
     "impose bounds on a function object"
     from numpy import asarray, any, inf, seterr
     bounds = True
@@ -176,10 +176,10 @@ def wrap_bounds(function, min=None, max=None):
                 seterr(**settings)
                 return inf
             seterr(**settings)
-            return function(x)
+            return target_function(x)
     else:
         def function_wrapper(x):
-            return function(x)
+            return target_function(x)
     return function_wrapper
 
 def wrap_cf(CF, REG=None, cfmult = 1.0, regmult = 0.0):

@@ -8,7 +8,7 @@
 """
 In test_twistedgaussian, we compared SCEM (one chain) with metropolis.
 
-Now we will use n-chains SCEM / in pseudo parallel.
+Now we will use n-chain SCEM / in parallel.
 """
 
 from test_twistedgaussian import *
@@ -28,8 +28,14 @@ def scemmap(Q):
         
 
 if __name__=='__main__':
-    from mystic.metropolis import *
     import time
+    from mystic.metropolis import *
+    # if available, use a multiprocessing worker pool
+    try:
+        from pathos.multiprocessing import ProcessingPool as Pool
+        map = Pool().map
+    except ImportError:
+        pass
 
     Sk = [ [Cs[i][0]] for i in range(q) ]
     Sak = [ [As[i][0]] for i in range(q) ]
@@ -38,7 +44,7 @@ if __name__=='__main__':
 
     for iter in range(5):
        # this is parallel
-       print iter+1
+       print "iteration: %s" % str(iter+1)
 
        res = map(scemmap, args)
 
@@ -57,15 +63,14 @@ if __name__=='__main__':
 
     Sk = [a[100:] for a in Sk] # throw away the first 100 pts of each chain
     sk = flatten_array(Sk,1)
-    import scipy.io, cPickle
-    print "Writing to data file"
-    scipy.io.write_array(open('tg3.dat','w'), sk)
-    #cPickle.dump(sk, open('tg3.dat','w'))
+    #import dill
+    #print "Writing to data file"
+    #dill.dump(sk, open('tg3.pkl','w'))
     
     try:
         import pylab
     except:
-        print "No pylab"
+        print "Install matplotlib for visualization"
     else:
         pylab.plot(sk[:,0],sk[:,1],'r.')
         pylab.show()

@@ -9,6 +9,7 @@
 test some simple multi-minima functions, such as |x + 3 sin[x]|
 """
 
+from mystic.solvers import NelderMeadSimplexSolver
 from mystic.solvers import DifferentialEvolutionSolver2 as DifferentialEvolutionSolver
 from mystic.termination import ChangeOverGeneration, VTR
 from mystic.strategy import Best1Exp, Best1Bin, Rand1Exp
@@ -23,6 +24,9 @@ random.seed(123)
 
 from mystic.models import wavy1, wavy2
 wavy = wavy1
+
+def cost(x): #NOTE: needed as DE throws errors for multi-valued return
+    return sum(wavy(x))
 
 def show():
     import pylab, Image
@@ -39,9 +43,10 @@ def plot_solution(sol=None):
         pylab.plot(x,y)
         if sol is not None:
             pylab.plot(sol, wavy(sol), 'r+')
-        show()
+        try: show()
+        except ImportError: pylab.show()
     except ImportError:
-        print "Install matplotlib for plotting"
+        print "Install matplotlib for visualization"
         pass
 
 
@@ -51,6 +56,7 @@ MAX_GENERATIONS = 100
 
 def main():
     solver = DifferentialEvolutionSolver(ND, NP)
+   #solver = NelderMeadSimplexSolver(ND)
     solver.SetRandomInitialPoints(min = [-100.0]*ND, max = [100.0]*ND)
     solver.SetEvaluationLimits(generations=MAX_GENERATIONS)
 
@@ -59,7 +65,7 @@ def main():
     strategy = Best1Bin
     stepmon = VerboseMonitor(1)
     solver.SetGenerationMonitor(stepmon)
-    solver.Solve(wavy, ChangeOverGeneration(generations=50), \
+    solver.Solve(cost, ChangeOverGeneration(generations=50), \
                  strategy=strategy, CrossProbability=1.0, ScalingFactor=0.9, \
                  sigint_callback = plot_solution)
 
@@ -75,22 +81,22 @@ if __name__ == '__main__':
     desol, solver = main()
     #plot_solution(scipysol)
     #plot_solution(desol)
-    print "scipy: ", scipysol, wavy(scipysol)
-    print "desol: ", desol, wavy(desol)
+    print "fmin: ", scipysol, wavy(scipysol)
+    print "dife: ", desol, wavy(desol)
     try:
         import pylab
         x = arange(-40,40,0.01)
         pylab.plot(x,wavy(x))
         pylab.plot(scipysol, wavy(scipysol), 'r+',markersize=8)
         pylab.plot(desol, wavy(desol), 'bo',markersize=8)
-        pylab.legend(('|x + 3 sin(x+pi)|','scipy','DE'))
-        pylab.plot(solver.genealogy[10], wavy(solver.genealogy[10]), 'g-')
-        print "genealogy:\n"
-        for xx in solver.genealogy[4]:
-            print xx
-            pylab.plot(xx, wavy(xx), 'go',markersize=3)
-        show()
+        pylab.legend(('|x + 3 sin(x+pi)|','fmin','dife'))
+        if hasattr(solver, 'genealogy'):
+            xx = solver.genealogy
+            pylab.plot(xx[4], wavy(xx[4]), 'g-',markersize=3)
+            pylab.plot(xx[10], wavy(xx[10]), 'y-',markersize=3)
+        try: show()
+        except ImportError: pylab.show()
     except ImportError:
-        print "Install matplotlib for plotting"
+        print "Install matplotlib for visualization"
 
 # end of file

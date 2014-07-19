@@ -58,7 +58,7 @@ def plot_solution(func, benchmark=Chebyshev8):
         pylab.legend(('Fitted','Chebyshev'))
         pylab.show()
     except ImportError:
-        print "Install matplotlib/numpy for visualization"
+        print "Install matplotlib for visualization"
         pass
 
 

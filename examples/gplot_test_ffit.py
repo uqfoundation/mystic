@@ -33,18 +33,18 @@ def plot_solution(func):
         # g('set style line lw 5')
         g('set xrange[-1.4:1.4]')
         g('set yrange[-2:8]')
-        g.plot(Gnuplot.Data(x, y, with='line', inline=1, title="Storn and Price's Function Fitting problem"), \
-               Gnuplot.Data(x, exact, with='l 4 4'), \
-               Gnuplot.Data(x, 0*x-1, with='l 2 2'), \
-               Gnuplot.Data(x2, 0*x2+1, with='l 2 2'),  \
-               Gnuplot.Data([-1.2, -1.2], [-1, 10], with='l 2 2'),  \
-               Gnuplot.Data([1.2, 1.2], [-1, 10], with='l 2 2'),  \
-               Gnuplot.Data([-1.0, -1.0], [1, 10], with='l 2 2'),  \
-               Gnuplot.Data([1.0, 1.0], [1, 10], with='l 2 2')  \
+        g.plot(Gnuplot.Data(x, y, with_='line', inline=1, title="Storn and Price's Function Fitting problem"), \
+               Gnuplot.Data(x, exact, with_='l 4 4'), \
+               Gnuplot.Data(x, 0*x-1, with_='l 2 2'), \
+               Gnuplot.Data(x2, 0*x2+1, with_='l 2 2'),  \
+               Gnuplot.Data([-1.2, -1.2], [-1, 10], with_='l 2 2'),  \
+               Gnuplot.Data([1.2, 1.2], [-1, 10], with_='l 2 2'),  \
+               Gnuplot.Data([-1.0, -1.0], [1, 10], with_='l 2 2'),  \
+               Gnuplot.Data([1.0, 1.0], [1, 10], with_='l 2 2')  \
                )
         getch('Press any key to exit plot')
     except ImportError:
-        print "Install Gnuplot/Gnuplot-py/numpy for visualization"
+        print "Install Gnuplot and Gnuplot.py for visualization"
         pass
 
 

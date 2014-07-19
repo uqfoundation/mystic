@@ -28,8 +28,12 @@ http://www.science.uva.nl/research/scs/papers/archive/Vrugt2006b.pdf
 from numpy import mean, cov, array, zeros, identity, transpose
 from numpy.random import multivariate_normal
 import numpy
+try:
+    getlimits = numpy.lib.getlimits
+except AttributeError:
+    getlimits = numpy.core.getlimits
 
-TYPE_DOUBLE =  numpy.lib.getlimits.finfo(numpy.lib.getlimits.numeric.double)
+TYPE_DOUBLE =  getlimits.finfo(getlimits.numeric.double)
 TINY = TYPE_DOUBLE.tiny
 
 def multinormal_pdf(mean, var):
