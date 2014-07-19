@@ -78,7 +78,7 @@ __all__ = ['AbstractSolver']
 import numpy
 from numpy import inf, shape, asarray, absolute, asfarray
 from mystic.tools import wrap_function, wrap_nested
-from mystic.tools import wrap_bounds, wrap_penalty
+from mystic.tools import wrap_bounds, wrap_penalty, reduced
 
 abs = absolute
 
@@ -145,6 +145,7 @@ Important class members:
 
         self._constraints     = lambda x: x
         self._penalty         = lambda x: 0.0
+        self._reducer         = (None, False)
         self._cost            = (None, None)
         self._termination     = lambda x, *ar, **kw: False if len(ar) < 1 or ar[0] is False or kw.get('info',True) == False else '' #XXX: better default ?
         # (get termination details with self._termination.__doc__)
@@ -204,6 +205,25 @@ Important class members:
     def __set_bestEnergy(self, energy):
         """set the bestEnergy (energy=None will sync with popEnergy[0])"""
         self._bestEnergy = energy
+        return
+
+    def SetReducer(self, reducer, arraylike=False):
+        """apply a reducer function to the cost function
+
+input::
+    - a reducer function of the form: y' = reducer(yk), where yk is a results
+      vector and y' is a single value.  Ideally, this method is applied to
+      a cost function with a multi-value return, to reduce the output to a
+      single value.  If arraylike, the reducer provided should take a single
+      array as input and produce a scalar; otherwise, the reducer provided
+      should meet the requirements of the python's builtin 'reduce' method 
+      (e.g. lambda x,y: x+y), taking two scalars and producing a scalar."""
+        if not reducer:
+            self._reducer = (None, True)
+        elif not callable(reducer):
+            raise TypeError, "'%s' is not a callable function" % reducer
+        else: #XXX: check for format: x' = reducer(x) ?
+            self._reducer = (reducer, arraylike) #XXX: bool(arraylike) ?
         return
 
     def SetPenalty(self, penalty):
@@ -557,6 +577,8 @@ Note::
             cost = wrap_bounds(cost, self._strictMin, self._strictMax)
         cost = wrap_penalty(cost, self._penalty)
         cost = wrap_nested(cost, self._constraints)
+        if self._reducer[0]:
+            cost = reduced(*self._reducer)(cost) #XXX: decorated? as wrap_*?
         # hold on to the 'wrapped' cost function
         self._cost = (cost, ExtraArgs)
         return cost

@@ -145,7 +145,7 @@ __all__ = ['DifferentialEvolutionSolver','DifferentialEvolutionSolver2',\
            'diffev','diffev2']
 
 from mystic.tools import wrap_function, unpair
-from mystic.tools import wrap_bounds, wrap_penalty
+from mystic.tools import wrap_bounds, wrap_penalty, reduced
 
 from mystic.abstract_solver import AbstractSolver
 from mystic.abstract_map_solver import AbstractMapSolver
@@ -208,6 +208,8 @@ are logged.
                 self.population[i] = self._clipGuessWithinRangeBoundary(self.population[i])
             cost = wrap_bounds(cost, self._strictMin, self._strictMax)
         cost = wrap_penalty(cost, self._penalty)
+        if self._reducer[0]:
+            cost = reduced(*self._reducer)(cost) #XXX: decorated? as wrap_*?
         # hold on to the 'wrapped' cost function
         self._cost = (cost, ExtraArgs)
         return cost
@@ -352,6 +354,8 @@ are logged.
                 self.population[i] = self._clipGuessWithinRangeBoundary(self.population[i])
             cost = wrap_bounds(cost, self._strictMin, self._strictMax)
         cost = wrap_penalty(cost, self._penalty)
+        if self._reducer[0]:
+            cost = reduced(*self._reducer)(cost) #XXX: decorated? as wrap_*?
         # hold on to the 'wrapped' cost function
         self._cost = (cost, ExtraArgs)
         return cost

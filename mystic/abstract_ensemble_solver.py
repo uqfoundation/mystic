@@ -165,6 +165,8 @@ input::
         solver.SetTermination(self._termination)
         solver.SetConstraints(self._constraints)
         solver.SetPenalty(self._penalty)
+        if self._reducer[0]: #XXX: always, settable, or sync'd ?
+            solver.SetReducer(*self._reducer)
         return solver
 
     def SetInitialPoints(self, x0, radius=0.05):

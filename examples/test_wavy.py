@@ -9,12 +9,11 @@
 test some simple multi-minima functions, such as |x + 3 sin[x]|
 """
 
-from mystic.solvers import NelderMeadSimplexSolver
 from mystic.solvers import DifferentialEvolutionSolver2 as DifferentialEvolutionSolver
 from mystic.termination import ChangeOverGeneration, VTR
 from mystic.strategy import Best1Exp, Best1Bin, Rand1Exp
 from mystic.monitors import VerboseMonitor
-from mystic.tools import getch
+from mystic.tools import getch, reduced
 from numpy import arange
 from mystic.solvers import fmin
 #from mystic._scipyoptimize import fmin
@@ -25,8 +24,10 @@ random.seed(123)
 from mystic.models import wavy1, wavy2
 wavy = wavy1
 
-def cost(x): #NOTE: needed as DE throws errors for multi-valued return
-    return sum(wavy(x))
+# reduce wavy's multi-valued return
+#@reduced(sum, arraylike=True)
+def cost(x):
+    return wavy(x)
 
 def show():
     import pylab, Image
@@ -56,7 +57,6 @@ MAX_GENERATIONS = 100
 
 def main():
     solver = DifferentialEvolutionSolver(ND, NP)
-   #solver = NelderMeadSimplexSolver(ND)
     solver.SetRandomInitialPoints(min = [-100.0]*ND, max = [100.0]*ND)
     solver.SetEvaluationLimits(generations=MAX_GENERATIONS)
 
@@ -65,6 +65,7 @@ def main():
     strategy = Best1Bin
     stepmon = VerboseMonitor(1)
     solver.SetGenerationMonitor(stepmon)
+    solver.SetReducer(sum, arraylike=True) # reduce wavy's multi-valued return
     solver.Solve(cost, ChangeOverGeneration(generations=50), \
                  strategy=strategy, CrossProbability=1.0, ScalingFactor=0.9, \
                  sigint_callback = plot_solution)

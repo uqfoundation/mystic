@@ -24,6 +24,7 @@ Main functions exported are::
     - wrap_function: bind an EvaluationMonitor and an evaluation counter
         to a function object
     - wrap_bounds: impose bounds on a function object
+    - reduced: apply a reducer function to reduce output to a single value
     - unpair: convert a 1D array of N pairs to two 1D arrays of N values
     - src: extract source code from a python code object
 
@@ -182,13 +183,61 @@ def wrap_bounds(target_function, min=None, max=None):
             return target_function(x)
     return function_wrapper
 
-def wrap_cf(CF, REG=None, cfmult = 1.0, regmult = 0.0):
+def reduced(reducer=None, arraylike=False):
+    """apply a reducer function to reduce output to a single value
+
+example usage...
+    >>> @reduced(lambda x,y: x)
+    ... def first(x):
+    ...   return x
+    ... 
+    >>> first([1,2,3])
+    1
+    >>> 
+    >>> @reduced(min)
+    ... def minimum(x):
+    ...   return x
+    ... 
+    >>> minimum([3,2,1])
+    1
+    >>> @reduced(lambda x,y: x+y)
+    ... def add(x):
+    ...   return x
+    ... 
+    >>> add([1,2,3])
+    6
+    >>> @reduced(sum, arraylike=True)
+    ... def added(x):
+    ...   return x
+    ... 
+    >>> added([1,2,3])
+    6
+
+    """
+    if reducer is None:
+        reducer = lambda x: x
+        arraylike = True
+    def dec(f):
+        if arraylike:
+            def func(*args, **kwds):
+                result = f(*args, **kwds)
+                iterable = isiterable(result)
+                return reducer(result) if iterable else result
+        else:
+            def func(*args, **kwds):
+                result = f(*args, **kwds)
+                iterable = isiterable(result)
+                return reduce(reducer, result) if iterable else result
+        return func
+    return dec 
+
+def wrap_cf(CF, REG=None, cfmult=1.0, regmult=0.0):
     "wrap a cost function..."
     def _(*args, **kwargs):
          if REG is not None:
-             return cfmult * CF(*args, **kwargs) + regmult * REG(*args, **kwargs)
+             return cfmult * CF(*args,**kwargs) + regmult * REG(*args,**kwargs)
          else:
-             return cfmult * CF(*args, **kwargs)
+             return cfmult * CF(*args,**kwargs)
     return _
 
 
