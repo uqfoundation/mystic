@@ -63,7 +63,7 @@ def costFactory(i):
 #######################################################################
 # make a pseudo-global optimizer from a steepest descent optimizer
 #######################################################################
-def optimize(cost,lower,upper):
+def optimize(cost,lower,upper,nbins):
   from mystic.tools import random_seed
   from pyina.launchers import TorqueMpi as Pool
   random_seed(123)
@@ -109,7 +109,8 @@ def optimize(cost,lower,upper):
 # loop over model parameters to calculate concentration of measure
 #######################################################################
 def UQ(start,end,lower,upper):
-  from pyina.launchers import Mpi as Pool
+ #from pyina.launchers import Mpi as Pool
+  from pathos.multiprocessing import ProcessingPool as Pool
  #from pool_helper import func_pickle  # if fails to pickle, try using a helper
 
   # run optimizer for each subdiameter 
