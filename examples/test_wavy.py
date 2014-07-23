@@ -65,7 +65,7 @@ def main():
     strategy = Best1Bin
     stepmon = VerboseMonitor(1)
     solver.SetGenerationMonitor(stepmon)
-    solver.SetReducer(sum, arraylike=True) # reduce wavy's multi-valued return
+   #solver.SetReducer(sum, arraylike=True) # reduce wavy's multi-valued return
     solver.Solve(cost, ChangeOverGeneration(generations=50), \
                  strategy=strategy, CrossProbability=1.0, ScalingFactor=0.9, \
                  sigint_callback = plot_solution)
