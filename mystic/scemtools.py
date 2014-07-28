@@ -103,7 +103,7 @@ def sort_ab_with_b(a, b, ord = -1):
 
 def sort_complex0(c, a):
     # this is dumb, because c (i.e., a, are almost sorted)
-    # should sue the one below instead.
+    # should use the one below instead.
     # this is faster than sort_complex
     b = array(a)
     o = list(reversed(b.argsort()))
@@ -111,7 +111,7 @@ def sort_complex0(c, a):
 
 def sort_complex(c, a):
     # this is dumb, because c (i.e., a, are almost sorted)
-    # should sue the one below instead.
+    # should use the one below instead.
     D = zip(a,c)
     def mycmp(x,y):
         if x[0] < y[0]:
@@ -134,7 +134,6 @@ def sort_complex2(c, a):
 - pos : 0 (first one out of order)
        -1 (last one out of order)
     """
-    from bisect import bisect
     # find where new key is relative to the rest
     if a[0] < a[1]:
         ax, cx = a[0], c[0]
@@ -155,21 +154,20 @@ def update_complex(Ck, ak, c, a, pos):
   c and a spliced in at the proper place
 - pos is 0, or -1
     """
-    from bisect import bisect
     if pos == 0:
         at = ak[1:]
     else:
         at = ak[:-1]
 
-    p = bisect(-at, -a)
+    p = myinsert(at, a)
 
     # not done yet.
     if pos == 0:
         Ck[0:p], ak[p] = Ck[1:p+1], ak[1:p+1]
-        ck[p], ak[p] = c, a
+        Ck[p], ak[p] = c, a
     else:
         Ck[0:p], ak[p] = Ck[1:p+1], ak[1:p+1]
-        ck[p], ak[p] = c, a
+        Ck[p], ak[p] = c, a
 
     return
 
