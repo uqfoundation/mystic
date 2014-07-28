@@ -25,8 +25,6 @@ http://www.science.uva.nl/research/scs/papers/archive/Vrugt2006b.pdf
 
 """
 
-from numpy import mean, cov, array, zeros, identity, transpose
-from numpy.random import multivariate_normal
 import numpy
 try:
     getlimits = numpy.lib.getlimits
@@ -38,19 +36,18 @@ TINY = TYPE_DOUBLE.tiny
 
 def multinormal_pdf(mean, var):
     """var must be symmetric positive definite """
-    from numpy.linalg import inv, det
-    from numpy import transpose, array, exp, sqrt, pi, dot
-    vinv = inv(var)
-    mu = array(mean).flatten()
+    import numpy
+    vinv = numpy.linalg.inv(var)
+    mu = numpy.array(mean).flatten()
     n = len(mu)
 
     # check that var is properly sized
-    dum = dot(mu,var) - dot(var,mu)
+    dum = numpy.dot(mu,var) - numpy.dot(var,mu)
 
-    prefactor = 1./sqrt((2 * pi)**n  * det(var))
+    prefactor = 1./numpy.sqrt((2 * numpy.pi)**n  * numpy.linalg.det(var))
     def _(x):
-        xm = array(x) - mu
-        return prefactor *  exp(-0.5 * dot(xm,dot(vinv,xm)) )
+        xm = numpy.array(x) - mu
+        return prefactor *  numpy.exp(-0.5 * numpy.dot(xm,numpy.dot(vinv,xm)) )
     return _
 
 def sequential_deal(inarray, n):
@@ -75,18 +72,18 @@ def sequential_deal(inarray, n):
 [ 4  9 14 19]
 
     """
-    from numpy import array, transpose
-    cards = array(inarray)
+    import numpy
+    cards = numpy.array(inarray)
     N = len(cards)
     # this bit of numpy will give, for N=20, n = 5
     # ord = [ [0,5,10,15], [1,6,11,16], [2,7,12,17], [3,8,13,18], [4,9,14,19] ]
-    ord = transpose(array(range(N)).reshape(N/n, n))
+    ord = numpy.transpose(numpy.array(range(N)).reshape(N/n, n))
     return [cards[x] for x in ord] 
 
 def sort_and_deal(cards, target, nplayers):
-    from numpy import argsort
-    c = array(map(target, cards))
-    o = list(reversed(argsort(c)))
+    import numpy
+    c = numpy.array(map(target, cards))
+    o = list(reversed(numpy.argsort(c)))
     # from best to worst
     sorted_deck = cards[o]
     return sequential_deal(sorted_deck, nplayers)
@@ -94,7 +91,7 @@ def sort_and_deal(cards, target, nplayers):
 def sort_ab_with_b(a, b, ord = -1):
     """default is descending..."""
     import numpy
-    aa,bb = array(a), array(b)
+    aa,bb = numpy.array(a), numpy.array(b)
     if ord == -1:
         o = list(reversed(bb.argsort()))
     else:
@@ -105,13 +102,15 @@ def sort_complex0(c, a):
     # this is dumb, because c (i.e., a, are almost sorted)
     # should use the one below instead.
     # this is faster than sort_complex
-    b = array(a)
+    import numpy
+    b = numpy.array(a)
     o = list(reversed(b.argsort()))
     return c[o], list(b[o])
 
 def sort_complex(c, a):
     # this is dumb, because c (i.e., a, are almost sorted)
     # should use the one below instead.
+    import numpy
     D = zip(a,c)
     def mycmp(x,y):
         if x[0] < y[0]:
@@ -200,12 +199,10 @@ This is the SCEM algorithm starting from line [35] of the reference [1].
 - On return... sort order in Ck/ak is destroyed. but see sort_complex2
 
     """
-
+    import numpy
     # function level constants
     T = 100000. # predefined likelihood ratio. Paragraph 45 of [1.]
 
-    from numpy import mean, cov, array, zeros, identity, transpose
-    
     # Sort Ck according to ak
     #Ck, ak = sort_complex0(Ck, ak) 
     #print "ak before: ", ak
@@ -216,29 +213,29 @@ This is the SCEM algorithm starting from line [35] of the reference [1].
     # number of points per complex
     M = Ck.shape[0]
 
-    mu = mean(Ck,0) # row mean
+    mu = numpy.mean(Ck,0) # row mean
 
     # (numpy.cov takes data in columns)
-    Sigma = cov(transpose(Ck)) 
+    Sigma = numpy.cov(numpy.transpose(Ck)) 
 
     # Gamma (line 35 of [1]. Best to Worst)
     Gamma = ak[0] / (ak[-1]+TINY)
    
     if len(Sak) >= M:
-        meansak = mean(Sak[-M:])
+        meansak = numpy.mean(Sak[-M:])
     else:
-        meansak = mean(Sak)
-    alpha_k = mean(ak) / (meansak+TINY)
+        meansak = numpy.mean(Sak)
+    alpha_k = numpy.mean(ak) / (meansak+TINY)
   
     if alpha_k < T:
          # Paragraph 37 of [1]
          basept = Sk[-1]
-    else: # mean(asak) is very close to zero.
+    else: # numpy.mean(asak) is very close to zero.
          # Paragraph 38 of [1]
          basept = mu
 
     # TODO should take a proposal instead !
-    Yt = multivariate_normal(basept,  cn*cn * Sigma)
+    Yt = numpy.random.multivariate_normal(basept,  cn*cn * Sigma)
     cY = target(Yt)    
 
     # print "new/orig : ", cY, Sak[-1]
