@@ -8,9 +8,24 @@
 """A sanity test suite for Mystic solvers."""
 # should report clock-time, # of iterations, and # of function evaluations
 
+import sys
+from StringIO import StringIO
 import unittest
 from math import *
 from mystic.math import almostEqual
+
+def trap_stdout(): #XXX: better with contextmanager?
+    "temporarily trap stdout; return original sys.stdout"
+    orig, sys.stdout = sys.stdout, StringIO()
+    return orig
+
+def release_stdout(orig):
+    "release stdout; return any trapped output as a string"
+    out = sys.stdout.getvalue()
+    sys.stdout.close()
+    sys.stdout = orig
+    return out
+
 
 class TestRosenbrock(unittest.TestCase):
     """Test the 2-dimensional rosenbrock optimization problem."""
@@ -35,7 +50,8 @@ class TestRosenbrock(unittest.TestCase):
         from mystic.monitors import Monitor
         import numpy
         from mystic.tools import random_seed
-        random_seed(321)
+        seed = 111 if self.maxiter is None else 321 #XXX: good numbers...
+        random_seed(seed)
         esow = Monitor()
         ssow = Monitor() 
 
@@ -45,7 +61,11 @@ class TestRosenbrock(unittest.TestCase):
         if self.uselimits: solver.SetEvaluationLimits(self.maxiter, self.maxfun)
         if self.useevalmon: solver.SetEvaluationMonitor(esow)
         if self.usestepmon: solver.SetGenerationMonitor(ssow)
+        #### run solver, but trap output
+        _stdout = trap_stdout()
         solver.Solve(self.costfunction, self.term, **kwds)
+        out = release_stdout(_stdout)
+        ################################
         sol = solver.Solution()
 
         iter=1
@@ -67,6 +87,8 @@ class TestRosenbrock(unittest.TestCase):
         # Fail appropriately for solver/termination mismatch
         if early_terminate:
             self.assertTrue(solver.generations < 2)
+            warn = "Warning: Invalid termination condition (nPop < 2)"
+            self.assertTrue(warn in out)
             return
 
         g = solver.generations
@@ -103,7 +125,7 @@ class TestRosenbrock(unittest.TestCase):
             return
 
         # Verify solution is close to exact
-        print sol
+       #print sol
         for i in range(len(sol)):
             self.assertAlmostEqual(sol[i], self.exact[i], self.precision)
         return
@@ -231,10 +253,17 @@ class TestRosenbrock(unittest.TestCase):
 if __name__ == '__main__':
     suite1 = unittest.TestLoader().loadTestsFromTestCase(TestRosenbrock)
     allsuites = unittest.TestSuite([suite1])
+#   runner = unittest.TextTestRunner(verbosity=2)
+    runner = unittest.TextTestRunner()
+
     my_maxiter = 0
-#   my_maxiter = 1
-#   my_maxiter = 2
-#   my_maxiter = None
-    unittest.TextTestRunner(verbosity=2).run(allsuites)
+    runner.run(allsuites)
+    my_maxiter = 1
+    runner.run(allsuites)
+    my_maxiter = 2
+    runner.run(allsuites)
+    my_maxiter = None
+    runner.run(allsuites)
+
 
 # EOF

@@ -290,8 +290,9 @@ abs(params - params[0]) <= tolerance"""
         else: info = bool
         sim = numpy.array(inst.population)
         #if not len(sim[1:]):
-        #    print "Warning: Invalid termination condition (nPop < 2)"
-        #    return True
+        #    warn = "Warning: Invalid termination condition (nPop < 2)"
+        #    print warn
+        #    return warn
         if numpy.all(abs(sim - sim[0]) <= abs(tolerance * sim[0])): return info(doc)
         return info(null)
     _PopulationSpread.__doc__ = doc

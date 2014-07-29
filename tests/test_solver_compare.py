@@ -8,10 +8,10 @@
 
 try:
   from scipy.optimize import fmin, fmin_powell
-  scipy_solvers = ['fmin_powell', 'fmin']
 except ImportError:
-  print "Warning: scipy not installed; comparison tests skipped"
-  scipy_solvers = []
+  from mystic._scipyoptimize import fmin, fmin_powell
+# print "Warning: scipy not installed; defaulting to local solver copy"
+scipy_solvers = ['fmin_powell', 'fmin']
 
 import mystic.solvers as solvers
 from mystic.models import rosen
@@ -55,7 +55,7 @@ def test_compare(solvername, x0, **kwds):
   # similar bestSolution and bestEnergy
 # print 'my:', my_x[0:2]
 # print 'sp:', sp_x[0:2]
-  if maxiter != 0: # mystic can stop at iter=0, scipy can't
+  if my_x[3] == sp_x[-2]: # mystic can stop at iter=0, scipy can't
     assert almostEqual(my_x[0], sp_x[0])
     assert almostEqual(my_x[1], sp_x[1])
   # print (iters, fcalls) and [maxiter, maxfun]
@@ -75,7 +75,7 @@ if __name__ == '__main__':
   x0 = [0,0,0]
 
   # check solutions versus results based on the random_seed
-  print "comparing against known results"
+# print "comparing against known results"
   sol = solvers.diffev(rosen, x0, npop=40, disp=0, full_output=True)
   assert almostEqual(sol[1], 0.0020640145337293249, tol=3e-3)
   sol = solvers.diffev2(rosen, x0, npop=40, disp=0, full_output=True)
@@ -87,24 +87,24 @@ if __name__ == '__main__':
 
   solver2 = 'diffev2'
   for solver in ['diffev']:
-    print "comparing %s and %s from mystic" % (solver, solver2)
+#   print "comparing %s and %s from mystic" % (solver, solver2)
     test_solvers(solver, solver2, x0, npop=40)
-#   test_solvers(solver, solver2, x0, npop=40, maxiter=None, maxfun=0)
-#   test_solvers(solver, solver2, x0, npop=40, maxiter=None, maxfun=1)
-#   test_solvers(solver, solver2, x0, npop=40, maxiter=None, maxfun=2)
-#   test_solvers(solver, solver2, x0, npop=40, maxiter=None, maxfun=9)
+    test_solvers(solver, solver2, x0, npop=40, maxiter=None, maxfun=0)
+    test_solvers(solver, solver2, x0, npop=40, maxiter=None, maxfun=1)
+    test_solvers(solver, solver2, x0, npop=40, maxiter=None, maxfun=2)
+    test_solvers(solver, solver2, x0, npop=40, maxiter=None, maxfun=9)
     test_solvers(solver, solver2, x0, npop=40, maxiter=0)
     test_solvers(solver, solver2, x0, npop=40, maxiter=1)
     test_solvers(solver, solver2, x0, npop=40, maxiter=2)
     test_solvers(solver, solver2, x0, npop=40, maxiter=9)
 
   for solver in scipy_solvers:
-    print "comparing %s from mystic and scipy" % (solver)
+#   print "comparing %s from mystic and scipy" % (solver)
     test_compare(solver, x0)
-#   test_compare(solver, x0, maxiter=None, maxfun=0)
-#   test_compare(solver, x0, maxiter=None, maxfun=1)
-#   test_compare(solver, x0, maxiter=None, maxfun=2)
-#   test_compare(solver, x0, maxiter=None, maxfun=9)
+    test_compare(solver, x0, maxiter=None, maxfun=0)
+    test_compare(solver, x0, maxiter=None, maxfun=1)
+    test_compare(solver, x0, maxiter=None, maxfun=2)
+    test_compare(solver, x0, maxiter=None, maxfun=9)
     test_compare(solver, x0, maxiter=0)
     test_compare(solver, x0, maxiter=1)
     test_compare(solver, x0, maxiter=2)#, itermon=VerboseMonitor(1,1))
