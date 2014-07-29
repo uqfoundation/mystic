@@ -14,6 +14,8 @@ import unittest
 from math import *
 from mystic.math import almostEqual
 
+verbosity = 1 # Verbosity setting for unittests (default is 1).
+
 def trap_stdout(): #XXX: better with contextmanager?
     "temporarily trap stdout; return original sys.stdout"
     orig, sys.stdout = sys.stdout, StringIO()
@@ -253,8 +255,7 @@ class TestRosenbrock(unittest.TestCase):
 if __name__ == '__main__':
     suite1 = unittest.TestLoader().loadTestsFromTestCase(TestRosenbrock)
     allsuites = unittest.TestSuite([suite1])
-#   runner = unittest.TextTestRunner(verbosity=2)
-    runner = unittest.TextTestRunner()
+    runner = unittest.TextTestRunner(verbosity=verbosity)
 
     my_maxiter = 0
     runner.run(allsuites)

@@ -12,12 +12,28 @@ Also, the two differential evolution solvers are global, while the other solvers
 are local optimizers."""
 # should report clock-time, # of iterations, and # of function evaluations
 
+import sys
+from StringIO import StringIO
 import unittest
 from math import *
 from mystic.math import almostEqual
 
-disp = True # Flag for whether to display number of iterations and 
-            # function evaluations
+disp = False  # Flag for whether to display number of iterations 
+              #  and function evaluations.
+verbosity = 2 # Verbosity setting for unittests (default is 1).
+
+def trap_stdout(): #XXX: better with contextmanager?
+    "temporarily trap stdout; return original sys.stdout"
+    orig, sys.stdout = sys.stdout, StringIO()
+    return orig
+
+def release_stdout(orig):
+    "release stdout; return any trapped output as a string"
+    out = sys.stdout.getvalue()
+    sys.stdout.close()
+    sys.stdout = orig
+    return out
+
 
 class TestZimmermann(unittest.TestCase):
     """Test the zimmermann optimization problem."""
@@ -35,21 +51,19 @@ class TestZimmermann(unittest.TestCase):
 
     def _run_solver(self, iter_limit=False, local=False, **kwds):
         from mystic.monitors import Monitor
-        import numpy
         from mystic.tools import random_seed
         random_seed(321) # Number of failures is quite dependent on random seed!
         esow = Monitor()
         ssow = Monitor() 
-
-        if iter_limit: # CRT with solvers that don't use population.
-            print '\nA warning should print:'
 
         solver = self.solver
         solver.SetRandomInitialPoints(min = self.min, max = self.max)
         solver.SetEvaluationLimits(generations=self.maxiter)
         solver.SetEvaluationMonitor(esow)
         solver.SetGenerationMonitor(ssow)
+        _stdout = trap_stdout()
         solver.Solve(self.costfunction, self.term, **kwds)
+        out = release_stdout(_stdout)
         sol = solver.Solution()
         #print '\nsol:', sol
 
@@ -63,6 +77,8 @@ class TestZimmermann(unittest.TestCase):
         # If solver should terminate immediately, check for that only.
         if iter_limit:
             self.assertTrue(solver.generations < 2)
+            warn = "Warning: Invalid termination condition (nPop < 2)"
+            self.assertTrue(warn in out)
             return
 
         # Allow success if local solvers find the local or global minimum
@@ -246,7 +262,6 @@ class TestRosenbrock(unittest.TestCase):
 
     def _run_solver(self, iter_limit=False, **kwds):
         from mystic.monitors import Monitor
-        import numpy
         from mystic.tools import random_seed
         #random_seed(123)
         esow = Monitor()
@@ -259,7 +274,9 @@ class TestRosenbrock(unittest.TestCase):
         solver.SetEvaluationLimits(generations=self.maxiter)
         solver.SetEvaluationMonitor(esow)
         solver.SetGenerationMonitor(ssow)
+        _stdout = trap_stdout()
         solver.Solve(self.costfunction, self.term, **kwds)
+        out = release_stdout(_stdout)
         sol = solver.Solution()
 
         if disp:
@@ -272,6 +289,8 @@ class TestRosenbrock(unittest.TestCase):
         # If solver should terminate immediately, check for that only.
         if iter_limit:
             self.assertTrue(solver.generations < 2)
+            warn = "Warning: Invalid termination condition (nPop < 2)"
+            self.assertTrue(warn in out)
             return
 
         # Verify solution is close to expected
@@ -447,7 +466,6 @@ minima."""
 
     def _run_solver(self, iter_limit=False, **kwds):
         from mystic.monitors import Monitor
-        import numpy
         from mystic.tools import random_seed
         random_seed(123)
         esow = Monitor()
@@ -459,7 +477,9 @@ minima."""
         solver.SetEvaluationLimits(generations=self.maxiter)
         solver.SetEvaluationMonitor(esow)
         solver.SetGenerationMonitor(ssow)
+        _stdout = trap_stdout()
         solver.Solve(self.costfunction, self.term, **kwds)
+        out = release_stdout(_stdout)
         sol = solver.Solution()
 
         if disp:
@@ -472,6 +492,8 @@ minima."""
         # If solver should terminate immediately, check for that only.
         if iter_limit:
             self.assertTrue(solver.generations < 2)
+            warn = "Warning: Invalid termination condition (nPop < 2)"
+            self.assertTrue(warn in out)
             return
 
         # Verify solution is close to expected (here, absolute value is within the
@@ -648,7 +670,6 @@ class TestQuartic(unittest.TestCase):
 
     def _run_solver(self, iter_limit=False, **kwds):
         from mystic.monitors import Monitor
-        import numpy
         from mystic.tools import random_seed
         #random_seed(123)
         esow = Monitor()
@@ -660,7 +681,9 @@ class TestQuartic(unittest.TestCase):
         solver.SetEvaluationLimits(generations=self.maxiter)
         solver.SetEvaluationMonitor(esow)
         solver.SetGenerationMonitor(ssow)
+        _stdout = trap_stdout()
         solver.Solve(self.costfunction, self.term, **kwds)
+        out = release_stdout(_stdout)
         sol = solver.Solution()
 
         if disp:
@@ -673,6 +696,8 @@ class TestQuartic(unittest.TestCase):
         # If solver should terminate immediately, check for that only.
         if iter_limit:
             self.assertTrue(solver.generations < 2)
+            warn = "Warning: Invalid termination condition (nPop < 2)"
+            self.assertTrue(warn in out)
             return
 
         # Verify solution is close to expected
@@ -847,7 +872,6 @@ class TestShekel(unittest.TestCase):
 
     def _run_solver(self, iter_limit=False, **kwds):
         from mystic.monitors import Monitor
-        import numpy
         from mystic.tools import random_seed
         random_seed(123)
         esow = Monitor()
@@ -859,7 +883,9 @@ class TestShekel(unittest.TestCase):
         solver.SetEvaluationLimits(generations=self.maxiter)
         solver.SetEvaluationMonitor(esow)
         solver.SetGenerationMonitor(ssow)
+        _stdout = trap_stdout()
         solver.Solve(self.costfunction, self.term, **kwds)
+        out = release_stdout(_stdout)
         sol = solver.Solution()
 
         if disp:
@@ -872,6 +898,8 @@ class TestShekel(unittest.TestCase):
         # If solver should terminate immediately, check for that only.
         if iter_limit:
             self.assertTrue(solver.generations < 2)
+            warn = "Warning: Invalid termination condition (nPop < 2)"
+            self.assertTrue(warn in out)
             return
 
         # Verify solution is close to expected
@@ -1047,7 +1075,6 @@ class TestStep(unittest.TestCase):
 
     def _run_solver(self, iter_limit = False, **kwds):
         from mystic.monitors import Monitor
-        import numpy
         from mystic.tools import random_seed
        #random_seed(123)
         esow = Monitor()
@@ -1059,7 +1086,9 @@ class TestStep(unittest.TestCase):
         solver.SetEvaluationLimits(generations=self.maxiter)
         solver.SetEvaluationMonitor(esow)
         solver.SetGenerationMonitor(ssow)
+        _stdout = trap_stdout()
         solver.Solve(self.costfunction, self.term, **kwds)
+        out = release_stdout(_stdout)
         sol = solver.Solution()
 
         if disp:
@@ -1072,6 +1101,8 @@ class TestStep(unittest.TestCase):
         # If solver should terminate immediately, check for that only.
         if iter_limit:
             self.assertTrue(solver.generations < 2)
+            warn = "Warning: Invalid termination condition (nPop < 2)"
+            self.assertTrue(warn in out)
             return
 
         # Expected: xi=-5-n where n=[0.0,0.12]
@@ -1248,7 +1279,6 @@ class TestGriewangk(unittest.TestCase):
 
     def _run_solver(self, iter_limit=False, **kwds):
         from mystic.monitors import Monitor
-        import numpy
         from mystic.tools import random_seed
         #random_seed(123)
         esow = Monitor()
@@ -1260,7 +1290,9 @@ class TestGriewangk(unittest.TestCase):
         solver.SetStrictRanges(self.min, self.max)
         solver.SetEvaluationMonitor(esow)
         solver.SetGenerationMonitor(ssow)
+        _stdout = trap_stdout()
         solver.Solve(self.costfunction, self.term, **kwds)
+        out = release_stdout(_stdout)
         sol = solver.Solution()
 
         if disp:
@@ -1273,6 +1305,8 @@ class TestGriewangk(unittest.TestCase):
         # If solver should terminate immediately, check for that only.
         if iter_limit:
             self.assertTrue(solver.generations < 2)
+            warn = "Warning: Invalid termination condition (nPop < 2)"
+            self.assertTrue(warn in out)
             return
 
         # Expected: xi=-5-n where n=[0.0,0.12]
@@ -1461,7 +1495,6 @@ Source: http://www.nag.co.uk/numeric/FL/nagdoc_fl22/xhtml/E05/e05jbf.xml"""
 
     def _run_solver(self, iter_limit=False, **kwds):
         from mystic.monitors import Monitor
-        import numpy
         from mystic.tools import random_seed
         #random_seed(123)
         esow = Monitor()
@@ -1473,7 +1506,9 @@ Source: http://www.nag.co.uk/numeric/FL/nagdoc_fl22/xhtml/E05/e05jbf.xml"""
         solver.SetStrictRanges(self.min, self.max)
         solver.SetEvaluationMonitor(esow)
         solver.SetGenerationMonitor(ssow)
+        _stdout = trap_stdout()
         solver.Solve(self.costfunction, self.term, **kwds)
+        out = release_stdout(_stdout)
         sol = solver.Solution()
 
         if disp:
@@ -1486,6 +1521,8 @@ Source: http://www.nag.co.uk/numeric/FL/nagdoc_fl22/xhtml/E05/e05jbf.xml"""
         # If solver should terminate immediately, check for that only.
         if iter_limit:
             self.assertTrue(solver.generations < 2)
+            warn = "Warning: Invalid termination condition (nPop < 2)"
+            self.assertTrue(warn in out)
             return
 
         # Verify solution is close to expected
@@ -1673,7 +1710,6 @@ Wiley, 2nd edition, 2009."""
 
     def _run_solver(self, iter_limit=False, **kwds):
         from mystic.monitors import Monitor
-        import numpy
         from mystic.tools import random_seed
         #random_seed(123)
         esow = Monitor()
@@ -1685,7 +1721,9 @@ Wiley, 2nd edition, 2009."""
         #solver.SetStrictRanges(self.min, self.max)
         solver.SetEvaluationMonitor(esow)
         solver.SetGenerationMonitor(ssow)
+        _stdout = trap_stdout()
         solver.Solve(self.costfunction, self.term, **kwds)
+        out = release_stdout(_stdout)
         sol = solver.Solution()
 
         if disp:
@@ -1702,6 +1740,8 @@ Wiley, 2nd edition, 2009."""
         # If solver should terminate immediately, check for that only.
         if iter_limit:
             self.assertTrue(solver.generations < 2)
+            warn = "Warning: Invalid termination condition (nPop < 2)"
+            self.assertTrue(warn in out)
             return
 
     def test_DifferentialEvolutionSolver_VTR(self): 
@@ -1861,6 +1901,7 @@ class TestSchwefel(unittest.TestCase):
     """Test Schwefel's function in 2 dimensions."""
 
     def setUp(self):
+        import numpy
         def schwefel(x):
             """'Schwefel's function [Sch81] is deceptive in that the global minimum is 
         geometrically distant, over the parameter space, from the next best local 
@@ -1882,7 +1923,6 @@ class TestSchwefel(unittest.TestCase):
 
     def _run_solver(self, iter_limit=False, **kwds):
         from mystic.monitors import Monitor
-        import numpy
         from mystic.tools import random_seed
         random_seed(123)
         esow = Monitor()
@@ -1894,7 +1934,9 @@ class TestSchwefel(unittest.TestCase):
         solver.SetStrictRanges(self.min, self.max)
         solver.SetEvaluationMonitor(esow)
         solver.SetGenerationMonitor(ssow)
+        _stdout = trap_stdout()
         solver.Solve(self.costfunction, self.term, **kwds)
+        out = release_stdout(_stdout)
         sol = solver.Solution()
 
         if disp:
@@ -1907,6 +1949,8 @@ class TestSchwefel(unittest.TestCase):
         # If solver should terminate immediately, check for that only.
         if iter_limit:
             self.assertTrue(solver.generations < 2)
+            warn = "Warning: Invalid termination condition (nPop < 2)"
+            self.assertTrue(warn in out)
             return
 
         # Verify solution is close to expected
@@ -2089,7 +2133,6 @@ class TestEasom(unittest.TestCase):
 
     def _run_solver(self, iter_limit=False, **kwds):
         from mystic.monitors import Monitor
-        import numpy
         from mystic.tools import random_seed
         random_seed(123)
         esow = Monitor()
@@ -2101,7 +2144,9 @@ class TestEasom(unittest.TestCase):
         solver.SetStrictRanges(self.min, self.max)
         solver.SetEvaluationMonitor(esow)
         solver.SetGenerationMonitor(ssow)
+        _stdout = trap_stdout()
         solver.Solve(self.costfunction, self.term, **kwds)
+        out = release_stdout(_stdout)
         sol = solver.Solution()
 
         if disp:
@@ -2114,6 +2159,8 @@ class TestEasom(unittest.TestCase):
         # If solver should terminate immediately, check for that only.
         if iter_limit:
             self.assertTrue(solver.generations < 2)
+            warn = "Warning: Invalid termination condition (nPop < 2)"
+            self.assertTrue(warn in out)
             return
 
         # Verify solution is close to expected
@@ -2301,7 +2348,6 @@ class TestRotatedEllipsoid(unittest.TestCase):
 
     def _run_solver(self, iter_limit=False, **kwds):
         from mystic.monitors import Monitor
-        import numpy
         from mystic.tools import random_seed
         random_seed(123)
         esow = Monitor()
@@ -2313,7 +2359,9 @@ class TestRotatedEllipsoid(unittest.TestCase):
         solver.SetStrictRanges(self.min, self.max)
         solver.SetEvaluationMonitor(esow)
         solver.SetGenerationMonitor(ssow)
+        _stdout = trap_stdout()
         solver.Solve(self.costfunction, self.term, **kwds)
+        out = release_stdout(_stdout)
         sol = solver.Solution()
 
         if disp:
@@ -2326,6 +2374,8 @@ class TestRotatedEllipsoid(unittest.TestCase):
         # If solver should terminate immediately, check for that only.
         if iter_limit:
             self.assertTrue(solver.generations < 2)
+            warn = "Warning: Invalid termination condition (nPop < 2)"
+            self.assertTrue(warn in out)
             return
 
         # Verify solution is close to expected
@@ -2489,6 +2539,7 @@ class TestAckley(unittest.TestCase):
     """Test Ackley's path function in 2 dimensions."""
 
     def setUp(self):
+        import numpy
         def ackley(x):
             """Ackley's Path function.
         xi in [-32.768., 32.768]
@@ -2508,7 +2559,6 @@ class TestAckley(unittest.TestCase):
 
     def _run_solver(self, iter_limit=False, **kwds):
         from mystic.monitors import Monitor
-        import numpy
         from mystic.tools import random_seed
         random_seed(123)
         esow = Monitor()
@@ -2520,7 +2570,9 @@ class TestAckley(unittest.TestCase):
         solver.SetStrictRanges(self.min, self.max)
         solver.SetEvaluationMonitor(esow)
         solver.SetGenerationMonitor(ssow)
+        _stdout = trap_stdout()
         solver.Solve(self.costfunction, self.term, **kwds)
+        out = release_stdout(_stdout)
         sol = solver.Solution()
 
         if disp:
@@ -2533,6 +2585,8 @@ class TestAckley(unittest.TestCase):
         # If solver should terminate immediately, check for that only.
         if iter_limit:
             self.assertTrue(solver.generations < 2)
+            warn = "Warning: Invalid termination condition (nPop < 2)"
+            self.assertTrue(warn in out)
             return
 
         # Verify solution is close to expected
@@ -2697,6 +2751,7 @@ class TestRastrigin(unittest.TestCase):
 one global minimum."""
 
     def setUp(self):
+        import numpy
         def rastrigin(x):
             """Rastrigin's function. Global minimum at xi=0, f(x)=0. Contains
         many local minima regularly distributed. Can be n-dimensional.
@@ -2714,7 +2769,6 @@ one global minimum."""
 
     def _run_solver(self, iter_limit=False, **kwds):
         from mystic.monitors import Monitor
-        import numpy
         from mystic.tools import random_seed
         random_seed(123)
         esow = Monitor()
@@ -2726,7 +2780,9 @@ one global minimum."""
         solver.SetStrictRanges(self.min, self.max)
         solver.SetEvaluationMonitor(esow)
         solver.SetGenerationMonitor(ssow)
+        _stdout = trap_stdout()
         solver.Solve(self.costfunction, self.term, **kwds)
+        out = release_stdout(_stdout)
         sol = solver.Solution()
 
         if disp:
@@ -2739,6 +2795,8 @@ one global minimum."""
         # If solver should terminate immediately, check for that only.
         if iter_limit:
             self.assertTrue(solver.generations < 2)
+            warn = "Warning: Invalid termination condition (nPop < 2)"
+            self.assertTrue(warn in out)
             return
 
         # Verify solution is close to expected
@@ -2921,7 +2979,6 @@ class TestGoldsteinPrice(unittest.TestCase):
 
     def _run_solver(self, iter_limit=False, **kwds):
         from mystic.monitors import Monitor
-        import numpy
         from mystic.tools import random_seed
         random_seed(123)
         esow = Monitor()
@@ -2933,7 +2990,9 @@ class TestGoldsteinPrice(unittest.TestCase):
         solver.SetStrictRanges(self.min, self.max)
         solver.SetEvaluationMonitor(esow)
         solver.SetGenerationMonitor(ssow)
+        _stdout = trap_stdout()
         solver.Solve(self.costfunction, self.term, **kwds)
+        out = release_stdout(_stdout)
         sol = solver.Solution()
 
         if disp:
@@ -2946,6 +3005,8 @@ class TestGoldsteinPrice(unittest.TestCase):
         # If solver should terminate immediately, check for that only.
         if iter_limit:
             self.assertTrue(solver.generations < 2)
+            warn = "Warning: Invalid termination condition (nPop < 2)"
+            self.assertTrue(warn in out)
             return
 
         # Verify solution is close to expected
@@ -3132,7 +3193,6 @@ http://reference.wolfram.com/mathematica/tutorial/ConstrainedOptimizationGlobalN
 
     def _run_solver(self, iter_limit=False, **kwds):
         from mystic.monitors import Monitor
-        import numpy
         from mystic.tools import random_seed
         random_seed(123)
         esow = Monitor()
@@ -3144,7 +3204,9 @@ http://reference.wolfram.com/mathematica/tutorial/ConstrainedOptimizationGlobalN
         #solver.SetStrictRanges(self.min, self.max)
         solver.SetEvaluationMonitor(esow)
         solver.SetGenerationMonitor(ssow)
+        _stdout = trap_stdout()
         solver.Solve(self.costfunction, self.term, **kwds)
+        out = release_stdout(_stdout)
         sol = solver.Solution()
         #print '\n', sol
 
@@ -3158,6 +3220,8 @@ http://reference.wolfram.com/mathematica/tutorial/ConstrainedOptimizationGlobalN
         # If solver should terminate immediately, check for that only.
         if iter_limit:
             self.assertTrue(solver.generations < 2)
+            warn = "Warning: Invalid termination condition (nPop < 2)"
+            self.assertTrue(warn in out)
             return
 
         # Verify solution is close to expected
@@ -3347,7 +3411,6 @@ F(min) is negative, so VTR default can fail."""
 
     def _run_solver(self, iter_limit=False, **kwds):
         from mystic.monitors import Monitor
-        import numpy
         from mystic.tools import random_seed
         random_seed(123)
         esow = Monitor()
@@ -3359,7 +3422,9 @@ F(min) is negative, so VTR default can fail."""
         solver.SetStrictRanges(self.min, self.max)
         solver.SetEvaluationMonitor(esow)
         solver.SetGenerationMonitor(ssow)
+        _stdout = trap_stdout()
         solver.Solve(self.costfunction, self.term, **kwds)
+        out = release_stdout(_stdout)
         sol = solver.Solution()
         #print '\n', sol
 
@@ -3373,6 +3438,8 @@ F(min) is negative, so VTR default can fail."""
         # If solver should terminate immediately, check for that only.
         if iter_limit:
             self.assertTrue(solver.generations < 2)
+            warn = "Warning: Invalid termination condition (nPop < 2)"
+            self.assertTrue(warn in out)
             return
 
         # Verify solution is close to expected
@@ -3553,9 +3620,24 @@ if __name__ == '__main__':
     suite17 = unittest.TestLoader().loadTestsFromTestCase(TestPaviani)
     # Comment out suites in the list below to test specific test cost functions only
     # (Testing all the problems will take some time)
-    #allsuites = unittest.TestSuite([suite1, suite2, suite3, suite4, suite5, \
-    #                                suite6, suite7, suite8, suite9, suite10, \
-    #                                suite11, suite12, suite13, suite14,\
-    #                                suite15, suite16, suite17])
-    allsuites = unittest.TestSuite([suite1])
-    unittest.TextTestRunner(verbosity=2).run(allsuites)
+    allsuites = unittest.TestSuite([suite1,   # Zimmermann
+#                                   suite2,   # Rosenbrock
+#                                   suite3,   # Corana
+#                                   suite4,   # Quartic
+#                                   suite5,   # Shekel
+ #                                  suite6,   # Step
+ #                                  suite7,   # Griewangk
+#                                   suite8,   # Peaks
+#                                   suite9,   # Venkataraman91
+#                                   suite10,  # Schwefel
+#                                   suite11,  # Easom
+                                    suite12,  # RotatedEllipsoid
+#                                   suite13,  # Ackley
+#                                   suite14,  # Rastrigin
+#                                   suite15,  # GoldsteinPrice
+#                                   suite16,  # MathematicaDoc
+ #                                  suite17,  # Paviani
+                                    ])
+    unittest.TextTestRunner(verbosity=verbosity).run(allsuites)
+
+# EOF
