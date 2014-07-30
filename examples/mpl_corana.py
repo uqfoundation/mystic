@@ -28,7 +28,7 @@ for xinit in numpy.arange(0.1,2,0.1):
     yy = [Corana1([c]) for c in xx]
     pylab.plot(xx,yy,'r-',xx,yy,'ko',linewidth=2)
 
-pylab.title("Solution trajectories for scipy's fmin at different ICs")
+pylab.title("Solution trajectories for fmin at different initial conditions")
 pylab.show()
 
 # end of file

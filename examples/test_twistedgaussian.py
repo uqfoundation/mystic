@@ -24,7 +24,8 @@ Link to paper: http://www.science.uva.nl/research/scs/papers/archive/Vrugt2006b.
 """
 
 from mystic.scemtools import *
-
+from numpy import zeros, identity, array
+from numpy import random
 
 # dimension of density function
 n = 2
@@ -50,10 +51,9 @@ def target(X):
     return p(twist(X))     
 
 def proposal(X):
-    return multivariate_normal(X, 10. * identity(n))
+    return random.multivariate_normal(X, 10. * identity(n))
 
 def initpop(npts, ndim):
-    from numpy import random
     return random.rand(npts, ndim) * 200. -1
 
 a = initpop(q*m, n)
