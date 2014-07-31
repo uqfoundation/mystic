@@ -77,7 +77,7 @@ __all__ = ['AbstractSolver']
 
 import numpy
 from numpy import inf, shape, asarray, absolute, asfarray
-from mystic.tools import wrap_function, wrap_nested
+from mystic.tools import wrap_function, wrap_nested, wrap_reducer
 from mystic.tools import wrap_bounds, wrap_penalty, reduced
 
 abs = absolute
@@ -145,7 +145,7 @@ Important class members:
 
         self._constraints     = lambda x: x
         self._penalty         = lambda x: 0.0
-        self._reducer         = (None, False)
+        self._reducer         = None
         self._cost            = (None, None)
         self._termination     = lambda x, *ar, **kw: False if len(ar) < 1 or ar[0] is False or kw.get('info',True) == False else '' #XXX: better default ?
         # (get termination details with self._termination.__doc__)
@@ -219,11 +219,13 @@ input::
       should meet the requirements of the python's builtin 'reduce' method 
       (e.g. lambda x,y: x+y), taking two scalars and producing a scalar."""
         if not reducer:
-            self._reducer = (None, True)
+            self._reducer = None
         elif not callable(reducer):
             raise TypeError, "'%s' is not a callable function" % reducer
-        else: #XXX: check for format: x' = reducer(x) ?
-            self._reducer = (reducer, arraylike) #XXX: bool(arraylike) ?
+        elif not arraylike:
+            self._reducer = wrap_reducer(reducer)   
+        else: #XXX: check if is arraylike?
+            self._reducer = reducer
         return
 
     def SetPenalty(self, penalty):
@@ -577,8 +579,9 @@ Note::
             cost = wrap_bounds(cost, self._strictMin, self._strictMax)
         cost = wrap_penalty(cost, self._penalty)
         cost = wrap_nested(cost, self._constraints)
-        if self._reducer[0]:
-            cost = reduced(*self._reducer)(cost) #XXX: decorated? as wrap_*?
+        if self._reducer:
+           #cost = reduced(*self._reducer)(cost) # was self._reducer = (f,bool)
+            cost = reduced(self._reducer, arraylike=True)(cost)
         # hold on to the 'wrapped' cost function
         self._cost = (cost, ExtraArgs)
         return cost

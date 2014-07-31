@@ -208,8 +208,9 @@ are logged.
                 self.population[i] = self._clipGuessWithinRangeBoundary(self.population[i])
             cost = wrap_bounds(cost, self._strictMin, self._strictMax)
         cost = wrap_penalty(cost, self._penalty)
-        if self._reducer[0]:
-            cost = reduced(*self._reducer)(cost) #XXX: decorated? as wrap_*?
+        if self._reducer:
+           #cost = reduced(*self._reducer)(cost) # was self._reducer = (f,bool)
+            cost = reduced(self._reducer, arraylike=True)(cost)
         # hold on to the 'wrapped' cost function
         self._cost = (cost, ExtraArgs)
         return cost
@@ -359,8 +360,9 @@ are logged.
                 self.population[i] = self._clipGuessWithinRangeBoundary(self.population[i])
             cost = wrap_bounds(cost, self._strictMin, self._strictMax)
         cost = wrap_penalty(cost, self._penalty)
-        if self._reducer[0]:
-            cost = reduced(*self._reducer)(cost) #XXX: decorated? as wrap_*?
+        if self._reducer:
+           #cost = reduced(*self._reducer)(cost) # was self._reducer = (f,bool)
+            cost = reduced(self._reducer, arraylike=True)(cost)
         # hold on to the 'wrapped' cost function
         self._cost = (cost, ExtraArgs)
         return cost

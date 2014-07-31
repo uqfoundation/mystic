@@ -13,7 +13,7 @@ from mystic.solvers import DifferentialEvolutionSolver2 as DifferentialEvolution
 from mystic.termination import ChangeOverGeneration, VTR
 from mystic.strategy import Best1Exp, Best1Bin, Rand1Exp
 from mystic.monitors import VerboseMonitor
-from mystic.tools import getch, reduced
+from mystic.tools import getch
 from numpy import arange
 from mystic.solvers import fmin
 #from mystic._scipyoptimize import fmin
@@ -23,11 +23,6 @@ random.seed(123)
 
 from mystic.models import wavy1, wavy2
 wavy = wavy1
-
-# reduce wavy's multi-valued return
-#@reduced(sum, arraylike=True)
-def cost(x):
-    return wavy(x)
 
 def show():
     import pylab, Image
@@ -66,7 +61,7 @@ def main():
     stepmon = VerboseMonitor(1)
     solver.SetGenerationMonitor(stepmon)
    #solver.SetReducer(sum, arraylike=True) # reduce wavy's multi-valued return
-    solver.Solve(cost, ChangeOverGeneration(generations=50), \
+    solver.Solve(wavy, ChangeOverGeneration(generations=50), \
                  strategy=strategy, CrossProbability=1.0, ScalingFactor=0.9, \
                  sigint_callback = plot_solution)
 

@@ -24,6 +24,7 @@ Main functions exported are::
     - wrap_function: bind an EvaluationMonitor and an evaluation counter
         to a function object
     - wrap_bounds: impose bounds on a function object
+    - wrap_reducer: convert a reducer function to an arraylike interface
     - reduced: apply a reducer function to reduce output to a single value
     - unpair: convert a 1D array of N pairs to two 1D arrays of N values
     - src: extract source code from a python code object
@@ -182,6 +183,23 @@ def wrap_bounds(target_function, min=None, max=None):
         def function_wrapper(x):
             return target_function(x)
     return function_wrapper
+
+def wrap_reducer(reducer_function):
+    """convert a reducer function to an arraylike interface
+
+This is useful for converting a function that used python's 'y = reduce(f, x)'
+interface to an arraylike interface 'y = f(x)'.  Example usage...
+    >>> acum = wrap_reduce(numpy.add)
+    >>> acum([1,2,3,4])
+    10
+    >>> prod = wrap_reduce(lambda x,y: x*y)
+    >>> prod([1,2,3,4])
+    24
+    """
+    def _reduce(x): # NOTE: not a decorator
+        return reduce(reducer_function, x)
+    return _reduce
+
 
 def reduced(reducer=None, arraylike=False):
     """apply a reducer function to reduce output to a single value
