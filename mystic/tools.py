@@ -27,6 +27,7 @@ Main functions exported are::
     - wrap_reducer: convert a reducer function to an arraylike interface
     - reduced: apply a reducer function to reduce output to a single value
     - masked: generate a masked function, given a function and mask provided
+    - insert_missing: return a sequence with the 'missing' elements inserted
     - unpair: convert a 1D array of N pairs to two 1D arrays of N values
     - src: extract source code from a python code object
 
@@ -250,54 +251,69 @@ example usage...
         return func
     return dec 
 
-def masked(mask=None):
-    """generate a masked function, given a function and mask provided
 
-mask should be a dictionary of the argument index and a value (e.g. {0:1.0}),
+def insert_missing(x, missing=None):
+    """return a sequence with the 'missing' elements inserted
+
+missing should be a dictionary of positional index and a value (e.g. {0:1.0}),
 where keys must be integers, and values can be any object (typically a float).
 
 For example,
-    >>> @masked({0:10,3:-1})
-    ... def foo(x,y=1,z=2,*args):
-    ...     w = sum(args) if args else 0
-    ...     return w+x+y+z
-    ...
-    >>> foo(-5) # i.e. foo(10,-5,2,-1)
-    6
+    >>> insert_missing([1,2,4], missing={0:10, 3:-1})
+    [10, 1, 2, -1, 4]
     """
-    #NOTE: ignores kwds (also ignores farg,fkwd from signature)
-    if mask is None: _mask = {}
-    elif isinstance(mask, str): _mask = eval('{%s}' % mask)
-    else: _mask = mask
-    # raise KeyError if mask has_key < 0 #XXX: also has *any* non-int object
+    import dill
+    if missing is None: _mask = {}
+    elif isinstance(missing, str): _mask = eval('{%s}' % missing)
+    else: _mask = missing
+    # raise KeyError if key out of bounds #XXX: also has *any* non-int object
     first = min([0]+_mask.keys())
     if first < 0:
         raise KeyError('invalid argument index: %s' % first)
+    last = max([-1]+_mask.keys())
+    if last > len(x)+len(_mask)-1:
+        raise KeyError('invalid argument index: %s' % last)
 
+    # preserve type(x)
+    _locals = {}
+    _locals['xtype'] = type(x)
+    code = "%s" % dill.source.getimport(x, alias='xtype')
+    if "import" in code:
+        code = compile(code, '<string>', 'exec')
+        exec code in _locals
+    xtype = _locals['xtype']
+
+    # find the new indices due to the mask
+    _x = list(x)
+    for (k,v) in sorted(_mask.items()):
+        _x.insert(k,v)
+    # get the new sequence
+    return xtype(_x)
+
+
+def masked(mask=None):
+    """generate a masked function, given a function and mask provided
+
+mask should be a dictionary of the positional index and a value (e.g. {0:1.0}),
+where keys must be integers, and values can be any object (typically a float).
+
+functions are expected to take a single argument, a n-dimensional list or array,
+where the mask will be applied to the input array.  Hence, instead of masking
+the inputs, the function is "masked".  Conceptually, f(mask(x)) ==> f'(x),
+instead of f(mask(x)) ==> f(x').
+
+For example,
+    >>> @masked({0:10,3:-1})
+    ... def foo(x):
+            w,x,y,z = x # requires a lenth-4 sequence
+    ...     return w+x+y+z
+    ...
+    >>> foo([-5,2])     # produces [10,-5,2,-1]
+    6
+    """
     def dec(f):
-        import klepto
-        # get the list of variable names in the function
-        names,kw,farg,fkwd = klepto.signature(f)
-        # make a dict of all 'default' variables (by index)
-        _kwds = dict((list(names).index(k),v) for (k,v) in kw.items())
-
-        def func(*args, **kwds):
-            # find the shift due to named args given in the mask
-            shift = sum(i in _mask for i in range(len(args)))
-            # make a dict of all variables
-            _arg = dict((i+shift,v) for (i,v) in enumerate(args))
-            _arg.update(_mask)
-            _kwds.update(_arg)
-            if max([-1]+_kwds.keys()) != len(_kwds)-1:
-                import dill
-                name = dill.source.getname(f)
-                msg = "%s() takes at least %s argument" % (name, len(names))
-                msg += "s" if len(names) > 1 else ""
-                msg += " (%s given)" % len(_arg)
-                raise TypeError(msg)
-            # get and apply the new args list to the function
-            _arg = tuple(v for (k,v) in sorted(_kwds.items()))
-            return f(*_arg, **kwds)
+        def func(x, *args, **kwds):
+            return f(insert_missing(x, mask), *args, **kwds)
         func.__doc__ = f.__doc__
         return func
     return dec
