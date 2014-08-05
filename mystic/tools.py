@@ -279,7 +279,7 @@ For example,
         # get the list of variable names in the function
         names,kw,farg,fkwd = klepto.signature(f)
         # make a dict of all 'default' variables (by index)
-        _kwds = dict((names.index(k),v) for (k,v) in kw.items())
+        _kwds = dict((list(names).index(k),v) for (k,v) in kw.items())
 
         def func(*args, **kwds):
             # find the shift due to named args given in the mask
