@@ -9,15 +9,13 @@ from mpl_toolkits.mplot3d import axes3d
 import matplotlib.pyplot as plt
 from matplotlib import cm
 
-#FIXME: make a script with commandline options
-
 def read_log(file): #FIXME: should also read "solver restart file"
   "read monitor or logfile (or support file) any return params and cost"
  #try:  # get the name of the parameter log file
  #  file = parsed_args[0]
   if isinstance(file, str):
     import re
-    file = re.sub('\.py*.$', '', file)  #XXX: strip off .py* extension
+    file = re.sub('\.py*.$', '', file)  # strip off .py* extension
     monitor = False
   else: monitor = True
  #except:
@@ -33,6 +31,19 @@ def read_log(file): #FIXME: should also read "solver restart file"
     exec "from %s import params" % file
     exec "from %s import cost" % file
   return params, cost
+
+
+def get_instance(location, *args, **kwds):
+    """given the import location of a model or model class, return the model
+
+args and kwds will be passed to the constructor of the model class
+    """
+    package, target = location.rsplit('.',1)
+    exec "from %s import %s as model" % (package, target)
+    import inspect
+    if inspect.isclass(model):
+        model = model(*args, **kwds)
+    return model
 
 
 def parse_axes(option):
@@ -81,7 +92,7 @@ For example:
     return x,y,z
 
 
-def nearest(target, vector): #XXX: useful, but not in this context...
+def nearest(target, vector): #XXX: useful? (not used in this module)
     """find the value in vector that is nearest to target
 
     vector should be a 1D array of len=N or have shape=(N,1) or (1,N)
@@ -93,11 +104,11 @@ def nearest(target, vector): #XXX: useful, but not in this context...
     return -diff + target
 
 
-def draw_projection(file, plotx=True, scale=True, shift=False, color=None, figure=None):
+def draw_projection(file, select=0, scale=True, shift=False, color=None, figure=None):
     """draw a solution trajectory (for overlay on a 1D plot)
 
 file is monitor or logfile of solution trajectories
-if plotx is True, project along the x-axis
+select is the parameter index (e.g. 0 -> param[0]) selected for plotting
 if scale is provided, scale the intensity as 'z = log(4*z*scale+1)+2'
 if shift is provided, shift the intensity as 'z = z+shift' (useful for -z's)
 if color is provided, set the line color (e.g. 'w', 'k')
@@ -106,11 +117,9 @@ if figure is provided, plot to an existing figure
     # params are the parameter trajectories
     # cost is the solution trajectory
     params, cost = read_log(file)
-    #XXX: take 'params,cost=None' instead of 'file,surface=False'?
-    if len(params) < 2:
-        x = y = params[0]
-    else:
-        x,y = params # requires two parameters
+    d = {'x':0, 'y':1, 'z':2} #XXX: remove the easter egg?
+    if select in d: select = d[select]
+    x = params[int(select)] # requires one parameter
 
     if not figure: figure = plt.figure()
     ax = figure.gca()
@@ -127,18 +136,16 @@ if figure is provided, plot to an existing figure
     if scale:
         cost = numpy.log(4*cost*scale+1)+2
 
-    if plotx:
-        ax.plot(x,cost, color+'-o', linewidth=2, markersize=4)
-    else:
-        ax.plot(y,cost, color+'-o', linewidth=2, markersize=4)
+    ax.plot(x,cost, color+'-o', linewidth=2, markersize=4)
     #XXX: need to 'correct' the z-axis (or provide easy conversion)
     return figure
 
 
-def draw_trajectory(file, surface=False, scale=True, shift=False, color=None, figure=None):
+def draw_trajectory(file, select=None, surface=False, scale=True, shift=False, color=None, figure=None):
     """draw a solution trajectory (for overlay on a contour plot)
 
 file is monitor or logfile of solution trajectories
+select is a len-2 list of parameter indicies (e.g. 0,1 -> param[0],param[1])
 if surface is True, plot the trajectories as a 3D projection
 if scale is provided, scale the intensity as 'z = log(4*z*scale+1)+2'
 if shift is provided, shift the intensity as 'z = z+shift' (useful for -z's)
@@ -148,6 +155,11 @@ if figure is provided, plot to an existing figure
     # params are the parameter trajectories
     # cost is the solution trajectory
     params, cost = read_log(file)
+    if select is None: select = (0,1)
+    d = {'x':0, 'y':1, 'z':2} #XXX: remove the easter egg?
+    for ind,val in enumerate(select):
+        if val in d: select[ind] = d[val]
+    params = [params[int(i)] for i in select[:2]]
     #XXX: take 'params,cost=None' instead of 'file,surface=False'?
     x,y = params # requires two parameters
 
@@ -266,69 +278,86 @@ use density to adjust the number of contour lines
 
 if __name__ == '__main__':
    #FIXME: for a script, need to: 
-   # - build an appropriately-sized default grid, or parse "slices" info
-   # - get a model ('package.file.model' or 'mystic.models.Foo(2)')
    # - do the other option parsing magic...
    # - enable 'skip' plotting points (points or line or both)?
-   # - enable adding constraints 'mask' (set cost=nan where violate constraints)
+   # - handle 1D, 2D, or >= 3D model and logfile
    #FIXME: should be able to:
-   # - apply a constraint as a region of NaN
-   # - apply a penalty by shifting the surface (maybe plot using alpha?)
+   # - apply a constraint as a region of NaN -- apply when 'xx,yy=x[ij],y[ij]'
+   # - apply a penalty by shifting the surface (plot w/alpha?) -- as above
    # - read logfile with multiple trajectories (i.e. parallel batch)
+   # - build an appropriately-sized default grid (from logfile info)
    #FIXME: current issues:
+   # - 1D slice and projection work for 2D function, but aren't "pretty"
+   # - 1D slice and projection for 1D function needs further testing...
    # - should be able to plot from solver.genealogy (multi-monitor?) [1D,2D,3D?]
    # - should be able to scale 'z-axis' instead of scaling 'z' itself
    #   (see https://github.com/matplotlib/matplotlib/issues/209)
 
-    import numpy
-    from mystic.models import rosen, step, quartic, shekel
-    from mystic.models import zimmermann, griewangk, fosc3d
-    from mystic.models.corana import corana2d
-    from mystic.models import wavy1, wavy2
-    from mystic.solvers import fmin, fmin_powell, diffev
     from mystic.tools import reduced
 
     ### INPUTS ###
+    select = (0,1) #FIXME: build with 'inputs'
+    model = 'mystic.models.zimmermann'
+    reducer = 'numpy.add'
+    source = None #'log.txt'
    #spec = '-50:50:.5, -50:50:.5, z'
     spec = '-1:10:.1, -1:10:.1, z'
     scale = True
+    shift = False
     fill = False
-    source = 'log.txt'
+    demo = True
     ##############
 
     # process inputs
-    x,y,z = parse_axes(spec)
     color = 'w' if fill else 'k'
-   #model = reduced(numpy.add, arraylike=False)(wavy1)
-    model = zimmermann
+    x,y,z = parse_axes(spec)
+    reducer = get_instance(reducer)
+    if not source and not model:
+        raise RuntimeError('a model or a results file is required')
+    if model: #FIXME: use 'inputs' to decorate model --> e.g. model(x,0,0,y)
+        model = get_instance(model)
+        model = reduced(reducer, arraylike=False)(model) # need if returns array
 
-    # for demo purposes, pick a solver (then solve)
-    solver = fmin
-    initial = (0,0)
-   #solver = diffev
-   #initial = ((-1,10),(-1,10))
-    from mystic.monitors import VerboseLoggingMonitor
-    itermon = VerboseLoggingMonitor(filename=source, new=True)
-    sol = solver(model, x0=initial, itermon=itermon)
+    if demo:
+        #-OVERRIDE-INPUTS-# 
+        source = 'log.txt'
+        #-----------------#
+        # for demo purposes, pick a solver (then solve)
+        from mystic.solvers import fmin, fmin_powell, diffev
+        solver = fmin
+        initial = (0,0)
+       #solver = diffev
+       #initial = ((-1,10),(-1,10))
+        from mystic.monitors import VerboseLoggingMonitor
+        itermon = VerboseLoggingMonitor(filename=source, new=True)
+        sol = solver(model, x0=initial, itermon=itermon)
 
-    ### INPUTS? ###
-    # read trajectories from monitor (comment out to use logfile)
-    source = itermon
-    # if negative minimum, shift by the 'solved minimum' plus an epsilon
-    shift = max(-numpy.min(itermon.y), 0.0) + 0.5 # a good guess
-   #shift = False
-    ###############
+        #-OVERRIDE-INPUTS-# 
+        import numpy
+        # read trajectories from monitor (comment out to use logfile)
+        source = itermon
+        # if negative minimum, shift by the 'solved minimum' plus an epsilon
+        shift = max(-numpy.min(itermon.y), 0.0) + 0.5 # a good guess
+        #-----------------#
 
     # project trajectory on a 1D slice of the model surface #XXX: useful?
 #   fig0 = draw_slice(model, x=x, y=sol[-1], scale=scale, shift=shift)
-#   draw_projection(source, plotx=True, color=color, scale=scale, shift=shift, figure=fig0)
+#   draw_projection(source, select=0, color=color, scale=scale, shift=shift, figure=fig0)
 
     # plot the trajectory on the model surface (2D and 3D)
-    fig1 = draw_contour(model, x, y, fill=fill, scale=scale, shift=shift)
-    draw_trajectory(source, color=color, scale=scale, shift=shift, figure=fig1)
+    if model: # plot the surface
+        fig1 = draw_contour(model, x, y, fill=fill, scale=scale, shift=shift)
+    else:
+        fig1 = None
+    if source: # plot the trajectory
+        draw_trajectory(source, select=select, color=color, scale=scale, shift=shift, figure=fig1)
 
-    fig2 = draw_contour(model, x, y, surface=True, fill=fill, scale=scale, shift=shift)
-    draw_trajectory(source, surface=True, color=color, scale=scale, shift=shift, figure=fig2)
+    if model: # plot the surface
+        fig2 = draw_contour(model, x, y, surface=True, fill=fill, scale=scale, shift=shift)
+    else:
+        fig2 = None
+    if source: # plot the trajectory
+        draw_trajectory(source, select=select, surface=True, color=color, scale=scale, shift=shift, figure=fig2)
 
 #   draw_contour(model, x, y, fill=fill, scale=scale)
 #   draw_contour(model, x, y, surface=True, fill=fill, scale=scale)
