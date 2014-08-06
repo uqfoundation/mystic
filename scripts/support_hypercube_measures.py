@@ -71,20 +71,11 @@ if __name__ == '__main__':
                     default=False,help="show selected iterations in a single plot")
   parsed_opts, parsed_args = parser.parse_args()
 
-  try:  # get the name of the parameter log file
-    file = parsed_args[0]
-    import re
-    file = re.sub('\.py*.$', '', file)  #XXX: strip off .py* extension
-  except:
-    raise IOError, "please provide log file name"
-  try:  # read standard logfile
-    from mystic.munge import logfile_reader, raw_to_support
-    _step, params, _cost = logfile_reader(file)
-    params, _cost = raw_to_support(params, _cost)
-  except: 
-    exec "from %s import params" % file
-    #exec "from %s import meta" % file
-    # would be nice to use meta = ['wx','wx2','x','x2','wy',...]
+  # get the name of the parameter log file
+  from mystic.munge import read_history
+  params, _cost = read_history(parsed_args[0])
+  # would be nice to use meta = ['wx','wx2','x','x2','wy',...]
+  # exec "from %s import meta" % file
 
   try: # select the bounds
     bounds = eval(parsed_opts.bounds)  # format is "[(60,105),(0,30),(2.1,2.8)]"

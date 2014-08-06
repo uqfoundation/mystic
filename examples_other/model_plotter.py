@@ -9,29 +9,7 @@ from mpl_toolkits.mplot3d import axes3d
 import matplotlib.pyplot as plt
 from matplotlib import cm
 
-def read_log(file): #FIXME: should also read "solver restart file"
-  "read monitor or logfile (or support file) any return params and cost"
- #try:  # get the name of the parameter log file
- #  file = parsed_args[0]
-  if isinstance(file, str):
-    import re
-    file = re.sub('\.py*.$', '', file)  # strip off .py* extension
-    monitor = False
-  else: monitor = True
- #except:
- #  raise IOError, "please provide log file name"
-  try:  # read standard logfile (or monitor)
-    from mystic.munge import logfile_reader, raw_to_support
-    if monitor:
-      params, cost = file.x, file.y
-    else: #FIXME: 'logfile_reader' should work for both file and monitor
-      _step, params, cost = logfile_reader(file)
-    params, cost = raw_to_support(params, cost)
-  except:
-    exec "from %s import params" % file
-    exec "from %s import cost" % file
-  return params, cost
-
+from mystic.munge import read_history
 
 def get_instance(location, *args, **kwds):
     """given the import location of a model or model class, return the model
@@ -46,26 +24,55 @@ args and kwds will be passed to the constructor of the model class
     return model
 
 
-def parse_axes(option):
+def parse_input(option):
+    """parse 'option' string into 'select', 'axes', and 'mask'
+
+select contains the dimension specifications on which to plot
+axes holds the indicies of the parameters selected to plot
+mask is a dictionary of the parameter indicies and fixed values
+
+For example,
+    >>> select, axes, mask = parse_input("-1:10:.1, 0.0, 5.0, -50:50:.5")
+    >>> select
+    [0, 3]
+    >>> axes
+    "-1:10:.1, -50:50:.5"
+    >>> mask
+    {1: 0.0, 2: 5.0}
+    """
+    option = option.split(',')
+    select = []
+    axes = []
+    mask = {}
+    for index,value in enumerate(option):
+        if ":" in value:
+            select.append(index)
+            axes.append(value)
+        else:
+            mask.update({index:float(value)})
+    axes = ','.join(axes)
+    return select, axes, mask
+
+
+def parse_axes(option, grid=True):
     """parse option string into grid axes; using modified numpy.ogrid notation
 
 For example:
-  option='-1:10' yields x=ogrid[-1:10] and y=0,
-  option='-1:10, 2' yields x=ogrid[-1:10] and y=2,
   option='-1:10:.1, 0:10:.1' yields x,y=ogrid[-1:10:.1,0:10:.1],
 
-Returns tuple (x,y,z) with 'x,y' defined above, and 'z' is a boolean
-where if a third member is included return z=True, else return z=False.
-
+If grid is False, accept options suitable for line plotting.
 For example:
-  option='-1:10:.1, 0:10:.1, z' yields x,y=ogrid[-1:10:.1,0:10:.1] and z=True
+  option='-1:10' yields x=ogrid[-1:10] and y=0,
+  option='-1:10, 2' yields x=ogrid[-1:10] and y=2,
+
+Returns tuple (x,y) with 'x,y' defined above.
     """
     import numpy
     option = option.split(',')
     opt = dict(zip(['x','y','z'],option))
-    if len(option) > 3 or len(option) < 1:
+    if len(option) > 2 or len(option) < 1:
         raise ValueError("invalid format string: '%s'" % ','.join(option))
-    z = True if len(option) == 3 else False
+    z = bool(grid)
     if len(option) == 1: opt['y'] = '0'
     xd = True if ':' in opt['x'] else False
     yd = True if ':' in opt['y'] else False
@@ -89,7 +96,7 @@ For example:
             raise ValueError("invalid format string: '%s'" % ','.join(option))
     else:
         raise ValueError("invalid format string: '%s'" % ','.join(option))
-    return x,y,z
+    return x,y
 
 
 def nearest(target, vector): #XXX: useful? (not used in this module)
@@ -116,7 +123,7 @@ if figure is provided, plot to an existing figure
     """
     # params are the parameter trajectories
     # cost is the solution trajectory
-    params, cost = read_log(file)
+    params, cost = read_history(file)
     d = {'x':0, 'y':1, 'z':2} #XXX: remove the easter egg?
     if select in d: select = d[select]
     x = params[int(select)] # requires one parameter
@@ -154,7 +161,7 @@ if figure is provided, plot to an existing figure
     """
     # params are the parameter trajectories
     # cost is the solution trajectory
-    params, cost = read_log(file)
+    params, cost = read_history(file)
     if select is None: select = (0,1)
     d = {'x':0, 'y':1, 'z':2} #XXX: remove the easter egg?
     for ind,val in enumerate(select):
@@ -280,54 +287,65 @@ if __name__ == '__main__':
    #FIXME: for a script, need to: 
    # - do the other option parsing magic...
    # - enable 'skip' plotting points (points or line or both)?
-   # - handle 1D, 2D, or >= 3D model and logfile
    #FIXME: should be able to:
    # - apply a constraint as a region of NaN -- apply when 'xx,yy=x[ij],y[ij]'
    # - apply a penalty by shifting the surface (plot w/alpha?) -- as above
    # - read logfile with multiple trajectories (i.e. parallel batch)
    # - build an appropriately-sized default grid (from logfile info)
    #FIXME: current issues:
+   # - working with 1D or >= 3D model / logfile "feels wrong"
    # - 1D slice and projection work for 2D function, but aren't "pretty"
    # - 1D slice and projection for 1D function needs further testing...
    # - should be able to plot from solver.genealogy (multi-monitor?) [1D,2D,3D?]
    # - should be able to scale 'z-axis' instead of scaling 'z' itself
    #   (see https://github.com/matplotlib/matplotlib/issues/209)
 
-    from mystic.tools import reduced
+    from mystic.tools import reduced, masked
 
     ### INPUTS ###
-    select = (0,1) #FIXME: build with 'inputs'
-    model = 'mystic.models.zimmermann'
+    options = '-1:10:.1, -1:10:.1' #, 1.0'
+   #options = '-50:50:.5, -50:50:.5'
+    model = 'mystic.models.rosen'
     reducer = 'numpy.add'
-    source = None #'log.txt'
-   #spec = '-50:50:.5, -50:50:.5, z'
-    spec = '-1:10:.1, -1:10:.1, z'
+    source = 'log.txt'
+    surface = True
     scale = True
     shift = False
     fill = False
     demo = True
+    fixed = False  # if True, apply 'fixed' parameter as constraint (for demo)
     ##############
 
     # process inputs
     color = 'w' if fill else 'k'
-    x,y,z = parse_axes(spec)
+    select, spec, mask = parse_input(options)
+    x,y = parse_axes(spec, grid=True) # grid=False for 1D plots
+    #FIXME: does grid=False still make sense here...?
     reducer = get_instance(reducer)
-    if not source and not model:
+    if demo and (not source or not model):
+        raise RuntimeError('a model and results filename are required')
+    elif not source and not model:
         raise RuntimeError('a model or a results file is required')
-    if model: #FIXME: use 'inputs' to decorate model --> e.g. model(x,0,0,y)
+    if model:
         model = get_instance(model)
         model = reduced(reducer, arraylike=False)(model) # need if returns array
+        if fixed: model = masked(mask)(model) # constrain masked parameters
 
     if demo:
-        #-OVERRIDE-INPUTS-# 
-        source = 'log.txt'
-        #-----------------#
-        # for demo purposes, pick a solver (then solve)
+        #NOTES on applying a mask:
+        # - before solver: reduce dim, log selected param, follow plot surface
+        # - after solver: all dim, log all param, don't follow plot surface
+        # - could apply constraint to solver to constrain to fixed axes...
+        #FIXME: to match surface with 'fixed' axes, use mask to constrain 'x'
+
+        # for demo purposes... pick a solver (then solve)
         from mystic.solvers import fmin, fmin_powell, diffev
         solver = fmin
-        initial = (0,0)
+        xlen = len(select)                # masked before...
+        xlen += 0 if fixed else len(mask) # or masked after
+        initial = [0]*xlen
        #solver = diffev
-       #initial = ((-1,10),(-1,10))
+       #initial = [(-1,10)]*xlen
         from mystic.monitors import VerboseLoggingMonitor
         itermon = VerboseLoggingMonitor(filename=source, new=True)
         sol = solver(model, x0=initial, itermon=itermon)
@@ -339,6 +357,9 @@ if __name__ == '__main__':
         # if negative minimum, shift by the 'solved minimum' plus an epsilon
         shift = max(-numpy.min(itermon.y), 0.0) + 0.5 # a good guess
         #-----------------#
+
+    if model and not fixed:
+        model = masked(mask)(model)
 
     # project trajectory on a 1D slice of the model surface #XXX: useful?
 #   fig0 = draw_slice(model, x=x, y=sol[-1], scale=scale, shift=shift)

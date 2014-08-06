@@ -80,19 +80,9 @@ if __name__ == '__main__':
                     default=False,help="show the legend")
   parsed_opts, parsed_args = parser.parse_args()
 
-  try:  # get the name of the parameter log file
-    file = parsed_args[0]
-    import re
-    file = re.sub('\.py*.$', '', file)  #XXX: strip off .py* extension
-  except:
-    raise IOError, "please provide log file name"
-  try:  # read standard logfile
-    from mystic.munge import logfile_reader, raw_to_support
-    _step, params, cost = logfile_reader(file)
-    params, cost = raw_to_support(params, cost)
-  except: 
-    exec "from %s import params" % file
-    exec "from %s import cost" % file
+  # get the name of the parameter log file
+  from mystic.munge import read_history
+  params, cost = read_history(parsed_args[0])
 
   if parsed_opts.cost: # also plot the cost
    #exec "from %s import cost" % file

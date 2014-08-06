@@ -8,6 +8,47 @@
 from mystic.tools import list_or_tuple_or_ndarray as sequence
 from mystic.tools import isNull
 
+# generalized history reader
+
+def read_history(source):
+    """read parameter history and cost history from the given source
+
+'source' can be a monitor, logfile, support file, or solver restart file
+    """
+    monitor = solver = False
+    from mystic.monitors import Monitor, Null
+    from mystic.abstract_solver import AbstractSolver
+    if isinstance(source, file):
+        return read_history(source.name)
+    if isinstance(source, str):
+        import re
+        source = re.sub('\.py*.$', '', source)  # strip off .py* extension
+    elif isinstance(source, Monitor):
+        monitor = True
+    elif isinstance(source, AbstractSolver):
+        solver = True
+    elif isinstance(source, Null):
+        return [],[] #XXX: or source.x, source.y (e.g. Null(),Null())? or Error?
+    else: #XXX: what about taking a logfile instance?
+        raise IOError("a history filename or instance is required")
+    try:  # read standard logfile (or monitor)
+        if monitor:
+            params, cost = read_monitor(source)
+        elif solver:
+            params, cost = source.solution_history, source.energy_history
+        else:
+            try:
+                from mystic.solvers import LoadSolver
+                return read_history(LoadSolver(source))
+            except: #KeyError
+                _step, params, cost = logfile_reader(source)
+        params, cost = raw_to_support(params, cost)
+    except:
+        exec "from %s import params" % source
+        exec "from %s import cost" % source
+    return params, cost
+
+
 # logfile reader
 
 def logfile_reader(filename):

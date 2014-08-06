@@ -314,20 +314,11 @@ if __name__ == '__main__':
                     default=False,help="show selected iterations in a single plot")
   parsed_opts, parsed_args = parser.parse_args()
 
-  try:  # get the name of the parameter log file
-    file = parsed_args[0]
-    import re
-    file = re.sub('\.py*.$', '', file)  #XXX: strip off .py* extension
-  except:
-    raise IOError, "please provide log file name"
-  try:  # read standard logfile
-    from mystic.munge import logfile_reader, raw_to_support
-    _step, params, _cost = logfile_reader(file)
-    params, _cost = raw_to_support(params, _cost)
-  except:
-    exec "from %s import params" % file
-    #exec "from %s import meta" % file
-    # would be nice to use meta = ['wx','wx2','x','x2','wy',...]
+  # get the name of the parameter log file
+  from mystic.munge import read_history
+  params, _cost = read_history(parsed_args[0])
+  # would be nice to use meta = ['wx','wx2','x','x2','wy',...]
+  # exec "from %s import meta" % file
 
   from mystic.math.discrete import scenario
   from mystic.math.legacydata import dataset
@@ -349,6 +340,8 @@ if __name__ == '__main__':
   try: # select the scenario dimensions
     npts = eval(parsed_opts.dim)  # format is "(1,1,1)"
     if npts is None: # npts may have been logged
+      import re
+      file = re.sub('\.py*.$', '', parsed_args[0]) #XXX: strip .py* extension
       exec "from %s import npts" % file
   except:
     npts = (1,1,1) #XXX: better in parsed_args ?
