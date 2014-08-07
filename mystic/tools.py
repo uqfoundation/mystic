@@ -27,6 +27,7 @@ Main functions exported are::
     - wrap_reducer: convert a reducer function to an arraylike interface
     - reduced: apply a reducer function to reduce output to a single value
     - masked: generate a masked function, given a function and mask provided
+    - partial: generate a function where some input has fixed values
     - insert_missing: return a sequence with the 'missing' elements inserted
     - unpair: convert a 1D array of N pairs to two 1D arrays of N values
     - src: extract source code from a python code object
@@ -248,6 +249,8 @@ example usage...
                 result = f(*args, **kwds)
                 iterable = isiterable(result)
                 return reduce(reducer, result) if iterable else result
+        func.__wrapped__ = f
+        func.__doc__ = f.__doc__
         return func
     return dec 
 
@@ -304,6 +307,13 @@ instead of f(mask(x)) ==> f(x').
 
 For example,
     >>> @masked({0:10,3:-1})
+    ... def same(x):
+    ...     return x
+    ...
+    >>> same([1,2,3])
+    [10, 1, 2, -1, 3]
+    >>> 
+    >>> @masked({0:10,3:-1})
     ... def foo(x):
             w,x,y,z = x # requires a lenth-4 sequence
     ...     return w+x+y+z
@@ -314,7 +324,41 @@ For example,
     def dec(f):
         def func(x, *args, **kwds):
             return f(insert_missing(x, mask), *args, **kwds)
+        func.__wrapped__ = f
         func.__doc__ = f.__doc__
+        func.mask = mask
+        return func
+    return dec
+
+
+def partial(mask):
+    """generate a function, where some input has fixed values
+
+mask should be a dictionary of the positional index and a value (e.g. {0:1.0}),
+where keys must be integers, and values can be any object (typically a float).
+
+functions are expected to take a single argument, a n-dimensional list or array,
+where the mask will be applied to the input array.
+
+For example,
+    >>> @partial({0:10,3:-1})
+    ... def same(x):
+    ...     return x
+    ...
+    >>> same([-5,9])
+    [10, 9]
+    >>> same([0,1,2,3,4])
+    [10, 1, 2, -1, 4]
+    """
+    def dec(f):
+        def func(x, *args, **kwds):
+            for i,j in mask.items():
+                try: x[i] = j
+                except IndexError: pass
+            return f(x, *args, **kwds)
+        func.__wrapped__ = f
+        func.__doc__ = f.__doc__
+        func.mask = mask
         return func
     return dec
 

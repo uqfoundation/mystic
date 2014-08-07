@@ -99,18 +99,6 @@ Returns tuple (x,y) with 'x,y' defined above.
     return x,y
 
 
-def nearest(target, vector): #XXX: useful? (not used in this module)
-    """find the value in vector that is nearest to target
-
-    vector should be a 1D array of len=N or have shape=(N,1) or (1,N)
-    """
-    import numpy
-    diff = numpy.min(numpy.abs(vector.reshape(-1) - target))
-    if numpy.any(vector.reshape(-1) == diff + target):
-        return diff + target
-    return -diff + target
-
-
 def draw_projection(file, select=0, scale=True, shift=False, color=None, figure=None):
     """draw a solution trajectory (for overlay on a 1D plot)
 
@@ -293,28 +281,31 @@ if __name__ == '__main__':
    # - read logfile with multiple trajectories (i.e. parallel batch)
    # - build an appropriately-sized default grid (from logfile info)
    #FIXME: current issues:
-   # - working with 1D or >= 3D model / logfile "feels wrong"
    # - 1D slice and projection work for 2D function, but aren't "pretty"
    # - 1D slice and projection for 1D function needs further testing...
    # - should be able to plot from solver.genealogy (multi-monitor?) [1D,2D,3D?]
    # - should be able to scale 'z-axis' instead of scaling 'z' itself
    #   (see https://github.com/matplotlib/matplotlib/issues/209)
 
-    from mystic.tools import reduced, masked
+    from mystic.tools import reduced, masked, partial
 
     ### INPUTS ###
     options = '-1:10:.1, -1:10:.1' #, 1.0'
    #options = '-50:50:.5, -50:50:.5'
     model = 'mystic.models.rosen'
     reducer = 'numpy.add'
-    source = 'log.txt'
+    source = None #'log.txt'
     surface = True
     scale = True
     shift = False
     fill = False
-    demo = True
-    fixed = False  # if True, apply 'fixed' parameter as constraint (for demo)
+    demo = False
     ##############
+    #NOTE: The demo constrains params explicitly in the solver, then reduces
+    #      dimensions appropriately so results can be 2D contour plotted.
+    #      When working with legacy results that have more than 2 params,
+    #      the trajectory WILL NOT follow the masked surface generated
+    #      because the masked params were NOT fixed when the solver was run.
 
     # process inputs
     color = 'w' if fill else 'k'
@@ -329,25 +320,21 @@ if __name__ == '__main__':
     if model:
         model = get_instance(model)
         model = reduced(reducer, arraylike=False)(model) # need if returns array
-        if fixed: model = masked(mask)(model) # constrain masked parameters
 
     if demo:
-        #NOTES on applying a mask:
-        # - before solver: reduce dim, log selected param, follow plot surface
-        # - after solver: all dim, log all param, don't follow plot surface
-        # - could apply constraint to solver to constrain to fixed axes...
-        #FIXME: to match surface with 'fixed' axes, use mask to constrain 'x'
-
-        # for demo purposes... pick a solver (then solve)
-        from mystic.solvers import fmin, fmin_powell, diffev
-        solver = fmin
-        xlen = len(select)                # masked before...
-        xlen += 0 if fixed else len(mask) # or masked after
-        initial = [0]*xlen
-       #solver = diffev
-       #initial = [(-1,10)]*xlen
+        # for demo purposes... pick a solver
+        solver = 'mystic.solvers.fmin'
+        solver = get_instance(solver)
+        xlen = len(select)+len(mask)
+        if solver.__name__.startswith('diffev'):
+            initial = [(-1,1)]*xlen
+        else:
+            initial = [0]*xlen
         from mystic.monitors import VerboseLoggingMonitor
         itermon = VerboseLoggingMonitor(filename=source, new=True)
+        # explicitly constrain parameters
+        model = partial(mask)(model)
+        # solve
         sol = solver(model, x0=initial, itermon=itermon)
 
         #-OVERRIDE-INPUTS-# 
@@ -358,7 +345,7 @@ if __name__ == '__main__':
         shift = max(-numpy.min(itermon.y), 0.0) + 0.5 # a good guess
         #-----------------#
 
-    if model and not fixed:
+    if model: # for plotting, implicitly constrain by reduction
         model = masked(mask)(model)
 
     # project trajectory on a 1D slice of the model surface #XXX: useful?
