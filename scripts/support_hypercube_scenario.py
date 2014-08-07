@@ -18,21 +18,21 @@ for x to be (.062,.125), y to be (0,30), and z to be (2300,3200). I bounds
 are to not be strictly enforced, append an asterisk '*' to the bounds. 
 The dim (dimensions of the scenario) should be a quoted tuple.  For example,
 dim = "(1,1,2)" will convert the params to a two-member 3-D dataset. Iters
-takes a list of strings instead of a tuple or a list of tuples. For example,
-iters = "[':']" will plot all iters in a single plot. Alternatively,
-iters = "[':2','2:']" will split the iters into two plots, while
-iters = "['0']" will only plot the first iteration.
+however, accepts a string built from comma-separated array slices. For
+example, iters = ":" will plot all iters in a single plot. Alternatively,
+iters = ":2, 2:" will split the iters into two plots, while iters = "0" will
+only plot the first iteration.
 
-The option "label" takes a list of strings. For example, label = "['x','y','']"
+The option "label" takes comma-separated strings. For example, label = "x,y,"
 will place 'x' on the x-axis, 'y' on the y-axis, and nothing on the z-axis.
-LaTeX is also accepted. For example, label = "[r'$ h $',r'$ {\alpha}$',r'$ v$']"
-will label the axes with standard LaTeX math formatting. Note that the leading
-space is required, while the trailing space aligns the text with the axis
-instead of the plot frame.  The option "filter" is used to select datapoints
-from a given dataset, and takes a quoted list.  A "mask" can be given as an
-integer or a tuple of integers; when the mask is a tuple, the plot will be 2D.  
-The option "vertical" will plot the dataset values on the vertical axis; for
-2D plots, cones are always plotted on the vertical axis.
+LaTeX is also accepted. For example, label = r"$ h $, $ {\alpha}$, $ v$" will
+label the axes with standard LaTeX math formatting. Note that the leading
+space and leading 'r' are required, while a trailing space aligns the text
+with the axis instead of the plot frame. The option "filter" is used to select
+datapoints from a given dataset, and takes a quoted list. A "mask" can be
+given as an integer or a tuple of integers; when the mask is a tuple, the plot
+will be 2D. The option "vertical" will plot the dataset values on the vertical
+axis; for 2D plots, cones are always plotted on the vertical axis.
 
 Required Inputs:
   filename            name of the python convergence logfile (e.g. paramlog.py)
@@ -281,10 +281,10 @@ if __name__ == '__main__':
                     metavar="STR",default="[(0,1),(0,1),(0,1)]",
                     help="indicator string to set hypercube bounds")
   parser.add_option("-i","--iters",action="store",dest="iters",\
-                    metavar="STR",default="['-1']",
+                    metavar="STR",default="-1",
                     help="indicator string to select iterations to plot")
   parser.add_option("-l","--label",action="store",dest="label",\
-                    metavar="STR",default="['','','']",
+                    metavar="STR",default=",,",
                     help="string to assign label to axis")
   parser.add_option("-d","--dim",action="store",dest="dim",\
                     metavar="STR",default="None",
@@ -369,13 +369,13 @@ if __name__ == '__main__':
     bounds = [(0,1),(0,1),(0,1)]
 
   try: # select labels for the axes
-    label = eval(parsed_opts.label)  # format is "['x','y','z']"
+    label = parsed_opts.label.split(',')  # format is "x, y, z"
   except:
     label = ['','','']
 
   x = params[-1]
   try: # select which iterations to plot
-    select = eval(parsed_opts.iters)  # format is "[':2','2:4','5','6:']"
+    select = parsed_opts.iters.split(',')  # format is ":2, 2:4, 5, 6:"
   except:
     select = ['-1']
    #select = [':']

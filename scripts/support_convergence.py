@@ -10,19 +10,18 @@ support_convergence.py [options] filename
 
 generate parameter convergence plots from file written with 'write_support_file'
 
-The option "param" takes an indicator string. This indicator string is a list
-of strings, with each entry in the list corresponding to an array slice.
-For example, params = "[':']" will plot all parameters in a single plot.
-Alternatively, params = "[':2','2:']" will split the parameters into two plots,
-while params = "['0']" will only plot the first parameter.
+The option "param" takes an indicator string. The indicator string is built
+from comma-separated array slices. For example, params = ":" will plot all
+parameters in a single plot.  Alternatively, params = ":2, 2:" will split the
+parameters into two plots, and params = "0" will only plot the first parameter.
 
-The option "label" takes a list of strings. For example, label = "['x','y','']"
+The option "label" takes comma-separated strings. For example, label = "x,y,"
 will label the y-axis of the first plot with 'x', a second plot with 'y', and
 not add a label to a third or subsequent plots. If more labels are given than
 plots, then the last label will be used for the y-axis of the 'cost' plot.
-LaTeX is also accepted. For example, label = "[r'$ h$',r'$ {\alpha}$',r'$ v$']"
-will label the axes with standard LaTeX math formatting. Note that the leading
-space is required, and the text is aligned along the axis.
+LaTeX is also accepted. For example, label = r"$ h$, $ {\alpha}$, $ v$" will
+label the axes with standard LaTeX math formatting. Note that the leading
+space and leading 'r' are required, and the text is aligned along the axis.
 
 Required Inputs:
   filename            name of the python convergence logfile (e.g paramlog.py)
@@ -66,10 +65,10 @@ if __name__ == '__main__':
   parser.add_option("-i","--iter",action="store",dest="step",metavar="INT",\
                     default=None,help="the largest iteration to plot")
   parser.add_option("-p","--param",action="store",dest="param",\
-                    metavar="STR",default="[':']",
+                    metavar="STR",default=":",
                     help="indicator string to select parameters")
   parser.add_option("-l","--label",action="store",dest="label",\
-                    metavar="STR",default="['']",
+                    metavar="STR",default="",
                     help="string to assign label to y-axis")
   parser.add_option("-n","--nid",action="store",dest="id",\
                     metavar="INT",default=None,
@@ -101,7 +100,7 @@ if __name__ == '__main__':
     step = None
 
   try: # select which parameters to plot
-    select = eval(parsed_opts.param)  # format is "[':2','2:4','5','6:']"
+    select = parsed_opts.param.split(',')  # format is ":2, 2:4, 5, 6:"
   except:
     select = [':']
    #select = [':1']
@@ -111,7 +110,7 @@ if __name__ == '__main__':
   plots = len(select)
 
   try: # select labels for the axes
-    label = eval(parsed_opts.label)  # format is "['x','y','z']"
+    label = parsed_opts.label.split(',')  # format is "x, y, z"
     label += [''] * max(0, plots - len(label))
   except:
     label = [''] * plots

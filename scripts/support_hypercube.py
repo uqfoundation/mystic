@@ -18,17 +18,17 @@ also accepts a quoted list of tuples; however, for axes, the first tuple
 indicates which parameters are along the x direction, the second tuple for
 the y direction, and the third tuple for the z direction. Thus, axes =
 "[(2,3),(6,7),(10,11)]" would set the 2nd and 3rd parameters along x. Iters,
-however, accepts a list of strings instead of a list of tuples. For example,
-iters = "[':']" will plot all iters in a single plot. Alternatively,
-iters = "[':2','2:']" will split the iters into two plots, while
-iters = "['0']" will only plot the first iteration.
+however, accepts a string built from comma-separated array slices. For
+example, iters = ":" will plot all iters in a single plot. Alternatively,
+iters = ":2, 2:" will split the iters into two plots, while iters = "0" will
+only plot the first iteration.
 
-The option "label" takes a list of strings. For example, label = "['x','y','']"
+The option "label" takes comma-separated strings. For example, label = "x,y,"
 will place 'x' on the x-axis, 'y' on the y-axis, and nothing on the z-axis.
-LaTeX is also accepted. For example, label = "[r'$ h $',r'$ {\alpha}$',r'$ v$']"
-will label the axes with standard LaTeX math formatting. Note that the leading
-space is required, while the trailing space aligns the text with the axis
-instead of the plot frame.
+LaTeX is also accepted. For example, label = r"$ h $, $ {\alpha}$, $ v$" will
+label the axes with standard LaTeX math formatting. Note that the leading
+space and leading 'r' are required, while a trailing space aligns the text
+with the axis instead of the plot frame.
 
 Required Inputs:
   filename            name of the python convergence logfile (e.g paramlog.py)
@@ -49,10 +49,10 @@ if __name__ == '__main__':
                     metavar="STR",default="[(0,),(1,),(2,)]",
                     help="indicator string to assign parameter to axis")
   parser.add_option("-i","--iters",action="store",dest="iters",\
-                    metavar="STR",default="['-1']",
+                    metavar="STR",default="-1",
                     help="indicator string to select iterations to plot")
   parser.add_option("-l","--label",action="store",dest="label",\
-                    metavar="STR",default="['','','']",
+                    metavar="STR",default=",,",
                     help="string to assign label to axis")
   parser.add_option("-n","--nid",action="store",dest="id",\
                     metavar="INT",default=None,
@@ -81,13 +81,13 @@ if __name__ == '__main__':
     xyz = [(0,),(1,),(2,)]
     
   try: # select labels for the axes
-    label = eval(parsed_opts.label)  # format is "['x','y','z']"
+    label = parsed_opts.label.split(',')  # format is "x, y, z"
   except:
     label = ['','','']
     
   x = params[max(xyz[0])]
   try: # select which iterations to plot
-    select = eval(parsed_opts.iters)  # format is "[':2','2:4','5','6:']"
+    select = parsed_opts.iters.split(',')  # format is ":2, 2:4, 5, 6:"
   except:
     select = ['-1']
    #select = [':']

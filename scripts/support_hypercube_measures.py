@@ -21,16 +21,16 @@ the y direction, and the third tuple for the z direction. Thus, axes =
 corresponding weights are used to color the measure points, where 1.0 is black
 and 0.0 is white. For example, using weight = "[(0,1),(4,5),(8,9)]" would use
 the 0th and 1st parameters to weight x. Iters is also similar, however only
-accept a list of ints. Hence, iters = "[-1]" will plot the last iteration,
-while iters = "[0,300,700]" will plot the 0th, 300th, and 700th in three plots.
+accepts comma-separated ints. Hence, iters = "-1" will plot the last iteration,
+while iters = "0,300,700" will plot the 0th, 300th, and 700th in three plots.
 ***Note that if weights are not normalized (to 1), an error will be thrown.***
 
-The option "label" takes a list of strings. For example, label = "['x','y','']"
+The option "label" takes comma-separated strings. For example, label = "x,y,"
 will place 'x' on the x-axis, 'y' on the y-axis, and nothing on the z-axis.
-LaTeX is also accepted. For example, label = "[r'$ h $',r'$ {\alpha}$',r'$ v$']"
-will label the axes with standard LaTeX math formatting. Note that the leading
-space is required, while the trailing space aligns the text with the axis
-instead of the plot frame.
+LaTeX is also accepted. For example, label = r"$ h $, $ {\alpha}$, $ v$" will
+label the axes with standard LaTeX math formatting. Note that the leading
+space and leading 'r' are required, while a trailing space aligns the text
+with the axis instead of the plot frame.
 
 INTENDED FOR VISUALIZING WEIGHTED MEASURES (i.e. weights and positions)
 
@@ -56,10 +56,10 @@ if __name__ == '__main__':
                     metavar="STR",default="[(0,),(2,),(4,)]",
                     help="indicator string to assign weight parameter to axis")
   parser.add_option("-i","--iters",action="store",dest="iters",\
-                    metavar="STR",default="['-1']",
+                    metavar="STR",default="-1",
                     help="indicator string to select iterations to plot")
   parser.add_option("-l","--label",action="store",dest="label",\
-                    metavar="STR",default="['','','']",
+                    metavar="STR",default=",,",
                     help="string to assign label to axis")
   parser.add_option("-n","--nid",action="store",dest="id",\
                     metavar="INT",default=None,
@@ -93,13 +93,13 @@ if __name__ == '__main__':
     wxyz = [(0,),(2,),(4,)]
     
   try: # select labels for the axes
-    label = eval(parsed_opts.label)  # format is "['x','y','z']"
+    label = parsed_opts.label.split(',')  # format is "x, y, z"
   except:
     label = ['','','']
     
   x = params[max(xyz[0])]
   try: # select which iterations to plot
-    select = eval(parsed_opts.iters)  # format is "[2,4,5,6]"
+    select = [int(i) for i in parsed_opts.iters.split(',')]# format is "[2,5,6]"
   except:
     select = ['-1']
    #select = ['0','1','2','3']

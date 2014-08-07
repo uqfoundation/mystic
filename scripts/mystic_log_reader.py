@@ -10,12 +10,10 @@ mystic_log_reader.py [options] filename
 
 plot parameter convergence from file written with 'LoggingMonitor'
 
-The option "param" takes an indicator string. This indicator string is a list
-of strings, with each entry in the list corresponding to an array slice.
-For example, params = "[':']" will plot all parameters.  Alternatively,
-params = "[':2','3:']" will plot all parameters except for the third parameter,
-while params = "['0']" will only plot the first parameter.
-
+The option "param" takes an indicator string. The indicator string is built
+from comma-separated array slices. For example, params = ":" will plot all
+parameters.  Alternatively, params = ":2, 3:" will plot all parameters except
+for the third parameter, while params = "0" will only plot the first parameter.
 
 Required Inputs:
   filename            name of the convergence logfile (e.g log.txt)
@@ -36,7 +34,7 @@ parser.add_option("-n","--nid",action="store",dest="id",\
                   metavar="INT",default=None,
                   help="id # of the nth simultaneous points to plot")
 parser.add_option("-p","--param",action="store",dest="param",\
-                  metavar="STR",default="[':']",
+                  metavar="STR",default=":",
                   help="indicator string to select parameters")
 #parser.add_option("-f","--file",action="store",dest="filename",metavar="FILE",\
 #                  default='log.txt',help="log file name")
@@ -68,7 +66,7 @@ except:
   runs = None # i.e. 'all' **or** use id=0, which should be 'best' energy ?
 
 try: # select which parameters to plot
-  select = eval(parsed_opts.param)  # format is "[':2','2:4','5','6:']"
+  select = parsed_opts.param.split(',')  # format is ":2, 2:4, 5, 6:"
 except:
   select = [':']
 
