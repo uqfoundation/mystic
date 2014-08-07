@@ -19,9 +19,9 @@ The option "label" takes comma-separated strings. For example, label = "x,y,"
 will label the y-axis of the first plot with 'x', a second plot with 'y', and
 not add a label to a third or subsequent plots. If more labels are given than
 plots, then the last label will be used for the y-axis of the 'cost' plot.
-LaTeX is also accepted. For example, label = r"$ h$, $ {\alpha}$, $ v$" will
+LaTeX is also accepted. For example, label = "$ h$, $ {\\alpha}$, $ v$" will
 label the axes with standard LaTeX math formatting. Note that the leading
-space and leading 'r' are required, and the text is aligned along the axis.
+space is required, and the text is aligned along the axis.
 
 Required Inputs:
   filename            name of the python convergence logfile (e.g paramlog.py)

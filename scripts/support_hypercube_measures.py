@@ -11,26 +11,26 @@ support_hypercube_measures.py [options] filename
 generate measure support plots from file written with 'write_support_file'
 
 The options "bounds", "axes", 'weight", and "iters" all take indicator strings.
-The bounds should be given as a quoted list of tuples.  For example, using
-bounds = "[(60,105),(0,30),(2.1,2.8)]" will set the lower and upper bounds for
+The bounds should be given as comma-separated slices. For example, using
+bounds = "60:105, 0:30, 2.1:2.8" will set the lower and upper bounds for
 x to be (60,105), y to be (0,30), and z to be (2.1,2.8).  Similarly, axes
-also accepts a quoted list of tuples; however, for axes, the first tuple
-indicates which parameters are along the x direction, the second tuple for
-the y direction, and the third tuple for the z direction. Thus, axes =
-"[(2,3),(6,7),(10,11)]" would set the 2nd and 3rd parameters along x. The
+also accepts comma-separated groups of ints; however, for axes, each entry
+indicates which parameters are to be plotted along each axis -- the first
+group for the x direction, the second for the y direction, and third for z. 
+Thus, axes = "2 3, 6 7, 10 11" would set 2nd and 3rd parameters along x. The
 corresponding weights are used to color the measure points, where 1.0 is black
-and 0.0 is white. For example, using weight = "[(0,1),(4,5),(8,9)]" would use
+and 0.0 is white. For example, using weight = "0 1, 4 5, 8 9" would use
 the 0th and 1st parameters to weight x. Iters is also similar, however only
 accepts comma-separated ints. Hence, iters = "-1" will plot the last iteration,
-while iters = "0,300,700" will plot the 0th, 300th, and 700th in three plots.
+while iters = "0, 300, 700" will plot the 0th, 300th, and 700th in three plots.
 ***Note that if weights are not normalized (to 1), an error will be thrown.***
 
 The option "label" takes comma-separated strings. For example, label = "x,y,"
 will place 'x' on the x-axis, 'y' on the y-axis, and nothing on the z-axis.
-LaTeX is also accepted. For example, label = r"$ h $, $ {\alpha}$, $ v$" will
+LaTeX is also accepted. For example, label = "$ h $, $ {\\alpha}$, $ v$" will
 label the axes with standard LaTeX math formatting. Note that the leading
-space and leading 'r' are required, while a trailing space aligns the text
-with the axis instead of the plot frame.
+space is required, while a trailing space aligns the text with the axis
+instead of the plot frame.
 
 INTENDED FOR VISUALIZING WEIGHTED MEASURES (i.e. weights and positions)
 
@@ -47,13 +47,13 @@ if __name__ == '__main__':
   from optparse import OptionParser
   parser = OptionParser(usage=__doc__)
   parser.add_option("-b","--bounds",action="store",dest="bounds",\
-                    metavar="STR",default="[(0,1),(0,1),(0,1)]",
+                    metavar="STR",default="0:1, 0:1, 0:1",
                     help="indicator string to set hypercube bounds")
   parser.add_option("-x","--axes",action="store",dest="xyz",\
-                    metavar="STR",default="[(1,),(3,),(5,)]",
+                    metavar="STR",default="1, 3, 5",
                     help="indicator string to assign spatial parameter to axis")
   parser.add_option("-w","--weight",action="store",dest="wxyz",\
-                    metavar="STR",default="[(0,),(2,),(4,)]",
+                    metavar="STR",default="0, 2, 4",
                     help="indicator string to assign weight parameter to axis")
   parser.add_option("-i","--iters",action="store",dest="iters",\
                     metavar="STR",default="-1",
@@ -78,17 +78,20 @@ if __name__ == '__main__':
   # exec "from %s import meta" % file
 
   try: # select the bounds
-    bounds = eval(parsed_opts.bounds)  # format is "[(60,105),(0,30),(2.1,2.8)]"
+    bounds = parsed_opts.bounds.split(",")  # format is "60:105, 0:30, 2.1:2.8"
+    bounds = [tuple(float(j) for j in i.split(':')) for i in bounds]
   except:
     bounds = [(0,1),(0,1),(0,1)]
 
   try: # select which params are along which axes
-    xyz = eval(parsed_opts.xyz)  # format is "[(0,1),(4,5),(8,9)]"
+    xyz = parsed_opts.xyz.split(",")  # format is "0 1, 4 5, 8 9"
+    xyz = [tuple(int(j) for j in i.split()) for i in xyz]
   except:
     xyz = [(1,),(3,),(5,)]
     
   try: # select which params are along which axes
-    wxyz = eval(parsed_opts.wxyz)  # format is "[(0,1),(4,5),(8,9)]"
+    wxyz = parsed_opts.wxyz.split(",")  # format is "0 1, 4 5, 8 9"
+    wxyz = [tuple(int(j) for j in i.split()) for i in wxyz]
   except:
     wxyz = [(0,),(2,),(4,)]
     
@@ -99,7 +102,7 @@ if __name__ == '__main__':
     
   x = params[max(xyz[0])]
   try: # select which iterations to plot
-    select = [int(i) for i in parsed_opts.iters.split(',')]# format is "[2,5,6]"
+    select = parsed_opts.iters.split(',')  # format is "2, 4, 5, 6"
   except:
     select = ['-1']
    #select = ['0','1','2','3']

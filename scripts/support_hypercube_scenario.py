@@ -12,27 +12,27 @@ generate scenario support plots from file written with 'write_support_file';
 generate legacy data and cones from a dataset file, if provided
 
 The options "bounds", "dim", and "iters" all take indicator strings.
-The bounds should be given as a quoted list of tuples.  For example, using
-bounds = "[(.062,.125),(0,30),(2300,3200)]" will set the lower and upper bounds
-for x to be (.062,.125), y to be (0,30), and z to be (2300,3200). I bounds
-are to not be strictly enforced, append an asterisk '*' to the bounds. 
-The dim (dimensions of the scenario) should be a quoted tuple.  For example,
-dim = "(1,1,2)" will convert the params to a two-member 3-D dataset. Iters
-however, accepts a string built from comma-separated array slices. For
-example, iters = ":" will plot all iters in a single plot. Alternatively,
-iters = ":2, 2:" will split the iters into two plots, while iters = "0" will
-only plot the first iteration.
+The bounds should be given as comma-separated slices. For example, using
+bounds = ".062:.125, 0:30, 2300:3200" will set the lower and upper bounds
+for x to be (.062,.125), y to be (0,30), and z to be (2300,3200). If all
+bounds are to not be strictly enforced, append an asterisk '*' to the string. 
+The dim (dimensions of the scenario) should comma-separated ints. For example,
+dim = "1, 1, 2" will convert the params to a two-member 3-D dataset. Iters
+accepts a string built from comma-separated array slices. For example,
+iters = ":" will plot all iters in a single plot. Alternatively,
+iters = ":2, 2:" will split the iters into two plots, while iters = "0"
+will only plot the first iteration.
 
 The option "label" takes comma-separated strings. For example, label = "x,y,"
 will place 'x' on the x-axis, 'y' on the y-axis, and nothing on the z-axis.
-LaTeX is also accepted. For example, label = r"$ h $, $ {\alpha}$, $ v$" will
+LaTeX is also accepted. For example, label = "$ h $, $ {\\alpha}$, $ v$" will
 label the axes with standard LaTeX math formatting. Note that the leading
-space and leading 'r' are required, while a trailing space aligns the text
-with the axis instead of the plot frame. The option "filter" is used to select
-datapoints from a given dataset, and takes a quoted list. A "mask" can be
-given as an integer or a tuple of integers; when the mask is a tuple, the plot
-will be 2D. The option "vertical" will plot the dataset values on the vertical
-axis; for 2D plots, cones are always plotted on the vertical axis.
+space is required, while a trailing space aligns the text with the axis
+instead of the plot frame. The option "filter" is used to select datapoints
+from a given dataset, and takes comma-separated ints. A "mask" is given as
+comma-separated ints; when the mask has more than one int, the plot will be
+2D. The option "vertical" will plot the dataset values on the vertical axis;
+for 2D plots, cones are always plotted on the vertical axis.
 
 Required Inputs:
   filename            name of the python convergence logfile (e.g. paramlog.py)
@@ -278,7 +278,7 @@ if __name__ == '__main__':
   from optparse import OptionParser
   parser = OptionParser(usage=__doc__)
   parser.add_option("-b","--bounds",action="store",dest="bounds",\
-                    metavar="STR",default="[(0,1),(0,1),(0,1)]",
+                    metavar="STR",default="0:1, 0:1, 0:1",
                     help="indicator string to set hypercube bounds")
   parser.add_option("-i","--iters",action="store",dest="iters",\
                     metavar="STR",default="-1",
@@ -333,16 +333,19 @@ if __name__ == '__main__':
     legacy = False
 
   try: # get dataset filter
-    filter = eval(parsed_opts.filter) # should be an iterable
+    filter = parsed_opts.filter
+    if "None" in filter: filter = None
+    else: filter = [int(i) for i in filter.split(",")] # format is "1,5,9"
   except:
     filter = None
 
   try: # select the scenario dimensions
-    npts = eval(parsed_opts.dim)  # format is "(1,1,1)"
-    if npts is None: # npts may have been logged
+    npts = parsed_opts.dim
+    if "None" in npts: # npts may have been logged
       import re
       file = re.sub('\.py*.$', '', parsed_args[0]) #XXX: strip .py* extension
       exec "from %s import npts" % file
+    else: npts = tuple(int(i) for i in dim.split(",")) # format is "1,1,1"
   except:
     npts = (1,1,1) #XXX: better in parsed_args ?
 
@@ -363,7 +366,8 @@ if __name__ == '__main__':
       strict = False
     else:
       strict = True
-    bounds = eval(_bounds)  # format is "[(60,105),(0,30),(2.1,2.8)]"
+    bounds = _bounds.split(",")  # format is "60:105, 0:30, 2.1:2.8"
+    bounds = [tuple(float(j) for j in i.split(':')) for i in bounds]
   except:
     strict = True
     bounds = [(0,1),(0,1),(0,1)]
@@ -411,7 +415,7 @@ if __name__ == '__main__':
     xs = int(parsed_opts.replace)
   except:
     try: # select which axes to mask (2D plot)
-      xs = eval(parsed_opts.replace)  # format is "(1,2)"
+      xs = (int(i) for i in parsed_opts.replace.split(",")) # format is "1,2"
       xs = list(reversed(sorted(set(xs))))
       cs = int(xs[-1]) if xs[-1] != xs[0] else None
       xs = int(xs[0])
