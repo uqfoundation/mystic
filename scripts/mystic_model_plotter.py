@@ -5,6 +5,44 @@
 # License: 3-clause BSD.  The full license text is available at:
 #  - http://trac.mystic.cacr.caltech.edu/project/mystic/browser/mystic/LICENSE
 
+__doc__ = """
+mystic_model_plotter.py [options] model (filename)
+
+generate surface contour plots for model, specified by full import path
+generate model trajectory from logfile, if provided
+
+The option "bounds" takes an indicator string, where the bounds should
+be given as comma-separated slices. For example, using bounds = "-1:10, 0:20"
+will set the lower and upper bounds for x to be (-1,10) and y to be (0,20).
+The "step" can also be given, to control the number of lines plotted in the
+grid. Thus "-1:10:.1, 0:20" would set the bounds as above, but use increments
+of .1 along x and the default step along y.  For models with > 2D, the bounds
+can be used to specify 2 dimensions plus fixed values for remaining dimensions.
+Thus, "-1:10, 0:20, 1.0" would plot the 2D surface where the z-axis was fixed
+at z=1.0.
+
+The option "label" takes comma-separated strings. For example, label = "x,y,"
+will place 'x' on the x-axis, 'y' on the y-axis, and nothing on the z-axis.
+LaTeX is also accepted. For example, label = "$ h $, $ {\\alpha}$, $ v$" will
+label the axes with standard LaTeX math formatting. Note that the leading
+space is required, while a trailing space aligns the text with the axis
+instead of the plot frame.
+
+The option "reduce" can be given to reduce the output of a model to a scalar,
+thus converting 'model(params)' to 'reduce(model(params))'. A reducer is given
+by the import path (e.g. 'numpy.add'). The option "scale" will convert the plot
+to log-scale, and scale the cost by 'z=log(4*z*scale+1)+2'. This is useful for
+visualizing small contour changes around the minimium. If using log-scale
+produces negative numbers, the option "shift" can be used to shift the cost
+by 'z=z+shift'. Both shift and scale are intended to help visualize contours.
+
+Required Inputs:
+  model               full import path for the model (e.g. mystic.models.rosen)
+
+Additional Inputs:
+  filename            name of the convergence logfile (e.g. log.txt)
+"""
+
 from mpl_toolkits.mplot3d import axes3d
 import matplotlib.pyplot as plt
 from matplotlib import cm
@@ -99,14 +137,14 @@ Returns tuple (x,y) with 'x,y' defined above.
     return x,y
 
 
-def draw_projection(file, select=0, scale=True, shift=False, color=None, figure=None):
+def draw_projection(file, select=0, scale=True, shift=False, style=None, figure=None):
     """draw a solution trajectory (for overlay on a 1D plot)
 
 file is monitor or logfile of solution trajectories
 select is the parameter index (e.g. 0 -> param[0]) selected for plotting
 if scale is provided, scale the intensity as 'z = log(4*z*scale+1)+2'
 if shift is provided, shift the intensity as 'z = z+shift' (useful for -z's)
-if color is provided, set the line color (e.g. 'w', 'k')
+if style is provided, set the line style (e.g. 'w-o', 'k-', 'ro')
 if figure is provided, plot to an existing figure
     """
     # params are the parameter trajectories
@@ -120,8 +158,8 @@ if figure is provided, plot to an existing figure
     ax = figure.gca()
     ax.autoscale(tight=True)
 
-    if color in [None, False]:
-        color = 'k'
+    if style in [None, False]:
+        style = 'k-o'
     import numpy
     if shift: 
         if shift is True: #NOTE: MAY NOT be the exact minimum
@@ -131,12 +169,12 @@ if figure is provided, plot to an existing figure
     if scale:
         cost = numpy.log(4*cost*scale+1)+2
 
-    ax.plot(x,cost, color+'-o', linewidth=2, markersize=4)
+    ax.plot(x,cost, style, linewidth=2, markersize=4)
     #XXX: need to 'correct' the z-axis (or provide easy conversion)
     return figure
 
 
-def draw_trajectory(file, select=None, surface=False, scale=True, shift=False, color=None, figure=None):
+def draw_trajectory(file, select=None, surface=False, scale=True, shift=False, style=None, figure=None):
     """draw a solution trajectory (for overlay on a contour plot)
 
 file is monitor or logfile of solution trajectories
@@ -144,7 +182,7 @@ select is a len-2 list of parameter indicies (e.g. 0,1 -> param[0],param[1])
 if surface is True, plot the trajectories as a 3D projection
 if scale is provided, scale the intensity as 'z = log(4*z*scale+1)+2'
 if shift is provided, shift the intensity as 'z = z+shift' (useful for -z's)
-if color is provided, set the line color (e.g. 'w', 'k')
+if style is provided, set the line style (e.g. 'w-o', 'k-', 'ro')
 if figure is provided, plot to an existing figure
     """
     # params are the parameter trajectories
@@ -166,8 +204,8 @@ if figure is provided, plot to an existing figure
     else: kwds = {}                        # 2D
     ax = figure.gca(**kwds)
 
-    if color in [None, False]:
-        color = 'w'#if not scale else 'k'
+    if style in [None, False]:
+        style = 'w-o' #if not scale else 'k-o'
     if surface: # is 3D, cost is needed
         import numpy
         if shift: 
@@ -177,10 +215,10 @@ if figure is provided, plot to an existing figure
         if scale:
             cost = numpy.asarray(cost)
             cost = numpy.log(4*cost*scale+1)+2
-        ax.plot(x,y,cost, color+'-o', linewidth=2, markersize=4)
+        ax.plot(x,y,cost, style, linewidth=2, markersize=4)
         #XXX: need to 'correct' the z-axis (or provide easy conversion)
     else:    # is 2D, cost not needed
-        ax.plot(x,y, color+'-o', linewidth=2, markersize=4)
+        ax.plot(x,y, style, linewidth=2, markersize=4)
     return figure
 
 
@@ -273,7 +311,6 @@ use density to adjust the number of contour lines
 
 if __name__ == '__main__':
    #FIXME: for a script, need to: 
-   # - do the other option parsing magic...
    # - enable 'skip' plotting points (points or line or both)?
    #FIXME: should be able to:
    # - apply a constraint as a region of NaN -- apply when 'xx,yy=x[ij],y[ij]'
@@ -287,42 +324,136 @@ if __name__ == '__main__':
    # - should be able to scale 'z-axis' instead of scaling 'z' itself
    #   (see https://github.com/matplotlib/matplotlib/issues/209)
 
-    from mystic.tools import reduced, masked, partial
+    #XXX: note that 'argparse' is new as of python2.7
+    from optparse import OptionParser
+    parser = OptionParser(usage=__doc__)
+    parser.add_option("-b","--bounds",action="store",dest="bounds",\
+                      metavar="STR",default="0:1:.1, 0:1:.1",
+                      help="indicator string to set plot bounds and density")
+    parser.add_option("-l","--label",action="store",dest="label",\
+                      metavar="STR",default=",,",
+                      help="string to assign label to axis")
+#   parser.add_option("-n","--nid",action="store",dest="id",\
+#                     metavar="INT",default=None,
+#                     help="id # of the nth simultaneous points to plot")
+#   parser.add_option("-i","--iters",action="store",dest="iters",\
+#                     metavar="STR",default=":",
+#                     help="indicator string to select iterations to plot")
+    parser.add_option("-r","--reduce",action="store",dest="reducer",\
+                      metavar="STR",default="None",
+                      help="import path of output reducer function")
+    parser.add_option("-x","--scale",action="store",dest="zscale",\
+                      metavar="INT",default=0.0,
+                      help="scale plotted cost by z=log(4*z*scale+1)+2")
+    parser.add_option("-z","--shift",action="store",dest="zshift",\
+                      metavar="INT",default=0.0,
+                      help="shift plotted cost by z=z+shift")
+    parser.add_option("-f","--fill",action="store_true",dest="fill",\
+                      default=False,help="plot using filled contours")
+    parser.add_option("-d","--depth",action="store_true",dest="surface",\
+                      default=False,help="plot contours showing depth in 3D")
+    parser.add_option("-o","--dots",action="store_true",dest="dots",\
+                      default=False,help="show trajectory points in plot")
+    parser.add_option("-j","--join",action="store_true",dest="line",\
+                      default=False,help="connect trajectory points in plot")
+    parsed_opts, parsed_args = parser.parse_args()
 
-    ### INPUTS ###
-    options = '-1:10:.1, -1:10:.1' #, 1.0'
-   #options = '-50:50:.5, -50:50:.5'
-    model = 'mystic.models.rosen'
-    reducer = 'numpy.add'
-    source = None #'log.txt'
-    surface = True
-    scale = True
-    shift = False
-    fill = False
-    demo = False
-    ##############
-    #NOTE: The demo constrains params explicitly in the solver, then reduces
+    # get the import path for the model
+    model = parsed_args[0]  # e.g. 'mystic.models.rosen'
+
+    try: # get the name of the parameter log file
+      source = parsed_args[1]  # e.g. 'log.txt'
+    except:
+      source = None
+
+    try: # select the bounds
+      options = parsed_opts.bounds  # format is "-1:10:.1, -1:10:.1, 1.0"
+    except:
+      options = "0:1:.1, 0:1:.1"
+
+    try: # plot using filled contours
+      fill = parsed_opts.fill
+    except:
+      fill = False
+
+    try: # plot contours showing depth in 3D
+      surface = parsed_opts.surface
+    except:
+      surface = False
+
+    #XXX: can't do '-x' with no argument given  (use T/F instead?)
+    try: # scale plotted cost by z=log(4*z*scale+1)+2
+      scale = float(parsed_opts.zscale)
+      if not scale: scale = False
+    except:
+      scale = False
+
+    #XXX: can't do '-z' with no argument given
+    try: # shift plotted cost by z=z+shift
+      shift = float(parsed_opts.zshift)
+      if not shift: shift = False
+    except:
+      shift = False
+
+    try: # import path of output reducer function
+      reducer = parsed_opts.reducer  # e.g. 'numpy.add'
+      if "None" == reducer: reducer = None
+    except:
+      reducer = None
+
+    style = '-' # default linestyle
+    if parsed_opts.dots:
+      mark = 'o' # marker=mark
+      # when using 'dots', also can turn off 'line'
+      if not parsed_opts.line:
+        style = '' # linestyle='None'
+    else:
+      mark = ''
+    color = 'w' if fill else 'k'
+    style = color + style + mark
+
+    try: # select labels for the axes
+      label = parsed_opts.label.split(',')  # format is "x, y, z"
+    except:
+      label = ['','','']
+
+#   try: # select which 'id' to plot results for
+#     id = (int(parsed_opts.id),) #XXX: allow selecting more than one id ?
+#   except:
+#     id = None # i.e. 'all' **or** use id=0, which should be 'best' energy ?
+
+#   try: # select which iterations to plot
+#     iters = parsed_opts.iters.split(',')  # format is ":2, 2:4, 5, 6:"
+#   except:
+#     iters = [':']
+
+    #################################################
+    solver = None  # set to 'mystic.solvers.fmin' (or similar) for 'live' fits
+    #NOTE: 'live' runs constrain params explicitly in the solver, then reduce
     #      dimensions appropriately so results can be 2D contour plotted.
     #      When working with legacy results that have more than 2 params,
     #      the trajectory WILL NOT follow the masked surface generated
     #      because the masked params were NOT fixed when the solver was run.
+    #################################################
+
+    from mystic.tools import reduced, masked, partial
 
     # process inputs
-    color = 'w' if fill else 'k'
     select, spec, mask = parse_input(options)
     x,y = parse_axes(spec, grid=True) # grid=False for 1D plots
     #FIXME: does grid=False still make sense here...?
-    reducer = get_instance(reducer)
-    if demo and (not source or not model):
+    if reducer: reducer = get_instance(reducer)
+    if solver and (not source or not model):
         raise RuntimeError('a model and results filename are required')
     elif not source and not model:
         raise RuntimeError('a model or a results file is required')
     if model:
         model = get_instance(model)
-        model = reduced(reducer, arraylike=False)(model) # need if returns array
+        # need a reducer if model returns an array
+        if reducer: model = reduced(reducer, arraylike=False)(model)
 
-    if demo:
-        # for demo purposes... pick a solver
+    if solver:
+        # if 'live'... pick a solver
         solver = 'mystic.solvers.fmin'
         solver = get_instance(solver)
         xlen = len(select)+len(mask)
@@ -350,26 +481,24 @@ if __name__ == '__main__':
 
     # project trajectory on a 1D slice of the model surface #XXX: useful?
 #   fig0 = draw_slice(model, x=x, y=sol[-1], scale=scale, shift=shift)
-#   draw_projection(source, select=0, color=color, scale=scale, shift=shift, figure=fig0)
+#   draw_projection(source, select=0, style=style, scale=scale, shift=shift, figure=fig0)
 
-    # plot the trajectory on the model surface (2D and 3D)
+    # plot the trajectory on the model surface (2D or 3D)
     if model: # plot the surface
-        fig1 = draw_contour(model, x, y, fill=fill, scale=scale, shift=shift)
+        fig = draw_contour(model, x, y, surface=surface, fill=fill, scale=scale, shift=shift)
     else:
-        fig1 = None
+        fig = None
     if source: # plot the trajectory
-        draw_trajectory(source, select=select, color=color, scale=scale, shift=shift, figure=fig1)
+        fig = draw_trajectory(source, select=select, surface=surface, style=style, scale=scale, shift=shift, figure=fig)
 
-    if model: # plot the surface
-        fig2 = draw_contour(model, x, y, surface=True, fill=fill, scale=scale, shift=shift)
-    else:
-        fig2 = None
-    if source: # plot the trajectory
-        draw_trajectory(source, select=select, surface=True, color=color, scale=scale, shift=shift, figure=fig2)
+    # add labels to the axes
+    if surface: kwds = {'projection':'3d'} # 3D
+    else: kwds = {}                        # 2D
+    ax = fig.gca(**kwds)
+    ax.set_xlabel(label[0])
+    ax.set_ylabel(label[1])
+    if surface: ax.set_zlabel(label[2])
 
-#   draw_contour(model, x, y, fill=fill, scale=scale)
-#   draw_contour(model, x, y, surface=True, fill=fill, scale=scale)
-##  draw_contour(model, x, y, surface=True, fill=None, scale=scale)
     plt.show()
 
 

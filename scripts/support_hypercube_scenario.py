@@ -334,14 +334,14 @@ if __name__ == '__main__':
 
   try: # get dataset filter
     filter = parsed_opts.filter
-    if "None" in filter: filter = None
+    if "None" == filter: filter = None
     else: filter = [int(i) for i in filter.split(",")] # format is "1,5,9"
   except:
     filter = None
 
   try: # select the scenario dimensions
     npts = parsed_opts.dim
-    if "None" in npts: # npts may have been logged
+    if "None" == npts: # npts may have been logged
       import re
       file = re.sub('\.py*.$', '', parsed_args[0]) #XXX: strip .py* extension
       exec "from %s import npts" % file
