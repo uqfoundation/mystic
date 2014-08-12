@@ -283,7 +283,7 @@ are logged.
 
 Description:
 
-    Uses a differential evolution algorith to find the minimum of
+    Uses a differential evolution algorithm to find the minimum of
     a function of one or more variables.
 
 Inputs:
@@ -438,7 +438,7 @@ are logged.
 
 Description:
 
-    Uses a differential evolution algorith to find the minimum of
+    Uses a differential evolution algorithm to find the minimum of
     a function of one or more variables. This implementation holds
     the current generation invariant until the end of each iteration.
 
@@ -477,7 +477,7 @@ def diffev2(cost,x0,npop=4,args=(),bounds=None,ftol=5e-3,gtol=None,
 
 Description:
 
-    Uses Storn & Prices's differential evolution algorith to find the minimum
+    Uses Storn & Prices's differential evolution algorithm to find the minimum
     of a function of one or more variables. Mimics a scipy.optimize style
     interface.
 
@@ -505,10 +505,10 @@ Additional Inputs:
     callback -- an optional user-supplied function to call after each
         iteration.  It is called as callback(xk), where xk is the
         current parameter vector.
-    handler -- boolean - enable/disable handling of interrupt signal
-    strategy -- strategy - override the default mutation strategy
-    itermon -- monitor - override the default GenerationMonitor
-    evalmon -- monitor - override the default EvaluationMonitor
+    handler -- boolean - enable/disable handling of interrupt signal.
+    strategy -- strategy - override the default mutation strategy.
+    itermon -- monitor - override the default GenerationMonitor.
+    evalmon -- monitor - override the default EvaluationMonitor.
     constraints -- an optional user-supplied function.  It is called as
         constraints(xk), where xk is the current parameter vector.
         This function must return xk', a parameter vector that satisfies
@@ -547,7 +547,7 @@ def diffev(cost,x0,npop=4,args=(),bounds=None,ftol=5e-3,gtol=None,
 
 Description:
 
-    Uses a differential evolution algorith to find the minimum of
+    Uses a differential evolution algorithm to find the minimum of
     a function of one or more variables. Mimics a scipy.optimize style
     interface.
 
@@ -575,10 +575,10 @@ Additional Inputs:
     callback -- an optional user-supplied function to call after each
         iteration.  It is called as callback(xk), where xk is the
         current parameter vector.
-    handler -- boolean - enable/disable handling of interrupt signal
-    strategy -- strategy - override the default mutation strategy
-    itermon -- monitor - override the default GenerationMonitor
-    evalmon -- monitor - override the default EvaluationMonitor
+    handler -- boolean - enable/disable handling of interrupt signal.
+    strategy -- strategy - override the default mutation strategy.
+    itermon -- monitor - override the default GenerationMonitor.
+    evalmon -- monitor - override the default EvaluationMonitor.
     constraints -- an optional user-supplied function.  It is called as
         constraints(xk), where xk is the current parameter vector.
         This function must return xk', a parameter vector that satisfies

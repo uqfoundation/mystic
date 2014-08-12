@@ -37,6 +37,9 @@ are provided::
     == Global Optimizers ==
     diffev      -- DifferentialEvolutionSolver
     diffev2     -- DifferentialEvolutionSolver2
+    == Pseudo-Global Optimizers ==
+    buckshot    -- BuckshotSolver
+    lattice     -- LatticeSolver
     == Local-Search Optimizers ==
     fmin        -- NelderMeadSimplexSolver
     fmin_powell -- PowellDirectionalSolver
@@ -65,6 +68,7 @@ from differential_evolution import diffev, diffev2
 # pseudo-global optimizers
 from ensemble import BuckshotSolver
 from ensemble import LatticeSolver
+from ensemble import buckshot, lattice
 
 # local-search optimizers
 from scipy_optimize import NelderMeadSimplexSolver

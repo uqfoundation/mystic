@@ -165,8 +165,8 @@ input::
         solver.SetTermination(self._termination)
         solver.SetConstraints(self._constraints)
         solver.SetPenalty(self._penalty)
-        if self._reducer[0]: #XXX: always, settable, or sync'd ?
-            solver.SetReducer(*self._reducer)
+        if self._reducer: #XXX: always, settable, or sync'd ?
+            solver.SetReducer(self._reducer, arraylike=True)
         return solver
 
     def SetInitialPoints(self, x0, radius=0.05):
@@ -242,7 +242,7 @@ Note::
             print "         Current function value: %f" % solver.bestEnergy
             print "         Iterations: %d" % solver.generations
             print "         Function evaluations: %d" % solver._fcalls[0]
-            print "         Total Function evaluations: %d" % self._total_evals
+            print "         Total function evaluations: %d" % self._total_evals
 
         if info:
             return msg

@@ -325,9 +325,9 @@ Additional Inputs:
     callback -- an optional user-supplied function to call after each
         iteration.  It is called as callback(xk), where xk is the
         current parameter vector.
-    handler -- boolean - enable/disable handling of interrupt signal
-    itermon -- monitor - override the default GenerationMonitor
-    evalmon -- monitor - override the default EvaluationMonitor
+    handler -- boolean - enable/disable handling of interrupt signal.
+    itermon -- monitor - override the default GenerationMonitor.
+    evalmon -- monitor - override the default EvaluationMonitor.
     constraints -- an optional user-supplied function.  It is called as
         constraints(xk), where xk is the current parameter vector.
         This function must return xk', a parameter vector that satisfies
@@ -644,10 +644,10 @@ Additional Inputs:
     callback -- an optional user-supplied function to call after each
         iteration.  It is called as callback(xk), where xk is the
         current parameter vector.
-    direc -- initial direction set
-    handler -- boolean - enable/disable handling of interrupt signal
-    itermon -- monitor - override the default GenerationMonitor
-    evalmon -- monitor - override the default EvaluationMonitor
+    direc -- initial direction set.
+    handler -- boolean - enable/disable handling of interrupt signal.
+    itermon -- monitor - override the default GenerationMonitor.
+    evalmon -- monitor - override the default EvaluationMonitor.
     constraints -- an optional user-supplied function.  It is called as
         constraints(xk), where xk is the current parameter vector.
         This function must return xk', a parameter vector that satisfies
