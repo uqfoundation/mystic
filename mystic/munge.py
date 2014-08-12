@@ -29,7 +29,7 @@ def read_history(source):
         solver = True
     elif isinstance(source, Null):
         return [],[] #XXX: or source.x, source.y (e.g. Null(),Null())? or Error?
-    else: #XXX: what about taking a logfile instance?
+    else:
         raise IOError("a history filename or instance is required")
     try:  # read standard logfile (or monitor)
         if monitor:
@@ -42,6 +42,7 @@ def read_history(source):
                 return read_history(LoadSolver(source))
             except: #KeyError
                 _step, params, cost = logfile_reader(source)
+                #FIXME: doesn't work for multi-id logfile; select id?
         params, cost = raw_to_support(params, cost)
     except:
         exec "from %s import params" % source

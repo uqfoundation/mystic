@@ -9,7 +9,7 @@ __doc__ = """
 mystic_model_plotter.py [options] model (filename)
 
 generate surface contour plots for model, specified by full import path
-generate model trajectory from logfile, if provided
+generate model trajectory from logfile (or solver restart file), if provided
 
 The option "bounds" takes an indicator string, where the bounds should
 be given as comma-separated slices. For example, using bounds = "-1:10, 0:20"
@@ -48,6 +48,41 @@ import matplotlib.pyplot as plt
 from matplotlib import cm
 
 from mystic.munge import read_history
+from mystic.munge import logfile_reader, raw_to_support
+
+#XXX: better if reads single id only? (e.g. same interface as read_history)
+def get_history(source, ids=None):
+    """get params and cost from the given source
+
+source is the name of the trajectory logfile (or solver instance)
+if provided, ids are the list of 'run ids' to select
+    """
+    try: # if it's a logfile, it might be multi-id
+        step, param, cost = logfile_reader(source)
+    except: # it's not a logfile, so read and return
+        param, cost = read_history(source)
+        return [param],[cost]
+
+    # split (i,id) into iteration and id
+    multinode = len(step[0]) - 1  #XXX: what if step = []?
+    if multinode: id = [i[1] for i in step]
+    else: id = [0 for i in step]
+
+    params = [[] for i in range(max(id) + 1)]
+    costs = [[] for i in range(len(params))]
+    # populate params for each id with the corresponding (param,cost)
+    for i in range(len(id)):
+        if ids is None or id[i] in ids: # take only the selected 'id'
+            params[id[i]].append(param[i])
+            costs[id[i]].append(cost[i])
+    params = [r for r in params if len(r)] # only keep selected 'ids'
+    costs = [r for r in costs if len(r)] # only keep selected 'ids'
+
+    # convert to support format
+    for i in range(len(params)):
+        params[i], costs[i] = raw_to_support(params[i], costs[i])
+    return params, costs
+
 
 def get_instance(location, *args, **kwds):
     """given the import location of a model or model class, return the model
@@ -137,23 +172,16 @@ Returns tuple (x,y) with 'x,y' defined above.
     return x,y
 
 
-def draw_projection(file, select=0, scale=True, shift=False, style=None, figure=None):
+def draw_projection(x, cost, scale=True, shift=False, style=None, figure=None):
     """draw a solution trajectory (for overlay on a 1D plot)
 
-file is monitor or logfile of solution trajectories
-select is the parameter index (e.g. 0 -> param[0]) selected for plotting
+x is the sequence of values for one parameter (i.e. a parameter trajectory)
+cost is the sequence of costs (i.e. the solution trajectory)
 if scale is provided, scale the intensity as 'z = log(4*z*scale+1)+2'
 if shift is provided, shift the intensity as 'z = z+shift' (useful for -z's)
 if style is provided, set the line style (e.g. 'w-o', 'k-', 'ro')
 if figure is provided, plot to an existing figure
     """
-    # params are the parameter trajectories
-    # cost is the solution trajectory
-    params, cost = read_history(file)
-    d = {'x':0, 'y':1, 'z':2} #XXX: remove the easter egg?
-    if select in d: select = d[select]
-    x = params[int(select)] # requires one parameter
-
     if not figure: figure = plt.figure()
     ax = figure.gca()
     ax.autoscale(tight=True)
@@ -174,39 +202,26 @@ if figure is provided, plot to an existing figure
     return figure
 
 
-def draw_trajectory(file, select=None, surface=False, scale=True, shift=False, style=None, figure=None):
+def draw_trajectory(x, y, cost=None, scale=True, shift=False, style=None, figure=None):
     """draw a solution trajectory (for overlay on a contour plot)
 
-file is monitor or logfile of solution trajectories
-select is a len-2 list of parameter indicies (e.g. 0,1 -> param[0],param[1])
-if surface is True, plot the trajectories as a 3D projection
+x is a sequence of values for one parameter (i.e. a parameter trajectory)
+y is a sequence of values for one parameter (i.e. a parameter trajectory)
+cost is the solution trajectory (i.e. costs); if provided, plot a 3D contour
 if scale is provided, scale the intensity as 'z = log(4*z*scale+1)+2'
 if shift is provided, shift the intensity as 'z = z+shift' (useful for -z's)
 if style is provided, set the line style (e.g. 'w-o', 'k-', 'ro')
 if figure is provided, plot to an existing figure
     """
-    # params are the parameter trajectories
-    # cost is the solution trajectory
-    params, cost = read_history(file)
-    if select is None: select = (0,1)
-    d = {'x':0, 'y':1, 'z':2} #XXX: remove the easter egg?
-    for ind,val in enumerate(select):
-        if val in d: select[ind] = d[val]
-    params = [params[int(i)] for i in select[:2]]
-    #XXX: take 'params,cost=None' instead of 'file,surface=False'?
-    x,y = params # requires two parameters
-
     if not figure: figure = plt.figure()
     
-    if surface: kwds = {'projection':'3d'} # 3D
-    elif surface is None: # 1D
-        raise NotImplementedError('need to add an option string parser')
-    else: kwds = {}                        # 2D
+    if cost: kwds = {'projection':'3d'} # 3D
+    else: kwds = {}                     # 2D
     ax = figure.gca(**kwds)
 
     if style in [None, False]:
         style = 'w-o' #if not scale else 'k-o'
-    if surface: # is 3D, cost is needed
+    if cost: # is 3D, cost is needed
         import numpy
         if shift: 
             if shift is True: #NOTE: MAY NOT be the exact minimum
@@ -310,19 +325,19 @@ use density to adjust the number of contour lines
 
 
 if __name__ == '__main__':
-   #FIXME: for a script, need to: 
-   # - enable 'skip' plotting points (points or line or both)?
    #FIXME: should be able to:
    # - apply a constraint as a region of NaN -- apply when 'xx,yy=x[ij],y[ij]'
    # - apply a penalty by shifting the surface (plot w/alpha?) -- as above
-   # - read logfile with multiple trajectories (i.e. parallel batch)
    # - build an appropriately-sized default grid (from logfile info)
+   # - move all mulit-id param/cost reading into read_history
    #FIXME: current issues:
    # - 1D slice and projection work for 2D function, but aren't "pretty"
-   # - 1D slice and projection for 1D function needs further testing...
+   # - 1D slice and projection for 1D function, is it meaningful and correct?
    # - should be able to plot from solver.genealogy (multi-monitor?) [1D,2D,3D?]
    # - should be able to scale 'z-axis' instead of scaling 'z' itself
    #   (see https://github.com/matplotlib/matplotlib/issues/209)
+   # - if trajectory outside contour grid, will increase bounds
+   #   (see support_hypercube.py for how to fix bounds)
 
     #XXX: note that 'argparse' is new as of python2.7
     from optparse import OptionParser
@@ -333,12 +348,12 @@ if __name__ == '__main__':
     parser.add_option("-l","--label",action="store",dest="label",\
                       metavar="STR",default=",,",
                       help="string to assign label to axis")
-#   parser.add_option("-n","--nid",action="store",dest="id",\
-#                     metavar="INT",default=None,
-#                     help="id # of the nth simultaneous points to plot")
-#   parser.add_option("-i","--iters",action="store",dest="iters",\
-#                     metavar="STR",default=":",
-#                     help="indicator string to select iterations to plot")
+    parser.add_option("-n","--nid",action="store",dest="id",\
+                      metavar="INT",default=None,
+                      help="id # of the nth simultaneous points to plot")
+    parser.add_option("-i","--iter",action="store",dest="stop",\
+                      metavar="INT",default=None,
+                      help="the largest iteration to plot")
     parser.add_option("-r","--reduce",action="store",dest="reducer",\
                       metavar="STR",default="None",
                       help="import path of output reducer function")
@@ -360,6 +375,7 @@ if __name__ == '__main__':
 
     # get the import path for the model
     model = parsed_args[0]  # e.g. 'mystic.models.rosen'
+    if "None" == model: model = None #XXX: 'required'... allow this?
 
     try: # get the name of the parameter log file
       source = parsed_args[1]  # e.g. 'log.txt'
@@ -417,15 +433,15 @@ if __name__ == '__main__':
     except:
       label = ['','','']
 
-#   try: # select which 'id' to plot results for
-#     id = (int(parsed_opts.id),) #XXX: allow selecting more than one id ?
-#   except:
-#     id = None # i.e. 'all' **or** use id=0, which should be 'best' energy ?
+    try: # select which 'id' to plot results for
+      ids = (int(parsed_opts.id),) #XXX: allow selecting more than one id ?
+    except:
+      ids = None # i.e. 'all'
 
-#   try: # select which iterations to plot
-#     iters = parsed_opts.iters.split(',')  # format is ":2, 2:4, 5, 6:"
-#   except:
-#     iters = [':']
+    try: # select which iteration to stop plotting at
+      stop = int(parsed_opts.stop)
+    except:
+      stop = None
 
     #################################################
     solver = None  # set to 'mystic.solvers.fmin' (or similar) for 'live' fits
@@ -479,17 +495,41 @@ if __name__ == '__main__':
     if model: # for plotting, implicitly constrain by reduction
         model = masked(mask)(model)
 
-    # project trajectory on a 1D slice of the model surface #XXX: useful?
-#   fig0 = draw_slice(model, x=x, y=sol[-1], scale=scale, shift=shift)
-#   draw_projection(source, select=0, style=style, scale=scale, shift=shift, figure=fig0)
-
-    # plot the trajectory on the model surface (2D or 3D)
-    if model: # plot the surface
+       ## plot the surface in 1D
+       #if solver: v=sol[-1]
+       #elif source: v=cost[-1]
+       #else: v=None
+       #fig0 = draw_slice(model, x=x, y=v, scale=scale, shift=shift)
+        # plot the surface in 2D or 3D
         fig = draw_contour(model, x, y, surface=surface, fill=fill, scale=scale, shift=shift)
     else:
+       #fig0 = None
         fig = None
-    if source: # plot the trajectory
-        fig = draw_trajectory(source, select=select, surface=surface, style=style, scale=scale, shift=shift, figure=fig)
+
+    if source:
+        # params are the parameter trajectories
+        # cost is the solution trajectory
+        params, cost = get_history(source, ids)
+        if len(cost) > 1: style = style[1:] # 'auto-color' #XXX: or grayscale?
+
+        for p,c in zip(params, cost):
+           ## project trajectory on a 1D slice of model surface #XXX: useful?
+           #s = select[0] if len(select) else 0
+           #px = p[int(s)] # draw_projection requires one parameter
+           ## ignore everything after 'stop'
+           #_c = c[:stop]
+           #_x = px[:stop]
+           #fig0 = draw_projection(_x,_c, style=style, scale=scale, shift=shift, figure=fig0)
+
+            # plot the trajectory on the model surface (2D or 3D)
+            # get two selected params #XXX: what if len(select)<2? or len(p)<2?
+            p = [p[int(i)] for i in select[:2]]
+            px,py = p # draw_trajectory requires two parameters
+            # ignore everything after 'stop'
+            _x = px[:stop]
+            _y = py[:stop]
+            _c = c[:stop] if surface else None
+            fig = draw_trajectory(_x,_y,_c, style=style, scale=scale, shift=shift, figure=fig)
 
     # add labels to the axes
     if surface: kwds = {'projection':'3d'} # 3D
