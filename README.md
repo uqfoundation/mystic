@@ -1,6 +1,6 @@
 mystic
 ======
-a framework for highly-constrained non-convex optimization and uncertainty quantification
+highly-constrained non-convex optimization and uncertainty quantification
 
 About Mystic
 ------------
