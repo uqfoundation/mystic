@@ -76,7 +76,7 @@ datapts = data(target)
 """
 x = (array([range(101)])-50.)[0]
 F = CostFactory()
-F.addModel(ForwardPolyFactory,'poly',3)
+F.addModel(ForwardPolyFactory,3,'poly')
 myCost = F.getCostFunction(evalpts=x, observations=datapts)
 
 

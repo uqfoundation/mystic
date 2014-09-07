@@ -71,7 +71,7 @@ if __name__ == '__main__':
    #myCost = cost_function
   ##myCost = PolyCostFactory(target,x)
     F = CostFactory()
-    F.addModel(ForwardPolyFactory,'poly',len(target))
+    F.addModel(ForwardPolyFactory,len(target),'poly')
     myCost = F.getCostFunction(evalpts=x, observations=datapts)    
 
     import pylab

@@ -103,7 +103,7 @@ Inputs::
 and evaluation points"""
         datapts = self.evaluate(target,pts)
         F = CF()
-        F.addModel(self.ForwardFactory,self.__name__,len(target))
+        F.addModel(self.ForwardFactory,len(target),self.__name__)
         self.__cost__ = F.getCostFunction(evalpts=pts,observations=datapts,sigma=self.__sigma__,metric=self.__metric__)
         return self.__cost__
 
@@ -111,7 +111,7 @@ and evaluation points"""
         """generates a cost function instance from datapoints 
 and evaluation points"""
         F = CF()
-        F.addModel(self.ForwardFactory,self.__name__,nparams)
+        F.addModel(self.ForwardFactory,nparams,self.__name__)
         self.__cost__ = F.getCostFunction(evalpts=pts,observations=datapts,sigma=self.__sigma__,metric=self.__metric__)
         return self.__cost__
 

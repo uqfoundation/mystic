@@ -35,7 +35,7 @@ def de_solve(CF):
 
 if __name__ == '__main__':
     F = CostFactory()
-    F.addModel(ForwardMogiFactory, 'mogi1', 4, outputFilter = PickComponent(2))
+    F.addModel(ForwardMogiFactory, 4, 'mogi1', outputFilter = PickComponent(2))
     myCostFunction = F.getCostFunction(evalpts = stations, observations = data_z)
     print F
     rp =  F.getRandomParams()

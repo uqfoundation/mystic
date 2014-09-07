@@ -16,33 +16,40 @@ Usage
 
 The basic usage pattern for a cost factory is to generate a cost function
 from a set of data points and a corresponding set of evaluation points.
-The cost factory requires a "forward model factory", which is just a generator
-of forward model instances from a list of coefficients. The following example
+The cost factory requires a "model factory", which is just a generator
+of model function instances from a list of coefficients. The following example
 uses numpy.poly1d, which provides a factory for generating polynomials. An
 expanded version of the following can be found in `mystic.examples.example12`.
 
-    >>> # get a forward model factory, and generate some evaluation points
-    >>> from numpy import array, sum, poly1d, random
-    >>> ForwardFactory = poly1d
-    >>> pts = 0.1*(array([range(101)])-50.)[0]
+    >>> # get a model factory
+    >>> import numpy as np
+    >>> FunctionFactory = np.poly1d
     >>> 
-    >>> # we don't have real data, so generate some fake data from the model
+    >>> # generate some evaluation points
+    >>> xpts = 0.1 * np.arange(-50.,51.)
+    >>> 
+    >>> # we don't have real data, so generate fake data from target and model
     >>> target = [2.,-5.,3.]
-    >>> datapts = [random.normal(0,1) + i for i in ForwardFactory(target)(pts)]
+    >>> ydata = FunctionFactory(target)(xpts)
+    >>> noise = np.random.normal(0,1,size=len(ydata))
+    >>> ydata = ydata + noise
     >>> 
     >>> # get a cost factory
     >>> from mystic.forward_model import CostFactory
-    >>> F = CostFactory()
+    >>> C = CostFactory()
     >>> 
     >>> # generate a cost function for the model factory
-    >>> costmetric = lambda x: sum(x*x)
-    >>> F.addModel(ForwardFactory, name='example', inputs=len(target))
-    >>> costfunction = F.getCostFunction(evalpts=pts, observations=datapts,
-    ...                                  sigma=1.0, metric=costmetric)
+    >>> metric = lambda x: np.sum(x*x)
+    >>> C.addModel(FunctionFactory, inputs=len(target))
+    >>> cost = C.getCostFunction(evalpts=xpts, observations=ydata,
+    ...                                        sigma=1.0, metric=metric)
     >>>
     >>> # pass the cost function to the optimizer
     >>> initial_guess = [1.,-2.,1.]
-    >>> solution = fmin_powell(costfunction, initial_guess)
+    >>> solution = fmin_powell(cost, initial_guess)
+    >>> print solution
+    [ 2.00495233 -5.0126248   2.72873734]
+
 
 In general, a user will be required to write their own model factory.
 See the examples contained in `mystic.models` for more information.
@@ -58,40 +65,6 @@ from mystic.filters import NullChecker
 from inspect import getargspec
 from numpy import pi, sqrt, array, mgrid, random, real, conjugate, arange, sum
 #from numpy.random import rand
-
-
-class ForwardModel1(object):
-    """
-A simple utility to 'prettify' object representations of forward models.
-    """
-    def __init__(self, func, inputs, outputs):
-        """
-Takes three initial inputs:
-    func      -- the forward model
-    inputs    -- the number of inputs
-    outputs   -- the number of outputs
-
-Example:
-    >>> f = lambda x: sum(x*x)
-    >>> fwd = ForwardModel1(f,1,1)
-    >>> fwd
-    func: ['x0'] -> ['y0']
-    >>> fwd(1)
-    1
-    >>> fwd(2)
-    4
-        """
-        self._func = func
-        self._m = inputs
-        self._n = outputs
-        self._inNames = ['x%d'%i for i in range(self._m)]
-        self._outNames = ['y%d'%i for i in range(self._n)]
-
-    def __call__(self, *args, **kwds):
-        return self._func(*args, **kwds)
-
-    def __repr__(self):
-        return 'func: %s -> %s' % (self._inNames, self._outNames)
 
 class CostFactory(object):
     """
@@ -113,18 +86,29 @@ Takes no initial inputs.
         self._inputCheckers = []
         pass
 
-    def addModel(self, model, name, inputs, outputFilter = Identity, inputChecker = NullChecker):
+    def addModel(self, model, inputs, name=None, outputFilter=Identity, inputChecker=NullChecker):
         """
 Adds a forward model factory to the cost factory.
 
 Inputs:
     model   -- a callable function factory object
-    name    -- a string representing the model name
     inputs  -- number of input arguments to model
+    name    -- a string representing the model name
+
+Example:
+    >>> import numpy as np
+    >>> C = CostFactory()
+    >>> C.addModel(np.poly, inputs=3)
         """
-        if name in self._names:
-             print "Model [%s] already in database." % name
-             raise AssertionError
+        if name is None:
+            name = dill.source.getname(model)
+        if name is None:
+            for i in range(len(self._names)+1):
+                name = 'model'+str(i)
+                if name not in self._names: break
+        elif name in self._names:
+            print "Model [%s] already in database." % name
+            raise AssertionError
         self._names.append(name)
         self._forwardFactories.append(model)
         self._inputs.append(inputs)
@@ -144,8 +128,8 @@ Inputs:
         """
         #NOTE: better to replace "old-style" addModel above?
         if name in self._names:
-             print "Model [%s] already in database." % name
-             raise AssertionError
+            print "Model [%s] already in database." % name
+            raise AssertionError
         self._names.append(name)
         self._forwardFactories.append(model)
         inputs = getargspec(model)[0]
@@ -161,6 +145,16 @@ for the same set of evaluation points.
 
 Inputs:
     evalpts -- a list of evaluation points
+
+Example:
+    >>> import numpy as np
+    >>> C = CostFactory()
+    >>> C.addModel(np.poly, inputs=3)
+    >>> F = C.getForwardEvaluator([1,2,3,4,5])
+    >>> F([1,0,0])
+    [array([ 1,  4,  9, 16, 25])]
+    >>> F([0,1,0])
+    [array([1, 2, 3, 4, 5])]
         """
         #NOTE: does NOT go through inputChecker
         def _(params):
@@ -186,10 +180,22 @@ The vector cost metric is hard-wired to be the sum of the difference of
 getForwardEvaluator(evalpts) and the observations.
 
 NOTE: Input parameters do NOT go through filters registered as inputCheckers.
+
+Example:
+    >>> import numpy as np
+    >>> C = CostFactory()
+    >>> C.addModel(np.poly, inputs=3)
+    >>> x = np.array([-2., -1., 0., 1., 2.])
+    >>> y = np.array([-4., -2., 0., 2., 4.])
+    >>> F = C.getVectorCostFunction(x, y)
+    >>> F([1,0,0])
+    0.0
+    >>> F([2,0,0])
+    10.0
         """
         def _(params):
             forward = self.getForwardEvaluator(evalpts)
-            return sum(forward(params)) - observations
+            return sum(forward(params) - observations)
         return _
 
     def getCostFunction(self, evalpts, observations, sigma = None, metric = lambda x: sum(x*x)):
@@ -208,6 +214,21 @@ that returns a scalar. The default is L2. When called, the "misfit" will
 be passed in.
 
 NOTE: Input parameters WILL go through filters registered as inputCheckers.
+
+Example:
+    >>> import numpy as np
+    >>> C = CostFactory()
+    >>> C.addModel(np.poly, inputs=3)
+    >>> x = np.array([-2., -1., 0., 1., 2.])
+    >>> y = np.array([-4., -2., 0., 2., 4.])
+    >>> F = C.getCostFunction(x, y, metric=lambda x: np.sum(x))
+    >>> F([1,0,0])
+    0.0
+    >>> F([2,0,0])
+    10.0
+    >>> F = C.getCostFunction(x, y)
+    >>> F([2,0,0])
+    34.0
         """
         #XXX: better interface for sigma?
         def _(params):
@@ -249,6 +270,18 @@ The cost metric is hard-wired to be the sum of the real part of |x|^2,
 where x is the VectorCostFunction for a given set of parameters.
 
 NOTE: Input parameters do NOT go through filters registered as inputCheckers.
+
+Example:
+    >>> import numpy as np
+    >>> C = CostFactory()
+    >>> C.addModel(np.poly, inputs=3)
+    >>> x = np.array([-2., -1., 0., 1., 2.])
+    >>> y = np.array([-4., -2., 0., 2., 4.])
+    >>> F = C.getCostFunctionSlow(x, y)
+    >>> F([1,0,0])
+    0.0
+    >>> F([2,0,0])
+    100.0
         """
         #XXX: update interface to allow metric?
         def _(params):

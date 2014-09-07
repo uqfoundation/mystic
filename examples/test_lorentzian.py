@@ -100,7 +100,7 @@ if __name__ == '__main__':
     print "now with DE..."
     from mystic.forward_model import CostFactory
     CF = CostFactory()
-    CF.addModel(F, 'lorentz', ND)
+    CF.addModel(F, ND, 'lorentz')
     myCF = CF.getCostFunction(binsc, histo/N)
     sol, steps = de_solve(myCF)
     plot_sol()(sol)

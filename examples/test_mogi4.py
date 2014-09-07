@@ -41,8 +41,8 @@ def de_solve(CF):
 if __name__ == '__main__':
 
     F = CostFactory()
-    F.addModel(ForwardMogiFactory, 'mogi1', 4, outputFilter = PickComponent(2, -1))
-    F.addModel(ForwardMogiFactory, 'mogi2', 4, outputFilter = PickComponent(2, -1))
+    F.addModel(ForwardMogiFactory, 4, 'mogi1', outputFilter = PickComponent(2, -1))
+    F.addModel(ForwardMogiFactory, 4, 'mogi2', outputFilter = PickComponent(2, -1))
     myCostFunction = F.getCostFunction(evalpts = stations, observations = data_z)
     print F
 

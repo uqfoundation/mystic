@@ -20,8 +20,8 @@ if __name__=='__main__':
     stations  = array((xstations, ystations))
 
     A = CostFactory()
-    A.addModel(ForwardMogiFactory, 'mogi1', 4, outputFilter=PickComponent(2))
-    A.addModel(ForwardMogiFactory, 'mogi2', 4, outputFilter=PickComponent(2))
+    A.addModel(ForwardMogiFactory, 4, 'mogi1', outputFilter=PickComponent(2))
+    A.addModel(ForwardMogiFactory, 4, 'mogi2', outputFilter=PickComponent(2))
     fe = A.getForwardEvaluator(stations)
     p = [random.random() for i in range(8)]
     c =  fe(p)

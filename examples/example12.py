@@ -37,7 +37,7 @@ def PolyCostFactory(evalpts,datapts,ndim):
     """generate a cost function instance from evaluation points and data"""
     from numpy import sum
     F = CostFactory()
-    F.addModel(ForwardPolyFactory,"noisy_polynomial",ndim)
+    F.addModel(ForwardPolyFactory,ndim,"noisy_polynomial")
     return F.getCostFunction(evalpts=evalpts,observations=datapts, \
                              metric=lambda x: sum(x*x),sigma=1000.)
 
