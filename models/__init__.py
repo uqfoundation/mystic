@@ -15,14 +15,26 @@ Functions
 Mystic provides a set of standard fitting functions that derive from
 the function API found in `mystic.models.abstract_model`. These standard
 functions are provided::
+    sphere     -- De Jong's spherical function
     rosen      -- Rosenbrock's function
     step       -- De Jong's step function
     quartic    -- De Jong's quartic function
     shekel     -- Shekel's function
     corana     -- Corana's function
-    fosc3d     -- the fOsc3D Mathematica function
+    fosc3d     -- Trott's fOsc3D function
     griewangk  -- Griewangk's function
     zimmermann -- Zimmermann's function
+    peaks      -- NAG's peaks function
+    venkat91   -- Venkataraman's sinc function
+    schwefel   -- Schwefel's function
+    ellipsoid  -- Pohlheim's rotated hyper-ellipsoid function
+    rastrigin  -- Rastrigin's function
+    powers     -- Pohlheim's sum of different powers function
+    ackley     -- Ackley's path function
+    michal     -- Michalewicz's function
+    branins    -- Branins's rcos function
+    easom      -- Easom's function
+    goldstein  -- Goldstein-Price's function
     wavy1      -- a simple sine-based multi-minima function
     wavy2      -- another simple sine-based multi-minima function
 
@@ -60,18 +72,21 @@ from lorentzian import lorentzian
 from circle import circle, dense_circle, sparse_circle, minimal_circle
 
 # functions
-from dejong import rosen, step, quartic, shekel
+from dejong import sphere, rosen, step, quartic, shekel
 from corana import corana
-from fosc3d import fosc3d
+from trott import fosc3d
 from griewangk import griewangk
 from zimmermann import zimmermann
+from nag import peaks
+from venkataraman import venkat91
 from wavy import wavy1, wavy2
+from pohlheim import schwefel, ellipsoid, rastrigin, powers, ackley
+from pohlheim import michal, branins, easom, goldstein
 
 #shortcuts
 #from poly import chebyshev8cost, chebyshev16cost
 #from br8 import data as br8data
 #from br8 import cost as br8cost
-#from corana import corana1d, corana2d, corana3d
 #from lorentzian import gendata, histogram
 
 # end of file

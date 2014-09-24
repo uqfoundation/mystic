@@ -169,6 +169,8 @@ Returns tuple (x,y) with 'x,y' defined above.
             raise ValueError("invalid format string: '%s'" % ','.join(option))
     else:
         raise ValueError("invalid format string: '%s'" % ','.join(option))
+    if not x.size or not y.size:
+        raise ValueError("invalid format string: '%s'" % ','.join(option))
     return x,y
 
 
@@ -343,7 +345,7 @@ if __name__ == '__main__':
     from optparse import OptionParser
     parser = OptionParser(usage=__doc__)
     parser.add_option("-b","--bounds",action="store",dest="bounds",\
-                      metavar="STR",default="0:1:.1, 0:1:.1",
+                      metavar="STR",default="-5:5:.1, -5:5:.1",
                       help="indicator string to set plot bounds and density")
     parser.add_option("-l","--label",action="store",dest="label",\
                       metavar="STR",default=",,",
@@ -385,7 +387,7 @@ if __name__ == '__main__':
     try: # select the bounds
       options = parsed_opts.bounds  # format is "-1:10:.1, -1:10:.1, 1.0"
     except:
-      options = "0:1:.1, 0:1:.1"
+      options = "-5:5:.1, -5:5:.1"
 
     try: # plot using filled contours
       fill = parsed_opts.fill

@@ -1698,8 +1698,8 @@ Wiley, 2nd edition, 2009."""
         by Venkataraman, Wiley, 2nd edition, 2009."""
             x1 = x[0]
             x2 = x[1]
-            return -20.*sin(0.1 + ((x1 - 4.)**2 + (x2 - 4.)**2)**(0.5))/   \
-                   (0.1 + ((x1 - 4.)**2 + (x2 - 4.)**2)**0.5)
+            return -20.*sin((0.1 + (x1 - 4.)**2 + (x2 - 4.)**2)**(0.5))/   \
+                   ((0.1 + (x1 - 4.)**2 + (x2 - 4.)**2)**0.5)
         self.costfunction = venkataraman_91
         self.ND = 2
         self.expected = [4., 4.]

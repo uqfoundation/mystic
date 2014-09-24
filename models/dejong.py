@@ -5,53 +5,101 @@
 # Copyright (c) 1997-2014 California Institute of Technology.
 # License: 3-clause BSD.  The full license text is available at:
 #  - http://trac.mystic.cacr.caltech.edu/project/mystic/browser/mystic/LICENSE
-"""
-Rosenbrock's function, De Jong's step function, De Jong's quartic function,
-and Shekel's function
+__doc__ = _doc = """
+This is part of Storn's "Differential Evolution" test suite, as defined
+in [2], with 'De Jong' function definitions drawn from [3].
 
 References::
-    [1] Storn, R. and Price, K. Differential Evolution - A Simple and Efficient
-    Heuristic for Global Optimization over Continuous Spaces. Journal of Global
-    Optimization 11: 341-359, 1997.
+    [1] Storn, R. and Price, K. "Differential Evolution - A Simple and
+    Efficient Heuristic for Global Optimization over Continuous Spaces"
+    Journal of Global Optimization 11: 341-359, 1997.
 
-    [2] Storn, R. and Price, K.
-    (Same title as above, but as a technical report.)
-    http://www.icsi.berkeley.edu/~storn/deshort1.ps
+    [2] Storn, R. and Price, K. "Differential Evolution - A Simple and
+    Efficient Heuristic for Global Optimization over Continuous Spaces"
+    TR-95-012, ICSI, 1995. http://www.icsi.berkeley.edu/~storn/TR-95-012.pdf
+
+    [3] Ingber, L. and Rosen, B. "Genetic Algorithms and Very Fast
+    Simulated Reannealing: A Comparison" J. of Mathematical and Computer
+    Modeling 16(11), 87-100, 1992.
 """
 from abstract_model import AbstractFunction
 
 from numpy import sum as numpysum
-from numpy import asarray, transpose
+from numpy import asarray, transpose, inf
 from numpy import zeros_like, diag, zeros, atleast_1d
 from math import floor
 import random
 from math import pow
+from mystic.tools import permutations
 
-class Rosenbrock(AbstractFunction):
-    """Rosenbrock function:
-A modified second De Jong function, Equation (18) of [2]"""
+class Sphere(AbstractFunction):
+    __doc__ = \
+    """a De Jong spherical function generator
 
-    def __init__(self):
-        AbstractFunction.__init__(self)
+De Jong's spherical function [1,2,3] is considered to be a simple
+task for every serious minimization method. The minimum is located
+at the center of the N-dimensional spehere.  There are no local
+minima.
+
+The generated function f(x) is identical to equation (17) of [2],
+where len(x) >= 0.
+    """ + _doc
+    def __init__(self, ndim=3): # is n-dimensional (n=3 in ref)
+        AbstractFunction.__init__(self, ndim=ndim)
         return
 
     def function(self,coeffs):
-        """evaluates n-dimensional Rosenbrock function for a list of coeffs
+        """evaluates an N-dimensional spherical function for a list of coeffs
 
-minimum is f(x)=0.0 at xi=1.0"""
+f(x) = \sum_(i=0)^(N-1) x_(i)^2
+
+Inspect with mystic_model_plotter using::
+    mystic.models.sphere -b "-5:5:.1, -5:5:.1" -d
+
+The minimum is f(x)=0.0 at x_i=0.0 for all i"""
+        f = 0.
+        for c in coeffs:
+            f += c*c
+        return f
+
+    minimizers = [0.]
+    pass
+
+
+class Rosenbrock(AbstractFunction):
+    __doc__ = \
+    """a Rosenbrock's Saddle function generator
+
+Rosenbrock's Saddle function [1,2,3] has the reputation of being
+a difficult minimization problem. In two dimensions, the function
+is a saddle with an inverted basin, where the global minimum
+occurs along the rim of the inverted basin.
+
+The generated function f(x) is a modified version of equation (18)
+of [2], where len(x) >= 0.
+    """ + _doc
+    def __init__(self, ndim=2): # is n-dimensional (n=2 in ref)
+        AbstractFunction.__init__(self, ndim=ndim)
+        return
+
+    def function(self,coeffs):
+        """evaluates an N-dimensional Rosenbrock saddle for a list of coeffs
+
+f(x) = \sum_(i=0)^(N-2) 100*(x_(i+1) - x_(i)^(2))^(2) + (1 - x_(i))^(2)
+
+Inspect with mystic_model_plotter using::
+    mystic.models.rosen -b "-3:3:.1, -1:5:.1, 1" -d -x 1
+
+The minimum is f(x)=0.0 at x_i=1.0 for all i"""
         x = [1]*2 # ensure that there are 2 coefficients
         x[:len(coeffs)]=coeffs
         x = asarray(x) #XXX: must be a numpy.array
         return numpysum(100.0*(x[1:]-x[:-1]**2.0)**2.0 + (1-x[:-1])**2.0)#,axis=0)
 
-    #def forward(self,pts):
-    #    """n-dimensional Rosenbrock; returns f(xi,yi,...) for pts=(x,y,...)"""
-    #    return AbstractFunction.forward(self,pts)
-
     def derivative(self,coeffs):
-        """evaluates n-dimensional Rosenbrock derivative for a list of coeffs
+        """evaluates an N-dimensional Rosenbrock derivative for a list of coeffs
 
-minimum is f'(x)=[0.0]*n at x=[1.0]*n;  x must have len >= 2"""
+The minimum is f'(x)=[0.0]*n at x=[1.0]*n, where len(x) >= 2."""
         l = len(coeffs)
         x = [0]*l #XXX: ensure that there are 2 coefficients ?
         x[:l]=coeffs
@@ -66,9 +114,9 @@ minimum is f'(x)=[0.0]*n at x=[1.0]*n;  x must have len >= 2"""
         return list(der)
 
     def hessian(self, coeffs):
-        """evaluates n-dimensional Rosenbrock hessian for the given coeffs
+        """evaluates an N-dimensional Rosenbrock hessian for the given coeffs
 
-coeffs must have len >= 2"""
+The function f''(x) requires len(x) >= 2."""
         x = atleast_1d(coeffs)
         H = diag(-400*x[:-1],1) - diag(400*x[:-1],-1)
         diagonal = zeros(len(x), dtype=x.dtype)
@@ -79,9 +127,10 @@ coeffs must have len >= 2"""
         return H
 
     def hessian_product(self, coeffs, p):
-        """evaluates n-dimensional Rosenbrock hessian product for the given coeffs
+        """evaluates an N-dimensional Rosenbrock hessian product
+for p and the given coeffs
 
-both p and coeffs must have len >= 2"""
+The hessian product requires both p and coeffs to have len >= 2."""
         #XXX: not well-tested
         p = atleast_1d(p)
         x = atleast_1d(coeffs)
@@ -92,21 +141,43 @@ both p and coeffs must have len >= 2"""
         Hp[-1] = -400*x[-2]*p[-2] + 200*p[-1]
         return Hp
 
+    minimizers = [1.] #NOTE: minima in lower dimensions occur along the ridge
     pass
  
 
 class Step(AbstractFunction):
-    """De Jong's step function:
-The third De Jong function, Equation (19) of [2]"""
+    __doc__ = \
+    """a De Jong step function generator
 
-    def __init__(self):
-        AbstractFunction.__init__(self)
+De Jong's step function [1,2,3] has several plateaus, which pose
+difficulty for many optimization algorithms. Degenerate global
+minima occur for all x_i on the lowest plateau, with degenerate
+local minima on all other plateaus.
+
+The generated function f(x) is a modified version of equation (19)
+of [2], where len(x) >= 0.
+    """ + _doc
+    def __init__(self, ndim=5): # is n-dimensional (n=5 in ref)
+        AbstractFunction.__init__(self, ndim=ndim)
         return
 
     def function(self,coeffs):
-        """evaluates n-dimensional De Jong step function for a list of coeffs
+        """evaluates an N-dimensional step function for a list of coeffs
 
-minimum is f(x)=0.0 at xi=-5-n where n=[0.0,0.12]"""
+f(x) = f_0(x) + p_i(x), with i=0,1
+
+Where for abs(x_i) <= 5.12:
+f_0(x) = 30 + \sum_(i=0)^(N-1) \floor x_i
+and for x_i > 5.12:
+p_0(x) = 30 * (1 + (x_i - 5.12))
+and for x_i < 5.12:
+p_1(x) = 30 * (1 + (5.12 - x_i))
+Otherwise, f_0(x) = 0 and p_i(x)=0 for i=0,1.
+
+Inspect with mystic_model_plotter using::
+    mystic.models.step -b "-10:10:.2, -10:10:.2" -d -x 1
+
+The minimum is f(x)=(30 - 6*N) for all x_i=[-5.12,-5)"""
         f = 30.
         for c in coeffs:
             if abs(c) <= 5.12:
@@ -117,49 +188,79 @@ minimum is f(x)=0.0 at xi=-5-n where n=[0.0,0.12]"""
                 f += 30 * (5.12 - c)
         return f
 
-#   def forward(self,pts):
-#       """n-dimensional De Jong step; returns f(xi,yi,...) for pts=(x,y,...)"""
-#       return AbstractFunction.forward(self,pts)
-
+    minimizers = None #FIXME: degenerate minimum... [-5.00000001]to[-5.12000000]
+                 # minimum is f(x)=(30 - 6*N) for all x_i=[-5.12,-5.00000001]"""
     pass
 
 
 class Quartic(AbstractFunction):
-    """De Jong's quartic function:
-The modified fourth De Jong function, Equation (20) of [2]"""
+    __doc__ = \
+    """a De Jong quartic function generator
 
-    def __init__(self):
-        AbstractFunction.__init__(self)
+De Jong's quartic function [1,2,3] is designed to test the
+behavior of minimizers in the presence of noise. The function's
+global minumum depends on the expectation value of a random
+variable, and also includes several randomly distributed local
+minima.
+
+The generated function f(x) is a modified version of equation (20)
+of [2], where len(x) >= 0.
+    """ + _doc
+    def __init__(self, ndim=30): # is n-dimensional (n=30 in ref)
+        AbstractFunction.__init__(self, ndim=ndim)
         return
 
     def function(self,coeffs):
-        """evaluates n-dimensional De Jong quartic function for a list of coeffs
+        """evaluates an N-dimensional quartic function for a list of coeffs
 
-minimum is f(x)=random, but statistically at xi=0"""
+f(x) = \sum_(i=0)^(N-1) (x_(i)^4 * (i+1) + k_i)
+ 
+Where k_i is a random variable with uniform distribution bounded by [0,1).
+
+Inspect with mystic_model_plotter using::
+    mystic.models.quartic -b "-3:3:.1, -3:3:.1" -d -x 1
+
+The minimum is f(x)=N*E[k] for x_i=0.0, where E[k] is the expectation
+of k, and thus E[k]=0.5 for a uniform distribution bounded by [0,1)."""
         f = 0.
         for j, c in enumerate(coeffs):
             f += pow(c,4) * (j+1.0) + random.random()
         return f
 
-#   def forward(self,pts):
-#       """n-dimensional De Jong quartic; returns f(xi,yi,...) for pts=(x,y,...)"""
-#       return AbstractFunction.forward(self,pts)
-
+    minimizers = None #FIXME: statistical minimum... of f(x) <= N*0.5
     pass
 
 
 class Shekel(AbstractFunction):
-    """Shekel's function:
-The modified fifth De Jong function, Equation (21) of [2]"""
+    __doc__ = \
+    """a Shekel's Foxholes function generator
 
-    def __init__(self):
-        AbstractFunction.__init__(self)
+Shekel's Foxholes function [1,2,3] has a generally flat surface
+with several narrow wells. The function's global minimum is at
+(-32, -32), with local minima at (i,j) in (-32, -16, 0, 16, 32).
+
+The generated function f(x) is a modified version of equation (21)
+of [2], where len(x) == 2.
+    """ + _doc
+    def __init__(self, ndim=2):
+        AbstractFunction.__init__(self, ndim=ndim)
         return
 
     def function(self,coeffs):
-        """evaluates 2-D Shekel's function at (x,y)
+        """evaluates a 2-D Shekel's Foxholes function for a list of coeffs
 
-minimum is f(x)=0.0 at x(-32,-32)"""
+f(x) = 1 / (0.002 + f_0(x))
+
+Where:
+f_0(x) = \sum_(i=0)^(24) 1 / (i + \sum_(j=0)^(1) (x_j - a_ij)^(6))
+with a_ij=(-32,-16,0,16,32).
+for j=0 and i=(0,1,2,3,4), a_i0=a_k0 with k=i \mod 5
+also j=1 and i=(0,5,10,15,20), a_i1=a_k1 with k=i+k' and k'=(1,2,3,4).
+
+Inspect with mystic_model_plotter using::
+    mystic.models.shekel -b "-50:50:1, -50:50:1" -d -x 1
+
+The minimum is f(x)=0 for x=(-32,-32)"""
         A = [-32., -16., 0., 16., 32.]
         a1 = A * 5
         a2 = reduce(lambda x1,x2: x1+x2, [[c] * 5 for c in A])
@@ -167,19 +268,23 @@ minimum is f(x)=0.0 at x(-32,-32)"""
         x,y=coeffs
         r = 0.0
         for i in range(25):
-            r += 1.0/ (1.0*i + pow(x-a1[i],6) + pow(y-a2[i],6) + 1e-15)
+#           r += 1.0/ (1.0*i + pow(x-a1[i],6) + pow(y-a2[i],6) + 1e-15)
+            z = 1.0*i + pow(x-a1[i],6) + pow(y-a2[i],6)
+            if z: r += 1.0/z
+            else: r += inf
         return 1.0/(0.002 + r)
 
-#   def forward(self,pts):
-#       """2-D Shekel; returns f(xi,yi) for pts=(x,y)"""
-#       return AbstractFunction.forward(self,pts)
-
+    minimizers = [(j,i) for (i,j) in sorted(list(permutations(range(-32,33,16),2))+[(i,i) for i in range(-32,33,16)])]
     pass
 
+# cleanup
+del _doc
+
 # prepared instances
-rosen = Rosenbrock()
-step = Step()
-quartic = Quartic()
-shekel = Shekel()
+sphere = Sphere().function
+rosen = Rosenbrock().function
+step = Step().function
+quartic = Quartic().function
+shekel = Shekel().function
 
 # End of file
