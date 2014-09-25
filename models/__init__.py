@@ -22,6 +22,7 @@ functions are provided::
     shekel     -- Shekel's function
     corana     -- Corana's function
     fosc3d     -- Trott's fOsc3D function
+    nmin51     -- Champion's NMinimize test function
     griewangk  -- Griewangk's function
     zimmermann -- Zimmermann's function
     peaks      -- NAG's peaks function
@@ -35,6 +36,7 @@ functions are provided::
     branins    -- Branins's rcos function
     easom      -- Easom's function
     goldstein  -- Goldstein-Price's function
+    paviani    -- Paviani's function
     wavy1      -- a simple sine-based multi-minima function
     wavy2      -- another simple sine-based multi-minima function
 
@@ -74,7 +76,7 @@ from circle import circle, dense_circle, sparse_circle, minimal_circle
 # functions
 from dejong import sphere, rosen, step, quartic, shekel
 from corana import corana
-from trott import fosc3d
+from wolfram import fosc3d, nmin51
 from griewangk import griewangk
 from zimmermann import zimmermann
 from nag import peaks
@@ -82,6 +84,7 @@ from venkataraman import venkat91
 from wavy import wavy1, wavy2
 from pohlheim import schwefel, ellipsoid, rastrigin, powers, ackley
 from pohlheim import michal, branins, easom, goldstein
+from schittkowski import paviani
 
 #shortcuts
 #from poly import chebyshev8cost, chebyshev16cost

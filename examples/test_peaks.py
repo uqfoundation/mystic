@@ -11,20 +11,7 @@ Testing the 'Peaks" Function.
 (tests VTR when minimum has negative value)
 """
 from math import *
-
-def peaks(x_vector):
-    """The peaks function. Optimize on the box [-3, 3]x[-3, 3]. Has 
-several local minima and one global minimum at (0.23, -1.63) where 
-the function value is about -6.55.
-
-Source: http://www.nag.co.uk/numeric/FL/nagdoc_fl22/xhtml/E05/e05jbf.xml, 
-example 9."""
-    x = x_vector[0]
-    y = x_vector[1]
-    result = 3.*(1. - x)**2*exp(-x**2 - (y + 1.)**2) - \
-            10.*(x*(1./5.) - x**3 - y**5)*exp(-x**2 - y**2) - \
-            1./3.*exp(-(x + 1.)**2 - y**2)
-    return result
+from mystic.models import peaks
 
 nd = 2
 npop = 20

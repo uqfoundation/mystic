@@ -1468,23 +1468,10 @@ class TestGriewangk(unittest.TestCase):
 #####################################################################
 
 class TestPeaks(unittest.TestCase):
-    """Test the peaks optimization problem.
-Source: http://www.nag.co.uk/numeric/FL/nagdoc_fl22/xhtml/E05/e05jbf.xml"""
+    """Test the peaks optimization problem."""
 
     def setUp(self):
-        def peaks(x_vector):
-            """The peaks function. Optimize on the box [-3, 3]x[-3, 3]. Has 
-        several local minima and one global minimum at (0.23, -1.63) where 
-        the function value is about -6.55.
-
-        Source: http://www.nag.co.uk/numeric/FL/nagdoc_fl22/xhtml/E05/e05jbf.xml, 
-        example 9."""
-            x = x_vector[0]
-            y = x_vector[1]
-            result = 3.*(1. - x)**2*exp(-x**2 - (y + 1.)**2) - \
-                    10.*(x*(1./5.) - x**3 - y**5)*exp(-x**2 - y**2) - \
-                    1./3.*exp(-(x + 1.)**2 - y**2)
-            return result
+        from mystic.models import peaks
         self.costfunction = peaks
         self.ND = 2
         self.expected = [0.23, -1.63]
@@ -1685,22 +1672,11 @@ Source: http://www.nag.co.uk/numeric/FL/nagdoc_fl22/xhtml/E05/e05jbf.xml"""
 ##############################################################################
 
 class TestVenkataraman91(unittest.TestCase):
-    """Test the optimization found in Example 9.1, page 442, in
-Applied Optimization with MATLAB Programming, by Venkataraman, 
-Wiley, 2nd edition, 2009."""
+    """Test Venkataraman's sinc optimization problem."""
 
     def setUp(self):
-        def venkataraman_91(x):
-            """This function has several minima and maxima and 
-        strong global minimum at x1 = 4, x2 = 4.
-
-        Source: Example 9.1, page 442, in Applied Optimization with MATLAB Programming, 
-        by Venkataraman, Wiley, 2nd edition, 2009."""
-            x1 = x[0]
-            x2 = x[1]
-            return -20.*sin((0.1 + (x1 - 4.)**2 + (x2 - 4.)**2)**(0.5))/   \
-                   ((0.1 + (x1 - 4.)**2 + (x2 - 4.)**2)**0.5)
-        self.costfunction = venkataraman_91
+        from mystic.models import venkat91
+        self.costfunction = venkat91
         self.ND = 2
         self.expected = [4., 4.]
         self.min = [-10.0]*self.ND
@@ -1898,21 +1874,10 @@ Wiley, 2nd edition, 2009."""
 ##############################################################################
 
 class TestSchwefel(unittest.TestCase):
-    """Test Schwefel's function in 2 dimensions."""
+    """Test Schwefel's optimization problem."""
 
     def setUp(self):
-        import numpy
-        def schwefel(x):
-            """'Schwefel's function [Sch81] is deceptive in that the global minimum is 
-        geometrically distant, over the parameter space, from the next best local 
-        minima. Therefore, the search algorithms are potentially prone to convergence 
-        in the wrong direction.' - http://www.geatbx.com/docu/fcnindex-01.html
-        xi in [-500, 500]
-        global minimum: f(x) = -n*418.9829, xi=420.9687
-        Can be n-dimensional.
-        """
-            x = numpy.asarray(x)
-            return numpy.sum(-x*numpy.sin(abs(x)**0.5))
+        from mystic.models import schwefel
         self.costfunction = schwefel
         self.ND = 2
         self.expected = [420.9687]*self.ND
@@ -2114,15 +2079,7 @@ class TestEasom(unittest.TestCase):
     """Test Easom's function."""
 
     def setUp(self):
-        def easom(x):
-            """'The Easom function [Eas90] is a unimodal test function, where the global 
-        minimum has a small area relative to the search space. The function was 
-        inverted for minimization.' - http://www.geatbx.com/docu/fcnindex-01.html
-        Global minimum f(x1, x2) = -1 at (x1, x2) = (pi, pi)
-        xi in [-100, 100]. 2-dimensional."""
-            x1 = x[0]
-            x2 = x[1]
-            return -cos(x1)*cos(x2)*exp(-(x1-pi)**2 - (x2 - pi)**2)
+        from mystic.models import easom
         self.costfunction = easom
         self.ND = 2
         self.expected = [pi]*self.ND
@@ -2324,21 +2281,8 @@ class TestRotatedEllipsoid(unittest.TestCase):
     """Test the rotated ellipsoid function in 2 dimensions."""
 
     def setUp(self):
-        def rotated_ellipsoid(x):
-            """'An extension of the axis parallel hyper-ellipsoid is Schwefel's 
-        function1.2. With respect to the coordinate axes, this function produces 
-        rotated hyper-ellipsoids. It is continuous, convex and unimodal.' 
-        - http://www.geatbx.com/docu/fcnindex-01.html
-        xi in [-65.536, 65.536]. n-dimensional.
-        global minimum f(x)=0 at xi=0."""
-            result = 0.
-            for i in range(len(x)):
-                s = 0.
-                for j in range(i+1):
-                    s += x[j]
-                result += s**2
-            return result
-        self.costfunction = rotated_ellipsoid
+        from mystic.models import ellipsoid
+        self.costfunction = ellipsoid
         self.ND = 2
         self.expected = [0.]*self.ND
         self.min = [-65.536]*self.ND
@@ -2539,16 +2483,7 @@ class TestAckley(unittest.TestCase):
     """Test Ackley's path function in 2 dimensions."""
 
     def setUp(self):
-        import numpy
-        def ackley(x):
-            """Ackley's Path function.
-        xi in [-32.768., 32.768]
-        global minimum f(x)=0 at xi=0
-        can be n-dimensional. http://www.geatbx.com/docu/fcnindex-01.html"""
-            x = numpy.asarray(x)
-            n = len(x)
-            return -20.*exp(-0.2*sqrt(1./n*numpy.sum(x**2))) - exp(1./n*numpy.sum(
-                    numpy.cos(2.*pi*x))) + 20. + exp(1)
+        from mystic.models import ackley
         self.costfunction = ackley
         self.ND = 2
         self.expected = [0.]*self.ND
@@ -2747,18 +2682,10 @@ class TestAckley(unittest.TestCase):
 ##############################################################################
 
 class TestRastrigin(unittest.TestCase):
-    """Test Rastrigin's function in 2 dimensions. Has many local minima and
-one global minimum."""
+    """Test Rastrigin's function in 2 dimensions."""
 
     def setUp(self):
-        import numpy
-        def rastrigin(x):
-            """Rastrigin's function. Global minimum at xi=0, f(x)=0. Contains
-        many local minima regularly distributed. Can be n-dimensional.
-        xi in [-5.12, 5.12]
-        http://www.geatbx.com/docu/fcnindex-01.html"""
-            x = numpy.asarray(x)
-            return 10.*len(x) + numpy.sum(x**2 - 10*numpy.cos(2.*pi*x))
+        from mystic.models import rastrigin
         self.costfunction = rastrigin
         self.ND = 2
         self.expected = [0.]*self.ND
@@ -2959,17 +2886,8 @@ class TestGoldsteinPrice(unittest.TestCase):
     """Test the Goldstein-Price function."""
 
     def setUp(self):
-        def goldstein_price(x):
-            """Goldstein-Price function. Global minimum f(x1, x2) = 3 at 
-        (x1, x2) = (0, -1)
-        x1, x2 in [-2., 2.]
-        2-dimensional.  http://www.geatbx.com/docu/fcnindex-01.html"""
-            x1 = x[0]
-            x2 = x[1]
-            return (1.+(x1+x2+1.)**2*(19.-14.*x1+3.*x1**2-14.*x2+6.*x1*x2+3.*x2**2))*\
-                   (30.+(2.*x1-3.*x2)**2*(18.-32.*x1+12.*x1**2+48.*x2-36.*x1*x2+\
-                    27.*x2**2))
-        self.costfunction = goldstein_price
+        from mystic.models import goldstein
+        self.costfunction = goldstein
         self.ND = 2
         self.expected = [0., -1.]
         self.min = [-2.]*self.ND
@@ -3167,23 +3085,12 @@ class TestGoldsteinPrice(unittest.TestCase):
 
 ##############################################################################
 
-class TestMathematicaDoc(unittest.TestCase):
-    """Test the function with many local minima found at 
-http://reference.wolfram.com/mathematica/tutorial/ConstrainedOptimizationGlobalNumerical.html."""
+class TestChampion(unittest.TestCase):
+    """Test Champion's NMinimize test function 51."""
 
     def setUp(self):
-        def mathematica_doc1(x):
-            """This function has many local minima. Even mathematica itself
-        has a hard time finding the global minimum.
-
-        Source: http://reference.wolfram.com/mathematica/tutorial/ConstrainedOptimizationGlobalNumerical.html
-
-        global minimum at [-0.0244031,0.210612]"""
-            x1 = x[0]
-            x2 = x[1]
-            return exp(sin(50.*x1)) + sin(60.*exp(x2)) + sin(70.*sin(x1)) + \
-                   sin(sin(80.*x2)) - sin(10.*(x1 + x2)) + 1./4.*(x1**2 + x2**2)
-        self.costfunction = mathematica_doc1
+        from mystic.models import nmin51
+        self.costfunction = nmin51
         self.ND = 2
         self.expected = [-0.0244031,0.210612]
         self.min = [-1.]*self.ND
@@ -3382,25 +3289,11 @@ http://reference.wolfram.com/mathematica/tutorial/ConstrainedOptimizationGlobalN
 ##############################################################################
 
 class TestPaviani(unittest.TestCase):
-    """Paviani's function, or TP110 of Schittkowski's test problems.
-F(min) is negative, so VTR default can fail."""
+    """Test Paviani's function, or TP110 of Schittkowski's test problems."""
 
     def setUp(self):
-        def tp110(x):
-            """TP110 of Schittkowski's test problems. Paviani's function.
-        Minimize sum(ln(xi-2)**2 + ln(10-xi)**2, i=1:10) - product(xi, i=1:10)**0.2
-        xi in [2.001, 9.999]
-        ndim = 10.
-        x0 = [9.]*ndim
-        expected solution: [9.35025655]*ndim where f=-45.77846971"""
-            p = 1.
-            for i in range(10):
-                p *= x[i]
-            s = 0.
-            for i in range(10):
-                s += log(x[i] - 2.)**2 + log(10.-x[i])**2
-            return s - p**0.2
-        self.costfunction = tp110
+        from mystic.models import paviani
+        self.costfunction = paviani
         self.ND = 10
         self.x0 = [9.]*self.ND
         self.expected = [9.35025655]*self.ND
@@ -3616,7 +3509,7 @@ if __name__ == '__main__':
     suite13 = unittest.TestLoader().loadTestsFromTestCase(TestAckley) 
     suite14 = unittest.TestLoader().loadTestsFromTestCase(TestRastrigin) 
     suite15 = unittest.TestLoader().loadTestsFromTestCase(TestGoldsteinPrice) 
-    suite16 = unittest.TestLoader().loadTestsFromTestCase(TestMathematicaDoc) 
+    suite16 = unittest.TestLoader().loadTestsFromTestCase(TestChampion) 
     suite17 = unittest.TestLoader().loadTestsFromTestCase(TestPaviani)
     # Comment out suites in the list below to test specific test cost functions only
     # (Testing all the problems will take some time)
@@ -3635,7 +3528,7 @@ if __name__ == '__main__':
 #                                   suite13,  # Ackley
 #                                   suite14,  # Rastrigin
 #                                   suite15,  # GoldsteinPrice
-#                                   suite16,  # MathematicaDoc
+#                                   suite16,  # Champion
  #                                  suite17,  # Paviani
                                     ])
     unittest.TextTestRunner(verbosity=verbosity).run(allsuites)
