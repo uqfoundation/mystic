@@ -8,6 +8,8 @@
 from mystic.constraints import *
 from mystic.solvers import *
 from mystic.math import almostEqual
+from mystic.tools import random_seed
+random_seed(123)
 
 def test_one_liner(solver):
 

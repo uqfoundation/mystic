@@ -9,6 +9,8 @@ from mystic.constraints import *
 from mystic.penalty import quadratic_equality
 from mystic.coupler import inner
 from mystic.math import almostEqual
+from mystic.tools import random_seed
+random_seed(213)
 
 def test_penalize():
 

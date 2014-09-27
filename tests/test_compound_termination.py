@@ -8,6 +8,7 @@
 """
 Tests of factories that enable verbose and compound termination conditions
 """
+disp = 0
 
 def __and(*funcs):
   "factory for compounding termination conditions with *and*"
@@ -42,9 +43,9 @@ from mystic.termination import And, Or, When
 
 if __name__ == '__main__':
     info = 'self' #False #True
-    _all = And #__and
-    _any = Or #__or
-    _one = When #__when
+    _and = And #__and
+    _or = Or #__or
+    _when = When #__when
 
     from mystic.solvers import DifferentialEvolutionSolver
     s = DifferentialEvolutionSolver(4,4)
@@ -56,61 +57,144 @@ if __name__ == '__main__':
     c = ChangeOverGeneration()
     n = NormalizedChangeOverGeneration()
 
-    print "define conditions..."
-    _v = _one(v)
-    _c = _one(c)
-    _n = _one(n)
-    vAc = _all(v,c)
-    vAn = _all(v,n)
-    vOc = _any(v,c)
-    vOn = _any(v,n)
-    vAc_On = _any(vAc,_n)
-    vAc_Oc = _any(vAc,_c)
-    vAn_On = _any(vAn,_n)
-    cAv = _all(c,v)
-    cOv = _any(c,v)
-    c_OcAv = _any(_c,cAv)
-    print "_v:", _v
-    print "_c:", _c
-    print "_n:", _n
-    print "vAc:", vAc
-    print "vAn:", vAn
-    print "vOc:", vOc
-    print "vOn:", vOn
-    print "vAc_On:", vAc_On
-    print "vAc_Oc:", vAc_Oc
-    print "vAn_On:", vAn_On
-    print "cAv:", cAv
-    print "cOv:", cOv
-    print "c_OcAv:", c_OcAv
+    if disp: print "define conditions..."
+    _v = _when(v)
+    _c = _when(c)
+    _n = _when(n)
+    v_and_c = _and(v,c)
+    v_and_n = _and(v,n)
+    v_or_c = _or(v,c)
+    v_or_n = _or(v,n)
+    v_and_c__or_n = _or(v_and_c,_n)
+    v_and_c__or_c = _or(v_and_c,_c)
+    v_and_n__or_n = _or(v_and_n,_n)
+    c_and_v = _and(c,v)
+    c_or_v = _or(c,v)
+    c_or__c_and_v = _or(_c,c_and_v)
 
-    print "initial conditions..."
-    print "vAc:", vAc(s, info)
-    print "vAn:", vAn(s, info)
-    print "vOc:", vOc(s, info)
-    print "vOn:", vOn(s, info)
+    assert len(_v) == len(_c) == len(_n) == 1
+    assert _v.index(v) == _c.index(c) == _n.index(n) == 0
+    assert _v.count(v) == _c.count(c) == _n.count(n) == 1
+    assert v in _v and c in _c and n in _n
+    assert v in v_and_c and c in v_and_c
+    assert v in v_and_n and n in v_and_n
+    assert v in v_or_c and c in v_or_c
+    assert v in v_or_n and n in v_or_n
+    assert len(v_and_c) == len(v_and_n) == len(v_or_c) == len(v_or_n) == 2
+    assert len(v_and_c__or_n) == len(v_and_c__or_c) == len(v_and_n__or_n) == 2
+    assert v not in v_and_c__or_n and c not in v_and_c__or_n and n not in v_and_c__or_n
+    assert v_and_c in v_and_c__or_n and _n in v_and_c__or_n
+    assert v_and_c in v_and_c__or_c and _c in v_and_c__or_c
+    assert v_and_n in v_and_n__or_n and _n in v_and_n__or_n
+    assert c in c_and_v and v in c_and_v
+    assert c in c_or_v and v in c_or_v
+    assert c_and_v.index(c) == v_and_c.index(v)
+    assert c_and_v.index(v) == v_and_c.index(c)
+    assert c_or_v.index(c) == v_or_c.index(v)
+    assert c_or_v.index(v) == v_or_c.index(c)
+    assert c_and_v in c_or__c_and_v and _c in c_or__c_and_v
 
-    print "after convergence toward zero..."
+    if disp:
+        print "_v:", _v
+        print "_c:", _c
+        print "_n:", _n
+        print "v_and_c:", v_and_c
+        print "v_and_n:", v_and_n
+        print "v_or_c:", v_or_c
+        print "v_or_n:", v_or_n
+        print "v_and_c__or_n:", v_and_c__or_n
+        print "v_and_c__or_c:", v_and_c__or_c
+        print "v_and_n__or_n:", v_and_n__or_n
+        print "c_and_v:", c_and_v
+        print "c_or_v:", c_or_v
+        print "c_or__c_and_v:", c_or__c_and_v
+
+    if disp: print "initial conditions..."
+    _v_and_c = v_and_c(s, info)
+    _v_and_n = v_and_n(s, info)
+    _v_or_c = v_or_c(s, info)
+    _v_or_n = v_or_n(s, info)
+
+    assert not _v_and_c
+    assert not _v_and_n
+    assert not _v_or_c
+    assert not _v_or_n
+
+    if disp:
+        print "v_and_c:", _v_and_c
+        print "v_and_n:", _v_and_n
+        print "v_or_c:", _v_or_c
+        print "v_or_n:", _v_or_n
+
+    if disp: print "after convergence toward zero..."
     s.energy_history = [0,0,0,0,0,0,0,0,0,0,0,0]
-    print "vAc:", vAc(s, info)
-    print "vAn:", vAn(s, info)
-    print "vOc:", vOc(s, info)
-    print "vOn:", vOn(s, info)
+    # _v and _n are True, _c is False
+    _v_and_c = v_and_c(s, info)
+    _v_and_n = v_and_n(s, info)
+    _v_or_c = v_or_c(s, info)
+    _v_or_n = v_or_n(s, info)
 
-    print "nested compound termination..."
-    print "vAc_On:", vAc_On(s, info)
-    print "vAc_Oc:", vAc_Oc(s, info)
-    print "vAn_On:", vAn_On(s, info)
+    assert not _v_and_c
+    assert _v_and_n
+    assert _v_or_c
+    assert _v_or_n
+    assert v in _v_and_n and n in _v_and_n
+    assert v in _v_or_c and c not in _v_or_c
+    assert v in _v_or_n and n in _v_or_n
 
-    print "individual conditions..."
-    print "v:", _v(s, info)
-    print "c:", _c(s, info)
-    print "n:", _n(s, info)
+    if disp:
+        print "v_and_c:", _v_and_c
+        print "v_and_n:", _v_and_n
+        print "v_or_c:", _v_or_c
+        print "v_or_n:", _v_or_n
 
-    print "conditions with false first..."
-    print "cAv:", cAv(s, info)
-    print "cOv:", cOv(s, info)
-    print "c_OcAv:", c_OcAv(s, info)
+    if disp: print "nested compound termination..."
+    # _v and _n are True, _c is False
+    _v_and_c__or_n = v_and_c__or_n(s, info)
+    _v_and_c__or_c = v_and_c__or_c(s, info)
+    _v_and_n__or_n = v_and_n__or_n(s, info)
+
+    assert _v_and_c__or_n
+    assert not _v_and_c__or_c
+    assert _v_and_n__or_n
+    assert _n in _v_and_c__or_n and v_and_c not in _v_and_c__or_n
+    assert v not in _v_and_c__or_n and c not in _v_and_c__or_n
+    assert v_and_n in _v_and_n__or_n and _n in _v_and_n__or_n
+    assert v not in _v_and_n__or_n and n not in _v_and_n__or_n
+
+    if disp:
+        print "v_and_c__or_n:", _v_and_c__or_n
+        print "v_and_c__or_c:", _v_and_c__or_c
+        print "v_and_n__or_n:", _v_and_n__or_n
+
+    if disp: print "individual conditions..."
+    __v = _v(s, info)
+    __c = _c(s, info)
+    __n = _n(s, info)
+
+    assert __v and __n
+    assert not __c
+    assert v in __v and n in __n
+
+    if disp:
+        print "v:", __v
+        print "c:", __c
+        print "n:", __n
+
+    if disp: print "conditions with false first..."
+    _c_and_v = c_and_v(s, info)
+    _c_or_v = c_or_v(s, info)
+    _c_or__c_and_v = c_or__c_and_v(s, info)
+
+    assert not _c_and_v
+    assert _c_or_v
+    assert not _c_or__c_and_v
+    assert v in _c_or_v and c not in _c_or_v
+
+    if disp:
+        print "c_and_v:", _c_and_v
+        print "c_or_v:", _c_or_v
+        print "c_or__c_and_v:", _c_or__c_and_v
 
 
 # EOF

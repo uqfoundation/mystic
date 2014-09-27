@@ -49,7 +49,6 @@ def cost(x):
   return (ax)**2 - bx + c
 
 monitor = Monitor()
-monitor2 = Monitor()
 solver = NelderMeadSimplexSolver(ndim)
 solver.SetRandomInitialPoints(min=lb,max=ub)
 solver.SetStrictRanges(min=lb,max=ub)
@@ -57,16 +56,30 @@ solver.SetEvaluationLimits(maxiter,maxfun)
 solver.SetGenerationMonitor(monitor)
 solver.Solve(cost)
 
-solved = solver.Solution()
+solved = solver.bestSolution
 monitor.info("solved: %s" % solved)
+
+lmon = len(monitor)
+assert solver.bestEnergy == monitor.y[-1]
+for xs,x in zip(solved,monitor.x[-1]):
+  assert xs == x
 
 solver.SetEvaluationLimits(maxiter*2,maxfun)
 solver.SetGenerationMonitor(monitor)
 solver.Solve(cost)
 
+assert len(monitor) > lmon
+assert solver.bestEnergy == monitor.y[-1]
+for xs,x in zip(solver.bestSolution,monitor.x[-1]):
+  assert xs == x
+
 solver.SetEvaluationLimits(maxiter*3,maxfun)
 solver.SetGenerationMonitor(monitor, new=True)
 solver.Solve(cost)
 
+assert solver.bestEnergy == monitor.y[-1]
+for xs,x in zip(solver.bestSolution,monitor.x[-1]):
+  assert xs == x
 
 
+# EOF
