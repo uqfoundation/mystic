@@ -192,10 +192,10 @@ def wrap_reducer(reducer_function):
 
 This is useful for converting a function that used python's 'y = reduce(f, x)'
 interface to an arraylike interface 'y = f(x)'.  Example usage...
-    >>> acum = wrap_reduce(numpy.add)
+    >>> acum = wrap_reducer(numpy.add)
     >>> acum([1,2,3,4])
     10
-    >>> prod = wrap_reduce(lambda x,y: x*y)
+    >>> prod = wrap_reducer(lambda x,y: x*y)
     >>> prod([1,2,3,4])
     24
     """

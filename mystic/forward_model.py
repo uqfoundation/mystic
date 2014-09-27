@@ -101,6 +101,7 @@ Example:
     >>> C.addModel(np.poly, inputs=3)
         """
         if name is None:
+            import dill
             name = dill.source.getname(model)
         if name is None:
             for i in range(len(self._names)+1):
