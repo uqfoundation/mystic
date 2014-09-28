@@ -190,7 +190,7 @@ assert energy2 == _energy2
 assert all(solution2 == _solution2)
 
 # start over... and change so initialize population in the restart
-interval = 1 # None
+interval = None
 random_seed(123)
 if interval:
   _stepmon3 = VerboseMonitor(interval)
