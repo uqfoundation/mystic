@@ -41,12 +41,7 @@ def __when(func):
 from mystic.termination import And, Or, When
 
 
-if __name__ == '__main__':
-    info = 'self' #False #True
-    _and = And #__and
-    _or = Or #__or
-    _when = When #__when
-
+def test_me(info='self'):
     from mystic.solvers import DifferentialEvolutionSolver
     s = DifferentialEvolutionSolver(4,4)
 
@@ -58,19 +53,19 @@ if __name__ == '__main__':
     n = NormalizedChangeOverGeneration()
 
     if disp: print "define conditions..."
-    _v = _when(v)
-    _c = _when(c)
-    _n = _when(n)
-    v_and_c = _and(v,c)
-    v_and_n = _and(v,n)
-    v_or_c = _or(v,c)
-    v_or_n = _or(v,n)
-    v_and_c__or_n = _or(v_and_c,_n)
-    v_and_c__or_c = _or(v_and_c,_c)
-    v_and_n__or_n = _or(v_and_n,_n)
-    c_and_v = _and(c,v)
-    c_or_v = _or(c,v)
-    c_or__c_and_v = _or(_c,c_and_v)
+    _v = When(v)
+    _c = When(c)
+    _n = When(n)
+    v_and_c = And(v,c)
+    v_and_n = And(v,n)
+    v_or_c = Or(v,c)
+    v_or_n = Or(v,n)
+    v_and_c__or_n = Or(v_and_c,_n)
+    v_and_c__or_c = Or(v_and_c,_c)
+    v_and_n__or_n = Or(v_and_n,_n)
+    c_and_v = And(c,v)
+    c_or_v = Or(c,v)
+    c_or__c_and_v = Or(_c,c_and_v)
 
     assert len(_v) == len(_c) == len(_n) == 1
     assert _v.index(v) == _c.index(c) == _n.index(n) == 0
@@ -138,9 +133,10 @@ if __name__ == '__main__':
     assert _v_and_n
     assert _v_or_c
     assert _v_or_n
-    assert v in _v_and_n and n in _v_and_n
-    assert v in _v_or_c and c not in _v_or_c
-    assert v in _v_or_n and n in _v_or_n
+    if info == 'self':
+        assert v in _v_and_n and n in _v_and_n
+        assert v in _v_or_c and c not in _v_or_c
+        assert v in _v_or_n and n in _v_or_n
 
     if disp:
         print "v_and_c:", _v_and_c
@@ -157,10 +153,11 @@ if __name__ == '__main__':
     assert _v_and_c__or_n
     assert not _v_and_c__or_c
     assert _v_and_n__or_n
-    assert _n in _v_and_c__or_n and v_and_c not in _v_and_c__or_n
-    assert v not in _v_and_c__or_n and c not in _v_and_c__or_n
-    assert v_and_n in _v_and_n__or_n and _n in _v_and_n__or_n
-    assert v not in _v_and_n__or_n and n not in _v_and_n__or_n
+    if info == 'self':
+        assert _n in _v_and_c__or_n and v_and_c not in _v_and_c__or_n
+        assert v not in _v_and_c__or_n and c not in _v_and_c__or_n
+        assert v_and_n in _v_and_n__or_n and _n in _v_and_n__or_n
+        assert v not in _v_and_n__or_n and n not in _v_and_n__or_n
 
     if disp:
         print "v_and_c__or_n:", _v_and_c__or_n
@@ -174,7 +171,8 @@ if __name__ == '__main__':
 
     assert __v and __n
     assert not __c
-    assert v in __v and n in __n
+    if info == 'self':
+        assert v in __v and n in __n
 
     if disp:
         print "v:", __v
@@ -189,12 +187,19 @@ if __name__ == '__main__':
     assert not _c_and_v
     assert _c_or_v
     assert not _c_or__c_and_v
-    assert v in _c_or_v and c not in _c_or_v
+    if info == 'self':
+        assert v in _c_or_v and c not in _c_or_v
 
     if disp:
         print "c_and_v:", _c_and_v
         print "c_or_v:", _c_or_v
         print "c_or__c_and_v:", _c_or__c_and_v
+
+
+if __name__ == '__main__':
+    test_me(False)
+    test_me(True)
+    test_me()
 
 
 # EOF
