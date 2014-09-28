@@ -7,8 +7,9 @@
 """
 test imposing the expectation for a function f by optimization
 """
-debug = True
+debug = False
 
+from mystic.math import almostEqual
 from math import pi, cos, tanh
 import random
 
@@ -60,7 +61,7 @@ def marc_surr(x):
   return K * (h/Dp)**p * (cos(a))**u * (tanh((v/v_bl)-1))**m
 
 
-if __name__ == '__main__':
+def test_expect(constrain=False):
   G = marc_surr  #XXX: uses the above-provided test function
   function_name = G.__name__
 
@@ -77,10 +78,11 @@ if __name__ == '__main__':
   upper_bounds = (nx * h_upper) + (ny * a_upper) + (nz * v_upper)
   bounds = (lower_bounds,upper_bounds)
 
-  print " model: f(x) = %s(x)" % function_name
-  print " mean: %s" % _mean
-  print " range: %s" % _range
-  print "..............\n"
+  if debug:
+    print " model: f(x) = %s(x)" % function_name
+    print " mean: %s" % _mean
+    print " range: %s" % _range
+    print "..............\n"
 
   if debug:
     param_string = "["
@@ -105,15 +107,16 @@ if __name__ == '__main__':
   wts = _pack([wx,wy,wz])
   weights = [i[0]*i[1]*i[2] for i in wts]
 
-  if not debug:
+  if not constrain:
     constraints = None
   else:  # impose a mean constraint on 'thickness'
     h_mean = (h_upper[0] + h_lower[0]) / 2.0
     h_error = 1.0
     v_mean = (v_upper[0] + v_lower[0]) / 2.0
     v_error = 0.05
-    print "impose: mean[x] = %s +/- %s" % (str(h_mean),str(h_error))
-    print "impose: mean[z] = %s +/- %s" % (str(v_mean),str(v_error))
+    if debug:
+      print "impose: mean[x] = %s +/- %s" % (str(h_mean),str(h_error))
+      print "impose: mean[z] = %s +/- %s" % (str(v_mean),str(v_error))
     def constraints(x, w):
       from mystic.math.discrete import compose, decompose
       c = compose(x,w)
@@ -129,20 +132,36 @@ if __name__ == '__main__':
   samples = impose_expectation((_mean,_range), G, (nx,ny,nz), bounds, \
                                       weights, constraints=constraints)
 
+  smp = _unpack(samples,(nx,ny,nz))
   if debug:
     from numpy import array
     # rv = [xi]*nx + [yi]*ny + [zi]*nz
-    smp = _unpack(samples,(nx,ny,nz))
     print "\nsolved [x]: %s" % array( smp[0] )
     print "solved [y]: %s" % array( smp[1] )
     print "solved [z]: %s" % array( smp[2] )
     #print "solved: %s" % smp
-    print "\nmean[x]: %s" % mean(smp[0])  # weights are all equal
-    print "mean[y]: %s" % mean(smp[1])  # weights are all equal
-    print "mean[z]: %s\n" % mean(smp[2])  # weights are all equal
+  mx = mean(smp[0])
+  my = mean(smp[1])
+  mz = mean(smp[2])
+  if debug:
+    print "\nmean[x]: %s" % mx  # weights are all equal
+    print "mean[y]: %s" % my  # weights are all equal
+    print "mean[z]: %s\n" % mz  # weights are all equal
+  if constrain:
+    assert almostEqual(mx, h_mean, tol=h_error)
+    assert almostEqual(mz, v_mean, tol=v_error)
 
   Ex = expectation(G, samples, weights)
-  print "expect: %s" % Ex
-  print "cost = (E[G] - m)^2: %s" % (Ex - _mean)**2
+  cost = (Ex - _mean)**2
+  if debug:
+    print "expect: %s" % Ex
+    print "cost = (E[G] - m)^2: %s" % cost
+  assert almostEqual(cost, 0.0, 0.01)
+
+
+if __name__ == '__main__':
+  test_expect(constrain=False)
+  test_expect(constrain=True)
+
 
 # EOF

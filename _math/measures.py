@@ -87,6 +87,14 @@ Inputs:
   return min(y)
 
 def ess_minimum(f, samples, weights=None, tol=0.):
+  """calculate the min of function for support on the given list of points
+
+Inputs: 
+    f -- a function that takes a list and returns a number
+    samples -- a list of sample points
+    weights -- a list of sample weights
+    tol -- weight tolerance, where any weight <= tol is considered zero
+"""
   if weights == None:
     return minimum(f, samples)
   return minimum(f, support(samples, weights, tol))
@@ -132,9 +140,22 @@ Inputs:
   return ssum * inf  # protect against ZeroDivision
 
 def support_index(weights, tol=0):
+  """get the indicies of the positions which have non-zero weight
+
+Inputs:
+    weights -- a list of sample weights
+    tol -- weight tolerance, where any weight <= tol is considered zero
+"""
   return [i for (i,w) in enumerate(weights) if w > tol]
 
 def support(samples, weights, tol=0):
+  """get the positions which have non-zero weight
+
+Inputs:
+    samples -- a list of sample points
+    weights -- a list of sample weights
+    tol -- weight tolerance, where any weight <= tol is considered zero
+"""
   return [samples[i] for (i,w) in enumerate(weights) if w > tol]
 
 def variance(samples, weights=None): #, _mean=None):
