@@ -181,7 +181,7 @@ The size of the simplex is dim+1.
                 y = numpy.array(x0,copy=True)
                 y[k] = val[k]
                 sim[k+1] = y
-                f = cost(y)
+                f = cost(y) #XXX: use self._map?
                 fsim[k+1] = f
 
         else: # do generations > 1
@@ -237,7 +237,7 @@ The size of the simplex is dim+1.
                     if doshrink:
                         for j in one2np1:
                             sim[j] = sim[0] + sigma*(sim[j] - sim[0])
-                            fsim[j] = cost(sim[j])
+                            fsim[j] = cost(sim[j]) #XXX: use self._map?
 
         if len(self._stepmon):
             # sort so sim[0,:] has the lowest function value
@@ -501,7 +501,7 @@ Takes one initial input:
                     bigind = i
 
                 # apply constraints
-                x = asfarray(self._constraints(x))
+                x = asfarray(self._constraints(x)) #XXX: use self._map?
             # decouple from 'best' energy
             self.energy_history = self.energy_history + [fval]
 
@@ -546,7 +546,7 @@ Takes one initial input:
                     bigind = i
 
                 # apply constraints
-                x = asfarray(self._constraints(x))
+                x = asfarray(self._constraints(x)) #XXX: use self._map?
 
             # decouple from 'best' energy
             self.energy_history = self.energy_history + [fval]
