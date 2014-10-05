@@ -145,7 +145,7 @@ __all__ = ['DifferentialEvolutionSolver','DifferentialEvolutionSolver2',\
            'diffev','diffev2']
 
 from mystic.tools import wrap_function, unpair, isiterable
-from mystic.tools import wrap_bounds, wrap_penalty, wrap_nested, reduced
+from mystic.tools import wrap_bounds, wrap_penalty, reduced
 
 from mystic.abstract_solver import AbstractSolver
 from mystic.abstract_map_solver import AbstractMapSolver
@@ -387,14 +387,14 @@ are logged.
                 # generate trialSolution (within valid range)
                 strategy(self, candidate)
             # apply constraints
-           #self.trialSolution[candidate][:] = self._constraints(self.trialSolution[candidate])
-        # bind constraints to cost
-        concost = wrap_nested(cost, self._constraints)
+            self.trialSolution[candidate][:] = self._constraints(self.trialSolution[candidate])
+        # bind constraints to cost #XXX: apparently imposes constraints poorly
+       #concost = wrap_nested(cost, self._constraints)
 
         # apply penalty
        #trialEnergy = map(self._penalty, self.trialSolution)#,**self._mapconfig)
         # calculate cost
-        trialEnergy = self._map(concost, self.trialSolution, **self._mapconfig)
+        trialEnergy = self._map(cost, self.trialSolution, **self._mapconfig)
 
         # each trialEnergy should be a scalar
         if isiterable(trialEnergy[0]) and len(trialEnergy[0]) == 1:
