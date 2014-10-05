@@ -22,7 +22,7 @@ def binary(n):
 
 def index2binary(index, npts=None):
   """convert a list of integers to a list of binary strings"""
-  if npts == None: npts = max(index) + 1
+  if npts is None: npts = max(index) + 1
   v = [binary(i) for i in index + [npts]]
   v = [( (len(v[-1]) - len(i))*'0' + i)[::-1] for i in v][:-1]
   return v

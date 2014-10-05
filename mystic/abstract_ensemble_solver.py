@@ -219,7 +219,7 @@ Note::
             solver = self._bestSolver
         else:
             solver = self
-        if termination == None:
+        if termination is None:
             termination = solver._termination
 
         # check for termination messages

@@ -47,7 +47,7 @@ Inputs:
 """
     eqstring = ""
     # Equality constraints
-    if A != None and b != None:
+    if A is not None and b is not None:
         # If one-dimensional and not in a nested list, add a list layer
         try:
             ndim = len(A[0])
@@ -72,7 +72,7 @@ Inputs:
 
     # Inequality constraints
     ineqstring = ""
-    if G != None and h != None:
+    if G is not None and h is not None:
         # If one-dimensional and not in a nested list, add a list layer
         try:
             ndim = len(G[0])
@@ -251,7 +251,7 @@ Additional Inputs:
    #from mystic.tools import src
    #ndim = len(get_variables(src(func), variables))
     if list_or_tuple_or_ndarray(variables):
-        if nvars != None: variables = variables[:nvars]
+        if nvars is not None: variables = variables[:nvars]
         constraints = replace_variables(constraints, variables)
         varname = '$'
         ndim = len(variables)
@@ -260,7 +260,7 @@ Additional Inputs:
         myvar = get_variables(constraints, variables)
         if myvar: ndim = max([int(v.strip(varname)) for v in myvar]) + 1
         else: ndim = 0
-    if nvars != None: ndim = nvars
+    if nvars is not None: ndim = nvars
 
     # Parse the constraints string
     lines = constraints.splitlines()
@@ -338,7 +338,7 @@ Additional Inputs:
    #from mystic.tools import src
    #ndim = len(get_variables(src(func), variables))
     if list_or_tuple_or_ndarray(variables):
-        if nvars != None: variables = variables[:nvars]
+        if nvars is not None: variables = variables[:nvars]
         constraints = replace_variables(constraints, variables)
         varname = '$'
         ndim = len(variables)
@@ -347,7 +347,7 @@ Additional Inputs:
         myvar = get_variables(constraints, variables)
         if myvar: ndim = max([int(v.strip(varname)) for v in myvar]) + 1
         else: ndim = 0
-    if nvars != None: ndim = nvars
+    if nvars is not None: ndim = nvars
 
     # Parse the constraints string
     lines = constraints.splitlines()

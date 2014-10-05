@@ -282,7 +282,7 @@ NOTE: The resulting constraints will likely be more expensive to evaluate
     if termination is None:
         from mystic.termination import ChangeOverGeneration as COG
         termination = COG()
-    if guess != None:
+    if guess is not None:
         solver.SetInitialPoints(guess) #XXX: nice if 'diffev' also had methods
     else:
         solver.SetRandomInitialPoints(lower_bounds, upper_bounds)

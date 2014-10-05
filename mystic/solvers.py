@@ -79,10 +79,10 @@ from scipy_optimize import fmin, fmin_powell
 # load a solver from a restart file
 def LoadSolver(filename=None, **kwds):
     """load solver state from a restart file"""
-    if filename == None: filename = kwds.get('_state', None)
+    if filename is None: filename = kwds.get('_state', None)
     #XXX: only allow a list override keys (lookup values from self)
-#   if filename == None: filename = self._state
-#   if filename == None:
+#   if filename is None: filename = self._state
+#   if filename is None:
 #       solver = self
 #   else:
     import dill

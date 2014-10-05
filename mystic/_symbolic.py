@@ -59,7 +59,7 @@ Additional Inputs:
     from mystic.symbolic import replace_variables, get_variables
     #XXX: use solve? or first if not in form xi = ... ?
     if list_or_tuple_or_ndarray(variables):
-        if nvars != None: variables = variables[:nvars]
+        if nvars is not None: variables = variables[:nvars]
         constraints = replace_variables(constraints, variables)
         varname = '$'
         ndim = len(variables)
@@ -68,7 +68,7 @@ Additional Inputs:
         myvar = get_variables(constraints, variables)
         if myvar: ndim = max([int(v.strip(varname)) for v in myvar]) + 1
         else: ndim = 0
-    if nvars != None: ndim = nvars
+    if nvars is not None: ndim = nvars
 
     eqns = constraints.splitlines()
     indices = range(ndim)
@@ -180,7 +180,7 @@ Additional Inputs:
     from mystic.symbolic import replace_variables, get_variables
     #XXX: if constraints contain x0,x1,x3 for 'x', should x2 be in code,xlist?
     if list_or_tuple_or_ndarray(variables):
-        if nvars != None: variables = variables[:nvars]
+        if nvars is not None: variables = variables[:nvars]
         constraints = replace_variables(constraints, variables, markers='_')
         varname = '_'
         ndim = len(variables)
@@ -189,7 +189,7 @@ Additional Inputs:
         myvar = get_variables(constraints, variables)
         if myvar: ndim = max([int(v.strip(varname)) for v in myvar]) + 1
         else: ndim = 0
-    if nvars != None: ndim = nvars
+    if nvars is not None: ndim = nvars
 
     # split constraints_str into lists of left hand sides and right hand sides
     eacheqn = constraints.splitlines()
@@ -283,7 +283,7 @@ Further Inputs:
 
     from mystic.symbolic import replace_variables, get_variables
     if list_or_tuple_or_ndarray(variables):
-        if nvars != None: variables = variables[:nvars]
+        if nvars is not None: variables = variables[:nvars]
         constraints = replace_variables(constraint, variables, markers='_')
         varname = '_'
         ndim = len(variables)
@@ -296,7 +296,7 @@ Further Inputs:
         myvar = get_variables(constraint, variables)
         if myvar: ndim = max([int(v.strip(varname)) for v in myvar]) + 1
         else: ndim = 0
-    if nvars != None: ndim = nvars
+    if nvars is not None: ndim = nvars
 
     # create function to replace "_" with original variables
     def restore(variables, mystring):
@@ -449,7 +449,7 @@ Further Inputs:
 
     from mystic.symbolic import replace_variables, get_variables
     if list_or_tuple_or_ndarray(variables):
-        if nvars != None: variables = variables[:nvars]
+        if nvars is not None: variables = variables[:nvars]
         _constraints = replace_variables(constraints, variables, '_')
         varname = '_'
         ndim = len(variables)
@@ -462,7 +462,7 @@ Further Inputs:
         myvar = get_variables(constraints, variables)
         if myvar: ndim = max([int(v.strip(varname)) for v in myvar]) + 1
         else: ndim = 0
-    if nvars != None: ndim = nvars
+    if nvars is not None: ndim = nvars
 
     # create function to replace "_" with original variables
     def restore(variables, mystring):
@@ -708,7 +708,7 @@ Further Inputs:
 
     from mystic.symbolic import replace_variables, get_variables
     if list_or_tuple_or_ndarray(variables):
-        if nvars != None: variables = variables[:nvars]
+        if nvars is not None: variables = variables[:nvars]
         constraints = replace_variables(constraints, variables, '_')
         varname = '_'
         ndim = len(variables)
@@ -717,7 +717,7 @@ Further Inputs:
         myvar = get_variables(constraints, variables)
         if myvar: ndim = max([int(v.strip(varname)) for v in myvar]) + 1
         else: ndim = 0
-    if nvars != None: ndim = nvars
+    if nvars is not None: ndim = nvars
 
     # create function to replace "_" with original variables
     def restore(variables, mystring):

@@ -201,7 +201,7 @@ are logged.
 
     def _RegisterObjective(self, cost, ExtraArgs=None):
         """decorate cost function with bounds, penalties, monitors, etc"""
-        if ExtraArgs == None: ExtraArgs = ()
+        if ExtraArgs is None: ExtraArgs = ()
         self._fcalls, cost = wrap_function(cost, ExtraArgs, self._evalmon)
         if self._useStrictRange:
             for i in range(self.nPop):
@@ -348,7 +348,7 @@ are logged.
 
     def _RegisterObjective(self, cost, ExtraArgs=None):
         """decorate cost function with bounds, penalties, monitors, etc"""
-        if ExtraArgs == None: ExtraArgs = ()
+        if ExtraArgs is None: ExtraArgs = ()
        #FIXME: EvaluationMonitor fails for MPI, throws error for 'pp'
         from python_map import python_map
         if self._map != python_map:

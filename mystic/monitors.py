@@ -219,7 +219,7 @@ current parameters every 'xinterval'.
                 who = ' best'
                 y = " %f" % self._y[-1][best]
             msg = "Generation %d has%s Chi-Squared:%s" % (self._step-1,who,y)
-            if id != None: msg = "[id: %d] " % (id) + msg
+            if id is not None: msg = "[id: %d] " % (id) + msg
             print msg
         if self._xinterval is not numpy.inf and \
            int((self._step-1) % self._xinterval) == 0:
@@ -233,7 +233,7 @@ current parameters every 'xinterval'.
                 who = ' best'
                 x = "\n %s" % self._x[-1][best]
             msg = "Generation %d has%s fit parameters:%s" % (self._step-1,who,x)
-            if id != None: msg = "[id: %d] " % (id) + msg
+            if id is not None: msg = "[id: %d] " % (id) + msg
             print msg
         return
     pass
@@ -291,7 +291,7 @@ Logs ChiSq and parameters to a file every 'interval'
                 else:
                   x = "%s" % xb
             step = [self._step-1]
-            if id != None: step.append(id)
+            if id is not None: step.append(id)
             self._file.write("  %s     %s   %s\n" % (tuple(step), y, x))
         self._file.close()
         return
@@ -334,7 +334,7 @@ Logs ChiSq and parameters to a file every 'interval', print every 'yinterval'
                 who = ' best'
                 y = " %f" % self._y[-1][best]
             msg = "Generation %d has%s Chi-Squared:%s" % (self._step-1,who,y)
-            if id != None: msg = "[id: %d] " % (id) + msg
+            if id is not None: msg = "[id: %d] " % (id) + msg
             print msg
         if self._vxinterval is not numpy.inf and \
            int((self._step-1) % self._vxinterval) == 0:
@@ -348,7 +348,7 @@ Logs ChiSq and parameters to a file every 'interval', print every 'yinterval'
                 who = ' best'
                 x = "\n %s" % self._x[-1][best]
             msg = "Generation %d has%s fit parameters:%s" % (self._step-1,who,x)
-            if id != None: msg = "[id: %d] " % (id) + msg
+            if id is not None: msg = "[id: %d] " % (id) + msg
             print msg
         return
     def __reduce__(self):

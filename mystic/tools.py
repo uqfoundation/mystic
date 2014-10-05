@@ -103,14 +103,14 @@ def getch(str="Press any key to continue"):
     "configurable pause of execution"
     import sys, subprocess
     if sys.stdin.isatty():
-       if str != None:
+       if str is not None:
           print str
        subprocess.call('stty raw', shell=True)
        a = sys.stdin.read(1)
        subprocess.call('stty cooked', shell=True)
        return a
     else:
-       if str != None:
+       if str is not None:
            print str + " and press enter"
        return raw_input()
 

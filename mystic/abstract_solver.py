@@ -312,12 +312,12 @@ note::
             self._useStrictRange = False
             return
         #XXX: better to use 'defaultMin,defaultMax' or '-inf,inf' ???
-        if min == None: min = self._defaultMin
-        if max == None: max = self._defaultMax
+        if min is None: min = self._defaultMin
+        if max is None: max = self._defaultMax
         # when 'some' of the bounds are given as 'None', replace with default
         for i in range(len(min)): 
-            if min[i] == None: min[i] = self._defaultMin[0]
-            if max[i] == None: max[i] = self._defaultMax[0]
+            if min[i] is None: min[i] = self._defaultMin[0]
+            if max[i] is None: max[i] = self._defaultMax[0]
 
         min = asarray(min); max = asarray(max)
         if numpy.any(( min > max ),0):
@@ -377,16 +377,16 @@ input::
 input::
     - min, max: must be a sequence of length self.nDim
     - each min[i] should be <= the corresponding max[i]"""
-        if min == None: min = self._defaultMin
-        if max == None: max = self._defaultMax
+        if min is None: min = self._defaultMin
+        if max is None: max = self._defaultMax
        #if numpy.any(( asarray(min) > asarray(max) ),0):
        #    raise ValueError, "each min[i] must be <= the corresponding max[i]"
         if len(min) != self.nDim or len(max) != self.nDim:
             raise ValueError, "bounds array must be length %s" % self.nDim
         # when 'some' of the bounds are given as 'None', replace with default
         for i in range(len(min)): 
-            if min[i] == None: min[i] = self._defaultMin[0]
-            if max[i] == None: max[i] = self._defaultMax[0]
+            if min[i] is None: min[i] = self._defaultMin[0]
+            if max[i] is None: max[i] = self._defaultMax[0]
         import random
         #generate random initial values
         for i in range(len(self.population)):
@@ -405,7 +405,7 @@ input::
         """
         from numpy.random import multivariate_normal
         assert(len(mean) == self.nDim)
-        if var == None:
+        if var is None:
             var = numpy.eye(self.nDim)
         else:
             try: # scalar ?
@@ -536,7 +536,7 @@ Note::
     If no termination conditions are given, the solver's stored
     termination conditions will be used.
         """
-        if termination == None:
+        if termination is None:
             termination = self._termination
         # check for termination messages
         msg = termination(self, info=True)
@@ -571,7 +571,7 @@ Note::
 
     def _RegisterObjective(self, cost, ExtraArgs=None):
         """decorate cost function with bounds, penalties, monitors, etc"""
-        if ExtraArgs == None: ExtraArgs = ()
+        if ExtraArgs is None: ExtraArgs = ()
         self._fcalls, cost = wrap_function(cost, ExtraArgs, self._evalmon)
         if self._useStrictRange:
             for i in range(self.nPop):
@@ -589,10 +589,10 @@ Note::
     def _bootstrap_decorate(self, cost=None, ExtraArgs=None):
         """HACK to enable not explicitly calling _RegisterObjective"""
         args = None
-        if cost == None: # 'use existing cost'
+        if cost is None: # 'use existing cost'
             cost,args = self._cost # use args, unless override with ExtraArgs
-        if ExtraArgs != None: args = ExtraArgs
-        if self._cost[0] == None: # '_RegisterObjective not yet called'
+        if ExtraArgs is not None: args = ExtraArgs
+        if self._cost[0] is None: # '_RegisterObjective not yet called'
             if args is None: args = ()
             cost = self._RegisterObjective(cost, args)
         return cost
@@ -606,8 +606,8 @@ Note::
     def SaveSolver(self, filename=None, **kwds):
         """save solver state to a restart file"""
         import dill
-        if filename == None: # then check if already has registered file
-            if self._state == None: # then create a new one
+        if filename is None: # then check if already has registered file
+            if self._state is None: # then create a new one
                 import tempfile
                 self._state = tempfile.mkstemp(suffix='.pkl')[-1]
             filename = self._state

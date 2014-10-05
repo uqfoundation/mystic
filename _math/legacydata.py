@@ -164,9 +164,9 @@ class datapoint(object):
       self.raw = position
     else:
       self.raw.position = position 
-      if value == None: raise ValueError, "value not set for the datapoint"
+      if value is None: raise ValueError, "value not set for the datapoint"
       self.raw.value = value
-    if id == None: id = self.__hash_id(self)  #XXX: default id is hash id
+    if id is None: id = self.__hash_id(self)  #XXX: default id is hash id
     self.id = id
     self.cone = lipschitzcone(self,lipschitz)
     return
@@ -616,11 +616,11 @@ def load_dataset(filename, filter=None):
 
   # apply filter(s)
   from numpy import asarray
-  if _filter != None and filter != False:
+  if _filter is not None and filter != False:
     _filter = asarray(_filter)
     _filter = _filter[_filter < len(pt)]
     pt = [pt[i] for i in _filter]
-  if filter != None and filter != False:
+  if filter is not None and filter != False:
     filter = asarray(filter)
     filter = filter[filter < len(pt)]
     pt = [pt[i] for i in filter]
@@ -647,7 +647,7 @@ def save_dataset(data, filename='dataset.txt', filter=None, new=True):
   if data.__name__: file.write('# data name: "%s"\n' % data.__name__ )
   if data.lipschitz:
     file.write("# lipschitz: %s\n" % str(tuple(data.lipschitz)) )
-  if filter != None:
+  if filter is not None:
     file.write("# filter: %s\n" % str(filter))
   file.write("# ___id___  __value__  __coords__\n")
   for pt in data:

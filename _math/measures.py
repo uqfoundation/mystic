@@ -72,7 +72,7 @@ Inputs:
     weights -- a list of sample weights
     tol -- weight tolerance, where any weight <= tol is considered zero
 """
-  if weights == None:
+  if weights is None:
     return maximum(f, samples)
   return maximum(f, support(samples, weights, tol))
 
@@ -95,7 +95,7 @@ Inputs:
     weights -- a list of sample weights
     tol -- weight tolerance, where any weight <= tol is considered zero
 """
-  if weights == None:
+  if weights is None:
     return minimum(f, samples)
   return minimum(f, support(samples, weights, tol))
 
@@ -108,7 +108,7 @@ Inputs:
     weights -- a list of sample weights
     tol -- weight tolerance, where any weight <= tol is ignored
 """
-  if weights == None:
+  if weights is None:
     y = [f(x) for x in samples]
     return mean(y, weights)
   # contributed by TJS #
@@ -129,7 +129,7 @@ Inputs:
     samples -- a list of sample points
     weights -- a list of sample weights
 """
-  if weights == None:
+  if weights is None:
     weights = [1.0/float(len(samples))] * len(samples)
   # get weighted sum
   ssum = sum(i*j for i,j in zip(samples, weights))
@@ -165,9 +165,9 @@ Inputs:
     samples -- a list of sample points
     weights -- a list of sample weights
 """
-  if weights == None:
+  if weights is None:
     weights = [1.0/float(len(samples))] * len(samples)
- #if _mean == None:
+ #if _mean is None:
   _mean = mean(samples, weights)
   svar = [abs(s - _mean)**2 for s in samples]
   return mean(svar, weights)
@@ -393,7 +393,7 @@ Inputs:
 def impose_reweighted_mean(m, samples, weights=None, solver=None):
     """impose a mean on a list of points, using reweighting"""
     ndim = len(samples)
-    if weights == None:
+    if weights is None:
         weights = [1.0/ndim] * ndim
     if solver is None or solver == 'fmin':
         from mystic.solvers import fmin as solver
@@ -436,7 +436,7 @@ def impose_reweighted_mean(m, samples, weights=None, solver=None):
 def impose_reweighted_variance(v, samples, weights=None, solver=None):
     """impose a variance on a list of points, using reweighting"""
     ndim = len(samples)
-    if weights == None:
+    if weights is None:
         weights = [1.0/ndim] * ndim
     if solver is None or solver == 'fmin':
         from mystic.solvers import fmin as solver
