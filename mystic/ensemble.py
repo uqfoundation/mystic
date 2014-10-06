@@ -84,7 +84,8 @@ Further Inputs:
         """
         # process and activate input settings
         settings = self._process_inputs(kwds)
-        disp=0
+        disp = settings.get('disp', False)
+        echo = settings.get('callback', None) #XXX: every iteration every run
 #       for key in settings:
 #           exec "%s = settings['%s']" % (key,key)
         if disp in ['verbose', 'all']: verbose = True
@@ -140,13 +141,13 @@ Further Inputs:
         id = range(len(initial_values))
 
         # generate the local_optimize function
-        def local_optimize(solver, x0, rank=None, disp=verbose):
+        def local_optimize(solver, x0, rank=None, disp=verbose, callback=echo):
             solver.id = rank
             solver.SetInitialPoints(x0)
             if solver._useStrictRange: #XXX: always, settable, or sync'd ?
                 solver.SetStrictRanges(min=solver._strictMin, \
                                        max=solver._strictMax) # or lower,upper ?
-            solver.Solve(cost, disp=disp)
+            solver.Solve(cost, disp=disp, callback=callback)
             return solver
 
         # map:: solver = local_optimize(solver, x0, id, verbose)
@@ -248,7 +249,8 @@ Further Inputs:
         """
         # process and activate input settings
         settings = self._process_inputs(kwds)
-        disp=0
+        disp = settings.get('disp', False)
+        echo = settings.get('callback', None) #XXX: every iteration every run
 #       for key in settings:
 #           exec "%s = settings['%s']" % (key,key)
         if disp in ['verbose', 'all']: verbose = True
@@ -297,13 +299,13 @@ Further Inputs:
         id = range(len(initial_values))
 
         # generate the local_optimize function
-        def local_optimize(solver, x0, rank=None, disp=verbose):
+        def local_optimize(solver, x0, rank=None, disp=verbose, callback=echo):
             solver.id = rank
             solver.SetInitialPoints(x0)
             if solver._useStrictRange: #XXX: always, settable, or sync'd ?
                 solver.SetStrictRanges(min=solver._strictMin, \
                                        max=solver._strictMax) # or lower,upper ?
-            solver.Solve(cost, disp=disp)
+            solver.Solve(cost, disp=disp, callback=callback)
             return solver
 
         # map:: solver = local_optimize(solver, x0, id, verbose)
@@ -466,7 +468,7 @@ Returns: (xopt, {fopt, iter, funcalls, warnflag, allfuncalls}, {allvecs})
     solution = solver.Solution()
 
     # code below here pushes output to scipy.optimize.fmin interface
-    msg = solver.CheckTermination(disp=disp, info=True)
+    msg = solver.CheckTermination(disp=False, info=True)
 
     x = solver.bestSolution
     fval = solver.bestEnergy
@@ -597,7 +599,7 @@ Returns: (xopt, {fopt, iter, funcalls, warnflag, allfuncalls}, {allvecs})
     solution = solver.Solution()
 
     # code below here pushes output to scipy.optimize.fmin interface
-    msg = solver.CheckTermination(disp=disp, info=True)
+    msg = solver.CheckTermination(disp=False, info=True)
 
     x = solver.bestSolution
     fval = solver.bestEnergy
