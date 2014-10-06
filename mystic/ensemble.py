@@ -30,7 +30,7 @@ For more information, see `mystic.mystic.abstract_solver`.
 """
 __all__ = ['LatticeSolver','BuckshotSolver']
 
-from mystic.tools import wrap_function
+from mystic.tools import wrap_function, unpair
 
 from mystic.abstract_ensemble_solver import AbstractEnsembleSolver
 
