@@ -379,7 +379,8 @@ Inputs:
   weights = asarray(list(weights)) #XXX: faster to use x = array(x, copy=True) ?
   w = float(sum(weights))
   if not w:  #XXX: is this the best behavior?
-    from numpy import inf
+    from numpy import inf, nan
+    weights[weights == 0.0] = nan
     return list(weights * inf)  # protect against ZeroDivision
   if float(mass) or not zsum:
     return list(mass * weights / w)  #FIXME: not "mean-preserving"

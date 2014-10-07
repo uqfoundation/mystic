@@ -118,8 +118,10 @@ The size of the simplex is dim+1.
         bounded = ~numpy.isinf(lo) & ~numpy.isinf(hi)
         val[bounded] = x0[bounded] + (hi[bounded]-lo[bounded])*radius
         # crop val at bounds
+        settings = numpy.seterr(all='ignore')
         val[val<lo] = lo[val<lo]
         val[val>hi] = hi[val>hi]
+        numpy.seterr(**settings)
         # handle collisions (when val[i] == x0[i])
         collision = val==x0
         if numpy.any(collision):

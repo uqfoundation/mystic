@@ -40,11 +40,11 @@ A typical call to a 'map' solver will roughly follow this example:
     >>> # select the parallel launch configuration
     >>> from pyina.launchers import Mpi as Pool
     >>> NNODES = 4
-    >>>> npts = 20
+    >>> npts = 20
     >>>
     >>> # instantiate and configure the solver
-    >>> from mystic.solvers import ScattershotSolver
-    >>> solver = ScattershotSolver(len(lb), npts)
+    >>> from mystic.solvers import BuckshotSolver
+    >>> solver = BuckshotSolver(len(lb), npts)
     >>> solver.SetMapper(Pool(NNODES).map)
     >>> solver.SetGenerationMonitor(stepmon)
     >>> solver.SetTermination(CRT())

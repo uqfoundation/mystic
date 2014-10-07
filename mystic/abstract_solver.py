@@ -76,7 +76,7 @@ __all__ = ['AbstractSolver']
 
 
 import numpy
-from numpy import inf, shape, asarray, absolute, asfarray
+from numpy import inf, shape, asarray, absolute, asfarray, seterr
 from mystic.tools import wrap_function, wrap_nested, wrap_reducer
 from mystic.tools import wrap_bounds, wrap_penalty, reduced
 
@@ -340,8 +340,10 @@ input::
         lo = self._strictMin
         hi = self._strictMax
         # crop x0 at bounds
+        settings = numpy.seterr(all='ignore')
         x0[x0<lo] = lo[x0<lo]
         x0[x0>hi] = hi[x0>hi]
+        numpy.seterr(**settings)
         return x0
 
     def SetInitialPoints(self, x0, radius=0.05):
