@@ -137,11 +137,12 @@ Further Inputs:
         from copy import deepcopy as copy
         op = [copy(solver) for i in range(len(initial_values))]
        #cf = [cost for i in range(len(initial_values))]
-       #vb = [verbose for i in range(len(initial_values))]
+        vb = [verbose for i in range(len(initial_values))]
+        cb = [echo for i in range(len(initial_values))] #XXX: remove?
         id = range(len(initial_values))
 
         # generate the local_optimize function
-        def local_optimize(solver, x0, rank=None, disp=verbose, callback=echo):
+        def local_optimize(solver, x0, rank=None, disp=False, callback=None):
             solver.id = rank
             solver.SetInitialPoints(x0)
             if solver._useStrictRange: #XXX: always, settable, or sync'd ?
@@ -152,7 +153,7 @@ Further Inputs:
 
         # map:: solver = local_optimize(solver, x0, id, verbose)
         results = self._map(local_optimize, op, initial_values, id, \
-                                                **self._mapconfig)
+                                            vb, cb, **self._mapconfig)
 
         # save initial state
         self._AbstractSolver__save_state()
@@ -295,11 +296,12 @@ Further Inputs:
         from copy import deepcopy as copy
         op = [copy(solver) for i in range(len(initial_values))]
        #cf = [cost for i in range(len(initial_values))]
-       #vb = [verbose for i in range(len(initial_values))]
+        vb = [verbose for i in range(len(initial_values))]
+        cb = [echo for i in range(len(initial_values))] #XXX: remove?
         id = range(len(initial_values))
 
         # generate the local_optimize function
-        def local_optimize(solver, x0, rank=None, disp=verbose, callback=echo):
+        def local_optimize(solver, x0, rank=None, disp=False, callback=None):
             solver.id = rank
             solver.SetInitialPoints(x0)
             if solver._useStrictRange: #XXX: always, settable, or sync'd ?
@@ -310,7 +312,7 @@ Further Inputs:
 
         # map:: solver = local_optimize(solver, x0, id, verbose)
         results = self._map(local_optimize, op, initial_values, id, \
-                                                **self._mapconfig)
+                                            vb, cb, **self._mapconfig)
 
         # save initial state
         self._AbstractSolver__save_state()
