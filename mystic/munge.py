@@ -53,6 +53,7 @@ def read_history(source):
 # logfile reader
 
 def logfile_reader(filename):
+  from numpy import inf, nan
   f = open(filename,"r")
   file = f.read()
   f.close()
