@@ -75,10 +75,8 @@ from circle import circle, dense_circle, sparse_circle, minimal_circle
 
 # functions
 from dejong import sphere, rosen, step, quartic, shekel
-from corana import corana
+from storn import corana, griewangk, zimmermann
 from wolfram import fosc3d, nmin51
-from griewangk import griewangk
-from zimmermann import zimmermann
 from nag import peaks
 from venkataraman import venkat91
 from wavy import wavy1, wavy2

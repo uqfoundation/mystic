@@ -24,8 +24,9 @@ from mystic.strategy import Best1Exp, Rand1Exp
 import random
 random.seed(123)
 
-from mystic.models import corana as Corana
-from mystic.models.corana import corana1d as Corana1
+from mystic.models import corana
+from mystic.models.storn import Corana as Corana1
+corana1 = Corana1(1)
 
 ND = 4
 NP = 10
@@ -37,7 +38,7 @@ def main():
     solver.SetRandomInitialPoints(min = [-1000]*ND, max = [1000]*ND)
     solver.SetEvaluationLimits(generations=MAX_GENERATIONS)
 
-    solver.Solve(Corana, termination=VTR(0.00000001), strategy=Rand1Exp,\
+    solver.Solve(corana, termination=VTR(0.00000001), strategy=Rand1Exp,\
                  CrossProbability=0.5, ScalingFactor=0.9)
 
     solution = solver.Solution()
@@ -57,10 +58,10 @@ if __name__ == '__main__':
        #from mystic._scipyoptimize import fmin
         import random
         print  "\nScipy: "
-        sol = fmin(Corana, [random.random() for j in range(4)], full_output=0, retall=1)
+        sol = fmin(corana, [random.random() for j in range(4)], full_output=0, retall=1)
         print "solution: ", sol[-1][0]
         print "\nCorana 1 with Scipy"
-        sol = fmin(Corana1, [random.random()], full_output=1, retall=1)
+        sol = fmin(corana1, [random.random()], full_output=1, retall=1)
         print "solution: ", sol[-1][0]
     except:
         pass
