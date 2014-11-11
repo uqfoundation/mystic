@@ -354,12 +354,14 @@ Further Inputs:
     # returns: {x0: f(xn,...), x1: f(xn,...), ..., xn: f(...,x0)}
     if permute or not target: #XXX: the goal is solving *only one* equation
         code += '_xlist = %s\n' % ','.join(targeted)
-        code += '_xlist = [symsol(['+eqlist+'], [i]) for i in _xlist]\n'
+        code += '_elist = [symsol(['+eqlist+'], [i]) for i in _xlist]\n'
+        code += '_elist = [i if isinstance(i, dict) else {j:i[-1][-1]} for j,i in zip(_xlist,_elist)]\n'
         code += 'soln = {}\n'
-        code += '[soln.update(i) for i in _xlist if i]\n'
+        code += '[soln.update(i) for i in _elist if i]\n'
     else:
         code += 'soln = symsol([' + eqlist + '], [' + target[0] + '])\n'
        #code += 'soln = symsol([' + eqlist + '], [' + targeted[0] + '])\n'
+        code += 'soln = soln if isinstance(soln, dict) else {' + target[0] + ': soln[-1][-1]}\n'
     ########################################################################
 
     if verbose: print code
@@ -534,6 +536,7 @@ Further Inputs:
         # solve dependent xi: symsol([linear_system], [x0,x1,...,xi,...,xn])
         # returns: {x0: f(xn,...), x1: f(xn,...), ...}
         _code += 'soln = symsol([' + eqlist + '], [' + xlist + '])'
+        #XXX: need to convert/check soln similarly as in _solve_single ?
         if verbose: print _code
         _code = compile(_code, '<string>', 'exec')
         try: 
