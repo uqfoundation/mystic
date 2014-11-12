@@ -510,7 +510,9 @@ Inputs:
     from numpy import inf
     return list(weights * inf)  # protect against ZeroDivision
   if float(mass):
-    return list(weights / (w/mass)**(1./n))  #FIXME: not "mean-preserving"
+    if w/mass < 0.0:
+      return list(-weights / (-w/mass)**(1./n))  #FIXME: not "mean-preserving"
+    return list(weights / (w/mass)**(1./n))      #FIXME: not "mean-preserving"
   # force selected member to satisfy product = 0.0
   if not zsum:
     return list(weights * 0.0)  #FIXME: not "mean-preserving"
@@ -519,7 +521,9 @@ Inputs:
   w = (w/p)
   n = n-1
   mass = zmass
-  return list(weights[:-1]/(w/mass)**(1./n))+[0.] #FIXME: not "mean-preserving"
+  if w/mass >= 0.0:
+    return list(weights[:-1]/(w/mass)**(1./n))+[0.]#FIXME: not "mean-preserving"
+  return list(-weights[:-1]/(-w/mass)**(1./n))+[0.]#FIXME: not "mean-preserving"
 
 
 #--------------------------------------------------------------------
