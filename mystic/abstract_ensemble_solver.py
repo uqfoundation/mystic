@@ -119,7 +119,7 @@ Important class members:
         if kwds.has_key('nbins'): nbins = kwds['nbins']
         if isinstance(nbins, int):
             from mystic.math.grid import randomly_bin
-            nbins = randomly_bin(nbins, dim)
+            nbins = randomly_bin(nbins, dim, ones=True, exact=True)
         self._nbins           = nbins
         npts = 1
         if kwds.has_key('npts'): npts = kwds['npts']

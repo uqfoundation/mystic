@@ -365,7 +365,7 @@ Further Inputs:
         return 
 
 
-def lattice(cost,ndim,nbins=2,args=(),bounds=None,ftol=1e-4,maxiter=None, \
+def lattice(cost,ndim,nbins=None,args=(),bounds=None,ftol=1e-4,maxiter=None, \
             maxfun=None,full_output=0,disp=1,retall=0,callback=None,**kwds):
     """Minimize a function using the lattice ensemble solver.
     
@@ -380,7 +380,7 @@ Inputs:
 
     cost -- the Python function or method to be minimized.
     ndim -- dimensionality of the problem.
-    nbins -- tuple of number of bins in each dimension.
+    nbins -- tuple of number of bins in each dimension. [default = (2,)*ndim]
 
 Additional Inputs:
 
@@ -447,7 +447,7 @@ Returns: (xopt, {fopt, iter, funcalls, warnflag, allfuncalls}, {allvecs})
         from mystic.termination import VTRChangeOverGeneration
         termination = VTRChangeOverGeneration(ftol)
 
-    if isinstance(nbins, int): nbins = [nbins]*ndim
+    if nbins is None: nbins = 2**ndim
 
     solver = LatticeSolver(ndim,nbins)
     solver.SetNestedSolver(_solver) #XXX: skip settings for configured solver?
