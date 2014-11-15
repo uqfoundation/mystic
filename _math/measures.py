@@ -502,9 +502,9 @@ Inputs:
     zsum -- use counterbalance when mass = 0.0
     zmass -- member scaling when mass = 0.0
 """
-  from numpy import prod
+  from numpy import product
   weights = asarray(list(weights)) #XXX: faster to use x = array(x, copy=True) ?
-  w = float(prod(weights))
+  w = float(product(weights))
   n = len(weights)
   if not w:  #XXX: is this the best behavior?
     from numpy import inf
@@ -545,25 +545,25 @@ For example:
   [(1,4,6), (2,4,6), (3,4,6), (1,5,6), (2,5,6), (3,5,6), \
    (1,4,7), (2,4,7), (3,4,7), (1,5,7), (2,5,7), (3,5,7)]
 """
- #from numpy import prod, array, ones
+ #from numpy import product, array, ones
  #ndim = len(samples)
  #npts = [len(s) for s in samples]
  #z = []
  #for i in range(ndim):
- #  tmp = list(array([n*ones(prod(npts[:i])) for n in samples[i]]).flatten())
- #  z.append( prod(npts[i+1:])*tmp )
+ #  tmp = list(array([n*ones(product(npts[:i])) for n in samples[i]]).flatten())
+ #  z.append( product(npts[i+1:])*tmp )
  #del tmp
  #zT = []
  #for i in range(len(z[0])):
  #  zT.append( tuple([y.pop(0) for y in z]) )
  #return zT
-# from numpy import prod, array, ones
+# from numpy import product, array, ones
 # ndim = len(samples)
 # npts = [len(s) for s in samples]
-# z = ones((ndim, prod(npts)))  # z.T of what's needed
+# z = ones((ndim, product(npts)))  # z.T of what's needed
 # for i in range(ndim):
-#   tmp = list(array([n*ones(prod(npts[:i])) for n in samples[i]]).flatten())
-#   z[i] = prod(npts[i+1:])*tmp
+#   tmp = list(array([n*ones(product(npts[:i])) for n in samples[i]]).flatten())
+#   z[i] = product(npts[i+1:])*tmp
 # return [tuple(i) for i in z.T]
   ndim = len(samples)
   currentx=[0.]*ndim
@@ -593,12 +593,12 @@ For example:
   ...        )
   [[1,2,3], [4,5], [6,7]]
 """
-# from numpy import prod, array
+# from numpy import product, array
 # ndim = len(npts)
 # z = []
 # for i in range(ndim):
-#   tmp = array(samples[:int(len(samples)/prod(npts[i+1:]))]).T[i]
-#   z.append( list(tmp[::int(prod(npts[:i]))]) )
+#   tmp = array(samples[:int(len(samples)/product(npts[i+1:]))]).T[i]
+#   z.append( list(tmp[::int(product(npts[:i]))]) )
 # return z
   _samples = []
   ndim = len(npts)

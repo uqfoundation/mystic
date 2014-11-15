@@ -71,8 +71,8 @@ Inputs:
     # if ones, mix in the 1s; otherwise, only use 1s when ndim < len(result)
     if ones: result = sorted(result, key=lambda v: random())
     else: result[:nfact] = sorted(result[:nfact], key=lambda v: random())
-    from numpy import prod
-    result = [prod(result[i::dim]) for i in range(dim)]
+    from numpy import product
+    result = [product(result[i::dim]) for i in range(dim)]
     # if not ones, now needs a full sort to sort in the 1s
     if not ones: result = sorted(result, key=lambda v: random())
     elif not ndim and 1 in result: result.remove(1) # remove the added "1"
