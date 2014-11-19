@@ -74,8 +74,7 @@ if __name__ == '__main__':
     import random
     random.seed(123)
     ndim = 9
-   #nbins = [1]*ndim
-    nbins = [2,1,2,1,2,1,1,1,1]
+    nbins = [2,1,2,1,2,1,2,1,1]
 
     # draw frame and exact coefficients
     plot_exact()

@@ -74,7 +74,7 @@ if __name__ == '__main__':
     import random
     random.seed(123)
     ndim = 9
-    npts = 6
+    npts = 8
 
     # draw frame and exact coefficients
     plot_exact()

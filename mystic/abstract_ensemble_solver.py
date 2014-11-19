@@ -128,6 +128,9 @@ Important class members:
         self._solver          = NelderMeadSimplexSolver
         self._bestSolver      = None # 'best' solver (after Solve)
         self._total_evals     = 0 # total function calls (after Solve)
+        if kwds.has_key('nbins'): NP = reduce(lambda x,y:x*y, nbins)
+        else: NP = npts #XXX: merge npts/nbins kwds?
+        self._allSolvers      = [None for j in range(NP)]
         return
 
     def SetNestedSolver(self, solver):

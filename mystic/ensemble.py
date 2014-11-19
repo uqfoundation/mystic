@@ -134,8 +134,8 @@ Further Inputs:
         initial_values = gridpts(bins)
 
         # run optimizer for each grid point
-        from copy import deepcopy as copy
-        op = [copy(solver) for i in range(len(initial_values))]
+        from copy import deepcopy as _copy
+        op = [_copy(solver) for i in range(len(initial_values))]
        #cf = [cost for i in range(len(initial_values))]
         vb = [verbose for i in range(len(initial_values))]
         cb = [echo for i in range(len(initial_values))] #XXX: remove?
@@ -143,13 +143,21 @@ Further Inputs:
 
         # generate the local_optimize function
         def local_optimize(solver, x0, rank=None, disp=False, callback=None):
+            from copy import deepcopy as _copy
+            from mystic.tools import isNull
             solver.id = rank
             solver.SetInitialPoints(x0)
             if solver._useStrictRange: #XXX: always, settable, or sync'd ?
                 solver.SetStrictRanges(min=solver._strictMin, \
                                        max=solver._strictMax) # or lower,upper ?
             solver.Solve(cost, disp=disp, callback=callback)
-            return solver
+            sm = solver._stepmon
+            em = solver._evalmon
+            if isNull(sm): sm = ([],[],[],[])
+            else: sm = (_copy(sm._x),_copy(sm._y),_copy(sm._id),_copy(sm._info))
+            if isNull(em): em = ([],[],[],[])
+            else: em = (_copy(em._x),_copy(em._y),_copy(em._id),_copy(em._info))
+            return solver, sm, em
 
         # map:: solver = local_optimize(solver, x0, id, verbose)
         results = self._map(local_optimize, op, initial_values, id, \
@@ -157,12 +165,29 @@ Further Inputs:
 
         # save initial state
         self._AbstractSolver__save_state()
+        #XXX: HACK TO GET CONTENT OF ALL MONITORS
+        # reconnect monitors; save all solvers
+        from mystic.monitors import Monitor
+        while results: #XXX: option to not save allSolvers? skip this and _copy
+            _solver, _stepmon, _evalmon = results.pop()
+            sm = Monitor()
+            sm._x,sm._y,sm._id,sm._info = _stepmon
+            _solver._stepmon.extend(sm)
+            del sm
+            em = Monitor()
+            em._x,em._y,em._id,em._info = _evalmon
+            _solver._evalmon.extend(em)
+            del em
+            self._allSolvers[len(results)] = _solver
+        del results, _solver, _stepmon, _evalmon
+        #XXX: END HACK
+
         # get the results with the lowest energy
-        self._bestSolver = results[0]
+        self._bestSolver = self._allSolvers[0]
         bestpath = self._bestSolver._stepmon
         besteval = self._bestSolver._evalmon
         self._total_evals = self._bestSolver.evaluations
-        for solver in results[1:]:
+        for solver in self._allSolvers[1:]:
             self._total_evals += solver.evaluations # add func evals
             if solver.bestEnergy < self._bestSolver.bestEnergy:
                 self._bestSolver = solver
@@ -293,8 +318,8 @@ Further Inputs:
         initial_values = samplepts(lower,upper,npts)
 
         # run optimizer for each grid point
-        from copy import deepcopy as copy
-        op = [copy(solver) for i in range(len(initial_values))]
+        from copy import deepcopy as _copy
+        op = [_copy(solver) for i in range(len(initial_values))]
        #cf = [cost for i in range(len(initial_values))]
         vb = [verbose for i in range(len(initial_values))]
         cb = [echo for i in range(len(initial_values))] #XXX: remove?
@@ -302,13 +327,21 @@ Further Inputs:
 
         # generate the local_optimize function
         def local_optimize(solver, x0, rank=None, disp=False, callback=None):
+            from copy import deepcopy as _copy
+            from mystic.tools import isNull
             solver.id = rank
             solver.SetInitialPoints(x0)
             if solver._useStrictRange: #XXX: always, settable, or sync'd ?
                 solver.SetStrictRanges(min=solver._strictMin, \
                                        max=solver._strictMax) # or lower,upper ?
             solver.Solve(cost, disp=disp, callback=callback)
-            return solver
+            sm = solver._stepmon
+            em = solver._evalmon
+            if isNull(sm): sm = ([],[],[],[])
+            else: sm = (_copy(sm._x),_copy(sm._y),_copy(sm._id),_copy(sm._info))
+            if isNull(em): em = ([],[],[],[])
+            else: em = (_copy(em._x),_copy(em._y),_copy(em._id),_copy(em._info))
+            return solver, sm, em
 
         # map:: solver = local_optimize(solver, x0, id, verbose)
         results = self._map(local_optimize, op, initial_values, id, \
@@ -316,12 +349,29 @@ Further Inputs:
 
         # save initial state
         self._AbstractSolver__save_state()
+        #XXX: HACK TO GET CONTENT OF ALL MONITORS
+        # reconnect monitors; save all solvers
+        from mystic.monitors import Monitor
+        while results: #XXX: option to not store allSolvers? skip this & _copy
+            _solver, _stepmon, _evalmon = results.pop()
+            sm = Monitor()
+            sm._x,sm._y,sm._id,sm._info = _stepmon
+            _solver._stepmon.extend(sm)
+            del sm
+            em = Monitor()
+            em._x,em._y,em._id,em._info = _evalmon
+            _solver._evalmon.extend(em)
+            del em
+            self._allSolvers[len(results)] = _solver
+        del results, _solver, _stepmon, _evalmon
+        #XXX: END HACK
+
         # get the results with the lowest energy
-        self._bestSolver = results[0]
+        self._bestSolver = self._allSolvers[0]
         bestpath = self._bestSolver._stepmon
         besteval = self._bestSolver._evalmon
         self._total_evals = self._bestSolver.evaluations
-        for solver in results[1:]:
+        for solver in self._allSolvers[1:]:
             self._total_evals += solver.evaluations # add func evals
             if solver.bestEnergy < self._bestSolver.bestEnergy:
                 self._bestSolver = solver
@@ -365,7 +415,7 @@ Further Inputs:
         return 
 
 
-def lattice(cost,ndim,nbins=None,args=(),bounds=None,ftol=1e-4,maxiter=None, \
+def lattice(cost,ndim,nbins=8,args=(),bounds=None,ftol=1e-4,maxiter=None, \
             maxfun=None,full_output=0,disp=1,retall=0,callback=None,**kwds):
     """Minimize a function using the lattice ensemble solver.
     
@@ -380,7 +430,7 @@ Inputs:
 
     cost -- the Python function or method to be minimized.
     ndim -- dimensionality of the problem.
-    nbins -- tuple of number of bins in each dimension. [default = (2,)*ndim]
+    nbins -- tuple of number of bins in each dimension. [default = 8 bins total]
 
 Additional Inputs:
 
@@ -446,8 +496,6 @@ Returns: (xopt, {fopt, iter, funcalls, warnflag, allfuncalls}, {allvecs})
     else:
         from mystic.termination import VTRChangeOverGeneration
         termination = VTRChangeOverGeneration(ftol)
-
-    if nbins is None: nbins = 2**ndim
 
     solver = LatticeSolver(ndim,nbins)
     solver.SetNestedSolver(_solver) #XXX: skip settings for configured solver?
