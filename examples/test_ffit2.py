@@ -22,8 +22,8 @@ from mystic.math import poly1d
 from mystic.monitors import VerboseMonitor
 from mystic.models.poly import chebyshev16cost
 
-import random
-random.seed(123)
+from mystic.tools import random_seed
+random_seed(123)
 
 # get the target coefficients
 from mystic.models.poly import chebyshev16coeffs as Chebyshev16

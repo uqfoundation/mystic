@@ -18,8 +18,8 @@ Optimization 11: 341-359, 1997.
 from mystic.solvers import diffev
 from test_ffit import plot_solution, print_solution, Chebyshev8, ChebyshevCost
 
-import random
-random.seed(123)
+from mystic.tools import random_seed
+random_seed(123)
 
 ND = 9
 NP = ND*10

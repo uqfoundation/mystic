@@ -22,9 +22,9 @@ Inputs:
     upper bounds  --  a list of the upper bounds
     npts  --  number of sample points [default = 10000]
 """
-  from numpy.random import random
+  from mystic.tools import random_state
   dim = len(lb)
-  pts = random((dim,npts))
+  pts = random_state(module='numpy.random').rand(dim,npts)
   for i in range(dim):
     pts[i] = (pts[i] * abs(ub[i] - lb[i])) + lb[i]
   return pts  #XXX: returns a numpy.array
@@ -41,7 +41,6 @@ Inputs:
     ub -- a list of upper bounds
     npts -- the number of points to sample [Default is npts=10000]
 """
-  from numpy.random import random
   from numpy import transpose
   pts = random_samples(lb, ub, npts)
 
@@ -188,35 +187,38 @@ def alpha(n,diameter,epsilon=0.01):
 
 #######################################################################
 
-def __test1():
-  # From branches/UQ/math/samples.py
-  num_sample_points = 5
-  lower = [10.0, 0.0, 2.1]
-  upper = [100.0, 30.0, 2.8]
-
-  pts = random_samples(lower,upper,num_sample_points)
-  print "randomly sampled points\nbetween %s and %s" % (lower, upper)
-  print pts
-
-def __test2():
-  # From branches/UQ/math/cut.py
-  from mystic.tools import random_seed
-  random_seed(123)
-  lower = [-60.0, -10.0, -50.0]
-  upper = [105.0, 30.0, 75.0]
-
-  def model(x):
-    x1,x2,x3 = x
-    if x1 > (x2 + x3): return x1*x2 - x3
-    return 0.0
-
-  failure,success = sample(model,lower,upper)
-  pof = float(failure) / float(failure + success)
-  print "PoF using method 1: %s" % pof
-  random_seed(123)
-  print "PoF using method 2: %s" % sampled_pof(model,lower,upper)
 
 if __name__ == '__main__':
+
+  def __test1():
+    # From branches/UQ/math/samples.py
+    num_sample_points = 5
+    lower = [10.0, 0.0, 2.1]
+    upper = [100.0, 30.0, 2.8]
+
+    pts = random_samples(lower,upper,num_sample_points)
+    print "randomly sampled points\nbetween %s and %s" % (lower, upper)
+    print pts
+
+  def __test2():
+    # From branches/UQ/math/cut.py
+    from mystic.tools import random_seed
+    random_seed(123)
+    lower = [-60.0, -10.0, -50.0]
+    upper = [105.0, 30.0, 75.0]
+
+    def model(x):
+      x1,x2,x3 = x
+      if x1 > (x2 + x3): return x1*x2 - x3
+      return 0.0
+
+    failure,success = sample(model,lower,upper)
+    pof = float(failure) / float(failure + success)
+    print "PoF using method 1: %s" % pof
+    random_seed(123)
+    print "PoF using method 2: %s" % sampled_pof(model,lower,upper)
+
+    # run the tests
     __test1()
     __test2()
 

@@ -21,8 +21,8 @@ from mystic.solvers import DifferentialEvolutionSolver
 from mystic.termination import ChangeOverGeneration, VTR
 from mystic.strategy import Best1Exp, Rand1Exp
 
-import random
-random.seed(123)
+from mystic.tools import random_seed
+random_seed(123)
 
 # The costfunction for Griewangk's Function, Eq. (23) of [1].
 from mystic.models import griewangk as Griewangk_cost

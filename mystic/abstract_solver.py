@@ -405,7 +405,8 @@ input::
         scalar: -> var becomes scalar * I
         matrix: -> the variance matrix. must be the right size!
         """
-        from numpy.random import multivariate_normal
+        from mystic.tools import random_state
+        prng = random_state(module='numpy.random')
         assert(len(mean) == self.nDim)
         if var is None:
             var = numpy.eye(self.nDim)
@@ -417,7 +418,7 @@ input::
             else:
                 var = var * numpy.eye(self.nDim)
         for i in range(len(self.population)):
-            self.population[i] = multivariate_normal(mean, var).tolist()
+            self.population[i] = prng.multivariate_normal(mean, var).tolist()
         return
 
     def enable_signal_handler(self):

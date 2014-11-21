@@ -22,8 +22,8 @@ from mystic.termination import ChangeOverGeneration, VTR
 from mystic.strategy import Best1Exp, Rand1Exp
 from mystic.models.dejong import shekel as DeJong5
 
-import random
-random.seed(123)
+from mystic.tools import random_seed
+random_seed(123)
 
 ND = 2
 NP = 15

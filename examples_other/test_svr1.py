@@ -13,7 +13,8 @@ import qld
 import pylab
 from mystic.svmtools import *
 
-#random.seed(123)
+from mystic.tools import random_seed
+#random_seed(123)
 
 x = arange(-5, 5.001)
 y = x + random.rand(x.size)*7

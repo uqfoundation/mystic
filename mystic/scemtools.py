@@ -200,6 +200,9 @@ This is the SCEM algorithm starting from line [35] of the reference [1].
 
     """
     import numpy
+    from mystic.tools import random_state
+    prng = random_state(module=numpy.random)
+
     # function level constants
     T = 100000. # predefined likelihood ratio. Paragraph 45 of [1.]
 
@@ -235,14 +238,14 @@ This is the SCEM algorithm starting from line [35] of the reference [1].
          basept = mu
 
     # TODO should take a proposal instead !
-    Yt = numpy.random.multivariate_normal(basept,  cn*cn * Sigma)
+    Yt = prng.multivariate_normal(basept, cn*cn * Sigma)
     cY = target(Yt)    
 
     # print "new/orig : ", cY, Sak[-1]
 
     r = min( cY / (Sak[-1]+TINY), 1)
 
-    if numpy.random.random() <= r:
+    if prng.rand() <= r:
         Sk.append(Yt)
         Sak.append(cY)
         # Paragraph 43 of [1] (update the best of Ck)

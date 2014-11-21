@@ -24,7 +24,8 @@ Inputs:
     mass -- sum of normalized weights
 """
   from numpy import sum, array
-  from numpy.random import rand
+  from mystic.tools import random_state
+  rand = random_state().random
   # generate a list representing the weighted distribution
   wts = normalize(weights, mass)
   wts = array([sum(wts[:i+1]) for i in range(len(wts))])

@@ -18,8 +18,8 @@ from numpy import arange
 from mystic.solvers import fmin
 #from mystic._scipyoptimize import fmin
 
-import random
-random.seed(123)
+from mystic.tools import random_seed
+random_seed(123)
 
 from mystic.models import wavy1, wavy2
 wavy = wavy1

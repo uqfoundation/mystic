@@ -64,7 +64,6 @@ from mystic.filters import NullChecker
 
 from inspect import getargspec
 from numpy import pi, sqrt, array, mgrid, random, real, conjugate, arange, sum
-#from numpy.random import rand
 
 class CostFactory(object):
     """

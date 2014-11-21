@@ -24,8 +24,8 @@ from mystic.solvers import DifferentialEvolutionSolver
 from mystic.termination import ChangeOverGeneration, VTR
 from mystic.models.dejong import step as DeJong3
 
-import random
-random.seed(123)
+from mystic.tools import random_seed
+random_seed(123)
 
 ND = 5
 NP = 25

@@ -15,8 +15,8 @@ from mystic.solvers import DifferentialEvolutionSolver
 from mystic.termination import ChangeOverGeneration, VTR
 from mystic.strategy import Best1Exp, Best1Bin, Rand1Exp
 
-import random
-random.seed(123)
+from mystic.tools import random_seed
+random_seed(123)
 
 from mystic.models import fosc3d as fOsc3D
 

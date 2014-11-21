@@ -15,10 +15,11 @@ References::
 from abstract_model import AbstractModel
 
 from numpy import array, pi, arange
-from numpy import random, sin, cos
+from numpy import sin, cos
 from math import floor, sqrt
+import random
 
-random.seed(123)
+# random.seed(123)
 
 class Circle(AbstractModel):
     """Computes 2D array representation of a circle

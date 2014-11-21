@@ -24,8 +24,8 @@ from mystic.solvers import DifferentialEvolutionSolver
 from mystic.termination import ChangeOverGeneration, VTR
 from mystic.strategy import Best1Exp, Rand1Exp
 
-import random
-random.seed(123)
+from mystic.tools import random_seed
+random_seed(123)
 
 # Eq. (24-26) of [2].
 from mystic.models import zimmermann as CostFunction
@@ -59,6 +59,7 @@ if __name__ == '__main__':
     from mystic.solvers import NelderMeadSimplexSolver as fmin
     from mystic.termination import CandidateRelativeTolerance as CRT
 
+    import random
     simplex = Monitor()
     esow = Monitor()
     xinit = [random.uniform(0,5) for j in range(ND)]

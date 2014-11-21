@@ -17,10 +17,11 @@ Optimization 11: 341-359, 1997.
 from test_ffit import Chebyshev8, ChebyshevCost, plot_solution, print_solution
 
 if __name__ == '__main__':
+    import random
     from mystic.solvers import fmin
    #from mystic._scipyoptimize import fmin
-    import random
-    random.seed(123)
+    from mystic.tools import random_seed
+    random_seed(123)
     x = [random.uniform(-100,100) + Chebyshev8[i] for i in range(9)]
     solution = fmin(ChebyshevCost, x)
     print_solution(solution)

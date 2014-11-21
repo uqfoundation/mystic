@@ -18,9 +18,10 @@ from mystic.solvers import DifferentialEvolutionSolver
 from mystic.termination import ChangeOverGeneration, VTR
 from mystic.strategy import Best1Exp, Rand1Exp, Best2Exp, Best2Exp
 from mystic.monitors import Monitor
-from mystic.tools import getch, random_seed
+from mystic.tools import getch
 
-random.seed(123)
+from mystic.tools import random_seed
+random_seed(123)
 
 #matplotlib.interactive(True)
 

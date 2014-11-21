@@ -15,7 +15,7 @@ from abstract_model import AbstractModel
 
 from numpy import sum as numpysum
 from numpy import array, pi, asarray, arange
-from numpy import random
+import random
 
 class Lorentzian(AbstractModel):
     """
@@ -52,7 +52,8 @@ def gendata(params,xmin,xmax,npts=4000):
     """Generate a lorentzian dataset of npts between [min,max] from given params"""
     F = lorentzian.ForwardFactory
     def gensample(F, xmin, xmax):
-        from numpy import arange, random
+        from numpy import arange
+        import random
         a = arange(xmin, xmax, (xmax-xmin)/200.)
         ymin = 0
         ymax = F(a).max()

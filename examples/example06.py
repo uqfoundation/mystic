@@ -61,7 +61,8 @@ if __name__ == '__main__':
 
     # initial guess
     import random
-    random.seed(123)
+    from mystic.tools import random_seed
+    random_seed(123)
     ndim = 9
     x0 = [random.uniform(-100,100) for i in range(ndim)]
 

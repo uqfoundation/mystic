@@ -29,7 +29,7 @@ from mystic.models.poly import chebyshev8coeffs
 # tools
 from mystic.termination import CandidateRelativeTolerance as CRT
 from mystic.monitors import VerboseMonitor, Monitor
-from mystic.tools import getch, random_seed
+from mystic.tools import getch
 from mystic.math import poly1d
 import pylab
 pylab.ion()
@@ -85,7 +85,8 @@ if __name__ == '__main__':
 
     # initial guess
     import random
-    random.seed(123)
+    from mystic.tools import random_seed
+    random_seed(123)
     ndim = 9
     x0 = [random.uniform(-5,5) + chebyshev8coeffs[i] for i in range(ndim)]
 

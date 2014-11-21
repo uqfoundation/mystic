@@ -18,8 +18,8 @@ ND = 3
 NP = 30
 
 from numpy import inf
-import random
-random.seed(123)
+from mystic.tools import random_seed
+random_seed(123)
 
 x0 = [0.8, 1.2, 0.5]
 

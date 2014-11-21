@@ -19,7 +19,8 @@ maxiter = 999
 
 from numpy import inf
 import random
-random.seed(123)
+from mystic.tools import random_seed
+random_seed(123)
 
 x0 = [random.uniform(-5,5) + chebyshev8coeffs[i] for i in range(ND)]
 

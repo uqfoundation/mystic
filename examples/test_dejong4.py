@@ -24,8 +24,8 @@ from mystic.termination import ChangeOverGeneration, VTR
 from mystic.strategy import Best1Exp, Rand1Exp
 from mystic.models.dejong import quartic as DeJong4
 
-import random
-random.seed(123)
+from mystic.tools import random_seed
+random_seed(123)
 
 ND = 30
 NP = 10

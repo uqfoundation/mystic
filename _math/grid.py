@@ -52,7 +52,8 @@ Inputs:
     if ndim == 0: return []
     if N == 0: return [0] if ndim else [0]*ndim
     from itertools import chain
-    from random import random
+    from mystic.tools import random_state
+    random = random_state().random
     def factors(n):
         result = list()
         for i in chain([2],xrange(3,n+1,2)):

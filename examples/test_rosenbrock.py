@@ -22,8 +22,8 @@ from mystic.termination import ChangeOverGeneration, VTR
 from mystic.models import rosen
 from mystic.monitors import Monitor, VerboseMonitor
 
-import random
-random.seed(123)
+from mystic.tools import random_seed
+random_seed(123)
 
 ND = 3
 NP = 30
@@ -70,6 +70,7 @@ if __name__ == '__main__':
     ssow= Monitor()
    #ssow= VerboseMonitor(1)
 
+  # import random
  #  xinit = [random.random() for j in range(ND)]
     xinit = [0.8,1.2,0.7]
   # xinit = [0.8,1.2,1.7]             #... better when using "bad" range

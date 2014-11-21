@@ -19,6 +19,7 @@ Main functions exported are::
     - flatten_array: flatten an array 
     - getch: provides "press any key to quit"
     - random_seed: sets the seed for calls to 'random()'
+    - random_state: build a localized random generator
     - wrap_nested: nest a function call within a function object
     - wrap_penalty: append a function call to a function object
     - wrap_function: bind an EvaluationMonitor and an evaluation counter
@@ -114,7 +115,7 @@ def getch(str="Press any key to continue"):
            print str + " and press enter"
        return raw_input()
 
-def random_seed(s):
+def random_seed(s=None):
     "sets the seed for calls to 'random()'"
     import random
     random.seed(s)
@@ -124,6 +125,53 @@ def random_seed(s):
     except:
         pass
     return
+
+def random_state(module='random', new=False, seed='!'):
+    """return a (optionally manually seeded) random generator
+
+For a given module, return an object that has random number generation (RNG)
+methods available.  If new=False, use the global copy of the RNG object.
+If seed='!', do not reseed the RNG (using seed=None 'removes' any seeding).
+If seed='*', use a seed that depends on the process id (PID); this is useful
+for building RNGs that are different across multiple threads or processes.
+    """
+    import random
+    if module == 'random':
+        rng = random
+    elif not isinstance(module, type(random)):
+        # convienence for passing in 'numpy'
+        if module == 'numpy': module = 'numpy.random'
+        import importlib
+        rng = importlib.import_module(module)
+    elif module.__name__ == 'numpy': # convienence for passing in numpy
+        from numpy import random as rng
+    else: rng = module
+
+    _rng = getattr(rng, 'RandomState', None) or \
+           getattr(rng, 'Random') # throw error if no rng found
+    if new:
+        rng = _rng()
+
+    if seed == '!': # special case: don't reset the seed
+        return rng
+    if seed == '*': # special case: random seeding for multiprocessing
+        try:
+            try:
+                import multiprocessing as mp
+            except ImportError:
+                import processing as mp
+            try:
+                seed = mp.current_process().pid
+            except AttributeError:
+                seed = mp.currentProcess().getPid()
+        except:   
+            seed = 0
+        import time
+        seed += int(time.time()*1e6)
+
+    # set the random seed (or 'reset' with None)
+    rng.seed(seed)
+    return rng
 
 def wrap_nested(outer_function, inner_function):
     """nest a function call within a function object

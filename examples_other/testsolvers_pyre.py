@@ -65,8 +65,8 @@ class TestSolverApp(Script):
 	costfunction  = self.mod.cost
         termination = self.mod.termination
 
-	import random
-	random.seed(123)
+        from mystic.tools import random_seed
+        random_seed(123)
 
         # set initial points
 	try:

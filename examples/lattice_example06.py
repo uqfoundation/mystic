@@ -27,6 +27,7 @@ from mystic.models.poly import chebyshev8coeffs
 # if available, use a multiprocessing worker pool
 try:
     from pathos.multiprocessing import ProcessingPool as Pool
+   #from pathos.pp import ParallelPythonPool as Pool
 except ImportError:
     from mystic.python import PythonSerial as Pool
 
@@ -71,10 +72,10 @@ if __name__ == '__main__':
     print "==============="
 
     # dimensional information
-    import random
-    random.seed(123)
+    from mystic.tools import random_seed
+    random_seed(123)
     ndim = 9
-    nbins = [2,1,2,1,2,1,2,1,1]
+    nbins = 8 #[2,1,2,1,2,1,2,1,1]
 
     # draw frame and exact coefficients
     plot_exact()

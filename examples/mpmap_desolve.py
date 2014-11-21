@@ -40,7 +40,7 @@ from mystic.math import poly1d
 from mystic.models.poly import chebyshev8cost as ChebyshevCost  # no helper
 
 ND = 9
-NP = 40
+NP = 80
 MAX_GENERATIONS = NP*NP
 NNODES = NP/5
 
@@ -57,7 +57,7 @@ if __name__=='__main__':
 
     random_seed(seed)
     print "first sequential..."
-    solver = DifferentialEvolutionSolver2(ND,NP)  #XXX: sequential
+    solver = DifferentialEvolutionSolver2(ND,NP)
     solver.SetRandomInitialPoints(min=[-100.0]*ND, max=[100.0]*ND)
     solver.SetEvaluationLimits(generations=MAX_GENERATIONS)
     solver.SetGenerationMonitor(ssow)
@@ -66,11 +66,10 @@ if __name__=='__main__':
     print ""
     print_solution( solver.bestSolution )
 
-    #'''
     random_seed(seed)
     print "\n and now parallel..."
-    solver2 = DifferentialEvolutionSolver2(ND,NP)  #XXX: parallel
-    solver2.SetMapper(Pool(NNODES).map)
+    solver2 = DifferentialEvolutionSolver2(ND,NP)
+    solver2.SetMapper(Pool(NNODES).map) # parallel
     solver2.SetRandomInitialPoints(min=[-100.0]*ND, max=[100.0]*ND)
     solver2.SetEvaluationLimits(generations=MAX_GENERATIONS)
     solver2.SetGenerationMonitor(psow)
@@ -78,6 +77,5 @@ if __name__=='__main__':
                   CrossProbability=1.0, ScalingFactor=0.9, disp=1)
     print ""
     print_solution( solver2.bestSolution )
-    #'''
 
 # end of file
