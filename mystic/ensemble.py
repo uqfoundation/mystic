@@ -39,7 +39,7 @@ class LatticeSolver(AbstractEnsembleSolver):
     """
 parallel mapped optimization starting from the center of N grid points
     """
-    def __init__(self, dim, nbins):
+    def __init__(self, dim, nbins=8):
         """
 Takes two initial inputs: 
     dim   -- dimensionality of the problem
@@ -234,7 +234,7 @@ class BuckshotSolver(AbstractEnsembleSolver):
     """
 parallel mapped optimization starting from the N random points
     """
-    def __init__(self, dim, npts):
+    def __init__(self, dim, npts=8):
         """
 Takes two initial inputs: 
     dim   -- dimensionality of the problem
