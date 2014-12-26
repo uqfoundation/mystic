@@ -256,6 +256,10 @@ Additional Inputs:
 
 NOTE: The resulting constraints will likely be more expensive to evaluate
     and less accurate than writing the constraints solver from scratch.
+
+NOTE: The default solver is 'diffev', with npop=min(40, ndim*5). The default
+    termination is ChangeOverGeneration(), and the default guess is randomly
+    selected points between the upper and lower bounds.
     """
     ndim = 1 #XXX: better, increase in while loop catching IndexError ?
     if nvars is not None: ndim = nvars
@@ -319,6 +323,10 @@ Additional Inputs:
     nvars -- number of parameter values.
     solver -- the mystic solver to use in the optimization
     termination -- the mystic termination to use in the optimization
+
+NOTE: The default solver is 'diffev', with npop=min(40, ndim*5). The default
+    termination is ChangeOverGeneration(), and the default guess is randomly
+    selected points between the upper and lower bounds.
     """
     def constraint(x): #XXX: better to enable args kwds for penalty ?
         return solve(penalty, x, *args, **kwds)
