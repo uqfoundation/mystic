@@ -2,7 +2,7 @@
 #
 # Author: Alta Fang (altafang @caltech and alta @princeton)
 # Author: Mike McKerns (mmckerns @caltech and @uqfoundation)
-# Copyright (c) 2010-2014 California Institute of Technology.
+# Copyright (c) 2010-2015 California Institute of Technology.
 # License: 3-clause BSD.  The full license text is available at:
 #
 # coded by Alta Fang, 2010

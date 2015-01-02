@@ -1,10 +1,18 @@
+#!/usr/bin/env python
+#
+# Problem definition:
 # A-R Hedar and M Fukushima, "Derivative-Free Filter Simulated Annealing
 # Method for Constrained Continuous Global Optimization", Journal of
 # Global Optimization, 35(4), 521-549 (2006).
 # 
-# code for function PrG8c and PrG8f
-# translated from Matlab Code written by A. Hedar (Nov. 23, 2005).
+# Original Matlab code written by A. Hedar (Nov. 23, 2005)
 # http://www-optima.amp.i.kyoto-u.ac.jp/member/student/hedar/Hedar_files/go.htm
+# and ported to Python by Mike McKerns (December 2014)
+#
+# Author: Mike McKerns (mmckerns @caltech and @uqfoundation)
+# Copyright (c) 1997-2015 California Institute of Technology.
+# License: 3-clause BSD.  The full license text is available at:
+#  - http://trac.mystic.cacr.caltech.edu/project/mystic/browser/mystic/LICENSE
 
 def objective(x):
     x0,x1 = x

@@ -3,7 +3,7 @@
 # Author: Mike McKerns (mmckerns @caltech and @uqfoundation)
 # Author: Patrick Hung (patrickh @caltech)
 # Author: Alta Fang (altafang @caltech and alta @princeton)
-# Copyright (c) 2010-2014 California Institute of Technology.
+# Copyright (c) 2010-2015 California Institute of Technology.
 # License: 3-clause BSD.  The full license text is available at:
 #  - http://trac.mystic.cacr.caltech.edu/project/mystic/browser/mystic/LICENSE
 """
