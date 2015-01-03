@@ -147,6 +147,31 @@ constraints function c(x), such that:  x' = impose_variance(target, c(x)).
     return decorate
 
 
+def with_std(target):
+    """bind a standard deviation constraint to a given constraints function.
+
+Inputs:
+    target -- the target standard deviation
+
+A constraints function takes an iterable x as input, returning a modified x.
+This function is an "outer" coupling of "impose_std" onto another
+constraints function c(x), such that:  x' = impose_std(target, c(x)).
+
+    For example:
+    >>> @with_std(1.0)
+    ... def constraint(x):
+    ...   x[-1] = x[0]
+    ...   return x
+    ... 
+    >>> x = constraint([1,2,3])
+    >>> print x
+    [0.6262265521467858, 2.747546895706428, 0.6262265521467858]
+    >>> std(x)
+    0.99999999999999956
+    """
+    return with_variance(target**2)
+
+
 def with_spread(target):
     """bind a range constraint to a given constraints function.
 

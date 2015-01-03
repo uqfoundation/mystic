@@ -173,6 +173,16 @@ Inputs:
   svar = [abs(s - _mean)**2 for s in samples]
   return mean(svar, weights)
 
+def std(samples, weights=None): #, _mean=None):
+  """calculate the (weighted) standard deviation for a list of points
+
+Inputs:
+    samples -- a list of sample points
+    weights -- a list of sample weights
+"""
+  from numpy import sqrt
+  return sqrt(variance(samples, weights)) # _mean)
+
 
 ##### coordinate shift methods #####
 from numpy import asarray
@@ -217,6 +227,16 @@ Inputs:
 #       must reconcile scaling by sqrt(v2/v1) & (r2/r1)
 #       ...so likely, must scale the weights... or scale each point differently
 
+def impose_std(s, samples, weights=None):
+  """impose a standard deviation on a list of (weighted) points
+  (this function is 'mean-preserving')
+
+Inputs:
+    s -- the target standard deviation
+    samples -- a list of sample points
+    weights -- a list of sample weights
+"""
+  return impose_variance(s**2, samples, weights)
 
 def impose_spread(r, samples, weights=None): #FIXME: fails if len(samples) = 1
   """impose a range on a list of (weighted) points
@@ -481,6 +501,9 @@ def impose_reweighted_variance(v, samples, weights=None, solver=None):
 
     return samples, wts  # "mean-preserving"
 
+def impose_reweighted_std(s, samples, weights=None, solver=None):
+    """impose a standard deviation on a list of points, using reweighting"""
+    return impose_reweighted_variance(s**2, samples, weights, solver)
 
 ##### misc methods #####
 def impose_sum(mass, weights, zsum=False, zmass=1.0):
