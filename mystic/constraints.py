@@ -9,8 +9,8 @@
 """
 
 __all__ = ['with_penalty','with_constraint','as_penalty','as_constraint',
-           'with_mean','with_variance','with_spread','normalized',
-           'issolution','solve','discrete']
+           'with_mean','with_variance','with_std','with_spread','normalized',
+           'issolution','solve','discrete','integers']
 
 from mystic.math.measures import *
 from mystic.math import almostEqual
@@ -483,6 +483,63 @@ The function's input will be mapped to the given discrete set
             return f(xp, *args, **kwds)
         func.samples = _points
         func.index = _index
+        return func
+    return dec
+
+
+from numpy import round, abs
+def integers(ints=True, index=None):
+    """impose the set of integers (by rounding) for the given function
+
+The function's input will be mapped to the ints, where:
+  - if ints is True, return results as ints; otherwise, use floats
+  - if index tuple provided, only round at the given indicies
+
+>>> @integers()
+... def identity(x):
+...     return x
+
+>>> identity([0.123, 1.789, 4.000])
+[0, 2, 4]
+
+>>> @integers(ints=float, index=(0,3,4))
+... def squared(x):
+....    return [i**2 for i in x]
+
+>>> squared([0.12, 0.12, 4.01, 4.01, 8, 8])
+[0.0, 0.0144, 16.080099999999998, 16.0, 64.0, 64.0]"""
+    #HACK: allow ints=False or ints=int
+    _ints = [(int if ints else float) if isinstance(ints, bool) else ints]
+    if isinstance(index, int): index = (index,)
+    index = [index]
+
+    def _index(alist=None):
+        index[0] = alist
+
+    def _type(ints=None):
+        _ints[0] = (int if ints else float) if isinstance(ints, bool) else ints
+
+    def dec(f):
+        def func(x,*args,**kwds):
+            if isinstance(x, ndarray): xtype = asarray
+            else: xtype = type(x)
+            ##### ALT #####
+           #pos = range(len(x))
+           #pos = [pos[i] for i in index[0]] if index[0] else pos
+           #xp = [float(round(xi) if i in pos else xi) for i,xi in enumerate(x)]
+            ###############
+            xp = round(x)
+            if index[0] is None:
+                mask = ones(xp.size, dtype=bool)
+            else:
+                mask = zeros(xp.size, dtype=bool)
+                try: mask[sorted(index[0], key=abs)] = True
+                except IndexError: pass
+            xp = choose(mask, (x,xp)).astype(_ints[0])
+            ###############
+            return f(xtype(xp), *args, **kwds)
+        func.index = _index
+        func.type = _type
         return func
     return dec
 
