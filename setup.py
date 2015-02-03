@@ -33,7 +33,7 @@ elif stable_version == target_version:
     this_version = stable_version
 else:
     # we are building a distribution
-    this_version = target_version + '.dev'
+    this_version = target_version + '.dev0'
     if is_release:
       from datetime import date
       today = "".join(date.isoformat(date.today()).split('-'))
@@ -164,8 +164,8 @@ Optional requirements::
     - setuptools, version >= 0.6
     - matplotlib, version >= 0.91
     - scipy, version >= 0.6.0
-    - pathos, version >= 0.2a1.dev
-    - pyina, version >= 0.2a1.dev
+    - pathos, version >= 0.2a1.dev0
+    - pyina, version >= 0.2a1.dev0
 
 
 Usage Notes
