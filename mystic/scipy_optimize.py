@@ -144,7 +144,7 @@ The size of the simplex is dim+1.
         """perform a single optimization iteration
         Note that ExtraArgs should be a *tuple* of extra arguments"""
         # HACK to enable not explicitly calling _RegisterObjective
-        cost = self._bootstrap_decorate(cost, ExtraArgs)
+        cost = self._bootstrap_objective(cost, ExtraArgs)
         # process and activate input settings
         settings = self._process_inputs(kwds)
         for key in settings:
@@ -458,7 +458,7 @@ Takes one initial input:
         """perform a single optimization iteration
         Note that ExtraArgs should be a *tuple* of extra arguments"""
         # HACK to enable not explicitly calling _RegisterObjective
-        cost = self._bootstrap_decorate(cost, ExtraArgs)
+        cost = self._bootstrap_objective(cost, ExtraArgs)
         # process and activate input settings
         settings = self._process_inputs(kwds)
         for key in settings:

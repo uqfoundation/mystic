@@ -219,7 +219,12 @@ are logged.
         """perform a single optimization iteration
         Note that ExtraArgs should be a *tuple* of extra arguments"""
         # HACK to enable not explicitly calling _RegisterObjective
-        cost = self._bootstrap_decorate(cost, ExtraArgs)
+        cost = self._bootstrap_objective(cost, ExtraArgs)
+        # process and activate input settings
+        kwds['strategy'] = strategy  # override default strategy with None
+        settings = self._process_inputs(kwds)
+        for key in settings:
+            exec "%s = settings['%s']" % (key,key)
 
         if not len(self._stepmon): # do generation = 0
             self.population[0] = asfarray(self.population[0])
@@ -371,7 +376,12 @@ are logged.
         """perform a single optimization iteration
         Note that ExtraArgs should be a *tuple* of extra arguments"""
         # HACK to enable not explicitly calling _RegisterObjective
-        cost = self._bootstrap_decorate(cost, ExtraArgs)
+        cost = self._bootstrap_objective(cost, ExtraArgs)
+        # process and activate input settings
+        kwds['strategy'] = strategy  # override default strategy with None
+        settings = self._process_inputs(kwds)
+        for key in settings:
+            exec "%s = settings['%s']" % (key,key)
 
         if not len(self._stepmon): # do generation = 0
             self.population[0] = asfarray(self.population[0])

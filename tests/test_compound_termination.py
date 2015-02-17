@@ -68,8 +68,8 @@ def test_me(info='self'):
     c_or__c_and_v = Or(_c,c_and_v)
 
     assert len(_v) == len(_c) == len(_n) == 1
-    assert _v.index(v) == _c.index(c) == _n.index(n) == 0
-    assert _v.count(v) == _c.count(c) == _n.count(n) == 1
+    assert list(_v).index(v) == list(_c).index(c) == list(_n).index(n) == 0
+    assert list(_v).count(v) == list(_c).count(c) == list(_n).count(n) == 1
     assert v in _v and c in _c and n in _n
     assert v in v_and_c and c in v_and_c
     assert v in v_and_n and n in v_and_n
@@ -83,10 +83,10 @@ def test_me(info='self'):
     assert v_and_n in v_and_n__or_n and _n in v_and_n__or_n
     assert c in c_and_v and v in c_and_v
     assert c in c_or_v and v in c_or_v
-    assert c_and_v.index(c) == v_and_c.index(v)
-    assert c_and_v.index(v) == v_and_c.index(c)
-    assert c_or_v.index(c) == v_or_c.index(v)
-    assert c_or_v.index(v) == v_or_c.index(c)
+    assert list(c_and_v).index(c) == list(v_and_c).index(v)
+    assert list(c_and_v).index(v) == list(v_and_c).index(c)
+    assert list(c_or_v).index(c) == list(v_or_c).index(v)
+    assert list(c_or_v).index(v) == list(v_or_c).index(c)
     assert c_and_v in c_or__c_and_v and _c in c_or__c_and_v
 
     if disp:

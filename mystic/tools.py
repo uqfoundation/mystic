@@ -141,8 +141,11 @@ for building RNGs that are different across multiple threads or processes.
     elif not isinstance(module, type(random)):
         # convienence for passing in 'numpy'
         if module == 'numpy': module = 'numpy.random'
-        import importlib
-        rng = importlib.import_module(module)
+        try:
+            import importlib
+            rng = importlib.import_module(module)
+        except ImportError:
+            rng = __import__(module, fromlist=module.split('.')[-1:])
     elif module.__name__ == 'numpy': # convienence for passing in numpy
         from numpy import random as rng
     else: rng = module

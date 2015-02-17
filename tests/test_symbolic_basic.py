@@ -124,16 +124,11 @@ def test_matrix_interface():
     assert cs[2] == "1.0*x0 + 6.0*x1 + -9.0*x2 = 0.0"
     # print "symbolic string:\n", constraints_string.rstrip()
     pf = generate_penalty(generate_conditions(constraints_string))
+    cn = as_constraint(pf)
 
-    @inner(as_constraint(pf))
-    def cf(x):
-        return sum(x)
-
-    #XXX: implement: wrap_constraint( as_constraint(pf), sum, ctype='inner') ?
-    # print "c = constraints wrapped around sum(x)"
     x0 = [1., 1., 1.]
-    # print "c(%s): %s\n" % (x0, cf(x0))
-    assert almostEqual(cf(x0), 0.133687558709, tol=1e-15)
+    assert almostEqual(pf(cn(x0)), 0.0, tol=1e-7)
+    #XXX: implement: wrap_constraint( as_constraint(pf), sum, ctype='inner') ?
 
 def test_varnamelist():
     # Demonstrates usage of varnamelist

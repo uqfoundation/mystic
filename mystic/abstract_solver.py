@@ -589,7 +589,7 @@ Note::
         self._cost = (cost, ExtraArgs)
         return cost
 
-    def _bootstrap_decorate(self, cost=None, ExtraArgs=None):
+    def _bootstrap_objective(self, cost=None, ExtraArgs=None):
         """HACK to enable not explicitly calling _RegisterObjective"""
         args = None
         if cost is None: # 'use existing cost'
@@ -695,7 +695,7 @@ Further Inputs:
     disp -- non-zero to print convergence messages.
         """
         # HACK to enable not explicitly calling _RegisterObjective
-        cost = self._bootstrap_decorate(cost, ExtraArgs)
+        cost = self._bootstrap_objective(cost, ExtraArgs)
         # process and activate input settings
         settings = self._process_inputs(kwds)
         for key in settings:

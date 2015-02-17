@@ -61,18 +61,19 @@ def test_generate_constraint():
 
 def test_solve_constraint():
 
+  # sympy can no longer do "spread([x0,x1])"... so use "x1 - x0"
   constraints = """
-  spread([x0,x1]) - 1.0 = mean([x0,x1])   
+  (x1 - x0) - 1.0 = mean([x0,x1])   
   mean([x0,x1,x2]) = x2"""
 
-  from mystic.math.measures import mean, spread
+  from mystic.math.measures import mean
   _constraints = solve(constraints)
   solv = generate_solvers(_constraints)
   constraint = generate_constraint(solv)
   x = constraint([1.0, 2.0, 3.0])
   assert all(x) == all([1.0, 5.0, 3.0])
   assert mean(x) == x[2]
-  assert spread(x[:-1]) - 1.0 == mean(x[:-1])
+  assert (x[1] - x[0]) - 1.0 == mean(x[:-1])
 
 
 if __name__ == '__main__':
