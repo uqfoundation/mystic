@@ -151,8 +151,10 @@ The size of the simplex is dim+1.
             exec "%s = settings['%s']" % (key,key)
 
         rho = 1; chi = 2; psi = 0.5; sigma = 0.5;
+        init = False  # flag to do 0th iteration 'post-initialization'
 
         if not len(self._stepmon): # do generation = 0
+            init = True
             x0 = self.population[0]
             x0 = asfarray(x0).flatten()
             x0 = asfarray(self._constraints(x0))
@@ -251,6 +253,11 @@ The size of the simplex is dim+1.
         self._stepmon(sim[0], fsim[0], self.id) # sim = all; "best" is sim[0]
         # if savefrequency matches, then save state
         self._AbstractSolver__save_state()
+
+        # do callback
+        if callback is not None: callback(self.bestSolution)
+        # initialize termination conditions, if needed
+        if init: self._termination(self) #XXX: at generation 0 or always?
         return #XXX: call CheckTermination ?
 
     def _process_inputs(self, kwds):
@@ -468,8 +475,10 @@ Takes one initial input:
         x = self.population[0]   # bestSolution
         fval = self.popEnergy[0] # bestEnergy
         x1, fx, bigind, delta = self.__internals
+        init = False  # flag to do 0th iteration 'post-initialization'
 
         if not len(self._stepmon): # do generation = 0
+            init = True
             x = asfarray(x).flatten()
             x = asfarray(self._constraints(x))
             N = len(x) #XXX: this should be equal to self.nDim
@@ -557,6 +566,11 @@ Takes one initial input:
         self._direc = direc
         self.population[0] = x   # bestSolution
         self.popEnergy[0] = fval # bestEnergy
+
+        # do callback
+        if callback is not None: callback(self.bestSolution)
+        # initialize termination conditions, if needed
+        if init: self._termination(self) #XXX: at generation 0 or always?
         return #XXX: call CheckTermination ?
 
     def _exitMain(self, **kwds):

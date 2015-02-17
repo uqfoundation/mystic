@@ -221,12 +221,15 @@ are logged.
         # HACK to enable not explicitly calling _RegisterObjective
         cost = self._bootstrap_objective(cost, ExtraArgs)
         # process and activate input settings
-        kwds['strategy'] = strategy  # override default strategy with None
+        kwds['strategy'] = strategy  # override default strategy
         settings = self._process_inputs(kwds)
         for key in settings:
             exec "%s = settings['%s']" % (key,key)
 
+        init = False  # flag to do 0th iteration 'post-initialization'
+
         if not len(self._stepmon): # do generation = 0
+            init = True
             self.population[0] = asfarray(self.population[0])
             # decouple bestSolution from population and bestEnergy from popEnergy
             self.bestSolution = self.population[0]
@@ -266,6 +269,11 @@ are logged.
         self._stepmon(self.bestSolution[:], self.bestEnergy, self.id)
         # if savefrequency matches, then save state
         self._AbstractSolver__save_state()
+
+        # do callback
+        if callback is not None: callback(self.bestSolution)
+        # initialize termination conditions, if needed
+        if init: self._termination(self) #XXX: at generation 0 or always?
         return #XXX: call CheckTermination ?
 
     def _process_inputs(self, kwds):
@@ -378,12 +386,15 @@ are logged.
         # HACK to enable not explicitly calling _RegisterObjective
         cost = self._bootstrap_objective(cost, ExtraArgs)
         # process and activate input settings
-        kwds['strategy'] = strategy  # override default strategy with None
+        kwds['strategy'] = strategy  # override default strategy
         settings = self._process_inputs(kwds)
         for key in settings:
             exec "%s = settings['%s']" % (key,key)
 
+        init = False  # flag to do 0th iteration 'post-initialization'
+
         if not len(self._stepmon): # do generation = 0
+            init = True
             self.population[0] = asfarray(self.population[0])
             # decouple bestSolution from population and bestEnergy from popEnergy
             self.bestSolution = self.population[0]
@@ -428,6 +439,11 @@ are logged.
         self._stepmon(self.bestSolution[:], self.bestEnergy, self.id)
         # if savefrequency matches, then save state
         self._AbstractSolver__save_state()
+
+        # do callback
+        if callback is not None: callback(self.bestSolution)
+        # initialize termination conditions, if needed
+        if init: self._termination(self) #XXX: at generation 0 or always?
         return #XXX: call CheckTermination ?
 
     def _process_inputs(self, kwds):

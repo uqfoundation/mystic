@@ -541,6 +541,8 @@ Note::
         """
         if termination is None:
             termination = self._termination
+        # ensure evaluation limits have been imposed
+        self._SetEvaluationLimits()
         # check for termination messages
         msg = termination(self, info=True)
         lim = "EvaluationLimits with %s" % {'evaluations':self._maxfun,
@@ -703,9 +705,9 @@ Further Inputs:
 
         # set up signal handler
         import signal
-        self._EARLYEXIT = False
+        self._EARLYEXIT = False  #XXX: why not use EARLYEXIT singleton?
         self._generateHandler(sigint_callback) 
-        if self._handle_sigint: signal.signal(signal.SIGINT, self.signal_handler)
+        if self._handle_sigint: signal.signal(signal.SIGINT,self.signal_handler)
 
        ## decorate cost function with bounds, penalties, monitors, etc
        #self._RegisterObjective(cost, ExtraArgs)    #XXX: SetObjective ?
@@ -715,20 +717,11 @@ Further Inputs:
 
         # the initital optimization iteration
         if not len(self._stepmon): # do generation = 0
-            self.Step()
-            if callback is not None:
-                callback(self.bestSolution)
-         
-            # initialize termination conditions, if needed
-            self._termination(self) #XXX: call at generation 0 or always?
-        # impose the evaluation limits
-        self._SetEvaluationLimits()
+            self.Step(callback=callback)
 
         # the main optimization loop
         while not self.CheckTermination() and not self._EARLYEXIT:
-            self.Step(**settings)
-            if callback is not None:
-                callback(self.bestSolution)
+            self.Step(**settings)  # includes settings['callback']
         else: self._exitMain()
 
         # handle signal interrupts
