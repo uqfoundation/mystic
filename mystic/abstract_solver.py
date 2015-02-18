@@ -717,7 +717,7 @@ Further Inputs:
 
         # the initital optimization iteration
         if not len(self._stepmon): # do generation = 0
-            self.Step(callback=callback)
+            self.Step(**settings)  # includes settings['callback']
 
         # the main optimization loop
         while not self.CheckTermination() and not self._EARLYEXIT:

@@ -215,13 +215,12 @@ are logged.
         self._cost = (cost, ExtraArgs)
         return cost
 
-    def Step(self, cost=None, ExtraArgs=None, strategy=None, **kwds):
+    def Step(self, cost=None, ExtraArgs=None, **kwds):
         """perform a single optimization iteration
         Note that ExtraArgs should be a *tuple* of extra arguments"""
         # HACK to enable not explicitly calling _RegisterObjective
         cost = self._bootstrap_objective(cost, ExtraArgs)
         # process and activate input settings
-        kwds['strategy'] = strategy  # override default strategy
         settings = self._process_inputs(kwds)
         for key in settings:
             exec "%s = settings['%s']" % (key,key)
@@ -230,6 +229,7 @@ are logged.
 
         if not len(self._stepmon): # do generation = 0
             init = True
+            strategy = None
             self.population[0] = asfarray(self.population[0])
             # decouple bestSolution from population and bestEnergy from popEnergy
             self.bestSolution = self.population[0]
@@ -380,13 +380,12 @@ are logged.
         self._cost = (cost, ExtraArgs)
         return cost
 
-    def Step(self, cost=None, ExtraArgs=None, strategy=None, **kwds):
+    def Step(self, cost=None, ExtraArgs=None, **kwds):
         """perform a single optimization iteration
         Note that ExtraArgs should be a *tuple* of extra arguments"""
         # HACK to enable not explicitly calling _RegisterObjective
         cost = self._bootstrap_objective(cost, ExtraArgs)
         # process and activate input settings
-        kwds['strategy'] = strategy  # override default strategy
         settings = self._process_inputs(kwds)
         for key in settings:
             exec "%s = settings['%s']" % (key,key)
@@ -395,6 +394,7 @@ are logged.
 
         if not len(self._stepmon): # do generation = 0
             init = True
+            strategy = None
             self.population[0] = asfarray(self.population[0])
             # decouple bestSolution from population and bestEnergy from popEnergy
             self.bestSolution = self.population[0]

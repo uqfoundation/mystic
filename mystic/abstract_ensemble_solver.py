@@ -224,7 +224,8 @@ Note::
             solver = self
         if termination is None:
             termination = solver._termination
-
+        # ensure evaluation limits have been imposed
+        self._SetEvaluationLimits()
         # check for termination messages
         msg = termination(solver, info=True)
         lim = "EvaluationLimits with %s" % {'evaluations':solver._maxfun,
