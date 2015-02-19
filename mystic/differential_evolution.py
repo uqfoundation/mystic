@@ -290,8 +290,7 @@ are logged.
         self.scale = kwds.get('ScalingFactor', scale)
         return settings
 
-    def Solve(self, cost=None, termination=None, sigint_callback=None,
-                                                 ExtraArgs=None, **kwds):
+    def Solve(self, cost=None, termination=None, ExtraArgs=None, **kwds):
         """Minimize a function using differential evolution.
 
 Description:
@@ -306,7 +305,6 @@ Inputs:
 Additional Inputs:
 
     termination -- callable object providing termination conditions.
-    sigint_callback -- callback function for signal handler.
     ExtraArgs -- extra arguments for cost.
 
 Further Inputs:
@@ -317,13 +315,14 @@ Further Inputs:
         [default = 0.9]
     ScalingFactor -- multiplier for the impact of mutations on the
         trial solution [default = 0.8]
+    sigint_callback -- callback function for signal handler.
     callback -- an optional user-supplied function to call after each
         iteration.  It is called as callback(xk), where xk is
         the current parameter vector.  [default = None]
     disp -- non-zero to print convergence messages.
         """
         super(DifferentialEvolutionSolver, self).Solve(cost, termination,\
-                                      sigint_callback, ExtraArgs, **kwds)
+                                                       ExtraArgs, **kwds)
         return
 
 
@@ -460,8 +459,7 @@ are logged.
         self.scale = kwds.get('ScalingFactor', scale)
         return settings
 
-    def Solve(self, cost=None, termination=None, sigint_callback=None,
-                                                 ExtraArgs=None, **kwds):
+    def Solve(self, cost=None, termination=None, ExtraArgs=None, **kwds):
         """Minimize a function using differential evolution.
 
 Description:
@@ -477,7 +475,6 @@ Inputs:
 Additional Inputs:
 
     termination -- callable object providing termination conditions.
-    sigint_callback -- callback function for signal handler.
     ExtraArgs -- extra arguments for cost.
 
 Further Inputs:
@@ -488,13 +485,14 @@ Further Inputs:
         [default = 0.9]
     ScalingFactor -- multiplier for the impact of mutations on the
         trial solution [default = 0.8]
+    sigint_callback -- callback function for signal handler.
     callback -- an optional user-supplied function to call after each
         iteration.  It is called as callback(xk), where xk is
         the current parameter vector.  [default = None]
     disp -- non-zero to print convergence messages.
         """
         super(DifferentialEvolutionSolver2, self).Solve(cost, termination,\
-                                      sigint_callback, ExtraArgs, **kwds)
+                                                        ExtraArgs, **kwds)
         return 
 
 

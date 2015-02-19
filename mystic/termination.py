@@ -348,4 +348,17 @@ iterations >= generations *or* fcalls >= evaluations"""
     _EvaluationLimits.__doc__ = doc
     return _EvaluationLimits
 
+def SolverInterrupt(): #XXX: enable = True ?
+    """handler is enabled and interrupt is given:
+
+_EARLYEXIT == True"""
+    doc = "SolverInterrupt with %s" % {}
+    def _SolverInterrupt(inst, info=False):
+        if info: info = lambda x:x
+        else: info = bool
+        if inst._EARLYEXIT: return info(doc)
+        return info(null)
+    _SolverInterrupt.__doc__ = doc
+    return _SolverInterrupt
+
 # end of file

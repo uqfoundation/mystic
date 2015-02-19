@@ -421,8 +421,20 @@ input::
             self.population[i] = prng.multivariate_normal(mean, var).tolist()
         return
 
-    def enable_signal_handler(self):
+    def enable_signal_handler(self):#, callback='*'):
         """enable workflow interrupt handler while solver is running"""
+        """ #XXX: disabled, as would add state to solver
+input::
+    - if a callback function is provided, generate a new handler with
+      the given callback.  If callback is None, do not use a callback.
+      If callback is not provided, just turn on the existing handler.
+"""
+       ## always _generate handler on first call
+       #if (self.signal_handler is None) and callback == '*':
+       #    callback = None
+       ## when a new callback is given, generate a new handler
+       #if callback != '*':
+       #    self._generateHandler(callback)
         self._handle_sigint = True
 
     def disable_signal_handler(self):
@@ -545,6 +557,7 @@ Note::
         self._SetEvaluationLimits()
         # check for termination messages
         msg = termination(self, info=True)
+        sig = "SolverInterrupt with %s" % {}
         lim = "EvaluationLimits with %s" % {'evaluations':self._maxfun,
                                             'generations':self._maxiter}
 
@@ -558,6 +571,10 @@ Note::
             msg = lim #XXX: prefer the default stop ?
             if disp:
                 print "Warning: Maximum number of iterations has been exceeded"
+        elif self._EARLYEXIT:
+            msg = sig
+            if disp:
+                print "Warning: Optimization terminated with signal interrupt."
         elif msg and disp:
             print "Optimization terminated successfully."
             print "         Current function value: %f" % self.bestEnergy
@@ -670,8 +687,7 @@ Note::
            self.SetConstraints(kwds.get('constraints'))
         return settings
 
-    def Solve(self, cost=None, termination=None, sigint_callback=None,
-                                                 ExtraArgs=None, **kwds):
+    def Solve(self, cost=None, termination=None, ExtraArgs=None, **kwds):
         """Minimize a 'cost' function with given termination conditions.
 
 Description:
@@ -686,11 +702,11 @@ Inputs:
 Additional Inputs:
 
     termination -- callable object providing termination conditions.
-    sigint_callback -- callback function for signal handler.
     ExtraArgs -- extra arguments for cost.
 
 Further Inputs:
 
+    sigint_callback -- callback function for signal handler.
     callback -- an optional user-supplied function to call after each
         iteration.  It is called as callback(xk), where xk is
         the current parameter vector.  [default = None]
@@ -699,14 +715,17 @@ Further Inputs:
         # HACK to enable not explicitly calling _RegisterObjective
         cost = self._bootstrap_objective(cost, ExtraArgs)
         # process and activate input settings
+        sigint_callback = kwds.pop('sigint_callback', None)
         settings = self._process_inputs(kwds)
         for key in settings:
             exec "%s = settings['%s']" % (key,key)
 
         # set up signal handler
-        import signal
         self._EARLYEXIT = False  #XXX: why not use EARLYEXIT singleton?
-        self._generateHandler(sigint_callback) 
+        self._generateHandler(sigint_callback)
+
+        # activate signal handler
+        import signal
         if self._handle_sigint: signal.signal(signal.SIGINT,self.signal_handler)
 
        ## decorate cost function with bounds, penalties, monitors, etc
@@ -720,11 +739,11 @@ Further Inputs:
             self.Step(**settings)  # includes settings['callback']
 
         # the main optimization loop
-        while not self.CheckTermination() and not self._EARLYEXIT:
+        while not self.CheckTermination():
             self.Step(**settings)  # includes settings['callback']
         else: self._exitMain()
 
-        # handle signal interrupts
+        # restore default handler for signal interrupts
         signal.signal(signal.SIGINT,signal.default_int_handler)
 
         # log any termination messages

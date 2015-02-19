@@ -228,6 +228,7 @@ Note::
         self._SetEvaluationLimits()
         # check for termination messages
         msg = termination(solver, info=True)
+        sig = "SolverInterrupt with %s" % {}
         lim = "EvaluationLimits with %s" % {'evaluations':solver._maxfun,
                                             'generations':solver._maxiter}
 
@@ -241,6 +242,10 @@ Note::
             msg = lim #XXX: prefer the default stop ?
             if disp:
                 print "Warning: Maximum number of iterations has been exceeded"
+        elif solver._EARLYEXIT: #XXX: self or solver ?
+            msg = sig
+            if disp:
+                print "Warning: Optimization terminated with signal interrupt."
         elif msg and disp:
             print "Optimization terminated successfully."
             print "         Current function value: %f" % solver.bestEnergy

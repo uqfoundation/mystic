@@ -269,8 +269,7 @@ The size of the simplex is dim+1.
         [settings.update({i:j}) for (i,j) in kwds.items() if i in settings]
         return settings
 
-    def Solve(self, cost=None, termination=None, sigint_callback=None,
-                                                 ExtraArgs=None, **kwds):
+    def Solve(self, cost=None, termination=None, ExtraArgs=None, **kwds):
         """Minimize a function using the downhill simplex algorithm.
 
 Description:
@@ -285,11 +284,11 @@ Inputs:
 Additional Inputs:
 
     termination -- callable object providing termination conditions.
-    sigint_callback -- callback function for signal handler.
     ExtraArgs -- extra arguments for cost.
 
 Further Inputs:
 
+    sigint_callback -- callback function for signal handler.
     callback -- an optional user-supplied function to call after each
         iteration.  It is called as callback(xk), where xk is the
         current parameter vector.                           [default = None]
@@ -297,7 +296,7 @@ Further Inputs:
     radius -- percentage change for initial simplex values. [default = 0.05]
 """
         super(NelderMeadSimplexSolver, self).Solve(cost, termination,\
-                                  sigint_callback, ExtraArgs, **kwds)
+                                                   ExtraArgs, **kwds)
         return
 
 
@@ -592,8 +591,7 @@ Takes one initial input:
         self._direc = kwds.get('direc', direc)
         return settings
 
-    def Solve(self, cost=None, termination=None, sigint_callback=None,
-                                                 ExtraArgs=None, **kwds):
+    def Solve(self, cost=None, termination=None, ExtraArgs=None, **kwds):
         """Minimize a function using modified Powell's method.
 
 Description:
@@ -608,11 +606,11 @@ Inputs:
 Additional Inputs:
 
     termination -- callable object providing termination conditions.
-    sigint_callback -- callback function for signal handler.
     ExtraArgs -- extra arguments for cost.
 
 Further Inputs:
 
+    sigint_callback -- callback function for signal handler.
     callback -- an optional user-supplied function to call after each
         iteration.  It is called as callback(xk), where xk is the
         current parameter vector
@@ -621,7 +619,7 @@ Further Inputs:
     disp -- non-zero to print convergence messages.
 """
         super(PowellDirectionalSolver, self).Solve(cost, termination,\
-                                  sigint_callback, ExtraArgs, **kwds)
+                                                   ExtraArgs, **kwds)
         return
 
 

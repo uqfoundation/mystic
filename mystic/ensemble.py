@@ -56,8 +56,7 @@ All important class members are inherited from AbstractEnsembleSolver.
 #       return
 
     #FIXME: should take cost=None, ExtraArgs=None... and utilize Step
-    def Solve(self, cost, termination=None, sigint_callback=None,
-                                            ExtraArgs=(), **kwds):
+    def Solve(self, cost, termination=None, ExtraArgs=(), **kwds):
         """Minimize a function using batch grid optimization.
 
 Description:
@@ -72,17 +71,18 @@ Inputs:
 Additional Inputs:
 
     termination -- callable object providing termination conditions.
-    sigint_callback -- callback function for signal handler.
     ExtraArgs -- extra arguments for cost.
 
 Further Inputs:
 
+    sigint_callback -- callback function for signal handler.
     callback -- an optional user-supplied function to call after each
         iteration.  It is called as callback(xk), where xk is the
         current parameter vector.                           [default = None]
     disp -- non-zero to print convergence messages.         [default = 0]
         """
         # process and activate input settings
+        sigint_callback = kwds.pop('sigint_callback', None)
         settings = self._process_inputs(kwds)
         disp = settings.get('disp', False)
         echo = settings.get('callback', None) #XXX: every iteration every run
@@ -92,9 +92,6 @@ Further Inputs:
         else: verbose = False
         #-------------------------------------------------------------
 
-        import signal
-       #self._EARLYEXIT = False
-
        #FIXME: EvaluationMonitor fails for MPI, throws error for 'pp'
         from python_map import python_map
         if self._map != python_map:
@@ -102,8 +99,12 @@ Further Inputs:
         else:
             self._fcalls, cost = wrap_function(cost, ExtraArgs, self._evalmon)
 
-        #generate signal_handler
+        # set up signal handler
+       #self._EARLYEXIT = False
         self._generateHandler(sigint_callback) 
+
+        # activate signal_handler
+        import signal
         if self._handle_sigint: signal.signal(signal.SIGINT,self.signal_handler)
 
         # register termination function
@@ -221,6 +222,7 @@ Further Inputs:
        #        self._evalmon(besteval.x[i], besteval.y[i])
         #-------------------------------------------------------------
 
+        # restore default handler for signal interrupts
         signal.signal(signal.SIGINT,signal.default_int_handler)
 
         # log any termination messages
@@ -247,8 +249,7 @@ All important class members are inherited from AbstractEnsembleSolver.
         convergence_tol = 1e-4
         self._termination = NormalizedChangeOverGeneration(convergence_tol)
 
-    def Solve(self, cost, termination=None, sigint_callback=None,
-                                            ExtraArgs=(), **kwds):
+    def Solve(self, cost, termination=None, ExtraArgs=(), **kwds):
         """Minimize a function using buckshot optimization.
 
 Description:
@@ -263,17 +264,18 @@ Inputs:
 Additional Inputs:
 
     termination -- callable object providing termination conditions.
-    sigint_callback -- callback function for signal handler.
     ExtraArgs -- extra arguments for cost.
 
 Further Inputs:
 
+    sigint_callback -- callback function for signal handler.
     callback -- an optional user-supplied function to call after each
         iteration.  It is called as callback(xk), where xk is the
         current parameter vector.                           [default = None]
     disp -- non-zero to print convergence messages.         [default = 0]
         """
         # process and activate input settings
+        sigint_callback = kwds.pop('sigint_callback', None)
         settings = self._process_inputs(kwds)
         disp = settings.get('disp', False)
         echo = settings.get('callback', None) #XXX: every iteration every run
@@ -283,9 +285,6 @@ Further Inputs:
         else: verbose = False
         #-------------------------------------------------------------
 
-        import signal
-       #self._EARLYEXIT = False
-
        #FIXME: EvaluationMonitor fails for MPI, throws error for 'pp'
         from python_map import python_map
         if self._map != python_map:
@@ -293,8 +292,12 @@ Further Inputs:
         else:
             self._fcalls, cost = wrap_function(cost, ExtraArgs, self._evalmon)
 
-        #generate signal_handler
+        # set up signal handler
+       #self._EARLYEXIT = False
         self._generateHandler(sigint_callback) 
+
+        # activate signal_handler
+        import signal
         if self._handle_sigint: signal.signal(signal.SIGINT,self.signal_handler)
 
         # register termination function
@@ -405,6 +408,7 @@ Further Inputs:
        #        self._evalmon(besteval.x[i], besteval.y[i])
         #-------------------------------------------------------------
 
+        # restore default handler for signal interrupts
         signal.signal(signal.SIGINT,signal.default_int_handler)
 
         # log any termination messages
