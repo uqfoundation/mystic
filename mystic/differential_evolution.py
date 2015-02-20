@@ -57,7 +57,7 @@ The corresponding solvers built on mystic's AbstractSolver are::
 Mystic solver behavior activated in diffev and diffev2::
     - EvaluationMonitor = Monitor()
     - StepMonitor = Monitor()
-    - strategy = Best1Exp
+    - strategy = Best1Bin
     - termination = ChangeOverGeneration(ftol,gtol), if gtol provided
           ''      = VTRChangeOverGenerations(ftol), otherwise
 
@@ -170,6 +170,7 @@ All important class members are inherited from AbstractSolver.
         self.genealogy     = [ [] for j in range(NP)]
         self.scale         = 0.8
         self.probability   = 0.9
+        self.strategy      = 'Best1Bin'
         ftol = 5e-3
         from mystic.termination import VTRChangeOverGeneration
         self._termination = VTRChangeOverGeneration(ftol)
@@ -199,7 +200,7 @@ are logged.
         self.genealogy[id].append(newchild)
         return
 
-    def _RegisterObjective(self, cost, ExtraArgs=None):
+    def _decorate_objective(self, cost, ExtraArgs=None):
         """decorate cost function with bounds, penalties, monitors, etc"""
         if ExtraArgs is None: ExtraArgs = ()
         self._fcalls, cost = wrap_function(cost, ExtraArgs, self._evalmon)
@@ -215,10 +216,10 @@ are logged.
         self._cost = (cost, ExtraArgs)
         return cost
 
-    def Step(self, cost=None, ExtraArgs=None, **kwds):
+    def _Step(self, cost=None, ExtraArgs=None, **kwds):
         """perform a single optimization iteration
         Note that ExtraArgs should be a *tuple* of extra arguments"""
-        # HACK to enable not explicitly calling _RegisterObjective
+        # HACK to enable not explicitly calling _decorate_objective
         cost = self._bootstrap_objective(cost, ExtraArgs)
         # process and activate input settings
         settings = self._process_inputs(kwds)
@@ -274,20 +275,25 @@ are logged.
         if callback is not None: callback(self.bestSolution)
         # initialize termination conditions, if needed
         if init: self._termination(self) #XXX: at generation 0 or always?
-        return #XXX: call CheckTermination ?
+        return #XXX: call Terminated ?
 
     def _process_inputs(self, kwds):
         """process and activate input settings"""
         #allow for inputs that don't conform to AbstractSolver interface
+        #NOTE: not sticky: callback, disp
+        #NOTE: sticky: EvaluationMonitor, StepMonitor, penalty, constraints
+        #NOTE: sticky: strategy, CrossProbability, ScalingFactor
         settings = super(DifferentialEvolutionSolver, self)._process_inputs(kwds)
-        from mystic.strategy import Best1Bin
+        from mystic import strategy
+        strategy = getattr(strategy,self.strategy,strategy.Best1Bin) #XXX: None?
         settings.update({\
-        'strategy':Best1Bin})#mutation strategy (see mystic.strategy)
-        probability=0.9      #potential for parameter cross-mutation
-        scale=0.8            #multiplier for mutation impact
+        'strategy': strategy})       #mutation strategy (see mystic.strategy)
+        probability=self.probability #potential for parameter cross-mutation
+        scale=self.scale             #multiplier for mutation impact
         [settings.update({i:j}) for (i,j) in kwds.items() if i in settings]
         self.probability = kwds.get('CrossProbability', probability)
         self.scale = kwds.get('ScalingFactor', scale)
+        self.strategy = getattr(settings['strategy'],'__name__','Best1Bin')
         return settings
 
     def Solve(self, cost=None, termination=None, ExtraArgs=None, **kwds):
@@ -344,11 +350,15 @@ Takes two initial inputs:
 
 All important class members are inherited from AbstractSolver.
         """
-        #XXX: raise Error if npop <= 4?
+        NP = max(NP, dim, 4) #XXX: raise Error if npop <= 4?
         super(DifferentialEvolutionSolver2, self).__init__(dim, npop=NP)
         self.genealogy     = [ [] for j in range(NP)]
         self.scale         = 0.8
         self.probability   = 0.9
+        self.strategy      = 'Best1Bin'
+        ftol = 5e-3
+        from mystic.termination import VTRChangeOverGeneration
+        self._termination = VTRChangeOverGeneration(ftol)
         
     def UpdateGenealogyRecords(self, id, newchild):
         """
@@ -358,7 +368,7 @@ are logged.
         self.genealogy[id].append(newchild)
         return
 
-    def _RegisterObjective(self, cost, ExtraArgs=None):
+    def _decorate_objective(self, cost, ExtraArgs=None):
         """decorate cost function with bounds, penalties, monitors, etc"""
         if ExtraArgs is None: ExtraArgs = ()
        #FIXME: EvaluationMonitor fails for MPI, throws error for 'pp'
@@ -379,10 +389,10 @@ are logged.
         self._cost = (cost, ExtraArgs)
         return cost
 
-    def Step(self, cost=None, ExtraArgs=None, **kwds):
+    def _Step(self, cost=None, ExtraArgs=None, **kwds):
         """perform a single optimization iteration
         Note that ExtraArgs should be a *tuple* of extra arguments"""
-        # HACK to enable not explicitly calling _RegisterObjective
+        # HACK to enable not explicitly calling _decorate_objective
         cost = self._bootstrap_objective(cost, ExtraArgs)
         # process and activate input settings
         settings = self._process_inputs(kwds)
@@ -443,20 +453,25 @@ are logged.
         if callback is not None: callback(self.bestSolution)
         # initialize termination conditions, if needed
         if init: self._termination(self) #XXX: at generation 0 or always?
-        return #XXX: call CheckTermination ?
+        return #XXX: call Terminated ?
 
     def _process_inputs(self, kwds):
         """process and activate input settings"""
         #allow for inputs that don't conform to AbstractSolver interface
+        #NOTE: not sticky: callback, disp
+        #NOTE: sticky: EvaluationMonitor, StepMonitor, penalty, constraints
+        #NOTE: sticky: strategy, CrossProbability, ScalingFactor
         settings = super(DifferentialEvolutionSolver2, self)._process_inputs(kwds)
-        from mystic.strategy import Best1Bin
+        from mystic import strategy
+        strategy = getattr(strategy,self.strategy,strategy.Best1Bin) #XXX: None?
         settings.update({\
-        'strategy':Best1Bin})#mutation strategy (see mystic.strategy)
-        probability=0.9      #potential for parameter cross-mutation
-        scale=0.8            #multiplier for mutation impact
+        'strategy': strategy})       #mutation strategy (see mystic.strategy)
+        probability=self.probability #potential for parameter cross-mutation
+        scale=self.scale             #multiplier for mutation impact
         [settings.update({i:j}) for (i,j) in kwds.items() if i in settings]
         self.probability = kwds.get('CrossProbability', probability)
         self.scale = kwds.get('ScalingFactor', scale)
+        self.strategy = getattr(settings['strategy'],'__name__','Best1Bin')
         return settings
 
     def Solve(self, cost=None, termination=None, ExtraArgs=None, **kwds):

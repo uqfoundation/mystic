@@ -226,7 +226,7 @@ Further Inputs:
         signal.signal(signal.SIGINT,signal.default_int_handler)
 
         # log any termination messages
-        msg = self.CheckTermination(disp=disp, info=True)
+        msg = self.Terminated(disp=disp, info=True)
         if msg: self._stepmon.info('STOP("%s")' % msg)
         # save final state
         self._AbstractSolver__save_state(force=True)
@@ -412,7 +412,7 @@ Further Inputs:
         signal.signal(signal.SIGINT,signal.default_int_handler)
 
         # log any termination messages
-        msg = self.CheckTermination(disp=disp, info=True)
+        msg = self.Terminated(disp=disp, info=True)
         if msg: self._stepmon.info('STOP("%s")' % msg)
         # save final state
         self._AbstractSolver__save_state(force=True)
@@ -522,7 +522,7 @@ Returns: (xopt, {fopt, iter, funcalls, warnflag, allfuncalls}, {allvecs})
     solution = solver.Solution()
 
     # code below here pushes output to scipy.optimize.fmin interface
-    msg = solver.CheckTermination(disp=False, info=True)
+    msg = solver.Terminated(disp=False, info=True)
 
     x = solver.bestSolution
     fval = solver.bestEnergy
@@ -653,7 +653,7 @@ Returns: (xopt, {fopt, iter, funcalls, warnflag, allfuncalls}, {allvecs})
     solution = solver.Solution()
 
     # code below here pushes output to scipy.optimize.fmin interface
-    msg = solver.CheckTermination(disp=False, info=True)
+    msg = solver.Terminated(disp=False, info=True)
 
     x = solver.bestSolution
     fval = solver.bestEnergy

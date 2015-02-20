@@ -206,7 +206,7 @@ input::
 *** this method must be overwritten ***"""
         raise NotImplementedError, "must be overwritten..."
 
-    def CheckTermination(self, disp=False, info=False, termination=None):
+    def Terminated(self, disp=False, info=False, termination=None):
         """check if the solver meets the given termination conditions
 
 Input::

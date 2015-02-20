@@ -91,6 +91,7 @@ The size of the simplex is dim+1.
         AbstractSolver.__init__(self,dim) #,npop=simplex)
         self.popEnergy.append(self._init_popEnergy)
         self.population.append([0.0 for i in range(dim)])
+        self.radius= 0.05 #percentage change for initial simplex values
         xtol, ftol = 1e-4, 1e-4
         from mystic.termination import CandidateRelativeTolerance as CRT
         self._termination = CRT(xtol,ftol)
@@ -140,10 +141,10 @@ The size of the simplex is dim+1.
         super(NelderMeadSimplexSolver, self)._SetEvaluationLimits(iterscale,evalscale)
         return
 
-    def Step(self, cost=None, ExtraArgs=None, **kwds):
+    def _Step(self, cost=None, ExtraArgs=None, **kwds):
         """perform a single optimization iteration
         Note that ExtraArgs should be a *tuple* of extra arguments"""
-        # HACK to enable not explicitly calling _RegisterObjective
+        # HACK to enable not explicitly calling _decorate_objective
         cost = self._bootstrap_objective(cost, ExtraArgs)
         # process and activate input settings
         settings = self._process_inputs(kwds)
@@ -258,15 +259,19 @@ The size of the simplex is dim+1.
         if callback is not None: callback(self.bestSolution)
         # initialize termination conditions, if needed
         if init: self._termination(self) #XXX: at generation 0 or always?
-        return #XXX: call CheckTermination ?
+        return #XXX: call Terminated ?
 
     def _process_inputs(self, kwds):
         """process and activate input settings"""
         #allow for inputs that don't conform to AbstractSolver interface
+        #NOTE: not sticky: callback, disp
+        #NOTE: sticky: EvaluationMonitor, StepMonitor, penalty, constraints
+        #NOTE: sticky: radius
         settings = super(NelderMeadSimplexSolver, self)._process_inputs(kwds)
         settings.update({\
-        'radius':0.05})      #percentage change for initial simplex values
+        'radius':self.radius}) #percentage change for initial simplex values
         [settings.update({i:j}) for (i,j) in kwds.items() if i in settings]
+        self.radius = settings['radius']
         return settings
 
     def Solve(self, cost=None, termination=None, ExtraArgs=None, **kwds):
@@ -452,6 +457,7 @@ Takes one initial input:
         fx = self.popEnergy[0]
         #                  [x1, fx, bigind, delta]
         self.__internals = [x1, fx,      0,   0.0]
+        self.xtol  = 1e-4  #line-search error tolerance
         ftol, gtol = 1e-4, 2
         from mystic.termination import NormalizedChangeOverGeneration as NCOG
         self._termination = NCOG(ftol,gtol)
@@ -460,17 +466,17 @@ Takes one initial input:
         super(PowellDirectionalSolver, self)._SetEvaluationLimits(iterscale,evalscale)
         return
 
-    def Step(self, cost=None, ExtraArgs=None, **kwds):
+    def _Step(self, cost=None, ExtraArgs=None, **kwds):
         """perform a single optimization iteration
         Note that ExtraArgs should be a *tuple* of extra arguments"""
-        # HACK to enable not explicitly calling _RegisterObjective
+        # HACK to enable not explicitly calling _decorate_objective
         cost = self._bootstrap_objective(cost, ExtraArgs)
         # process and activate input settings
         settings = self._process_inputs(kwds)
         for key in settings:
             exec "%s = settings['%s']" % (key,key)
 
-        direc = self._direc
+        direc = self._direc #XXX: throws Error if direc=None after generation=0
         x = self.population[0]   # bestSolution
         fval = self.popEnergy[0] # bestEnergy
         x1, fx, bigind, delta = self.__internals
@@ -570,9 +576,9 @@ Takes one initial input:
         if callback is not None: callback(self.bestSolution)
         # initialize termination conditions, if needed
         if init: self._termination(self) #XXX: at generation 0 or always?
-        return #XXX: call CheckTermination ?
+        return #XXX: call Terminated ?
 
-    def _exitMain(self, **kwds):
+    def _Finalize(self, **kwds):
         """cleanup upon exiting the main optimization loop"""
         self.energy_history = None # resync with 'best' energy
         self._stepmon(self.bestSolution, self.bestEnergy, self.id)
@@ -583,12 +589,16 @@ Takes one initial input:
     def _process_inputs(self, kwds):
         """process and activate input settings"""
         #allow for inputs that don't conform to AbstractSolver interface
+        #NOTE: not sticky: callback, disp
+        #NOTE: sticky: EvaluationMonitor, StepMonitor, penalty, constraints
+        #NOTE: sticky: xtol, direc
         settings = super(PowellDirectionalSolver, self)._process_inputs(kwds)
         settings.update({\
-        'xtol':1e-4})        #line-search error tolerance
+        'xtol':self.xtol})   #line-search error tolerance
         direc=self._direc    #initial direction set
         [settings.update({i:j}) for (i,j) in kwds.items() if i in settings]
         self._direc = kwds.get('direc', direc)
+        self.xtol = settings['xtol']
         return settings
 
     def Solve(self, cost=None, termination=None, ExtraArgs=None, **kwds):

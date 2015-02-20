@@ -539,7 +539,7 @@ input::
             self._maxfun = (N * self.nPop * evalscale) + self.evaluations
         return
 
-    def CheckTermination(self, disp=False, info=False, termination=None):
+    def Terminated(self, disp=False, info=False, termination=None):
         """check if the solver meets the given termination conditions
 
 Input::
@@ -591,7 +591,12 @@ Note::
         self._termination = termination
         return
 
-    def _RegisterObjective(self, cost, ExtraArgs=None):
+    def SetObjective(self, cost, ExtraArgs=None, fetch=False):
+        """set the objective, decorated with bounds, penalties, monitors, etc"""
+        cost = self._bootstrap_objective(cost, ExtraArgs=None)
+        return cost if fetch else None
+
+    def _decorate_objective(self, cost, ExtraArgs=None):
         """decorate cost function with bounds, penalties, monitors, etc"""
         if ExtraArgs is None: ExtraArgs = ()
         self._fcalls, cost = wrap_function(cost, ExtraArgs, self._evalmon)
@@ -609,17 +614,17 @@ Note::
         return cost
 
     def _bootstrap_objective(self, cost=None, ExtraArgs=None):
-        """HACK to enable not explicitly calling _RegisterObjective"""
+        """HACK to enable not explicitly calling _decorate_objective"""
         args = None
         if cost is None: # 'use existing cost'
             cost,args = self._cost # use args, unless override with ExtraArgs
         if ExtraArgs is not None: args = ExtraArgs
-        if self._cost[0] is None: # '_RegisterObjective not yet called'
+        if self._cost[0] is None: # '_decorate_objective not yet called'
             if args is None: args = ()
-            cost = self._RegisterObjective(cost, args)
+            cost = self._decorate_objective(cost, args)
         return cost
 
-    def Step(self, cost=None, ExtraArgs=None, **kwds):
+    def _Step(self, cost=None, ExtraArgs=None, **kwds):
         """perform a single optimization iteration
 
 *** this method must be overwritten ***"""
@@ -665,13 +670,15 @@ Note::
         self.__dict__.update(solver.__dict__, **kwds)
         return
 
-    def _exitMain(self, **kwds):
+    def _Finalize(self, **kwds):
         """cleanup upon exiting the main optimization loop"""
         pass
 
     def _process_inputs(self, kwds):
         """process and activate input settings"""
         #allow for inputs that don't conform to AbstractSolver interface
+        #NOTE: not sticky: callback, disp
+        #NOTE: sticky: EvaluationMonitor, StepMonitor, penalty, constraints
         settings = \
        {'callback':None,     #user-supplied function, called after each step
         'disp':0}            #non-zero to print convergence messages
@@ -687,12 +694,69 @@ Note::
            self.SetConstraints(kwds.get('constraints'))
         return settings
 
+    def Step(self, cost=None, termination=None, ExtraArgs=None, **kwds):
+        """Take a single optimiztion step using the given 'cost' function.
+
+Description:
+
+    Uses an optimization algorithm to take one 'step' toward
+    the minimum of a function of one or more variables.
+
+Inputs:
+
+    cost -- the Python function or method to be minimized.
+
+Additional Inputs:
+
+    termination -- callable object providing termination conditions.
+    ExtraArgs -- extra arguments for cost.
+
+Further Inputs:
+
+    callback -- an optional user-supplied function to call after each
+        iteration.  It is called as callback(xk), where xk is
+        the current parameter vector.  [default = None]
+    disp -- non-zero to print convergence messages.
+
+Notes:
+    If the algorithm does not meet the given termination conditions after
+    the call to "Step", the solver may be left in an "out-of-sync" state.
+    When abandoning an non-terminated solver, one should call "_Finalize"
+    to make sure the solver is fully returned to a "synchronized" state.
+
+    To run the solver until termination, call "Solve()".  Alternately, use
+    Terminated()" as the condition in a while loop over "Step".
+        """
+        disp = kwds.pop('disp', False)
+
+        # register: cost, termination, ExtraArgs
+        cost = self._bootstrap_objective(cost, ExtraArgs)
+        if termination is not None: self.SetTermination(termination)
+
+        # check termination before 'stepping'
+        if len(self._stepmon):
+            msg = self.Terminated(disp=disp, info=True) or None
+        else: msg = None
+
+        # if not terminated, then take a step
+        if msg is None:
+            self._Step(**kwds) #FIXME: not all kwds are given in __doc__
+            if self.Terminated(): # then cleanup/finalize
+                self._Finalize()
+
+            # get termination message and log state
+            msg = self.Terminated(disp=disp, info=True) or None
+            if msg:
+                self._stepmon.info('STOP("%s")' % msg)
+                self.__save_state(force=True)
+        return msg
+
     def Solve(self, cost=None, termination=None, ExtraArgs=None, **kwds):
         """Minimize a 'cost' function with given termination conditions.
 
 Description:
 
-    Uses an optimization algorith to find the minimum of
+    Uses an optimization algorithm to find the minimum of
     a function of one or more variables.
 
 Inputs:
@@ -712,13 +776,9 @@ Further Inputs:
         the current parameter vector.  [default = None]
     disp -- non-zero to print convergence messages.
         """
-        # HACK to enable not explicitly calling _RegisterObjective
-        cost = self._bootstrap_objective(cost, ExtraArgs)
         # process and activate input settings
         sigint_callback = kwds.pop('sigint_callback', None)
         settings = self._process_inputs(kwds)
-        for key in settings:
-            exec "%s = settings['%s']" % (key,key)
 
         # set up signal handler
         self._EARLYEXIT = False  #XXX: why not use EARLYEXIT singleton?
@@ -728,29 +788,17 @@ Further Inputs:
         import signal
         if self._handle_sigint: signal.signal(signal.SIGINT,self.signal_handler)
 
-       ## decorate cost function with bounds, penalties, monitors, etc
-       #self._RegisterObjective(cost, ExtraArgs)    #XXX: SetObjective ?
-        # register termination function
-        if termination is not None:
-            self.SetTermination(termination)
-
-        # the initital optimization iteration
-        if not len(self._stepmon): # do generation = 0
-            self.Step(**settings)  # includes settings['callback']
+        # register: cost, termination, ExtraArgs
+        cost = self._bootstrap_objective(cost, ExtraArgs)
+        if termination is not None: self.SetTermination(termination)
+        #XXX: self.Step(cost, termination, ExtraArgs, **settings) ?
 
         # the main optimization loop
-        while not self.CheckTermination():
-            self.Step(**settings)  # includes settings['callback']
-        else: self._exitMain()
+        while not self.Step(**settings): #XXX: remove need to pass settings?
+            continue
 
         # restore default handler for signal interrupts
         signal.signal(signal.SIGINT,signal.default_int_handler)
-
-        # log any termination messages
-        msg = self.CheckTermination(disp=disp, info=True)
-        if msg: self._stepmon.info('STOP("%s")' % msg)
-        # save final state
-        self.__save_state(force=True)
         return
 
     # extensions to the solver interface
