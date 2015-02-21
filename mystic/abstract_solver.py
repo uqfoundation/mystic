@@ -585,15 +585,16 @@ Note::
             return msg
         return bool(msg)
 
-    def SetTermination(self, termination):
+    def SetTermination(self, termination): # disp ?
         """set the termination conditions"""
         #XXX: validate that termination is a 'condition' ?
         self._termination = termination
         return
 
-    def SetObjective(self, cost, ExtraArgs=None, fetch=False):
+    def SetObjective(self, cost, ExtraArgs=None, **kwds): # callback, fetch ?
         """set the objective, decorated with bounds, penalties, monitors, etc"""
-        cost = self._bootstrap_objective(cost, ExtraArgs=None)
+        fetch = kwds.get('fetch', False)
+        cost = self._bootstrap_objective(cost, ExtraArgs)
         return cost if fetch else None
 
     def _decorate_objective(self, cost, ExtraArgs=None):
