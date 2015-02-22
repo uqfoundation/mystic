@@ -202,6 +202,7 @@ are logged.
 
     def _decorate_objective(self, cost, ExtraArgs=None):
         """decorate cost function with bounds, penalties, monitors, etc"""
+        raw = cost
         if ExtraArgs is None: ExtraArgs = ()
         self._fcalls, cost = wrap_function(cost, ExtraArgs, self._evalmon)
         if self._useStrictRange:
@@ -212,8 +213,8 @@ are logged.
         if self._reducer:
            #cost = reduced(*self._reducer)(cost) # was self._reducer = (f,bool)
             cost = reduced(self._reducer, arraylike=True)(cost)
-        # hold on to the 'wrapped' cost function
-        self._cost = (cost, ExtraArgs)
+        # hold on to the 'wrapped' and 'raw' cost function
+        self._cost = (cost, raw, ExtraArgs)
         return cost
 
     def _Step(self, cost=None, ExtraArgs=None, **kwds):
@@ -370,6 +371,7 @@ are logged.
 
     def _decorate_objective(self, cost, ExtraArgs=None):
         """decorate cost function with bounds, penalties, monitors, etc"""
+        raw = cost
         if ExtraArgs is None: ExtraArgs = ()
        #FIXME: EvaluationMonitor fails for MPI, throws error for 'pp'
         from python_map import python_map
@@ -385,8 +387,8 @@ are logged.
         if self._reducer:
            #cost = reduced(*self._reducer)(cost) # was self._reducer = (f,bool)
             cost = reduced(self._reducer, arraylike=True)(cost)
-        # hold on to the 'wrapped' cost function
-        self._cost = (cost, ExtraArgs)
+        # hold on to the 'wrapped' and 'raw' cost function
+        self._cost = (cost, raw, ExtraArgs)
         return cost
 
     def _Step(self, cost=None, ExtraArgs=None, **kwds):

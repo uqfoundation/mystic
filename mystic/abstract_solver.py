@@ -79,9 +79,10 @@ import numpy
 from numpy import inf, shape, asarray, absolute, asfarray, seterr
 from mystic.tools import wrap_function, wrap_nested, wrap_reducer
 from mystic.tools import wrap_bounds, wrap_penalty, reduced
+from klepto import isvalid, validate
 
 abs = absolute
-
+null = lambda x: None
 
 class AbstractSolver(object):
     """
@@ -146,7 +147,8 @@ Important class members:
         self._constraints     = lambda x: x
         self._penalty         = lambda x: 0.0
         self._reducer         = None
-        self._cost            = (None, None)
+        self._cost            = (None, None, None)
+        #                       (cost, raw_cost, args) #,callback)
         self._termination     = lambda x, *ar, **kw: False if len(ar) < 1 or ar[0] is False or kw.get('info',True) == False else '' #XXX: better default ?
         # (get termination details with self._termination.__doc__)
 
@@ -591,14 +593,14 @@ Note::
         self._termination = termination
         return
 
-    def SetObjective(self, cost, ExtraArgs=None, **kwds): # callback, fetch ?
-        """set the objective, decorated with bounds, penalties, monitors, etc"""
-        fetch = kwds.get('fetch', False)
-        cost = self._bootstrap_objective(cost, ExtraArgs)
-        return cost if fetch else None
+    def SetObjective(self, cost, ExtraArgs=None):  # callback=None/False ?
+        """decorate the cost function with bounds, penalties, monitors, etc"""
+        self._bootstrap_objective(cost, ExtraArgs) # callback=null (see above)
+        return
 
     def _decorate_objective(self, cost, ExtraArgs=None):
-        """decorate cost function with bounds, penalties, monitors, etc"""
+        """decorate the cost function with bounds, penalties, monitors, etc"""
+        raw = cost
         if ExtraArgs is None: ExtraArgs = ()
         self._fcalls, cost = wrap_function(cost, ExtraArgs, self._evalmon)
         if self._useStrictRange:
@@ -610,20 +612,32 @@ Note::
         if self._reducer:
            #cost = reduced(*self._reducer)(cost) # was self._reducer = (f,bool)
             cost = reduced(self._reducer, arraylike=True)(cost)
-        # hold on to the 'wrapped' cost function
-        self._cost = (cost, ExtraArgs)
+        # hold on to the 'wrapped' and 'raw' cost function
+        self._cost = (cost, raw, ExtraArgs)
         return cost
 
     def _bootstrap_objective(self, cost=None, ExtraArgs=None):
         """HACK to enable not explicitly calling _decorate_objective"""
-        args = None
-        if cost is None: # 'use existing cost'
-            cost,args = self._cost # use args, unless override with ExtraArgs
-        if ExtraArgs is not None: args = ExtraArgs
-        if self._cost[0] is None: # '_decorate_objective not yet called'
-            if args is None: args = ()
-            cost = self._decorate_objective(cost, args)
-        return cost
+        _cost,_raw,_args = self._cost
+        # check if need to 'wrap' or can return the stored cost
+        if cost in [None, _raw, _cost] and ExtraArgs in [None, _args]:
+            return _cost
+        # get cost and args if None was given
+        if cost is None: cost = _raw
+        args = _args if ExtraArgs is None else ExtraArgs
+        args = () if args is None else args
+        # quick validation check (so doesn't screw up internals)
+        if not isvalid(cost, [0]*self.nDim, *args):
+            try: name = cost.__name__
+            except AttributeError: # raise new error for non-callables
+                cost(*args)
+            validate(cost, None, *args)
+           #val = len(args) + 1  #XXX: 'klepto.validate' for better error?
+           #msg = '%s() invalid number of arguments (%d given)' % (name, val)
+           #raise TypeError(msg)
+        # 'wrap' the 'new' cost function with _decorate
+        return self._decorate_objective(cost, args)
+        #XXX: **CAUTION** when _decorate called, solver._fcalls will be reset
 
     def _Step(self, cost=None, ExtraArgs=None, **kwds):
         """perform a single optimization iteration
