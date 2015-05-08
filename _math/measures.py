@@ -413,7 +413,7 @@ Inputs:
 
 
 def impose_reweighted_mean(m, samples, weights=None, solver=None):
-    """impose a mean on a list of points, using reweighting"""
+    """impose a mean on a list of points by reweighting weights"""
     ndim = len(samples)
     if weights is None:
         weights = [1.0/ndim] * ndim
@@ -450,13 +450,13 @@ def impose_reweighted_mean(m, samples, weights=None, solver=None):
     #XXX: better to fail immediately if xlo < m < xhi... or the below?
     if warn or not almostEqual(_norm, norm):
         print "Warning: could not impose mean through reweighting"
-        return impose_mean(m, samples, weights), weights
+        return None #impose_mean(m, samples, weights), weights
 
-    return samples, wts
+    return wts #samples, wts
 
 
 def impose_reweighted_variance(v, samples, weights=None, solver=None):
-    """impose a variance on a list of points, using reweighting"""
+    """impose a variance on a list of points by reweighting weights"""
     ndim = len(samples)
     if weights is None:
         weights = [1.0/ndim] * ndim
@@ -497,12 +497,12 @@ def impose_reweighted_variance(v, samples, weights=None, solver=None):
     #XXX: better to fail immediately if xlo < m < xhi... or the below?
     if warn or not almostEqual(_norm, norm):
         print "Warning: could not impose mean through reweighting"
-        return impose_variance(v, samples, weights), weights
+        return None #impose_variance(v, samples, weights), weights
 
-    return samples, wts  # "mean-preserving"
+    return wts #samples, wts  # "mean-preserving"
 
 def impose_reweighted_std(s, samples, weights=None, solver=None):
-    """impose a standard deviation on a list of points, using reweighting"""
+    """impose a standard deviation on a list of points by reweighting weights"""
     return impose_reweighted_variance(s**2, samples, weights, solver)
 
 ##### misc methods #####

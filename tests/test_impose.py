@@ -14,9 +14,8 @@ def test_impose_reweighted_mean():
   w0 = [3,1,1,1,1]
   m = 3.5
 
-  x, w = impose_reweighted_mean(m, x0, w0)
-  assert x0 == x
-  assert almostEqual(mean(x,w), m)
+  w = impose_reweighted_mean(m, x0, w0)
+  assert almostEqual(mean(x0,w), m)
 
 
 def test_impose_reweighted_variance():
@@ -25,10 +24,9 @@ def test_impose_reweighted_variance():
   w0 = [3,1,1,1,1]
   v = 1.0
 
-  x, w = impose_reweighted_variance(v, x0, w0)
-  assert x0 == x
-  assert almostEqual(variance(x,w), v)
-  assert almostEqual(mean(x0,w0), mean(x,w))
+  w = impose_reweighted_variance(v, x0, w0)
+  assert almostEqual(variance(x0,w), v)
+  assert almostEqual(mean(x0,w0), mean(x0,w))
 
 
 if __name__ == '__main__':
