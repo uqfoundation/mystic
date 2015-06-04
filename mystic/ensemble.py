@@ -140,7 +140,8 @@ Further Inputs:
        #cf = [cost for i in range(len(initial_values))]
         vb = [verbose for i in range(len(initial_values))]
         cb = [echo for i in range(len(initial_values))] #XXX: remove?
-        id = range(len(initial_values))
+        at = self.id if self.id else 0  # start at self.id
+        id = range(at,at+len(initial_values))
 
         # generate the local_optimize function
         def local_optimize(solver, x0, rank=None, disp=False, callback=None):
@@ -326,7 +327,8 @@ Further Inputs:
        #cf = [cost for i in range(len(initial_values))]
         vb = [verbose for i in range(len(initial_values))]
         cb = [echo for i in range(len(initial_values))] #XXX: remove?
-        id = range(len(initial_values))
+        at = self.id if self.id else 0  # start at self.id
+        id = range(at,at+len(initial_values))
 
         # generate the local_optimize function
         def local_optimize(solver, x0, rank=None, disp=False, callback=None):

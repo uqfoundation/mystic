@@ -354,8 +354,8 @@ if __name__ == '__main__':
                       metavar="INT",default=None,
                       help="id # of the nth simultaneous points to plot")
     parser.add_option("-i","--iter",action="store",dest="stop",\
-                      metavar="INT",default=None,
-                      help="the largest iteration to plot")
+                      metavar="STR",default=":",
+                      help="string for smallest:largest iterations to plot")
     parser.add_option("-r","--reduce",action="store",dest="reducer",\
                       metavar="STR",default="None",
                       help="import path of output reducer function")
@@ -441,9 +441,10 @@ if __name__ == '__main__':
       ids = None # i.e. 'all'
 
     try: # select which iteration to stop plotting at
-      stop = int(parsed_opts.stop)
+      stop = parsed_opts.stop  # format is "1:10:1"
+      stop = stop if ":" in stop else ":"+stop
     except:
-      stop = None
+      stop = ":"
 
     #################################################
     solver = None  # set to 'mystic.solvers.fmin' (or similar) for 'live' fits
@@ -519,8 +520,8 @@ if __name__ == '__main__':
            #s = select[0] if len(select) else 0
            #px = p[int(s)] # draw_projection requires one parameter
            ## ignore everything after 'stop'
-           #_c = c[:stop]
-           #_x = px[:stop]
+           #_c = eval('c[%s]' % stop)
+           #_x = eval('px[%s]' % stop)
            #fig0 = draw_projection(_x,_c, style=style, scale=scale, shift=shift, figure=fig0)
 
             # plot the trajectory on the model surface (2D or 3D)
@@ -528,9 +529,9 @@ if __name__ == '__main__':
             p = [p[int(i)] for i in select[:2]]
             px,py = p # draw_trajectory requires two parameters
             # ignore everything after 'stop'
-            _x = px[:stop]
-            _y = py[:stop]
-            _c = c[:stop] if surface else None
+            _x = eval('px[%s]' % stop)
+            _y = eval('py[%s]' % stop)
+            _c = eval('c[%s]' % stop) if surface else None
             fig = draw_trajectory(_x,_y,_c, style=style, scale=scale, shift=shift, figure=fig)
 
     # add labels to the axes
