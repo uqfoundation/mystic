@@ -270,9 +270,9 @@ Further Inputs:
     warn = True  # if True, don't supress warnings
     verbose = False  # if True, print debug info
     #-----------------------undocumented-------------------------------
-    if kwds.has_key('permute'): permute = kwds['permute']
-    if kwds.has_key('warn'): warn = kwds['warn']
-    if kwds.has_key('verbose'): verbose = kwds['verbose']
+    permute = kwds['permute'] if 'permute' in kwds else permute
+    warn = kwds['warn'] if 'warn' in kwds else warn
+    verbose = kwds['verbose'] if 'verbose' in kwds else verbose
     #------------------------------------------------------------------
     if target in [None, False]:
         target = []
@@ -309,7 +309,7 @@ Further Inputs:
 
     # default is _locals with sympy imported
     _locals = {}
-    locals = kwds.get('locals', None)
+    locals = kwds['locals'] if 'locals' in kwds else None
     if locals is None: locals = {}
     try:
         code = """from sympy import Eq, Symbol;"""
@@ -438,9 +438,9 @@ Further Inputs:
     warn = True  # if True, don't supress warnings
     verbose = False  # if True, print debug info
     #-----------------------undocumented-------------------------------
-    if kwds.has_key('permute'): permute = kwds['permute']
-    if kwds.has_key('warn'): warn = kwds['warn']
-    if kwds.has_key('verbose'): verbose = kwds['verbose']
+    permute = kwds['permute'] if 'permute' in kwds else permute
+    warn = kwds['warn'] if 'warn' in kwds else warn
+    verbose = kwds['verbose'] if 'verbose' in kwds else verbose
     #------------------------------------------------------------------
     if target in [None, False]:
         target = []
@@ -477,7 +477,7 @@ Further Inputs:
 
     # default is _locals with sympy imported
     _locals = {}
-    locals = kwds.get('locals', None)
+    locals = kwds['locals'] if 'locals' in kwds else None
     if locals is None: locals = {}
     # if sympy not installed, return original constraints
     try:
@@ -698,9 +698,9 @@ Further Inputs:
     warn = True  # if True, don't supress warnings
     verbose = False # if True, print details from _classify_variables
     #-----------------------undocumented-------------------------------
-    if kwds.has_key('permute'): permute = kwds['permute']
-    if kwds.has_key('warn'): warn = kwds['warn']
-    if kwds.has_key('verbose'): verbose = kwds['verbose']
+    permute = kwds['permute'] if 'permute' in kwds else permute
+    warn = kwds['warn'] if 'warn' in kwds else warn
+    verbose = kwds['verbose'] if 'verbose' in kwds else verbose
     #------------------------------------------------------------------
     if target in [None, False]:
         target = []
@@ -731,7 +731,7 @@ Further Inputs:
                 mystring = mystring.replace(vars[i],variables[indices[i]])
         return mystring
 
-    locals = kwds.get('locals', None)
+    locals = kwds['locals'] if 'locals' in kwds else None
     if locals is None: locals = {}
 
     eqns = constraints.splitlines()

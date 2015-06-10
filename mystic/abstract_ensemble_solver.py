@@ -115,21 +115,18 @@ Important class members:
        #self._handle_sigint   = False
 
         # default settings for nested optimization
-        nbins = [1]*dim
-        if kwds.has_key('nbins'): nbins = kwds['nbins']
+        nbins = kwds['nbins'] if 'nbins' in kwds else [1]*dim
         if isinstance(nbins, int):
             from mystic.math.grid import randomly_bin
             nbins = randomly_bin(nbins, dim, ones=True, exact=True)
         self._nbins           = nbins
-        npts = 1
-        if kwds.has_key('npts'): npts = kwds['npts']
+        npts = kwds['npts'] if 'npts' in kwds else 1
         self._npts            = npts
         from mystic.solvers import NelderMeadSimplexSolver
         self._solver          = NelderMeadSimplexSolver
         self._bestSolver      = None # 'best' solver (after Solve)
         self._total_evals     = 0 # total function calls (after Solve)
-        if kwds.has_key('nbins'): NP = reduce(lambda x,y:x*y, nbins)
-        else: NP = npts #XXX: merge npts/nbins kwds?
+        NP = reduce(lambda x,y:x*y, nbins) if 'nbins' in kwds else npts
         self._allSolvers      = [None for j in range(NP)]
         return
 

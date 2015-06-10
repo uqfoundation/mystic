@@ -362,17 +362,11 @@ Returns: (xopt, {fopt, iter, funcalls, warnflag}, {allvecs})
     allvecs -- list - a list of solutions at each iteration
 
     """
-    handler = False
-    if kwds.has_key('handler'):
-        handler = kwds['handler']
+    handler = kwds['handler'] if 'handler' in kwds else False
 
     from mystic.monitors import Monitor
-    stepmon = Monitor()
-    evalmon = Monitor()
-    if kwds.has_key('itermon'):
-        stepmon = kwds['itermon']
-    if kwds.has_key('evalmon'):
-        evalmon = kwds['evalmon']
+    stepmon = kwds['itermon'] if 'itermon' in kwds else Monitor()
+    evalmon = kwds['evalmon'] if 'evalmon' in kwds else Monitor()
 
     if xtol: #if tolerance in x is provided, use CandidateRelativeTolerance
         from mystic.termination import CandidateRelativeTolerance as CRT
@@ -385,12 +379,10 @@ Returns: (xopt, {fopt, iter, funcalls, warnflag}, {allvecs})
     solver.SetEvaluationLimits(maxiter,maxfun)
     solver.SetEvaluationMonitor(evalmon)
     solver.SetGenerationMonitor(stepmon)
-    if kwds.has_key('penalty'):
-        penalty = kwds['penalty']
-        solver.SetPenalty(penalty)
-    if kwds.has_key('constraints'):
-        constraints = kwds['constraints']
-        solver.SetConstraints(constraints)
+    if 'penalty' in kwds:
+        solver.SetPenalty(kwds['penalty'])
+    if 'constraints' in kwds:
+        solver.SetConstraints(kwds['constraints'])
     if bounds is not None:
         minb,maxb = unpair(bounds)
         solver.SetStrictRanges(minb,maxb)
@@ -601,7 +593,7 @@ Takes one initial input:
         'xtol':self.xtol})   #line-search error tolerance
         direc=self._direc    #initial direction set
         [settings.update({i:j}) for (i,j) in kwds.items() if i in settings]
-        self._direc = kwds.get('direc', direc)
+        self._direc = kwds['direc'] if 'direc' in kwds else direc
         self.xtol = settings['xtol']
         return settings
 
@@ -705,21 +697,14 @@ Returns: (xopt, {fopt, iter, funcalls, warnflag, direc}, {allvecs})
     #FIXME: need to resolve "direc"
     #        - should just pass 'direc', and then hands-off ?  How return it ?
 
-    handler = False
-    if kwds.has_key('handler'):
-        handler = kwds['handler']
+    handler = kwds['handler'] if 'handler' in kwds else False
 
     from mystic.monitors import Monitor
-    stepmon = Monitor()
-    evalmon = Monitor()
-    if kwds.has_key('itermon'):
-        stepmon = kwds['itermon']
-    if kwds.has_key('evalmon'):
-        evalmon = kwds['evalmon']
+    stepmon = kwds['itermon'] if 'itermon' in kwds else Monitor()
+    evalmon = kwds['evalmon'] if 'evalmon' in kwds else Monitor()
 
     gtol = 2 # termination generations (scipy: 2, default: 10)
-    if kwds.has_key('gtol'):
-        gtol = kwds['gtol']
+    if 'gtol' in kwds: gtol = kwds['gtol']
     if gtol: #if number of generations is provided, use NCOG
         from mystic.termination import NormalizedChangeOverGeneration as NCOG
         termination = NCOG(ftol,gtol)
@@ -732,12 +717,10 @@ Returns: (xopt, {fopt, iter, funcalls, warnflag, direc}, {allvecs})
     solver.SetEvaluationLimits(maxiter,maxfun)
     solver.SetEvaluationMonitor(evalmon)
     solver.SetGenerationMonitor(stepmon)
-    if kwds.has_key('penalty'):
-        penalty = kwds['penalty']
-        solver.SetPenalty(penalty)
-    if kwds.has_key('constraints'):
-        constraints = kwds['constraints']
-        solver.SetConstraints(constraints)
+    if 'penalty' in kwds:
+        solver.SetPenalty(kwds['penalty'])
+    if 'constraints' in kwds:
+        solver.SetConstraints(kwds['constraints'])
     if bounds is not None:
         minb,maxb = unpair(bounds)
         solver.SetStrictRanges(minb,maxb)

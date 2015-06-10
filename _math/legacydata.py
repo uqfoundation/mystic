@@ -324,9 +324,9 @@ Notes:
     calculation of the lipschitz_distance, while cutoff zeros out the value
     of any element less than the cutoff.
 """
-    tol = kwds.get('tol', 0.0) # get tolerance in y
+    tol = kwds['tol'] if 'tol' in kwds else 0.0 # get tolerance in y
     # default is to zero out distances less than tolerance
-    cutoff = kwds.get('cutoff', tol)
+    cutoff = kwds['cutoff'] if 'cutoff' in kwds else tol
     if cutoff is True: cutoff = tol
     elif cutoff is False: cutoff = None
 
@@ -374,9 +374,9 @@ Notes:
     termination for an acceptable |y - F(x')| + |x - x'|/norm, where the x
     values are normalized by norm = hausdorff.
 """
-    ytol = kwds.get('ytol', 0.0) # get tolerance in y
+    ytol = kwds['ytol'] if 'ytol' in kwds else 0.0 # get tolerance in y
     # default is to zero out distances less than tolerance
-    cutoff = kwds.get('cutoff', ytol)
+    cutoff = kwds['cutoff'] if 'cutoff' in kwds else ytol
     if cutoff is True: cutoff = ytol
     elif cutoff is False: cutoff = None
 

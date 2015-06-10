@@ -70,7 +70,7 @@ Takes optional input 'ndim' (number of dimensions).
         return
 
     def __call__(self,*args,**kwds):
-        coeffs = kwds.get('coeffs', args[0] if len(args) else [])
+        coeffs = kwds['coeffs'] if 'coeffs' in kwds else (args[0] if len(args) else [])
         if len(coeffs) != self.ndim:
             raise ValueError('input length does not match ndim (ndim=%d)' % self.ndim)
         return self.function(*args,**kwds)

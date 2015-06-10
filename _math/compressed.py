@@ -48,7 +48,7 @@ def differs_by_one(ith, binaries, all=True, index=True):
 def binary2coords(binaries, positions, **kwds):
   """convert a list of binary strings to product measure coordinates"""
   reduce = True  # 'reduce' len=1 and len=0 results
-  if kwds.has_key('reduce'): reduce = kwds['reduce']
+  if 'reduce' in kwds: reduce = kwds['reduce']
   result = [tuple([j[0][j[1]] for j in \
                   zip(positions,[int(i) for i in vk])]) for vk in binaries]
   if len(result) > 1 or not reduce: return result

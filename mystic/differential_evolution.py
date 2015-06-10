@@ -292,8 +292,10 @@ are logged.
         probability=self.probability #potential for parameter cross-mutation
         scale=self.scale             #multiplier for mutation impact
         [settings.update({i:j}) for (i,j) in kwds.items() if i in settings]
-        self.probability = kwds.get('CrossProbability', probability)
-        self.scale = kwds.get('ScalingFactor', scale)
+        word = 'CrossProbability'
+        self.probability = kwds[word] if word in kwds else probability
+        word = 'ScalingFactor'
+        self.scale = kwds[word] if word in kwds else scale
         self.strategy = getattr(settings['strategy'],'__name__','Best1Bin')
         return settings
 
@@ -470,8 +472,10 @@ are logged.
         probability=self.probability #potential for parameter cross-mutation
         scale=self.scale             #multiplier for mutation impact
         [settings.update({i:j}) for (i,j) in kwds.items() if i in settings]
-        self.probability = kwds.get('CrossProbability', probability)
-        self.scale = kwds.get('ScalingFactor', scale)
+        word = 'CrossProbability'
+        self.probability = kwds[word] if word in kwds else probability
+        word = 'ScalingFactor'
+        self.scale = kwds[word] if word in kwds else scale
         self.strategy = getattr(settings['strategy'],'__name__','Best1Bin')
         return settings
 
@@ -572,9 +576,7 @@ Returns: (xopt, {fopt, iter, funcalls, warnflag}, {allvecs})
     allvecs -- list - a list of solutions at each iteration
 
     """
-    invariant_current = True
-    if kwds.has_key('invariant_current'):
-        invariant_current = kwds['invariant_current']
+    invariant_current = kwds['invariant_current'] if 'invariant_current' in kwds else True
     kwds['invariant_current'] = invariant_current
     return diffev(cost,x0,npop,args=args,bounds=bounds,ftol=ftol,gtol=gtol,
                   maxiter=maxiter,maxfun=maxfun,cross=cross,scale=scale,
@@ -642,24 +644,15 @@ Returns: (xopt, {fopt, iter, funcalls, warnflag}, {allvecs})
     allvecs -- list - a list of solutions at each iteration
 
     """
-    invariant_current = False
-    if kwds.has_key('invariant_current'):
-        invariant_current = kwds['invariant_current']
-    handler = False
-    if kwds.has_key('handler'):
-        handler = kwds['handler']
+    invariant_current = kwds['invariant_current'] if 'invariant_current' in kwds else False
+    handler = kwds['handler'] if 'handler' in kwds else False
 
     from mystic.strategy import Best1Bin
-    strategy = Best1Bin
-    if kwds.has_key('strategy'):
-        strategy = kwds['strategy']
+    strategy = kwds['strategy'] if 'strategy' in kwds else Best1Bin
     from mystic.monitors import Monitor
-    stepmon = Monitor()
-    evalmon = Monitor()
-    if kwds.has_key('itermon'):
-        stepmon = kwds['itermon']
-    if kwds.has_key('evalmon'):
-        evalmon = kwds['evalmon']
+    stepmon = kwds['itermon'] if 'itermon' in kwds else Monitor()
+    evalmon = kwds['evalmon'] if 'evalmon' in kwds else Monitor()
+
     if gtol: #if number of generations provided, use ChangeOverGeneration 
         from mystic.termination import ChangeOverGeneration
         termination = ChangeOverGeneration(ftol,gtol)
@@ -675,12 +668,10 @@ Returns: (xopt, {fopt, iter, funcalls, warnflag}, {allvecs})
     solver.SetEvaluationLimits(maxiter,maxfun)
     solver.SetEvaluationMonitor(evalmon)
     solver.SetGenerationMonitor(stepmon)
-    if kwds.has_key('penalty'):
-        penalty = kwds['penalty']
-        solver.SetPenalty(penalty)
-    if kwds.has_key('constraints'):
-        constraints = kwds['constraints']
-        solver.SetConstraints(constraints)
+    if 'penalty' in kwds:
+        solver.SetPenalty(kwds['penalty'])
+    if 'constraints' in kwds:
+        solver.SetConstraints(kwds['constraints'])
     if bounds is not None:
         minb,maxb = unpair(bounds)
         solver.SetStrictRanges(minb,maxb)

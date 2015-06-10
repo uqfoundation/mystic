@@ -109,8 +109,8 @@ Important class members:
     energy_history   - history of bestEnergy status.         [StepMonitor.y]
     signal_handler   - catches the interrupt signal.
         """
-        NP = 1
-        if kwds.has_key('npop'): NP = kwds['npop']
+        NP = kwds['npop'] if 'npop' in kwds else 1
+       #self._max = kwds['max'] if 'max' in kwds else False
 
         self.nDim             = dim
         self.nPop             = NP
@@ -149,7 +149,7 @@ Important class members:
         self._reducer         = None
         self._cost            = (None, None, None)
         #                       (cost, raw_cost, args) #,callback)
-        self._termination     = lambda x, *ar, **kw: False if len(ar) < 1 or ar[0] is False or kw.get('info',True) == False else '' #XXX: better default ?
+        self._termination     = lambda x, *ar, **kw: False if len(ar) < 1 or ar[0] is False or (kw['info'] if 'info' in kw else True) == False else '' #XXX: better default ?
         # (get termination details with self._termination.__doc__)
 
         import mystic.termination
@@ -169,12 +169,12 @@ Important class members:
         return max(0,len(self._stepmon)-1)
 
     def __energy_history(self):
-        """get the energy_history (default: energy_history = _stepmon.y)"""
-        if self._energy_history is None: return self._stepmon.y
+        """get the energy_history (default: energy_history = _stepmon._y)"""
+        if self._energy_history is None: return self._stepmon._y
         return self._energy_history
 
     def __set_energy_history(self, energy):
-        """set the energy_history (energy=None will sync with _stepmon.y)"""
+        """set the energy_history (energy=None will sync with _stepmon._y)"""
         self._energy_history = energy
         return
 
@@ -279,8 +279,8 @@ input::
                 self._stepmon = monitor #FIXME: need .prepend(current)
         else:
             raise TypeError, "'%s' is not a monitor instance" % monitor
-        self.energy_history   = self._stepmon.y
-        self.solution_history = self._stepmon.x
+        self.energy_history   = None # sync with self._stepmon
+        self.solution_history = None # sync with self._stepmon
         return
 
     def SetEvaluationMonitor(self, monitor, new=False):
@@ -505,13 +505,9 @@ note::
 input::
     - generations = maximum number of solver iterations (i.e. steps)
     - evaluations = maximum number of function evaluations"""
-        self._maxiter = generations
-        self._maxfun = evaluations
         # backward compatibility
-        if kwds.has_key('maxiter'):
-            self._maxiter = kwds['maxiter']
-        if kwds.has_key('maxfun'):
-            self._maxfun = kwds['maxfun']
+        self._maxiter = kwds['maxiter'] if 'maxiter' in kwds else generations
+        self._maxfun = kwds['maxfun'] if 'maxfun' in kwds else evaluations
         # handle if new (reset counter, instead of extend counter)
         if new:
             if generations is not None:
@@ -698,14 +694,14 @@ Note::
         'disp':0}            #non-zero to print convergence messages
         [settings.update({i:j}) for (i,j) in kwds.items() if i in settings]
         # backward compatibility
-        if kwds.has_key('EvaluationMonitor'): \
-           self.SetEvaluationMonitor(kwds.get('EvaluationMonitor'))
-        if kwds.has_key('StepMonitor'): \
-           self.SetGenerationMonitor(kwds.get('StepMonitor'))
-        if kwds.has_key('penalty'): \
-           self.SetPenalty(kwds.get('penalty'))
-        if kwds.has_key('constraints'): \
-           self.SetConstraints(kwds.get('constraints'))
+        if 'EvaluationMonitor' in kwds: \
+           self.SetEvaluationMonitor(kwds['EvaluationMonitor'])
+        if 'StepMonitor' in kwds: \
+           self.SetGenerationMonitor(kwds['StepMonitor'])
+        if 'penalty' in kwds: \
+           self.SetPenalty(kwds['penalty'])
+        if 'constraints' in kwds: \
+           self.SetConstraints(kwds['constraints'])
         return settings
 
     def Step(self, cost=None, termination=None, ExtraArgs=None, **kwds):

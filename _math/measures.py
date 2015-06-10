@@ -302,7 +302,7 @@ For example:
   #        we 'mimic' discrete measures using the product measure weights
   # plug in the 'constraints' function:  samples' = constrain(samples, weights)
   constrain = None   # default is no constraints
-  if kwds.has_key('constraints'): constrain = kwds['constraints']
+  if 'constraints' in kwds: constrain = kwds['constraints']
   if not constrain:  # if None (default), there are no constraints
     constraints = lambda x: x
   else: #XXX: better to use a standard "xk' = constrain(xk)" interface ?
@@ -332,8 +332,7 @@ For example:
     lower_bounds, upper_bounds = bounds
 
   # construct and configure optimizer
-  debug = False
-  if kwds.has_key('debug'): debug = kwds['debug']
+  debug = kwds['debug'] if 'debug' in kwds else False
   npop = 200
   maxiter = 1000;  maxfun = 1e+6
   crossover = 0.9; percent_change = 0.9

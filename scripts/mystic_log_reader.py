@@ -97,8 +97,13 @@ for i in range(len(select)):
 #   Plot should be discontinuous for (i,) then (0,)
 
 # parse file contents to get (i,id), cost, and parameters
-from mystic.munge import logfile_reader
-step, param, cost = logfile_reader(filename)
+from mystic.munge import logfile_reader, read_raw_file
+try:
+    step, param, cost = logfile_reader(filename)
+except SyntaxError:
+    read_raw_file(filename)
+    msg = "incompatible file format, try 'support_convergence.py'"
+    raise SyntaxError(msg)
 
 # ignore everything after 'stop'
 step = step[:stop]

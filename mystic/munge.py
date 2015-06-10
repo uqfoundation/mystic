@@ -113,9 +113,8 @@ def write_raw_file(mon,log_file='paramlog.py',**kwds):
   if isNull(mon): return  #XXX: throw error? warning? ???
   steps, energy = read_monitor(mon)
   f = open(log_file,'w')
-  if kwds.has_key('header'):
-    header = kwds.pop('header')
-    f.write('# %s\n' % header)
+  if 'header' in kwds:
+    f.write('# %s\n' % kwds.pop('header'))
   for variable,value in kwds.items(): # write remaining kwds as variables
     f.write('%s = %s\n' % (variable,value))
  #f.write('# %s\n' % energy[-1])
@@ -128,7 +127,7 @@ def write_support_file(mon,log_file='paramlog.py',**kwds):
   if isNull(mon): return  #XXX: throw error? warning? ???
   monitor = write_monitor( *raw_to_support( *read_monitor(mon) ) )
   header = "written in 'support' format"
-  if kwds.has_key('header'):
+  if 'header' in kwds:
     header += "\n# " + str(kwds.pop('header'))
   write_raw_file(monitor,log_file,header=header,**kwds)
   return
@@ -137,7 +136,7 @@ def write_converge_file(mon,log_file='paramlog.py',**kwds):
   if isNull(mon): return  #XXX: throw error? warning? ???
   monitor = write_monitor( *raw_to_converge( *read_monitor(mon) ) )
   header = "written in 'converge' format"
-  if kwds.has_key('header'):
+  if 'header' in kwds:
     header += "\n# " + str(kwds.pop('header'))
   write_raw_file(monitor,log_file,header=header,**kwds)
   return

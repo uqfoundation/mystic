@@ -23,8 +23,8 @@ random_seed(321)
 def test_solvers(solver1, solver2, x0, **kwds):
   exec "s1 = solvers.%s" % solver1
   exec "s2 = solvers.%s" % solver2
-  maxiter = kwds.get('maxiter', None)
-  maxfun = kwds.get('maxfun', None)
+  maxiter = kwds['maxiter'] if 'maxiter' in kwds else None
+  maxfun = kwds['maxfun'] if 'maxfun' in kwds else None
   s1_x = s1(rosen, x0, disp=0, full_output=True, **kwds)
   s2_x = s2(rosen, x0, disp=0, full_output=True, **kwds)
   # similar bestSolution and bestEnergy
@@ -47,8 +47,8 @@ def test_solvers(solver1, solver2, x0, **kwds):
 def test_compare(solvername, x0, **kwds):
   exec "my = solvers.%s" % solvername
   exec "sp = %s" % solvername
-  maxiter = kwds.get('maxiter', None)
-  maxfun = kwds.get('maxfun', None)
+  maxiter = kwds['maxiter'] if 'maxiter' in kwds else None
+  maxfun = kwds['maxfun'] if 'maxfun' in kwds else None
   my_x = my(rosen, x0, disp=0, full_output=True, **kwds)
 # itermon = kwds.pop('itermon',None)
   sp_x = sp(rosen, x0, disp=0, full_output=True, **kwds)

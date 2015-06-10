@@ -53,9 +53,7 @@ Notes:
   use dmin=2 for forced upconversion of 1-D arrays
 """
   # dmin: force upconvert to x,x' to dimension >= dmin
-  dmin = 0 # default
-  if kwds.has_key('dmin'):
-    dmin = kwds['dmin']
+  dmin = kwds['dmin'] if 'dmin' in kwds else 0 # default dimension
   from numpy import abs, asarray, newaxis as nwxs
   from __builtin__ import max
   # cast as arrays of the same dimension
@@ -269,7 +267,7 @@ Notes:
   # get tolerance in y
   tol = kwds.pop('tol', 0.0)
   cutoff = tol  # default is to zero out distances less than tolerance
-  if kwds.has_key('cutoff'): cutoff = kwds.pop('cutoff')
+  if 'cutoff' in kwds: cutoff = kwds.pop('cutoff')
   if cutoff is True: cutoff = tol
   elif cutoff is False: cutoff = None
 
@@ -328,7 +326,7 @@ Notes:
   #       because each underlying optimization is over a single xe,ye.
   #       thus, we 'pass' on using constraints at this time...
   constraints = None   # default is no constraints
-  if kwds.has_key('constraints'): constraints = kwds.pop('constraints')
+  if 'constraints' in kwds: constraints = kwds.pop('constraints')
   if not constraints:  # if None (default), there are no constraints
     constraints = lambda x: x
 
@@ -337,7 +335,7 @@ Notes:
   xtol = kwds.pop('xtol', 0.0) # default is to not allow 'wiggle room' in x 
 
   cutoff = ytol  # default is to zero out distances less than tolerance
-  if kwds.has_key('cutoff'): cutoff = kwds.pop('cutoff')
+  if 'cutoff' in kwds: cutoff = kwds.pop('cutoff')
   if cutoff is True: cutoff = ytol
   elif cutoff is False: cutoff = None
   ipop = kwds.pop('ipop', min(20, 3*nxi)) #XXX: tune ipop?

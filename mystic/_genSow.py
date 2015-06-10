@@ -35,7 +35,7 @@ Takes **kwds of the form property="doc".
 Takes string names of properties (given as *args), and sets the
 corresponding properties as required inputs for the Monitor.
         """
-        self.__args = [ i for i in args if self.__dict.has_key(i) ]
+        self.__args = [ i for i in args if i in self.__dict ]
         exec(self._genClass()) # generates Monitor()
         return Monitor()
        #return self._genClass()

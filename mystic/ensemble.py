@@ -84,8 +84,8 @@ Further Inputs:
         # process and activate input settings
         sigint_callback = kwds.pop('sigint_callback', None)
         settings = self._process_inputs(kwds)
-        disp = settings.get('disp', False)
-        echo = settings.get('callback', None) #XXX: every iteration every run
+        disp = settings['disp'] if 'disp' in settings else False
+        echo = settings['callback'] if 'callback' in settings else None
 #       for key in settings:
 #           exec "%s = settings['%s']" % (key,key)
         if disp in ['verbose', 'all']: verbose = True
@@ -278,8 +278,8 @@ Further Inputs:
         # process and activate input settings
         sigint_callback = kwds.pop('sigint_callback', None)
         settings = self._process_inputs(kwds)
-        disp = settings.get('disp', False)
-        echo = settings.get('callback', None) #XXX: every iteration every run
+        disp = settings['disp'] if 'disp' in settings else False
+        echo = settings['callback'] if 'callback' in settings else None
 #       for key in settings:
 #           exec "%s = settings['%s']" % (key,key)
         if disp in ['verbose', 'all']: verbose = True
@@ -478,24 +478,16 @@ Returns: (xopt, {fopt, iter, funcalls, warnflag, allfuncalls}, {allvecs})
     allvecs -- list - a list of solutions at each iteration
 
     """
-    handler = False
-    if kwds.has_key('handler'):
-        handler = kwds['handler']
+    handler = kwds['handler'] if 'handler' in kwds else False
     from mystic.solvers import NelderMeadSimplexSolver as _solver
-    if kwds.has_key('solver'):
-        _solver = kwds['solver']
+    if 'solver' in kwds: _solver = kwds['solver']
 
     from mystic.monitors import Monitor
-    stepmon = Monitor()
-    evalmon = Monitor()
-    if kwds.has_key('itermon'):
-        stepmon = kwds['itermon']
-    if kwds.has_key('evalmon'):
-        evalmon = kwds['evalmon']
+    stepmon = kwds['itermon'] if 'itermon' in kwds else Monitor()
+    evalmon = kwds['evalmon'] if 'evalmon' in kwds else Monitor()
 
     gtol = 10 # termination generations (scipy: 2, default: 10)
-    if kwds.has_key('gtol'):
-        gtol = kwds['gtol']
+    if 'gtol' in kwds: gtol = kwds['gtol']
     if gtol: #if number of generations is provided, use NCOG
         from mystic.termination import NormalizedChangeOverGeneration
         termination = NormalizedChangeOverGeneration(ftol,gtol)
@@ -508,12 +500,10 @@ Returns: (xopt, {fopt, iter, funcalls, warnflag, allfuncalls}, {allvecs})
     solver.SetEvaluationLimits(maxiter,maxfun)
     solver.SetEvaluationMonitor(evalmon)
     solver.SetGenerationMonitor(stepmon)
-    if kwds.has_key('penalty'):
-        penalty = kwds['penalty']
-        solver.SetPenalty(penalty)
-    if kwds.has_key('constraints'):
-        constraints = kwds['constraints']
-        solver.SetConstraints(constraints)
+    if 'penalty' in kwds:
+        solver.SetPenalty(kwds['penalty'])
+    if 'constraints' in kwds:
+        solver.SetConstraints(kwds['constraints'])
     if bounds is not None:
         minb,maxb = unpair(bounds)
         solver.SetStrictRanges(minb,maxb)
@@ -609,24 +599,16 @@ Returns: (xopt, {fopt, iter, funcalls, warnflag, allfuncalls}, {allvecs})
     allvecs -- list - a list of solutions at each iteration
 
     """
-    handler = False
-    if kwds.has_key('handler'):
-        handler = kwds['handler']
+    handler = kwds['handler'] if 'handler' in kwds else False
     from mystic.solvers import NelderMeadSimplexSolver as _solver
-    if kwds.has_key('solver'):
-        _solver = kwds['solver']
+    if 'solver' in kwds: _solver = kwds['solver']
 
     from mystic.monitors import Monitor
-    stepmon = Monitor()
-    evalmon = Monitor()
-    if kwds.has_key('itermon'):
-        stepmon = kwds['itermon']
-    if kwds.has_key('evalmon'):
-        evalmon = kwds['evalmon']
+    stepmon = kwds['itermon'] if 'itermon' in kwds else Monitor()
+    evalmon = kwds['evalmon'] if 'evalmon' in kwds else Monitor()
 
     gtol = 10 # termination generations (scipy: 2, default: 10)
-    if kwds.has_key('gtol'):
-        gtol = kwds['gtol']
+    if 'gtol' in kwds: gtol = kwds['gtol']
     if gtol: #if number of generations is provided, use NCOG
         from mystic.termination import NormalizedChangeOverGeneration
         termination = NormalizedChangeOverGeneration(ftol,gtol)
@@ -639,12 +621,10 @@ Returns: (xopt, {fopt, iter, funcalls, warnflag, allfuncalls}, {allvecs})
     solver.SetEvaluationLimits(maxiter,maxfun)
     solver.SetEvaluationMonitor(evalmon)
     solver.SetGenerationMonitor(stepmon)
-    if kwds.has_key('penalty'):
-        penalty = kwds['penalty']
-        solver.SetPenalty(penalty)
-    if kwds.has_key('constraints'):
-        constraints = kwds['constraints']
-        solver.SetConstraints(constraints)
+    if 'penalty' in kwds:
+        solver.SetPenalty(kwds['penalty'])
+    if 'constraints' in kwds:
+        solver.SetConstraints(kwds['constraints'])
     if bounds is not None:
         minb,maxb = unpair(bounds)
         solver.SetStrictRanges(minb,maxb)
