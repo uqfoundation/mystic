@@ -92,12 +92,10 @@ Further Inputs:
         else: verbose = False
         #-------------------------------------------------------------
 
-       #FIXME: EvaluationMonitor fails for MPI, throws error for 'pp'
         from python_map import python_map
         if self._map != python_map:
-            self._fcalls = [0] #FIXME: temporary patch for removing the following line
-        else:
-            self._fcalls, cost = wrap_function(cost, ExtraArgs, self._evalmon)
+            pass #FIXME: EvaluationMonitor fails for MPI, throws error for 'pp'
+        else: fcalls, cost = wrap_function(cost, ExtraArgs, self._evalmon)
 
         # set up signal handler
        #self._EARLYEXIT = False
@@ -209,6 +207,8 @@ Further Inputs:
         # write 'bests' to monitors  #XXX: non-best monitors may be useful too
         self._stepmon = bestpath #XXX: pointer? copy?
         self._evalmon = besteval #XXX: pointer? copy?
+        self.energy_history = None
+        self.solution_history = None
        #from mystic.tools import isNull
        #if isNull(bestpath):
        #    self._stepmon = bestpath
@@ -286,12 +286,10 @@ Further Inputs:
         else: verbose = False
         #-------------------------------------------------------------
 
-       #FIXME: EvaluationMonitor fails for MPI, throws error for 'pp'
         from python_map import python_map
         if self._map != python_map:
-            self._fcalls = [0] #FIXME: temporary patch for removing the following line
-        else:
-            self._fcalls, cost = wrap_function(cost, ExtraArgs, self._evalmon)
+            pass #FIXME: EvaluationMonitor fails for MPI, throws error for 'pp'
+        else: fcalls, cost = wrap_function(cost, ExtraArgs, self._evalmon)
 
         # set up signal handler
        #self._EARLYEXIT = False
@@ -396,6 +394,8 @@ Further Inputs:
         # write 'bests' to monitors  #XXX: non-best monitors may be useful too
         self._stepmon = bestpath #XXX: pointer? copy?
         self._evalmon = besteval #XXX: pointer? copy?
+        self.energy_history = None
+        self.solution_history = None
        #from mystic.tools import isNull
        #if isNull(bestpath):
        #    self._stepmon = bestpath
@@ -531,7 +531,7 @@ Returns: (xopt, {fopt, iter, funcalls, warnflag, allfuncalls}, {allvecs})
     warnflag = 0
     fcalls = solver.evaluations
     all_fcalls = solver._total_evals
-    iterations = max(0,len(solver._stepmon.y)-1) #FIXME: solver.generations
+    iterations = solver.generations
     allvecs = solver._stepmon.x
 
     if fcalls >= solver._maxfun: #XXX: check against total or individual?
@@ -662,7 +662,7 @@ Returns: (xopt, {fopt, iter, funcalls, warnflag, allfuncalls}, {allvecs})
     warnflag = 0
     fcalls = solver.evaluations
     all_fcalls = solver._total_evals
-    iterations = max(0,len(solver._stepmon.y)-1) #FIXME: solver.generations
+    iterations = solver.generations
     allvecs = solver._stepmon.x
 
     if fcalls >= solver._maxfun: #XXX: check against total or individual?

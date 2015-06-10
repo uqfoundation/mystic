@@ -64,7 +64,7 @@ __all__ = ['Null','Monitor', 'VerboseMonitor', 'LoggingMonitor',
 
 import numpy
 from mystic.tools import list_or_tuple_or_ndarray
-from mystic.tools import listify
+from mystic.tools import listify, multiply, divide, _kdiv
 
 class Null(object):
     """A Null object
@@ -90,6 +90,7 @@ Null objects always and reliably "do nothing." """
     def __getnewargs__(self): return ()
 # comply with monitor interface
 Null.info = Null()
+Null.k = None
 #XXX: should also have Null.x, Null.y ?
 
 
@@ -116,6 +117,7 @@ example usage...
         self._id = []
         self._info = []
        #self._all = all
+        self.k = kwds.pop('k', None)
 
     def __len__(self):
         return len(self.x)
@@ -125,8 +127,8 @@ example usage...
         return
 
     def __call__(self, x, y, id=None, **kwds):#, best=0):
-        self._x.append(listify(x)) #XXX: better to save as-is?
-        self._y.append(listify(y)) #XXX: better to save as-is?
+        self._x.append(listify(x)) #XXX: listify?
+        self._y.append(listify(self._k(y, iter))) #XXX: listify?
         self._id.append(id)
        #if not self._all and list_or_tuple_or_ndarray(x):
        #    self._x[-1] = self._x[-1][best]
@@ -137,15 +139,16 @@ example usage...
         """append the contents of the given monitor"""
         if isinstance(monitor, Monitor): # is Monitor()
             pass
-        elif (monitor == Null) or isinstance(monitor, Null): # is Null or Null()
+        elif (monitor == Null) or isinstance(monitor, Null): # Null or Null()
             monitor = Monitor()
         elif hasattr(monitor, '__module__') and \
-            monitor.__module__ in ['mystic._genSow']: # is CustomMonitor()
+            monitor.__module__ in ['mystic._genSow']: # CustomMonitor()
                 pass #XXX: CustomMonitor may fail...
         else:
             raise TypeError, "'%s' is not a monitor instance" % monitor
         self._x.extend(monitor._x)
-        self._y.extend(monitor._y)
+        self._y.extend(self._get_y(monitor))      # scalar, up to 2x faster
+       #self._y.extend(self._k(monitor.iy, iter)) # vector, results like numpy
         self._id.extend(monitor._id)
         self._info.extend(monitor._info)
 
@@ -153,25 +156,23 @@ example usage...
         """prepend the contents of the given monitor"""
         if isinstance(monitor, Monitor): # is Monitor()
             pass
-        elif (monitor == Null) or isinstance(monitor, Null): # is Null or Null()
+        elif (monitor == Null) or isinstance(monitor, Null): # Null or Null()
             monitor = Monitor()
         elif hasattr(monitor, '__module__') and \
-            monitor.__module__ in ['mystic._genSow']: # is CustomMonitor()
+            monitor.__module__ in ['mystic._genSow']: # CustomMonitor()
                 pass #XXX: CustomMonitor may fail...
         else:
             raise TypeError, "'%s' is not a monitor instance" % monitor
-        [self._x.insert(i,j) for (i,j) in list(enumerate(monitor._x))]
-        [self._y.insert(i,j) for (i,j) in list(enumerate(monitor._y))]
-        [self._id.insert(i,j) for (i,j) in list(enumerate(monitor._id))]
-        [self._info.insert(i,j) for (i,j) in list(enumerate(monitor._info))]
+        [self._x.insert(*i) for i in enumerate(monitor._x)]
+        [self._y.insert(*i) for i in enumerate(self._get_y(monitor))]
+       #[self._y.insert(*i) for i in enumerate(self._k(monitor.iy, iter))]
+        [self._id.insert(*i) for i in enumerate(monitor._id)]
+        [self._info.insert(*i) for i in enumerate(monitor._info)]
         #XXX: may be faster ways of doing the above...
         #     (e.g. deepcopy(monitor) allows enumerate w/o list())
 
     def get_x(self):
         return self._x
-
-    def get_y(self):
-        return self._y
 
     def get_id(self):
         return self._id
@@ -181,9 +182,46 @@ example usage...
 
     def __step(self):
         return len(self.x)
+
+    #BELOW: madness due to monitor k-conversion
+
+    def get_y(self): # can be slow if k not in (1, None)
+        return divide(self._y, self.k, list)
+        #XXX: better if everywhere y = _y, as opposed to y = _ik(_y) ?
+        #     better if k only applied to 'output' of __call__ ?
+        #     better if k ionly applied on 'exit' from solver ?
+
+    def _get_y(self, monitor):
+        "avoid double-conversion by combining k's"
+        _ik = _kdiv(monitor.k, self.k, float) #XXX: always a float?
+        return divide(monitor._y, _ik, iter)
+
+    def get_ix(self):
+        return divide(self._y, 1, iter)
+
+    def get_ax(self):
+        return divide(self._y, 1, numpy.array)
+
+    def get_iy(self):
+        return divide(self._y, self.k, iter)
+
+    def get_ay(self):
+        return divide(self._y, self.k, numpy.array)
+
+    def _k(self, y, type=list):
+        return multiply(y, self.k, type)
+
+    def _ik(self, y, k=False, type=list):
+        if k: return y # k's already applied, so don't un-apply it
+        return divide(y, self.k, type)
+
     _step = property(__step)
     x = property(get_x, doc = "Params")
+    ix = property(get_ix, doc = "Params")
+    ax = property(get_ax, doc = "Params")
     y = property(get_y, doc = "Costs")
+    iy = property(get_iy, doc = "Costs")
+    ay = property(get_ay, doc = "Costs")
     id = property(get_id, doc = "Id")
     pass
 
@@ -193,8 +231,8 @@ class VerboseMonitor(Monitor):
 Prints ChiSq every 'interval', and optionally prints
 current parameters every 'xinterval'.
     """
-    def __init__(self, interval = 10, xinterval = numpy.inf, all=True):
-        super(VerboseMonitor,self).__init__()
+    def __init__(self, interval=10, xinterval=numpy.inf, all=True, **kwds):
+        super(VerboseMonitor,self).__init__(**kwds)
         if not interval or interval is numpy.nan: interval = numpy.inf
         if not xinterval or xinterval is numpy.nan: xinterval = numpy.inf
         self._yinterval = interval
@@ -205,19 +243,19 @@ current parameters every 'xinterval'.
         super(VerboseMonitor,self).info(message)
         print "%s" % "".join(["",str(message)])
         return
-    def __call__(self, x, y, id=None, best=0):
-        super(VerboseMonitor,self).__call__(x, y, id)
+    def __call__(self, x, y, id=None, best=0, k=False):
+        super(VerboseMonitor,self).__call__(x, y, id, k=k)
         if self._yinterval is not numpy.inf and \
            int((self._step-1) % self._yinterval) == 0:
             if not list_or_tuple_or_ndarray(y):
                 who = ''
-                y = " %f" % self._y[-1]
+                y = " %f" % self._ik(self._y[-1], k)
             elif self._all:
                 who = ''
-                y = " %s" % self._y[-1]
+                y = " %s" % self._ik(self._y[-1], k)
             else:
                 who = ' best'
-                y = " %f" % self._y[-1][best]
+                y = " %f" % self._ik(self._y[-1][best], k)
             msg = "Generation %d has%s Chi-Squared:%s" % (self._step-1,who,y)
             if id is not None: msg = "[id: %d] " % (id) + msg
             print msg
@@ -243,9 +281,9 @@ class LoggingMonitor(Monitor):
 
 Logs ChiSq and parameters to a file every 'interval'
     """
-    def __init__(self, interval=1, filename='log.txt', new=False, all=True, info=None):
+    def __init__(self, interval=1, filename='log.txt', new=False, all=True, info=None, **kwds):
         import datetime
-        super(LoggingMonitor,self).__init__()
+        super(LoggingMonitor,self).__init__(**kwds)
         self._filename = filename
         if not interval or interval is numpy.nan: interval = numpy.inf
         self._yinterval = interval
@@ -265,17 +303,17 @@ Logs ChiSq and parameters to a file every 'interval'
         self._file.write("# %s\n" % str(message))
         self._file.close()
         return
-    def __call__(self, x, y, id=None, best=0):
+    def __call__(self, x, y, id=None, best=0, k=False):
         self._file = open(self._filename,'a')
-        super(LoggingMonitor,self).__call__(x, y, id)
+        super(LoggingMonitor,self).__call__(x, y, id, k=k)
         if self._yinterval is not numpy.inf and \
            int((self._step-1) % self._yinterval) == 0:
             if not list_or_tuple_or_ndarray(y):
-                y = "%f" % self._y[-1]
+                y = "%f" % self._ik(self._y[-1], k)
             elif self._all:
-                y = "%s" % self._y[-1]
+                y = "%s" % self._ik(self._y[-1], k)
             else:
-                y = "%f" % self._y[-1][best]
+                y = "%f" % self._ik(self._y[-1][best], k)
             if not list_or_tuple_or_ndarray(x):
                 x = "[%f]" % self._x[-1]
             elif self._all:
@@ -298,10 +336,16 @@ Logs ChiSq and parameters to a file every 'interval'
     def __reduce__(self):
         interval = self._yinterval        
         filename = self._filename
-        new=False
-        all=self._all
-        info=None
-        return (self.__class__, (interval, filename, new, all, info))
+        new = False
+        all = self._all
+        info = None
+        args = (interval, filename, new, all, info)
+        k = self.k
+        state = dict(_x=self._x,_y=self._y,_id=self._id,_info=self._info,k=k)
+        return (self.__class__, args, state)
+    def __setstate__(self, state):
+        self.__dict__.update(state)
+        return
     pass
 
 class VerboseLoggingMonitor(LoggingMonitor):
@@ -309,8 +353,8 @@ class VerboseLoggingMonitor(LoggingMonitor):
 
 Logs ChiSq and parameters to a file every 'interval', print every 'yinterval'
     """
-    def __init__(self, interval=1, yinterval=10, xinterval=numpy.inf, filename='log.txt', new=False, all=True, info=None):
-        super(VerboseLoggingMonitor,self).__init__(interval,filename,new,all,info)
+    def __init__(self, interval=1, yinterval=10, xinterval=numpy.inf, filename='log.txt', new=False, all=True, info=None, **kwds):
+        super(VerboseLoggingMonitor,self).__init__(interval,filename,new,all,info,**kwds)
         if not yinterval or yinterval is numpy.nan: yinterval = numpy.inf
         if not xinterval or xinterval is numpy.nan: xinterval = numpy.inf
         self._vyinterval = yinterval
@@ -320,19 +364,19 @@ Logs ChiSq and parameters to a file every 'interval', print every 'yinterval'
         super(VerboseLoggingMonitor,self).info(message)
         print "%s" % "".join(["",str(message)])
         return
-    def __call__(self, x, y, id=None, best=0):
-        super(VerboseLoggingMonitor,self).__call__(x, y, id, best)
+    def __call__(self, x, y, id=None, best=0, k=False):
+        super(VerboseLoggingMonitor,self).__call__(x, y, id, best, k=k)
         if self._vyinterval is not numpy.inf and \
            int((self._step-1) % self._vyinterval) == 0:
             if not list_or_tuple_or_ndarray(y):
                 who = ''
-                y = " %f" % self._y[-1]
+                y = " %f" % self._ik(self._y[-1], k)
             elif self._all:
                 who = ''
-                y = " %s" % self._y[-1]
+                y = " %s" % self._ik(self._y[-1], k)
             else:
                 who = ' best'
-                y = " %f" % self._y[-1][best]
+                y = " %f" % self._ik(self._y[-1][best], k)
             msg = "Generation %d has%s Chi-Squared:%s" % (self._step-1,who,y)
             if id is not None: msg = "[id: %d] " % (id) + msg
             print msg
@@ -352,14 +396,20 @@ Logs ChiSq and parameters to a file every 'interval', print every 'yinterval'
             print msg
         return
     def __reduce__(self):
-        interval = self._yinterval        
-        yinterval =  self._vyinterval
-        xinterval =  self._vxinterval
+        interval = self._yinterval
+        yint = self._vyinterval
+        xint = self._vxinterval
         filename = self._filename
-        new=False
-        all=self._all
-        info=None
-        return (self.__class__, (interval, yinterval, xinterval, filename, new, all, info))
+        new = False
+        all = self._all
+        info = None
+        args = (interval, yint, xint, filename, new, all, info)
+        k = self.k
+        state = dict(_x=self._x,_y=self._y,_id=self._id,_info=self._info,k=k)
+        return (self.__class__, args, state)
+    def __setstate__(self, state):
+        self.__dict__.update(state)
+        return
     pass
 
 def CustomMonitor(*args,**kwds):

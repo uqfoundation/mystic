@@ -73,7 +73,7 @@ class TestRosenbrock(unittest.TestCase):
         iter=1
        #if self.uselimits and self.maxiter == 0: iter=0
         # sanity check solver internals
-        self.assertTrue(solver.generations == len(solver._stepmon.y)-iter)
+        self.assertTrue(solver.generations == len(solver._stepmon._y)-iter)
         self.assertTrue(list(solver.bestSolution) == solver._stepmon.x[-1]) #XXX
         self.assertTrue(solver.bestEnergy == solver._stepmon.y[-1])
         self.assertTrue(solver.solution_history == solver._stepmon.x)
@@ -81,10 +81,12 @@ class TestRosenbrock(unittest.TestCase):
         if self.usestepmon:
             self.assertTrue(ssow.x == solver._stepmon.x)
             self.assertTrue(ssow.y == solver._stepmon.y)
+            self.assertTrue(ssow._y == solver._stepmon._y)
         if self.useevalmon:
-            self.assertTrue(solver.evaluations == len(solver._evalmon.y))
+            self.assertTrue(solver.evaluations == len(solver._evalmon._y))
             self.assertTrue(esow.x == solver._evalmon.x)
             self.assertTrue(esow.y == solver._evalmon.y)
+            self.assertTrue(esow._y == solver._evalmon._y)
 
         # Fail appropriately for solver/termination mismatch
         if early_terminate:

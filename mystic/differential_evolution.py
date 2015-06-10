@@ -373,12 +373,10 @@ are logged.
         """decorate cost function with bounds, penalties, monitors, etc"""
         raw = cost
         if ExtraArgs is None: ExtraArgs = ()
-       #FIXME: EvaluationMonitor fails for MPI, throws error for 'pp'
         from python_map import python_map
         if self._map != python_map:
-            self._fcalls = [0] #FIXME: temporary patch for removing the following line
-        else:
-            self._fcalls, cost = wrap_function(cost, ExtraArgs, self._evalmon)
+            pass #FIXME: EvaluationMonitor fails for MPI, throws error for 'pp'
+        else: fcalls, cost = wrap_function(cost, ExtraArgs, self._evalmon)
         if self._useStrictRange:
             for i in range(self.nPop):
                 self.population[i] = self._clipGuessWithinRangeBoundary(self.population[i])
@@ -427,6 +425,7 @@ are logged.
        #trialEnergy = map(self._penalty, self.trialSolution)#,**self._mapconfig)
         # calculate cost
         trialEnergy = self._map(cost, self.trialSolution, **self._mapconfig)
+        self._fcalls[0] += len(self.trialSolution) #FIXME: manually increment
 
         # each trialEnergy should be a scalar
         if isiterable(trialEnergy[0]) and len(trialEnergy[0]) == 1:

@@ -166,8 +166,7 @@ Important class members:
 
     def __generations(self):
         """get the number of iterations"""
-        return max(0,len(self.energy_history)-1)
-       #return max(0,len(self._stepmon)-1)
+        return max(0,len(self._stepmon)-1)
 
     def __energy_history(self):
         """get the energy_history (default: energy_history = _stepmon.y)"""

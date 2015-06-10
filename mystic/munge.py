@@ -80,12 +80,13 @@ def read_monitor(mon, id=False):
   id = mon.id[:]
   return steps, energy, id 
 
-def write_monitor(steps, energy, id=[]):
+def write_monitor(steps, energy, id=[], k=None):
   from mystic.monitors import Monitor
   mon = Monitor()
-  mon._x = steps[:]
-  mon._y = energy[:]
-  mon._id = id[:]
+  mon.k = k
+  mon._x.extend(steps)
+  mon._y.extend(mon._k(energy, iter))
+  mon._id.extend(id)
   return mon
 
 # converters 

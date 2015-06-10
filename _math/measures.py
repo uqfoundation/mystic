@@ -361,7 +361,7 @@ For example:
 
     solved = solver.Solution()
     diameter_squared = solver.bestEnergy
-    func_evals = len(evalmon.y)
+    func_evals = len(evalmon)
     return solved, diameter_squared, func_evals
 
   # use optimization to get expectation value

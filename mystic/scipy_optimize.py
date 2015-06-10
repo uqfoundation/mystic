@@ -462,6 +462,10 @@ Takes one initial input:
         from mystic.termination import NormalizedChangeOverGeneration as NCOG
         self._termination = NCOG(ftol,gtol)
 
+    def __generations(self):
+        """get the number of iterations"""
+        return max(0,len(self.energy_history)-1)  #XXX: slower for k=-1 ?
+
     def _SetEvaluationLimits(self, iterscale=1000, evalscale=1000):
         super(PowellDirectionalSolver, self)._SetEvaluationLimits(iterscale,evalscale)
         return
@@ -631,6 +635,10 @@ Further Inputs:
         super(PowellDirectionalSolver, self).Solve(cost, termination,\
                                                    ExtraArgs, **kwds)
         return
+
+    # extensions to the solver interface
+    generations = property(__generations )
+    pass
 
 
 def fmin_powell(cost, x0, args=(), bounds=None, xtol=1e-4, ftol=1e-4,

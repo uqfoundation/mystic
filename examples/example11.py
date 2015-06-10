@@ -45,7 +45,7 @@ def plot_frame(label=None):
  
 # plot the polynomial trajectories
 def plot_params(monitor):
-    x = range(len(monitor.y))
+    x = range(len(monitor))
     y = monitor.y
     pylab.plot(x,y,'b-')
     pylab.axis([1,0.5*x[-1],0,y[1]],'k-')

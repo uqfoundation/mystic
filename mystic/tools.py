@@ -15,6 +15,9 @@ Various python tools
 
 Main functions exported are:: 
     - isiterable: check if an object is iterable
+    - itertype: get the 'underlying' type used to construct x
+    - multiply: recursive elementwise casting multiply of x by n
+    - divide: recursive elementwise casting divide of x by n
     - flatten: flatten a sequence
     - flatten_array: flatten an array 
     - getch: provides "press any key to quit"
@@ -49,20 +52,146 @@ def isiterable(x):
     except TypeError: return False
    #return hasattr(x, '__len__') or hasattr(x, '__iter__')
 
-def list_or_tuple(x):
+def itertype(x, default=tuple):
+    """get the 'underlying' type used to construct x"""
+    _type = type(x)
+    try:
+        if _type((0,)): return _type # non-iterator iterables
+    except TypeError: pass
+    try:
+        if _type(1): return _type # non-iterables
+    except TypeError: pass
+    # iterators, etc
+    _type = type(x).__name__.split('iterator')[0]
+    types = ('xrange','generator','') # and ...?
+    if _type in types: return default
+    try:
+        return eval(_type)
+    except NameError: return default
+
+def _kdiv(num, denom, type=None):
+    """'special' scalar division for 'k'"""
+    if num is denom is None: return None
+    if denom is None: denom = 1
+    if num is None: num = 1
+    if type is not None: num = type(num)
+    return num/denom
+
+def multiply(x, n, type=list, recurse=False): # list, iter, numpy.array, ...
+    """multiply: recursive elementwise casting multiply of x by n"""
+    # short-circuit cases for speed
+    if n is None: return x
+    try:   # for scalars and vectors (numpy.arrays)
+        -x # x*n might not throw an error
+        return x*n
+    except TypeError: pass
+    if n is 1: return type(x)
+    if type.__name__ == 'array': return type(x)*n
+    # multiply by n != 1 for iterables (iter and non-iter)
+    if recurse:
+        return type(multiply(i,n,type) for i in x)
+    return type(i*n for i in x)
+
+def divide(x, n, type=list, recurse=False): # list, iter, numpy.array, ...
+    """elementwise division of x by n, returning the selected type"""
+    # short-circuit cases for speed
+    if n is None: return x
+    try:   # for scalars and vectors (numpy.arrays)
+        return x/n
+    except TypeError: pass
+    if n is 1: return type(x)
+    if type.__name__ == 'array': return type(x)/n
+    # divide by n != 1 for iterables (iter and non-iter)
+    if recurse:
+        return type(divide(i,n,type) for i in x)
+    return type(i/n for i in x)
+
+def _multiply(x, n):
+    """elementwise multiplication of x by n, as if x were an array"""
+    # short-circuit cases for speed
+    if n is None: return x
+    try:   # for scalars and vectors (numpy.arrays)
+        -x # x*n might not throw an error
+        return x*n
+    except TypeError: pass
+    if n is 1: return itertype(x)(x)
+    # multiply by n != 1 for iterables (iter and non-iter)
+    xn = (_multiply(i,n) for i in x)
+    # return astype used to construct x, if possible
+    return itertype(x)(xn)
+
+def _divide(x, n):
+    """elementwise division of x by n, as if x were an array"""
+    # short-circuit cases for speed
+    if n is None: return x
+    try:   # for scalars and vectors (numpy.arrays)
+        return x/n
+    except TypeError: pass
+    if n is 1: return itertype(x)(x)
+    # divide by n != 1 for iterables (iter and non-iter)
+    xn = (_divide(i,n) for i in x)
+    # return astype used to construct x, if possible
+    return itertype(x)(xn)
+
+def _imultiply(x, n):
+    """iterator for elementwise 'array-like' multiplication of x by n"""
+    # short-circuit cases for speed
+    if n is None: return x
+    try:   # for scalars and vectors (numpy.arrays)
+        -x # x*n might not throw an error
+        return iter(x*n)
+    except TypeError: pass
+    if n is 1: return iter(x)
+    # multiply by n != 1 for iterables (iter and non-iter)
+    return (_multiply(i,n) for i in x)
+
+def _idivide(x, n):
+    """iterator for elementwise 'array-like' division of x by n"""
+    # short-circuit cases for speed
+    if n is None: return x
+    try:   # for scalars and vectors (numpy.arrays)
+        return iter(x/n)
+    except TypeError: pass
+    if n is 1: return iter(x)
+    # divide by n != 1 for iterables (iter and non-iter)
+    return (_divide(i,n) for i in x)
+
+def _amultiply(x, n):
+    """elementwise 'array-casting' multiplication of x by n"""
+    # short-circuit cases for speed
+    if n is None: return x
+    # convert to numpy array
+    import numpy
+    x = numpy.asarray(x)
+    if n is 1: return x
+    return x*n
+
+def _adivide(x, n):
+    """elementwise 'array-casting' division of x by n"""
+    # short-circuit cases for speed
+    if n is None: return x
+    # convert to numpy array
+    import numpy
+    x = numpy.asarray(x)
+    if n is 1: return x
+    return x/n
+
+def list_or_tuple(x): # set, ...?
     "True if x is a list or a tuple"
     return isinstance(x, (list, tuple))
 
-def list_or_tuple_or_ndarray(x):
+def list_or_tuple_or_ndarray(x): # set, ...?
     "True if x is a list, tuple, or a ndarray"
     import numpy
     return isinstance(x, (list, tuple, numpy.ndarray))
 
 def listify(x):
     "recursivly convert all members of a sequence to a list"
-    if not list_or_tuple_or_ndarray(x): return x
-    #if isinstance(x, numpy.ndarray) and x.ndim == 0: return x # i.e. array(1)
-    if not list_or_tuple(x) and x.ndim == 0: return x.flatten()[0]
+    if not isiterable(x): return x
+    if x is iter(x): return listify(list(x))
+    try: # e.g. if array(1)
+        if x.ndim == 0: return x.flatten()[0]
+    except Exception: pass
     return [listify(i) for i in x]
 
 def flatten_array(sequence, maxlev=999, lev=0):

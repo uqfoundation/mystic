@@ -90,7 +90,7 @@ if __name__ == '__main__':
     solution = solver.Solution()
 
     # use monitor to retrieve results information
-    iterations = len(stepmon.x)
+    iterations = len(stepmon)
     cost = stepmon.y[-1]
     print "Generation %d has best Chi-Squared: %f" % (iterations, cost)
 
