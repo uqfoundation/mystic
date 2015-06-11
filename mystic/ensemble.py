@@ -94,8 +94,11 @@ Further Inputs:
 
         from python_map import python_map
         if self._map != python_map:
-            pass #FIXME: EvaluationMonitor fails for MPI, throws error for 'pp'
-        else: fcalls, cost = wrap_function(cost, ExtraArgs, self._evalmon)
+            #FIXME: EvaluationMonitor fails for MPI, throws error for 'pp'
+            from mystic.monitors import Null
+            evalmon = Null()
+        else: evalmon = self._evalmon
+        fcalls, cost = wrap_function(cost, ExtraArgs, evalmon)
 
         # set up signal handler
        #self._EARLYEXIT = False
@@ -288,8 +291,11 @@ Further Inputs:
 
         from python_map import python_map
         if self._map != python_map:
-            pass #FIXME: EvaluationMonitor fails for MPI, throws error for 'pp'
-        else: fcalls, cost = wrap_function(cost, ExtraArgs, self._evalmon)
+            #FIXME: EvaluationMonitor fails for MPI, throws error for 'pp'
+            from mystic.monitors import Null
+            evalmon = Null()
+        else: evalmon = self._evalmon
+        fcalls, cost = wrap_function(cost, ExtraArgs, evalmon)
 
         # set up signal handler
        #self._EARLYEXIT = False
