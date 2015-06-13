@@ -200,14 +200,33 @@ are logged.
         self.genealogy[id].append(newchild)
         return
 
+    def SetConstraints(self, constraints):
+        """apply a constraints function to the optimization
+
+input::
+    - a constraints function of the form: xk' = constraints(xk),
+      where xk is the current parameter vector. Ideally, this function
+      is constructed so the parameter vector it passes to the cost function
+      will satisfy the desired (i.e. encoded) constraints."""
+        if not constraints:
+            self._constraints = lambda x: x
+        elif not callable(constraints):
+            raise TypeError, "'%s' is not a callable function" % constraints
+        else: #XXX: check for format: x' = constraints(x) ?
+            self._constraints = constraints
+        return # doesn't use wrap_nested
+
     def _decorate_objective(self, cost, ExtraArgs=None):
         """decorate cost function with bounds, penalties, monitors, etc"""
+        #print ("@", cost, ExtraArgs, max)
         raw = cost
         if ExtraArgs is None: ExtraArgs = ()
         self._fcalls, cost = wrap_function(cost, ExtraArgs, self._evalmon)
         if self._useStrictRange:
+            indx = list(self.popEnergy).index(self.bestEnergy)
+            ngen = self.generations #XXX: no random if generations=0 ?
             for i in range(self.nPop):
-                self.population[i] = self._clipGuessWithinRangeBoundary(self.population[i])
+                self.population[i] = self._clipGuessWithinRangeBoundary(self.population[i], (not ngen) or (i is indx))
             cost = wrap_bounds(cost, self._strictMin, self._strictMax)
         cost = wrap_penalty(cost, self._penalty)
         if self._reducer:
@@ -215,17 +234,19 @@ are logged.
             cost = reduced(self._reducer, arraylike=True)(cost)
         # hold on to the 'wrapped' and 'raw' cost function
         self._cost = (cost, raw, ExtraArgs)
+        self._live = True
         return cost
 
     def _Step(self, cost=None, ExtraArgs=None, **kwds):
         """perform a single optimization iteration
         Note that ExtraArgs should be a *tuple* of extra arguments"""
-        # HACK to enable not explicitly calling _decorate_objective
-        cost = self._bootstrap_objective(cost, ExtraArgs)
         # process and activate input settings
         settings = self._process_inputs(kwds)
         for key in settings:
             exec "%s = settings['%s']" % (key,key)
+
+        # HACK to enable not explicitly calling _decorate_objective
+        cost = self._bootstrap_objective(cost, ExtraArgs)
 
         init = False  # flag to do 0th iteration 'post-initialization'
 
@@ -371,8 +392,25 @@ are logged.
         self.genealogy[id].append(newchild)
         return
 
+    def SetConstraints(self, constraints):
+        """apply a constraints function to the optimization
+
+input::
+    - a constraints function of the form: xk' = constraints(xk),
+      where xk is the current parameter vector. Ideally, this function
+      is constructed so the parameter vector it passes to the cost function
+      will satisfy the desired (i.e. encoded) constraints."""
+        if not constraints:
+            self._constraints = lambda x: x
+        elif not callable(constraints):
+            raise TypeError, "'%s' is not a callable function" % constraints
+        else: #XXX: check for format: x' = constraints(x) ?
+            self._constraints = constraints
+        return # doesn't use wrap_nested
+
     def _decorate_objective(self, cost, ExtraArgs=None):
         """decorate cost function with bounds, penalties, monitors, etc"""
+        #print ("@", cost, ExtraArgs, max)
         raw = cost
         if ExtraArgs is None: ExtraArgs = ()
         from python_map import python_map
@@ -383,8 +421,10 @@ are logged.
         else: evalmon = self._evalmon
         fcalls, cost = wrap_function(cost, ExtraArgs, evalmon)
         if self._useStrictRange:
+            indx = list(self.popEnergy).index(self.bestEnergy)
+            ngen = self.generations #XXX: no random if generations=0 ?
             for i in range(self.nPop):
-                self.population[i] = self._clipGuessWithinRangeBoundary(self.population[i])
+                self.population[i] = self._clipGuessWithinRangeBoundary(self.population[i], (not ngen) or (i is indx))
             cost = wrap_bounds(cost, self._strictMin, self._strictMax)
         cost = wrap_penalty(cost, self._penalty)
         if self._reducer:
@@ -392,17 +432,19 @@ are logged.
             cost = reduced(self._reducer, arraylike=True)(cost)
         # hold on to the 'wrapped' and 'raw' cost function
         self._cost = (cost, raw, ExtraArgs)
+        self._live = True
         return cost
 
     def _Step(self, cost=None, ExtraArgs=None, **kwds):
         """perform a single optimization iteration
         Note that ExtraArgs should be a *tuple* of extra arguments"""
-        # HACK to enable not explicitly calling _decorate_objective
-        cost = self._bootstrap_objective(cost, ExtraArgs)
         # process and activate input settings
         settings = self._process_inputs(kwds)
         for key in settings:
             exec "%s = settings['%s']" % (key,key)
+
+        # HACK to enable not explicitly calling _decorate_objective
+        cost = self._bootstrap_objective(cost, ExtraArgs)
 
         init = False  # flag to do 0th iteration 'post-initialization'
 

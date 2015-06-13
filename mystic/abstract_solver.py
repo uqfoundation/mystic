@@ -75,6 +75,7 @@ the solver is running.
 __all__ = ['AbstractSolver']
 
 
+import random
 import numpy
 from numpy import inf, shape, asarray, absolute, asfarray, seterr
 from mystic.tools import wrap_function, wrap_nested, wrap_reducer
@@ -154,6 +155,7 @@ Important class members:
 
         import mystic.termination
         self._EARLYEXIT       = mystic.termination.EARLYEXIT
+        self._live            = False 
         return
 
     def Solution(self):
@@ -227,7 +229,7 @@ input::
             self._reducer = wrap_reducer(reducer)   
         else: #XXX: check if is arraylike?
             self._reducer = reducer
-        return
+        return self._update_objective()
 
     def SetPenalty(self, penalty):
         """apply a penalty function to the optimization
@@ -246,7 +248,7 @@ input::
             raise TypeError, "'%s' is not a callable function" % penalty
         else: #XXX: check for format: y' = penalty(x) ?
             self._penalty = penalty
-        return
+        return self._update_objective()
 
     def SetConstraints(self, constraints):
         """apply a constraints function to the optimization
@@ -262,7 +264,7 @@ input::
             raise TypeError, "'%s' is not a callable function" % constraints
         else: #XXX: check for format: x' = constraints(x) ?
             self._constraints = constraints
-        return
+        return self._update_objective()
 
     def SetGenerationMonitor(self, monitor, new=False):
         """select a callable to monitor (x, f(x)) after each solver iteration"""
@@ -311,7 +313,7 @@ note::
     SetStrictRanges(None) will remove strict range constraints"""
         if min is False or max is False:
             self._useStrictRange = False
-            return
+            return self._update_objective()
         #XXX: better to use 'defaultMin,defaultMax' or '-inf,inf' ???
         if min is None: min = self._defaultMin
         if max is None: max = self._defaultMax
@@ -328,9 +330,9 @@ note::
         self._useStrictRange = True
         self._strictMin = min
         self._strictMax = max
-        return
+        return self._update_objective()
 
-    def _clipGuessWithinRangeBoundary(self, x0): #FIXME: use self.trialSolution?
+    def _clipGuessWithinRangeBoundary(self, x0, at=True):
         """ensure that initial guess is set within bounds
 
 input::
@@ -338,13 +340,16 @@ input::
        #if len(x0) != self.nDim: #XXX: unnecessary w/ self.trialSolution
        #    raise ValueError, "initial guess must be length %s" % self.nDim
         x0 = asarray(x0)
-        lo = self._strictMin
-        hi = self._strictMax
-        # crop x0 at bounds
+        bounds = (self._strictMin,self._strictMax)
+        if not len(self._strictMin): return x0
+        # clip x0 at bounds
         settings = numpy.seterr(all='ignore')
-        x0[x0<lo] = lo[x0<lo]
-        x0[x0>hi] = hi[x0>hi]
+        x_ = x0.clip(*bounds)
         numpy.seterr(**settings)
+        if at: return x_
+        # clip x0 within bounds
+        x_ = x_ != x0
+        x0[x_] = random.uniform(self._strictMin,self._strictMax)[x_]
         return x0
 
     def SetInitialPoints(self, x0, radius=0.05):
@@ -390,7 +395,6 @@ input::
         for i in range(len(min)): 
             if min[i] is None: min[i] = self._defaultMin[0]
             if max[i] is None: max[i] = self._defaultMax[0]
-        import random
         #generate random initial values
         for i in range(len(self.population)):
             for j in range(self.nDim):
@@ -590,33 +594,10 @@ Note::
 
     def SetObjective(self, cost, ExtraArgs=None):  # callback=None/False ?
         """decorate the cost function with bounds, penalties, monitors, etc"""
-        self._bootstrap_objective(cost, ExtraArgs) # callback=null (see above)
-        return
-
-    def _decorate_objective(self, cost, ExtraArgs=None):
-        """decorate the cost function with bounds, penalties, monitors, etc"""
-        raw = cost
-        if ExtraArgs is None: ExtraArgs = ()
-        self._fcalls, cost = wrap_function(cost, ExtraArgs, self._evalmon)
-        if self._useStrictRange:
-            for i in range(self.nPop):
-                self.population[i] = self._clipGuessWithinRangeBoundary(self.population[i])
-            cost = wrap_bounds(cost, self._strictMin, self._strictMax)
-        cost = wrap_penalty(cost, self._penalty)
-        cost = wrap_nested(cost, self._constraints)
-        if self._reducer:
-           #cost = reduced(*self._reducer)(cost) # was self._reducer = (f,bool)
-            cost = reduced(self._reducer, arraylike=True)(cost)
-        # hold on to the 'wrapped' and 'raw' cost function
-        self._cost = (cost, raw, ExtraArgs)
-        return cost
-
-    def _bootstrap_objective(self, cost=None, ExtraArgs=None):
-        """HACK to enable not explicitly calling _decorate_objective"""
         _cost,_raw,_args = self._cost
         # check if need to 'wrap' or can return the stored cost
         if cost in [None, _raw, _cost] and ExtraArgs in [None, _args]:
-            return _cost
+            return
         # get cost and args if None was given
         if cost is None: cost = _raw
         args = _args if ExtraArgs is None else ExtraArgs
@@ -630,9 +611,53 @@ Note::
            #val = len(args) + 1  #XXX: 'klepto.validate' for better error?
            #msg = '%s() invalid number of arguments (%d given)' % (name, val)
            #raise TypeError(msg)
+        # hold on to the 'raw' cost function
+        self._cost = (None, cost, ExtraArgs)
+        self._live = False
+        return
+
+    def _update_objective(self):
+        """decorate the cost function with bounds, penalties, monitors, etc"""
+        # rewrap the cost if the solver has been run
+        if False: # trigger immediately
+            self._decorate_objective(*self._cost[1:])
+        else: # delay update until _bootstrap
+            self.Finalize()
+        return
+
+    def _decorate_objective(self, cost, ExtraArgs=None):
+        """decorate the cost function with bounds, penalties, monitors, etc"""
+        #print ("@", cost, ExtraArgs, max)
+        raw = cost
+        if ExtraArgs is None: ExtraArgs = ()
+        self._fcalls, cost = wrap_function(cost, ExtraArgs, self._evalmon)
+        if self._useStrictRange:
+            indx = list(self.popEnergy).index(self.bestEnergy)
+            ngen = self.generations #XXX: no random if generations=0 ?
+            for i in range(self.nPop):
+                self.population[i] = self._clipGuessWithinRangeBoundary(self.population[i], (not ngen) or (i is indx))
+            cost = wrap_bounds(cost, self._strictMin, self._strictMax)
+        cost = wrap_penalty(cost, self._penalty)
+        cost = wrap_nested(cost, self._constraints)
+        if self._reducer:
+           #cost = reduced(*self._reducer)(cost) # was self._reducer = (f,bool)
+            cost = reduced(self._reducer, arraylike=True)(cost)
+        # hold on to the 'wrapped' and 'raw' cost function
+        self._cost = (cost, raw, ExtraArgs)
+        self._live = True
+        return cost
+
+    def _bootstrap_objective(self, cost=None, ExtraArgs=None):
+        """HACK to enable not explicitly calling _decorate_objective"""
+        _cost,_raw,_args = self._cost
+        # check if need to 'wrap' or can return the stored cost
+        if cost in [None, _raw, _cost] and ExtraArgs in [None, _args] \
+          and self._live:
+            return _cost
         # 'wrap' the 'new' cost function with _decorate
-        return self._decorate_objective(cost, args)
-        #XXX: **CAUTION** when _decorate called, solver._fcalls will be reset
+        self.SetObjective(cost, ExtraArgs)
+        return self._decorate_objective(*self._cost[1:])
+        #XXX: when _decorate called, solver._fcalls will be reset ?
 
     def _Step(self, cost=None, ExtraArgs=None, **kwds):
         """perform a single optimization iteration
@@ -680,9 +705,10 @@ Note::
         self.__dict__.update(solver.__dict__, **kwds)
         return
 
-    def _Finalize(self, **kwds):
+    def Finalize(self, **kwds):
         """cleanup upon exiting the main optimization loop"""
-        pass
+        self._live = False
+        return
 
     def _process_inputs(self, kwds):
         """process and activate input settings"""
@@ -731,7 +757,7 @@ Further Inputs:
 Notes:
     If the algorithm does not meet the given termination conditions after
     the call to "Step", the solver may be left in an "out-of-sync" state.
-    When abandoning an non-terminated solver, one should call "_Finalize"
+    When abandoning an non-terminated solver, one should call "Finalize"
     to make sure the solver is fully returned to a "synchronized" state.
 
     To run the solver until termination, call "Solve()".  Alternately, use
@@ -752,7 +778,7 @@ Notes:
         if msg is None:
             self._Step(**kwds) #FIXME: not all kwds are given in __doc__
             if self.Terminated(): # then cleanup/finalize
-                self._Finalize()
+                self.Finalize()
 
             # get termination message and log state
             msg = self.Terminated(disp=disp, info=True) or None

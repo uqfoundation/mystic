@@ -62,7 +62,8 @@ __all__ = ['NelderMeadSimplexSolver','PowellDirectionalSolver',
            'fmin','fmin_powell']
 
 
-from mystic.tools import unpair
+from mystic.tools import wrap_function, unpair, wrap_nested
+from mystic.tools import wrap_bounds, wrap_penalty, reduced
 
 import numpy
 from numpy import eye, zeros, shape, asarray, absolute, asfarray
@@ -141,15 +142,41 @@ The size of the simplex is dim+1.
         super(NelderMeadSimplexSolver, self)._SetEvaluationLimits(iterscale,evalscale)
         return
 
+    def _decorate_objective(self, cost, ExtraArgs=None):
+        """decorate the cost function with bounds, penalties, monitors, etc"""
+        #print ("@", cost, ExtraArgs, max)
+        raw = cost
+        if ExtraArgs is None: ExtraArgs = ()
+        self._fcalls, cost = wrap_function(cost, ExtraArgs, self._evalmon)
+        if self._useStrictRange:
+            if self.generations:
+                #NOTE: pop[0] was best, may not be after resetting simplex
+                for i,j in enumerate(self._setSimplexWithinRangeBoundary()):
+                    self.population[i+1] = self.population[0].copy()
+                    self.population[i+1][i] = j
+            else:
+                self.population[0] = self._clipGuessWithinRangeBoundary(self.population[0])
+            cost = wrap_bounds(cost, self._strictMin, self._strictMax)
+        cost = wrap_penalty(cost, self._penalty)
+        cost = wrap_nested(cost, self._constraints)
+        if self._reducer:
+           #cost = reduced(*self._reducer)(cost) # was self._reducer = (f,bool)
+            cost = reduced(self._reducer, arraylike=True)(cost)
+        # hold on to the 'wrapped' and 'raw' cost function
+        self._cost = (cost, raw, ExtraArgs)
+        self._live = True
+        return cost
+
     def _Step(self, cost=None, ExtraArgs=None, **kwds):
         """perform a single optimization iteration
         Note that ExtraArgs should be a *tuple* of extra arguments"""
-        # HACK to enable not explicitly calling _decorate_objective
-        cost = self._bootstrap_objective(cost, ExtraArgs)
         # process and activate input settings
         settings = self._process_inputs(kwds)
         for key in settings:
             exec "%s = settings['%s']" % (key,key)
+
+        # HACK to enable not explicitly calling _decorate_objective
+        cost = self._bootstrap_objective(cost, ExtraArgs)
 
         rho = 1; chi = 2; psi = 0.5; sigma = 0.5;
         init = False  # flag to do 0th iteration 'post-initialization'
@@ -465,12 +492,13 @@ Takes one initial input:
     def _Step(self, cost=None, ExtraArgs=None, **kwds):
         """perform a single optimization iteration
         Note that ExtraArgs should be a *tuple* of extra arguments"""
-        # HACK to enable not explicitly calling _decorate_objective
-        cost = self._bootstrap_objective(cost, ExtraArgs)
         # process and activate input settings
         settings = self._process_inputs(kwds)
         for key in settings:
             exec "%s = settings['%s']" % (key,key)
+
+        # HACK to enable not explicitly calling _decorate_objective
+        cost = self._bootstrap_objective(cost, ExtraArgs)
 
         direc = self._direc #XXX: throws Error if direc=None after generation=0
         x = self.population[0]   # bestSolution
@@ -574,12 +602,14 @@ Takes one initial input:
         if init: self._termination(self) #XXX: at generation 0 or always?
         return #XXX: call Terminated ?
 
-    def _Finalize(self, **kwds):
+    def Finalize(self, **kwds):
         """cleanup upon exiting the main optimization loop"""
-        self.energy_history = None # resync with 'best' energy
-        self._stepmon(self.bestSolution, self.bestEnergy, self.id)
-        # if savefrequency matches, then save state
-        self._AbstractSolver__save_state()
+        if self.energy_history != None:
+            self.energy_history = None # resync with 'best' energy
+            self._stepmon(self.bestSolution, self.bestEnergy, self.id)
+            # if savefrequency matches, then save state
+            self._AbstractSolver__save_state()
+        self._live = False
         return
 
     def _process_inputs(self, kwds):

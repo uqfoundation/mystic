@@ -254,6 +254,12 @@ Note::
             return msg
         return bool(msg)
 
+    def _update_objective(self):
+        """decorate the cost function with bounds, penalties, monitors, etc"""
+        # rewrap the cost if the solver has been run
+        self.Finalize()
+        return
+
 
 if __name__=='__main__':
     help(__name__)
