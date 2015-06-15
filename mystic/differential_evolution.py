@@ -729,10 +729,10 @@ Returns: (xopt, {fopt, iter, funcalls, warnflag}, {allvecs})
 
     if handler: solver.enable_signal_handler()
     #TODO: allow sigint_callbacks for all minimal interfaces ?
-    solver.Solve(cost,termination=termination,strategy=strategy,\
+    solver.Solve(cost, termination=termination, strategy=strategy, \
                 #sigint_callback=other_callback,\
-                 CrossProbability=cross,ScalingFactor=scale,\
-                 ExtraArgs=args,callback=callback)
+                 CrossProbability=cross, ScalingFactor=scale, \
+                 ExtraArgs=args, callback=callback)
     solution = solver.Solution()
 
     # code below here pushes output to scipy.optimize.fmin interface

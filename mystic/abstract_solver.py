@@ -111,7 +111,6 @@ Important class members:
     signal_handler   - catches the interrupt signal.
         """
         NP = kwds['npop'] if 'npop' in kwds else 1
-       #self._max = kwds['max'] if 'max' in kwds else False
 
         self.nDim             = dim
         self.nPop             = NP
@@ -652,7 +651,7 @@ Note::
         _cost,_raw,_args = self._cost
         # check if need to 'wrap' or can return the stored cost
         if cost in [None, _raw, _cost] and ExtraArgs in [None, _args] \
-          and self._live:
+           and self._live:
             return _cost
         # 'wrap' the 'new' cost function with _decorate
         self.SetObjective(cost, ExtraArgs)

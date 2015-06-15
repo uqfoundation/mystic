@@ -415,7 +415,7 @@ Returns: (xopt, {fopt, iter, funcalls, warnflag}, {allvecs})
         solver.SetStrictRanges(minb,maxb)
 
     if handler: solver.enable_signal_handler()
-    solver.Solve(cost,termination=termination,\
+    solver.Solve(cost, termination=termination, \
                  disp=disp, ExtraArgs=args, callback=callback)
     solution = solver.Solution()
 
@@ -604,7 +604,7 @@ Takes one initial input:
 
     def Finalize(self, **kwds):
         """cleanup upon exiting the main optimization loop"""
-        if self.energy_history != None:
+        if self.energy_history and self._live:
             self.energy_history = None # resync with 'best' energy
             self._stepmon(self.bestSolution, self.bestEnergy, self.id)
             # if savefrequency matches, then save state
@@ -756,7 +756,7 @@ Returns: (xopt, {fopt, iter, funcalls, warnflag, direc}, {allvecs})
         solver.SetStrictRanges(minb,maxb)
 
     if handler: solver.enable_signal_handler()
-    solver.Solve(cost,termination=termination,\
+    solver.Solve(cost, termination=termination, \
                  xtol=xtol, ExtraArgs=args, callback=callback, \
                  disp=disp, direc=direc)   #XXX: last two lines use **kwds
     solution = solver.Solution()
