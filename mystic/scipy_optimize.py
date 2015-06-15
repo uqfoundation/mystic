@@ -604,7 +604,7 @@ Takes one initial input:
 
     def Finalize(self, **kwds):
         """cleanup upon exiting the main optimization loop"""
-        if self.energy_history and self._live:
+        if self.energy_history != None and self._live:
             self.energy_history = None # resync with 'best' energy
             self._stepmon(self.bestSolution, self.bestEnergy, self.id)
             # if savefrequency matches, then save state
