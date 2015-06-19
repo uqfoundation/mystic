@@ -109,7 +109,8 @@ def optimize(cost,lower,upper,nbins):
 # loop over model parameters to calculate concentration of measure
 #######################################################################
 def UQ(start,end,lower,upper):
-  from pathos.multiprocessing import ProcessingPool as Pool
+ #from pathos.multiprocessing import ProcessingPool as Pool
+  from pathos.multiprocessing import ThreadingPool as Pool
  #from pool_helper import func_pickle  # if fails to pickle, try using a helper
 
   # run optimizer for each subdiameter 
