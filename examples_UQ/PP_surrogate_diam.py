@@ -64,7 +64,7 @@ def costFactory(i):
 # the differential evolution optimizer
 #######################################################################
 def optimize(cost,lb,ub):
-  from pathos.pp import ParallelPythonPool as Pool
+  from pathos.pools import ParallelPool as Pool
   from mystic.solvers import DifferentialEvolutionSolver2
   from mystic.termination import CandidateRelativeTolerance as CRT
   from mystic.strategy import Best1Exp

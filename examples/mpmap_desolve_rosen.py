@@ -23,7 +23,7 @@ python mpmap_desolve_rosen.py
 """
 
 try:
-  from pathos.multiprocessing import ProcessingPool as Pool
+  from pathos.pools import ProcessPool as Pool
 except:
   print __doc__
 

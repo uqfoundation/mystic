@@ -26,10 +26,10 @@ from mystic.models.poly import chebyshev8coeffs
 
 # if available, use a multiprocessing worker pool
 try:
-    from pathos.multiprocessing import ProcessingPool as Pool
-   #from pathos.pp import ParallelPythonPool as Pool
+    from pathos.pools import ProcessPool as Pool
+   #from pathos.pools import ParallelPool as Pool
 except ImportError:
-    from mystic.python import PythonSerial as Pool
+    from mystic.pools import SerialPool as Pool
 
 # tools
 from mystic.termination import NormalizedChangeOverGeneration as NCOG

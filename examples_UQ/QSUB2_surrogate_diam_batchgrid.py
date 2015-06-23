@@ -110,7 +110,7 @@ def optimize(cost,lower,upper,nbins):
 #######################################################################
 def UQ(start,end,lower,upper):
  #from pyina.launchers import Mpi as Pool
-  from pathos.multiprocessing import ProcessingPool as Pool
+  from pathos.pools import ProcessPool as Pool
  #from pool_helper import func_pickle  # if fails to pickle, try using a helper
 
   # run optimizer for each subdiameter 

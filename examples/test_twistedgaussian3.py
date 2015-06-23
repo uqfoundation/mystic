@@ -32,7 +32,7 @@ if __name__=='__main__':
     from mystic.metropolis import *
     # if available, use a multiprocessing worker pool
     try:
-        from pathos.multiprocessing import ProcessingPool as Pool
+        from pathos.pools import ProcessPool as Pool
         map = Pool().map
     except ImportError:
         pass

@@ -65,7 +65,7 @@ def costFactory(i):
 #######################################################################
 def optimize(cost,lower,upper,nbins):
   from mystic.tools import random_seed
-  from pathos.multiprocessing import ProcessingPool as Pool
+  from pathos.pools import ProcessPool as Pool
   random_seed(123)
 
   # generate arrays of points defining a grid in parameter space
@@ -109,8 +109,8 @@ def optimize(cost,lower,upper,nbins):
 # loop over model parameters to calculate concentration of measure
 #######################################################################
 def UQ(start,end,lower,upper):
- #from pathos.multiprocessing import ProcessingPool as Pool
-  from pathos.multiprocessing import ThreadingPool as Pool
+ #from pathos.pools import ProcessPool as Pool
+  from pathos.pools import ThreadPool as Pool
  #from pool_helper import func_pickle  # if fails to pickle, try using a helper
 
   # run optimizer for each subdiameter 

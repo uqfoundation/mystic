@@ -180,8 +180,8 @@ if __name__ == '__main__':
     test_inner_solver(nested, solver)
 
   # solver with mapper
- #from pathos.multiprocessing import ProcessingPool as Pool
-  from mystic.python import PythonSerial as Pool
+ #from pathos.pools import ProcessPool as Pool
+  from mystic.pools import SerialPool as Pool
   map = Pool(5).map
   for solver in classes:
     nested = BuckshotSolver

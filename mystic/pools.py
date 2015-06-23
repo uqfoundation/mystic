@@ -21,15 +21,20 @@ Usage
 A typical call to a pathos python map will roughly follow this example:
 
     >>> # instantiate and configure the worker pool
-    >>> from pathos.python import PythonSerial
-    >>> pool = PythonSerial()
+    >>> from pathos.serial import SerialPool
+    >>> pool = SerialPool()
     >>>
     >>> # do a blocking map on the chosen function
-    >>> results = pool.map(pow, [1,2,3,4], [5,6,7,8])
+    >>> print pool.map(pow, [1,2,3,4], [5,6,7,8])
     >>>
     >>> # do a non-blocking map, then extract the results from the iterator
     >>> results = pool.imap(pow, [1,2,3,4], [5,6,7,8])
-    >>> results = list(results)
+    >>> print "..."
+    >>> print list(results)
+    >>>
+    >>> # do one item at a time, using a pipe
+    >>> print pool.pipe(pow, 1, 5)
+    >>> print pool.pipe(pow, 2, 6)
 
 
 Notes
@@ -42,7 +47,7 @@ or in the python interpreter, and work reliably for both imported and
 interactively-defined functions.
 
 """
-__all__ = ['PythonSerial']
+__all__ = ['SerialPool']
 
 from abstract_launcher import AbstractWorkerPool
 __get_nodes__ = AbstractWorkerPool._AbstractWorkerPool__get_nodes
@@ -50,7 +55,7 @@ __set_nodes__ = AbstractWorkerPool._AbstractWorkerPool__set_nodes
 from itertools import imap as _imap
 from __builtin__ import map as _map, apply as _apply
 
-class PythonSerial(AbstractWorkerPool):
+class SerialPool(AbstractWorkerPool):
     """
 Mapper that leverages standard (i.e. serial) python maps.
     """
@@ -77,3 +82,7 @@ Mapper that leverages standard (i.e. serial) python maps.
     pass
 
 
+# backward compatibility
+PythonSerial = SerialPool
+
+# EOF
