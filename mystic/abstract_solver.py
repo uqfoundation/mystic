@@ -667,10 +667,12 @@ Note::
     def SaveSolver(self, filename=None, **kwds):
         """save solver state to a restart file"""
         import dill
+        fd = None
         if filename is None: # then check if already has registered file
             if self._state is None: # then create a new one
-                import tempfile
-                self._state = tempfile.mkstemp(suffix='.pkl')[-1]
+                import os, tempfile
+                fd, self._state = tempfile.mkstemp(suffix='.pkl')
+                os.close(fd)
             filename = self._state
         self._state = filename
         f = file(filename, 'wb')

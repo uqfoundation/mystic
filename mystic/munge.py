@@ -45,8 +45,7 @@ def read_history(source):
                 #FIXME: doesn't work for multi-id logfile; select id?
         params, cost = raw_to_support(params, cost)
     except:
-        exec "from %s import params" % source
-        exec "from %s import cost" % source
+        params, cost = read_import(source+'.py', 'params', 'cost')
     return params, cost
 
 
@@ -144,11 +143,33 @@ def write_converge_file(mon,log_file='paramlog.py',**kwds):
 # file to data (support file, converge file, raw file)
 
 def read_raw_file(file_in):
-  import re
-  file_in = re.sub('\.py*.$', '', file_in)  #XXX: strip off .py* extension
-  exec "from %s import params as steps" % file_in
-  exec "from %s import cost as energy" % file_in
-  return steps, energy
+  steps, energy = read_import(file_in, "params", "cost")
+  return steps, energy  # was 'from file_in import params as steps', etc
+
+def read_import(file, *targets):
+  "import the targets; targets are name strings"
+  import re, os, sys
+  _dir, file = os.path.split(file)
+  file = re.sub('\.py*.$', '', file) #XXX: strip .py* extension
+  curdir = os.path.abspath(os.curdir)
+  sys.path.append('.')
+  results = []
+  try:
+    if _dir: os.chdir(_dir)
+    if len(targets):
+      for target in targets:
+        exec "from %s import %s" % (file, target)
+        exec "results.append(%s)" % target
+    else:
+        exec "import %s" % file
+        exec "results.append(%s)" % file
+  except ImportError:
+    raise RuntimeError('File: %s not found' % file)
+  finally:
+    if _dir: os.chdir(curdir)
+    sys.path.pop()
+  if not len(results): return None
+  return results[-1] if (len(results) == 1) else results
 
 def read_converge_file(file_in):
   steps, energy = read_raw_file(file_in)

@@ -24,7 +24,7 @@ from mystic.solvers import PowellDirectionalSolver
 from mystic.models.poly import chebyshev8, chebyshev8cost
 from mystic.models.poly import chebyshev8coeffs
 
-# if available, use a multiprocessing worker pool
+# if available, use a pathos worker pool
 try:
     from pathos.pools import ProcessPool as Pool
    #from pathos.pools import ParallelPool as Pool
@@ -67,6 +67,8 @@ def plot_solution(params,style='y-'):
 
 
 if __name__ == '__main__':
+    from pathos.helpers import freeze_support
+    freeze_support() # help Windows use multiprocessing
 
     print "Powell's Method"
     print "==============="

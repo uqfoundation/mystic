@@ -342,9 +342,8 @@ if __name__ == '__main__':
   try: # select the scenario dimensions
     npts = parsed_opts.dim
     if "None" == npts: # npts may have been logged
-      import re
-      file = re.sub('\.py*.$', '', parsed_args[0]) #XXX: strip .py* extension
-      exec "from %s import npts" % file
+      from mystic.munge import read_import
+      npts = read_import(parsed_args[0], 'npts')
     else: npts = tuple(int(i) for i in dim.split(",")) # format is "1,1,1"
   except:
     npts = (1,1,1) #XXX: better in parsed_args ?

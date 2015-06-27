@@ -235,9 +235,13 @@ def getch(str="Press any key to continue"):
     if sys.stdin.isatty():
        if str is not None:
           print str
-       subprocess.call('stty raw', shell=True)
+       if sys.platform[:3] != 'win':
+          raw,cooked = 'stty raw','stty cooked'
+       else:
+          raw,cooked = '',''
+       subprocess.call(raw, shell=True)
        a = sys.stdin.read(1)
-       subprocess.call('stty cooked', shell=True)
+       subprocess.call(cooked, shell=True)
        return a
     else:
        if str is not None:

@@ -70,6 +70,8 @@ def main(servers,ncpus):
   
 
 if __name__ == '__main__':
+    from pathos.helpers import freeze_support
+    freeze_support() # help Windows use multiprocessing
 
     # number of local processors
     ncpus = 'autodetect' #XXX: None == autodetect; otherwise select n=0,1,2,...

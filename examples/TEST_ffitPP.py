@@ -42,6 +42,8 @@ def main():
   
 
 if __name__ == '__main__':
+    from pathos.helpers import freeze_support
+    freeze_support() # help Windows use multiprocessing
     solution = main()
     print_solution(solution)
     plot_solution(solution)

@@ -20,6 +20,7 @@ Cs = sequential_deal(a, q)
 As = [xx.tolist() for xx in sequential_deal(b, q)]
 
 def scemmap(Q):
+    from test_twistedgaussian import scem
     Cs, As, Sk, Sak, target, cn = Q
     niter = 1000
     for i in xrange(niter):
@@ -32,6 +33,8 @@ if __name__=='__main__':
     from mystic.metropolis import *
     # if available, use a multiprocessing worker pool
     try:
+        from pathos.helpers import freeze_support
+        freeze_support() # help Windows use multiprocessing
         from pathos.pools import ProcessPool as Pool
         map = Pool().map
     except ImportError:

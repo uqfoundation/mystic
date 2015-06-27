@@ -48,6 +48,9 @@ seed = 321
 
 
 if __name__=='__main__':
+    from pathos.helpers import freeze_support
+    freeze_support() # help Windows use multiprocessing
+
     def print_solution(func):
         print poly1d(func)
         return
