@@ -544,4 +544,97 @@ The function's input will be mapped to the ints, where:
     return dec
 
 
+from random import randrange, shuffle
+def unique(seq, full=None):
+    """replace the duplicate values with unique values in 'full'
+
+    If full is a type (int or float), then unique values of the given type
+    are selected from range(min(seq),max(seq)). If full is a dict of
+    {'min':min, 'max':max}, then unique floats are selected from
+    range(min(seq),max(seq)). If full is a sequence (list or set), then
+    unique values are selected from the given sequence. 
+    """
+    unique = set()
+    # replace all duplicates with 'None'
+    seq = [x if x not in unique and not unique.add(x) else None for x in seq]
+    lseq = len(seq)
+    # check type if full not specified
+    if full is None:
+        if all([isinstance(x, int) for x in unique]): full = int
+        else: full = float
+        ok = True
+    else: ok = False
+    # check all unique show up in 'full'
+    if full in (int,float): # specified type, not range
+        ok = ok or full==float or all([isinstance(x, int) for x in unique])
+        msg = "not all items are of type='%s'" % full.__name__
+        _min = min(unique)
+        _max = max(unique)
+    elif isinstance(full, dict): # specified min/max for floats
+        ok = min(unique) >= full['min'] and max(unique) < full['max']
+        if not ok:
+            oops = list(unique - set(range(full['min'],full['max'])))
+            msg = "x=%s not in %s <= x < %s" % (oops[-1],full['min'],full['max'])
+        _min = full['min']
+        _max = full['max']
+        full = float
+    else: # full is a list of all possible values
+        ok = unique.issubset(full)
+        if not ok:
+            oops = list(unique - set(full))
+            msg = "%s not in given set" % oops[-1]
+        _min = _max = None
+    if not ok: raise ValueError(msg)
+    # check if a unique sequence is possible to build
+    if full is float:
+        if _min == _max and lseq > 1:
+            msg = "no unique len=%s sequence with %s <= x <= %s" % (lseq,_min,_max)
+            raise ValueError(msg)
+        # replace the 'None' values in seq with 'new' values
+        #XXX: HIGHLY UNLIKELY two numbers will be the same, but possible
+        return [randrange(_min,_max,_int=float) if x is None else x for x in seq]
+    # generate all possible values not found in 'unique'
+    if full is int:
+        if max(lseq - (_max+1 - _min), 0):
+            msg = "no unique len=%s sequence with %s <= x <= %s" % (lseq,_min,_max)
+            raise ValueError(msg)
+        new = list(set(range(_min,_max+1)) - unique)
+    else:
+        if lseq > len(full):
+            msg = "no unique len=%s sequence in given set" % lseq
+            raise ValueError(msg)
+        new = list(set(full) - unique)
+    # ensure randomly ordered
+    shuffle(new)
+    # replace the 'None' values in seq with 'new' values
+    return [new.pop() if x is None else x for x in seq]
+
+
+#XXX: enable impose_unique on selected members of x? (see constraints.integers)
+
+def impose_unique(seq=None):
+    """ensure all values are unique and found in the given set"""
+    def dec(f):
+        def func(x,*args,**kwds):
+            return f(unique(x, seq),*args,**kwds)
+        return func
+    return dec
+
+
+#XXX: enable near_integers and has_unique on selected members of x?
+
+from numpy import round, abs
+def near_integers(x): # use as a penalty for int programming
+    """the sum of all deviations from int values"""
+    return abs(x - round(x)).sum()
+
+def has_unique(x): # use as a penalty for unique numbers
+    """check for uniqueness of the members of x"""
+    return sum(x.count(xi) for xi in x)
+   #return len(x) - len(set(x))
+
+
+
+# EOF
+
 # EOF

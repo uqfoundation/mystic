@@ -57,7 +57,7 @@ Inputs:
 
         # Flatten b, in case it's in the form [[0, 1, 2]] for example.
         if len(b) == 1:
-            b = list(ndarray.flatten(asarray(b)))
+            b = ndarray.flatten(asarray(b)).tolist()
 
         # Check dimensions and give errors if incorrect.
         if len(A) != len(b):
@@ -82,7 +82,7 @@ Inputs:
 
         # Flatten h, in case it's in the form [[0, 1, 2]] for example.
         if len(h) == 1:
-            h = list(ndarray.flatten(asarray(h)))
+            h = ndarray.flatten(asarray(h)).tolist()
 
         # Check dimensions and give errors if incorrect.
         if len(G) != len(h):
