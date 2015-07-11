@@ -504,6 +504,227 @@ def impose_reweighted_std(s, samples, weights=None, solver=None):
     """impose a standard deviation on a list of points by reweighting weights"""
     return impose_reweighted_variance(s**2, samples, weights, solver)
 
+##### sampling statistics methods #####
+def _sort(samples, weights=None):
+    "sort (weighted) samples; returns 2-D array of samples and weights"
+    import numpy as np
+    if weights is None:
+        x = np.ones((2,len(samples))) #XXX: casts to a float
+        x[0] = np.sort(samples)
+        return x
+    x = np.vstack([samples,weights]).T
+    return x[x[:,0].argsort()].T
+
+
+def median(samples, weights=None):
+    """calculate the (weighted) median for a list of points
+
+Inputs:
+    samples -- a list of sample points
+    weights -- a list of sample weights
+"""
+    import numpy as np
+    x,w = _sort(samples,weights)
+    s = sum(w)
+    return np.mean(x[s/2. - np.cumsum(w) <= 0][0:2-x.size%2])
+
+
+def mad(samples, weights=None): #, scale=1.4826):
+    """calculate the (weighted) median absolute deviation for a list of points
+
+Inputs:
+    samples -- a list of sample points
+    weights -- a list of sample weights
+"""
+    s = sarray(samples)
+    return median(abs(s - median(samples,weights)),weights) # * scale
+
+
+#XXX: impose median by ensuring equal # samples < & >... (and not shifting) ?
+def impose_median(m, samples, weights=None):
+    """impose a median on a list of (weighted) points
+    (this function is 'range-preserving' and 'mad-preserving')
+
+Inputs:
+    m -- the target median
+    samples -- a list of sample points
+    weights -- a list of sample weights
+"""
+    s = asarray(samples)
+    return (s + (m - median(samples, weights))).tolist()
+
+
+def impose_mad(s, samples, weights=None):
+    """impose a median absolute deviation on a list of (weighted) points
+    (this function is 'median-preserving')
+
+Inputs:
+    s -- the target median absolute deviation
+    samples -- a list of sample points
+    weights -- a list of sample weights
+"""
+    import numpy as np
+    m = median(samples, weights)
+    samples = np.asarray(list(samples))
+    _mad = mad(samples,weights)
+    if not _mad: # protect against ZeroDivision when mad = 0
+        return [np.nan]*len(samples)
+    scale = float(s) / _mad
+    samples = samples * scale #NOTE: not "median-preserving" until next line
+    return impose_median(m, samples, weights) #NOTE: not "range-preserving"
+
+
+def _k(weights, k=0, clip=False, norm=False, eps=15): #XXX: better 9 ?
+    "trim weights at k%; if clip is True, winsorize instead of trim"
+    #NOTE: eps is tolerance for cancellation of similar values
+    import numpy as np
+    try:
+        klo,khi = k
+    except TypeError:
+        klo = khi = k
+    if klo + khi > 100:
+        msg = "cannot crop '%s + %s > 100' percent" % (klo,khi)
+        raise ValueError(msg)
+    elif klo < 0 or khi < 0:
+        msg = "cannot crop negative percent '%s + %s'" % (klo,khi)
+        raise ValueError(msg)
+    else:
+        klo,khi = .01*klo,.01*khi
+    w = np.array(weights, dtype=float)/sum(weights)  #XXX: no dtype?
+    w_lo, w_hi = np.cumsum(w), np.cumsum(w[::-1])
+    # calculate the cropped indicies
+    lo = len(w) - sum((w_lo - klo).round(eps) > 0)
+    hi = sum((w_hi - khi).round(eps) > 0) - 1
+    # flip indices if flipped
+    if lo > hi:
+        lo,hi = hi,lo
+    if not clip:
+        # find the values at k%
+        w_lo = w_lo[lo]
+        w_hi = w_hi[len(w)-1-hi]
+        # reset the values at k%
+        if klo + khi == 1:
+            w[lo] = w[hi] = 0
+        elif lo == hi:
+            w[lo] = max(1 - khi - klo,0)
+        else: 
+            w[lo] = max(w_lo - klo,0)
+            w[hi] = max(w_hi - khi,0)
+    else:
+        # reset the values at k%
+        if lo == hi:
+            w[lo] = sum(w)
+        else: 
+            w[lo] += sum(w[:lo])
+            w[hi] += sum(w[hi+1:])
+    # trim the remaining weights
+    w[:lo] = 0
+    w[hi+1:] = 0
+    if not norm: w *= sum(weights)
+    return w.tolist()
+
+
+def tmean(samples, weights=None, k=0, clip=False):
+    """calculate the (weighted) trimmed mean for a list of points
+
+Inputs:
+    samples -- a list of sample points
+    weights -- a list of sample weights
+    k -- percent samples to trim (k%) [tuple (lo,hi) or float if lo=hi]
+    clip -- if True, winsorize instead of trimming k% of samples
+
+NOTE: if all samples are excluded, will return nan
+"""
+    samples,weights = _sort(samples,weights)
+    weights = _k(weights,k,clip)
+    return sum(samples * weights)/sum(weights)
+
+
+def tvariance(samples, weights=None, k=0, clip=False):
+    """calculate the (weighted) trimmed variance for a list of points
+
+Inputs:
+    samples -- a list of sample points
+    weights -- a list of sample weights
+    k -- percent samples to trim (k%) [tuple (lo,hi) or float if lo=hi]
+    clip -- if True, winsorize instead of trimming k% of samples
+
+NOTE: if all samples are excluded, will return nan
+"""
+    samples,weights = _sort(samples,weights)
+    weights = _k(weights,k,clip)
+    trim_mean = sum(samples * weights)/sum(weights)
+    return mean(abs(samples - trim_mean)**2, weights) #XXX: correct ?
+
+
+def tstd(samples, weights=None, k=0, clip=False):
+    """calculate the (weighted) trimmed standard deviation for a list of points
+
+Inputs:
+    samples -- a list of sample points
+    weights -- a list of sample weights
+    k -- percent samples to trim (k%) [tuple (lo,hi) or float if lo=hi]
+    clip -- if True, winsorize instead of trimming k% of samples
+
+NOTE: if all samples are excluded, will return nan
+"""
+    import numpy as np
+    return np.sqrt(tvariance(samples, weights, k, clip))
+
+
+#XXX: use reweighting to impose tmean, tvariance, tstd, median, & mad ?
+def impose_tmean(m, samples, weights=None, k=0, clip=False):
+    """impose a trimmed mean (at k%) on a list of (weighted) points
+    (this function is 'range-preserving' and 'tvariance-preserving')
+
+Inputs:
+    m -- the target trimmed mean
+    samples -- a list of sample points
+    weights -- a list of sample weights
+    k -- percent samples to be trimmed (k%) [tuple (lo,hi) or float if lo=hi]
+    clip -- if True, winsorize instead of trimming k% of samples
+"""
+    s = asarray(samples)
+    return (s + (m - tmean(samples, weights, k=k, clip=clip))).tolist()
+
+
+def impose_tvariance(v, samples, weights=None, k=0, clip=False):
+    """impose a trimmed variance (at k%) on a list of (weighted) points
+    (this function is 'tmean-preserving')
+
+Inputs:
+    v -- the target trimmed variance
+    samples -- a list of sample points
+    weights -- a list of sample weights
+    k -- percent samples to be trimmed (k%) [tuple (lo,hi) or float if lo=hi]
+    clip -- if True, winsorize instead of trimming k% of samples
+"""
+    import numpy as np
+    m = tmean(samples, weights, k=k, clip=clip)
+    samples = np.asarray(list(samples))
+
+    tvar = tvariance(samples,weights,k=k,clip=clip)
+    if not tvar: # protect against ZeroDivision when tvar = 0
+        return [np.nan]*len(samples) #XXX: k?
+    scale = np.sqrt(float(v) / tvar)
+    samples = samples * scale #NOTE: not "tmean-preserving" until next line
+    return impose_tmean(m, samples, weights, k=k, clip=clip) #NOTE: not "range-preserving"
+
+
+def impose_tstd(s, samples, weights=None, k=0, clip=False):
+    """impose a trimmed std (at k%) on a list of (weighted) points
+    (this function is 'tmean-preserving')
+
+Inputs:
+    s -- the target trimmed standard deviation
+    samples -- a list of sample points
+    weights -- a list of sample weights
+    k -- percent samples to be trimmed (k%) [tuple (lo,hi) or float if lo=hi]
+    clip -- if True, winsorize instead of trimming k% of samples
+"""
+    return impose_tvariance(s**2, samples, weights, k=k, clip=clip)
+
+
 ##### misc methods #####
 def impose_sum(mass, weights, zsum=False, zmass=1.0):
   """impose a sum on a list of points
