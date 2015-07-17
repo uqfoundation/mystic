@@ -1,48 +1,17 @@
 #!/usr/bin/env python
 #
-# Author: Patrick Hung (patrickh @caltech)
+# Author: Mike McKerns (mmckerns @caltech and @uqfoundation)
 # Author: Jean-Christophe Fillion-Robin (jchris.fillionr @kitware.com)
 # Copyright (c) 1997-2015 California Institute of Technology.
 # License: 3-clause BSD.  The full license text is available at:
 #  - http://trac.mystic.cacr.caltech.edu/project/mystic/browser/mystic/LICENSE
-
-__doc__ = """
-mystic_model_plotter.py [options] model (filename)
-
-generate surface contour plots for model, specified by full import path
-generate model trajectory from logfile (or solver restart file), if provided
-
-The option "bounds" takes an indicator string, where the bounds should
-be given as comma-separated slices. For example, using bounds = "-1:10, 0:20"
-will set the lower and upper bounds for x to be (-1,10) and y to be (0,20).
-The "step" can also be given, to control the number of lines plotted in the
-grid. Thus "-1:10:.1, 0:20" would set the bounds as above, but use increments
-of .1 along x and the default step along y.  For models with > 2D, the bounds
-can be used to specify 2 dimensions plus fixed values for remaining dimensions.
-Thus, "-1:10, 0:20, 1.0" would plot the 2D surface where the z-axis was fixed
-at z=1.0.
-
-The option "label" takes comma-separated strings. For example, label = "x,y,"
-will place 'x' on the x-axis, 'y' on the y-axis, and nothing on the z-axis.
-LaTeX is also accepted. For example, label = "$ h $, $ {\\alpha}$, $ v$" will
-label the axes with standard LaTeX math formatting. Note that the leading
-space is required, while a trailing space aligns the text with the axis
-instead of the plot frame.
-
-The option "reduce" can be given to reduce the output of a model to a scalar,
-thus converting 'model(params)' to 'reduce(model(params))'. A reducer is given
-by the import path (e.g. 'numpy.add'). The option "scale" will convert the plot
-to log-scale, and scale the cost by 'z=log(4*z*scale+1)+2'. This is useful for
-visualizing small contour changes around the minimium. If using log-scale
-produces negative numbers, the option "shift" can be used to shift the cost
-by 'z=z+shift'. Both shift and scale are intended to help visualize contours.
-
-Required Inputs:
-  model               full import path for the model (e.g. mystic.models.rosen)
-
-Additional Inputs:
-  filename            name of the convergence logfile (e.g. log.txt)
+__doc__ = \
 """
+functional interfaces for mystic's visual analytics scripts
+"""
+
+__all__ = ['model_plotter',]
+
 
 from mpl_toolkits.mplot3d import axes3d
 import matplotlib.pyplot as plt
@@ -52,7 +21,7 @@ from mystic.munge import read_history
 from mystic.munge import logfile_reader, raw_to_support
 
 #XXX: better if reads single id only? (e.g. same interface as read_history)
-def get_history(source, ids=None):
+def _get_history(source, ids=None):
     """get params and cost from the given source
 
 source is the name of the trajectory logfile (or solver instance)
@@ -85,7 +54,7 @@ if provided, ids are the list of 'run ids' to select
     return params, costs
 
 
-def get_instance(location, *args, **kwds):
+def _get_instance(location, *args, **kwds):
     """given the import location of a model or model class, return the model
 
 args and kwds will be passed to the constructor of the model class
@@ -98,7 +67,7 @@ args and kwds will be passed to the constructor of the model class
     return model
 
 
-def parse_input(option):
+def _parse_input(option):
     """parse 'option' string into 'select', 'axes', and 'mask'
 
 select contains the dimension specifications on which to plot
@@ -106,7 +75,7 @@ axes holds the indicies of the parameters selected to plot
 mask is a dictionary of the parameter indicies and fixed values
 
 For example,
-    >>> select, axes, mask = parse_input("-1:10:.1, 0.0, 5.0, -50:50:.5")
+    >>> select, axes, mask = _parse_input("-1:10:.1, 0.0, 5.0, -50:50:.5")
     >>> select
     [0, 3]
     >>> axes
@@ -128,7 +97,7 @@ For example,
     return select, axes, mask
 
 
-def parse_axes(option, grid=True):
+def _parse_axes(option, grid=True):
     """parse option string into grid axes; using modified numpy.ogrid notation
 
 For example:
@@ -175,7 +144,7 @@ Returns tuple (x,y) with 'x,y' defined above.
     return x,y
 
 
-def draw_projection(x, cost, scale=True, shift=False, style=None, figure=None):
+def _draw_projection(x, cost, scale=True, shift=False, style=None, figure=None):
     """draw a solution trajectory (for overlay on a 1D plot)
 
 x is the sequence of values for one parameter (i.e. a parameter trajectory)
@@ -205,7 +174,7 @@ if figure is provided, plot to an existing figure
     return figure
 
 
-def draw_trajectory(x, y, cost=None, scale=True, shift=False, style=None, figure=None):
+def _draw_trajectory(x, y, cost=None, scale=True, shift=False, style=None, figure=None):
     """draw a solution trajectory (for overlay on a contour plot)
 
 x is a sequence of values for one parameter (i.e. a parameter trajectory)
@@ -240,7 +209,7 @@ if figure is provided, plot to an existing figure
     return figure
 
 
-def draw_slice(f, x, y=None, scale=True, shift=False):
+def _draw_slice(f, x, y=None, scale=True, shift=False):
     """plot a slice of a 2D function 'f' in 1D
 
 x is an array used to set up the axis
@@ -280,7 +249,7 @@ pass the array to 'y' and the fixed value to 'x'
     return fig
 
 
-def draw_contour(f, x, y=None, surface=False, fill=True, scale=True, shift=False, density=5):
+def _draw_contour(f, x, y=None, surface=False, fill=True, scale=True, shift=False, density=5):
     """draw a contour plot for a given 2D function 'f'
 
 x and y are arrays used to set up a 2D mesh grid
@@ -327,33 +296,49 @@ use density to adjust the number of contour lines
     return fig
 
 
-def model_plotter(cmdargs=[]):
-    """convenience function providing a function interface to the model
-    plotter. The ``cmdargs`` can either be a :class:`basestring` or
-    a :class:`list`.
-
-    See ``mystic.model_plotter`` module documentation for a complete
-    description of the model plotter and its associated arguments.
-
-    Examples:
-
-    >>> from mystic.model_plotter import model_plotter
-    >>> model_plotter(cmdargs='mystic.models.zimmermann log.txt -b "-5:10:.1, -5:10:.1" -d -x 1')
-
-    or
-
-    >>> from mystic.model_plotter import model_plotter
-    >>> model_plotter(cmdargs=['mystic.models.zimmermann', 'log.txt', '-b', '-5:10:.1, -5:10:.1', '-d', '-x', '1'])
-
+def model_plotter(model, logfile=None, **kwds):
     """
+generate surface contour plots for model, specified by full import path
+generate model trajectory from logfile (or solver restart file), if provided
 
-    if isinstance(cmdargs, basestring):
-        import shlex
-        cmdargs = shlex.split(cmdargs)
+Available from the command shell as:
+  mystic_model_plotter.py model (filename) [options]
 
-    if not isinstance(cmdargs, list):
-        raise Exception("'cmdargs' is expected to either be a list or a string")
+or as a function call as:
+  mystic.model_plotter(model, filename=None, **options)
 
+The option "bounds" takes an indicator string, where the bounds should
+be given as comma-separated slices. For example, using bounds = "-1:10, 0:20"
+will set the lower and upper bounds for x to be (-1,10) and y to be (0,20).
+The "step" can also be given, to control the number of lines plotted in the
+grid. Thus "-1:10:.1, 0:20" would set the bounds as above, but use increments
+of .1 along x and the default step along y.  For models with > 2D, the bounds
+can be used to specify 2 dimensions plus fixed values for remaining dimensions.
+Thus, "-1:10, 0:20, 1.0" would plot the 2D surface where the z-axis was fixed
+at z=1.0.  When called from a script, slice objects can be used instead of a
+string, thus "-1:10:.1, 0:20, 1.0" becomes (slice(-1,10,.1), slice(20), 1.0).
+
+The option "label" takes comma-separated strings. For example, label = "x,y,"
+will place 'x' on the x-axis, 'y' on the y-axis, and nothing on the z-axis.
+LaTeX is also accepted. For example, label = "$ h $, $ {\\alpha}$, $ v$" will
+label the axes with standard LaTeX math formatting. Note that the leading
+space is required, while a trailing space aligns the text with the axis
+instead of the plot frame.
+
+The option "reduce" can be given to reduce the output of a model to a scalar,
+thus converting 'model(params)' to 'reduce(model(params))'. A reducer is given
+by the import path (e.g. 'numpy.add'). The option "scale" will convert the plot
+to log-scale, and scale the cost by 'z=log(4*z*scale+1)+2'. This is useful for
+visualizing small contour changes around the minimium. If using log-scale
+produces negative numbers, the option "shift" can be used to shift the cost
+by 'z=z+shift'. Both shift and scale are intended to help visualize contours.
+
+Required Inputs:
+  model               full import path for the model (e.g. mystic.models.rosen)
+
+Additional Inputs:
+  filename            name of the convergence logfile (e.g. log.txt)
+    """
     #FIXME: should be able to:
     # - apply a constraint as a region of NaN -- apply when 'xx,yy=x[ij],y[ij]'
     # - apply a penalty by shifting the surface (plot w/alpha?) -- as above
@@ -367,13 +352,71 @@ def model_plotter(cmdargs=[]):
     #   (see https://github.com/matplotlib/matplotlib/issues/209)
     # - if trajectory outside contour grid, will increase bounds
     #   (see support_hypercube.py for how to fix bounds)
+    import shlex
+    _model = None
+    _reducer = None
+    _solver = None
+
+    # handle the special case where list is provided by sys.argv
+    if isinstance(model, (list,tuple)) and not logfile and not kwds:
+        cmdargs = model # (above is used by script to parse command line)
+    elif isinstance(model, basestring) and not logfile and not kwds:
+        cmdargs = shlex.split(model)
+    # 'everything else' is essentially the functional interface
+    else:
+        out = kwds.get('out', None)
+        bounds = kwds.get('bounds', None)
+        label = kwds.get('label', None)
+        nid = kwds.get('nid', None)
+        iter = kwds.get('iter', None)
+        reduce = kwds.get('reduce', None)
+        scale = kwds.get('scale', None)
+        shift = kwds.get('shift', None)
+        fill = kwds.get('fill', False)
+        depth = kwds.get('depth', False)
+        dots = kwds.get('dots', False)
+        join = kwds.get('join', False)
+
+        # special case: bounds passed as list of slices
+        if not isinstance(bounds, (basestring, type(None))):
+            cmdargs = ''
+            for b in bounds:
+                if isinstance(b, slice):
+                    cmdargs += "{}:{}:{}, ".format(b.start, b.stop, b.step)
+                else:
+                    cmdargs += "{}, ".format(b)
+            bounds = cmdargs[:-2]
+
+        # special case: model passed as model instance
+       #model.__doc__.split('using::')[1].split()[0].strip()
+        if callable(model): _model, model = model, "None"
+        if callable(reduce): _reducer, reduce = reduce, None
+
+        # handle logfile if given
+        if logfile: model += ' ' + logfile
+
+        # process "commandline" arguments
+        cmdargs = ''
+        cmdargs += '' if out is None else '--out={} '.format(out)
+        cmdargs += '' if bounds is None else '--bounds="{}" '.format(bounds)
+        cmdargs += '' if label is None else '--label={} '.format(label)
+        cmdargs += '' if nid is None else '--nid={} '.format(nid)
+        cmdargs += '' if iter is None else '--iter={} '.format(iter)
+        cmdargs += '' if reduce is None else '--reduce={} '.format(reduce)
+        cmdargs += '' if scale is None else '--scale={} '.format(scale)
+        cmdargs += '' if shift is None else '--shift={} '.format(shift)
+        cmdargs += '' if fill == False else '--fill '
+        cmdargs += '' if depth == False else '--depth '
+        cmdargs += '' if dots == False else '--dots '
+        cmdargs += '' if join == False else '--join '
+        cmdargs = model.split() + shlex.split(cmdargs)
 
     #XXX: note that 'argparse' is new as of python2.7
     from optparse import OptionParser
-    parser = OptionParser(usage=__doc__)
-    parser.add_option("-p","--plot-filepath",action="store",dest="plot_filepath",\
+    parser = OptionParser(usage=model_plotter.__doc__)
+    parser.add_option("-u","--out",action="store",dest="out",\
                       metavar="STR",default=None,
-                      help="save generated plot")
+                      help="filepath to save generated plot")
     parser.add_option("-b","--bounds",action="store",dest="bounds",\
                       metavar="STR",default="-5:5:.1, -5:5:.1",
                       help="indicator string to set plot bounds and density")
@@ -407,7 +450,7 @@ def model_plotter(cmdargs=[]):
 
     # get the import path for the model
     model = parsed_args[0]  # e.g. 'mystic.models.rosen'
-    if "None" == model: model = None #XXX: 'required'... allow this?
+    if "None" == model: model = None
 
     try: # get the name of the parameter log file
       source = parsed_args[1]  # e.g. 'log.txt'
@@ -488,23 +531,26 @@ def model_plotter(cmdargs=[]):
     from mystic.tools import reduced, masked, partial
 
     # process inputs
-    select, spec, mask = parse_input(options)
-    x,y = parse_axes(spec, grid=True) # grid=False for 1D plots
+    if _model: model = _model
+    if _reducer: reducer = _reducer
+    if _solver: solver = _solver
+    select, spec, mask = _parse_input(options)
+    x,y = _parse_axes(spec, grid=True) # grid=False for 1D plots
     #FIXME: does grid=False still make sense here...?
-    if reducer: reducer = get_instance(reducer)
+    if reducer: reducer = _reducer or _get_instance(reducer)
     if solver and (not source or not model):
         raise RuntimeError('a model and results filename are required')
     elif not source and not model:
         raise RuntimeError('a model or a results file is required')
     if model:
-        model = get_instance(model)
+        model = _model or _get_instance(model)
         # need a reducer if model returns an array
         if reducer: model = reduced(reducer, arraylike=False)(model)
 
     if solver:
         # if 'live'... pick a solver
         solver = 'mystic.solvers.fmin'
-        solver = get_instance(solver)
+        solver = _solver or _get_instance(solver)
         xlen = len(select)+len(mask)
         if solver.__name__.startswith('diffev'):
             initial = [(-1,1)]*xlen
@@ -532,9 +578,9 @@ def model_plotter(cmdargs=[]):
        #if solver: v=sol[-1]
        #elif source: v=cost[-1]
        #else: v=None
-       #fig0 = draw_slice(model, x=x, y=v, scale=scale, shift=shift)
+       #fig0 = _draw_slice(model, x=x, y=v, scale=scale, shift=shift)
         # plot the surface in 2D or 3D
-        fig = draw_contour(model, x, y, surface=surface, fill=fill, scale=scale, shift=shift)
+        fig = _draw_contour(model, x, y, surface=surface, fill=fill, scale=scale, shift=shift)
     else:
        #fig0 = None
         fig = None
@@ -542,27 +588,27 @@ def model_plotter(cmdargs=[]):
     if source:
         # params are the parameter trajectories
         # cost is the solution trajectory
-        params, cost = get_history(source, ids)
+        params, cost = _get_history(source, ids)
         if len(cost) > 1: style = style[1:] # 'auto-color' #XXX: or grayscale?
 
         for p,c in zip(params, cost):
            ## project trajectory on a 1D slice of model surface #XXX: useful?
            #s = select[0] if len(select) else 0
-           #px = p[int(s)] # draw_projection requires one parameter
+           #px = p[int(s)] # _draw_projection requires one parameter
            ## ignore everything after 'stop'
            #_c = eval('c[%s]' % stop)
            #_x = eval('px[%s]' % stop)
-           #fig0 = draw_projection(_x,_c, style=style, scale=scale, shift=shift, figure=fig0)
+           #fig0 = _draw_projection(_x,_c, style=style, scale=scale, shift=shift, figure=fig0)
 
             # plot the trajectory on the model surface (2D or 3D)
             # get two selected params #XXX: what if len(select)<2? or len(p)<2?
             p = [p[int(i)] for i in select[:2]]
-            px,py = p # draw_trajectory requires two parameters
+            px,py = p # _draw_trajectory requires two parameters
             # ignore everything after 'stop'
             _x = eval('px[%s]' % stop)
             _y = eval('py[%s]' % stop)
             _c = eval('c[%s]' % stop) if surface else None
-            fig = draw_trajectory(_x,_y,_c, style=style, scale=scale, shift=shift, figure=fig)
+            fig = _draw_trajectory(_x,_y,_c, style=style, scale=scale, shift=shift, figure=fig)
 
     # add labels to the axes
     if surface: kwds = {'projection':'3d'} # 3D
@@ -572,10 +618,10 @@ def model_plotter(cmdargs=[]):
     ax.set_ylabel(label[1])
     if surface: ax.set_zlabel(label[2])
 
-    if not parsed_opts.plot_filepath:
+    if not parsed_opts.out:
         plt.show()
     else:
-        fig.savefig(parsed_opts.plot_filepath)
+        fig.savefig(parsed_opts.out)
 
 
 if __name__=='__main__':

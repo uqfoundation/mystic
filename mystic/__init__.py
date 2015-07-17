@@ -44,6 +44,9 @@ import monitors
 import munge
 import tools
 
+# scripts
+from scripts import *
+
 # backward compatibility
 from tools import *
 

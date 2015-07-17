@@ -6,14 +6,15 @@
 # License: 3-clause BSD.  The full license text is available at:
 #  - http://trac.mystic.cacr.caltech.edu/project/mystic/browser/mystic/LICENSE
 
-from mystic.model_plotter import model_plotter
+from mystic import model_plotter
 
 __doc__ = model_plotter.__doc__
 
 if __name__ == '__main__':
 
     import sys
-    model_plotter(cmdargs=sys.argv[1:])
+
+    model_plotter(sys.argv[1:])
 
 
 # EOF
