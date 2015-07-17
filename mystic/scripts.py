@@ -5,13 +5,11 @@
 # Copyright (c) 1997-2015 California Institute of Technology.
 # License: 3-clause BSD.  The full license text is available at:
 #  - http://trac.mystic.cacr.caltech.edu/project/mystic/browser/mystic/LICENSE
-__doc__ = \
-"""
+__doc__ = """
 functional interfaces for mystic's visual analytics scripts
 """
 
-__all__ = ['model_plotter',]
-
+__all__ = ['model_plotter','log_reader']
 
 from mpl_toolkits.mplot3d import axes3d
 import matplotlib.pyplot as plt
@@ -19,6 +17,10 @@ from matplotlib import cm
 
 from mystic.munge import read_history
 from mystic.munge import logfile_reader, raw_to_support
+
+# globals
+__quit = False
+
 
 #XXX: better if reads single id only? (e.g. same interface as read_history)
 def _get_history(source, ids=None):
@@ -338,7 +340,7 @@ Required Inputs:
 
 Additional Inputs:
   filename            name of the convergence logfile (e.g. log.txt)
-    """
+"""
     #FIXME: should be able to:
     # - apply a constraint as a region of NaN -- apply when 'xx,yy=x[ij],y[ij]'
     # - apply a penalty by shifting the surface (plot w/alpha?) -- as above
@@ -353,6 +355,8 @@ Additional Inputs:
     # - if trajectory outside contour grid, will increase bounds
     #   (see support_hypercube.py for how to fix bounds)
     import shlex
+    global __quit
+    __quit = False
     _model = None
     _reducer = None
     _solver = None
@@ -413,7 +417,12 @@ Additional Inputs:
 
     #XXX: note that 'argparse' is new as of python2.7
     from optparse import OptionParser
-    parser = OptionParser(usage=model_plotter.__doc__)
+    def _exit(self, **kwds):
+      global __quit
+      __quit = True
+    OptionParser.exit = _exit
+
+    parser = OptionParser(usage=model_plotter.__doc__.split('\n\nOptions:')[0])
     parser.add_option("-u","--out",action="store",dest="out",\
                       metavar="STR",default=None,
                       help="filepath to save generated plot")
@@ -447,6 +456,18 @@ Additional Inputs:
     parser.add_option("-j","--join",action="store_true",dest="line",\
                       default=False,help="connect trajectory points in plot")
     parsed_opts, parsed_args = parser.parse_args(cmdargs)
+
+#   import sys
+#   if 'mystic_model_plotter.py' not in sys.argv:
+    from StringIO import StringIO
+    f = StringIO()
+    parser.print_help(file=f)
+    f.seek(0)
+    if 'Options:' not in model_plotter.__doc__:
+      model_plotter.__doc__ += '\nOptions:%s' % f.read().split('Options:')[-1]
+    f.close()
+
+    if __quit: return
 
     # get the import path for the model
     model = parsed_args[0]  # e.g. 'mystic.models.rosen'
@@ -624,7 +645,244 @@ Additional Inputs:
         fig.savefig(parsed_opts.out)
 
 
-if __name__=='__main__':
+def log_reader(filename, **kwds):
+    """
+plot parameter convergence from file written with 'LoggingMonitor'
+
+Available from the command shell as:
+  mystic_log_reader.py filename [options]
+
+or as a function call as:
+  mystic.log_reader(filename, **options)
+
+The option "param" takes an indicator string. The indicator string is built
+from comma-separated array slices. For example, params = ":" will plot all
+parameters.  Alternatively, params = ":2, 3:" will plot all parameters except
+for the third parameter, while params = "0" will only plot the first parameter.
+
+Required Inputs:
+  filename            name of the convergence logfile (e.g log.txt)
+"""
+    import shlex
+    global __quit
+    __quit = False
+
+    # handle the special case where list is provided by sys.argv
+    if isinstance(filename, (list,tuple)) and not kwds:
+        cmdargs = filename # (above is used by script to parse command line)
+    elif isinstance(filename, basestring) and not kwds:
+        cmdargs = shlex.split(filename)
+    # 'everything else' is essentially the functional interface
+    else:
+        out = kwds.get('out', None)
+        dots = kwds.get('dots', False)
+        line = kwds.get('line', False)
+        iter = kwds.get('iter', None)
+        legend = kwds.get('legend', False)
+        nid = kwds.get('nid', None)
+        param = kwds.get('param', None)
+
+        # process "commandline" arguments
+        cmdargs = ''
+        cmdargs += '' if out is None else '--out={} '.format(out)
+        cmdargs += '' if dots == False else '--dots '
+        cmdargs += '' if line == False else '--line '
+        cmdargs += '' if iter is None else '--iter={} '.format(iter)
+        cmdargs += '' if legend == False else '--legend '
+        cmdargs += '' if nid is None else '--nid={} '.format(nid)
+        cmdargs += '' if param is None else '--param="{}" '.format(param)
+        cmdargs = filename.split() + shlex.split(cmdargs)
+
+    #XXX: note that 'argparse' is new as of python2.7
+    from optparse import OptionParser
+    def _exit(self, **kwds):
+      global __quit
+      __quit = True
+    OptionParser.exit = _exit
+
+    parser = OptionParser(usage=log_reader.__doc__.split('\n\nOptions:')[0])
+    parser.add_option("-u","--out",action="store",dest="out",\
+                      metavar="STR",default=None,
+                      help="filepath to save generated plot")
+    parser.add_option("-d","--dots",action="store_true",dest="dots",\
+                      default=False,help="show data points in plot")
+    parser.add_option("-l","--line",action="store_true",dest="line",\
+                      default=False,help="connect data points in plot with a line")
+    parser.add_option("-i","--iter",action="store",dest="stop",metavar="INT",\
+                      default=None,help="the largest iteration to plot")
+    parser.add_option("-g","--legend",action="store_true",dest="legend",\
+                      default=False,help="show the legend")
+    parser.add_option("-n","--nid",action="store",dest="id",\
+                      metavar="INT",default=None,
+                      help="id # of the nth simultaneous points to plot")
+    parser.add_option("-p","--param",action="store",dest="param",\
+                      metavar="STR",default=":",
+                      help="indicator string to select parameters")
+    #parser.add_option("-f","--file",action="store",dest="filename",metavar="FILE",\
+    #                  default='log.txt',help="log file name")
+    parsed_opts, parsed_args = parser.parse_args(cmdargs)
+
+#   import sys
+#   if 'mystic_log_reader.py' not in sys.argv:
+    from StringIO import StringIO
+    f = StringIO()
+    parser.print_help(file=f)
+    f.seek(0)
+    if 'Options:' not in log_reader.__doc__:
+      log_reader.__doc__ += '\nOptions:%s' % f.read().split('Options:')[-1]
+    f.close()
+
+    style = '-' # default linestyle
+    if parsed_opts.dots:
+      mark = 'o'
+      # when using 'dots', also can turn off 'line'
+      if not parsed_opts.line:
+        style = 'None'
+    else:
+      mark = ''
+
+    if __quit: return
+
+    try: # get logfile name
+      filename = parsed_args[0]
+    except:
+      raise IOError, "please provide log file name"
+
+    try: # select which iteration to stop plotting at
+      stop = int(parsed_opts.stop)
+    except:
+      stop = None
+
+    try: # select which 'id' to plot results for
+      runs = (int(parsed_opts.id),) #XXX: allow selecting more than one id ?
+    except:
+      runs = None # i.e. 'all' **or** use id=0, which should be 'best' energy ?
+
+    try: # select which parameters to plot
+      select = parsed_opts.param.split(',')  # format is ":2, 2:4, 5, 6:"
+    except:
+      select = [':']
+
+    # ensure all terms of select have a ":"
+    for i in range(len(select)):
+      if isinstance(select[i], int): select[i] = str(select[i])
+      if select[i] == '-1': select[i] = 'len(params)-1:len(params)'
+      elif not select[i].count(':'):
+        select[i] += ':' + str(int(select[i])+1)
+
+
+    # == Possible results ==
+    # iter = (i,id) or (i,) 
+    # split => { (i,) then (i+1,) } or { (i,) then (0,) }
+    # y x = { float list } or { list [list1, ...] }
+
+    # == Use Cases ==
+    # (i,id) + { (i,) then (i+1,) } + { float list }
+    # (i,) + { (i,) then (i+1,) } + { float list }
+    # (i,id) + { (i,) then (i+1,) } + { list [list1, ...] }
+    # (i,) + { (i,) then (i+1,) } + { list [list1, ...] }
+    # (i,id) + { (i,) then (0,) } + { float list }
+    # (i,) + { (i,) then (0,) } + { float list }
+    # (i,id) + { (i,) then (0,) } + { list [list1, ...] }
+    # (i,) + { (i,) then (0,) } + { list [list1, ...] }
+    # NOTES:
+    #   Legend is different for list versus [list1,...]
+    #   Plot should be discontinuous for (i,) then (0,)
+
+    # parse file contents to get (i,id), cost, and parameters
+    from mystic.munge import logfile_reader, read_raw_file
+    try:
+        step, param, cost = logfile_reader(filename)
+    except SyntaxError:
+        read_raw_file(filename)
+        msg = "incompatible file format, try 'support_convergence.py'"
+        raise SyntaxError(msg)
+
+    # ignore everything after 'stop'
+    step = step[:stop]
+    cost = cost[:stop]
+    param = param[:stop]
+
+    # split (i,id) into iteration and id
+    multinode = len(step[0]) - 1  #XXX: what if step = []?
+    iter = [i[0] for i in step]
+    if multinode:
+      id = [i[1] for i in step]
+    else:
+      id = [0 for i in step]
+
+    # build the list of selected parameters
+    params = range(len(param[0]))
+    selected = []
+    for i in select:
+      selected.extend(eval("params[%s]" % i))
+    selected = list(set(selected))
+
+    results = [[] for i in range(max(id) + 1)]
+
+    # populate results for each id with the corresponding (iter,cost,param)
+    for i in range(len(id)):
+      if runs is None or id[i] in runs: # take only the selected 'id'
+        results[id[i]].append((iter[i],cost[i],param[i]))
+    # NOTE: for example...  results = [[(0,...)],[(0,...),(1,...)],[],[(0,...)]]
+
+    # build list of parameter (and cost) convergences for each id
+    conv = []; cost_conv = []; iter_conv = []
+    for i in range(len(results)):
+      conv.append([])#; cost_conv.append([]); iter_conv.append([])
+      if len(results[i]):
+        for k in range(len(results[i][0][2])):
+          conv[i].append([results[i][j][2][k] for j in range(len(results[i]))])
+        cost_conv.append([results[i][j][1] for j in range(len(results[i]))])
+        iter_conv.append([results[i][j][0] for j in range(len(results[i]))])
+      else:
+        conv[i] = [[] for k in range(len(param[0]))]
+        cost_conv.append([])
+        iter_conv.append([])
+
+    #print "iter_conv = %s" % iter_conv
+    #print "cost_conv = %s" % cost_conv
+    #print "conv = %s" % conv
+
+    import matplotlib.pyplot as plt
+
+    fig = plt.figure()
+
+    #FIXME: These may fail when conv[i][j] = [[],[],[]] and cost = []. Verify this.
+    ax1 = fig.add_subplot(2,1,1)
+    for i in range(len(conv)):
+      if runs is None or i in runs: # take only the selected 'id'
+        for j in range(len(param[0])):
+          if j in selected: # take only the selected 'params'
+            tag = "%d,%d" % (j,i) # label is 'parameter,id'
+            ax1.plot(iter_conv[i],conv[i][j],label="%s" % tag,marker=mark,linestyle=style)
+    if parsed_opts.legend: plt.legend()
+
+    ax2 = fig.add_subplot(2,1,2)
+    for i in range(len(conv)):
+      if runs is None or i in runs: # take only the selected 'id'
+        tag = "%d" % i # label is 'cost id'
+        ax2.plot(iter_conv[i],cost_conv[i],label='cost %s' % tag,marker=mark,linestyle=style)
+    if parsed_opts.legend: plt.legend()
+
+    if not parsed_opts.out:
+        plt.show()
+    else:
+        fig.savefig(parsed_opts.out)
+
+
+# initialize doc
+try: log_reader()
+except TypeError:
+    pass
+try: model_plotter()
+except TypeError:
     pass
 
-# End of file
+
+
+if __name__ == '__main__':
+    pass
+
+
+# EOF
