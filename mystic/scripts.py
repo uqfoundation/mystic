@@ -16,7 +16,7 @@ import matplotlib.pyplot as plt
 from matplotlib import cm
 
 from mystic.munge import read_history
-from mystic.munge import logfile_reader, raw_to_support
+from mystic.munge import logfile_reader, raw_to_support, read_raw_file
 
 # globals
 __quit = False
@@ -790,7 +790,6 @@ Required Inputs:
     #   Plot should be discontinuous for (i,) then (0,)
 
     # parse file contents to get (i,id), cost, and parameters
-    from mystic.munge import logfile_reader, read_raw_file
     try:
         step, param, cost = logfile_reader(filename)
     except SyntaxError:
@@ -843,8 +842,6 @@ Required Inputs:
     #print "iter_conv = %s" % iter_conv
     #print "cost_conv = %s" % cost_conv
     #print "conv = %s" % conv
-
-    import matplotlib.pyplot as plt
 
     fig = plt.figure()
 

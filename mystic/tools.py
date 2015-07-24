@@ -18,6 +18,7 @@ Main functions exported are::
     - itertype: get the 'underlying' type used to construct x
     - multiply: recursive elementwise casting multiply of x by n
     - divide: recursive elementwise casting divide of x by n
+    - factor: generator for factors of a number
     - flatten: flatten a sequence
     - flatten_array: flatten an array 
     - getch: provides "press any key to quit"
@@ -175,6 +176,21 @@ def _adivide(x, n):
     x = numpy.asarray(x)
     if n is 1: return x
     return x/n
+
+def factor(n):
+    "generator for factors of a number"
+    #yield 1
+    i = 2
+    limit = n**0.5
+    while i <= limit:
+        if n % i == 0:
+            yield i
+            n = n / i
+            limit = n**0.5
+        else:
+            i += 1
+    if n > 1:
+        yield n
 
 def list_or_tuple(x): # set, ...?
     "True if x is a list or a tuple"
