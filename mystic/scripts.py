@@ -417,9 +417,12 @@ Additional Inputs:
 
     #XXX: note that 'argparse' is new as of python2.7
     from optparse import OptionParser
-    def _exit(self, **kwds):
+    def _exit(self, errno=None, msg=None):
       global __quit
       __quit = True
+      if errno or msg:
+        msg = msg.split(': error: ')[-1].strip()
+        raise IOError(msg)
     OptionParser.exit = _exit
 
     parser = OptionParser(usage=model_plotter.__doc__.split('\n\nOptions:')[0])
@@ -455,7 +458,6 @@ Additional Inputs:
                       default=False,help="show trajectory points in plot")
     parser.add_option("-j","--join",action="store_true",dest="line",\
                       default=False,help="connect trajectory points in plot")
-    parsed_opts, parsed_args = parser.parse_args(cmdargs)
 
 #   import sys
 #   if 'mystic_model_plotter.py' not in sys.argv:
@@ -467,6 +469,10 @@ Additional Inputs:
       model_plotter.__doc__ += '\nOptions:%s' % f.read().split('Options:')[-1]
     f.close()
 
+    try:
+      parsed_opts, parsed_args = parser.parse_args(cmdargs)
+    except UnboundLocalError:
+      pass
     if __quit: return
 
     # get the import path for the model
@@ -695,9 +701,12 @@ Required Inputs:
 
     #XXX: note that 'argparse' is new as of python2.7
     from optparse import OptionParser
-    def _exit(self, **kwds):
+    def _exit(self, errno=None, msg=None):
       global __quit
       __quit = True
+      if errno or msg:
+        msg = msg.split(': error: ')[-1].strip()
+        raise IOError(msg)
     OptionParser.exit = _exit
 
     parser = OptionParser(usage=log_reader.__doc__.split('\n\nOptions:')[0])
@@ -720,7 +729,6 @@ Required Inputs:
                       help="indicator string to select parameters")
     #parser.add_option("-f","--file",action="store",dest="filename",metavar="FILE",\
     #                  default='log.txt',help="log file name")
-    parsed_opts, parsed_args = parser.parse_args(cmdargs)
 
 #   import sys
 #   if 'mystic_log_reader.py' not in sys.argv:
@@ -732,6 +740,12 @@ Required Inputs:
       log_reader.__doc__ += '\nOptions:%s' % f.read().split('Options:')[-1]
     f.close()
 
+    try:
+      parsed_opts, parsed_args = parser.parse_args(cmdargs)
+    except UnboundLocalError:
+      pass
+    if __quit: return
+
     style = '-' # default linestyle
     if parsed_opts.dots:
       mark = 'o'
@@ -741,12 +755,10 @@ Required Inputs:
     else:
       mark = ''
 
-    if __quit: return
-
     try: # get logfile name
       filename = parsed_args[0]
     except:
-      raise IOError, "please provide log file name"
+      raise IOError("please provide log file name")
 
     try: # select which iteration to stop plotting at
       stop = int(parsed_opts.stop)

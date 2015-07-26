@@ -338,9 +338,12 @@ Required Inputs:
 
     #XXX: note that 'argparse' is new as of python2.7
     from optparse import OptionParser
-    def _exit(self, **kwds):
+    def _exit(self, errno=None, msg=None):
         global __quit
         __quit = True
+        if errno or msg:
+            msg = msg.split(': error: ')[-1].strip()
+            raise IOError(msg)
     OptionParser.exit = _exit
 
     parser = OptionParser(usage=convergence.__doc__.split('\n\nOptions:')[0])
@@ -362,7 +365,6 @@ Required Inputs:
                       default=False,help="also plot the parameter cost")
     parser.add_option("-g","--legend",action="store_true",dest="legend",\
                       default=False,help="show the legend")
-    parsed_opts, parsed_args = parser.parse_args(cmdargs)
 
     from StringIO import StringIO
     f = StringIO()
@@ -372,6 +374,10 @@ Required Inputs:
         convergence.__doc__ += '\nOptions:%s' % f.read().split('Options:')[-1]
     f.close()
 
+    try:
+        parsed_opts, parsed_args = parser.parse_args(cmdargs)
+    except UnboundLocalError:
+        pass
     if __quit: return
 
     # get the name of the parameter log file
@@ -571,9 +577,12 @@ Required Inputs:
 
     #XXX: note that 'argparse' is new as of python2.7
     from optparse import OptionParser
-    def _exit(self, **kwds):
+    def _exit(self, errno=None, msg=None):
         global __quit
         __quit = True
+        if errno or msg:
+            msg = msg.split(': error: ')[-1].strip()
+            raise IOError(msg)
     OptionParser.exit = _exit
 
     parser = OptionParser(usage=hypercube.__doc__.split('\n\nOptions:')[0])
@@ -600,7 +609,6 @@ Required Inputs:
                       help="grayscale contrast multiplier for points in plot")
     parser.add_option("-f","--flat",action="store_true",dest="flatten",\
                       default=False,help="show selected iterations in a single plot")
-    parsed_opts, parsed_args = parser.parse_args(cmdargs)
 
     from StringIO import StringIO
     f = StringIO()
@@ -610,6 +618,10 @@ Required Inputs:
         hypercube.__doc__ += '\nOptions:%s' % f.read().split('Options:')[-1]
     f.close()
 
+    try:
+        parsed_opts, parsed_args = parser.parse_args(cmdargs)
+    except UnboundLocalError:
+        pass
     if __quit: return
 
     # get the name of the parameter log file
@@ -663,12 +675,12 @@ Required Inputs:
     # ensure all terms of bounds and xyz are tuples
     for bound in bounds:
         if not isinstance(bound, tuple):
-            raise TypeError, "bounds should be tuples of (lower_bound,upper_bound)"
+            raise TypeError("bounds should be tuples of (lower_bound,upper_bound)")
     for i in range(len(xyz)):
         if isinstance(xyz[i], int):
             xyz[i] = (xyz[i],)
         elif not isinstance(xyz[i], tuple):
-            raise TypeError, "xyz should be tuples of (param1,param2,param3,...)"
+            raise TypeError("xyz should be tuples of (param1,param2,param3,...)")
 
     # ensure all terms of select are strings that have a ":"
     for i in range(len(select)):
@@ -847,9 +859,12 @@ Required Inputs:
 
     #XXX: note that 'argparse' is new as of python2.7
     from optparse import OptionParser
-    def _exit(self, **kwds):
+    def _exit(self, errno=None, msg=None):
         global __quit
         __quit = True
+        if errno or msg:
+            msg = msg.split(': error: ')[-1].strip()
+            raise IOError(msg)
     OptionParser.exit = _exit
 
     parser = OptionParser(usage=hypercube_measures.__doc__.split('\n\nOptions:')[0])
@@ -879,7 +894,6 @@ Required Inputs:
                       help="grayscale contrast multiplier for points in plot")
     parser.add_option("-f","--flat",action="store_true",dest="flatten",\
                       default=False,help="show selected iterations in a single plot")
-    parsed_opts, parsed_args = parser.parse_args(cmdargs)
 
     from StringIO import StringIO
     f = StringIO()
@@ -889,6 +903,10 @@ Required Inputs:
         hypercube_measures.__doc__ += '\nOptions:%s' % f.read().split('Options:')[-1]
     f.close()
 
+    try:
+        parsed_opts, parsed_args = parser.parse_args(cmdargs)
+    except UnboundLocalError:
+        pass
     if __quit: return
 
     # get the name of the parameter log file
@@ -944,23 +962,23 @@ Required Inputs:
     # ensure all terms of bounds and xyz are tuples
     for bound in bounds:
         if not isinstance(bound, tuple):
-            raise TypeError, "bounds should be tuples of (lower_bound,upper_bound)"
+            raise TypeError("bounds should be tuples of (lower_bound,upper_bound)")
     for i in range(len(xyz)):
         if isinstance(xyz[i], int):
             xyz[i] = (xyz[i],)
         elif not isinstance(xyz[i], tuple):
-            raise TypeError, "xyz should be tuples of (param1,param2,param3,...)"
+            raise TypeError("xyz should be tuples of (param1,param2,param3,...)")
     for i in range(len(wxyz)):
         if isinstance(wxyz[i], int):
             wxyz[i] = (wxyz[i],)
         elif not isinstance(wxyz[i], tuple):
-            raise TypeError, "wxyz should be tuples of (param1,param2,param3,...)"
+            raise TypeError("wxyz should be tuples of (param1,param2,param3,...)")
 
     # ensure all terms of select are strings of ints
     for i in range(len(select)):
         if isinstance(select[i], int): select[i] = str(select[i])
         if select[i].count(':'):
-            raise ValueError, "iters should be ints"
+            raise ValueError("iters should be ints")
        #if select[i] == '-1': select[i] = 'len(x)-1:len(x)'
        #elif not select[i].count(':'):
        #    select[i] += ':' + str(int(select[i])+1)
@@ -1059,7 +1077,7 @@ Required Inputs:
                     for k in eval("[params[q][%s] for q in wxyz[2]]" % s):
                         t[v].append([str((1.0 - i[q]*j[q]*k[q])**scale) for q in range(len(i))])
                         if float(t[v][-1][-1]) > 1.0 or float(t[v][-1][-1]) < 0.0:
-                            raise ValueError, "Weights must be in range 0-1. Check normalization and/or assignment."
+                            raise ValueError("Weights must be in range 0-1. Check normalization and/or assignment.")
 
     # build all the plots
     for v in range(len(steps)):
@@ -1164,9 +1182,12 @@ Additional Inputs:
 
     #XXX: note that 'argparse' is new as of python2.7
     from optparse import OptionParser
-    def _exit(self, **kwds):
+    def _exit(self, errno=None, msg=None):
         global __quit
         __quit = True
+        if errno or msg:
+            msg = msg.split(': error: ')[-1].strip()
+            raise IOError(msg)
     OptionParser.exit = _exit
 
     parser = OptionParser(usage=hypercube_scenario.__doc__.split('\n\nOptions:')[0])
@@ -1208,7 +1229,6 @@ Additional Inputs:
                       default=False,help="always plot values on vertical axis")
     parser.add_option("-f","--flat",action="store_true",dest="flatten",\
                       default=False,help="show selected iterations in a single plot")
-    parsed_opts, parsed_args = parser.parse_args(cmdargs)
 
     from StringIO import StringIO
     f = StringIO()
@@ -1218,6 +1238,10 @@ Additional Inputs:
         hypercube_scenario.__doc__ += '\nOptions:%s' % f.read().split('Options:')[-1]
     f.close()
 
+    try:
+        parsed_opts, parsed_args = parser.parse_args(cmdargs)
+    except UnboundLocalError:
+        pass
     if __quit: return
 
     # get the name of the parameter log file
@@ -1258,7 +1282,7 @@ Additional Inputs:
         from mystic.math.legacydata import load_dataset
         data = load_dataset(file, filter)
     except:
-#       raise IOError, "please provide dataset file name"
+#       raise IOError("please provide dataset file name")
         data = dataset()
         cones = False
         legacy = False
@@ -1337,7 +1361,7 @@ Additional Inputs:
     # ensure all terms of bounds are tuples
     for bound in bounds:
         if not isinstance(bound, tuple):
-            raise TypeError, "bounds should be tuples of (lower_bound,upper_bound)"
+            raise TypeError("bounds should be tuples of (lower_bound,upper_bound)")
 
     # ensure all terms of select are strings that have a ":"
     for i in range(len(select)):
