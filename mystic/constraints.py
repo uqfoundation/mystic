@@ -10,7 +10,8 @@
 
 __all__ = ['with_penalty','with_constraint','as_penalty','as_constraint',
            'with_mean','with_variance','with_std','with_spread','normalized',
-           'issolution','solve','discrete','integers']
+           'issolution','solve','discrete','integers','near_integers',
+           'unique','has_unique','impose_unique']
 
 from mystic.math.measures import *
 from mystic.math import almostEqual

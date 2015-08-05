@@ -156,7 +156,7 @@ Mystic requires::
     - python, version >= 2.5, version < 3.0
     - numpy, version >= 1.0
     - sympy, version >= 0.6.7
-    - dill, version >= 0.2.3
+    - dill, version >= 0.2.4
     - klepto, version >= 0.1.1
 
 Optional requirements::
@@ -308,7 +308,7 @@ if sys.version_info[:2] < (2.6):
 else:
     numpy_version = '>=1.0'
     sympy_version = '>=0.6.7'#, <0.7.4'
-dill_version = '>=0.2.3'
+dill_version = '>=0.2.4'
 klepto_version = '>=0.1.1'
 scipy_version = '>=0.6.0'
 matplotlib_version = '>=0.91'
