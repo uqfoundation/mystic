@@ -5,12 +5,13 @@
 # License: 3-clause BSD.  The full license text is available at:
 #  - http://trac.mystic.cacr.caltech.edu/project/mystic/browser/mystic/LICENSE
 """
-    Fit linear and quadratic polynomial to noisy data
+    Fit linear and quadratic polynomial to noisy data:
+               y(x) ~ a + b * x   --or--   y(x) ~ a + b * x + c * x**2
 
     where:
                0 >= x >= 4
-               y = y0 + yn
-               y0 = 1.5 * exp(-0.2 * x) + 0.3
+               y(x) = y0(x) + yn
+               y0(x) = 1.5 * exp(-0.2 * x) + 0.3
                yn = 0.1 * Normal(0,1)
 """
 from numpy import polyfit, poly1d, linspace, exp
