@@ -1,5 +1,17 @@
+#!/usr/bin/env python
+#
+# Problem definition:
+# Example in google/or-tools
+# https://github.com/google/or-tools/blob/master/examples/python/ex20.py
+# with Copyright 2010 Hakan Kjellerstrand hakank@bonetmail.com
+# and disclamer as stated at the above reference link.
+# 
+# Author: Mike McKerns (mmckerns @caltech and @uqfoundation)
+# Copyright (c) 1997-2015 California Institute of Technology.
+# License: 3-clause BSD.  The full license text is available at:
+#  - http://trac.mystic.cacr.caltech.edu/project/mystic/browser/mystic/LICENSE
 """
-  Eq 10 in Google CP Solver.
+  Eq 20 in Google CP Solver.
 
   Standard benchmark problem.
 """
