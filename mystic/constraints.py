@@ -242,8 +242,28 @@ def issolution(constraints, guess, tol=1e-3):
 
 Input:
     constraints -- a constraints solver function or a penalty function
-    guess -- list of parameter values prposed to solve the constraints
+    guess -- list of parameter values proposed to solve the constraints
     tol -- residual error magnitude for which constraints are considered solved
+
+    For example:
+    >>> @normalized()
+    ... def constraint(x):
+    ...   return x
+    ... 
+    >>> constraint([.5,.5])
+    [0.5, 0.5]
+    >>> issolution(constraint, [.5,.5])
+    True
+    >>> 
+    >>> from mystic.penalty import quadratic_inequality
+    >>> @quadratic_inequality(lambda x: x[0] - x[1] + 10)
+    ... def penalty(x):
+    ...   return 0.0
+    ... 
+    >>> penalty([-10,.5])
+    0.0
+    >>> issolution(penalty, [-10,.5])
+    True
     """
     if hasattr(constraints, 'error'):
         error = constraints.error(guess)
@@ -554,6 +574,29 @@ def unique(seq, full=None):
     {'min':min, 'max':max}, then unique floats are selected from
     range(min(seq),max(seq)). If full is a sequence (list or set), then
     unique values are selected from the given sequence. 
+
+    For example:
+    >>> unique([1,2,3,1,2,4], range(11))
+    [1, 2, 3, 9, 8, 4]
+    >>> unique([1,2,3,1,2,9], range(11))
+    [1, 2, 3, 8, 5, 9]
+    >>> try:
+    ...     unique([1,2,3,1,2,13], range(11))
+    ... except ValueError:
+    ...     pass
+    ...
+    >>>
+    >>> unique([1,2,3,1,2,4], {'min':0, 'max':11})
+    [1, 2, 3, 4.175187820357143, 2.5407265707465716, 4]
+    >>> mcon.unique([1,2,3,1,2,4], float)
+    [1, 2, 3, 1.012375036824941, 3.9821250727509905, 4]
+    >>> unique([1,2,3,1,2,10], int)
+    [1, 2, 3, 9, 6, 10]
+    >>> try:
+    ...     unique([1,2,3,1,2,4], int)
+    ... except ValueError:
+    ...     pass
+    ...
     """
     unique = set()
     # replace all duplicates with 'None'
@@ -614,7 +657,24 @@ def unique(seq, full=None):
 #XXX: enable impose_unique on selected members of x? (see constraints.integers)
 
 def impose_unique(seq=None):
-    """ensure all values are unique and found in the given set"""
+    """ensure all values are unique and found in the given set
+
+    For example:
+    >>> @impose_unique(range(11))
+    ... def doit(x):
+    ...     return x
+    ... 
+    >>> doit([1,2,3,1,2,4])
+    [1, 2, 3, 9, 8, 4]
+    >>> doit([1,2,3,1,2,10])
+    [1, 2, 3, 8, 5, 10]
+    >>> try:
+    ...     doit([1,2,3,1,2,13])
+    ... except ValueError:
+    ...     print "Bad Input"
+    ...
+    Bad Input
+"""
     def dec(f):
         def func(x,*args,**kwds):
             return f(unique(x, seq),*args,**kwds)
@@ -623,6 +683,7 @@ def impose_unique(seq=None):
 
 
 #XXX: enable near_integers and has_unique on selected members of x?
+#FIXME: the following don't seem to belong in 'mystic.constraints'
 
 from numpy import round, abs
 def near_integers(x): # use as a penalty for int programming
@@ -635,7 +696,5 @@ def has_unique(x): # use as a penalty for unique numbers
    #return len(x) - len(set(x))
 
 
-
-# EOF
 
 # EOF

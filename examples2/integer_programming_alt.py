@@ -37,14 +37,20 @@ def constraint(x):
     from numpy import round
     return round(solver(x))
 
-from numpy import round as npround
+# better is to constrain to integers, penalize otherwise
+from mystic.constraints import integers
+
+@integers()
+def round(x):
+  return x
+
 
 if __name__ == '__main__':
 
     from mystic.solvers import diffev2
     from mystic.math import almostEqual
 
-    result = diffev2(objective, x0=bounds, bounds=bounds, penalty=penalty, constraints=npround, npop=20, gtol=50, disp=True, full_output=True)
+    result = diffev2(objective, x0=bounds, bounds=bounds, penalty=penalty, constraints=round, npop=30, gtol=50, disp=True, full_output=True)
 
     print result[0]
     assert almostEqual(result[0], xs, tol=1e-8) #XXX: fails b/c rel & zero?
