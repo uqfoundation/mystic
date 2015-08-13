@@ -45,7 +45,7 @@ def test_calculate_methods(npts=2):
   weights = normalize(wts, 0.0, zsum=True)
   if disp: print "weights (when normalized to 0.0): %s" % weights
   assert almostEqual(sum(weights), 0.0, tol=1e-15)
-  weights = normalize(wts)
+  weights = normalize(wts, 1.0)
   assert almostEqual(sum(weights), 1.0, tol=1e-15)
   if disp: print "weights (when normalized to 1.0): %s" % weights
   w = norm(weights)

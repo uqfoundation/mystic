@@ -14,7 +14,7 @@ from cvxqp import objective, bounds, xs, ys
 from mystic.math.measures import normalize
 
 def constraint(x): # impose exactly
-    return normalize(x)
+    return normalize(x, 1.0)
 
 
 if __name__ == '__main__':

@@ -893,7 +893,7 @@ discrete measure positions, where the weights have norm 1.0 and are uniform.
 [[0.333333333333333, 0.333333333333333, 0.333333333333333], [0.5, 0.5], [1.0]]
 """
   from mystic.math.measures import normalize
-  return [normalize([1.]*len(xi)) for xi in samples]
+  return [normalize([1.]*len(xi), 1.0) for xi in samples]
 
 
 def _list_of_measures(samples, weights=None):

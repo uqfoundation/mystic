@@ -373,57 +373,78 @@ For example:
 
 
 ##### weight shift methods #####
-def impose_weight_norm(samples, weights, mass=None):
+def impose_weight_norm(samples, weights, mass=1.0):
   """normalize the weights for a list of (weighted) points
   (this function is 'mean-preserving')
 
 Inputs:
     samples -- a list of sample points
     weights -- a list of sample weights
-    mass -- target of normalized weights
+    mass -- float target of normalized weights
 """
   m = mean(samples, weights)
-  wts = normalize(weights,mass) #NOTE: not "mean-preserving", until next line
+  wts = normalize(weights,mass) #NOTE: not mean-preserving, until next line
   return impose_mean(m, samples, wts), wts
 
 
-def normalize(weights, mass=None, zsum=False, zmass=1.0, l=1):
+def Lnorm(weights, n=1):
+  "calculate L-n norm of weights"
+  # weights is a numpy array
+  # n is an int
+  if not n:
+    w = float(len(weights[weights != 0.0])) # total number of nonzero elements
+  else:
+    w = float(sum(abs(weights**n)))**(1./n)
+  return w
+
+
+def normalize(weights, mass='l2', zsum=False, zmass=1.0):
   """normalize a list of points (e.g. normalize to 1.0)
 
 Inputs:
     weights -- a list of sample weights
-    mass -- target of normalized weights
+    mass -- float target of normalized weights (or string for Ln norm)
     zsum -- use counterbalance when mass = 0.0
     zmass -- member scaling when mass = 0.0
-    l -- integer power for the norm (i.e. l=1 is the L1 norm)
 
-Note: if mass is None, use mass = sum(weights)/sum(abs(weights))
+Note: if mass='l1', will use L1-norm; if mass='l2' will use L2-norm; etc.
 """
-  l = int(l)
+  try:
+    mass = int(mass.lstrip('l'))
+    fixed = False
+  except AttributeError:
+    fixed = True
   weights = asarray(list(weights)) #XXX: faster to use x = array(x, copy=True) ?
-  if mass is None:
-    mass = sum(weights)/sum(abs(weights)) #XXX: correct?
-    if not mass: mass = None
-  if not l:
-    w = float(len(weights[weights != 0.0])) # total number of nonzero elements
+
+  if fixed:
+    w = sum(abs(weights))
   else:
-    w = float(sum(weights**l))**(1./l)
-  if not w:  #XXX: is this the best behavior?
-    if mass is None:
-      w = sum(abs(weights)); mass = 1.0 # XXX: correct?
-    else:
+    mass = int(min(200, mass)) # x**200 is ~ x**inf
+    w = Lnorm(weights,mass)
+    mass = 1.0
+
+  if not w:
+    if not zsum: return list(weights * 0.0)
+    from numpy import inf, nan
+    weights[weights == 0.0] = nan
+    return list(weights * inf)  # protect against ZeroDivision
+
+  if float(mass) or not zsum:
+    w = weights / w #FIXME: not "mean-preserving"
+    if not fixed: return list(w) # <- scaled so sum(abs(x)) = 1
+    #REMAINING ARE fixed mean
+    m = sum(w)
+    w = mass * w
+    if not m:  #XXX: do similar to zsum (i.e. shift) when sum(weights)==0 ?
+      if not zsum: return list(weights * 0.0)
       from numpy import inf, nan
       weights[weights == 0.0] = nan
       return list(weights * inf)  # protect against ZeroDivision
-  if mass is None: mass = 1.0
-  if float(mass) or not zsum:
-    return list(mass * weights / w)  #FIXME: not "mean-preserving"
+    return list(w/m) # <- scaled so sum(x) = 1
+
   # force selected member to satisfy sum = 0.0
   zsum = -1
-  if not l:
-    weights[:] = 0.0 #XXX: correct?
-  else:
-    weights[zsum] = (-(w**l - weights[zsum]**l))**(1./l)
+  weights[zsum] = -(sum(weights) - weights[zsum])
   mass = zmass
   return list(mass * weights / w)  #FIXME: not "mean-preserving"
 
