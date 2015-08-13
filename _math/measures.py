@@ -373,40 +373,57 @@ For example:
 
 
 ##### weight shift methods #####
-def impose_weight_norm(samples, weights, mass=1.0):
+def impose_weight_norm(samples, weights, mass=None):
   """normalize the weights for a list of (weighted) points
   (this function is 'mean-preserving')
 
 Inputs:
     samples -- a list of sample points
     weights -- a list of sample weights
-    mass -- target sum of normalized weights
+    mass -- target of normalized weights
 """
   m = mean(samples, weights)
   wts = normalize(weights,mass) #NOTE: not "mean-preserving", until next line
   return impose_mean(m, samples, wts), wts
 
 
-def normalize(weights, mass=1.0, zsum=False, zmass=1.0):
-  """normalize a list of points to unity (i.e. normalize to 1.0)
+def normalize(weights, mass=None, zsum=False, zmass=1.0, l=1):
+  """normalize a list of points (e.g. normalize to 1.0)
 
 Inputs:
     weights -- a list of sample weights
-    mass -- target sum of normalized weights
+    mass -- target of normalized weights
     zsum -- use counterbalance when mass = 0.0
     zmass -- member scaling when mass = 0.0
+    l -- integer power for the norm (i.e. l=1 is the L1 norm)
+
+Note: if mass is None, use mass = sum(weights)/sum(abs(weights))
 """
+  l = int(l)
   weights = asarray(list(weights)) #XXX: faster to use x = array(x, copy=True) ?
-  w = float(sum(weights))
+  if mass is None:
+    mass = sum(weights)/sum(abs(weights)) #XXX: correct?
+    if not mass: mass = None
+  if not l:
+    w = float(len(weights[weights != 0.0])) # total number of nonzero elements
+  else:
+    w = float(sum(weights**l))**(1./l)
   if not w:  #XXX: is this the best behavior?
-    from numpy import inf, nan
-    weights[weights == 0.0] = nan
-    return list(weights * inf)  # protect against ZeroDivision
+    if mass is None:
+      w = sum(abs(weights)); mass = 1.0 # XXX: correct?
+    else:
+      from numpy import inf, nan
+      weights[weights == 0.0] = nan
+      return list(weights * inf)  # protect against ZeroDivision
+  if mass is None: mass = 1.0
   if float(mass) or not zsum:
     return list(mass * weights / w)  #FIXME: not "mean-preserving"
   # force selected member to satisfy sum = 0.0
   zsum = -1
-  weights[zsum] = -(w - weights[zsum])
+  if not l:
+    weights[:] = 0.0 #XXX: correct?
+  else:
+    weights[zsum] = (-(w**l - weights[zsum]**l))**(1./l)
   mass = zmass
   return list(mass * weights / w)  #FIXME: not "mean-preserving"
 
