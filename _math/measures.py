@@ -14,6 +14,7 @@ from mystic.math.integrate import *
 from mystic.symbolic import generate_solvers, generate_constraint, solve
 from mystic.symbolic import generate_conditions, generate_penalty
 from mystic.math import almostEqual
+from mystic.math.distance import Lnorm
 
 def weighted_select(samples, weights, mass=1.0):
   """randomly select a sample from weighted set of samples
@@ -387,17 +388,6 @@ Inputs:
   return impose_mean(m, samples, wts), wts
 
 
-def Lnorm(weights, n=1):
-  "calculate L-n norm of weights"
-  # weights is a numpy array
-  # n is an int
-  if not n:
-    w = float(len(weights[weights != 0.0])) # total number of nonzero elements
-  else:
-    w = float(sum(abs(weights**n)))**(1./n)
-  return w
-
-
 def normalize(weights, mass='l2', zsum=False, zmass=1.0):
   """normalize a list of points (e.g. normalize to 1.0)
 
@@ -574,7 +564,7 @@ Inputs:
     samples -- a list of sample points
     weights -- a list of sample weights
 """
-    s = sarray(samples)
+    s = asarray(samples)
     return median(abs(s - median(samples,weights)),weights) # * scale
 
 

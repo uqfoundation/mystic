@@ -15,6 +15,16 @@ graphical_distance: for a given dataset (x,y) and a given model (F),
 """
 debug = False 
 
+def Lnorm(weights, p=1):
+  "calculate L-p norm of weights"
+  # weights is a numpy array
+  # p is an int
+  if not p:
+    w = float(len(weights[weights != 0.0])) # total number of nonzero elements
+  else:
+    w = float(sum(abs(weights**p)))**(1./p)
+  return w
+
 def absolute_distance(x, xp, up=False, dmin=0):
   """distance = |x - x'|;  (see euclidean_distance for notes)"""
   from numpy import abs, asarray, newaxis as nwxs
