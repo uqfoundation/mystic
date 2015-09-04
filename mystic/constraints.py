@@ -588,7 +588,9 @@ def unique(seq, full=None):
     >>>
     >>> unique([1,2,3,1,2,4], {'min':0, 'max':11})
     [1, 2, 3, 4.175187820357143, 2.5407265707465716, 4]
-    >>> mcon.unique([1,2,3,1,2,4], float)
+    >>> unique([1,2,3,1,2,4], {'min':0, 'max':11, 'type':int})
+    [1, 2, 3, 6, 8, 4]
+    >>> unique([1,2,3,1,2,4], float)
     [1, 2, 3, 1.012375036824941, 3.9821250727509905, 4]
     >>> unique([1,2,3,1,2,10], int)
     [1, 2, 3, 9, 6, 10]
@@ -615,13 +617,16 @@ def unique(seq, full=None):
         _min = min(unique)
         _max = max(unique)
     elif isinstance(full, dict): # specified min/max for floats
-        ok = min(unique) >= full['min'] and max(unique) < full['max']
+        _type = full.pop('type', float) #NOTE: undocumented keys: min,max,type
+        minu = min(unique)
+        maxu = max(unique)
+        _min = full.get('min', minu)
+        _max = full.get('max', maxu)
+        ok = minu >= _min and maxu < _max
         if not ok:
-            oops = list(unique - set(range(full['min'],full['max'])))
-            msg = "x=%s not in %s <= x < %s" % (oops[-1],full['min'],full['max'])
-        _min = full['min']
-        _max = full['max']
-        full = float
+            oops = list(unique - set(range(_min,_max)))
+            msg = "x=%s not in %s <= x < %s" % (oops[-1],_min,_max)
+        full = _type
     else: # full is a list of all possible values
         ok = unique.issubset(full)
         if not ok:
