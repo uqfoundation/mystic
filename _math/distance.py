@@ -19,18 +19,28 @@ def Lnorm(weights, p=1):
   "calculate L-p norm of weights"
   # weights is a numpy array
   # p is an int
+  from numpy import asarray, seterr, inf
+  weights = asarray(weights).flatten()
   if not p:
     w = float(len(weights[weights != 0.0])) # total number of nonzero elements
+  elif p == inf:
+    w = float(max(abs(weights)))
   else:
-    w = float(sum(abs(weights**p)))**(1./p)
+    orig = seterr(over='raise', invalid='raise')
+    try:
+      w = float(sum(abs(weights**p)))**(1./p)
+    except FloatingPointError: # use the infinity norm
+      w = float(max(abs(weights)))
+    seterr(**orig)
   return w
 
-def absolute_distance(x, xp, up=False, dmin=0):
+def absolute_distance(x, xp=None, up=False, dmin=0):
   """distance = |x - x'|;  (see euclidean_distance for notes)"""
-  from numpy import abs, asarray, newaxis as nwxs
+  from numpy import abs, asarray, newaxis as nwxs, zeros_like
   from __builtin__ import max
   # cast as arrays of the same dimension
-  x = asarray(x); xp = asarray(xp)
+  x = asarray(x)
+  xp = zeros_like(x) if xp is None else asarray(xp)
   xsize = max(len(x.shape), len(xp.shape), dmin)
   while len(x.shape) < xsize: x = x[nwxs]
   while len(xp.shape) < xsize: xp = xp[nwxs]
@@ -38,7 +48,7 @@ def absolute_distance(x, xp, up=False, dmin=0):
   if up: x = x[:,nwxs] if xsize > 0 else x[nwxs]
   return abs(x - xp)
 
-def euclidean_distance(x, xp, up=True, dmin=0):
+def euclidean_distance(x, xp=None, up=True, dmin=0):
   """1-D euclidean distance between points
 
   d[i] = | x[i] - x'[i] |
@@ -53,7 +63,7 @@ Notes:
 """
   return absolute_distance(x,xp,up=up,dmin=dmin).swapaxes(0,1).T
 
-def manhattan_distance(x, xp, **kwds):
+def manhattan_distance(x, xp=None, **kwds):
   """1-D manhattan distance between points
 
   d[ij] = | x[i] - x'[j] |
@@ -64,10 +74,11 @@ Notes:
 """
   # dmin: force upconvert to x,x' to dimension >= dmin
   dmin = kwds['dmin'] if 'dmin' in kwds else 0 # default dimension
-  from numpy import abs, asarray, newaxis as nwxs
+  from numpy import abs, asarray, newaxis as nwxs, zeros_like
   from __builtin__ import max
   # cast as arrays of the same dimension
-  x = asarray(x); xp = asarray(xp)
+  x = asarray(x)
+  xp = zeros_like(x) if xp is None else asarray(xp)
   xsize = max(len(x.shape), len(xp.shape), dmin)
   while len(x.shape) < xsize: x = x[nwxs]
   while len(xp.shape) < xsize: xp = xp[nwxs]
@@ -85,7 +96,7 @@ Notes:
 #       (is sum done correctly? is orientation correct? ...)
 ###############################################################################
 
-def lipschitz_metric(L, x, xp):
+def lipschitz_metric(L, x, xp=None):
   """sum of lipschitz-weighted distance between points
 
   d = sum( L[i] * |x[i] - x'[i]| )
@@ -118,7 +129,7 @@ def _get_xy(points):
 # distance metrics  #NOTE: euclidean_distance and the like need renaming!!!
 ###########################################################################
 
-def chebyshev(x,xp, up=True, dmin=0, axis=None):
+def chebyshev(x,xp=None, up=True, dmin=0, axis=None):
   """infinity norm distance between points in euclidean space
 
   d(inf) =  max( |x[0] - x[0]'|, |x[1] - x[1]'|, ..., |x[n] - x[n]'| ) 
@@ -137,11 +148,32 @@ Notes:
   for element-wise across all elements, use up=True
 """
   d = euclidean_distance(x,xp,up=up,dmin=dmin)
-  from numpy import max
-  return max(d, axis=axis)
+  return d.max(axis=axis).astype(float)
 
 
-def minkowski(x,xp, up=True, dmin=0, p=3, axis=None):
+def hamming(x,xp=None, up=True, dmin=0, axis=None):
+  """zero 'norm' distance between points in euclidean space
+
+  d(0) =  sum( x[0] != x[0]', x[1] != x[1]', ..., x[n] != x[n]' ) 
+
+Input:
+  x    = array of points, x
+  xp   = array pf points, x'
+
+Additional Input:
+  up   = True if upconvert x with x[:,newaxis]
+  dmin = upconvert to x,x' to dimension >= dmin
+  axis = if not None, reduce across the selected axis
+
+Notes:
+  for standard array behavior, use up=False
+  for element-wise across all elements, use up=True
+"""
+  d = euclidean_distance(x,xp,up=up,dmin=dmin)
+  return d.astype(bool).sum(axis=axis).astype(float)
+
+
+def minkowski(x,xp=None, up=True, dmin=0, p=3, axis=None):
   """p-norm distance between points in euclidean space
 
   d(p) = sum( |x[0] - x[0]'|^p, |x[1] - x[1]'|^p, ..., |x[n] - x[n]'|^p )^(1/p)
@@ -160,12 +192,19 @@ Notes:
   for standard array behavior, use up=False
   for element-wise across all elements, use up=True
 """
+  from numpy import seterr, inf
+  if p == inf: return chebyshev(x,xp,up=up,dmin=dmin,axis=axis)
   d = euclidean_distance(x,xp,up=up,dmin=dmin)
-  from numpy import sum
-  return sum(d**p, axis=axis)**(1./p)
+  orig = seterr(over='raise', invalid='raise')
+  try:
+      d = (d**p).sum(axis=axis)**(1./p)
+  except FloatingPointError: # use the infinity norm
+      d = d.max(axis=axis).astype(float)
+  seterr(**orig)
+  return d
 
 
-def euclidean(x,xp, up=True, dmin=0, axis=None):
+def euclidean(x,xp=None, up=True, dmin=0, axis=None):
   """L-2 norm distance between points in euclidean space
 
   d(2) = sqrt(sum( |x[0] - x[0]'|^2, |x[1] - x[1]'|^2, ..., |x[n] - x[n]'|^2 ))
@@ -186,7 +225,7 @@ Notes:
   return minkowski(x,xp,up=up,dmin=dmin,p=2,axis=axis)
 
 
-def manhattan(x,xp, up=True, dmin=0, axis=None):
+def manhattan(x,xp=None, up=True, dmin=0, axis=None):
   """L-1 norm distance between points in euclidean space
 
   d(1) = sum( |x[0] - x[0]'|, |x[1] - x[1]'|, ..., |x[n] - x[n]'| )
