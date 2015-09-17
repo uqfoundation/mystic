@@ -106,12 +106,12 @@ if __name__ == '__main__':
     # find & draw the support vectors from DE
     svl = sv(xy, sx,sy,sr)
     print "DE support vectors: ", svl
-    pylab.plot(xy[svl,0],xy[svl,1],'bo',markersize=6)
+    pylab.plot(xy[svl,0],xy[svl,1],'bx',markersize=6)
 
     # find & draw the support vectors from scipy.brute
    #svl = sv(xy, bx,by,br)
    #print "Brute support vectors: ", svl
-   #pylab.plot(xy[svl,0],xy[svl,1],'yo',markersize=6)
+   #pylab.plot(xy[svl,0],xy[svl,1],'yx',markersize=6)
 
     pylab.legend(legend)
     pylab.show()
