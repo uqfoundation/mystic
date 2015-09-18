@@ -25,9 +25,9 @@ def WeightVector(alpha, X, y):
 
 
 def SupportVectors(alpha, y=None, eps = 0):
-    import mystic.svmtools
-    sv = svmtools.SupportVectors(alpha,eps)
-    if y == None:
+    import mystic.svmtools as svm
+    sv = svm.SupportVectors(alpha,eps)
+    if y is None:
         return sv
     else:
         class1 = set((y>0).nonzero()[1])

@@ -135,7 +135,7 @@ Additional Inputs:
 
 
 # Factories that give termination conditions
-def VTR(tolerance = 0.005, target = 0.0):
+def VTR(tolerance=0.005, target=0.0):
     """cost of last iteration is < tolerance:
 
 cost[-1] <= tolerance"""
@@ -151,7 +151,7 @@ cost[-1] <= tolerance"""
     _VTR.__doc__ = doc
     return _VTR
 
-def ChangeOverGeneration(tolerance = 1e-6, generations = 30):
+def ChangeOverGeneration(tolerance=1e-6, generations=30):
     """change in cost is < tolerance over a number of generations:
 
 cost[-g] - cost[-1] <= tolerance, where g=generations"""
@@ -168,7 +168,7 @@ cost[-g] - cost[-1] <= tolerance, where g=generations"""
     _ChangeOverGeneration.__doc__ = doc
     return _ChangeOverGeneration
 
-def NormalizedChangeOverGeneration(tolerance = 1e-4, generations = 10):
+def NormalizedChangeOverGeneration(tolerance=1e-4, generations=10):
     """normalized change in cost is < tolerance over number of generations:
 
 (cost[-g] - cost[-1]) /  0.5*(abs(cost[-g]) + abs(cost[-1])) <= tolerance"""
@@ -187,7 +187,7 @@ def NormalizedChangeOverGeneration(tolerance = 1e-4, generations = 10):
     _NormalizedChangeOverGeneration.__doc__ = doc
     return _NormalizedChangeOverGeneration
               
-def CandidateRelativeTolerance(xtol = 1e-4, ftol = 1e-4):
+def CandidateRelativeTolerance(xtol=1e-4, ftol=1e-4):
     """absolute difference in candidates is < tolerance:
 
 abs(xi-x0) <= xtol & abs(fi-f0) <= ftol, where x=params & f=cost"""
@@ -213,7 +213,7 @@ abs(xi-x0) <= xtol & abs(fi-f0) <= ftol, where x=params & f=cost"""
     _CandidateRelativeTolerance.__doc__ = doc
     return _CandidateRelativeTolerance
 
-def SolutionImprovement(tolerance = 1e-5):  
+def SolutionImprovement(tolerance=1e-5):  
     """sum of change in each parameter is < tolerance:
 
 sum(abs(last_params - current_params)) <= tolerance"""
@@ -233,7 +233,7 @@ sum(abs(last_params - current_params)) <= tolerance"""
     _SolutionImprovement.__doc__ = doc
     return _SolutionImprovement
 
-def NormalizedCostTarget(fval = None, tolerance = 1e-6, generations = 30):
+def NormalizedCostTarget(fval=None, tolerance=1e-6, generations=30):
     """normalized absolute difference from given cost value is < tolerance:
 (if fval is not provided, then terminate when no improvement over g iterations)
 
@@ -247,20 +247,19 @@ abs(cost[-1] - fval)/fval <= tolerance *or* (cost[-1] - cost[-g]) = 0 """
         if info: info = lambda x:x
         else: info = bool
         hist = inst.energy_history
-        if generations and fval == None:
+        if generations and fval is None:
             lg = len(hist)
             #XXX: throws error when hist is shorter than generations ?
             if lg > generations and (hist[-generations]-hist[-1]) <= 0:
                 return info(doc)
             return info(null)
-        if not generations and fval == None: return info(doc)
+        if not generations and fval is None: return info(doc)
         if abs(hist[-1]-fval) <= abs(tolerance * fval): return info(doc)
         return info(null)
     _NormalizedCostTarget.__doc__ = doc
     return _NormalizedCostTarget
 
-def VTRChangeOverGeneration(ftol = 0.005, gtol = 1e-6, generations = 30,
-                                                            target = 0.0):
+def VTRChangeOverGeneration(ftol=0.005, gtol=1e-6, generations=30, target=0.0):
     """change in cost is < gtol over a number of generations,
 or cost of last iteration is < ftol:
 
@@ -280,7 +279,7 @@ cost[-g] - cost[-1] <= gtol, where g=generations *or* cost[-1] <= ftol."""
     _VTRChangeOverGeneration.__doc__ = doc
     return _VTRChangeOverGeneration
 
-def PopulationSpread(tolerance = 1e-6):
+def PopulationSpread(tolerance=1e-6):
     """normalized absolute deviation from best candidate is < tolerance:
 
 abs(params - params[0]) <= tolerance"""
@@ -298,7 +297,7 @@ abs(params - params[0]) <= tolerance"""
     _PopulationSpread.__doc__ = doc
     return _PopulationSpread
 
-def GradientNormTolerance(tolerance = 1e-5, norm = Inf): 
+def GradientNormTolerance(tolerance=1e-5, norm=Inf): 
     """gradient norm is < tolerance, given user-supplied norm:
 
 sum( abs(gradient)**norm )**(1.0/norm) <= tolerance"""
@@ -325,7 +324,7 @@ sum( abs(gradient)**norm )**(1.0/norm) <= tolerance"""
     _GradientNormTolerance.__doc__ = doc
     return _GradientNormTolerance
 
-def EvaluationLimits(generations = None, evaluations = None):
+def EvaluationLimits(generations=None, evaluations=None):
     """number of iterations is > generations,
 or number of function calls is > evaluations:
 

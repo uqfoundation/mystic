@@ -117,7 +117,7 @@ Example:
 
     #XXX: addModelNew is a work in progress...
     '''
-    def addModelNew(self, model, name, outputFilter = Identity, inputChecker = NullChecker):
+    def addModelNew(self, model, name, outputFilter=Identity, inputChecker=NullChecker):
         """
 Adds a forward model factory to the cost factory.
 The number of inputs is determined with inspect.getargspec.
@@ -198,7 +198,7 @@ Example:
             return sum(forward(params) - observations)
         return _
 
-    def getCostFunction(self, evalpts, observations, sigma = None, metric = lambda x: sum(x*x)):
+    def getCostFunction(self, evalpts, observations, sigma=None, metric=lambda x: sum(x*x)):
         """
 Get a cost function that allows simultaneous evaluation of all forward models
 for the same set of evaluation points and observation points.
@@ -248,7 +248,7 @@ Example:
                 else:
                     x = x + ofilt(Gm(evalpts)) 
                 ind = ind+n
-            if sigma == None:
+            if sigma is None:
                 x = x - observations
             else:
                 x = (x - observations) / sigma

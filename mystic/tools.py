@@ -34,6 +34,9 @@ Main functions exported are::
     - masked: generate a masked function, given a function and mask provided
     - partial: generate a function where some input has fixed values
     - insert_missing: return a sequence with the 'missing' elements inserted
+    - clipped: generate a function where values outside of bounds are clipped
+    - supressed: generate a function where values less than tol are supressed
+    - supress: supress small values less than tol
     - unpair: convert a 1D array of N pairs to two 1D arrays of N values
     - src: extract source code from a python code object
 
@@ -560,6 +563,67 @@ For example,
         func.__wrapped__ = f
         func.__doc__ = f.__doc__
         func.mask = mask
+        return func
+    return dec
+
+
+def supress(x, tol=1e-8, clip=True):
+    """supress small values less than tol"""
+    from numpy import asarray, abs
+    x = asarray(list(x))
+    mask = abs(x) < tol
+    if not clip:
+        # preserve sum by spreading supressed values to the non-zero elements
+        x[mask==False] = (x + sum(x[mask])/(len(mask)-sum(mask)))[mask==False]
+    x[mask] = 0.0
+    return x.tolist()
+
+def supressed(tol=1e-8, exit=False, clip=True):
+    """generate a function, where values less than tol are supressed
+
+For example,
+    >>> @supressed(1e-8)
+    ... def square(x):
+    ...     return [i**2 for i in x]
+    ... 
+    >>> square([1e-8, 2e-8, 1e-9])
+    [1.00000000e-16, 4.00000000e-16, 0.00000000e+00]
+    >>> 
+    >>> from mystic.math.measures import normalize
+    >>> @supressed(1e-8, exit=True, clip=False)
+    ... def norm(x):
+    ...     return normalize(x, mass=1)
+    ... 
+    >>> norm([1e-8, 2e-8, 1e-16, 5e-9])
+    [0.28571428585034014, 0.5714285707482993, 0.0, 0.14285714340136055]
+    >>> sum(_)
+    1.0
+    """
+    def dec(f):
+        if exit:
+            def func(x, *args, **kwds):
+                return supress(f(x, *args, **kwds), tol, clip)
+        else:
+            def func(x, *args, **kwds):
+                return f(supress(x, tol, clip), *args, **kwds)
+        func.__wrapped__ = f
+        func.__doc__ = f.__doc__
+        return func
+    return dec
+
+def clipped(min=None, max=None, exit=False):
+    """generate a function, where values outside of bounds are clipped
+    """
+    from numpy import clip
+    def dec(f):
+        if exit:
+            def func(x, *args, **kwds):
+                return clip(f(x, *args, **kwds), min, max).tolist()
+        else:
+            def func(x, *args, **kwds):
+                return f(clip(x, min, max).tolist(), *args, **kwds)
+        func.__wrapped__ = f
+        func.__doc__ = f.__doc__
         return func
     return dec
 
