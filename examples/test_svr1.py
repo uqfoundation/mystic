@@ -13,34 +13,34 @@ from numpy import *
 import pylab
 from mystic.svmtools import *
 
-# a common objective function for solving a QP problem
-# (see http://www.mathworks.com/help/optim/ug/quadprog.html)
-def objective(x, H, f):
-    return 0.5 * dot(dot(x,H),x) + dot(f,x)
+# define the objective function to match standard QP solver
+# (see: http://www.mathworks.com/help/optim/ug/quadprog.html)
+def objective(x, Q, b):
+    return 0.5 * dot(dot(x,Q),x) + dot(b,x)
 
-# linear data with scatter
-x = arange(-5, 5.001)
-y = x + 7*random.rand(x.size)
+# define the data points (linear data with uniform scatter)
+x = arange(-5, 5.001); nx = x.size
+y = x + 7*random.rand(nx)
+N = 2*nx
 
-l = x.size
-N = 2*l
-
-# the Kernel Matrix (with the linear kernel)
+# build the Kernel Matrix (with linear kernel)
+# get the QP quadratic term
 X = concatenate([x,-x])
-Q = multiply.outer(X,X)+1
-
-# the linear term for the QP
+Q = 1 + multiply.outer(X,X)
+# get the QP linear term
 Y = concatenate([y,-y])
 svr_epsilon = 3
 b = Y + svr_epsilon * ones(Y.size)
 
-H = Q
-f = b
-Aeq = concatenate([ones(l), -ones(l)]).reshape(1,N)
+# build the constraints (y.T * x = 0.0)
+# 1.0*x0 + 1.0*x1 + ... - 1.0*xN = 0.0
+Aeq = concatenate([ones(nx), -ones(nx)]).reshape(1,N)
 Beq = array([0.])
+# set the bounds
 lb = zeros(N)
 ub = zeros(N) + 0.5
 
+# build the constraints operator
 from mystic.symbolic import linear_symbolic, solve, \
      generate_solvers as solvers, generate_constraint as constraint
 constrain = linear_symbolic(Aeq,Beq)
@@ -54,18 +54,19 @@ def conserve(x):
 from mystic.monitors import VerboseMonitor
 mon = VerboseMonitor(10)
 
+# solve for alpha
 from mystic.solvers import diffev
-alpha = diffev(objective, zip(lb,.1*ub), args=(H,f), npop=N*3, gtol=200, \
+alpha = diffev(objective, zip(lb,.1*ub), args=(Q,b), npop=N*3, gtol=200, \
                itermon=mon, \
                ftol=1e-5, bounds=zip(lb,ub), constraints=conserve, disp=1)
 
 print 'solved x: ', alpha
 print "constraint A*x == 0: ", inner(Aeq, alpha)
-print "minimum 0.5*x'Hx + f'*x: ", objective(alpha, H, f)
+print "minimum 0.5*x'Qx + b'*x: ", objective(alpha, Q, b)
 
-sv1 = SupportVectors(alpha[:l])
-sv2 = SupportVectors(alpha[l:])
-
+# calculate support vectors and regression function
+sv1 = SupportVectors(alpha[:nx])
+sv2 = SupportVectors(alpha[nx:])
 R = RegressionFunction(x, y, alpha, svr_epsilon, LinearKernel)
 
 print 'support vectors: ', sv1, sv2

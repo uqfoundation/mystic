@@ -10,7 +10,13 @@ Simple utility functions for SV-Regressions
 
 from numpy import zeros, multiply, ndarray, vectorize, array
 
-def KernelMatrix(X, k):
+def InnerProduct(i1, i2):
+    return i1 * i2
+
+def LinearKernel(i1, i2):
+    return 1. + i1 * i2
+
+def KernelMatrix(X, k=InnerProduct):
     n = X.size
     Q = zeros((n,n))
     for i in range(n):
@@ -21,16 +27,10 @@ def KernelMatrix(X, k):
     return Q
 
 def SupportVectors(alpha, eps=0):
-    # return index of nonzero alphas (at a tolerance of epsilon)
+    """indicies of nonzero alphas (at tolerance eps)"""
     return (abs(alpha)>eps).nonzero()[0]
 
-def StandardInnerProduct(i1, i2):
-    return i1 * i2
-
-def LinearKernel(i1, i2):
-    return 1. + i1 * i2
-
-def Bias(x, y, alpha, eps, kernel=StandardInnerProduct):
+def Bias(x, y, alpha, eps, kernel=InnerProduct):
     """ Compute regression bias for epsilon insensitive loss regression """
     N = len(alpha)/2
     ap, am = alpha[:N],  alpha[N:]
@@ -39,7 +39,7 @@ def Bias(x, y, alpha, eps, kernel=StandardInnerProduct):
     b = eps + y[sv] + sum( (ap-am) * multiply.outer(x, x[sv]) )
     return b
 
-def RegressionFunction(x, y, alpha, eps, kernel=StandardInnerProduct):
+def RegressionFunction(x, y, alpha, eps, kernel=InnerProduct):
     """ The Support Vector expansion. f(x) = Sum (ap - am) K(xi, x) + b """
     bias = Bias(x, y, alpha, eps, kernel)
     N = len(alpha)/2

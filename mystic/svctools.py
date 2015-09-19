@@ -24,7 +24,11 @@ def WeightVector(alpha, X, y):
     return sum(aXy, 0)
 
 
-def SupportVectors(alpha, y=None, eps = 0):
+def SupportVectors(alpha, y=None, eps=0):
+    """indicies of nonzero alphas (at tolerance eps)
+
+If labels y are provided, then group indicies by label
+    """
     import mystic.svmtools as svm
     sv = svm.SupportVectors(alpha,eps)
     if y is None:
