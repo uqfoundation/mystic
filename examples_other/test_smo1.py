@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 #
 # Author: Patrick Hung (patrickh @caltech)
+# Author: Mike McKerns (mmckerns @caltech and @uqfoundation)
 # Copyright (c) 1997-2015 California Institute of Technology.
 # License: 3-clause BSD.  The full license text is available at:
 #  - http://trac.mystic.cacr.caltech.edu/project/mystic/browser/mystic/LICENSE
@@ -11,9 +12,13 @@ SMO prototype.
 """
 
 from numpy import *
-import qld
 import pylab
 from mystic.svctools import *
+
+# a common objective function for solving a QP problem
+# (see http://www.mathworks.com/help/optim/ug/quadprog.html)
+def objective(x, H, f):
+    return 0.5 * dot(dot(x,H),x) + dot(f,x)
 
 c1 = array([[0., 0.],[1., 0.],[ 0.2, 0.2],[0.,1.]])
 c2 = array([[0, 1.1], [1.1, 0.],[0, 1.5],[0.5,1.2],[0.8, 1.7]])
@@ -21,6 +26,8 @@ c2 = array([[0, 1.1], [1.1, 0.],[0, 1.5],[0.5,1.2],[0.8, 1.7]])
 # the Kernel Matrix (with the linear kernel)
 XX = concatenate([c1,-c2])
 nx = XX.shape[0]
+
+# quadratic and linear terms of QP
 Q = KernelMatrix(XX)
 b = -1 * ones(nx)
 
@@ -29,11 +36,30 @@ f = b
 Aeq = concatenate([ones(c1.shape[0]), -ones(c2.shape[0])]).reshape(1,nx)
 Beq = array([0])
 lb = zeros(nx)
-ub = zeros(nx) + 99999
+ub = 99999 * ones(nx)
 
-# first, use a general purpose IQP solver.
-alpha = qld.quadprog2(H, f, None, None, Aeq, Beq, lb, ub)
-print alpha
+from mystic.symbolic import linear_symbolic, solve, \
+     generate_solvers as solvers, generate_constraint as constraint
+constrain = linear_symbolic(Aeq,Beq)
+constrain = constraint(solvers(solve(constrain,target=['x0'])))
+
+from mystic import supressed
+@supressed(1e-5)
+def conserve(x):
+    return constrain(x)
+
+#from mystic.monitors import VerboseMonitor
+#mon = VerboseMonitor(1)
+
+from mystic.solvers import diffev
+alpha = diffev(objective, zip(lb,ub), args=(H,f), npop=nx*3, gtol=200, \
+#              itermon=mon, \
+               ftol=1e-8, bounds=zip(lb,ub), constraints=conserve, disp=1)
+
+print 'solved x: ', alpha
+print "constraint A*x == 0: ", inner(Aeq, alpha)
+print "minimum 0.5*x'Hx + f'*x: ", objective(alpha, H, f)
+
 
 # let's play. We will need to bootstrap the SMO with an initial
 # state that belongs to the feasible set. Because of the special structure
@@ -158,9 +184,9 @@ Minimizes xQx + Px,
         print alpha
         break
 
+X = concatenate([c1,c2])
 y = Aeq.flatten()
 p,a,b,c = f, lb, ub, 0
-X = concatenate([c1,c2])
 QP_smo(Q, p, a, b, c, y, 0.01, a, X)
 
 # end of file
