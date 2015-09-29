@@ -31,6 +31,8 @@ ys = 1.875
 
 from mystic.symbolic import generate_conditions, generate_penalty
 pf = generate_penalty(generate_conditions(equations), k=1e4)
+from mystic.symbolic import generate_constraint, generate_solvers, solve
+cf = generate_constraint(generate_solvers(solve(equations)))
 
 
 if __name__ == '__main__':
@@ -38,11 +40,11 @@ if __name__ == '__main__':
   from mystic.solvers import diffev2, fmin_powell
   from mystic.math import almostEqual
 
-  result = diffev2(objective, x0=bounds, bounds=bounds, penalty=pf, npop=40, disp=False, full_output=True)
+  result = diffev2(objective, x0=bounds, bounds=bounds, constraint=cf, penalty=pf, npop=40, disp=False, full_output=True)
   assert almostEqual(result[0], xs, rel=2e-2)
   assert almostEqual(result[1], ys, rel=2e-2)
 
-  result = fmin_powell(objective, x0=[0.0,0.0], bounds=bounds, penalty=pf, disp=False, full_output=True)
+  result = fmin_powell(objective, x0=[0.0,0.0], bounds=bounds, constraint=cf, penalty=pf, disp=False, full_output=True)
   assert almostEqual(result[0], xs, rel=2e-2)
   assert almostEqual(result[1], ys, rel=2e-2)
 

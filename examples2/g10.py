@@ -24,23 +24,19 @@ xs = [579.3167, 1359.943, 5110.071, 182.0174, \
       295.5985, 217.9799, 286.4162,395.5979]
 ys = 7049.3307
 
-from mystic.symbolic import generate_constraint, generate_solvers, solve
+from mystic.symbolic import generate_constraint, generate_solvers, simplify
 from mystic.symbolic import generate_penalty, generate_conditions
 
 equations = """
--1 + 0.0025*(x3 + x5) <= 0.0
--1 + 0.0025*(-x3 + x4 + x6) <= 0.0
--1 + 0.01*(-x4 + x7) <= 0.0
-100*x0 - x0*x5 + 833.33252*x3 - 83333.333 <= 0.0
-x1*x3 - x1*x6 - 1250*x3 + 1250*x4 <= 0.0
-x2*x4 - x2*x7 - 2500*x4 + 1250000 <= 0.0
+-1.0 + 0.0025*(x3 + x5) <= 0.0
+-1.0 + 0.0025*(-x3 + x4 + x6) <= 0.0
+-1.0 + 0.01*(-x4 + x7) <= 0.0
+100.0*x0 - x0*x5 + 833.33252*x3 - 83333.333 <= 0.0
+x1*x3 - x1*x6 - 1250.0*x3 + 1250.0*x4 <= 0.0
+x2*x4 - x2*x7 - 2500.0*x4 + 1250000.0 <= 0.0
 """
-#cf = generate_constraint(generate_solvers(solve(equations))) #XXX: inequalities
+cf = generate_constraint(generate_solvers(simplify(equations)))
 pf = generate_penalty(generate_conditions(equations), k=1e12)
-
-from mystic.constraints import as_constraint
-
-cf = as_constraint(pf)
 
 
 

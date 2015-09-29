@@ -37,6 +37,8 @@ equations = """
 
 from mystic.symbolic import generate_penalty, generate_conditions
 pf = generate_penalty(generate_conditions(equations))
+from mystic.symbolic import generate_constraint, generate_solvers, simplify
+cf = generate_constraint(generate_solvers(simplify(equations)))
 
 from mystic.constraints import integers
 

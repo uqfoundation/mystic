@@ -26,20 +26,16 @@ x_s = [-1.717143, 1.595709, -1.827247, 0.7636413, -0.763645]
 xs_ = [-1.717143, 1.595709, -1.827247, -0.7636413, 0.763645]
 ys = 0.05394983
 
-from mystic.symbolic import generate_constraint, generate_solvers, solve
+from mystic.symbolic import generate_constraint, generate_solvers, simplify
 from mystic.symbolic import generate_penalty, generate_conditions
 
 equations = """
 x0**2 + x1**2 + x2**2 + x3**2 + x4**2 - 10.0 = 0.0
-x1*x2 - 5*x3*x4 = 0.0
+x1*x2 - 5.0*x3*x4 = 0.0
 x0**3 + x1**3 + 1.0 = 0.0
 """
-#cf = generate_constraint(generate_solvers(solve(equations))) #XXX: solve slow
+cf = generate_constraint(generate_solvers(simplify(equations))) # slow solve
 pf = generate_penalty(generate_conditions(equations))
-
-from mystic.constraints import as_constraint
-
-cf = as_constraint(pf)
 
 
 

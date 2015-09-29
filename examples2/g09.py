@@ -24,21 +24,17 @@ bounds = [(-10.,10.)]*7
 xs = [2.330499, 1.951372, -0.4775414, 4.365726, -0.6244870, 1.038131, 1.594227]
 ys = 680.6300573
 
-from mystic.symbolic import generate_constraint, generate_solvers, solve
+from mystic.symbolic import generate_constraint, generate_solvers, simplify
 from mystic.symbolic import generate_penalty, generate_conditions
 
 equations = """
-2*x0**2 + 3*x1**4 + x2 + 4*x3**2 + 5*x4 - 127.0 <= 0.0
-7*x0 + 3*x1 + 10*x2**2 + x3 - x4 - 282.0 <= 0.0
-23*x0 + x1**2 + 6*x5**2 - 8*x6 - 196.0 <= 0.0
-4*x0**2 + x1**2 - 3*x0*x1 + 2*x2**2 + 5*x5 - 11*x6 <= 0.0
+2.0*x0**2 + 3.0*x1**4 + x2 + 4.0*x3**2 + 5.0*x4 - 127.0 <= 0.0
+7.0*x0 + 3.0*x1 + 10.0*x2**2 + x3 - x4 - 282.0 <= 0.0
+23.0*x0 + x1**2 + 6.0*x5**2 - 8.0*x6 - 196.0 <= 0.0
+4.0*x0**2 + x1**2 - 3.0*x0*x1 + 2.0*x2**2 + 5.0*x5 - 11.0*x6 <= 0.0
 """
-#cf = generate_constraint(generate_solvers(solve(equations))) #XXX: inequalities
+cf = generate_constraint(generate_solvers(simplify(equations)))
 pf = generate_penalty(generate_conditions(equations), k=1e12)
-
-from mystic.constraints import as_constraint
-
-cf = as_constraint(pf)
 
 
 
@@ -47,7 +43,7 @@ if __name__ == '__main__':
     from mystic.solvers import diffev2
     from mystic.math import almostEqual
 
-    result = diffev2(objective, x0=bounds, bounds=bounds, penalty=pf, npop=40, gtol=200, disp=False, full_output=True)
+    result = diffev2(objective, x0=bounds, bounds=bounds, constraints=cf, penalty=pf, npop=40, gtol=200, disp=False, full_output=True)
 
     assert almostEqual(result[0], xs, rel=1e-2)
     assert almostEqual(result[1], ys, rel=1e-2)

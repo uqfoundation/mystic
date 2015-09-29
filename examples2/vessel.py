@@ -24,7 +24,7 @@ bounds = [(0,1e6)]*4
 xs = [0.72759093, 0.35964857, 37.69901188, 240.0]
 ys = 5804.3762083
 
-from mystic.symbolic import generate_constraint, generate_solvers, solve
+from mystic.symbolic import generate_constraint, generate_solvers, simplify
 from mystic.symbolic import generate_penalty, generate_conditions
 
 equations = """
@@ -33,12 +33,8 @@ equations = """
 -pi*x2**2*x3 - (4/3.)*pi*x2**3 + 1296000.0 <= 0.0
 x3 - 240.0 <= 0.0
 """
-#cf = generate_constraint(generate_solvers(solve(equations))) #XXX: inequalities
+cf = generate_constraint(generate_solvers(simplify(equations)))
 pf = generate_penalty(generate_conditions(equations), k=1e12)
-
-from mystic.constraints import as_constraint
-
-cf = as_constraint(pf)
 
 
 
@@ -46,8 +42,10 @@ if __name__ == '__main__':
 
     from mystic.solvers import diffev2
     from mystic.math import almostEqual
+    from mystic.monitors import VerboseMonitor
+    mon = VerboseMonitor(10)
 
-    result = diffev2(objective, x0=bounds, bounds=bounds, penalty=pf, npop=40, gtol=500, disp=False, full_output=True)
+    result = diffev2(objective, x0=bounds, bounds=bounds, constraints=cf, penalty=pf, npop=40, gtol=50, disp=False, full_output=True, itermon=mon)
 
     assert almostEqual(result[0], xs, rel=1e-2)
     assert almostEqual(result[1], ys, rel=1e-2)

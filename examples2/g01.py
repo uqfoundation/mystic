@@ -22,26 +22,23 @@ bounds = [(0,1)]*9 + [(0,100)]*3 + [(0,1)]
 xs = [1.0]*9 + [3.0]*3 + [1.0]
 ys = -15.0
 
-from mystic.symbolic import generate_constraint, generate_solvers, solve
+from mystic.symbolic import generate_constraint, generate_solvers, simplify
 from mystic.symbolic import generate_penalty, generate_conditions
 
 equations = """
-2*x0 + 2*x1 + x9 + x10 - 10.0 <= 0.0
-2*x0 + 2*x2 + x9 + x11 - 10.0 <= 0.0
-2*x1 + 2*x2 + x10 + x11 - 10.0 <= 0.0
--8*x0 + x9 <= 0.0
--8*x1 + x10 <= 0.0
--8*x2 + x11 <= 0.0
--2*x3 - x4 + x9 <= 0.0
--2*x5 - x6 + x10 <= 0.0
--2*x7 - x8 + x11 <= 0.0
+2.0*x0 + 2.0*x1 + x9 + x10 - 10.0 <= 0.0
+2.0*x0 + 2.0*x2 + x9 + x11 - 10.0 <= 0.0
+2.0*x1 + 2.0*x2 + x10 + x11 - 10.0 <= 0.0
+-8.0*x0 + x9 <= 0.0
+-8.0*x1 + x10 <= 0.0
+-8.0*x2 + x11 <= 0.0
+-2.0*x3 - x4 + x9 <= 0.0
+-2.0*x5 - x6 + x10 <= 0.0
+-2.0*x7 - x8 + x11 <= 0.0
 """
-#cf = generate_constraint(generate_solvers(solve(equations))) #XXX: inequalities
+cf = generate_constraint(generate_solvers(simplify(equations)))
 pf = generate_penalty(generate_conditions(equations))
 
-from mystic.constraints import as_constraint
-
-cf = as_constraint(pf)
 
 
 if __name__ == '__main__':
@@ -50,7 +47,7 @@ if __name__ == '__main__':
     from mystic.solvers import fmin_powell
     from mystic.math import almostEqual
 
-    result = fmin_powell(objective, x0=x, bounds=bounds, penalty=pf, disp=False, full_output=True)
+    result = fmin_powell(objective, x0=x, bounds=bounds, constraints=cf, disp=False, full_output=True)
 
     assert almostEqual(result[0], xs, tol=1e-2)
     assert almostEqual(result[1], ys, tol=1e-2)

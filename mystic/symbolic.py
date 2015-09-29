@@ -12,7 +12,8 @@
 """
 from __future__ import division
 
-__all__ = ['linear_symbolic','replace_variables','get_variables','solve',
+__all__ = ['linear_symbolic','replace_variables','get_variables',
+           'solve','simplify','comparator',
            'penalty_parser','constraints_parser','generate_conditions',
            'generate_solvers','generate_penalty','generate_constraint']
 
@@ -96,6 +97,142 @@ Inputs:
             ineqstring += Gsum.rstrip(' + ') + ' <= ' + str(h[i]) + '\n'
     totalconstraints = ineqstring + eqstring
     return totalconstraints 
+
+
+def comparator(equation):
+    """identify the comparator (e.g. '<', '=', ...) in a constraints equation"""
+    if '\n' in equation.strip(): #XXX: failure throws error or returns ''?
+        return [comparator(eqn) for eqn in equation.strip().split('\n') if eqn]
+    return '<=' if equation.count('<=') else '<' if equation.count('<') else \
+           '>=' if equation.count('>=') else '>' if equation.count('>') else \
+           '!=' if equation.count('!=') else \
+           '==' if equation.count('==') else '=' if equation.count('=') else ''
+
+def simplify(constraints, variables='x', target=None, **kwds):
+    """simplify a system of symbolic constraints equations.
+
+Returns a system of equations where a single variable has been isolated on
+the left-hand side of each constraints equation, thus all constraints are
+of the form "x_i = f(x)".
+
+Inputs:
+    constraints -- a string of symbolic constraints, with one constraint
+        equation per line. Standard python syntax should be followed (with
+        the math and numpy modules already imported).
+
+    For example:
+        >>> constraints = '''
+        ...     x0 - x2 <= 2.
+        ...     x2 = x3*2.'''
+        >>> print simplify(constraints)
+        x0 <= x2 + 2.0
+        x2 = 2.0*x3
+        >>> constraints = '''
+        ...     x0 - x1 - 1.0 = mean([x0,x1])   
+        ...     mean([x0,x1,x2]) >= x2'''
+        >>> print simplify(constraints)
+        x0 = 3.0*x1 + 2.0
+        x0 >= -x1 + 2*x2
+
+Additional Inputs:
+    variables -- desired variable name. Default is 'x'. A list of variable
+        name strings is also accepted for when desired variable names
+        don't have the same base, and can include variables that are not
+        found in the constraints equation string.
+    target -- list providing the order for which the variables will be solved.
+        If there are "N" constraint equations, the first "N" variables given
+        will be selected as the dependent variables. By default, increasing
+        order is used.
+
+Further Inputs:
+    locals -- a dictionary of additional variables used in the symbolic
+        constraints equations, and their desired values.
+    cycle -- boolean to cycle the order for which the variables are solved.
+        If cycle is True, there should be more variety on the left-hand side
+        of the simplified equations. By default, the variables do not cycle.
+"""
+    import random
+    _locals = {}
+    # default is _locals with numpy and math imported
+    # numpy throws an 'AttributeError', but math passes error to sympy
+    code = """from numpy import *; from math import *;""" # prefer math
+    code += """from numpy import mean as average;""" # use np.mean not average
+    code += """from numpy import var as variance;""" # look like mystic.math
+    code += """from numpy import ptp as spread;"""   # look like mystic.math
+    code += """_sqrt = lambda x:x**.5;""" # 'domain error' to 'negative power'
+    code = compile(code, '<string>', 'exec')
+    exec code in _locals
+
+    def _flip(cmp):
+        "flip the comparator (i.e. '<' to '>', and '<=' to '>=')"
+        return '<=' if cmp == '>=' else '<' if cmp == '>' else \
+               '>=' if cmp == '<=' else '>' if cmp == '<' else cmp
+
+    def _simplify(eqn, rand=random.random, target=None, **kwds):
+        'isolate one variable on the lhs'
+        verbose = kwds.get('verbose', False)
+        vars = kwds.get('variables', 'x')
+        cmp = comparator(eqn)
+        res = solve(eqn.replace(cmp,'='), target=target, **kwds)
+        _eqn = res.replace('=',cmp)
+        if verbose: print _eqn
+        if not cmp.count('<')+cmp.count('>'):
+            return _eqn 
+        # evaluate expression to see if comparator needs to be flipped
+        locals = kwds['locals'] if 'locals' in kwds else None
+        if locals is None: locals = {}
+        locals.update(dict((var,rand()) for var in get_variables(res, vars)))
+        locals_ = _locals.copy()
+        locals_.update(locals) #XXX: allow this?
+        # make sure '=' is '==' so works in eval
+        _cmp = comparator(_eqn)
+        variants = [100000,-200000,100100,-200,110,-20,11,-2,1] #HACK
+        #HACK: avoid (rand-M)**(1/N) where (rand-M) negative; sqrt(x) to x**.5
+        before = eqn.replace(cmp, '==') if cmp == '=' else eqn
+        after = _eqn.replace(_cmp, '==') if _cmp == '=' else _eqn
+        before = before.replace('sqrt','_sqrt')
+        after = after.replace('sqrt','_sqrt')
+        while variants:
+            try:
+                after, before = eval(after, locals_), eval(before, locals_)
+                break
+            except ValueError as error:
+                if error.message.startswith('negative number') and \
+                   error.message.endswith('raised to a fractional power'):
+                    val = variants.pop()
+                    [locals_.update({k:v+val}) for k,v in locals_.items() if k in get_variables(_eqn, vars)]
+                else:
+                    raise error
+        else: #END HACK
+            after, before = eval(after, locals_), eval(before, locals_)
+        if before == after:
+            return _eqn
+        # flip comparator, then return
+        cmp = _flip(cmp)
+        return res.replace('=',cmp)
+    cycle = kwds.get('cycle', False)
+    eqns = []
+    used = []
+    for eqn in constraints.strip().split('\n'):
+        # get least used, as they are likely to be simpler
+        vars = get_variables(eqn, variables)
+        vars.sort(key=eqn.count) #XXX: better to sort by count(var+'**')?
+        vars = target[:] if target else vars
+        if cycle: vars = [var for var in vars if var not in used] + used
+        while vars:
+            try: # cycle through variables trying 'simplest' first
+                res = _simplify(eqn, variables=variables, target=vars, **kwds)
+                eqns.append(res)
+                used.append(res.split(comparator(res),1)[0].strip())
+                break
+            except ValueError:
+                if isinstance(vars, basestring): vars = []
+                else: vars.pop(0)
+        else: # failure... so re-raise error
+            res = _simplify(eqn, variables=variables, target=target, **kwds)
+            eqns.append(res)
+   #eqns = (_simplify(eqn, **kwds) for eqn in constraints.strip().split('\n'))
+    return '\n'.join(eqns)
 
 
 def replace_variables(constraints, variables=None, markers='$'):

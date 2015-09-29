@@ -40,8 +40,8 @@ equations = """
 
 from mystic.symbolic import generate_penalty, generate_conditions
 pf = generate_penalty(generate_conditions(equations))
-#from mystic.constraints import as_constraint, discrete
-#cf = as_constraint(pf)
+from mystic.symbolic import generate_constraint, generate_solvers, solve
+cf = generate_constraint(generate_solvers(solve(equations)))
 
 from numpy import round as npround
 
@@ -52,7 +52,8 @@ if __name__ == '__main__':
     from mystic.math import almostEqual
 
    #result = diffev2(objective, x0=bounds, bounds=bounds, penalty=pf, npop=20, gtol=50, disp=True, full_output=True)
-    result = diffev2(objective, x0=bounds, bounds=bounds, penalty=pf, constraints=npround, npop=40, gtol=50, disp=True, full_output=True)
+   #result = diffev2(objective, x0=bounds, bounds=bounds, penalty=pf, constraints=npround, npop=40, gtol=50, disp=True, full_output=True)
+    result = diffev2(objective, x0=bounds, bounds=bounds, constraints=cf, npop=4, gtol=1, disp=True, full_output=True)
 
     print result[0]
     assert almostEqual(result[0], xs, tol=1e-8) #XXX: fails b/c rel & zero?

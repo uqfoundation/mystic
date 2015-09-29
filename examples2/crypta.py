@@ -56,10 +56,10 @@ bounds[-2] = (1,1)
 
 from mystic.constraints import unique, near_integers
 
+from mystic.symbolic import generate_constraint, generate_solvers, solve
 from mystic.symbolic import generate_penalty, generate_conditions
 pf = generate_penalty(generate_conditions(equations,var),k=1e-6)
-from mystic.constraints import as_constraint
-cf = as_constraint(pf)
+cf = generate_constraint(generate_solvers(solve(equations,var)))
 
 from mystic.penalty import quadratic_inequality, quadratic_equality
 

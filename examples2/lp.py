@@ -37,6 +37,8 @@ _ys = 11.428571428571429
 
 from mystic.symbolic import generate_conditions, generate_penalty
 pf = generate_penalty(generate_conditions(equations))
+from mystic.symbolic import generate_constraint, generate_solvers, simplify
+cf = generate_constraint(generate_solvers(simplify(equations)))
 
 # inverted objective, used in solving for the maximum
 _objective = lambda x: -objective(x)
@@ -47,20 +49,20 @@ if __name__ == '__main__':
   from mystic.solvers import diffev2, fmin_powell
   from mystic.math import almostEqual
 
-  result = diffev2(objective, x0=bounds, bounds=bounds, penalty=pf, npop=40, disp=False, full_output=True)
+  result = diffev2(objective, x0=bounds, bounds=bounds, constraint=cf, penalty=pf, npop=40, disp=False, full_output=True)
   assert almostEqual(result[0], xs, rel=1e-2)
   assert almostEqual(result[1], ys, rel=1e-2)
 
-  result = fmin_powell(objective, x0=[0.0,0.0], bounds=bounds, penalty=pf, disp=False, full_output=True)
+  result = fmin_powell(objective, x0=[0.0,0.0], bounds=bounds, constraint=cf, penalty=pf, disp=False, full_output=True)
   assert almostEqual(result[0], xs, rel=1e-2)
   assert almostEqual(result[1], ys, rel=1e-2)
 
   # alternately, solving for the maximum
-  result = diffev2(_objective, x0=bounds, bounds=bounds, penalty=pf, npop=40, disp=False, full_output=True)
+  result = diffev2(_objective, x0=bounds, bounds=bounds, constraint=cf, penalty=pf, npop=40, disp=False, full_output=True)
   assert almostEqual( result[0], _xs, rel=1e-2)
   assert almostEqual(-result[1], _ys, rel=1e-2)
 
-  result = fmin_powell(_objective, x0=[0,0], bounds=bounds, penalty=pf, npop=40, disp=False, full_output=True)
+  result = fmin_powell(_objective, x0=[0,0], bounds=bounds, constraint=cf, penalty=pf, npop=40, disp=False, full_output=True)
   assert almostEqual( result[0], _xs, rel=1e-2)
   assert almostEqual(-result[1], _ys, rel=1e-2)
 

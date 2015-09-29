@@ -57,16 +57,17 @@ ub = 1 * ones(nx)
 _b = .1 * ones(nx) # good starting value if most solved xi should be zero
 
 # build the constraints operator
-from mystic.symbolic import linear_symbolic, solve, \
+from mystic.symbolic import linear_symbolic, solve, simplify, \
      generate_solvers as solvers, generate_constraint as constraint
 constrain = linear_symbolic(Aeq,Beq)
-#NOTE: assumes a single equation of the form: '1.0*x0 + ... = 0.0\n'
+#NOTE: HACK assumes a single equation of the form: '1.0*x0 + ... = 0.0\n'
 x0,rhs = constrain.strip().split(' = ')
 x0,xN = x0.split(' + ', 1) 
 N,x0 = x0.split("*")
 constrain = "{x0} = ({rhs} - ({xN}))/{N}".format(x0=x0, xN=xN, N=N, rhs=rhs)
-#NOTE: end slight hack (as mystic.symbolic.solve takes __forever__)
+#NOTE: end HACK (as mystic.symbolic.solve takes __forever__)
 constrain = constraint(solvers(constrain))
+#constrain = constraint(solvers(solve(constrain)))
 
 from mystic import supressed
 @supressed(5e-2)

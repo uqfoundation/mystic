@@ -75,10 +75,25 @@ def test_solve_constraint():
   assert mean(x) == x[2]
   assert (x[1] - x[0]) - 1.0 == mean(x[:-1])
 
+def test_simplify():
+  constraints = """
+  mean([x0, x1, x2]) <= 5.0
+  x0 <= x1 + x2"""
+
+  from mystic.math.measures import mean
+  _constraints = simplify(constraints)
+  solv = generate_solvers(_constraints)
+  constraint = generate_constraint(solv)
+  x = constraint([1.0, -2.0, -3.0])
+  assert all(x) == all([-5.0, -2.0, -3.0])
+  assert mean(x) <= 5.0
+  assert x[0] <= x[1] + x[2]
+
 
 if __name__ == '__main__':
   test_generate_penalty()
   test_numpy_penalty()
   test_generate_constraint()
   test_solve_constraint()
+  test_simplify()
 

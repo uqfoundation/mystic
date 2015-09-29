@@ -34,19 +34,15 @@ xs ~ [3.12388714, 3.06913834, 3.01426760, 2.95755412, 1.46603517,
 ys ~ -0.74732020
 """
 
-from mystic.symbolic import generate_constraint, generate_solvers, solve
+from mystic.symbolic import generate_constraint, generate_solvers, simplify
 from mystic.symbolic import generate_penalty, generate_conditions
 
 equations = """
 -prod([x0, x1, x2]) + 0.75 <= 0.0
 sum([x0, x1, x2]) - 7.5*3 <= 0.0
 """
-#cf = generate_constraint(generate_solvers(solve(equations))) #XXX: inequalities
+cf = generate_constraint(generate_solvers(simplify(equations)))
 pf = generate_penalty(generate_conditions(equations))
-
-from mystic.constraints import as_constraint
-
-cf = as_constraint(pf)
 
 
 
@@ -56,7 +52,7 @@ if __name__ == '__main__':
     from mystic.solvers import diffev2
     from mystic.math import almostEqual
 
-    result = diffev2(objective, x0=bounds, bounds=bounds, penalty=pf, npop=40, disp=False, full_output=True)
+    result = diffev2(objective, x0=bounds, bounds=bounds, constraints=cf, penalty=pf, npop=40, disp=False, full_output=True)
 
     assert almostEqual(result[0], xs, rel=1e-2)
     assert almostEqual(result[1], ys, rel=1e-2)

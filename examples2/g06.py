@@ -23,19 +23,15 @@ bounds = [(13,100),(0,100)]
 xs = [14.095, 0.84296079]
 ys = -6961.81387628
 
-from mystic.symbolic import generate_constraint, generate_solvers, solve
+from mystic.symbolic import generate_constraint, generate_solvers, simplify
 from mystic.symbolic import generate_penalty, generate_conditions
 
 equations = """
 (x0 - 5)**2 + (x1 - 5)**2 - 100 >= 0.0
 (x0 - 6)**2 + (x1 - 5)**2 - 82.81 <= 0.0
 """
-#cf = generate_constraint(generate_solvers(solve(equations))) #XXX: inequalities
+cf = generate_constraint(generate_solvers(simplify(equations)))
 pf = generate_penalty(generate_conditions(equations), k=1e12)
-
-from mystic.constraints import as_constraint
-
-cf = as_constraint(pf)
 
 
 
@@ -45,7 +41,7 @@ if __name__ == '__main__':
     from mystic.solvers import fmin_powell
     from mystic.math import almostEqual
 
-    result = fmin_powell(objective, x0=x, bounds=bounds, penalty=pf, disp=False, full_output=True)
+    result = fmin_powell(objective, x0=x, bounds=bounds, constraints=cf, penalty=pf, disp=False, full_output=True)
 
     assert almostEqual(result[0], xs, tol=1e-2)
     assert almostEqual(result[1], ys, rel=1e-2)

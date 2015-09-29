@@ -23,7 +23,7 @@ bounds = [(0,1200)]*2 + [(-0.55,0.55)]*2
 xs = [679.945794311, 1026.0666256385, 0.11887602615356, -0.3962337137961]
 ys = 5126.49810960
 
-from mystic.symbolic import generate_constraint, generate_solvers, solve
+from mystic.symbolic import generate_constraint, generate_solvers, simplify
 from mystic.symbolic import generate_penalty, generate_conditions
 
 equations = """
@@ -33,12 +33,8 @@ abs(1000*(sin(-x2-.25) + sin(-x3-0.25)) + 894.8 - x0) = 0.0
 abs(1000*(sin(x2-.25) + sin(x2-x3-0.25)) + 894.8 - x1) = 0.0
 abs(1000*(sin(x3-.25) + sin(x3-x2-0.25)) + 1294.8) = 0.0
 """
-#cf = generate_constraint(generate_solvers(solve(equations))) #XXX: inequalities
+#cf = generate_constraint(generate_solvers(simplify(equations)))
 pf = generate_penalty(generate_conditions(equations), k=1e12)
-
-from mystic.constraints import as_constraint
-
-cf = as_constraint(pf)
 
 
 

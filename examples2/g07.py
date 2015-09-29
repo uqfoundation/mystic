@@ -26,25 +26,21 @@ xs = [2.171996, 2.363683, 8.773926, 5.095984, 0.9906548,
       1.430574, 1.321644, 9.828726, 8.280092, 8.375927]
 ys = 24.3062091
 
-from mystic.symbolic import generate_constraint, generate_solvers, solve
+from mystic.symbolic import generate_constraint, generate_solvers, simplify
 from mystic.symbolic import generate_penalty, generate_conditions
 
 equations = """
-4*x0 + 5*x1 - 3*x6 + 9*x7 - 105.0 <= 0.0
-10*x0 - 8*x1 - 17*x6 + 2*x7 <= 0.0
--8*x0 + 2*x1 + 5*x8 - 2*x9 - 12.0 <= 0.0
-3*(x0-2)**2 + 4*(x1-3)**2 + 2*x2**2 - 7*x3 - 120.0 <= 0.0
-5*x0**2 + 8*x1 + (x2-6)**2 - 2*x3 - 40.0 <= 0.0
-0.5*(x0-8)**2 + 2*(x1-4)**2 + 3*x4**2 - x5 - 30.0 <= 0.0
-x0**2 + 2*(x1-2)**2 - 2*x0*x1 + 14*x4 - 6*x5 <= 0.0
--3*x0 + 6*x1 + 12*(x8-8)**2 - 7*x9 <= 0.0
+4.0*x0 + 5.0*x1 - 3.0*x6 + 9.0*x7 - 105.0 <= 0.0
+10.0*x0 - 8.0*x1 - 17.0*x6 + 2.0*x7 <= 0.0
+-8.0*x0 + 2.0*x1 + 5.0*x8 - 2.0*x9 - 12.0 <= 0.0
+3.0*(x0-2)**2 + 4.0*(x1-3)**2 + 2.0*x2**2 - 7.0*x3 - 120.0 <= 0.0
+5.0*x0**2 + 8.0*x1 + (x2-6)**2 - 2.0*x3 - 40.0 <= 0.0
+0.5*(x0-8)**2 + 2.0*(x1-4)**2 + 3.0*x4**2 - x5 - 30.0 <= 0.0
+x0**2 + 2.0*(x1-2)**2 - 2.0*x0*x1 + 14.0*x4 - 6.0*x5 <= 0.0
+-3.0*x0 + 6.0*x1 + 12.0*(x8-8)**2 - 7.0*x9 <= 0.0
 """
-#cf = generate_constraint(generate_solvers(solve(equations))) #XXX: inequalities
+cf = generate_constraint(generate_solvers(simplify(equations, target=['x5','x3'])))
 pf = generate_penalty(generate_conditions(equations))
-
-from mystic.constraints import as_constraint
-
-cf = as_constraint(pf)
 
 
 
@@ -53,6 +49,8 @@ if __name__ == '__main__':
 
     from mystic.solvers import fmin_powell
     from mystic.math import almostEqual
+    from mystic.monitors import VerboseMonitor
+    mon = VerboseMonitor(10)
 
     result = fmin_powell(objective, x0=x, bounds=bounds, penalty=pf, maxiter=1000, maxfun=100000, ftol=1e-12, xtol=1e-12, gtol=10, disp=False, full_output=True)
 

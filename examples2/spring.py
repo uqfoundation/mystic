@@ -24,7 +24,7 @@ bounds = [(0,100)]*3
 xs = [0.05168906, 0.35671773, 11.28896619]
 ys = 0.01266523
 
-from mystic.symbolic import generate_constraint, generate_solvers, solve
+from mystic.symbolic import generate_constraint, generate_solvers, simplify
 from mystic.symbolic import generate_penalty, generate_conditions
 
 equations = """
@@ -33,12 +33,8 @@ equations = """
 1.0 - 140.45*x0/(x2 * x1**2) <= 0.0
 (x0 + x1)/1.5 - 1.0 <= 0.0
 """
-#cf = generate_constraint(generate_solvers(solve(equations))) #XXX: inequalities
+# cf = generate_constraint(generate_solvers(simplify(equations))) #XXX: slow
 pf = generate_penalty(generate_conditions(equations), k=1e12)
-
-from mystic.constraints import as_constraint
-
-cf = as_constraint(pf)
 
 
 

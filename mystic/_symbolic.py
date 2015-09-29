@@ -355,13 +355,13 @@ Further Inputs:
     if permute or not target: #XXX: the goal is solving *only one* equation
         code += '_xlist = %s\n' % ','.join(targeted)
         code += '_elist = [symsol(['+eqlist+'], [i]) for i in _xlist]\n'
-        code += '_elist = [i if isinstance(i, dict) else {j:i[-1][-1]} for j,i in zip(_xlist,_elist)]\n'
+        code += '_elist = [i if isinstance(i, dict) else {j:i[-1][-1]} for j,i in zip(_xlist,_elist) if i]\n'
         code += 'soln = {}\n'
         code += '[soln.update(i) for i in _elist if i]\n'
     else:
         code += 'soln = symsol([' + eqlist + '], [' + target[0] + '])\n'
        #code += 'soln = symsol([' + eqlist + '], [' + targeted[0] + '])\n'
-        code += 'soln = soln if isinstance(soln, dict) else {' + target[0] + ': soln[-1][-1]}\n'
+        code += 'soln = soln if isinstance(soln, dict) else {' + target[0] + ': soln[-1][-1]} if soln else ""\n'
     ########################################################################
 
     if verbose: print code

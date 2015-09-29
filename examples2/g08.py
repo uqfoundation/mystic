@@ -24,19 +24,15 @@ bounds = [(0,10)]*2
 xs = [1.22797136, 4.24537337]
 ys = -0.09582504
 
-from mystic.symbolic import generate_constraint, generate_solvers, solve
+from mystic.symbolic import generate_constraint, generate_solvers, simplify
 from mystic.symbolic import generate_penalty, generate_conditions
 
 equations = """
 x0**2 - x1 + 1.0 <= 0.0
 1.0 - x0 + (x1 - 4)**2 <= 0.0
 """
-#cf = generate_constraint(generate_solvers(solve(equations))) #XXX: inequalities
+cf = generate_constraint(generate_solvers(simplify(equations)))
 pf = generate_penalty(generate_conditions(equations), k=1e12)
-
-from mystic.constraints import as_constraint
-
-cf = as_constraint(pf)
 
 
 
