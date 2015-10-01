@@ -175,13 +175,14 @@ Further Inputs:
         cmp = comparator(eqn)
         res = solve(eqn.replace(cmp,'='), target=target, **kwds)
         _eqn = res.replace('=',cmp)
-        if verbose: print _eqn
+        if verbose: print 'in: %s\nout: %s' % (eqn, _eqn)
         if not cmp.count('<')+cmp.count('>'):
             return _eqn 
         # evaluate expression to see if comparator needs to be flipped
         locals = kwds['locals'] if 'locals' in kwds else None
         if locals is None: locals = {}
-        locals.update(dict((var,rand()) for var in get_variables(res, vars)))
+        locals.update(dict((var,rand()) for var in get_variables(eqn, vars)))
+        if verbose: print locals
         locals_ = _locals.copy()
         locals_.update(locals) #XXX: allow this?
         # make sure '=' is '==' so works in eval

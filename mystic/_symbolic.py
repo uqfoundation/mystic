@@ -390,7 +390,8 @@ Further Inputs:
         if solved: solns.append( restore(variables, solved.rstrip()) )
 
     if not permute:
-        return None if not solns[:1] else solns[0]
+        sol = None if not solns[:1] else solns[0]
+        return '' if sol and not sol.strip() else sol
     return tuple(solns)
 
 
@@ -640,6 +641,13 @@ Further Inputs:
         if len(constraints.replace('==','=').split('=')) <= 2:
             soln = _solve_single(constraints, variables=variables, \
                                  target=target, **kwds)
+            # for corner case where has something like: '0*xN'
+            if not soln or not soln.strip():
+                if target in [None, False]: target = []
+                elif isinstance(target, str): target = target.split(',')
+                else: target = list(target)
+                soln = _solve_single(constraints, variables=variables, \
+                                     target=target[1:], **kwds)
         else:
             soln = _solve_linear(constraints, variables=variables, \
                                  target=target, **kwds)
