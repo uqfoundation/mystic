@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 #
 # Author: Patrick Hung (patrickh @caltech)
+# Author: Mike McKerns (mmckerns @caltech and @uqfoundation)
 # Copyright (c) 1997-2015 California Institute of Technology.
 # License: 3-clause BSD.  The full license text is available at:
 #  - http://trac.mystic.cacr.caltech.edu/project/mystic/browser/mystic/LICENSE
@@ -8,15 +9,37 @@
 Simple utility functions for SV-classifications
 """
 
-from numpy import zeros, multiply, ndarray, vectorize, array, dot, transpose, diag, sum
+from numpy import multiply, asarray, dot, transpose, sum
 
 def KernelMatrix(X, k=dot):
-    n = X.shape[0]
-    Q = zeros((n,n))
-    for i in range(n):
-       for j in range(i, n):
-           Q[i,j] = k(X[i,:],X[j,:])
-    return Q + transpose(Q) - diag(Q.diagonal())
+    "inner product of X with self, using k as elementwise product function"
+    # the following is tensordot(X,X,axes=(-1,-1)), with dot --> k
+    # 3-clause BSD (see: v1.7.2 http://docs.scipy.org/doc/numpy/license.html)
+    X = asarray(X)
+    Xs = X.shape
+    ndX = len(X.shape)
+    nX = 1
+    axes = [ndX - 1]
+
+    # Move the axes to sum over to the end of "a"
+    # and to the front of "b" in inner(a,b)
+    notin = [_ for _ in range(ndX) if _ not in axes]
+    newaxes_a = notin + axes
+    N2 = 1
+    for axis in axes: N2 *= Xs[axis]
+    newshape_a = (-1, N2)
+    olda = [Xs[axis] for axis in notin]
+
+    newaxes_b = axes + notin
+    N2 = 1
+    for axis in axes: N2 *= Xs[axis]
+    newshape_b = (N2, -1)
+    oldb = [Xs[axis] for axis in notin]
+
+    at = X.transpose(newaxes_a).reshape(newshape_a)
+    bt = X.transpose(newaxes_b).reshape(newshape_b)
+    return k(at,bt).reshape(olda + oldb)
+
 
 def WeightVector(alpha, X, y):
     ay = (alpha * y).flatten()

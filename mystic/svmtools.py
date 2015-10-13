@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 #
 # Author: Patrick Hung (patrickh @caltech)
+# Author: Mike McKerns (mmckerns @caltech and @uqfoundation)
 # Copyright (c) 1997-2015 California Institute of Technology.
 # License: 3-clause BSD.  The full license text is available at:
 #  - http://trac.mystic.cacr.caltech.edu/project/mystic/browser/mystic/LICENSE
@@ -8,23 +9,19 @@
 Simple utility functions for SV-Regressions
 """
 
-from numpy import zeros, multiply, ndarray, vectorize, array
+from numpy import multiply, ndarray, vectorize, array, asarray
 
-def InnerProduct(i1, i2):
+def InnerProduct(i1, i2): # numpy.multiply(x,x)
     return i1 * i2
 
 def LinearKernel(i1, i2):
     return 1. + i1 * i2
 
-def KernelMatrix(X, k=InnerProduct):
-    n = X.size
-    Q = zeros((n,n))
-    for i in range(n):
-       for j in range(n):
-           # dumb, but how else to do outer products of arbitrary functions
-           # without going through ufunc C-api ?
-           Q[i,j] = k(X[i],X[j])
-    return Q
+def KernelMatrix(X, k=multiply):
+    "outer product of X with self, using k as elementwise product function"
+    X = asarray(X).ravel()
+    return k(X[:,None], X[None,:])
+
 
 def SupportVectors(alpha, eps=0):
     """indicies of nonzero alphas (at tolerance eps)"""
