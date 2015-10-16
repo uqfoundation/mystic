@@ -41,7 +41,7 @@ X = concatenate([c1,c2]); nx = X.shape[0]
 # define the labels (+1 for c1; -1 for c2)
 y = concatenate([ones(c1.shape[0]), -ones(c2.shape[0])]).reshape(1,nx)
 
-# build the Kernel Matrix (with the linear kernel)
+# build the Kernel Matrix
 # get the QP quadratic and linear terms
 XX = concatenate([c1,-c2])
 Q = KernelMatrix(XX)  # Q_ij = K(x_i, x_j)

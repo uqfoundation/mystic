@@ -26,7 +26,7 @@ N = 2*nx
 # build the Kernel Matrix (with linear kernel)
 # get the QP quadratic term
 X = concatenate([x,-x])
-Q = 1 + multiply.outer(X,X)
+Q = KernelMatrix(X, LinearKernel)
 # get the QP linear term
 Y = concatenate([y,-y])
 svr_epsilon = 3

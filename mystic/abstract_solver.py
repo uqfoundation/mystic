@@ -595,7 +595,8 @@ Note::
         """decorate the cost function with bounds, penalties, monitors, etc"""
         _cost,_raw,_args = self._cost
         # check if need to 'wrap' or can return the stored cost
-        if cost in [None, _raw, _cost] and ExtraArgs in [None, _args]:
+        if (cost is None or cost is _raw or cost is _cost) and \
+           (ExtraArgs is None or ExtraArgs is _args):
             return
         # get cost and args if None was given
         if cost is None: cost = _raw
@@ -650,8 +651,8 @@ Note::
         """HACK to enable not explicitly calling _decorate_objective"""
         _cost,_raw,_args = self._cost
         # check if need to 'wrap' or can return the stored cost
-        if cost in [None, _raw, _cost] and ExtraArgs in [None, _args] \
-           and self._live:
+        if (cost is None or cost is _raw or cost is _cost) and \
+           (ExtraArgs is None or ExtraArgs is _args) and self._live:
             return _cost
         # 'wrap' the 'new' cost function with _decorate
         self.SetObjective(cost, ExtraArgs)

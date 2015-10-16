@@ -673,6 +673,7 @@ Required Inputs:
     global __quit
     __quit = False
 
+    instance = None
     # handle the special case where list is provided by sys.argv
     if isinstance(filename, (list,tuple)) and not kwds:
         cmdargs = filename # (above is used by script to parse command line)
@@ -697,7 +698,11 @@ Required Inputs:
         cmdargs += '' if legend == False else '--legend '
         cmdargs += '' if nid is None else '--nid={} '.format(nid)
         cmdargs += '' if param is None else '--param="{}" '.format(param)
-        cmdargs = filename.split() + shlex.split(cmdargs)
+        if isinstance(filename, basestring):
+            cmdargs = filename.split() + shlex.split(cmdargs)
+        else: # special case of passing in monitor instance
+            instance = filename
+            cmdargs = ['^1203@magic*key311&'] + shlex.split(cmdargs)
 
     #XXX: note that 'argparse' is new as of python2.7
     from optparse import OptionParser
@@ -756,7 +761,10 @@ Required Inputs:
       mark = ''
 
     try: # get logfile name
-      filename = parsed_args[0]
+      if instance:
+        filename = instance
+      else:
+        filename = parsed_args[0]
     except:
       raise IOError("please provide log file name")
 
@@ -803,7 +811,15 @@ Required Inputs:
 
     # parse file contents to get (i,id), cost, and parameters
     try:
-        step, param, cost = logfile_reader(filename)
+        if instance:
+            step = enumerate(instance.id)
+            if len(instance) == instance.id.count(None):
+                step = [(i,) for (i,j) in step]
+            else:
+                step = list(step)
+            param, cost = instance.x, instance.y
+        else:
+            step, param, cost = logfile_reader(filename)
     except SyntaxError:
         read_raw_file(filename)
         msg = "incompatible file format, try 'support_convergence.py'"
