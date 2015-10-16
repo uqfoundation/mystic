@@ -377,33 +377,37 @@ Additional Inputs:
         cmdargs = shlex.split(model)
     # 'everything else' is essentially the functional interface
     else:
-        out = kwds.get('out', None)
-        bounds = kwds.get('bounds', None)
-        label = kwds.get('label', None)
-        nid = kwds.get('nid', None)
-        iter = kwds.get('iter', None)
-        reduce = kwds.get('reduce', None)
-        scale = kwds.get('scale', None)
-        shift = kwds.get('shift', None)
-        fill = kwds.get('fill', False)
-        depth = kwds.get('depth', False)
-        dots = kwds.get('dots', False)
-        join = kwds.get('join', False)
+        cmdargs = kwds.get('kwds', '')
+        if not cmdargs:
+            out = kwds.get('out', None)
+            bounds = kwds.get('bounds', None)
+            label = kwds.get('label', None)
+            nid = kwds.get('nid', None)
+            iter = kwds.get('iter', None)
+            reduce = kwds.get('reduce', None)
+            scale = kwds.get('scale', None)
+            shift = kwds.get('shift', None)
+            fill = kwds.get('fill', False)
+            depth = kwds.get('depth', False)
+            dots = kwds.get('dots', False)
+            join = kwds.get('join', False)
 
-        # special case: bounds passed as list of slices
-        if not isinstance(bounds, (basestring, type(None))):
-            cmdargs = ''
-            for b in bounds:
-                if isinstance(b, slice):
-                    cmdargs += "{}:{}:{}, ".format(b.start, b.stop, b.step)
-                else:
-                    cmdargs += "{}, ".format(b)
-            bounds = cmdargs[:-2]
+            # special case: bounds passed as list of slices
+            if not isinstance(bounds, (basestring, type(None))):
+                cmdargs = ''
+                for b in bounds:
+                    if isinstance(b, slice):
+                        cmdargs += "{}:{}:{}, ".format(b.start, b.stop, b.step)
+                    else:
+                        cmdargs += "{}, ".format(b)
+                bounds = cmdargs[:-2]
+                cmdargs = ''
+
+            if callable(reduce): _reducer, reduce = reduce, None
 
         # special case: model passed as model instance
        #model.__doc__.split('using::')[1].split()[0].strip()
         if callable(model): _model, model = model, "None"
-        if callable(reduce): _reducer, reduce = reduce, None
 
         # handle logfile if given
         if logfile:
@@ -413,19 +417,22 @@ Additional Inputs:
                 instance = logfile
 
         # process "commandline" arguments
-        cmdargs = ''
-        cmdargs += '' if out is None else '--out={} '.format(out)
-        cmdargs += '' if bounds is None else '--bounds="{}" '.format(bounds)
-        cmdargs += '' if label is None else '--label={} '.format(label)
-        cmdargs += '' if nid is None else '--nid={} '.format(nid)
-        cmdargs += '' if iter is None else '--iter={} '.format(iter)
-        cmdargs += '' if reduce is None else '--reduce={} '.format(reduce)
-        cmdargs += '' if scale is None else '--scale={} '.format(scale)
-        cmdargs += '' if shift is None else '--shift={} '.format(shift)
-        cmdargs += '' if fill == False else '--fill '
-        cmdargs += '' if depth == False else '--depth '
-        cmdargs += '' if dots == False else '--dots '
-        cmdargs += '' if join == False else '--join '
+        if not cmdargs:
+            cmdargs = ''
+            cmdargs += '' if out is None else '--out={} '.format(out)
+            cmdargs += '' if bounds is None else '--bounds="{}" '.format(bounds)
+            cmdargs += '' if label is None else '--label={} '.format(label)
+            cmdargs += '' if nid is None else '--nid={} '.format(nid)
+            cmdargs += '' if iter is None else '--iter={} '.format(iter)
+            cmdargs += '' if reduce is None else '--reduce={} '.format(reduce)
+            cmdargs += '' if scale is None else '--scale={} '.format(scale)
+            cmdargs += '' if shift is None else '--shift={} '.format(shift)
+            cmdargs += '' if fill == False else '--fill '
+            cmdargs += '' if depth == False else '--depth '
+            cmdargs += '' if dots == False else '--dots '
+            cmdargs += '' if join == False else '--join '
+        else:
+            cmdargs = ' ' + cmdargs
         cmdargs = model.split() + shlex.split(cmdargs)
 
     #XXX: note that 'argparse' is new as of python2.7
@@ -699,23 +706,27 @@ Required Inputs:
         cmdargs = shlex.split(filename)
     # 'everything else' is essentially the functional interface
     else:
-        out = kwds.get('out', None)
-        dots = kwds.get('dots', False)
-        line = kwds.get('line', False)
-        iter = kwds.get('iter', None)
-        legend = kwds.get('legend', False)
-        nid = kwds.get('nid', None)
-        param = kwds.get('param', None)
+        cmdargs = kwds.get('kwds', '')
+        if not cmdargs:
+            out = kwds.get('out', None)
+            dots = kwds.get('dots', False)
+            line = kwds.get('line', False)
+            iter = kwds.get('iter', None)
+            legend = kwds.get('legend', False)
+            nid = kwds.get('nid', None)
+            param = kwds.get('param', None)
 
-        # process "commandline" arguments
-        cmdargs = ''
-        cmdargs += '' if out is None else '--out={} '.format(out)
-        cmdargs += '' if dots == False else '--dots '
-        cmdargs += '' if line == False else '--line '
-        cmdargs += '' if iter is None else '--iter={} '.format(iter)
-        cmdargs += '' if legend == False else '--legend '
-        cmdargs += '' if nid is None else '--nid={} '.format(nid)
-        cmdargs += '' if param is None else '--param="{}" '.format(param)
+            # process "commandline" arguments
+            cmdargs = ''
+            cmdargs += '' if out is None else '--out={} '.format(out)
+            cmdargs += '' if dots == False else '--dots '
+            cmdargs += '' if line == False else '--line '
+            cmdargs += '' if iter is None else '--iter={} '.format(iter)
+            cmdargs += '' if legend == False else '--legend '
+            cmdargs += '' if nid is None else '--nid={} '.format(nid)
+            cmdargs += '' if param is None else '--param="{}" '.format(param)
+        else:
+            cmdargs = ' ' + cmdargs
         if isinstance(filename, basestring):
             cmdargs = filename.split() + shlex.split(cmdargs)
         else: # special case of passing in monitor instance
