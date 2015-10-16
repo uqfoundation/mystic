@@ -68,6 +68,22 @@ def logfile_reader(filename):
       param.append(eval(values[2]))
   return step, param, cost
 
+def read_trajectories(source):
+  """read trajectories from a convergence logfile or a monitor
+
+source can either be a monitor instance or a logfile path
+  """
+  if isinstance(source, basestring):
+    step, param, cost = logfile_reader(source)
+  else:
+    step = enumerate(source.id)
+    if len(source) == source.id.count(None):
+      step = [(i,) for (i,j) in step]
+    else:
+      step = list(step)
+    param, cost = source.x, source.y
+  return step, param, cost
+
 
 # read and write monitor (to and from raw data)
 

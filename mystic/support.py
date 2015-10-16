@@ -20,7 +20,7 @@ import matplotlib.pyplot as plt
 from matplotlib import cm
 
 from mystic.munge import read_history
-from mystic.munge import logfile_reader, raw_to_support
+from mystic.munge import raw_to_support, read_trajectories
 from mystic.tools import factor, flatten
 
 # globals
@@ -310,6 +310,7 @@ Required Inputs:
     global __quit
     __quit = False
 
+    instance = None
     # handle the special case where list is provided by sys.argv
     if isinstance(filename, (list,tuple)) and not kwds:
         cmdargs = filename # (above is used by script to parse command line)
@@ -317,24 +318,32 @@ Required Inputs:
         cmdargs = shlex.split(filename)
     # 'everything else' is essentially the functional interface
     else:
-        out = kwds.get('out', None)
-        iter = kwds.get('iter', None)
-        param = kwds.get('param', None)
-        label = kwds.get('label', None)
-        nid = kwds.get('nid', None)
-        cost = kwds.get('cost', False)
-        legend = kwds.get('legend', False)
+        cmdargs = kwds.get('kwds', '')
+        if not cmdargs:
+            out = kwds.get('out', None)
+            iter = kwds.get('iter', None)
+            param = kwds.get('param', None)
+            label = kwds.get('label', None)
+            nid = kwds.get('nid', None)
+            cost = kwds.get('cost', False)
+            legend = kwds.get('legend', False)
 
-        # process "commandline" arguments
-        cmdargs = ''
-        cmdargs += '' if out is None else '--out={} '.format(out)
-        cmdargs += '' if iter is None else '--iter={} '.format(iter)
-        cmdargs += '' if param is None else '--param="{}" '.format(param)
-        cmdargs += '' if label is None else '--label="{}" '.format(label)
-        cmdargs += '' if nid is None else '--nid={} '.format(nid)
-        cmdargs += '' if cost == False else '--cost '
-        cmdargs += '' if legend == False else '--legend '
-        cmdargs = filename.split() + shlex.split(cmdargs)
+            # process "commandline" arguments
+            cmdargs = ''
+            cmdargs += '' if out is None else '--out={} '.format(out)
+            cmdargs += '' if iter is None else '--iter={} '.format(iter)
+            cmdargs += '' if param is None else '--param="{}" '.format(param)
+            cmdargs += '' if label is None else '--label="{}" '.format(label)
+            cmdargs += '' if nid is None else '--nid={} '.format(nid)
+            cmdargs += '' if cost == False else '--cost '
+            cmdargs += '' if legend == False else '--legend '
+        else:
+            cmdargs = ' ' + cmdargs
+        if isinstance(filename, basestring):
+            cmdargs = filename.split() + shlex.split(cmdargs)
+        else: # special case of passing in monitor instance
+            instance = filename
+            cmdargs = shlex.split(cmdargs)
 
     #XXX: note that 'argparse' is new as of python2.7
     from optparse import OptionParser
@@ -381,7 +390,9 @@ Required Inputs:
     if __quit: return
 
     # get the name of the parameter log file
-    params, cost = read_history(parsed_args[0])
+    if instance is None:
+        instance = parsed_args[0]
+    params, cost = read_history(instance)
 
     if parsed_opts.cost: # also plot the cost
        #exec "from %s import cost" % file
@@ -547,6 +558,7 @@ Required Inputs:
     global __quit
     __quit = False
 
+    instance = None
     # handle the special case where list is provided by sys.argv
     if isinstance(filename, (list,tuple)) and not kwds:
         cmdargs = filename # (above is used by script to parse command line)
@@ -554,26 +566,34 @@ Required Inputs:
         cmdargs = shlex.split(filename)
     # 'everything else' is essentially the functional interface
     else:
-        out = kwds.get('out', None)
-        bounds = kwds.get('bounds', None)
-        axes = kwds.get('axes', None)
-        iters = kwds.get('iters', None)
-        label = kwds.get('label', None)
-        nid = kwds.get('nid', None)
-        scale = kwds.get('scale', None)
-        flat = kwds.get('flat', False)
+        cmdargs = kwds.get('kwds', '')
+        if not cmdargs:
+            out = kwds.get('out', None)
+            bounds = kwds.get('bounds', None)
+            axes = kwds.get('axes', None)
+            iters = kwds.get('iters', None)
+            label = kwds.get('label', None)
+            nid = kwds.get('nid', None)
+            scale = kwds.get('scale', None)
+            flat = kwds.get('flat', False)
 
-        # process "commandline" arguments
-        cmdargs = ''
-        cmdargs += '' if out is None else '--out={} '.format(out)
-        cmdargs += '' if bounds is None else '--bounds="{}" '.format(bounds)
-        cmdargs += '' if axes is None else '--axes="{}" '.format(axes)
-        cmdargs += '' if iters is None else '--iters="{}" '.format(iters)
-        cmdargs += '' if label is None else '--label="{}" '.format(label)
-        cmdargs += '' if nid is None else '--nid={} '.format(nid)
-        cmdargs += '' if scale is None else '--scale={} '.format(scale)
-        cmdargs += '' if flat == False else '--flat '
-        cmdargs = filename.split() + shlex.split(cmdargs)
+            # process "commandline" arguments
+            cmdargs = ''
+            cmdargs += '' if out is None else '--out={} '.format(out)
+            cmdargs += '' if bounds is None else '--bounds="{}" '.format(bounds)
+            cmdargs += '' if axes is None else '--axes="{}" '.format(axes)
+            cmdargs += '' if iters is None else '--iters="{}" '.format(iters)
+            cmdargs += '' if label is None else '--label="{}" '.format(label)
+            cmdargs += '' if nid is None else '--nid={} '.format(nid)
+            cmdargs += '' if scale is None else '--scale={} '.format(scale)
+            cmdargs += '' if flat == False else '--flat '
+        else:
+            cmdargs = ' ' + cmdargs
+        if isinstance(filename, basestring):
+            cmdargs = filename.split() + shlex.split(cmdargs)
+        else: # special case of passing in monitor instance
+            instance = filename
+            cmdargs = shlex.split(cmdargs)
 
     #XXX: note that 'argparse' is new as of python2.7
     from optparse import OptionParser
@@ -625,7 +645,9 @@ Required Inputs:
     if __quit: return
 
     # get the name of the parameter log file
-    params, _cost = read_history(parsed_args[0])
+    if instance is None:
+        instance = parsed_args[0]
+    params, _cost = read_history(instance)
     # would be nice to use meta = ['wx','wx2','x','x2','wy',...]
     # exec "from %s import meta" % file
 
@@ -827,6 +849,7 @@ Required Inputs:
     global __quit
     __quit = False
 
+    instance = None
     # handle the special case where list is provided by sys.argv
     if isinstance(filename, (list,tuple)) and not kwds:
         cmdargs = filename # (above is used by script to parse command line)
@@ -834,28 +857,36 @@ Required Inputs:
         cmdargs = shlex.split(filename)
     # 'everything else' is essentially the functional interface
     else:
-        out = kwds.get('out', None)
-        bounds = kwds.get('bounds', None)
-        axes = kwds.get('axes', None)
-        weight = kwds.get('weight', None)
-        iters = kwds.get('iters', None)
-        label = kwds.get('label', None)
-        nid = kwds.get('nid', None)
-        scale = kwds.get('scale', None)
-        flat = kwds.get('flat', False)
+        cmdargs = kwds.get('kwds', '')
+        if not cmdargs:
+            out = kwds.get('out', None)
+            bounds = kwds.get('bounds', None)
+            axes = kwds.get('axes', None)
+            weight = kwds.get('weight', None)
+            iters = kwds.get('iters', None)
+            label = kwds.get('label', None)
+            nid = kwds.get('nid', None)
+            scale = kwds.get('scale', None)
+            flat = kwds.get('flat', False)
 
-        # process "commandline" arguments
-        cmdargs = ''
-        cmdargs += '' if out is None else '--out={} '.format(out)
-        cmdargs += '' if bounds is None else '--bounds="{}" '.format(bounds)
-        cmdargs += '' if axes is None else '--axes="{}" '.format(axes)
-        cmdargs += '' if weight is None else '--weight="{}" '.format(weight)
-        cmdargs += '' if iters is None else '--iters="{}" '.format(iters)
-        cmdargs += '' if label is None else '--label="{}" '.format(label)
-        cmdargs += '' if nid is None else '--nid={} '.format(nid)
-        cmdargs += '' if scale is None else '--scale={} '.format(scale)
-        cmdargs += '' if flat == False else '--flat '
-        cmdargs = filename.split() + shlex.split(cmdargs)
+            # process "commandline" arguments
+            cmdargs = ''
+            cmdargs += '' if out is None else '--out={} '.format(out)
+            cmdargs += '' if bounds is None else '--bounds="{}" '.format(bounds)
+            cmdargs += '' if axes is None else '--axes="{}" '.format(axes)
+            cmdargs += '' if weight is None else '--weight="{}" '.format(weight)
+            cmdargs += '' if iters is None else '--iters="{}" '.format(iters)
+            cmdargs += '' if label is None else '--label="{}" '.format(label)
+            cmdargs += '' if nid is None else '--nid={} '.format(nid)
+            cmdargs += '' if scale is None else '--scale={} '.format(scale)
+            cmdargs += '' if flat == False else '--flat '
+        else:
+            cmdargs = ' ' + cmdargs
+        if isinstance(filename, basestring):
+            cmdargs = filename.split() + shlex.split(cmdargs)
+        else: # special case of passing in monitor instance
+            instance = filename
+            cmdargs = shlex.split(cmdargs)
 
     #XXX: note that 'argparse' is new as of python2.7
     from optparse import OptionParser
@@ -910,7 +941,9 @@ Required Inputs:
     if __quit: return
 
     # get the name of the parameter log file
-    params, _cost = read_history(parsed_args[0])
+    if instance is None:
+        instance = parsed_args[0]
+    params, _cost = read_history(instance)
     # would be nice to use meta = ['wx','wx2','x','x2','wy',...]
     # exec "from %s import meta" % file
 
@@ -1140,6 +1173,7 @@ Additional Inputs:
     global __quit
     __quit = False
 
+    instance = None
     # handle the special case where list is provided by sys.argv
     if isinstance(filename, (list,tuple)) and not kwds:
         cmdargs = filename # (above is used by script to parse command line)
@@ -1147,38 +1181,46 @@ Additional Inputs:
         cmdargs = shlex.split(filename)
     # 'everything else' is essentially the functional interface
     else:
-        out = kwds.get('out', None)
-        bounds = kwds.get('bounds', None)
-        iters = kwds.get('iters', None)
-        label = kwds.get('label', None)
-        dim = kwds.get('dim', None)
-        filter = kwds.get('filter', None)
-        mask = kwds.get('mask', None)
-        nid = kwds.get('nid', None)
-        scale = kwds.get('scale', None)
-        gap = kwds.get('gap', None)
-        data = kwds.get('data', False)
-        cones = kwds.get('cones', False)
-        vertical = kwds.get('vertical', False)
-        flat = kwds.get('flat', False)
+        cmdargs = kwds.get('kwds', '')
+        if not cmdargs:
+            out = kwds.get('out', None)
+            bounds = kwds.get('bounds', None)
+            iters = kwds.get('iters', None)
+            label = kwds.get('label', None)
+            dim = kwds.get('dim', None)
+            filter = kwds.get('filter', None)
+            mask = kwds.get('mask', None)
+            nid = kwds.get('nid', None)
+            scale = kwds.get('scale', None)
+            gap = kwds.get('gap', None)
+            data = kwds.get('data', False)
+            cones = kwds.get('cones', False)
+            vertical = kwds.get('vertical', False)
+            flat = kwds.get('flat', False)
 
-        # process "commandline" arguments
-        cmdargs = ''
-        cmdargs += '' if out is None else '--out={} '.format(out)
-        cmdargs += '' if bounds is None else '--bounds="{}" '.format(bounds)
-        cmdargs += '' if iters is None else '--iters="{}" '.format(iters)
-        cmdargs += '' if label is None else '--label="{}" '.format(label)
-        cmdargs += '' if dim is None else '--dim="{}" '.format(dim)
-        cmdargs += '' if filter is None else '--filter="{}" '.format(filter)
-        cmdargs += '' if mask is None else '--mask={} '.format(mask)
-        cmdargs += '' if nid is None else '--nid={} '.format(nid)
-        cmdargs += '' if scale is None else '--scale={} '.format(scale)
-        cmdargs += '' if gap is None else '--gap={} '.format(gap)
-        cmdargs += '' if data == False else '--data '
-        cmdargs += '' if cones == False else '--cones '
-        cmdargs += '' if vertical == False else '--vertical '
-        cmdargs += '' if flat == False else '--flat '
-        cmdargs = filename.split() + shlex.split(cmdargs)
+            # process "commandline" arguments
+            cmdargs = ''
+            cmdargs += '' if out is None else '--out={} '.format(out)
+            cmdargs += '' if bounds is None else '--bounds="{}" '.format(bounds)
+            cmdargs += '' if iters is None else '--iters="{}" '.format(iters)
+            cmdargs += '' if label is None else '--label="{}" '.format(label)
+            cmdargs += '' if dim is None else '--dim="{}" '.format(dim)
+            cmdargs += '' if filter is None else '--filter="{}" '.format(filter)
+            cmdargs += '' if mask is None else '--mask={} '.format(mask)
+            cmdargs += '' if nid is None else '--nid={} '.format(nid)
+            cmdargs += '' if scale is None else '--scale={} '.format(scale)
+            cmdargs += '' if gap is None else '--gap={} '.format(gap)
+            cmdargs += '' if data == False else '--data '
+            cmdargs += '' if cones == False else '--cones '
+            cmdargs += '' if vertical == False else '--vertical '
+            cmdargs += '' if flat == False else '--flat '
+        else:
+            cmdargs = ' ' + cmdargs
+        if isinstance(filename, basestring):
+            cmdargs = filename.split() + shlex.split(cmdargs)
+        else: # special case of passing in monitor instance
+            instance = filename
+            cmdargs = shlex.split(cmdargs)
 
     #XXX: note that 'argparse' is new as of python2.7
     from optparse import OptionParser
@@ -1245,7 +1287,9 @@ Additional Inputs:
     if __quit: return
 
     # get the name of the parameter log file
-    params, _cost = read_history(parsed_args[0])
+    if instance is None:
+        instance = parsed_args[0]
+    params, _cost = read_history(instance)
     # would be nice to use meta = ['wx','wx2','x','x2','wy',...]
     # exec "from %s import meta" % file
 

@@ -16,7 +16,7 @@ import matplotlib.pyplot as plt
 from matplotlib import cm
 
 from mystic.munge import read_history
-from mystic.munge import logfile_reader, raw_to_support, read_raw_file
+from mystic.munge import raw_to_support, read_raw_file, read_trajectories
 
 # globals
 __quit = False
@@ -30,15 +30,7 @@ source is the name of the trajectory logfile (or solver instance)
 if provided, ids are the list of 'run ids' to select
     """
     try: # if it's a logfile, it might be multi-id
-        if isinstance(source, basestring):
-            step, param, cost = logfile_reader(source)
-        else:
-            step = enumerate(source.id)
-            if len(source) == source.id.count(None):
-                step = [(i,) for (i,j) in step]
-            else:
-                step = list(step)
-            param, cost = source.x, source.y
+        step, param, cost = read_trajectories(source)
     except: # it's not a logfile, so read and return
         param, cost = read_history(source)
         return [param],[cost]
@@ -840,15 +832,8 @@ Required Inputs:
 
     # parse file contents to get (i,id), cost, and parameters
     try:
-        if instance:
-            step = enumerate(instance.id)
-            if len(instance) == instance.id.count(None):
-                step = [(i,) for (i,j) in step]
-            else:
-                step = list(step)
-            param, cost = instance.x, instance.y
-        else:
-            step, param, cost = logfile_reader(filename)
+        instance = instance if instance else filename
+        step, param, cost = read_trajectories(instance)
     except SyntaxError:
         read_raw_file(filename)
         msg = "incompatible file format, try 'support_convergence.py'"
