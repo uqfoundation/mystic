@@ -30,7 +30,15 @@ source is the name of the trajectory logfile (or solver instance)
 if provided, ids are the list of 'run ids' to select
     """
     try: # if it's a logfile, it might be multi-id
-        step, param, cost = logfile_reader(source)
+        if isinstance(source, basestring):
+            step, param, cost = logfile_reader(source)
+        else:
+            step = enumerate(source.id)
+            if len(source) == source.id.count(None):
+                step = [(i,) for (i,j) in step]
+            else:
+                step = list(step)
+            param, cost = source.x, source.y
     except: # it's not a logfile, so read and return
         param, cost = read_history(source)
         return [param],[cost]
@@ -361,6 +369,7 @@ Additional Inputs:
     _reducer = None
     _solver = None
 
+    instance = None
     # handle the special case where list is provided by sys.argv
     if isinstance(model, (list,tuple)) and not logfile and not kwds:
         cmdargs = model # (above is used by script to parse command line)
@@ -397,7 +406,11 @@ Additional Inputs:
         if callable(reduce): _reducer, reduce = reduce, None
 
         # handle logfile if given
-        if logfile: model += ' ' + logfile
+        if logfile:
+            if isinstance(logfile, basestring):
+                model += ' ' + logfile
+            else: # special case of passing in monitor instance
+                instance = logfile
 
         # process "commandline" arguments
         cmdargs = ''
@@ -565,9 +578,9 @@ Additional Inputs:
     x,y = _parse_axes(spec, grid=True) # grid=False for 1D plots
     #FIXME: does grid=False still make sense here...?
     if reducer: reducer = _reducer or _get_instance(reducer)
-    if solver and (not source or not model):
+    if solver and (not source or not model): #XXX: not instance?
         raise RuntimeError('a model and results filename are required')
-    elif not source and not model:
+    elif not source and not model and not instance:
         raise RuntimeError('a model or a results file is required')
     if model:
         model = _model or _get_instance(model)
@@ -584,7 +597,11 @@ Additional Inputs:
         else:
             initial = [0]*xlen
         from mystic.monitors import VerboseLoggingMonitor
-        itermon = VerboseLoggingMonitor(filename=source, new=True)
+        if instance:
+            itermon = VerboseLoggingMonitor(new=True)
+            itermon.prepend(instance)
+        else:
+            itermon = VerboseLoggingMonitor(filename=source, new=True)
         # explicitly constrain parameters
         model = partial(mask)(model)
         # solve
@@ -612,6 +629,7 @@ Additional Inputs:
        #fig0 = None
         fig = None
 
+    if instance: source = instance
     if source:
         # params are the parameter trajectories
         # cost is the solution trajectory
@@ -702,7 +720,7 @@ Required Inputs:
             cmdargs = filename.split() + shlex.split(cmdargs)
         else: # special case of passing in monitor instance
             instance = filename
-            cmdargs = ['^1203@magic*key311&'] + shlex.split(cmdargs)
+            cmdargs = shlex.split(cmdargs)
 
     #XXX: note that 'argparse' is new as of python2.7
     from optparse import OptionParser
