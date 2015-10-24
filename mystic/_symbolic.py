@@ -267,7 +267,7 @@ Further Inputs:
 
     nvars = None
     permute = False # if True, return all permutations
-    warn = True  # if True, don't supress warnings
+    warn = True  # if True, don't suppress warnings
     verbose = False  # if True, print debug info
     #-----------------------undocumented-------------------------------
     permute = kwds['permute'] if 'permute' in kwds else permute
@@ -436,7 +436,7 @@ Further Inputs:
 """
     nvars = None
     permute = False # if True, return all permutations
-    warn = True  # if True, don't supress warnings
+    warn = True  # if True, don't suppress warnings
     verbose = False  # if True, print debug info
     #-----------------------undocumented-------------------------------
     permute = kwds['permute'] if 'permute' in kwds else permute
@@ -634,7 +634,7 @@ Further Inputs:
 """
     #-----------------------undocumented-------------------------------
    #kwds['permute'] = False # if True, return all permutations
-    kwds['warn'] = False  # if True, don't supress warnings
+    kwds['warn'] = False  # if True, don't suppress warnings
     kwds['verbose'] = False  # if True, print debug info
     #------------------------------------------------------------------
     try:
@@ -703,7 +703,7 @@ Further Inputs:
 """
     nvars = None
     permute = False # if True, return all permutations
-    warn = True  # if True, don't supress warnings
+    warn = True  # if True, don't suppress warnings
     verbose = False # if True, print details from _classify_variables
     #-----------------------undocumented-------------------------------
     permute = kwds['permute'] if 'permute' in kwds else permute

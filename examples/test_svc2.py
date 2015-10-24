@@ -69,8 +69,8 @@ constrain = "{x0} = ({rhs} - ({xN}))/{N}".format(x0=x0, xN=xN, N=N, rhs=rhs)
 constrain = constraint(solvers(constrain))
 #constrain = constraint(solvers(solve(constrain)))
 
-from mystic import supressed
-@supressed(5e-2)
+from mystic import suppressed
+@suppressed(5e-2)
 def conserve(x):
     return constrain(x)
 

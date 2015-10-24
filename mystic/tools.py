@@ -35,8 +35,8 @@ Main functions exported are::
     - partial: generate a function where some input has fixed values
     - insert_missing: return a sequence with the 'missing' elements inserted
     - clipped: generate a function where values outside of bounds are clipped
-    - supressed: generate a function where values less than tol are supressed
-    - supress: supress small values less than tol
+    - suppressed: generate a function where values less than tol are suppressed
+    - suppress: suppress small values less than tol
     - unpair: convert a 1D array of N pairs to two 1D arrays of N values
     - src: extract source code from a python code object
 
@@ -380,7 +380,7 @@ def wrap_bounds(target_function, min=None, max=None):
         bounds = False
     if bounds:
         def function_wrapper(x):
-            settings = seterr(all='ignore') #XXX: slow to supress warnings?
+            settings = seterr(all='ignore') #XXX: slow to suppress warnings?
             if any((x<min)|(x>max)): #if violate bounds, evaluate as inf
                 seterr(**settings)
                 return inf
@@ -567,22 +567,22 @@ For example,
     return dec
 
 
-def supress(x, tol=1e-8, clip=True):
-    """supress small values less than tol"""
+def suppress(x, tol=1e-8, clip=True):
+    """suppress small values less than tol"""
     from numpy import asarray, abs
     x = asarray(list(x))
     mask = abs(x) < tol
     if not clip:
-        # preserve sum by spreading supressed values to the non-zero elements
+        # preserve sum by spreading suppressed values to the non-zero elements
         x[mask==False] = (x + sum(x[mask])/(len(mask)-sum(mask)))[mask==False]
     x[mask] = 0.0
     return x.tolist()
 
-def supressed(tol=1e-8, exit=False, clip=True):
-    """generate a function, where values less than tol are supressed
+def suppressed(tol=1e-8, exit=False, clip=True):
+    """generate a function, where values less than tol are suppressed
 
 For example,
-    >>> @supressed(1e-8)
+    >>> @suppressed(1e-8)
     ... def square(x):
     ...     return [i**2 for i in x]
     ... 
@@ -590,7 +590,7 @@ For example,
     [1.00000000e-16, 4.00000000e-16, 0.00000000e+00]
     >>> 
     >>> from mystic.math.measures import normalize
-    >>> @supressed(1e-8, exit=True, clip=False)
+    >>> @suppressed(1e-8, exit=True, clip=False)
     ... def norm(x):
     ...     return normalize(x, mass=1)
     ... 
@@ -602,10 +602,10 @@ For example,
     def dec(f):
         if exit:
             def func(x, *args, **kwds):
-                return supress(f(x, *args, **kwds), tol, clip)
+                return suppress(f(x, *args, **kwds), tol, clip)
         else:
             def func(x, *args, **kwds):
-                return f(supress(x, tol, clip), *args, **kwds)
+                return f(suppress(x, tol, clip), *args, **kwds)
         func.__wrapped__ = f
         func.__doc__ = f.__doc__
         return func

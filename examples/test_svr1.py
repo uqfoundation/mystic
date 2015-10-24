@@ -46,8 +46,8 @@ from mystic.symbolic import linear_symbolic, solve, \
 constrain = linear_symbolic(Aeq,Beq)
 constrain = constraint(solvers(solve(constrain,target=['x0'])))
 
-from mystic import supressed
-@supressed(1e-5)
+from mystic import suppressed
+@suppressed(1e-5)
 def conserve(x):
     return constrain(x)
 

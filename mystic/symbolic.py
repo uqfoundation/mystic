@@ -197,7 +197,7 @@ Further Inputs:
             try:
                 after, before = eval(after, locals_), eval(before, locals_)
                 break
-            except ValueError as error:
+            except ValueError as error:  #FIXME: python2.5
                 if error.message.startswith('negative number') and \
                    error.message.endswith('raised to a fractional power'):
                     val = variants.pop()
