@@ -52,8 +52,8 @@ def SupportVectors(alpha, y=None, eps=0):
 
 If labels y are provided, then group indicies by label
     """
-    import mystic.svmtools as svm
-    sv = svm.SupportVectors(alpha,eps)
+    import mystic.svr as svr
+    sv = svr.SupportVectors(alpha,eps)
     if y is None:
         return sv
     else:

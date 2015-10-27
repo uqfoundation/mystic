@@ -11,7 +11,7 @@ Support Vector Regression. Example 1
 from numpy import *
 import qld
 import pylab
-from mystic.svmtools import *
+from mystic.svr import *
 
 from mystic.tools import random_seed
 #random_seed(123)

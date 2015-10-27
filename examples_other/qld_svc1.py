@@ -11,7 +11,7 @@ Support Vector Classification. Example 1
 from numpy import *
 import qld, quapro
 import pylab
-from mystic.svctools import *
+from mystic.svc import *
 
 def myshow():
     import Image, tempfile

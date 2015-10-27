@@ -11,7 +11,7 @@ Support Vector Regression. Example 1
 
 from numpy import *
 import pylab
-from mystic.svmtools import *
+from mystic.svr import *
 
 # define the objective function to match standard QP solver
 # (see: http://www.mathworks.com/help/optim/ug/quadprog.html)

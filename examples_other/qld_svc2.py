@@ -13,7 +13,7 @@ from numpy import *
 from scipy.io import read_array
 import qld, quapro
 import pylab
-from mystic.svctools import *
+from mystic.svc import *
 import os.path, time
 
 def myshow():

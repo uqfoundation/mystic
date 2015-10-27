@@ -13,7 +13,7 @@ using meristem data from data files
 
 from numpy import *
 import pylab
-from mystic.svctools import *
+from mystic.svc import *
 import os.path
 
 # define the objective function as the dual for SVC

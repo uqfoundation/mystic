@@ -136,9 +136,9 @@ Additional Inputs:
 
 # Factories that give termination conditions
 def VTR(tolerance=0.005, target=0.0):
-    """cost of last iteration is < tolerance:
+    """cost of last iteration is < tolerance from target:
 
-cost[-1] <= tolerance"""
+abs(cost[-1] - target) <= tolerance"""
     doc = "VTR with %s" % {'tolerance':tolerance, 'target':target}
     def _VTR(inst, info=False):
         if info: info = lambda x:x
@@ -261,9 +261,9 @@ abs(cost[-1] - fval)/fval <= tolerance *or* (cost[-1] - cost[-g]) = 0 """
 
 def VTRChangeOverGeneration(ftol=0.005, gtol=1e-6, generations=30, target=0.0):
     """change in cost is < gtol over a number of generations,
-or cost of last iteration is < ftol:
+or cost of last iteration is < ftol from target:
 
-cost[-g] - cost[-1] <= gtol, where g=generations *or* cost[-1] <= ftol."""
+cost[-g] - cost[-1] <= gtol *or* abs(cost[-1] - target) <= ftol."""
     doc = "VTRChangeOverGeneration with %s" % {'ftol':ftol, 'gtol':gtol,
                                                'generations':generations,
                                                'target':target}

@@ -11,7 +11,7 @@ Support Vector Regression. Example 1
 from numpy import *
 import qld
 import pylab
-from mystic.svmtools import *
+from mystic.svr import *
 
 x = arange(-5, 5.001)
 y = x*x + random.rand(x.size)*8

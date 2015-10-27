@@ -11,7 +11,7 @@ Support Vector Classification. Example 1
 
 from numpy import *
 import pylab
-from mystic.svctools import *
+from mystic.svc import *
 
 # define the objective function to match standard QP solver
 # (see: http://www.mathworks.com/help/optim/ug/quadprog.html)
