@@ -383,6 +383,7 @@ Additional Inputs:
             depth = kwds.get('depth', False)
             dots = kwds.get('dots', False)
             join = kwds.get('join', False)
+            verb = kwds.get('verb', False)
 
             # special case: bounds passed as list of slices
             if not isinstance(bounds, (basestring, type(None))):
@@ -423,6 +424,7 @@ Additional Inputs:
             cmdargs += '' if depth == False else '--depth '
             cmdargs += '' if dots == False else '--dots '
             cmdargs += '' if join == False else '--join '
+            cmdargs += '' if verb == False else '--verb '
         else:
             cmdargs = ' ' + cmdargs
         cmdargs = model.split() + shlex.split(cmdargs)
@@ -470,6 +472,8 @@ Additional Inputs:
                       default=False,help="show trajectory points in plot")
     parser.add_option("-j","--join",action="store_true",dest="line",\
                       default=False,help="connect trajectory points in plot")
+    parser.add_option("-v","--verb",action="store_true",dest="verbose",\
+                      default=False,help="print model documentation string")
 
 #   import sys
 #   if 'mystic_model_plotter.py' not in sys.argv:
@@ -558,6 +562,11 @@ Additional Inputs:
     except:
       stop = ":"
 
+    try: # select whether to be verbose about model documentation
+      verbose = bool(parsed_opts.verbose)
+    except:
+      verbose = False
+
     #################################################
     solver = None  # set to 'mystic.solvers.fmin' (or similar) for 'live' fits
     #NOTE: 'live' runs constrain params explicitly in the solver, then reduce
@@ -583,6 +592,7 @@ Additional Inputs:
         raise RuntimeError('a model or a results file is required')
     if model:
         model = _model or _get_instance(model)
+        if verbose: print model.__doc__
         # need a reducer if model returns an array
         if reducer: model = reduced(reducer, arraylike=False)(model)
 

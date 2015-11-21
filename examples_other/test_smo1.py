@@ -13,7 +13,7 @@ SMO prototype.
 
 from numpy import *
 import pylab
-from mystic.svctools import *
+from mystic.svc import *
 
 # a common objective function for solving a QP problem
 # (see http://www.mathworks.com/help/optim/ug/quadprog.html)
