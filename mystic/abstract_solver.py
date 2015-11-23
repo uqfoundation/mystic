@@ -839,6 +839,28 @@ Further Inputs:
         signal.signal(signal.SIGINT,signal.default_int_handler)
         return
 
+    def __copy__(self):
+        cls = self.__class__
+        result = cls.__new__(cls)
+        result.__dict__.update(self.__dict__)
+        return result
+
+    def __deepcopy__(self, memo):
+        import copy
+        import dill
+        cls = self.__class__
+        result = cls.__new__(cls)
+        memo[id(self)] = result
+        for k, v in self.__dict__.items():
+            if v is self._cost:
+                setattr(result, k, tuple(dill.copy(i) for i in v))
+            else:
+                try: #XXX: work-around instancemethods in python2.6
+                    setattr(result, k, copy.deepcopy(v, memo))
+                except TypeError:
+                    setattr(result, k, dill.copy(v))
+        return result
+
     # extensions to the solver interface
     evaluations = property(__evaluations )
     generations = property(__generations )
