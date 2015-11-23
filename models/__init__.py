@@ -74,15 +74,16 @@ from lorentzian import lorentzian
 from circle import circle, dense_circle, sparse_circle, minimal_circle
 
 # functions
-from dejong import sphere, rosen, step, quartic, shekel
-from storn import corana, griewangk, zimmermann
-from wolfram import fosc3d, nmin51
-from nag import peaks
-from venkataraman import venkat91
-from wavy import wavy1, wavy2
-from pohlheim import schwefel, ellipsoid, rastrigin, powers, ackley
-from pohlheim import michal, branins, easom, goldstein
-from schittkowski import paviani
+from functions import *
+# from dejong import sphere, rosen, step, quartic, shekel
+# from storn import corana, griewangk, zimmermann
+# from wolfram import fosc3d, nmin51
+# from nag import peaks
+# from venkataraman import venkat91
+# from wavy import wavy1, wavy2
+# from pohlheim import schwefel, ellipsoid, rastrigin, powers, ackley
+# from pohlheim import michal, branins, easom, goldstein
+# from schittkowski import paviani
 
 #shortcuts
 #from poly import chebyshev8cost, chebyshev16cost
