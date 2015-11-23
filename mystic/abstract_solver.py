@@ -823,8 +823,12 @@ Further Inputs:
         self._generateHandler(sigint_callback)
 
         # activate signal handler
+       #import threading as thread
+       #mainthread = isinstance(thread.current_thread(), thread._MainThread)
+       #if mainthread: #XXX: if not mainthread, signal will raise ValueError
         import signal
-        if self._handle_sigint: signal.signal(signal.SIGINT,self.signal_handler)
+        if self._handle_sigint:
+            signal.signal(signal.SIGINT,self.signal_handler)
 
         # register: cost, termination, ExtraArgs
         cost = self._bootstrap_objective(cost, ExtraArgs)
@@ -836,7 +840,8 @@ Further Inputs:
             continue
 
         # restore default handler for signal interrupts
-        signal.signal(signal.SIGINT,signal.default_int_handler)
+        if self._handle_sigint:
+            signal.signal(signal.SIGINT,signal.default_int_handler)
         return
 
     def __copy__(self):

@@ -9,7 +9,7 @@ from mystic.search import Searcher
 if __name__ == '__main__':
 #   start = time.time()
     # if available, use a multiprocessing worker pool
-    try: #NOTE: ThreadPool and ParallelPool fail
+    try: #NOTE: ParallelPool fails
         from pathos.helpers import freeze_support
         freeze_support()
         from pathos.pools import ProcessPool as Pool
