@@ -11,13 +11,6 @@ functional interfaces for mystic's visual analytics scripts
 
 __all__ = ['model_plotter','log_reader']
 
-from mpl_toolkits.mplot3d import axes3d
-import matplotlib.pyplot as plt
-from matplotlib import cm
-
-from mystic.munge import read_history
-from mystic.munge import raw_to_support, read_raw_file, read_trajectories
-
 # globals
 __quit = False
 
@@ -30,8 +23,10 @@ source is the name of the trajectory logfile (or solver instance)
 if provided, ids are the list of 'run ids' to select
     """
     try: # if it's a logfile, it might be multi-id
+        from mystic.munge import read_trajectories
         step, param, cost = read_trajectories(source)
     except: # it's not a logfile, so read and return
+        from mystic.munge import read_history
         param, cost = read_history(source)
         return [param],[cost]
 
@@ -51,6 +46,7 @@ if provided, ids are the list of 'run ids' to select
     costs = [r for r in costs if len(r)] # only keep selected 'ids'
 
     # convert to support format
+    from mystic.munge import raw_to_support
     for i in range(len(params)):
         params[i], costs[i] = raw_to_support(params[i], costs[i])
     return params, costs
@@ -156,6 +152,7 @@ if shift is provided, shift the intensity as 'z = z+shift' (useful for -z's)
 if style is provided, set the line style (e.g. 'w-o', 'k-', 'ro')
 if figure is provided, plot to an existing figure
     """
+    import matplotlib.pyplot as plt
     if not figure: figure = plt.figure()
     ax = figure.gca()
     ax.autoscale(tight=True)
@@ -187,6 +184,8 @@ if shift is provided, shift the intensity as 'z = z+shift' (useful for -z's)
 if style is provided, set the line style (e.g. 'w-o', 'k-', 'ro')
 if figure is provided, plot to an existing figure
     """
+    import matplotlib.pyplot as plt
+    from mpl_toolkits.mplot3d import axes3d
     if not figure: figure = plt.figure()
 
     if cost: kwds = {'projection':'3d'} # 3D
@@ -241,6 +240,7 @@ pass the array to 'y' and the fixed value to 'x'
     if scale: z = numpy.log(4*z*scale+1)+2
     #XXX: need to 'correct' the z-axis (or provide easy conversion)
 
+    import matplotlib.pyplot as plt
     fig = plt.figure()
     ax = fig.gca()
     ax.autoscale(tight=True)
@@ -262,6 +262,7 @@ if shift is provided, shift the intensity as 'z = z+shift' (useful for -z's)
 use density to adjust the number of contour lines
     """
     import numpy
+    from matplotlib import cm
 
     if y is None:
         y = x
@@ -279,6 +280,8 @@ use density to adjust the number of contour lines
     if scale: z = numpy.log(4*z*scale+1)+2
     #XXX: need to 'correct' the z-axis (or provide easy conversion)
 
+    import matplotlib.pyplot as plt
+    from mpl_toolkits.mplot3d import axes3d
     fig = plt.figure()
     if surface and fill is None: # 'hidden' option; full 3D surface plot
         ax = fig.gca(projection='3d')
@@ -664,6 +667,8 @@ Additional Inputs:
             _c = eval('c[%s]' % stop) if surface else None
             fig = _draw_trajectory(_x,_y,_c, style=style, scale=scale, shift=shift, figure=fig)
 
+    import matplotlib.pyplot as plt
+    from mpl_toolkits.mplot3d import axes3d
     # add labels to the axes
     if surface: kwds = {'projection':'3d'} # 3D
     else: kwds = {}                        # 2D
@@ -843,8 +848,10 @@ Required Inputs:
     # parse file contents to get (i,id), cost, and parameters
     try:
         instance = instance if instance else filename
+        from mystic.munge import read_trajectories
         step, param, cost = read_trajectories(instance)
     except SyntaxError:
+        from mystic.munge import read_raw_file
         read_raw_file(filename)
         msg = "incompatible file format, try 'support_convergence.py'"
         raise SyntaxError(msg)
@@ -895,6 +902,7 @@ Required Inputs:
     #print "cost_conv = %s" % cost_conv
     #print "conv = %s" % conv
 
+    import matplotlib.pyplot as plt
     fig = plt.figure()
 
     #FIXME: These may fail when conv[i][j] = [[],[],[]] and cost = []. Verify this.

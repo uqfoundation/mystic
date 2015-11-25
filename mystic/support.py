@@ -11,17 +11,7 @@ functional interfaces for mystic's visual diagnistics for support files
 __all__ = ['convergence', 'hypercube', 'hypercube_measures', \
            'hypercube_scenario', 'best_dimensions', 'swap']
 
-from mpl_toolkits.mplot3d import Axes3D as _Axes3D
-from matplotlib.axes import subplot_class_factory
-Subplot3D = subplot_class_factory(_Axes3D)
-
-from mpl_toolkits.mplot3d import axes3d
-import matplotlib.pyplot as plt
-from matplotlib import cm
-
-from mystic.munge import read_history
-from mystic.munge import raw_to_support, read_trajectories
-from mystic.tools import factor, flatten
+# from mpl_toolkits.mplot3d import axes3d
 
 # globals
 __quit = False
@@ -30,6 +20,7 @@ ZERO = 1.0e-6  # zero-ish
 
 def best_dimensions(n):
   "get the 'best' dimensions (n x m) for arranging plots"
+  from mystic.tools import factor
   allfactors = list(factor(n))
   from numpy import product
   cand = [1] + [product(allfactors[:i+1]) for i in range(len(allfactors))]
@@ -392,6 +383,7 @@ Required Inputs:
     # get the name of the parameter log file
     if instance is None:
         instance = parsed_args[0]
+    from mystic.munge import read_history
     params, cost = read_history(instance)
 
     if parsed_opts.cost: # also plot the cost
@@ -454,6 +446,7 @@ Required Inputs:
     else: j = 0
     dim1,dim2 = best_dimensions(plots + j)
 
+    import matplotlib.pyplot as plt
     fig = plt.figure()
     ax1 = fig.add_subplot(dim1,dim2,1)
     ax1.set_ylabel(label[0])
@@ -647,6 +640,7 @@ Required Inputs:
     # get the name of the parameter log file
     if instance is None:
         instance = parsed_args[0]
+    from mystic.munge import read_history
     params, _cost = read_history(instance)
     # would be nice to use meta = ['wx','wx2','x','x2','wy',...]
     # exec "from %s import meta" % file
@@ -736,6 +730,10 @@ Required Inputs:
         if bounds[i][1] is None: bounds[i][1] = 1
 
     # correctly bound the first plot.  there must be at least one plot
+    import matplotlib.pyplot as plt
+    from mpl_toolkits.mplot3d import Axes3D as _Axes3D
+    from matplotlib.axes import subplot_class_factory
+    Subplot3D = subplot_class_factory(_Axes3D)
     fig = plt.figure()
     ax1 = Subplot3D(fig, dim1,dim2,1)
     ax1.plot([bounds[0][0]],[bounds[1][0]],[bounds[2][0]])
@@ -786,6 +784,7 @@ Required Inputs:
     #xyz = [(0,1),(4,5),(8,9)] for any length tuple
     #steps = [[0,1],[1,2],[2,3],[3,4,5,6,7,8]] or similar
     if flatten:
+        from mystic.tools import flatten
         steps = [list(flatten(steps))]
 
     # build all the plots
@@ -943,6 +942,7 @@ Required Inputs:
     # get the name of the parameter log file
     if instance is None:
         instance = parsed_args[0]
+    from mystic.munge import read_history
     params, _cost = read_history(instance)
     # would be nice to use meta = ['wx','wx2','x','x2','wy',...]
     # exec "from %s import meta" % file
@@ -1042,6 +1042,10 @@ Required Inputs:
         if bounds[i][1] is None: bounds[i][1] = 1
 
     # correctly bound the first plot.  there must be at least one plot
+    import matplotlib.pyplot as plt
+    from mpl_toolkits.mplot3d import Axes3D as _Axes3D
+    from matplotlib.axes import subplot_class_factory
+    Subplot3D = subplot_class_factory(_Axes3D)
     fig = plt.figure()
     ax1 = Subplot3D(fig, dim1,dim2,1)
     ax1.plot([bounds[0][0]],[bounds[1][0]],[bounds[2][0]])
@@ -1094,6 +1098,7 @@ Required Inputs:
     #wxyz = [(0,1),(4,5),(8,9)] for any length tuple (should match up with xyz)
     #steps = [[0],[1],[3],[8]] or similar
     if flatten:
+        from mystic.tools import flatten
         steps = [list(flatten(steps))]
 
     # adjust for logarithmic scaling of intensity
@@ -1289,6 +1294,7 @@ Additional Inputs:
     # get the name of the parameter log file
     if instance is None:
         instance = parsed_args[0]
+    from mystic.munge import read_history
     params, _cost = read_history(instance)
     # would be nice to use meta = ['wx','wx2','x','x2','wy',...]
     # exec "from %s import meta" % file
@@ -1468,6 +1474,10 @@ Additional Inputs:
         axis = xs
 
     # correctly bound the first plot.  there must be at least one plot
+    import matplotlib.pyplot as plt
+    from mpl_toolkits.mplot3d import Axes3D as _Axes3D
+    from matplotlib.axes import subplot_class_factory
+    Subplot3D = subplot_class_factory(_Axes3D)
     fig = plt.figure() 
     if _2D:
         ax1 = fig.add_subplot(dim1,dim2,1)
