@@ -25,7 +25,8 @@ is used. Otherwise, use mystic's n-dimensional Monte Carlo integrator."""
   if len(lb) <= 3:
     scipy = True
     try: 
-      from scipy.integrate import quad, dblquad, tplquad
+      import imp
+      imp.find_module('scipy')
     except ImportError:
       scipy = False
     if scipy:

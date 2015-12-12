@@ -312,6 +312,8 @@ Further Inputs:
     locals = kwds['locals'] if 'locals' in kwds else None
     if locals is None: locals = {}
     try:
+        import imp
+        imp.find_module('sympy')
         code = """from sympy import Eq, Symbol;"""
         code += """from sympy import solve as symsol;"""
         code = compile(code, '<string>', 'exec')
@@ -482,6 +484,8 @@ Further Inputs:
     if locals is None: locals = {}
     # if sympy not installed, return original constraints
     try:
+        import imp
+        imp.find_module('sympy')
         code = """from sympy import Eq, Symbol;"""
         code += """from sympy import solve as symsol;"""
         code = compile(code, '<string>', 'exec')

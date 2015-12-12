@@ -85,7 +85,7 @@ class Searcher(object):
         for _solver in solver._allSolvers:
             bestSol = tuple(_solver.bestSolution)
             bestRes = float(_solver.bestEnergy)
-            memo(*bestSol, out=l*bestRes)
+            memo(*bestSol, out=l*bestRes)  #FIXME: python2.5
         return memo
 
     def _configure(self, model, bounds, stop=None, monitor=None):
