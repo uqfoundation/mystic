@@ -33,6 +33,7 @@ Main functions exported are::
     - reduced: apply a reducer function to reduce output to a single value
     - masked: generate a masked function, given a function and mask provided
     - partial: generate a function where some input has fixed values
+    - synchronized: generate a function, where some input tracks another input
     - insert_missing: return a sequence with the 'missing' elements inserted
     - clipped: generate a function where values outside of bounds are clipped
     - suppressed: generate a function where values less than tol are suppressed
@@ -567,6 +568,57 @@ For example,
     return dec
 
 
+def synchronized(mask):
+    """generate a function, where some input tracks another input
+
+mask should be a dictionary of positional index and tracked index (e.g. {0:1}),
+where keys and values should be different integers. However, if a tuple is
+provided instead of the tracked index (e.g. {0:(1,lambda x:2*x)} or {0:(1,2)}),
+the second member of the tuple will be used to scale the tracked index.
+
+functions are expected to take a single argument, a n-dimensional list or array,
+where the mask will be applied to the input array.
+
+For example,
+    >>> @synchronized({0:1,3:-1})
+    ... def same(x):
+    ...     return x
+    ...
+    >>> same([-5,9])
+    [9, 9]
+    >>> same([0,1,2,3,4])
+    [1, 1, 2, 4, 4]
+    >>> same([0,9,2,3,6])
+    [9, 9, 2, 6, 6]
+    >>> 
+    >>> @synchronized({0:(1,lambda x:1/x),3:(1,-1)})
+    ... def doit(x):
+    ...   return x
+    ... 
+    >>> doit([-5.,9.])
+    [0.1111111111111111, 9.0]
+    >>> doit([0.,1.,2.,3.,4.])
+    [1.0, 1.0, 2.0, -1.0, 4.0]
+    >>> doit([0.,9.,2.,3.,6.])
+    [0.1111111111111111, 9.0, 2.0, -9.0, 6.0]
+    """
+    def dec(f):
+        def func(x, *args, **kwds):
+            for i,j in mask.items():
+                try: x[i] = x[j]
+                except TypeError: # value is tuple with f(x) or constant
+                  j0,j1 = (j[:2] + (1,))[:2]
+                  try: x[i] = j1(x[j0]) if callable(j1) else j1*x[j0]
+                  except IndexError: pass
+                except IndexError: pass
+            return f(x, *args, **kwds)
+        func.__wrapped__ = f
+        func.__doc__ = f.__doc__
+        func.mask = mask
+        return func
+    return dec
+
+
 def suppress(x, tol=1e-8, clip=True):
     """suppress small values less than tol"""
     from numpy import asarray, abs
@@ -577,6 +629,7 @@ def suppress(x, tol=1e-8, clip=True):
         x[mask==False] = (x + sum(x[mask])/(len(mask)-sum(mask)))[mask==False]
     x[mask] = 0.0
     return x.tolist()
+
 
 def suppressed(tol=1e-8, exit=False, clip=True):
     """generate a function, where values less than tol are suppressed
@@ -610,6 +663,7 @@ For example,
         func.__doc__ = f.__doc__
         return func
     return dec
+
 
 def clipped(min=None, max=None, exit=False):
     """generate a function, where values outside of bounds are clipped
