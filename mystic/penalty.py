@@ -91,6 +91,57 @@ the condition f(x) is satisfied when f(x) == 0.0
         return func
     return dec
 
+def linear_equality(condition=lambda x:0., args=None, kwds=None, k=100, h=5):
+    """apply a linear penalty if the given equality constraint is violated
+
+penalty is p(x) = pk*abs(f(x)), with pk = k*pow(h,n) and n=0
+where f.iter() can be used to increment n = n+1
+
+the condition f(x) is satisfied when f(x) == 0.0
+    """
+    if args is None: args=()
+    if kwds is None: kwds={}
+    _n = [0] # current penalty iteration
+    _f = [lambda x:0.] # decorated function
+    _y = [] # stored results
+    def error(x):
+        rms = condition(x, *args, **kwds)**2
+        if hasattr(_f[0], 'error'): rms += _f[0].error(x)**2
+        return rms**0.5
+    def iter(i=None):
+        if i is None: _n[0] += 1
+        else: _n[0] = i
+        if hasattr(_f[0], 'iter'): _f[0].iter(i)
+        return
+    def iteration():
+        return _n[0]
+    def store(x,i=None): #XXX: couple to 'iter' as {n:y} ?
+        if hasattr(_f[0], 'store'): _f[0].store(x,i)
+        return
+    def stored(i=None): # can take a slice
+        if i is None: return _y[:]
+        try: return _y[i]
+        except IndexError: return 0.0
+    def clear():
+        _n[0] = 0
+        [_y.pop() for i in range(len(_y))]
+        if hasattr(_f[0], 'clear'): _f[0].clear()
+        return
+    def dec(f):
+        _f[0] = f
+        def func(x, *argz, **kwdz):
+            pf = condition(x, *args, **kwds)
+            _k = k * pow(h,_n[0])
+            return float(_k)*abs(pf) + f(x, *argz, **kwdz)
+        func.iter = iter
+        func.iteration = iteration
+        func.store = store
+        func.clear = clear
+        func.stored = stored
+        func.error = error
+        return func
+    return dec
+
 def uniform_equality(condition=lambda x:0., args=None, kwds=None, k=inf, h=5):
     """apply a uniform penalty if the given equality constraint is violated
 
@@ -291,6 +342,57 @@ the condition f(x) is satisfied when f(x) <= 0.0
             pf = condition(x, *args, **kwds)
             _k = k * pow(h,_n[0])
             return float(2*_k)*max(0., pf)**2 + f(x, *argz, **kwdz) #XXX: use 2*k or k=200?
+        func.iter = iter
+        func.iteration = iteration
+        func.store = store
+        func.clear = clear
+        func.stored = stored
+        func.error = error
+        return func
+    return dec
+
+def linear_inequality(condition=lambda x:0., args=None, kwds=None, k=100, h=5):
+    """apply a linear penalty if the given inequality constraint is violated
+
+penalty is p(x) = pk*abs(f(x)), with pk = 2k*pow(h,n) and n=0
+where f.iter() can be used to increment n = n+1
+
+the condition f(x) is satisfied when f(x) <= 0.0
+    """
+    if args is None: args=()
+    if kwds is None: kwds={}
+    _n = [0] # current penalty iteration
+    _f = [lambda x:0.] # decorated function
+    _y = [] # stored results
+    def error(x):
+        rms = max(0., condition(x, *args, **kwds))**2
+        if hasattr(_f[0], 'error'): rms += _f[0].error(x)**2
+        return rms**0.5
+    def iter(i=None):
+        if i is None: _n[0] += 1
+        else: _n[0] = i
+        if hasattr(_f[0], 'iter'): _f[0].iter(i)
+        return
+    def iteration():
+        return _n[0]
+    def store(x,i=None): #XXX: couple to 'iter' as {n:y} ?
+        if hasattr(_f[0], 'store'): _f[0].store(x,i)
+        return
+    def stored(i=None): # can take a slice
+        if i is None: return _y[:]
+        try: return _y[i]
+        except IndexError: return 0.0
+    def clear():
+        _n[0] = 0
+        [_y.pop() for i in range(len(_y))]
+        if hasattr(_f[0], 'clear'): _f[0].clear()
+        return
+    def dec(f):
+        _f[0] = f
+        def func(x, *argz, **kwdz):
+            pf = condition(x, *args, **kwds)
+            _k = k * pow(h,_n[0])
+            return float(2*_k)*abs(max(0., pf)) + f(x, *argz, **kwdz) #XXX: use 2*k or k=200?
         func.iter = iter
         func.iteration = iteration
         func.store = store
