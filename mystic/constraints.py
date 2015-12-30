@@ -437,14 +437,19 @@ Additional Inputs:
     ptype -- penalty function type [default: linear_equality]
     args -- arguments for the penalty function [default: ()]
     kwds -- keyword arguments for the penalty function [default: {}]
-    k -- penalty multiplier
-    h -- iterative multiplier
+    k -- penalty multiplier [default: 1]
+    h -- iterative multiplier [default: 5]
+
+NOTE: The defaults provide a linear combination of the individual penalties
+    without any scaling. A different ptype (from 'mystic.penalty') will
+    apply a nonlinear scaling to the combined penalty, while a different
+    k will apply a linear scaling.
 
 NOTE: This function is also useful for combining constraints solvers
     into a single constraints solver, however can not do so directly.  
     Constraints solvers must first be converted to penalty functions
     (i.e. with 'as_penalty'), then combined, then can be converted to
-    a constraints solver (i.e. with `as_constraint'). The resulting
+    a constraints solver (i.e. with 'as_constraint'). The resulting
     constraints will likely be more expensive to evaluate and less
     accurate than writing the constraints solver from scratch.
     """
@@ -452,6 +457,8 @@ NOTE: This function is also useful for combining constraints solvers
    #h = settings.pop('h', None)
    #if k is not None: settings['k'] = k
    #if h is not None: settings['h'] = h
+    k = settings.setdefault('k', 1)
+    if k is None: del settings['k']
     ptype = settings.pop('ptype', None)
     if ptype is None:
         from mystic.penalty import linear_equality as ptype

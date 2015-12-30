@@ -26,9 +26,8 @@ if __name__ == '__main__':
     p2 = lambda x: abs(x2 - f2(x))
     p3 = lambda x: abs(x3 - f3(x))
     p = (p1,p2,p3)
-#   p = [ptype(pi)(lambda x:0.) for pi in p]
-#   ptype = None
-    penalty = combine(*p, k=k, ptype=ptype)
+    p = [ptype(pi)(lambda x:0.) for pi in p]
+    penalty = combine(*p, k=k)
     constraint = as_constraint(penalty, solver=solver)
 
     x = [1,2,3,4,5]
@@ -54,11 +53,12 @@ if __name__ == '__main__':
     c3 = lambda x: t3(x3, x)
     c = (c1,c2,c3)
     
+    k=1
     solver = 'buckshot' #'diffev'
     ptype = linear_equality #quadratic_equality
 
     p = [as_penalty(ci, ptype) for ci in c]
-    penalty = combine(*p, k=1, ptype=linear_equality)
+    penalty = combine(*p, k=k)
     constraint = as_constraint(penalty, solver=solver)
 
     x = [1,2,3,4,5]
