@@ -11,7 +11,7 @@
 __all__ = ['with_penalty','with_constraint','as_penalty','as_constraint',
            'with_mean','with_variance','with_std','with_spread','normalized',
            'issolution','solve','discrete','integers','near_integers',
-           'unique','has_unique','impose_unique']
+           'unique','has_unique','impose_unique', 'combine']
 
 from mystic.math.measures import *
 from mystic.math import almostEqual
@@ -425,6 +425,40 @@ Additional Inputs:
         return 0.0
 
     return penalty
+
+
+def combine(*penalties, **settings): #XXX: is this in the right module?
+    """combine several penalties into a single penalty function
+
+Inputs:
+    penalties -- penalty functions (or penalty conditions)
+
+Additional Inputs:
+    ptype -- penalty function type [default: linear_equality]
+    args -- arguments for the penalty function [default: ()]
+    kwds -- keyword arguments for the penalty function [default: {}]
+    k -- penalty multiplier
+    h -- iterative multiplier
+
+NOTE: This function is also useful for combining constraints solvers
+    into a single constraints solver, however can not do so directly.  
+    Constraints solvers must first be converted to penalty functions
+    (i.e. with 'as_penalty'), then combined, then can be converted to
+    a constraints solver (i.e. with `as_constraint'). The resulting
+    constraints will likely be more expensive to evaluate and less
+    accurate than writing the constraints solver from scratch.
+    """
+   #k = settings.pop('k', None)
+   #h = settings.pop('h', None)
+   #if k is not None: settings['k'] = k
+   #if h is not None: settings['h'] = h
+    ptype = settings.pop('ptype', None)
+    if ptype is None:
+        from mystic.penalty import linear_equality as ptype
+    penalty = lambda x: sum(p(x) for p in penalties)
+    return ptype(penalty, **settings)(lambda x:0.)
+   #from mystic.constraints import as_constraint
+   #return as_constraint(penalty, **settings)
 
 
 from numpy import asfarray, asarray, choose, zeros, ones, ndarray
