@@ -54,6 +54,7 @@ def test_solve():
     return 0.0
 
   x = solve(penalty, guess=[2,3,1])
+ #x = solve(penalty, solver='buckshot')
 
   assert round(mean_constraint(x, 5.0)) == 0.0
   assert round(parameter_constraint(x)) == 0.0
@@ -69,6 +70,7 @@ def test_solve_constraint():
     return x
 
   x = solve(constraint, guess=[2,3,1])
+ #x = solve(constraint, solver='buckshot')
 
   assert almostEqual(mean(x), 1.0, tol=1e-15)
   assert x[-1] == x[0]

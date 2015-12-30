@@ -303,10 +303,16 @@ Additional Inputs:
 NOTE: The resulting constraints will likely be more expensive to evaluate
     and less accurate than writing the constraints solver from scratch.
 
+NOTE: The ensemble solvers are available, using the default NestedSolver,
+    where the keyword 'guess' can be used to set the number of solvers.
+
 NOTE: The default solver is 'diffev', with npop=min(40, ndim*5). The default
     termination is ChangeOverGeneration(), and the default guess is randomly
     selected points between the upper and lower bounds.
     """
+    npts = 8
+    if type(guess) is int: npts, guess = guess, None
+
     ndim = 1 #XXX: better, increase in while loop catching IndexError ?
     if nvars is not None: ndim = nvars
     elif guess is not None: ndim = len(guess)
@@ -315,7 +321,8 @@ NOTE: The default solver is 'diffev', with npop=min(40, ndim*5). The default
 
     def cost(x): return 1.
 
-    #XXX: don't allow solver string as a short-cut?
+    #XXX: don't allow solver string as a short-cut? #FIXME: add ensemble solvers
+    ensemble = False
     if solver is None or solver == 'diffev':
         from mystic.solvers import DifferentialEvolutionSolver as TheSolver
         solver = TheSolver(ndim, min(40, ndim*5))
@@ -328,14 +335,23 @@ NOTE: The default solver is 'diffev', with npop=min(40, ndim*5). The default
     elif solver == 'fmin':
         from mystic.solvers import NelderMeadSimplexSolver as TheSolver
         solver = TheSolver(ndim)
+    elif solver == 'buckshot':
+        from mystic.solvers import BuckshotSolver as TheSolver
+        solver = TheSolver(ndim, max(8, npts)) #XXX: needs better default?
+        ensemble = True
+    elif solver == 'lattice':
+        from mystic.solvers import LatticeSolver as TheSolver
+        solver = TheSolver(ndim, max(8, npts)) #XXX: needs better default?
+        ensemble = True
     
     if termination is None:
         from mystic.termination import ChangeOverGeneration as COG
         termination = COG()
-    if guess is not None:
-        solver.SetInitialPoints(guess) #XXX: nice if 'diffev' also had methods
-    else:
-        solver.SetRandomInitialPoints(lower_bounds, upper_bounds)
+    if not ensemble:
+        if guess is not None:
+            solver.SetInitialPoints(guess) #XXX: nice if 'diffev' had methods
+        else:
+            solver.SetRandomInitialPoints(lower_bounds, upper_bounds)
     if lower_bounds or upper_bounds:
         solver.SetStrictRanges(lower_bounds, upper_bounds)
     if hasattr(constraints, 'iter') and hasattr(constraints, 'error'):
