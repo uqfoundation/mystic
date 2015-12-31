@@ -115,7 +115,7 @@ instead of the decorated function.
 
 
 ####################################################
-def penalize_proxy(penalty=lambda x:0.0, args=None, kwds=None):
+def additive_proxy(penalty=lambda x:0.0, args=None, kwds=None):
     """penalize a function with another function: y = f(x) to y' = f(x) + p(x)
     
 This is useful, for example, in penalizing a cost function where the constraints
@@ -133,7 +133,7 @@ and kwds to the penalty function.
         return func
     return dec
 
-def penalize(penalty=lambda x:0.0, args=None, kwds=None):
+def additive(penalty=lambda x:0.0, args=None, kwds=None):
     """penalize a function with another function: y = f(x) to y' = f(x) + p(x)
     
 This is useful, for example, in penalizing a cost function where the constraints
@@ -145,7 +145,7 @@ cost function evaluation.
     ...   return x**2             
     ... 
     >>> # equivalent to: (x+1) + (x**2) 
-    >>> @penalize(squared)
+    >>> @additive(squared)
     ... def constrain(x):
     ...   return x+1
     ... 
@@ -162,7 +162,7 @@ cost function evaluation.
         return func
     return dec
 
-#XXX: can do multiple @penalize; but better is compound penalty with And,Or,..?
+#XXX: can do multiple @additive; but better is compound penalty with And,Or,..?
 #XXX: create a counter for n += 1 ?
 
 

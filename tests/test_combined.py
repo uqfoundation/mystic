@@ -2,7 +2,7 @@
 combine several penalty conditions to build a single constraint solver
 '''
 
-from mystic.constraints import combine
+from mystic.constraints import combined
  
 
 if __name__ == '__main__':
@@ -27,7 +27,7 @@ if __name__ == '__main__':
     p3 = lambda x: abs(x3 - f3(x))
     p = (p1,p2,p3)
     p = [ptype(pi)(lambda x:0.) for pi in p]
-    penalty = combine(*p, k=k)
+    penalty = combined(*p, k=k)
     constraint = as_constraint(penalty, solver=solver)
 
     x = [1,2,3,4,5]
@@ -58,7 +58,7 @@ if __name__ == '__main__':
     ptype = linear_equality #quadratic_equality
 
     p = [as_penalty(ci, ptype) for ci in c]
-    penalty = combine(*p, k=k)
+    penalty = combined(*p, k=k)
     constraint = as_constraint(penalty, solver=solver)
 
     x = [1,2,3,4,5]

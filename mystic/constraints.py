@@ -11,7 +11,7 @@
 __all__ = ['with_penalty','with_constraint','as_penalty','as_constraint',
            'with_mean','with_variance','with_std','with_spread','normalized',
            'issolution','solve','discrete','integers','near_integers',
-           'unique','has_unique','impose_unique', 'combine']
+           'unique','has_unique','impose_unique', 'combined']
 
 from mystic.math.measures import *
 from mystic.math import almostEqual
@@ -427,7 +427,7 @@ Additional Inputs:
     return penalty
 
 
-def combine(*penalties, **settings): #XXX: is this in the right module?
+def combined(*penalties, **settings): #XXX: is this in the right module?
     """combine several penalties into a single penalty function
 
 Inputs:

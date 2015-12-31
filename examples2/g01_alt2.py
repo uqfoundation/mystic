@@ -18,13 +18,13 @@ from g01 import objective, bounds, xs, ys
 from g01_alt import penalty1, penalty2, penalty3, penalty4, penalty5, \
                     penalty6, penalty7, penalty8, penalty9
 
-from mystic.constraints import as_constraint, combine
+from mystic.constraints import as_constraint, combined
 from mystic.penalty import linear_inequality
 
 penalties = (penalty1,penalty2,penalty3,penalty4,penalty5,\
              penalty6,penalty7,penalty8,penalty9)
 
-penalty = combine(*[linear_inequality(pi)(lambda x:0.) for pi in penalties])
+penalty = combined(*[linear_inequality(pi)(lambda x:0.) for pi in penalties])
 solver = as_constraint(penalty)
 
 
