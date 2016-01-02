@@ -10,7 +10,7 @@
 # and ported to Python by Mike McKerns (December 2014)
 #
 # Author: Mike McKerns (mmckerns @caltech and @uqfoundation)
-# Copyright (c) 1997-2015 California Institute of Technology.
+# Copyright (c) 1997-2016 California Institute of Technology.
 # License: 3-clause BSD.  The full license text is available at:
 #  - http://trac.mystic.cacr.caltech.edu/project/mystic/browser/mystic/LICENSE
 "a Tension-Compression String"
