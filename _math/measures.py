@@ -141,7 +141,7 @@ Inputs:
   from numpy import inf
   return ssum * inf  # protect against ZeroDivision
 
-def support_index(weights, tol=0):
+def support_index(weights, tol=0): #XXX: no relative tolerance near zero
   """get the indicies of the positions which have non-zero weight
 
 Inputs:
@@ -150,7 +150,7 @@ Inputs:
 """
   return [i for (i,w) in enumerate(weights) if w > tol]
 
-def support(samples, weights, tol=0):
+def support(samples, weights, tol=0): #XXX: no relative tolerance near zero
   """get the positions which have non-zero weight
 
 Inputs:
