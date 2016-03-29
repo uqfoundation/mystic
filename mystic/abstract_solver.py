@@ -399,7 +399,7 @@ input::
             for j in range(self.nDim):
                 self.population[i][j] = random.uniform(min[j],max[j])
 
-    def SetMultinormalInitialPoints(self, mean, var = None):
+    def SetMultinormalInitialPoints(self, mean, var=None):
         """Generate Initial Points from Multivariate Normal.
 
 input::
@@ -423,6 +423,17 @@ input::
                 var = var * numpy.eye(self.nDim)
         for i in range(len(self.population)):
             self.population[i] = prng.multivariate_normal(mean, var).tolist()
+        return
+
+    def SetDistributionInitialPoints(self, dist):
+        """Generate Random Initial Points from Distribution (dist)
+
+input::
+    - dist: a scipy.stats distribution instance"""
+        from mystic.tools import random_state
+        prng = random_state(module='numpy.random')
+        for i in range(self.nPop):
+            self.population[i] = dist.rvs(self.nDim, random_state=prng).tolist()
         return
 
     def enable_signal_handler(self):#, callback='*'):
@@ -838,6 +849,11 @@ Further Inputs:
         # the main optimization loop
         while not self.Step(**settings): #XXX: remove need to pass settings?
             continue
+
+        # keep stepping if collapse
+#       while collapse and cc.collapse(self, verbose=False):
+#           while not self.Step(**settings):
+#               continue
 
         # restore default handler for signal interrupts
         if self._handle_sigint:
