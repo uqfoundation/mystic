@@ -190,7 +190,7 @@ input::
 *** this method must be overwritten ***"""
         raise NotImplementedError, "must be overwritten..."
 
-    def SetMultinormalInitialPoints(self, mean, var = None):
+    def SetMultinormalInitialPoints(self, mean, var=None):
         """Generate Initial Points from Multivariate Normal.
 
 input::
@@ -199,6 +199,15 @@ input::
         None: -> it becomes the identity
         scalar: -> var becomes scalar * I
         matrix: -> the variance matrix. must be the right size!
+
+*** this method must be overwritten ***"""
+        raise NotImplementedError, "must be overwritten..."
+
+    def SetDistributionInitialPoints(self, dist):
+        """Generate Random Initial Points from Distribution (dist)
+
+input::
+    - dist: a scipy.stats distribution instance
 
 *** this method must be overwritten ***"""
         raise NotImplementedError, "must be overwritten..."
