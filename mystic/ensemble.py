@@ -30,7 +30,7 @@ For more information, see `mystic.mystic.abstract_solver`.
 """
 __all__ = ['LatticeSolver','BuckshotSolver']
 
-from mystic.tools import wrap_function, unpair
+from mystic.tools import unpair
 
 from mystic.abstract_ensemble_solver import AbstractEnsembleSolver
 
@@ -52,74 +52,8 @@ All important class members are inherited from AbstractEnsembleSolver.
         convergence_tol = 1e-4
         self._termination = NormalizedChangeOverGeneration(convergence_tol)
 
-#   def SetGridBins(self, nbins):
-#       return
-
-    #FIXME: should take cost=None, ExtraArgs=None... and utilize Step
-    def Solve(self, cost, termination=None, ExtraArgs=(), **kwds):
-        """Minimize a function using batch grid optimization.
-
-Description:
-
-    Uses parallel mapping of solvers on a regular grid to find the
-    minimum of a function of one or more variables.
-
-Inputs:
-
-    cost -- the Python function or method to be minimized.
-
-Additional Inputs:
-
-    termination -- callable object providing termination conditions.
-    ExtraArgs -- extra arguments for cost.
-
-Further Inputs:
-
-    sigint_callback -- callback function for signal handler.
-    callback -- an optional user-supplied function to call after each
-        iteration.  It is called as callback(xk), where xk is the
-        current parameter vector.                           [default = None]
-    disp -- non-zero to print convergence messages.         [default = 0]
-        """
-        # process and activate input settings
-        sigint_callback = kwds.pop('sigint_callback', None)
-        settings = self._process_inputs(kwds)
-        disp = settings['disp'] if 'disp' in settings else False
-        echo = settings['callback'] if 'callback' in settings else None
-#       for key in settings:
-#           exec "%s = settings['%s']" % (key,key)
-        if disp in ['verbose', 'all']: verbose = True
-        else: verbose = False
-        #-------------------------------------------------------------
-
-        from python_map import python_map
-        if self._map != python_map:
-            #FIXME: EvaluationMonitor fails for MPI, throws error for 'pp'
-            from mystic.monitors import Null
-            evalmon = Null()
-        else: evalmon = self._evalmon
-        fcalls, cost = wrap_function(cost, ExtraArgs, evalmon)
-
-        # set up signal handler
-       #self._EARLYEXIT = False
-        self._generateHandler(sigint_callback) 
-
-        # activate signal_handler
-       #import threading as thread
-       #mainthread = isinstance(thread.current_thread(), thread._MainThread)
-       #if mainthread: #XXX: if not mainthread, signal will raise ValueError
-        import signal
-        if self._handle_sigint:
-            signal.signal(signal.SIGINT,self.signal_handler)
-
-        # register termination function
-        if termination is not None:
-            self.SetTermination(termination)
-
-        # get the nested solver instance
-        solver = self._AbstractEnsembleSolver__get_solver_instance()
-        #-------------------------------------------------------------
-
+    def _InitialPoints(self):
+        """Generate a grid of starting points for the ensemble of optimizers"""
         nbins = self._nbins
         if len(self._strictMax): upper = list(self._strictMax)
         else:
@@ -137,109 +71,8 @@ Further Inputs:
 
         # build a grid of starting points
         from mystic.math import gridpts
-        initial_values = gridpts(bins)
+        return gridpts(bins)
 
-        # run optimizer for each grid point
-        from copy import deepcopy as _copy
-        op = [_copy(solver) for i in range(len(initial_values))]
-       #cf = [cost for i in range(len(initial_values))]
-        vb = [verbose for i in range(len(initial_values))]
-        cb = [echo for i in range(len(initial_values))] #XXX: remove?
-        at = self.id if self.id else 0  # start at self.id
-        id = range(at,at+len(initial_values))
-
-        # generate the local_optimize function
-        def local_optimize(solver, x0, rank=None, disp=False, callback=None):
-            from copy import deepcopy as _copy
-            from mystic.tools import isNull
-            solver.id = rank
-            solver.SetInitialPoints(x0)
-            if solver._useStrictRange: #XXX: always, settable, or sync'd ?
-                solver.SetStrictRanges(min=solver._strictMin, \
-                                       max=solver._strictMax) # or lower,upper ?
-            solver.Solve(cost, disp=disp, callback=callback)
-            sm = solver._stepmon
-            em = solver._evalmon
-            if isNull(sm): sm = ([],[],[],[])
-            else: sm = (_copy(sm._x),_copy(sm._y),_copy(sm._id),_copy(sm._info))
-            if isNull(em): em = ([],[],[],[])
-            else: em = (_copy(em._x),_copy(em._y),_copy(em._id),_copy(em._info))
-            return solver, sm, em
-
-        # map:: solver = local_optimize(solver, x0, id, verbose)
-        results = self._map(local_optimize, op, initial_values, id, \
-                                            vb, cb, **self._mapconfig)
-
-        # save initial state
-        self._AbstractSolver__save_state()
-        #XXX: HACK TO GET CONTENT OF ALL MONITORS
-        # reconnect monitors; save all solvers
-        from mystic.monitors import Monitor
-        while results: #XXX: option to not save allSolvers? skip this and _copy
-            _solver, _stepmon, _evalmon = results.pop()
-            sm = Monitor()
-            sm._x,sm._y,sm._id,sm._info = _stepmon
-            _solver._stepmon.extend(sm)
-            del sm
-            em = Monitor()
-            em._x,em._y,em._id,em._info = _evalmon
-            _solver._evalmon.extend(em)
-            del em
-            self._allSolvers[len(results)] = _solver
-        del results, _solver, _stepmon, _evalmon
-        #XXX: END HACK
-
-        # get the results with the lowest energy
-        self._bestSolver = self._allSolvers[0]
-        bestpath = self._bestSolver._stepmon
-        besteval = self._bestSolver._evalmon
-        self._total_evals = self._bestSolver.evaluations
-        for solver in self._allSolvers[1:]:
-            self._total_evals += solver.evaluations # add func evals
-            if solver.bestEnergy < self._bestSolver.bestEnergy:
-                self._bestSolver = solver
-                bestpath = solver._stepmon
-                besteval = solver._evalmon
-
-        # return results to internals
-        self.population = self._bestSolver.population #XXX: pointer? copy?
-        self.popEnergy = self._bestSolver.popEnergy #XXX: pointer? copy?
-        self.bestSolution = self._bestSolver.bestSolution #XXX: pointer? copy?
-        self.bestEnergy = self._bestSolver.bestEnergy
-        self.trialSolution = self._bestSolver.trialSolution #XXX: pointer? copy?
-        self._fcalls = self._bestSolver._fcalls #XXX: pointer? copy?
-        self._maxiter = self._bestSolver._maxiter
-        self._maxfun = self._bestSolver._maxfun
-
-        # write 'bests' to monitors  #XXX: non-best monitors may be useful too
-        self._stepmon = bestpath #XXX: pointer? copy?
-        self._evalmon = besteval #XXX: pointer? copy?
-        self.energy_history = None
-        self.solution_history = None
-       #from mystic.tools import isNull
-       #if isNull(bestpath):
-       #    self._stepmon = bestpath
-       #else:
-       #    for i in range(len(bestpath.y)):
-       #        self._stepmon(bestpath.x[i], bestpath.y[i], self.id)
-       #        #XXX: could apply callback here, or in exec'd code
-       #if isNull(besteval):
-       #    self._evalmon = besteval
-       #else:
-       #    for i in range(len(besteval.y)):
-       #        self._evalmon(besteval.x[i], besteval.y[i])
-        #-------------------------------------------------------------
-
-        # restore default handler for signal interrupts
-        if self._handle_sigint:
-            signal.signal(signal.SIGINT,signal.default_int_handler)
-
-        # log any termination messages
-        msg = self.Terminated(disp=disp, info=True)
-        if msg: self._stepmon.info('STOP("%s")' % msg)
-        # save final state
-        self._AbstractSolver__save_state(force=True)
-        return 
 
 class BuckshotSolver(AbstractEnsembleSolver):
     """
@@ -258,70 +91,8 @@ All important class members are inherited from AbstractEnsembleSolver.
         convergence_tol = 1e-4
         self._termination = NormalizedChangeOverGeneration(convergence_tol)
 
-    def Solve(self, cost, termination=None, ExtraArgs=(), **kwds):
-        """Minimize a function using buckshot optimization.
-
-Description:
-
-    Uses parallel mapping of solvers on randomly selected points
-    to find the minimum of a function of one or more variables.
-
-Inputs:
-
-    cost -- the Python function or method to be minimized.
-
-Additional Inputs:
-
-    termination -- callable object providing termination conditions.
-    ExtraArgs -- extra arguments for cost.
-
-Further Inputs:
-
-    sigint_callback -- callback function for signal handler.
-    callback -- an optional user-supplied function to call after each
-        iteration.  It is called as callback(xk), where xk is the
-        current parameter vector.                           [default = None]
-    disp -- non-zero to print convergence messages.         [default = 0]
-        """
-        # process and activate input settings
-        sigint_callback = kwds.pop('sigint_callback', None)
-        settings = self._process_inputs(kwds)
-        disp = settings['disp'] if 'disp' in settings else False
-        echo = settings['callback'] if 'callback' in settings else None
-#       for key in settings:
-#           exec "%s = settings['%s']" % (key,key)
-        if disp in ['verbose', 'all']: verbose = True
-        else: verbose = False
-        #-------------------------------------------------------------
-
-        from python_map import python_map
-        if self._map != python_map:
-            #FIXME: EvaluationMonitor fails for MPI, throws error for 'pp'
-            from mystic.monitors import Null
-            evalmon = Null()
-        else: evalmon = self._evalmon
-        fcalls, cost = wrap_function(cost, ExtraArgs, evalmon)
-
-        # set up signal handler
-       #self._EARLYEXIT = False
-        self._generateHandler(sigint_callback) 
-
-        # activate signal_handler
-       #import threading as thread
-       #mainthread = isinstance(thread.current_thread(), thread._MainThread)
-       #if mainthread: #XXX: if not mainthread, signal will raise ValueError
-        import signal
-        if self._handle_sigint:
-            signal.signal(signal.SIGINT,self.signal_handler)
-
-        # register termination function
-        if termination is not None:
-            self.SetTermination(termination)
-
-        # get the nested solver instance
-        solver = self._AbstractEnsembleSolver__get_solver_instance()
-        #-------------------------------------------------------------
-
+    def _InitialPoints(self):
+        """Generate a grid of starting points for the ensemble of optimizers"""
         npts = self._npts
         if len(self._strictMax): upper = list(self._strictMax)
         else:
@@ -330,111 +101,9 @@ Further Inputs:
         else:
             lower = list(self._defaultMin)
 
-        # generate a set of starting points
+        # build a grid of starting points
         from mystic.math import samplepts
-        initial_values = samplepts(lower,upper,npts)
-
-        # run optimizer for each grid point
-        from copy import deepcopy as _copy
-        op = [_copy(solver) for i in range(len(initial_values))]
-       #cf = [cost for i in range(len(initial_values))]
-        vb = [verbose for i in range(len(initial_values))]
-        cb = [echo for i in range(len(initial_values))] #XXX: remove?
-        at = self.id if self.id else 0  # start at self.id
-        id = range(at,at+len(initial_values))
-
-        # generate the local_optimize function
-        def local_optimize(solver, x0, rank=None, disp=False, callback=None):
-            from copy import deepcopy as _copy
-            from mystic.tools import isNull
-            solver.id = rank
-            solver.SetInitialPoints(x0)
-            if solver._useStrictRange: #XXX: always, settable, or sync'd ?
-                solver.SetStrictRanges(min=solver._strictMin, \
-                                       max=solver._strictMax) # or lower,upper ?
-            solver.Solve(cost, disp=disp, callback=callback)
-            sm = solver._stepmon
-            em = solver._evalmon
-            if isNull(sm): sm = ([],[],[],[])
-            else: sm = (_copy(sm._x),_copy(sm._y),_copy(sm._id),_copy(sm._info))
-            if isNull(em): em = ([],[],[],[])
-            else: em = (_copy(em._x),_copy(em._y),_copy(em._id),_copy(em._info))
-            return solver, sm, em
-
-        # map:: solver = local_optimize(solver, x0, id, verbose)
-        results = self._map(local_optimize, op, initial_values, id, \
-                                            vb, cb, **self._mapconfig)
-
-        # save initial state
-        self._AbstractSolver__save_state()
-        #XXX: HACK TO GET CONTENT OF ALL MONITORS
-        # reconnect monitors; save all solvers
-        from mystic.monitors import Monitor
-        while results: #XXX: option to not store allSolvers? skip this & _copy
-            _solver, _stepmon, _evalmon = results.pop()
-            sm = Monitor()
-            sm._x,sm._y,sm._id,sm._info = _stepmon
-            _solver._stepmon.extend(sm)
-            del sm
-            em = Monitor()
-            em._x,em._y,em._id,em._info = _evalmon
-            _solver._evalmon.extend(em)
-            del em
-            self._allSolvers[len(results)] = _solver
-        del results, _solver, _stepmon, _evalmon
-        #XXX: END HACK
-
-        # get the results with the lowest energy
-        self._bestSolver = self._allSolvers[0]
-        bestpath = self._bestSolver._stepmon
-        besteval = self._bestSolver._evalmon
-        self._total_evals = self._bestSolver.evaluations
-        for solver in self._allSolvers[1:]:
-            self._total_evals += solver.evaluations # add func evals
-            if solver.bestEnergy < self._bestSolver.bestEnergy:
-                self._bestSolver = solver
-                bestpath = solver._stepmon
-                besteval = solver._evalmon
-
-        # return results to internals
-        self.population = self._bestSolver.population #XXX: pointer? copy?
-        self.popEnergy = self._bestSolver.popEnergy #XXX: pointer? copy?
-        self.bestSolution = self._bestSolver.bestSolution #XXX: pointer? copy?
-        self.bestEnergy = self._bestSolver.bestEnergy
-        self.trialSolution = self._bestSolver.trialSolution #XXX: pointer? copy?
-        self._fcalls = self._bestSolver._fcalls #XXX: pointer? copy?
-        self._maxiter = self._bestSolver._maxiter
-        self._maxfun = self._bestSolver._maxfun
-
-        # write 'bests' to monitors  #XXX: non-best monitors may be useful too
-        self._stepmon = bestpath #XXX: pointer? copy?
-        self._evalmon = besteval #XXX: pointer? copy?
-        self.energy_history = None
-        self.solution_history = None
-       #from mystic.tools import isNull
-       #if isNull(bestpath):
-       #    self._stepmon = bestpath
-       #else:
-       #    for i in range(len(bestpath.y)):
-       #        self._stepmon(bestpath.x[i], bestpath.y[i], self.id)
-       #        #XXX: could apply callback here, or in exec'd code
-       #if isNull(besteval):
-       #    self._evalmon = besteval
-       #else:
-       #    for i in range(len(besteval.y)):
-       #        self._evalmon(besteval.x[i], besteval.y[i])
-        #-------------------------------------------------------------
-
-        # restore default handler for signal interrupts
-        if self._handle_sigint:
-            signal.signal(signal.SIGINT,signal.default_int_handler)
-
-        # log any termination messages
-        msg = self.Terminated(disp=disp, info=True)
-        if msg: self._stepmon.info('STOP("%s")' % msg)
-        # save final state
-        self._AbstractSolver__save_state(force=True)
-        return 
+        return samplepts(lower,upper,npts)
 
 
 def lattice(cost,ndim,nbins=8,args=(),bounds=None,ftol=1e-4,maxiter=None, \
