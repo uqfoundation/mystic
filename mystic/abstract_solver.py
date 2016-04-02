@@ -425,15 +425,22 @@ input::
             self.population[i] = prng.multivariate_normal(mean, var).tolist()
         return
 
-    def SetDistributionInitialPoints(self, dist):
+    def SetDistributionInitialPoints(self, dist, *args):
         """Generate Random Initial Points from Distribution (dist)
 
 input::
-    - dist: a scipy.stats distribution instance"""
+    - dist: a scipy.stats distribution instance (or a numpy.random method)
+
+note::
+    this method only accepts numpy.random methods with the keyword 'size'"""
         from mystic.tools import random_state
         prng = random_state(module='numpy.random')
-        for i in range(self.nPop):
-            self.population[i] = dist.rvs(self.nDim, random_state=prng).tolist()
+        if not args and type(dist).__name__ is 'rv_frozen': #from scipy.stats
+            for i in range(self.nPop):
+                self.population[i] = dist.rvs(self.nDim, random_state=prng).tolist()
+        else: #from numpy.random with *args and size in kwds
+            for i in range(self.nPop): 
+                self.population[i] = dist(*args, size=self.nDim).tolist()
         return
 
     def enable_signal_handler(self):#, callback='*'):
