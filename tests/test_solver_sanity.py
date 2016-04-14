@@ -6,10 +6,13 @@
 # License: 3-clause BSD.  The full license text is available at:
 #  - http://trac.mystic.cacr.caltech.edu/project/mystic/browser/mystic/LICENSE
 """A sanity test suite for Mystic solvers."""
+from future import standard_library
+standard_library.install_aliases()
+from builtins import range
 # should report clock-time, # of iterations, and # of function evaluations
 
 import sys
-from StringIO import StringIO
+from io import StringIO
 import unittest
 from math import *
 from mystic.math import almostEqual

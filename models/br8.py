@@ -13,7 +13,10 @@ References::
     Data Reduction and Error Analysis for the Physical Sciences,
     Second Edition, McGraw-Hill, Inc., New York.
 """
-from abstract_model import AbstractModel
+from __future__ import division
+from __future__ import absolute_import
+from past.utils import old_div
+from .abstract_model import AbstractModel
 
 from numpy import array, asarray
 from numpy import sum as numpysum
@@ -35,7 +38,7 @@ y = a1 + a2 Exp[-t / a4] + a3 Exp[-t/a5]
 coeffs = (a1,a2,a3,a4,a5)"""
         a1,a2,a3,a4,a5 = coeffs
         t = asarray(evalpts) #XXX: requires a numpy.array
-        return a1 + a2*exp(-t/a4) + a3*exp(-t/a5)
+        return a1 + a2*exp(old_div(-t,a4)) + a3*exp(old_div(-t,a5))
 
     def ForwardFactory(self,coeffs):
         """generates a dual decay model instance from a list of coefficients"""

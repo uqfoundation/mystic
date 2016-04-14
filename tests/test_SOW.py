@@ -5,6 +5,7 @@
 # License: 3-clause BSD.  The full license text is available at:
 #  - http://trac.mystic.cacr.caltech.edu/project/mystic/browser/mystic/LICENSE
 
+from __future__ import print_function
 from mystic.munge import write_support_file, write_converge_file, write_raw_file
 ## FIXME: 'converge' and 'raw' files are virtually unused and unsupported
 
@@ -20,11 +21,11 @@ def test0(monitor):
   monitor(x3,-5)
   monitor(x4,-7)
 
-  print "...printing..."
-  print monitor.x[0], monitor.y[0]
-  print monitor.x[1], monitor.y[1]
-  print monitor.x[2], monitor.y[2]
-  print monitor.x[3], monitor.y[3]
+  print("...printing...")
+  print(monitor.x[0], monitor.y[0])
+  print(monitor.x[1], monitor.y[1])
+  print(monitor.x[2], monitor.y[2])
+  print(monitor.x[3], monitor.y[3])
   return
 
 
@@ -40,11 +41,11 @@ def test1(monitor):
   monitor(x3,y3)
   monitor(x4,y4)
 
-  print "...printing..."
-  print monitor.x[0], monitor.y[0]
-  print monitor.x[1], monitor.y[1]
-  print monitor.x[2], monitor.y[2]
-  print monitor.x[3], monitor.y[3]
+  print("...printing...")
+  print(monitor.x[0], monitor.y[0])
+  print(monitor.x[1], monitor.y[1])
+  print(monitor.x[2], monitor.y[2])
+  print(monitor.x[3], monitor.y[3])
   return
 
 

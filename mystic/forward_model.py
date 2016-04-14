@@ -58,6 +58,13 @@ The CostFactory can be used to couple models together into a single cost
 function. For an example, see `mystic.examples.forward_model`.
 
 """
+from __future__ import division
+from __future__ import print_function
+from builtins import zip
+from builtins import str
+from builtins import range
+from builtins import object
+from past.utils import old_div
 
 from mystic.filters import Identity, PickComponent
 from mystic.filters import NullChecker
@@ -107,7 +114,7 @@ Example:
                 name = 'model'+str(i)
                 if name not in self._names: break
         elif name in self._names:
-            print "Model [%s] already in database." % name
+            print("Model [%s] already in database." % name)
             raise AssertionError
         self._names.append(name)
         self._forwardFactories.append(model)
@@ -251,7 +258,7 @@ Example:
             if sigma is None:
                 x = x - observations
             else:
-                x = (x - observations) / sigma
+                x = old_div((x - observations), sigma)
             #return sum(real((conjugate(x)*x)))
             #return sum(x*x) 
             return metric(x)

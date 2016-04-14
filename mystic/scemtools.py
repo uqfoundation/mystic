@@ -24,6 +24,11 @@ Computers & Geosciences, Vol. 32, No. 8. (October 2006), pp. 1139-1155.
 http://www.science.uva.nl/research/scs/papers/archive/Vrugt2006b.pdf
 
 """
+from __future__ import division
+from builtins import zip
+from builtins import map
+from builtins import range
+from past.utils import old_div
 
 import numpy
 try:
@@ -44,7 +49,7 @@ def multinormal_pdf(mean, var):
     # check that var is properly sized
     dum = numpy.dot(mu,var) - numpy.dot(var,mu)
 
-    prefactor = 1./numpy.sqrt((2 * numpy.pi)**n  * numpy.linalg.det(var))
+    prefactor = old_div(1.,numpy.sqrt((2 * numpy.pi)**n  * numpy.linalg.det(var)))
     def _(x):
         xm = numpy.array(x) - mu
         return prefactor *  numpy.exp(-0.5 * numpy.dot(xm,numpy.dot(vinv,xm)) )
@@ -77,12 +82,12 @@ def sequential_deal(inarray, n):
     N = len(cards)
     # this bit of numpy will give, for N=20, n = 5
     # ord = [ [0,5,10,15], [1,6,11,16], [2,7,12,17], [3,8,13,18], [4,9,14,19] ]
-    ord = numpy.transpose(numpy.array(range(N)).reshape(N/n, n))
+    ord = numpy.transpose(numpy.array(list(range(N))).reshape(old_div(N,n), n))
     return [cards[x] for x in ord] 
 
 def sort_and_deal(cards, target, nplayers):
     import numpy
-    c = numpy.array(map(target, cards))
+    c = numpy.array(list(map(target, cards)))
     o = list(reversed(numpy.argsort(c)))
     # from best to worst
     sorted_deck = cards[o]
@@ -111,7 +116,7 @@ def sort_complex(c, a):
     # this is dumb, because c (i.e., a, are almost sorted)
     # should use the one below instead.
     import numpy
-    D = zip(a,c)
+    D = list(zip(a,c))
     def mycmp(x,y):
         if x[0] < y[0]:
             return 1
@@ -222,13 +227,13 @@ This is the SCEM algorithm starting from line [35] of the reference [1].
     Sigma = numpy.cov(numpy.transpose(Ck)) 
 
     # Gamma (line 35 of [1]. Best to Worst)
-    Gamma = ak[0] / (ak[-1]+TINY)
+    Gamma = old_div(ak[0], (ak[-1]+TINY))
    
     if len(Sak) >= M:
         meansak = numpy.mean(Sak[-M:])
     else:
         meansak = numpy.mean(Sak)
-    alpha_k = numpy.mean(ak) / (meansak+TINY)
+    alpha_k = old_div(numpy.mean(ak), (meansak+TINY))
   
     if alpha_k < T:
          # Paragraph 37 of [1]
@@ -243,7 +248,7 @@ This is the SCEM algorithm starting from line [35] of the reference [1].
 
     # print "new/orig : ", cY, Sak[-1]
 
-    r = min( cY / (Sak[-1]+TINY), 1)
+    r = min( old_div(cY, (Sak[-1]+TINY)), 1)
 
     if prng.rand() <= r:
         Sk.append(Yt)

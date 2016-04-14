@@ -7,6 +7,8 @@
 """
 Implements a simple version of the Metropolis-Hastings algorithm
 """
+from __future__ import division
+from past.utils import old_div
 
 
 def metropolis_hastings(proposal, target, x):
@@ -17,7 +19,7 @@ This is because otherwise the PDF of the proposal density is needed
     """
     import random
     Yt = proposal(x)
-    r = min(target(Yt)/(target(x) + 1e-100), 1)
+    r = min(old_div(target(Yt),(target(x) + 1e-100)), 1)
     if random.random() <= r:
         return Yt
     else:

@@ -47,13 +47,16 @@ or in the python interpreter, and work reliably for both imported and
 interactively-defined functions.
 
 """
+from __future__ import absolute_import
+from future import standard_library
+standard_library.install_aliases()
 __all__ = ['SerialPool']
 
-from abstract_launcher import AbstractWorkerPool
+from .abstract_launcher import AbstractWorkerPool
 __get_nodes__ = AbstractWorkerPool._AbstractWorkerPool__get_nodes
 __set_nodes__ = AbstractWorkerPool._AbstractWorkerPool__set_nodes
-from itertools import imap as _imap
-from __builtin__ import map as _map, apply as _apply
+
+from builtins import map as _map
 
 class SerialPool(AbstractWorkerPool):
     """
@@ -71,7 +74,7 @@ Mapper that leverages standard (i.e. serial) python maps.
     # PIPES
     def pipe(self, f, *args, **kwds):
        #AbstractWorkerPool._AbstractWorkerPool__pipe(self, f, *args, **kwds)
-        return _apply(f, args, kwds)
+        return f(*args, **kwds)
     pipe.__doc__ = AbstractWorkerPool.pipe.__doc__
     #XXX: generator/yield provides simple ipipe? apipe? what about coroutines?
     ########################################################################

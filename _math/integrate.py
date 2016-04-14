@@ -7,6 +7,11 @@
 """
 math tools related to integration
 """
+from __future__ import division
+from __future__ import print_function
+from builtins import map
+from builtins import range
+from past.utils import old_div
 
 # INTEGRATE #
 def integrate(f, lb, ub):
@@ -122,9 +127,9 @@ References:
   from mystic.math.samples import random_samples
   vol = volume(lb, ub)
   x = [random_samples(lb, ub, npts=1) for k in range(1, n+1)]
-  r = map(f, x)  #FIXME: , nnodes=nnodes, launcher=launcher)
+  r = list(map(f, x))  #FIXME: , nnodes=nnodes, launcher=launcher)
   s = sum(r)[0]
-  I = (vol/k)*s
+  I = (old_div(vol,k))*s
   return float(I)
 
 
@@ -152,11 +157,11 @@ same as: variance = (ub - lb)**2 / 12.0
 
 def __test_integrator1():
   def f(x):
-    return x[0]/2. + x[1]**3 + 3.*x[2]
+    return old_div(x[0],2.) + x[1]**3 + 3.*x[2]
   lb = [1., 1., 1.]
   ub = [2., 2., 2.]
-  print "monte_carlo_integrate says:", monte_carlo_integrate(f, lb, ub)
-  print "_scipy_integrate says: ", _scipy_integrate(f, lb, ub)
+  print("monte_carlo_integrate says:", monte_carlo_integrate(f, lb, ub))
+  print("_scipy_integrate says: ", _scipy_integrate(f, lb, ub))
   return
 
 def __test_mean():
@@ -165,8 +170,8 @@ def __test_mean():
   lb = [0.]
   ub = [1.]
   from mystic.math.samples import sampled_mean
-  print "Sampled mean says:", sampled_mean(f, lb, ub)
-  print "Integrated mean says:", integrated_mean(f, lb, ub)
+  print("Sampled mean says:", sampled_mean(f, lb, ub))
+  print("Integrated mean says:", integrated_mean(f, lb, ub))
 
 if __name__ == '__main__':
   __test_integrator1()

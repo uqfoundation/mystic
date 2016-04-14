@@ -5,10 +5,12 @@
 # License: 3-clause BSD.  The full license text is available at:
 #  - http://trac.mystic.cacr.caltech.edu/project/mystic/browser/mystic/LICENSE
 
+from __future__ import division
+from past.utils import old_div
 from mystic.math.measures import *
 from mystic.math.discrete import *
 from mystic.math import almostEqual
-def f(x): return sum(x)/len(x)
+def f(x): return old_div(sum(x),len(x))
 
 def test_setexpect(m, expect=5.0, tol=0.001):
     e = (expect, tol)

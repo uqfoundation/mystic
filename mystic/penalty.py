@@ -38,6 +38,9 @@ References:
        Discrete Continuous Optimization and Its Applications to Mechanical
        Design", by Kannan and Kramer. 1994.
 """
+from __future__ import division
+from builtins import range
+from past.utils import old_div
 
 from numpy import inf, log
 def quadratic_equality(condition=lambda x:0., args=None, kwds=None, k=100, h=5):
@@ -450,9 +453,9 @@ the condition f(x) is satisfied when f(x) <= 0.0
             pf = condition(x, *args, **kwds)
             beta = 0.; _k = k
             for i in range(_n[0]):
-                beta += 2.*_k*max(-beta/(2.*_k), stored(i))
+                beta += 2.*_k*max(old_div(-beta,(2.*_k)), stored(i))
                 _k *= h
-            mpf = max(-beta/(2.*_k), pf)
+            mpf = max(old_div(-beta,(2.*_k)), pf)
             return float(_k)*mpf**2 + beta*mpf + f(x, *argz, **kwdz)
         func.iter = iter
         func.iteration = iteration

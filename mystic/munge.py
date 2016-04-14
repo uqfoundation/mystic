@@ -1,3 +1,9 @@
+
+from io import open
+from builtins import str
+from builtins import zip
+from builtins import range
+from past.builtins import basestring
 #!/usr/bin/env python
 #
 # Author: Mike McKerns (mmckerns @caltech and @uqfoundation)
@@ -93,7 +99,7 @@ def read_monitor(mon, id=False):
   if not id:
     return steps, energy
   id = mon.id[:]
-  return steps, energy, id 
+  return steps, energy, id
 
 def write_monitor(steps, energy, id=[], k=None):
   from mystic.monitors import Monitor
@@ -104,10 +110,10 @@ def write_monitor(steps, energy, id=[], k=None):
   mon._id.extend(id)
   return mon
 
-# converters 
+# converters
 
 def converge_to_support(steps, energy):
-  steps = zip(*steps)
+  steps = list(zip(*steps))
   steps = [list(i) for i in steps]
   return steps, energy
 
@@ -115,7 +121,7 @@ def raw_to_converge(steps, energy):
   if len(steps) > 0:
     if not sequence(steps[0][0]):
       steps = [[step] for step in steps]  # needed when steps = [1,2,3,...]
-    steps = [zip(*step) for step in steps] # also can be used to revert 'steps'
+    steps = [list(zip(*step)) for step in steps] # also can be used to revert 'steps'
   return steps, energy
 
 def raw_to_support(steps, energy):
@@ -127,14 +133,14 @@ def raw_to_support(steps, energy):
 def write_raw_file(mon,log_file='paramlog.py',**kwds):
   if isNull(mon): return  #XXX: throw error? warning? ???
   steps, energy = read_monitor(mon)
-  f = open(log_file,'w')
+  f = open(log_file, 'w')
   if 'header' in kwds:
-    f.write('# %s\n' % kwds.pop('header'))
-  for variable,value in kwds.items(): # write remaining kwds as variables
-    f.write('%s = %s\n' % (variable,value))
- #f.write('# %s\n' % energy[-1])
-  f.write('params = %s\n' % steps)
-  f.write('cost = %s\n' % energy)
+    f.write(u'# %s\n' % kwds.pop('header'))
+  for variable,value in list(kwds.items()): # write remaining kwds as variables
+    f.write(u'%s = %s\n' % (variable,value))
+ #f.write(u'# %s\n' % energy[-1])
+  f.write(u'params = %s\n' % steps)
+  f.write(u'cost = %s\n' % energy)
   f.close()
   return
 
@@ -174,11 +180,11 @@ def read_import(file, *targets):
     if _dir: os.chdir(_dir)
     if len(targets):
       for target in targets:
-        exec "from %s import %s" % (file, target)
-        exec "results.append(%s)" % target
+        exec("from %s import %s" % (file, target))
+        exec("results.append(%s)" % target)
     else:
-        exec "import %s" % file
-        exec "results.append(%s)" % file
+        exec("import %s" % file)
+        exec("results.append(%s)" % file)
   except ImportError:
     raise RuntimeError('File: %s not found' % file)
   finally:
@@ -239,7 +245,7 @@ def __orig_write_support_file(mon,log_file='paramlog.py'):
       q = []
       for s in range(len(steps)):
         q.append(steps[s][p])
-      log.append(q)  
+      log.append(q)
   monitor = write_monitor(log, energy)
   write_raw_file(monitor,log_file)
   return

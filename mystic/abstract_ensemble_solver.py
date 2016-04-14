@@ -31,12 +31,12 @@ A typical call to a 'ensemble' solver will roughly follow this example:
     >>> from mystic.models import rosen
     >>> lb = [0.0, 0.0, 0.0]
     >>> ub = [2.0, 2.0, 2.0]
-    >>> 
+    >>>
     >>> # get monitors and termination condition objects
     >>> from mystic.monitors import Monitor
     >>> stepmon = Monitor()
     >>> from mystic.termination import CandidateRelativeTolerance as CRT
-    >>> 
+    >>>
     >>> # select the parallel launch configuration
     >>> from pyina.launchers import Mpi as Pool
     >>> NNODES = 4
@@ -52,7 +52,7 @@ A typical call to a 'ensemble' solver will roughly follow this example:
     >>> solver.SetGenerationMonitor(stepmon)
     >>> solver.SetTermination(CRT())
     >>> solver.Solve(rosen)
-    >>> 
+    >>>
     >>> # obtain the solution
     >>> solution = solver.Solution()
 
@@ -71,9 +71,13 @@ Handlers are enabled with the 'enable_signal_handler' method,
 and are configured through the solver's 'Solve' method.  Handlers
 trigger when a signal interrupt (usually, Ctrl-C) is given while
 the solver is running.  ***NOTE: The handler currently is disabled
-when the solver has been launched in parallel.*** 
+when the solver has been launched in parallel.***
 
 """
+from __future__ import print_function
+from __future__ import absolute_import
+from builtins import range
+from functools import reduce
 __all__ = ['AbstractEnsembleSolver']
 
 
@@ -149,7 +153,7 @@ input::
         if isinstance(solver, AbstractSolver): # is a configured solver instance
             return solver
         if not hasattr(solver, "Solve"):       # is an Error...
-            raise TypeError, "%s is not a valid solver" % solver
+            raise TypeError("%s is not a valid solver" % solver)
 
         # otherwise, this is a solver class and needs configuring
        #from mystic.monitors import Monitor
@@ -180,8 +184,8 @@ input::
         for i!=0 when a simplex-type initial guess in required
 
 *** this method must be overwritten ***"""
-        raise NotImplementedError, "must be overwritten..."
-    
+        raise NotImplementedError("must be overwritten...")
+
     def SetRandomInitialPoints(self, min=None, max=None):
         """Generate Random Initial Points within given Bounds
 
@@ -190,7 +194,7 @@ input::
     - each min[i] should be <= the corresponding max[i]
 
 *** this method must be overwritten ***"""
-        raise NotImplementedError, "must be overwritten..."
+        raise NotImplementedError("must be overwritten...")
 
     def SetMultinormalInitialPoints(self, mean, var=None):
         """Generate Initial Points from Multivariate Normal.
@@ -203,7 +207,7 @@ input::
         matrix: -> the variance matrix. must be the right size!
 
 *** this method must be overwritten ***"""
-        raise NotImplementedError, "must be overwritten..."
+        raise NotImplementedError("must be overwritten...")
 
     def SetDistributionInitialPoints(self, dist):
         """Generate Random Initial Points from Distribution (dist)
@@ -212,7 +216,7 @@ input::
     - dist: a scipy.stats distribution instance
 
 *** this method must be overwritten ***"""
-        raise NotImplementedError, "must be overwritten..."
+        raise NotImplementedError("must be overwritten...")
 
     def Terminated(self, disp=False, info=False, termination=None):
         """check if the solver meets the given termination conditions
@@ -244,22 +248,22 @@ Note::
         if solver._fcalls[0] >= solver._maxfun and solver._maxfun is not None:
             msg = lim #XXX: prefer the default stop ?
             if disp:
-                print "Warning: Maximum number of function evaluations has "\
-                      "been exceeded."
+                print("Warning: Maximum number of function evaluations has "\
+                      "been exceeded.")
         elif solver.generations >= solver._maxiter and solver._maxiter is not None:
             msg = lim #XXX: prefer the default stop ?
             if disp:
-                print "Warning: Maximum number of iterations has been exceeded"
+                print("Warning: Maximum number of iterations has been exceeded")
         elif solver._EARLYEXIT: #XXX: self or solver ?
             msg = sig
             if disp:
-                print "Warning: Optimization terminated with signal interrupt."
+                print("Warning: Optimization terminated with signal interrupt.")
         elif msg and disp:
-            print "Optimization terminated successfully."
-            print "         Current function value: %f" % solver.bestEnergy
-            print "         Iterations: %d" % solver.generations
-            print "         Function evaluations: %d" % solver._fcalls[0]
-            print "         Total function evaluations: %d" % self._total_evals
+            print("Optimization terminated successfully.")
+            print("         Current function value: %f" % solver.bestEnergy)
+            print("         Iterations: %d" % solver.generations)
+            print("         Function evaluations: %d" % solver._fcalls[0])
+            print("         Total function evaluations: %d" % self._total_evals)
 
         if info:
             return msg
@@ -275,7 +279,7 @@ Note::
         """Generate a grid of starting points for the ensemble of optimizers
 
 *** this method must be overwritten ***"""
-        raise NotImplementedError, "a sampling algorithm was not provided"
+        raise NotImplementedError("a sampling algorithm was not provided")
 
     #FIXME: should take cost=None, ExtraArgs=None... and utilize Step
     def Solve(self, cost, termination=None, ExtraArgs=(), **kwds):
@@ -314,7 +318,7 @@ Further Inputs:
         else: verbose = False
         #-------------------------------------------------------------
 
-        from python_map import python_map
+        from .python_map import python_map
         if self._map != python_map:
             #FIXME: EvaluationMonitor fails for MPI, throws error for 'pp'
             from mystic.monitors import Null
@@ -324,7 +328,7 @@ Further Inputs:
 
         # set up signal handler
        #self._EARLYEXIT = False
-        self._generateHandler(sigint_callback) 
+        self._generateHandler(sigint_callback)
 
         # activate signal_handler
        #import threading as thread
@@ -351,7 +355,7 @@ Further Inputs:
         vb = [verbose for i in range(len(initial_values))]
         cb = [echo for i in range(len(initial_values))] #XXX: remove?
         at = self.id if self.id else 0  # start at self.id
-        id = range(at,at+len(initial_values))
+        id = list(range(at,at+len(initial_values)))
 
         # generate the local_optimize function
         def local_optimize(solver, x0, rank=None, disp=False, callback=None):
@@ -372,8 +376,13 @@ Further Inputs:
             return solver, sm, em
 
         # map:: solver = local_optimize(solver, x0, id, verbose)
-        results = self._map(local_optimize, op, initial_values, id, \
-                                            vb, cb, **self._mapconfig)
+        results = list(self._map(local_optimize,
+                                 op,
+                                 initial_values,
+                                 id,
+                                 vb,
+                                 cb,
+                                 **self._mapconfig))
 
         # save initial state
         self._AbstractSolver__save_state()
@@ -444,7 +453,7 @@ Further Inputs:
         if msg: self._stepmon.info('STOP("%s")' % msg)
         # save final state
         self._AbstractSolver__save_state(force=True)
-        return 
+        return
 
 
 if __name__=='__main__':

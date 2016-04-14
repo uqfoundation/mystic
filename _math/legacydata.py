@@ -7,6 +7,11 @@
 """
 ...data structures for legacy data observations of lipschitz functions
 """
+from __future__ import print_function
+from builtins import str
+from builtins import zip
+from builtins import range
+from builtins import object
 from numpy import inf, asarray
 NULLSLOPE = inf
 
@@ -164,7 +169,7 @@ class datapoint(object):
       self.raw = position
     else:
       self.raw.position = position 
-      if value is None: raise ValueError, "value not set for the datapoint"
+      if value is None: raise ValueError("value not set for the datapoint")
       self.raw.value = value
     if id is None: id = self.__hash_id(self)  #XXX: default id is hash id
     self.id = id
@@ -402,7 +407,7 @@ Notes:
     lip = self.lipschitz
     ids = self.ids +\
           [None] * max(0, min(len(positions), len(values)) - len(self.ids))
-    z = zip(positions, values, ids)
+    z = list(zip(positions, values, ids))
     self[:len(z)] = [datapoint(i,j,id=k) for (i,j,k) in z]
     self.lipschitz = lip
     return
@@ -413,7 +418,7 @@ Notes:
 Notes:
     positions and values provided must be iterable
 """
-    z = zip(positions, values)
+    z = list(zip(positions, values))
     self.extend([datapoint(i,j) for (i,j) in z])
     if ids: #XXX: must be at least as long as 'z'
       for i in range(len(z)):
@@ -535,7 +540,7 @@ Inputs:
     # if all cones don't have the same slopes, throw error
     lip = [self[i].cone.slopes != self[0].cone.slopes for i in range(len(self))]
     if any(lip):
-      raise ValueError, "Lipschitz constants not set for the dataset."
+      raise ValueError("Lipschitz constants not set for the dataset.")
     # return the lipschitz constants
     return self[0].cone.slopes
 
@@ -661,51 +666,51 @@ def save_dataset(data, filename='dataset.txt', filter=None, new=True):
 if __name__ == '__main__':
   x = [1,1,0]; x3 = [1,1,1]; x4 = [0,0,0]
   y = 1; y2 = 2; y3 = 0; y4 = 2; y5 = 3
-  print "creating a datapoint..."
+  print("creating a datapoint...")
   pt1 = datapoint(x,y,id='1')
-  print pt1
-  print "with: %s\n" % pt1.cone
+  print(pt1)
+  print("with: %s\n" % pt1.cone)
 
-  print "creating a second datapoint..."
+  print("creating a second datapoint...")
   pt2 = datapoint(x,y2,lipschitz=[1,1,1])
-  print pt2
-  print "with: %s\n" % pt2.cone
+  print(pt2)
+  print("with: %s\n" % pt2.cone)
 
-  print "creating a third datapoint..."
+  print("creating a third datapoint...")
   pt3 = datapoint(x3,y3,lipschitz=[1,1,1])
-  print pt3
-  print "with: %s\n" % pt3.cone
+  print(pt3)
+  print("with: %s\n" % pt3.cone)
 
-  print "creating a fourth datapoint..."
+  print("creating a fourth datapoint...")
   pt4 = datapoint(x4,y4,lipschitz=[0.25,0.25,0.25])
-  print pt4
-  print "with: %s\n" % pt4.cone
+  print(pt4)
+  print("with: %s\n" % pt4.cone)
 
-  print "creating a fifth datapoint..."
+  print("creating a fifth datapoint...")
   pt5 = datapoint(x4,y5,lipschitz=[0.25,0.25,0.25])
-  print pt5
-  print "with: %s\n" % pt5.cone
+  print(pt5)
+  print("with: %s\n" % pt5.cone)
 
-  print "testing 'cone.contains'..."
-  print "1st cone contains 1st, 2nd, 3rd, 4th, 5th point? %s, %s, %s, %s, %s" % (pt1.cone.contains(pt1), pt1.cone.contains(pt2), pt1.cone.contains(pt3), pt1.cone.contains(pt4), pt1.cone.contains(pt5))
-  print "2nd cone contains 1st, 2nd, 3rd, 4th, 5th point? %s, %s, %s, %s, %s" % (pt2.cone.contains(pt1), pt2.cone.contains(pt2), pt2.cone.contains(pt3), pt2.cone.contains(pt4), pt2.cone.contains(pt5))
-  print "3rd cone contains 1st, 2nd, 3rd, 4th, 5th point? %s, %s, %s, %s, %s" % (pt3.cone.contains(pt1), pt3.cone.contains(pt2), pt3.cone.contains(pt3), pt3.cone.contains(pt4), pt3.cone.contains(pt5))
-  print "4th cone contains 1st, 2nd, 3rd, 4th, 5th point? %s, %s, %s, %s, %s" % (pt4.cone.contains(pt1), pt4.cone.contains(pt2), pt4.cone.contains(pt3), pt4.cone.contains(pt4), pt4.cone.contains(pt5))
-  print "5th cone contains 1st, 2nd, 3rd, 4th, 5th point? %s, %s, %s, %s, %s\n" % (pt5.cone.contains(pt1), pt5.cone.contains(pt2), pt5.cone.contains(pt3), pt5.cone.contains(pt4), pt5.cone.contains(pt5))
+  print("testing 'cone.contains'...")
+  print("1st cone contains 1st, 2nd, 3rd, 4th, 5th point? %s, %s, %s, %s, %s" % (pt1.cone.contains(pt1), pt1.cone.contains(pt2), pt1.cone.contains(pt3), pt1.cone.contains(pt4), pt1.cone.contains(pt5)))
+  print("2nd cone contains 1st, 2nd, 3rd, 4th, 5th point? %s, %s, %s, %s, %s" % (pt2.cone.contains(pt1), pt2.cone.contains(pt2), pt2.cone.contains(pt3), pt2.cone.contains(pt4), pt2.cone.contains(pt5)))
+  print("3rd cone contains 1st, 2nd, 3rd, 4th, 5th point? %s, %s, %s, %s, %s" % (pt3.cone.contains(pt1), pt3.cone.contains(pt2), pt3.cone.contains(pt3), pt3.cone.contains(pt4), pt3.cone.contains(pt5)))
+  print("4th cone contains 1st, 2nd, 3rd, 4th, 5th point? %s, %s, %s, %s, %s" % (pt4.cone.contains(pt1), pt4.cone.contains(pt2), pt4.cone.contains(pt3), pt4.cone.contains(pt4), pt4.cone.contains(pt5)))
+  print("5th cone contains 1st, 2nd, 3rd, 4th, 5th point? %s, %s, %s, %s, %s\n" % (pt5.cone.contains(pt1), pt5.cone.contains(pt2), pt5.cone.contains(pt3), pt5.cone.contains(pt4), pt5.cone.contains(pt5)))
 
-  print  "creating a dataset..."
+  print("creating a dataset...")
   dset = dataset([pt1,pt2,pt3])
-  print dset
-  print "values: %s:" % dset.values
-  print "coords: %s:" % dset.coords
-  print "ids: %s" % dset.ids
-  print "raw: %s\n" % dset.raw
+  print(dset)
+  print("values: %s:" % dset.values)
+  print("coords: %s:" % dset.coords)
+  print("ids: %s" % dset.ids)
+  print("raw: %s\n" % dset.raw)
 
-  print "setting lipschitz constants for dataset..."
+  print("setting lipschitz constants for dataset...")
  #print dset.lipschitz
   dset.lipschitz = pt2.cone.slopes
-  print "all lipschitz: %s" % dset.lipschitz
-  print "resulting cones: %s\n" % [p.cone for p in dset]
+  print("all lipschitz: %s" % dset.lipschitz)
+  print("resulting cones: %s\n" % [p.cone for p in dset])
 
 
   ##### comparisons #####
@@ -728,46 +733,46 @@ if __name__ == '__main__':
   assert d2 > d1 and d3 > d1 and d2 < d3  #XXX: d3 > d2 ?
 
   ##### intersections #####
-  print "testing membership..."
+  print("testing membership...")
   d = dataset([d0,d1,d2])
-  print "point:"
+  print("point:")
   query = [p1,p2]
-  print "%r in %r is %r" % (query, d.raw, d.filter(d.has_point(query)).raw)
+  print("%r in %r is %r" % (query, d.raw, d.filter(d.has_point(query)).raw))
   query = [p0,p3]
-  print "%r in %r is %r" % (query, d.raw, d.filter(d.has_point(query)).raw)
-  print "coords:"
+  print("%r in %r is %r" % (query, d.raw, d.filter(d.has_point(query)).raw))
+  print("coords:")
   query = [p0.position, p2.position]
-  print "%r in %r is %r" % (query, d.coords, d.filter(d.has_position(query)).coords)
+  print("%r in %r is %r" % (query, d.coords, d.filter(d.has_position(query)).coords))
   query = [p1.position, p3.position]
-  print "%r in %r is %r" % (query, d.coords, d.filter(d.has_position(query)).coords)
+  print("%r in %r is %r" % (query, d.coords, d.filter(d.has_position(query)).coords))
   query = [p3.position]
-  print "%r in %r is %r" % (query, d.coords, d.filter(d.has_position(query)).coords)
-  print "id:"
+  print("%r in %r is %r" % (query, d.coords, d.filter(d.has_position(query)).coords))
+  print("id:")
   query = ['0','2']
-  print "%r in %r is %r" % (query, d.ids, d.filter(d.has_id(query)).ids)
+  print("%r in %r is %r" % (query, d.ids, d.filter(d.has_id(query)).ids))
   query = ['1','3']
-  print "%r in %r is %r" % (query, d.ids, d.filter(d.has_id(query)).ids)
-  print "datapoint:"
+  print("%r in %r is %r" % (query, d.ids, d.filter(d.has_id(query)).ids))
+  print("datapoint:")
   query = [d1,d2]
-  print "%r in %r is %r" % (dataset(query).ids, d.ids, d.filter(d.has_datapoint(query)).ids)
-  print "datapoint by intersection:"
+  print("%r in %r is %r" % (dataset(query).ids, d.ids, d.filter(d.has_datapoint(query)).ids))
+  print("datapoint by intersection:")
   query = [d0,d2]
-  print "%r in %r is %r" % (dataset(query).ids, d.ids, d.intersection(query).ids)
+  print("%r in %r is %r" % (dataset(query).ids, d.ids, d.intersection(query).ids))
 
   ##### integrity #####
-  print "testing integrity..."
+  print("testing integrity...")
   d = dataset([d0,d1,d2,d3,d4,d5])
-  print "duplicates: %r" % d.duplicates
-  print "repeats: %r" % d.repeats
-  print "conflicts: %r" % d.conflicts
-  print "collisions: %r" % d.collisions
+  print("duplicates: %r" % d.duplicates)
+  print("repeats: %r" % d.repeats)
+  print("conflicts: %r" % d.conflicts)
+  print("collisions: %r" % d.collisions)
 
-  print "%r collides: %r" % (d[0], d[0].collisions(d))
-  print "%r collides: %r" % (d[1], d[1].collisions(d))
-  print "%r collides: %r" % (d[2], d[2].collisions(d))
-  print "%r collides: %r" % (d[3], d[3].collisions(d))
-  print "%r collides: %r" % (d[4], d[4].collisions(d))
-  print "%r collides: %r" % (d[5], d[5].collisions(d))
+  print("%r collides: %r" % (d[0], d[0].collisions(d)))
+  print("%r collides: %r" % (d[1], d[1].collisions(d)))
+  print("%r collides: %r" % (d[2], d[2].collisions(d)))
+  print("%r collides: %r" % (d[3], d[3].collisions(d)))
+  print("%r collides: %r" % (d[4], d[4].collisions(d)))
+  print("%r collides: %r" % (d[5], d[5].collisions(d)))
 
 
 # EOF

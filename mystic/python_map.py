@@ -12,6 +12,10 @@ install from pathos::
     - python_map:        wrapper around the standard python map
     - worker_pool:       the worker_pool map strategy
 """
+from __future__ import print_function
+from builtins import str
+from builtins import map
+from builtins import range
 
 import os
 _pid = '.' + str(os.getpid()) + '.'
@@ -61,7 +65,7 @@ Further Input: [***disabled***]
     queue -- string name of selected queue (e.g. 'normal')
 """
    #print "ignoring: %s" % kwds  #XXX: should allow use of **kwds
-    result = map(func, *arglist) #     see pathos.pyina.ez_map
+    result = list(map(func, *arglist)) #     see pathos.pyina.ez_map
     return result
 
 def worker_pool():
@@ -77,7 +81,7 @@ carddealer_mapper = worker_pool
 
 if __name__=='__main__':
     f = lambda x:x**2
-    print python_map(f,range(5),nodes=10)
+    print(python_map(f,list(range(5)),nodes=10))
 
     import subprocess
     d = {'progargs': """-c "print('hello')" """}

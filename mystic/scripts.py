@@ -1,3 +1,10 @@
+from __future__ import print_function
+from future import standard_library
+standard_library.install_aliases()
+from builtins import zip
+from builtins import str
+from builtins import range
+from past.builtins import basestring
 #!/usr/bin/env python
 #
 # Author: Mike McKerns (mmckerns @caltech and @uqfoundation)
@@ -58,7 +65,7 @@ def _get_instance(location, *args, **kwds):
 args and kwds will be passed to the constructor of the model class
     """
     package, target = location.rsplit('.',1)
-    exec "from %s import %s as model" % (package, target)
+    exec("from %s import %s as model" % (package, target))
     import inspect
     if inspect.isclass(model):
         model = model(*args, **kwds)
@@ -110,7 +117,7 @@ Returns tuple (x,y) with 'x,y' defined above.
     """
     import numpy
     option = option.split(',')
-    opt = dict(zip(['x','y','z'],option))
+    opt = dict(list(zip(['x','y','z'],option)))
     if len(option) > 2 or len(option) < 1:
         raise ValueError("invalid format string: '%s'" % ','.join(option))
     z = bool(grid)
@@ -480,7 +487,7 @@ Additional Inputs:
 
 #   import sys
 #   if 'mystic_model_plotter.py' not in sys.argv:
-    from StringIO import StringIO
+    from io import StringIO
     f = StringIO()
     parser.print_help(file=f)
     f.seek(0)
@@ -595,7 +602,7 @@ Additional Inputs:
         raise RuntimeError('a model or a results file is required')
     if model:
         model = _model or _get_instance(model)
-        if verbose: print model.__doc__
+        if verbose: print(model.__doc__)
         # need a reducer if model returns an array
         if reducer: model = reduced(reducer, arraylike=False)(model)
 
@@ -773,7 +780,7 @@ Required Inputs:
 
 #   import sys
 #   if 'mystic_log_reader.py' not in sys.argv:
-    from StringIO import StringIO
+    from io import StringIO
     f = StringIO()
     parser.print_help(file=f)
     f.seek(0)
@@ -870,7 +877,7 @@ Required Inputs:
       id = [0 for i in step]
 
     # build the list of selected parameters
-    params = range(len(param[0]))
+    params = list(range(len(param[0])))
     selected = []
     for i in select:
       selected.extend(eval("params[%s]" % i))
