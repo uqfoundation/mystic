@@ -63,18 +63,19 @@ Chebyshev polynomials::
 
 
 """
+from __future__ import absolute_import
 # base classes
-from abstract_model import AbstractModel, AbstractFunction
+from .abstract_model import AbstractModel, AbstractFunction
 
 # models
-from poly import poly, chebyshev2,chebyshev4,chebyshev6,chebyshev8,chebyshev16
-from mogi import mogi
-from br8 import decay
-from lorentzian import lorentzian
-from circle import circle, dense_circle, sparse_circle, minimal_circle
+from .poly import poly, chebyshev2,chebyshev4,chebyshev6,chebyshev8,chebyshev16
+from .mogi import mogi
+from .br8 import decay
+from .lorentzian import lorentzian
+from .circle import circle, dense_circle, sparse_circle, minimal_circle
 
 # functions
-from functions import *
+from .functions import *
 # from dejong import sphere, rosen, step, quartic, shekel
 # from storn import corana, griewangk, zimmermann
 # from wolfram import fosc3d, nmin51

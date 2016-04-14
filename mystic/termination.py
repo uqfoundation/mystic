@@ -9,6 +9,10 @@
 """
 Factories that provide termination conditions for a mystic.solver
 """
+from __future__ import division
+from __future__ import print_function
+from builtins import str
+from past.utils import old_div
 
 import numpy
 from numpy import absolute
@@ -36,7 +40,7 @@ Usage:
     if isinstance(arg, tuple) and len(arg) == 1: arg = arg[0] # for pickling
     #XXX: need better filter on inputs
     if getattr(arg, '__module__', None) != self.__module__:
-      raise TypeError, "'%s' object is not a condition" % arg.__class__.__name__
+      raise TypeError("'%s' object is not a condition" % arg.__class__.__name__)
     if not getattr(arg, '__len__', None): arg = [arg]
     return tuple.__new__(self, arg)
 
@@ -60,7 +64,7 @@ Additional Inputs:
     # return the satisfied conditions
     if info == 'self': return tuple(set(stop.keys())) if _all else ()
     # return info about the satisfied conditions
-    return "; ".join(set("; ".join(stop.values()).split("; "))) if _all else ""
+    return "; ".join(set("; ".join(list(stop.values())).split("; "))) if _all else ""
 
   def __repr__(self):
     return "When(%s)" % str(self[0])
@@ -124,11 +128,11 @@ Additional Inputs:
     _any = any(stop.values())
     # return T/F if the conditions are met
     if not info: return _any
-    [stop.pop(cond) for (cond,met) in stop.items() if not met]
+    [stop.pop(cond) for (cond,met) in list(stop.items()) if not met]
     # return the satisfied conditions
     if info == 'self': return tuple(set(stop.keys()))
     # return info about the satisfied conditions
-    return "; ".join(set("; ".join(stop.values()).split("; ")))
+    return "; ".join(set("; ".join(list(stop.values())).split("; ")))
 
   def __repr__(self):
     return "Or%s" % str(tuple([f for f in self]))
@@ -198,7 +202,7 @@ abs(xi-x0) <= xtol & abs(fi-f0) <= ftol, where x=params & f=cost"""
         fsim = numpy.array(inst.popEnergy)
         if not len(fsim[1:]):
             warn = "Warning: Invalid termination condition (nPop < 2)"
-            print warn
+            print(warn)
             return warn
         #   raise ValueError, "Invalid termination condition (nPop < 2)"
         if info: info = lambda x:x
@@ -307,7 +311,7 @@ sum( abs(gradient)**norm )**(1.0/norm) <= tolerance"""
             gfk = inst.gfk #XXX: need to ensure that gfk is an array ?
         except:
             warn = "Warning: Invalid termination condition (no gradient)"
-            print warn
+            print(warn)
             return warn
         if info: info = lambda x:x
         else: info = bool
@@ -318,7 +322,7 @@ sum( abs(gradient)**norm )**(1.0/norm) <= tolerance"""
         else: #XXX: throws error when norm = 0.0
            #XXX: as norm > large, gnorm approaches amax(abs(gfk)) --> then inf
            #XXX: as norm < -large, gnorm approaches amin(abs(gfk)) --> then -inf
-            gnorm = numpy.sum(abs(gfk)**norm,axis=0)**(1.0/norm)
+            gnorm = numpy.sum(abs(gfk)**norm,axis=0)**(old_div(1.0,norm))
         if gnorm <= tolerance: return info(doc)
         return info(null)
     _GradientNormTolerance.__doc__ = doc

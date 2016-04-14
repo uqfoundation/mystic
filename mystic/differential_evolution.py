@@ -44,7 +44,7 @@ iteration.
 
 A minimal interface that mimics a scipy.optimize interface has also been
 implemented, and functionality from the mystic solver API has been added
-with reasonable defaults. 
+with reasonable defaults.
 
 Minimal function interface to optimization routines::
     diffev      -- Differential Evolution (DE) solver
@@ -97,7 +97,7 @@ reproduced here::
     Another interesting empirical finding is that rasing NP above, say, 40
     does not substantially improve the convergence, independent of the
     number of parameters. It is worthwhile to experiment with these suggestions.
-  
+
     Make sure that you initialize your parameter vectors by exploiting
     their full numerical range, i.e. if a parameter is allowed to exhibit
     values in the range [-100, 100] it's a good idea to pick the initial
@@ -141,6 +141,9 @@ Optimization 11: 341-359, 1997.
 A Practical Approach to Global Optimization. Springer, 1st Edition, 2005
 
 """
+from __future__ import print_function
+from __future__ import absolute_import
+from builtins import range
 __all__ = ['DifferentialEvolutionSolver','DifferentialEvolutionSolver2',\
            'diffev','diffev2']
 
@@ -156,10 +159,10 @@ class DifferentialEvolutionSolver(AbstractSolver):
     """
 Differential Evolution optimization.
     """
-    
+
     def __init__(self, dim, NP=4):
         """
-Takes two initial inputs: 
+Takes two initial inputs:
     dim  -- dimensionality of the problem
     NP   -- size of the trial solution population. [requires: NP >= 4]
 
@@ -174,7 +177,7 @@ All important class members are inherited from AbstractSolver.
         ftol = 5e-3
         from mystic.termination import VTRChangeOverGeneration
         self._termination = VTRChangeOverGeneration(ftol)
-        
+
 ### XXX: OBSOLETED by wrap_bounds ###
 #   def _keepSolutionWithinRangeBoundary(self, base):
 #       """scale trialSolution to be between base value and range boundary"""
@@ -211,7 +214,7 @@ input::
         if not constraints:
             self._constraints = lambda x: x
         elif not callable(constraints):
-            raise TypeError, "'%s' is not a callable function" % constraints
+            raise TypeError("'%s' is not a callable function" % constraints)
         else: #XXX: check for format: x' = constraints(x) ?
             self._constraints = constraints
         return # doesn't use wrap_nested
@@ -242,8 +245,6 @@ input::
         Note that ExtraArgs should be a *tuple* of extra arguments"""
         # process and activate input settings
         settings = self._process_inputs(kwds)
-        for key in settings:
-            exec "%s = settings['%s']" % (key,key)
 
         # HACK to enable not explicitly calling _decorate_objective
         cost = self._bootstrap_objective(cost, ExtraArgs)
@@ -252,7 +253,7 @@ input::
 
         if not len(self._stepmon): # do generation = 0
             init = True
-            strategy = None
+            settings['strategy'] = None
             self.population[0] = asfarray(self.population[0])
             # decouple bestSolution from population and bestEnergy from popEnergy
             self.bestSolution = self.population[0]
@@ -262,9 +263,9 @@ input::
             if not len(self._stepmon):
                 # generate trialSolution (within valid range)
                 self.trialSolution[:] = self.population[candidate]
-            if strategy:
+            if settings['strategy']:
                 # generate trialSolution (within valid range)
-                strategy(self, candidate)
+                settings['strategy'](self, candidate)
             # apply constraints
             self.trialSolution[:] = self._constraints(self.trialSolution)
             # apply penalty
@@ -294,7 +295,8 @@ input::
         self._AbstractSolver__save_state()
 
         # do callback
-        if callback is not None: callback(self.bestSolution)
+        if settings['callback'] is not None:
+            settings['callback'](self.bestSolution)
         # initialize termination conditions, if needed
         if init: self._termination(self) #XXX: at generation 0 or always?
         return #XXX: call Terminated ?
@@ -312,7 +314,7 @@ input::
         'strategy': strategy})       #mutation strategy (see mystic.strategy)
         probability=self.probability #potential for parameter cross-mutation
         scale=self.scale             #multiplier for mutation impact
-        [settings.update({i:j}) for (i,j) in kwds.items() if i in settings]
+        [settings.update({i:j}) for (i,j) in list(kwds.items()) if i in settings]
         word = 'CrossProbability'
         self.probability = kwds[word] if word in kwds else probability
         word = 'ScalingFactor'
@@ -361,14 +363,14 @@ class DifferentialEvolutionSolver2(AbstractMapSolver):
     """
 Differential Evolution optimization, using Storn and Price's algorithm.
 
-Alternate implementation: 
+Alternate implementation:
     - utilizes a map-reduce interface, extensible to parallel computing
     - both a current and a next generation are kept, while the current
       generation is invariant during the main DE logic
     """
     def __init__(self, dim, NP=4):
         """
-Takes two initial inputs: 
+Takes two initial inputs:
     dim  -- dimensionality of the problem
     NP   -- size of the trial solution population. [requires: NP >= 4]
 
@@ -383,7 +385,7 @@ All important class members are inherited from AbstractSolver.
         ftol = 5e-3
         from mystic.termination import VTRChangeOverGeneration
         self._termination = VTRChangeOverGeneration(ftol)
-        
+
     def UpdateGenealogyRecords(self, id, newchild):
         """
 Override me for more refined behavior. Currently all changes
@@ -403,7 +405,7 @@ input::
         if not constraints:
             self._constraints = lambda x: x
         elif not callable(constraints):
-            raise TypeError, "'%s' is not a callable function" % constraints
+            raise TypeError("'%s' is not a callable function" % constraints)
         else: #XXX: check for format: x' = constraints(x) ?
             self._constraints = constraints
         return # doesn't use wrap_nested
@@ -413,7 +415,7 @@ input::
         #print ("@", cost, ExtraArgs, max)
         raw = cost
         if ExtraArgs is None: ExtraArgs = ()
-        from python_map import python_map
+        from .python_map import python_map
         if self._map != python_map:
             #FIXME: EvaluationMonitor fails for MPI, throws error for 'pp'
             from mystic.monitors import Null
@@ -440,8 +442,6 @@ input::
         Note that ExtraArgs should be a *tuple* of extra arguments"""
         # process and activate input settings
         settings = self._process_inputs(kwds)
-        for key in settings:
-            exec "%s = settings['%s']" % (key,key)
 
         # HACK to enable not explicitly calling _decorate_objective
         cost = self._bootstrap_objective(cost, ExtraArgs)
@@ -450,7 +450,7 @@ input::
 
         if not len(self._stepmon): # do generation = 0
             init = True
-            strategy = None
+            settings['strategy'] = None
             self.population[0] = asfarray(self.population[0])
             # decouple bestSolution from population and bestEnergy from popEnergy
             self.bestSolution = self.population[0]
@@ -460,9 +460,9 @@ input::
             if not len(self._stepmon):
                 # generate trialSolution (within valid range)
                 self.trialSolution[candidate][:] = self.population[candidate]
-            if strategy:
+            if settings['strategy']:
                 # generate trialSolution (within valid range)
-                strategy(self, candidate)
+                settings['strategy'](self, candidate)
             # apply constraints
             self.trialSolution[candidate][:] = self._constraints(self.trialSolution[candidate])
         # bind constraints to cost #XXX: apparently imposes constraints poorly
@@ -498,7 +498,8 @@ input::
         self._AbstractSolver__save_state()
 
         # do callback
-        if callback is not None: callback(self.bestSolution)
+        if settings['callback'] is not None:
+            settings['callback'](self.bestSolution)
         # initialize termination conditions, if needed
         if init: self._termination(self) #XXX: at generation 0 or always?
         return #XXX: call Terminated ?
@@ -516,7 +517,7 @@ input::
         'strategy': strategy})       #mutation strategy (see mystic.strategy)
         probability=self.probability #potential for parameter cross-mutation
         scale=self.scale             #multiplier for mutation impact
-        [settings.update({i:j}) for (i,j) in kwds.items() if i in settings]
+        [settings.update({i:j}) for (i,j) in list(kwds.items()) if i in settings]
         word = 'CrossProbability'
         self.probability = kwds[word] if word in kwds else probability
         word = 'ScalingFactor'
@@ -524,7 +525,11 @@ input::
         self.strategy = getattr(settings['strategy'],'__name__','Best1Bin')
         return settings
 
-    def Solve(self, cost=None, termination=None, ExtraArgs=None, **kwds):
+    def Solve(self,
+              cost=None,
+              termination=None,
+              ExtraArgs=None,
+              **kwds):
         """Minimize a function using differential evolution.
 
 Description:
@@ -556,9 +561,11 @@ Further Inputs:
         the current parameter vector.  [default = None]
     disp -- non-zero to print convergence messages.
         """
-        super(DifferentialEvolutionSolver2, self).Solve(cost, termination,\
-                                                        ExtraArgs, **kwds)
-        return 
+        super(DifferentialEvolutionSolver2, self).Solve(cost,
+                                                        termination,
+                                                        ExtraArgs,
+                                                        **kwds)
+        return
 
 
 def diffev2(cost,x0,npop=4,args=(),bounds=None,ftol=5e-3,gtol=None,
@@ -698,7 +705,7 @@ Returns: (xopt, {fopt, iter, funcalls, warnflag}, {allvecs})
     stepmon = kwds['itermon'] if 'itermon' in kwds else Monitor()
     evalmon = kwds['evalmon'] if 'evalmon' in kwds else Monitor()
 
-    if gtol: #if number of generations provided, use ChangeOverGeneration 
+    if gtol: #if number of generations provided, use ChangeOverGeneration
         from mystic.termination import ChangeOverGeneration
         termination = ChangeOverGeneration(ftol,gtol)
     else:
@@ -729,10 +736,10 @@ Returns: (xopt, {fopt, iter, funcalls, warnflag}, {allvecs})
 
     if handler: solver.enable_signal_handler()
     #TODO: allow sigint_callbacks for all minimal interfaces ?
-    solver.Solve(cost, termination=termination, strategy=strategy, \
-                #sigint_callback=other_callback,\
-                 CrossProbability=cross, ScalingFactor=scale, \
+    solver.Solve(cost, termination=termination, strategy=strategy,
+                 CrossProbability=cross, ScalingFactor=scale,
                  ExtraArgs=args, callback=callback)
+                #sigint_callback=other_callback,\
     solution = solver.Solution()
 
     # code below here pushes output to scipy.optimize.fmin interface
@@ -747,18 +754,18 @@ Returns: (xopt, {fopt, iter, funcalls, warnflag}, {allvecs})
     if fcalls >= solver._maxfun:
         warnflag = 1
         if disp:
-            print "Warning: Maximum number of function evaluations has "\
-                  "been exceeded."
+            print("Warning: Maximum number of function evaluations has "\
+                  "been exceeded.")
     elif iterations >= solver._maxiter:
         warnflag = 2
         if disp:
-            print "Warning: Maximum number of iterations has been exceeded"
+            print("Warning: Maximum number of iterations has been exceeded")
     else:
         if disp:
-            print "Optimization terminated successfully."
-            print "         Current function value: %f" % fval
-            print "         Iterations: %d" % iterations
-            print "         Function evaluations: %d" % fcalls
+            print("Optimization terminated successfully.")
+            print("         Current function value: %f" % fval)
+            print("         Iterations: %d" % iterations)
+            print("         Function evaluations: %d" % fcalls)
 
     if full_output:
         retlist = x, fval, iterations, fcalls, warnflag

@@ -12,15 +12,19 @@
 # License: 3-clause BSD.  The full license text is available at:
 #  - http://trac.mystic.cacr.caltech.edu/project/mystic/browser/mystic/LICENSE
 """modified algorithms from local copy of scipy.optimize"""
+from __future__ import division
+from __future__ import absolute_import
+from builtins import range
+from past.utils import old_div
 
 #__all__ = ['fmin', 'fmin_powell', 'fmin_ncg', 'fmin_cg', 'fmin_bfgs',
 #           'fminbound','brent', 'golden','bracket','rosen','rosen_der',
 #           'rosen_hess', 'rosen_hess_prod', 'brute', 'approx_fprime',
 #           'line_search', 'check_grad']
 
-from _scipy060optimize import *
-from _scipy060optimize import _cubicmin, _quadmin, _epsilon
-from _scipy060optimize import _linesearch_powell, _endprint
+from ._scipy060optimize import *
+from ._scipy060optimize import _cubicmin, _quadmin, _epsilon
+from ._scipy060optimize import _linesearch_powell, _endprint
 
 def line_search(f, myfprime, xk, pk, gfk, old_fval, old_old_fval,
                 args=(), c1=1e-4, c2=0.9, amax=50, self=None):
@@ -208,20 +212,20 @@ def line_search_BFGS(f, xk, pk, gfk, old_fval, args=(), c1=1e-4, alpha0=1,\
         factor = alpha0**2 * alpha1**2 * (alpha1-alpha0)
         a = alpha0**2 * (phi_a1 - phi0 - derphi0*alpha1) - \
             alpha1**2 * (phi_a0 - phi0 - derphi0*alpha0)
-        a = a / factor
+        a = old_div(a, factor)
         b = -alpha0**3 * (phi_a1 - phi0 - derphi0*alpha1) + \
             alpha1**3 * (phi_a0 - phi0 - derphi0*alpha0)
-        b = b / factor
+        b = old_div(b, factor)
 
-        alpha2 = (-b + numpy.sqrt(abs(b**2 - 3 * a * derphi0))) / (3.0*a)
+        alpha2 = old_div((-b + numpy.sqrt(abs(b**2 - 3 * a * derphi0))), (3.0*a))
         phi_a2 = f(*((xk+alpha2*pk,)+args))
         fc = fc + 1
 
         if (phi_a2 <= phi0 + c1*alpha2*derphi0):
             return alpha2, fc, 0, phi_a2
 
-        if (alpha1 - alpha2) > alpha1 / 2.0 or (1 - alpha2/alpha1) < 0.96:
-            alpha2 = alpha1 / 2.0
+        if (alpha1 - alpha2) > old_div(alpha1, 2.0) or (1 - old_div(alpha2,alpha1)) < 0.96:
+            alpha2 = old_div(alpha1, 2.0)
 
         alpha0 = alpha1
         alpha1 = alpha2
@@ -239,7 +243,7 @@ def approx_fprime(xk,f,epsilon,*args):
     ei = numpy.zeros((len(xk),), float)
     for k in range(len(xk)):
         ei[k] = epsilon
-        grad[k] = (f(*((xk+ei,)+args)) - f0)/epsilon
+        grad[k] = old_div((f(*((xk+ei,)+args)) - f0),epsilon)
         ei[k] = 0.0
     return grad
 

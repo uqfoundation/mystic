@@ -21,8 +21,8 @@ from mystic.tools import random_seed
 random_seed(321)
 
 def test_solvers(solver1, solver2, x0, **kwds):
-  exec "s1 = solvers.%s" % solver1
-  exec "s2 = solvers.%s" % solver2
+  exec("s1 = solvers.%s" % solver1)
+  exec("s2 = solvers.%s" % solver2)
   maxiter = kwds['maxiter'] if 'maxiter' in kwds else None
   maxfun = kwds['maxfun'] if 'maxfun' in kwds else None
   s1_x = s1(rosen, x0, disp=0, full_output=True, **kwds)
@@ -42,11 +42,11 @@ def test_solvers(solver1, solver2, x0, **kwds):
 #   assert s1_x[3] <= maxfun
     # test same number of fcalls
     if s1_x[4] == s2_x[4]: assert s1_x[3] == s2_x[3]
-  return 
+  return
 
 def test_compare(solvername, x0, **kwds):
-  exec "my = solvers.%s" % solvername
-  exec "sp = %s" % solvername
+  exec("my = solvers.%s" % solvername)
+  exec("sp = %s" % solvername)
   maxiter = kwds['maxiter'] if 'maxiter' in kwds else None
   maxfun = kwds['maxfun'] if 'maxfun' in kwds else None
   my_x = my(rosen, x0, disp=0, full_output=True, **kwds)
@@ -69,7 +69,7 @@ def test_compare(solvername, x0, **kwds):
   if maxiter is not None:
     # test iters <= maxiter
     assert my_x[2] <= maxiter
-  return 
+  return
 
 if __name__ == '__main__':
   x0 = [0,0,0]
@@ -79,6 +79,7 @@ if __name__ == '__main__':
   sol = solvers.diffev(rosen, x0, npop=40, disp=0, full_output=True)
   assert almostEqual(sol[1], 0.0020640145337293249, tol=3e-3)
   sol = solvers.diffev2(rosen, x0, npop=40, disp=0, full_output=True)
+  print(sol)
   assert almostEqual(sol[1], 0.0017516784703663288, tol=3e-3)
   sol = solvers.fmin_powell(rosen, x0, disp=0, full_output=True)
   assert almostEqual(sol[1], 8.3173488898295291e-23)

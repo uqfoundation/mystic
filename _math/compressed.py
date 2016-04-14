@@ -7,6 +7,8 @@
 """
 helpers for compressed format for measures
 """
+from builtins import zip
+from builtins import range
 
 __oct2bin_lookup = {'0': '000', '1': '001', '2': '010', '3': '011',\
                     '4': '100', '5': '101', '6': '110', '7': '111'}

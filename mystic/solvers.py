@@ -60,20 +60,22 @@ or the API documentation found here::
 
 
 """
+from __future__ import absolute_import
+from io import open
 # global optimizers
-from differential_evolution import DifferentialEvolutionSolver
-from differential_evolution import DifferentialEvolutionSolver2
-from differential_evolution import diffev, diffev2
+from .differential_evolution import DifferentialEvolutionSolver
+from .differential_evolution import DifferentialEvolutionSolver2
+from .differential_evolution import diffev, diffev2
 
 # pseudo-global optimizers
-from ensemble import BuckshotSolver
-from ensemble import LatticeSolver
-from ensemble import buckshot, lattice
+from .ensemble import BuckshotSolver
+from .ensemble import LatticeSolver
+from .ensemble import buckshot, lattice
 
 # local-search optimizers
-from scipy_optimize import NelderMeadSimplexSolver
-from scipy_optimize import PowellDirectionalSolver
-from scipy_optimize import fmin, fmin_powell
+from .scipy_optimize import NelderMeadSimplexSolver
+from .scipy_optimize import PowellDirectionalSolver
+from .scipy_optimize import fmin, fmin_powell
 
 
 # load a solver from a restart file
@@ -87,7 +89,7 @@ def LoadSolver(filename=None, **kwds):
 #       solver = self
 #   else:
     import dill
-    if filename: f = file(filename, 'rb')
+    if filename: f = open(filename, 'rb')
     else: return
     try:
         solver = dill.load(f)
@@ -96,7 +98,7 @@ def LoadSolver(filename=None, **kwds):
         code = "from mystic.solvers import %s;" % solver._type
         code += "self = %s(solver.nDim);" % solver._type
         code = compile(code, '<string>', 'exec')
-        exec code in _locals
+        exec(code, _locals)
         self = _locals['self']
     finally:
         f.close()

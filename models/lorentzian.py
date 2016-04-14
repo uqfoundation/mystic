@@ -11,7 +11,11 @@ Lorentzian peak model
 References::
     None
 """
-from abstract_model import AbstractModel
+from __future__ import division
+from __future__ import absolute_import
+from builtins import range
+from past.utils import old_div
+from .abstract_model import AbstractModel
 
 from numpy import sum as numpysum
 from numpy import array, pi, asarray, arange
@@ -31,7 +35,7 @@ Computes lorentzian
 coeffs = (a1,a2,a3,A0,E0,G0,n)"""
         a1,a2,a3,A0,E0,G0,n = coeffs
         x = asarray(evalpts) #XXX: requires a numpy.array
-        return (a1 + a2*x + a3*x*x + A0 * ( G0/(2*pi) )/( (x-E0)*(x-E0)+(G0/2)*(G0/2) ))/n
+        return old_div((a1 + a2*x + a3*x*x + A0 * ( old_div(G0,(2*pi)) )/( (x-E0)*(x-E0)+(old_div(G0,2))*(old_div(G0,2)) )),n)
 
     def ForwardFactory(self,coeffs):
         """generates a lorentzian model instance from a list of coefficients"""
@@ -54,7 +58,7 @@ def gendata(params,xmin,xmax,npts=4000):
     def gensample(F, xmin, xmax):
         from numpy import arange
         import random
-        a = arange(xmin, xmax, (xmax-xmin)/200.)
+        a = arange(xmin, xmax, old_div((xmax-xmin),200.))
         ymin = 0
         ymax = F(a).max()
         while 1:
@@ -64,7 +68,7 @@ def gendata(params,xmin,xmax,npts=4000):
             if t2 < t3:
                 return t1
     fwd = F(params)
-    return array([gensample(fwd, xmin,xmax) for i in xrange(npts)])
+    return array([gensample(fwd, xmin,xmax) for i in range(npts)])
 
 # probably shouldn't be in here...
 from numpy import histogram as numpyhisto

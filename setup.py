@@ -6,6 +6,7 @@
 #  - http://trac.mystic.cacr.caltech.edu/project/mystic/browser/mystic/LICENSE
 
 from __future__ import with_statement
+from __future__ import print_function
 import os
 import sys
 
@@ -173,7 +174,7 @@ Usage Notes
 
 Probably the best way to get started is to look at a few of the
 examples provided within mystic. See `mystic.examples` for a
-set of scripts that demonstrate the configuration and launching of 
+set of scripts that demonstrate the configuration and launching of
 optimization jobs for one of the sample models in `mystic.models`.
 Many of the included examples are standard optimization test problems.
 
@@ -302,7 +303,7 @@ setup(name='mystic',
 """ % (target_version, long_description)
 
 # add dependencies
-if sys.version_info[:2] < (2.6):
+if sys.version_info[:2] < (2.6,):
     numpy_version = '>=1.0, <1.8.0'
     sympy_version = '>=0.6.7'#, <0.7.1'
 else:
@@ -312,12 +313,15 @@ dill_version = '>=0.2.5'
 klepto_version = '>=0.1.2'
 scipy_version = '>=0.6.0'
 matplotlib_version = '>=0.91'
+future_version = '>=0.15.2'
 if has_setuptools:
     setup_code += """
       zip_safe=False,
       dependency_links = ['http://dev.danse.us/packages/'],
-      install_requires = ('numpy%s', 'sympy%s', 'klepto%s', 'dill%s'),
-""" % (numpy_version, sympy_version, klepto_version, dill_version)
+      install_requires = ('numpy%s', 'sympy%s', 'klepto%s', 'dill%s',
+                          'future%s'),
+""" % (numpy_version, sympy_version, klepto_version, dill_version,
+       future_version)
 
 # add the scripts, and close 'setup' call
 setup_code += """
@@ -330,7 +334,7 @@ setup_code += """
 """
 
 # exec the 'setup' code
-exec setup_code
+exec(setup_code)
 
 # if dependencies are missing, print a warning
 try:
@@ -341,15 +345,15 @@ try:
     #import scipy
     #import matplotlib #XXX: has issues being zip_safe
 except ImportError:
-    print "\n***********************************************************"
-    print "WARNING: One of the following dependencies is unresolved:"
-    print "    numpy %s" % numpy_version
-    print "    sympy %s" % sympy_version
-    print "    klepto %s" % klepto_version
-    print "    dill %s" % dill_version
-    print "    scipy %s (optional)" % scipy_version
-    print "    matplotlib %s (optional)" % matplotlib_version
-    print "***********************************************************\n"
+    print("\n***********************************************************")
+    print("WARNING: One of the following dependencies is unresolved:")
+    print("    numpy %s" % numpy_version)
+    print("    sympy %s" % sympy_version)
+    print("    klepto %s" % klepto_version)
+    print("    dill %s" % dill_version)
+    print("    scipy %s (optional)" % scipy_version)
+    print("    matplotlib %s (optional)" % matplotlib_version)
+    print("***********************************************************\n")
 
 
 if __name__=='__main__':

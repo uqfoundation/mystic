@@ -14,7 +14,10 @@ References::
     volcanoes and the deformations of the ground surfaces around them, 
     Bull. Earthquake. Res. Inst., 36, 99-134, 1958.
 """
-from abstract_model import AbstractModel
+from __future__ import division
+from __future__ import absolute_import
+from past.utils import old_div
+from .abstract_model import AbstractModel
 
 from numpy import sum as numpysum
 from numpy import array, pi
@@ -39,7 +42,7 @@ pressure source in an elastic half space [3].
         # or equivalently c= (3/4) a^3 dP / rigidity
         # where a = sphere radius, dP = delta Pressure
         r2 = dx*dx + dy*dy + dz*dz
-        C = c / pow(r2, 1.5)
+        C = old_div(c, pow(r2, 1.5))
         return array((C*dx,C*dy,C*dz)) #XXX: requires a numpy.array
 
     def ForwardFactory(self,coeffs):
@@ -54,12 +57,12 @@ with (x0,y0,z0,dV) = (%s,%s,%s,%s)""" % (x0,y0,z0,dV)
     #FIXME: continue refactoring from test_mogi*.py...
     def CostFactory(self,target,pts):
         """generates a cost function instance from list of coefficients & evaluation points"""
-        raise NotImplementedError, "cost function not implemented"
+        raise NotImplementedError("cost function not implemented")
 
     #FIXME: continue refactoring from test_mogi*.py...
     def CostFactory2(self,pts,datapts,nparams):
         """generates a cost function instance from datapoints & evaluation points"""
-        raise NotImplementedError, "cost function not implemented"
+        raise NotImplementedError("cost function not implemented")
 
     pass
  

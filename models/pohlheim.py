@@ -5,6 +5,10 @@
 # Copyright (c) 1997-2016 California Institute of Technology.
 # License: 3-clause BSD.  The full license text is available at:
 #  - http://trac.mystic.cacr.caltech.edu/project/mystic/browser/mystic/LICENSE
+from __future__ import division
+from __future__ import absolute_import
+from builtins import range
+from past.utils import old_div
 __doc__ = _doc = """
 This is part of Pohlheim's "GEATbx" test suite in [1], with function
 definitions drawn from [1], [2], [3], [4], [5], [6], and [7].
@@ -35,7 +39,7 @@ References::
 #   [8] Dixon, L.C.W. and Szego, G.P. "The Optimization Problem: An
 #   Introduction", in "Toward Global Optimization II", North Holland,
 #   New York, 1978.
-from abstract_model import AbstractFunction
+from .abstract_model import AbstractFunction
 
 from math import sin, cos, sqrt, pi, exp
 
@@ -98,7 +102,7 @@ Inspect with mystic_model_plotter using::
     mystic.models.ellipsoid -b "-5:5:.1, -5:5:.1" -d
 
 The minimum is f(x)=0.0 at x_i=0.0 for all i"""
-        ncoeffs = range(len(coeffs))
+        ncoeffs = list(range(len(coeffs)))
         return sum(sum(coeffs[0:i+1])**2 for i in ncoeffs)
 
     minimizers = [0.]
@@ -159,7 +163,7 @@ Inspect with mystic_model_plotter using::
     mystic.models.powers -b "-5:5:.1, -5:5:.1" -d
 
 The minimum is f(x)=0.0 at x_i=0.0 for all i"""
-        ncoeffs = range(len(coeffs))
+        ncoeffs = list(range(len(coeffs)))
         return sum(abs(coeffs[i])**(i+2) for i in ncoeffs)
 
     minimizers = [0.]
@@ -199,8 +203,8 @@ Inspect with mystic_model_plotter using::
 The minimum is f(x)=0.0 at x_i=0.0 for all i"""
         a=20.; b=0.2; d=2*pi
         n = len(coeffs)
-        f0 = -a * exp(-b * sqrt(sum(c*c for c in coeffs)/n))
-        f1 = -exp(sum(cos(d*c) for c in coeffs)/n) + a + exp(1)
+        f0 = -a * exp(-b * sqrt(old_div(sum(c*c for c in coeffs),n)))
+        f1 = -exp(old_div(sum(cos(d*c) for c in coeffs),n)) + a + exp(1)
         return f0 + f1
 
     minimizers = None #XXX: there are many local minima
@@ -235,7 +239,7 @@ For x=(2.20289811, 1.57078059, 1.28500168, 1.92305311, 1.72047194, ...)[:N]
 and c=(-0.801303, -1.0, -0.959092, -0.896699, -1.030564, ...)[:N],
 the minimum is f(x)=sum(c) for all x_i=(0,pi)"""
         m = 20 # the larger the number the narrower the channel
-        n = range(len(coeffs))
+        n = list(range(len(coeffs)))
         r = -sum(sin(coeffs[i])*(sin((i+1)*coeffs[i]**2/pi))**m for i in n)
         return r #XXX: constrain x_i=(0,pi) ?
 
@@ -276,7 +280,7 @@ Inspect with mystic_model_plotter using::
 The minimum is f(x)=0.397887 at x=((2 +/- (2*i)+1)*pi, 2.275 + 10*i*(i+1)/2)
 for all i"""
         x1,x2 = coeffs
-        a=1.; b=5.1/(4*pi**2); c=5./pi; d=6.; e=10.; f=1./(8*pi)
+        a=1.; b=old_div(5.1,(4*pi**2)); c=old_div(5.,pi); d=6.; e=10.; f=old_div(1.,(8*pi))
         f0 = a * (x2 - b * x1**2 + c * x1 - d)**2
         f1 = e * (1 - f) * cos(x1) + e
         return f0 + f1

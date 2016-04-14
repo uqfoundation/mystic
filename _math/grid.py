@@ -7,6 +7,11 @@
 """
 tools for generating points on a grid
 """
+from __future__ import division
+from __future__ import print_function
+from builtins import zip
+from builtins import range
+from past.utils import old_div
 
 def gridpts(q):
     """
@@ -35,7 +40,7 @@ Inputs:
     from mystic.math.samples import random_samples
     q = random_samples(lb,ub,npts)
     q = [list(i) for i in q]
-    q = zip(*q)
+    q = list(zip(*q))
     return [list(i) for i in q]
 
 
@@ -56,7 +61,7 @@ Inputs:
     random = random_state().random
     def factors(n):
         result = list()
-        for i in chain([2],xrange(3,n+1,2)):
+        for i in chain([2],range(3,n+1,2)):
             s = 0
             while n%i == 0:
                 n /= i
@@ -67,7 +72,7 @@ Inputs:
     result = factors(N)
     dim = nfact = len(result)
     prime = nfact == 1
-    if ndim: result += [1] * (ndim - (nfact / ndim));  dim = ndim
+    if ndim: result += [1] * (ndim - (old_div(nfact, ndim)));  dim = ndim
     elif ones: result += [1] # add some 'randomness' by adding a "1"
     # if ones, mix in the 1s; otherwise, only use 1s when ndim < len(result)
     if ones: result = sorted(result, key=lambda v: random())
@@ -94,12 +99,12 @@ if __name__ == '__main__':
   grid_dimensions = len(lower)
   bins = []
   for i in range(grid_dimensions):  #XXX: different nbins for each direction?
-    step = abs(upper[i] - lower[i])/nbins
+    step = old_div(abs(upper[i] - lower[i]),nbins)
     bins.append( [lower[i] + (j+0.5)*step for j in range(nbins)] )
 
   # build a grid of starting points
   initial_values = gridpts(bins)
-  print "grid: %s" % initial_values
+  print("grid: %s" % initial_values)
 
   npts = 10
   lower = [0.0, 3.0, 6.0]
@@ -107,7 +112,7 @@ if __name__ == '__main__':
 
   # generate a set of random starting points
   initial_values = samplepts(lower,upper,npts)
-  print "scatter: %s" % initial_values
+  print("scatter: %s" % initial_values)
 
 
 # EOF

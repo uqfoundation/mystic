@@ -16,7 +16,7 @@ will convert y = f(x) to y' = c(f(x)).  Similarly, the "inner" method
 called on y = f(x), with inner=c(x), will convert y = f(x) to  y' = f(c(x)).
 """
 
-def outer(outer=lambda x:x, args=None, kwds=None):
+def outer(outer=lambda(x):x, args=None, kwds=None):
     """wrap a function around another function: convert y = f(x) to y' = c(f(x))
 
 This is a useful function for nesting one constraint in another constraint.
@@ -24,13 +24,13 @@ A constraints function takes an iterable x as input, returning a modified x.
 
     For example:
     >>> def squared(x):
-    ...   return x**2             
-    ... 
-    >>> # equivalent to: ((x+1)**2) 
+    ...   return x**2
+    ...
+    >>> # equivalent to: ((x+1)**2)
     >>> @outer(squared)
     ... def constrain(x):
     ...   return x+1
-    ... 
+    ...
     >>> from numpy import array
     >>> x = array([1,2,3,4,5])
     >>> constrain(x)
@@ -45,7 +45,7 @@ A constraints function takes an iterable x as input, returning a modified x.
     return dec
 
 
-def inner(inner=lambda x:x, args=None, kwds=None):
+def inner(inner=lambda(x):x, args=None, kwds=None):
     """nest a function within another function: convert y = f(x) to y' = f(c(x))
 
 This is a useful function for nesting one constraint in another constraint.
@@ -55,13 +55,13 @@ function; thus the constraints are imposed every cost function evaluation.
 
     For example:
     >>> def squared(x):
-    ...   return x**2             
-    ... 
-    >>> # equivalent to: ((x**2)+1) 
+    ...   return x**2
+    ...
+    >>> # equivalent to: ((x**2)+1)
     >>> @inner(squared)
     ... def constrain(x):
     ...   return x+1
-    ... 
+    ...
     >>> from numpy import array
     >>> x = array([1,2,3,4,5])
     >>> constrain(x)
@@ -76,7 +76,7 @@ function; thus the constraints are imposed every cost function evaluation.
     return dec
 
 
-def inner_proxy(inner=lambda x:x, args=None, kwds=None):
+def inner_proxy(inner=lambda(x):x, args=None, kwds=None):
     """nest a function within another function: convert y = f(x) to y' = f(c(x))
 
 This is a useful function for nesting one constraint in another constraint.
@@ -95,7 +95,7 @@ instead of the decorated function.
     return dec
 
 
-def outer_proxy(outer=lambda x:x, args=None, kwds=None):
+def outer_proxy(outer=lambda(x):x, args=None, kwds=None):
     """wrap a function around another function: convert y = f(x) to y' = c(f(x))
 
 This is a useful function for nesting one constraint in another constraint.
@@ -115,9 +115,9 @@ instead of the decorated function.
 
 
 ####################################################
-def additive_proxy(penalty=lambda x:0.0, args=None, kwds=None):
+def additive_proxy(penalty=lambda(x):0.0, args=None, kwds=None):
     """penalize a function with another function: y = f(x) to y' = f(x) + p(x)
-    
+
 This is useful, for example, in penalizing a cost function where the constraints
 are violated; thus, the satisfying the constraints will be preferred at every
 cost function evaluation.
@@ -133,22 +133,22 @@ and kwds to the penalty function.
         return func
     return dec
 
-def additive(penalty=lambda x:0.0, args=None, kwds=None):
+def additive(penalty=lambda(x):0.0, args=None, kwds=None):
     """penalize a function with another function: y = f(x) to y' = f(x) + p(x)
-    
+
 This is useful, for example, in penalizing a cost function where the constraints
 are violated; thus, the satisfying the constraints will be preferred at every
 cost function evaluation.
 
     For example:
     >>> def squared(x):
-    ...   return x**2             
-    ... 
-    >>> # equivalent to: (x+1) + (x**2) 
+    ...   return x**2
+    ...
+    >>> # equivalent to: (x+1) + (x**2)
     >>> @additive(squared)
     ... def constrain(x):
     ...   return x+1
-    ... 
+    ...
     >>> from numpy import array
     >>> x = array([1,2,3,4,5])
     >>> constrain(x)

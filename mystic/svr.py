@@ -8,6 +8,8 @@
 """
 Simple utility functions for SV-Regressions
 """
+from __future__ import division
+from past.utils import old_div
 
 from numpy import multiply, ndarray, vectorize, array, asarray
 
@@ -29,7 +31,7 @@ def SupportVectors(alpha, eps=0):
 
 def Bias(x, y, alpha, eps, kernel=InnerProduct):
     """ Compute regression bias for epsilon insensitive loss regression """
-    N = len(alpha)/2
+    N = old_div(len(alpha),2)
     ap, am = alpha[:N],  alpha[N:]
     sv = SupportVectors(alpha)[0]
     # functionally: b = eps + y[sv] + sum( (ap-am) * map(lambda xx: kernel(xx, x[sv]), x) )
@@ -39,7 +41,7 @@ def Bias(x, y, alpha, eps, kernel=InnerProduct):
 def RegressionFunction(x, y, alpha, eps, kernel=InnerProduct):
     """ The Support Vector expansion. f(x) = Sum (ap - am) K(xi, x) + b """
     bias = Bias(x, y, alpha, eps, kernel)
-    N = len(alpha)/2
+    N = old_div(len(alpha),2)
     ap, am = alpha[:N],  alpha[N:]
     ad = ap-am
     def _(x_in):

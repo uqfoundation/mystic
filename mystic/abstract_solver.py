@@ -24,13 +24,13 @@ A typical call to a mystic solver will roughly follow this example:
     >>> # the function to be minimized and the initial values
     >>> from mystic.models import rosen
     >>> x0 = [0.8, 1.2, 0.7]
-    >>> 
+    >>>
     >>> # get monitors and termination condition objects
     >>> from mystic.monitors import Monitor
     >>> stepmon = Monitor()
     >>> evalmon = Monitor()
     >>> from mystic.termination import CandidateRelativeTolerance as CRT
-    >>> 
+    >>>
     >>> # instantiate and configure the solver
     >>> from mystic.solvers import NelderMeadSimplexSolver
     >>> solver = NelderMeadSimplexSolver(len(x0))
@@ -40,7 +40,7 @@ A typical call to a mystic solver will roughly follow this example:
     >>> solver.enable_signal_handler()
     >>> solver.SetTermination(CRT())
     >>> solver.Solve(rosen)
-    >>> 
+    >>>
     >>> # obtain the solution
     >>> solution = solver.Solution()
 
@@ -50,7 +50,7 @@ An equivalent, yet less flexible, call using the minimal interface is:
     >>> # the function to be minimized and the initial values
     >>> from mystic.models import rosen
     >>> x0 = [0.8, 1.2, 0.7]
-    >>> 
+    >>>
     >>> # configure the solver and obtain the solution
     >>> from mystic.solvers import fmin
     >>> solution = fmin(rosen,x0)
@@ -72,9 +72,13 @@ trigger when a signal interrupt (usually, Ctrl-C) is given while
 the solver is running.
 
 """
+from __future__ import print_function
+from builtins import input
+from builtins import range
+from builtins import object
 __all__ = ['AbstractSolver']
 
-
+from io import open
 import random
 import numpy
 from numpy import inf, shape, asarray, absolute, asfarray, seterr
@@ -154,7 +158,7 @@ Important class members:
 
         import mystic.termination
         self._EARLYEXIT       = mystic.termination.EARLYEXIT
-        self._live            = False 
+        self._live            = False
         return
 
     def Solution(self):
@@ -218,14 +222,14 @@ input::
       a cost function with a multi-value return, to reduce the output to a
       single value.  If arraylike, the reducer provided should take a single
       array as input and produce a scalar; otherwise, the reducer provided
-      should meet the requirements of the python's builtin 'reduce' method 
+      should meet the requirements of the python's builtin 'reduce' method
       (e.g. lambda x,y: x+y), taking two scalars and producing a scalar."""
         if not reducer:
             self._reducer = None
         elif not callable(reducer):
-            raise TypeError, "'%s' is not a callable function" % reducer
+            raise TypeError("'%s' is not a callable function" % reducer)
         elif not arraylike:
-            self._reducer = wrap_reducer(reducer)   
+            self._reducer = wrap_reducer(reducer)
         else: #XXX: check if is arraylike?
             self._reducer = reducer
         return self._update_objective()
@@ -244,7 +248,7 @@ input::
         if not penalty:
             self._penalty = lambda x: 0.0
         elif not callable(penalty):
-            raise TypeError, "'%s' is not a callable function" % penalty
+            raise TypeError("'%s' is not a callable function" % penalty)
         else: #XXX: check for format: y' = penalty(x) ?
             self._penalty = penalty
         return self._update_objective()
@@ -260,7 +264,7 @@ input::
         if not constraints:
             self._constraints = lambda x: x
         elif not callable(constraints):
-            raise TypeError, "'%s' is not a callable function" % constraints
+            raise TypeError("'%s' is not a callable function" % constraints)
         else: #XXX: check for format: x' = constraints(x) ?
             self._constraints = constraints
         return self._update_objective()
@@ -279,7 +283,7 @@ input::
             if monitor.__module__ in ['mystic._genSow']:
                 self._stepmon = monitor #FIXME: need .prepend(current)
         else:
-            raise TypeError, "'%s' is not a monitor instance" % monitor
+            raise TypeError("'%s' is not a monitor instance" % monitor)
         self.energy_history   = None # sync with self._stepmon
         self.solution_history = None # sync with self._stepmon
         return
@@ -298,7 +302,7 @@ input::
             if monitor.__module__ in ['mystic._genSow']:
                 self._evalmon = monitor #FIXME: need .prepend(current)
         else:
-            raise TypeError, "'%s' is not a monitor instance" % monitor
+            raise TypeError("'%s' is not a monitor instance" % monitor)
         return
 
     def SetStrictRanges(self, min=None, max=None):
@@ -317,15 +321,15 @@ note::
         if min is None: min = self._defaultMin
         if max is None: max = self._defaultMax
         # when 'some' of the bounds are given as 'None', replace with default
-        for i in range(len(min)): 
+        for i in range(len(min)):
             if min[i] is None: min[i] = self._defaultMin[0]
             if max[i] is None: max[i] = self._defaultMax[0]
 
         min = asarray(min); max = asarray(max)
         if numpy.any(( min > max ),0):
-            raise ValueError, "each min[i] must be <= the corresponding max[i]"
+            raise ValueError("each min[i] must be <= the corresponding max[i]")
         if len(min) != self.nDim:
-            raise ValueError, "bounds array must be length %s" % self.nDim
+            raise ValueError("bounds array must be length %s" % self.nDim)
         self._useStrictRange = True
         self._strictMin = min
         self._strictMax = max
@@ -364,9 +368,9 @@ input::
             x0 = asfarray([x0])
             rank = 1
         if not -1 < rank < 2:
-            raise ValueError, "Initial guess must be a scalar or rank-1 sequence."
+            raise ValueError("Initial guess must be a scalar or rank-1 sequence.")
         if len(x0) != self.nDim:
-            raise ValueError, "Initial guess must be length %s" % self.nDim
+            raise ValueError("Initial guess must be length %s" % self.nDim)
 
         #slightly alter initial values for solvers that depend on randomness
         min = x0*(1-radius)
@@ -377,7 +381,7 @@ input::
         self.SetRandomInitialPoints(min,max)
         #stick initial values in population[i], i=0
         self.population[0] = x0.tolist()
-    
+
     def SetRandomInitialPoints(self, min=None, max=None):
         """Generate Random Initial Points within given Bounds
 
@@ -389,9 +393,9 @@ input::
        #if numpy.any(( asarray(min) > asarray(max) ),0):
        #    raise ValueError, "each min[i] must be <= the corresponding max[i]"
         if len(min) != self.nDim or len(max) != self.nDim:
-            raise ValueError, "bounds array must be length %s" % self.nDim
+            raise ValueError("bounds array must be length %s" % self.nDim)
         # when 'some' of the bounds are given as 'None', replace with default
-        for i in range(len(min)): 
+        for i in range(len(min)):
             if min[i] is None: min[i] = self._defaultMin[0]
             if max[i] is None: max[i] = self._defaultMax[0]
         #generate random initial values
@@ -439,7 +443,7 @@ note::
             for i in range(self.nPop):
                 self.population[i] = dist.rvs(self.nDim, random_state=prng).tolist()
         else: #from numpy.random with *args and size in kwds
-            for i in range(self.nPop): 
+            for i in range(self.nPop):
                 self.population[i] = dist(*args, size=self.nDim).tolist()
         return
 
@@ -474,12 +478,12 @@ Available switches::
 """
         def handler(signum, frame):
             import inspect
-            print inspect.getframeinfo(frame)
-            print inspect.trace()
+            print(inspect.getframeinfo(frame))
+            print(inspect.trace())
             while 1:
-                s = raw_input(\
+                s = eval(input(\
 """
- 
+
  Enter sense switch.
 
     sol:  Print current best solution.
@@ -487,20 +491,20 @@ Available switches::
     call: Executes sigint_callback [%s].
     exit: Exits with current best solution.
 
- >>> """ % sigint_callback)
-                if s.lower() == 'sol': 
-                    print self.bestSolution
-                elif s.lower() == 'cont': 
+ >>> """ % sigint_callback))
+                if s.lower() == 'sol':
+                    print(self.bestSolution)
+                elif s.lower() == 'cont':
                     return
-                elif s.lower() == 'call': 
+                elif s.lower() == 'call':
                     # sigint call_back
                     if sigint_callback is not None:
                         sigint_callback(self.bestSolution)
-                elif s.lower() == 'exit': 
+                elif s.lower() == 'exit':
                     self._EARLYEXIT = True
                     return
                 else:
-                    print "unknown option : %s" % s
+                    print("unknown option : %s" % s)
             return
         self.signal_handler = handler
         return
@@ -549,7 +553,7 @@ input::
         # if SetEvaluationLimits not applied, use the solver default
         if self._maxiter is None:
             self._maxiter = N * self.nPop * iterscale
-        elif self._maxiter == "*": # (i.e. None, but 'reset counter') 
+        elif self._maxiter == "*": # (i.e. None, but 'reset counter')
             self._maxiter = (N * self.nPop * iterscale) + self.generations
         if self._maxfun is None:
             self._maxfun = N * self.nPop * evalscale
@@ -580,24 +584,24 @@ Note::
                                             'generations':self._maxiter}
 
         # push solver internals to scipy.optimize.fmin interface
-        if self._fcalls[0] >= self._maxfun and self._maxfun is not None:
+        if self._maxfun is not None and isinstance(self._maxfun, int) and self._fcalls[0] >= int(self._maxfun):
             msg = lim #XXX: prefer the default stop ?
             if disp:
-                print "Warning: Maximum number of function evaluations has "\
-                      "been exceeded."
+                print("Warning: Maximum number of function evaluations has "\
+                      "been exceeded.")
         elif self.generations >= self._maxiter and self._maxiter is not None:
             msg = lim #XXX: prefer the default stop ?
             if disp:
-                print "Warning: Maximum number of iterations has been exceeded"
+                print("Warning: Maximum number of iterations has been exceeded")
         elif self._EARLYEXIT:
             msg = sig
             if disp:
-                print "Warning: Optimization terminated with signal interrupt."
+                print("Warning: Optimization terminated with signal interrupt.")
         elif msg and disp:
-            print "Optimization terminated successfully."
-            print "         Current function value: %f" % self.bestEnergy
-            print "         Iterations: %d" % self.generations
-            print "         Function evaluations: %d" % self._fcalls[0]
+            print("Optimization terminated successfully.")
+            print("         Current function value: %f" % self.bestEnergy)
+            print("         Iterations: %d" % self.generations)
+            print("         Function evaluations: %d" % self._fcalls[0])
 
         if info:
             return msg
@@ -681,7 +685,7 @@ Note::
         """perform a single optimization iteration
 
 *** this method must be overwritten ***"""
-        raise NotImplementedError, "an optimization algorithm was not provided"
+        raise NotImplementedError("an optimization algorithm was not provided")
 
     def SaveSolver(self, filename=None, **kwds):
         """save solver state to a restart file"""
@@ -694,7 +698,7 @@ Note::
                 os.close(fd)
             filename = self._state
         self._state = filename
-        f = file(filename, 'wb')
+        f = open(filename, 'wb')
         try:
             dill.dump(self, f, **kwds)
             self._stepmon.info('DUMPED("%s")' % filename) #XXX: before / after ?
@@ -735,10 +739,11 @@ Note::
         #allow for inputs that don't conform to AbstractSolver interface
         #NOTE: not sticky: callback, disp
         #NOTE: sticky: EvaluationMonitor, StepMonitor, penalty, constraints
-        settings = \
-       {'callback':None,     #user-supplied function, called after each step
-        'disp':0}            #non-zero to print convergence messages
-        [settings.update({i:j}) for (i,j) in kwds.items() if i in settings]
+        settings = {
+                    'callback':None,
+                    'disp':0
+                   }
+        [settings.update({i:j}) for (i,j) in list(kwds.items()) if i in settings]
         # backward compatibility
         if 'EvaluationMonitor' in kwds: \
            self.SetEvaluationMonitor(kwds['EvaluationMonitor'])
@@ -796,7 +801,7 @@ Notes:
 
         # if not terminated, then take a step
         if msg is None:
-            self._Step(**kwds) #FIXME: not all kwds are given in __doc__
+            self._Step(cost=cost, ExtraArgs=ExtraArgs, **kwds) #FIXME: not all kwds are given in __doc__
             if self.Terminated(): # then cleanup/finalize
                 self.Finalize()
 
@@ -879,7 +884,7 @@ Further Inputs:
         cls = self.__class__
         result = cls.__new__(cls)
         memo[id(self)] = result
-        for k, v in self.__dict__.items():
+        for k, v in list(self.__dict__.items()):
             if v is self._cost:
                 setattr(result, k, tuple(dill.copy(i) for i in v))
             else:

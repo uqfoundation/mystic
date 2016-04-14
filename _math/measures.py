@@ -7,6 +7,11 @@
 """
 Methods to support discrete measures
 """
+from __future__ import division
+from __future__ import print_function
+from builtins import zip
+from builtins import range
+from past.utils import old_div
 # what about sample_unsafe ?
 from mystic.math.stats import *
 from mystic.math.samples import *
@@ -58,7 +63,7 @@ Inputs:
 def maximum(f, samples):
   """calculate the max of function for the given list of points
 
-Inputs: 
+Inputs:
     f -- a function that takes a list and returns a number
     samples -- a list of sample points
 """
@@ -68,7 +73,7 @@ Inputs:
 def ess_maximum(f, samples, weights=None, tol=0.):
   """calculate the max of function for support on the given list of points
 
-Inputs: 
+Inputs:
     f -- a function that takes a list and returns a number
     samples -- a list of sample points
     weights -- a list of sample weights
@@ -81,7 +86,7 @@ Inputs:
 def minimum(f, samples):
   """calculate the min of function for the given list of points
 
-Inputs: 
+Inputs:
     f -- a function that takes a list and returns a number
     samples -- a list of sample points
 """
@@ -91,7 +96,7 @@ Inputs:
 def ess_minimum(f, samples, weights=None, tol=0.):
   """calculate the min of function for support on the given list of points
 
-Inputs: 
+Inputs:
     f -- a function that takes a list and returns a number
     samples -- a list of sample points
     weights -- a list of sample weights
@@ -117,7 +122,7 @@ Inputs:
   # to prevent function evaluation if weight is "too small":
   # skip evaluation of f(x) if the corresponding weight <= tol
   yw = [(f(x),w) for (x,w) in zip(samples, weights) if abs(w) > tol]
-  return mean(*zip(*yw))
+  return mean(*list(zip(*yw)))
   ##XXX: at around len(samples) == 150, the following is faster
   #aw = asarray(weights)
   #ax = asarray(samples)
@@ -132,12 +137,12 @@ Inputs:
     weights -- a list of sample weights
 """
   if weights is None:
-    weights = [1.0/float(len(samples))] * len(samples)
+    weights = [old_div(1.0,float(len(samples)))] * len(samples)
   # get weighted sum
   ssum = sum(i*j for i,j in zip(samples, weights))
   # normalize by sum of the weights
   wts = float(sum(weights))
-  if wts: return ssum / wts
+  if wts: return old_div(ssum, wts)
   from numpy import inf
   return ssum * inf  # protect against ZeroDivision
 
@@ -168,7 +173,7 @@ Inputs:
     weights -- a list of sample weights
 """
   if weights is None:
-    weights = [1.0/float(len(samples))] * len(samples)
+    weights = [old_div(1.0,float(len(samples)))] * len(samples)
  #if _mean is None:
   _mean = mean(samples, weights)
   svar = [abs(s - _mean)**2 for s in samples]
@@ -220,7 +225,7 @@ Inputs:
     from numpy import nan
     return [nan]*len(samples) #XXX: better to space pts evenly across range?
   from numpy import sqrt
-  scale = sqrt(float(v) / sv)
+  scale = sqrt(old_div(float(v), sv))
   samples = samples * scale  #NOTE: not "mean-preserving", until the next line
   return impose_mean(m, samples, weights) #NOTE: not range preserving
 
@@ -254,7 +259,7 @@ Inputs:
   if not sr:  # protect against ZeroDivision when range = 0
     from numpy import nan
     return [nan]*len(samples) #XXX: better to space pts evenly across range?
-  scale = float(r) / sr
+  scale = old_div(float(r), sr)
   samples = samples * scale  #NOTE: not "mean-preserving", until the next line
   return impose_mean(m, samples, weights) #NOTE: not variance preserving
 
@@ -283,7 +288,7 @@ For example:
     >>> nx = 3;  ny = 2;  nz = 1
     >>> x_lb = [10.0];  y_lb = [0.0];  z_lb = [10.0]
     >>> x_ub = [50.0];  y_ub = [9.0];  z_ub = [90.0]
-    >>> 
+    >>>
     >>> # prepare the bounds
     >>> lb = (nx * x_lb) + (ny * y_lb) + (nz * z_lb)
     >>> ub = (nx * x_ub) + (ny * y_ub) + (nz * z_ub)
@@ -309,9 +314,9 @@ For example:
   else: #XXX: better to use a standard "xk' = constrain(xk)" interface ?
     def constraints(rv):
       coords = _pack( _nested(rv,npts) )
-      coords = zip(*coords)              # 'mimic' a nested list
+      coords = list(zip(*coords))              # 'mimic' a nested list
       coords = constrain(coords, [weights for i in range(len(coords))])
-      coords = zip(*coords)              # revert back to a packed list
+      coords = list(zip(*coords))              # revert back to a packed list
       return _flat( _unpack(coords,npts) )
 
   # construct cost function to reduce deviation from expectation value
@@ -329,7 +334,7 @@ For example:
     for n in npts:
       lower_bounds += [None]*n
       upper_bounds += [None]*n
-  else: 
+  else:
     lower_bounds, upper_bounds = bounds
 
   # construct and configure optimizer
@@ -338,7 +343,8 @@ For example:
   maxiter = 1000;  maxfun = 1e+6
   crossover = 0.9; percent_change = 0.9
 
-  def optimize(cost,(lb,ub),tolerance,_constraints):
+  def optimize(cost, xxx_todo_changeme,tolerance,_constraints):
+    (lb,ub) = xxx_todo_changeme
     from mystic.solvers import DifferentialEvolutionSolver2
     from mystic.termination import VTR
     from mystic.strategy import Best1Exp
@@ -420,7 +426,7 @@ Note: if mass='l1', will use L1-norm; if mass='l2' will use L2-norm; etc.
     return list(weights * inf)  # protect against ZeroDivision
 
   if float(mass) or not zsum:
-    w = weights / w #FIXME: not "mean-preserving"
+    w = old_div(weights, w) #FIXME: not "mean-preserving"
     if not fixed: return list(w) # <- scaled so sum(abs(x)) = 1
     #REMAINING ARE fixed mean
     m = sum(w)
@@ -430,7 +436,7 @@ Note: if mass='l1', will use L1-norm; if mass='l2' will use L2-norm; etc.
       from numpy import inf, nan
       weights[weights == 0.0] = nan
       return list(weights * inf)  # protect against ZeroDivision
-    return list(w/m) # <- scaled so sum(x) = 1
+    return list(old_div(w,m)) # <- scaled so sum(x) = 1
 
   # force selected member to satisfy sum = 0.0
   zsum = -1
@@ -443,7 +449,7 @@ def impose_reweighted_mean(m, samples, weights=None, solver=None):
     """impose a mean on a list of points by reweighting weights"""
     ndim = len(samples)
     if weights is None:
-        weights = [1.0/ndim] * ndim
+        weights = [old_div(1.0,ndim)] * ndim
     if solver is None or solver == 'fmin':
         from mystic.solvers import fmin as solver
     elif solver == 'fmin_powell':
@@ -476,7 +482,7 @@ def impose_reweighted_mean(m, samples, weights=None, solver=None):
 
     #XXX: better to fail immediately if xlo < m < xhi... or the below?
     if warn or not almostEqual(_norm, norm):
-        print "Warning: could not impose mean through reweighting"
+        print("Warning: could not impose mean through reweighting")
         return None #impose_mean(m, samples, weights), weights
 
     return wts #samples, wts
@@ -486,7 +492,7 @@ def impose_reweighted_variance(v, samples, weights=None, solver=None):
     """impose a variance on a list of points by reweighting weights"""
     ndim = len(samples)
     if weights is None:
-        weights = [1.0/ndim] * ndim
+        weights = [old_div(1.0,ndim)] * ndim
     if solver is None or solver == 'fmin':
         from mystic.solvers import fmin as solver
     elif solver == 'fmin_powell':
@@ -523,7 +529,7 @@ def impose_reweighted_variance(v, samples, weights=None, solver=None):
 
     #XXX: better to fail immediately if xlo < m < xhi... or the below?
     if warn or not almostEqual(_norm, norm):
-        print "Warning: could not impose mean through reweighting"
+        print("Warning: could not impose mean through reweighting")
         return None #impose_variance(v, samples, weights), weights
 
     return wts #samples, wts  # "mean-preserving"
@@ -554,7 +560,7 @@ Inputs:
     import numpy as np
     x,w = _sort(samples,weights)
     s = sum(w)
-    return np.mean(x[s/2. - np.cumsum(w) <= 0][0:2-x.size%2])
+    return np.mean(x[old_div(s,2.) - np.cumsum(w) <= 0][0:2-x.size%2])
 
 
 def mad(samples, weights=None): #, scale=1.4826):
@@ -597,7 +603,7 @@ Inputs:
     _mad = mad(samples,weights)
     if not _mad: # protect against ZeroDivision when mad = 0
         return [np.nan]*len(samples)
-    scale = float(s) / _mad
+    scale = old_div(float(s), _mad)
     samples = samples * scale #NOTE: not "median-preserving" until next line
     return impose_median(m, samples, weights) #NOTE: not "range-preserving"
 
@@ -618,7 +624,7 @@ def _k(weights, k=0, clip=False, norm=False, eps=15): #XXX: better 9 ?
         raise ValueError(msg)
     else:
         klo,khi = .01*klo,.01*khi
-    w = np.array(weights, dtype=float)/sum(weights)  #XXX: no dtype?
+    w = old_div(np.array(weights, dtype=float),sum(weights))  #XXX: no dtype?
     w_lo, w_hi = np.cumsum(w), np.cumsum(w[::-1])
     # calculate the cropped indicies
     lo = len(w) - sum((w_lo - klo).round(eps) > 0)
@@ -635,14 +641,14 @@ def _k(weights, k=0, clip=False, norm=False, eps=15): #XXX: better 9 ?
             w[lo] = w[hi] = 0
         elif lo == hi:
             w[lo] = max(1 - khi - klo,0)
-        else: 
+        else:
             w[lo] = max(w_lo - klo,0)
             w[hi] = max(w_hi - khi,0)
     else:
         # reset the values at k%
         if lo == hi:
             w[lo] = sum(w)
-        else: 
+        else:
             w[lo] += sum(w[:lo])
             w[hi] += sum(w[hi+1:])
     # trim the remaining weights
@@ -665,7 +671,7 @@ NOTE: if all samples are excluded, will return nan
 """
     samples,weights = _sort(samples,weights)
     weights = _k(weights,k,clip)
-    return sum(samples * weights)/sum(weights)
+    return old_div(sum(samples * weights),sum(weights))
 
 
 def tvariance(samples, weights=None, k=0, clip=False):
@@ -681,7 +687,7 @@ NOTE: if all samples are excluded, will return nan
 """
     samples,weights = _sort(samples,weights)
     weights = _k(weights,k,clip)
-    trim_mean = sum(samples * weights)/sum(weights)
+    trim_mean = old_div(sum(samples * weights),sum(weights))
     return mean(abs(samples - trim_mean)**2, weights) #XXX: correct ?
 
 
@@ -734,7 +740,7 @@ Inputs:
     tvar = tvariance(samples,weights,k=k,clip=clip)
     if not tvar: # protect against ZeroDivision when tvar = 0
         return [np.nan]*len(samples) #XXX: k?
-    scale = np.sqrt(float(v) / tvar)
+    scale = np.sqrt(old_div(float(v), tvar))
     samples = samples * scale #NOTE: not "tmean-preserving" until next line
     return impose_tmean(m, samples, weights, k=k, clip=clip) #NOTE: not "range-preserving"
 
@@ -782,20 +788,20 @@ Inputs:
     from numpy import inf
     return list(weights * inf)  # protect against ZeroDivision
   if float(mass):
-    if w/mass < 0.0:
-      return list(-weights / (-w/mass)**(1./n))  #FIXME: not "mean-preserving"
-    return list(weights / (w/mass)**(1./n))      #FIXME: not "mean-preserving"
+    if old_div(w,mass) < 0.0:
+      return list(old_div(-weights, (old_div(-w,mass))**(old_div(1.,n))))  #FIXME: not "mean-preserving"
+    return list(old_div(weights, (old_div(w,mass))**(old_div(1.,n))))      #FIXME: not "mean-preserving"
   # force selected member to satisfy product = 0.0
   if not zsum:
     return list(weights * 0.0)  #FIXME: not "mean-preserving"
   zsum = -1
   p, weights[zsum] = weights[zsum], 0.0
-  w = (w/p)
+  w = (old_div(w,p))
   n = n-1
   mass = zmass
-  if w/mass >= 0.0:
-    return list(weights[:-1]/(w/mass)**(1./n))+[0.]#FIXME: not "mean-preserving"
-  return list(-weights[:-1]/(-w/mass)**(1./n))+[0.]#FIXME: not "mean-preserving"
+  if old_div(w,mass) >= 0.0:
+    return list(old_div(weights[:-1],(old_div(w,mass))**(old_div(1.,n))))+[0.]#FIXME: not "mean-preserving"
+  return list(old_div(-weights[:-1],(old_div(-w,mass))**(old_div(1.,n))))+[0.]#FIXME: not "mean-preserving"
 
 
 #--------------------------------------------------------------------
@@ -806,7 +812,7 @@ Inputs:
 # >>> zip(a[0:]+a[:0],b) + zip(a[1:]+a[:1],b) + zip(a[2:]+a[:2],b)
 # [(1, 4), (2, 5), (3, 6), (2, 4), (3, 5), (1, 6), (3, 4), (1, 5), (2, 6)]
 def _pack(samples):
-  """'pack' a list of discrete measure sample points 
+  """'pack' a list of discrete measure sample points
 into a list of product measure sample points
 
 Inputs:
@@ -852,7 +858,7 @@ For example:
   return _samples
 
 def _unpack(samples, npts):
-  """'unpack' a list of product measure sample points 
+  """'unpack' a list of product measure sample points
 into a list of discrete measure sample points
 
 Inputs:

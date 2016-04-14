@@ -10,10 +10,14 @@ Note: VTR termination with default tolerance shouldn't work for functions
 whose value at the minimum is negative!
 Also, the two differential evolution solvers are global, while the other solvers
 are local optimizers."""
+from __future__ import print_function
+from future import standard_library
+standard_library.install_aliases()
+from builtins import range
 # should report clock-time, # of iterations, and # of function evaluations
 
 import sys
-from StringIO import StringIO
+from io import StringIO
 import unittest
 from math import *
 from mystic.math import almostEqual
@@ -71,8 +75,8 @@ class TestZimmermann(unittest.TestCase):
             # Print the number of iterations and function evaluations
             iters = len(ssow.x)
             func_evals = len(esow.x)
-            print "\nNumber of iterations = ", iters
-            print "Number of function evaluations = ", func_evals
+            print("\nNumber of iterations = ", iters)
+            print("Number of function evaluations = ", func_evals)
 
         # If solver should terminate immediately, check for that only.
         if iter_limit:
@@ -283,8 +287,8 @@ class TestRosenbrock(unittest.TestCase):
             # Print the number of iterations and function evaluations
             iters = len(ssow.x) #XXX Should use solver.generations instead?
             func_evals = len(esow.x)
-            print "\nNumber of iterations = ", iters
-            print "Number of function evaluations = ", func_evals
+            print("\nNumber of iterations = ", iters)
+            print("Number of function evaluations = ", func_evals)
 
         # If solver should terminate immediately, check for that only.
         if iter_limit:
@@ -486,8 +490,8 @@ minima."""
             # Print the number of iterations and function evaluations
             iters = len(ssow.x)
             func_evals = len(esow.x)
-            print "\nNumber of iterations = ", iters
-            print "Number of function evaluations = ", func_evals
+            print("\nNumber of iterations = ", iters)
+            print("Number of function evaluations = ", func_evals)
 
         # If solver should terminate immediately, check for that only.
         if iter_limit:
@@ -690,8 +694,8 @@ class TestQuartic(unittest.TestCase):
             # Print the number of iterations and function evaluations
             iters = len(ssow.x)
             func_evals = len(esow.x)
-            print "\nNumber of iterations = ", iters
-            print "Number of function evaluations = ", func_evals
+            print("\nNumber of iterations = ", iters)
+            print("Number of function evaluations = ", func_evals)
 
         # If solver should terminate immediately, check for that only.
         if iter_limit:
@@ -892,8 +896,8 @@ class TestShekel(unittest.TestCase):
             # Print the number of iterations and function evaluations
             iters = len(ssow.x)
             func_evals = len(esow.x)
-            print "\nNumber of iterations = ", iters
-            print "Number of function evaluations = ", func_evals
+            print("\nNumber of iterations = ", iters)
+            print("Number of function evaluations = ", func_evals)
 
         # If solver should terminate immediately, check for that only.
         if iter_limit:
@@ -1095,8 +1099,8 @@ class TestStep(unittest.TestCase):
             # Print the number of iterations and function evaluations
             iters = len(ssow.x)
             func_evals = len(esow.x)
-            print "\nNumber of iterations = ", iters
-            print "Number of function evaluations = ", func_evals
+            print("\nNumber of iterations = ", iters)
+            print("Number of function evaluations = ", func_evals)
 
         # If solver should terminate immediately, check for that only.
         if iter_limit:
@@ -1299,8 +1303,8 @@ class TestGriewangk(unittest.TestCase):
             # Print the number of iterations and function evaluations
             iters = len(ssow.x)
             func_evals = len(esow.x)
-            print "\nNumber of iterations = ", iters
-            print "Number of function evaluations = ", func_evals
+            print("\nNumber of iterations = ", iters)
+            print("Number of function evaluations = ", func_evals)
 
         # If solver should terminate immediately, check for that only.
         if iter_limit:
@@ -1502,8 +1506,8 @@ class TestPeaks(unittest.TestCase):
             # Print the number of iterations and function evaluations
             iters = len(ssow.x)
             func_evals = len(esow.x)
-            print "\nNumber of iterations = ", iters
-            print "Number of function evaluations = ", func_evals
+            print("\nNumber of iterations = ", iters)
+            print("Number of function evaluations = ", func_evals)
 
         # If solver should terminate immediately, check for that only.
         if iter_limit:
@@ -1706,8 +1710,8 @@ class TestVenkataraman91(unittest.TestCase):
             # Print the number of iterations and function evaluations
             iters = len(ssow.x)
             func_evals = len(esow.x)
-            print "\nNumber of iterations = ", iters
-            print "Number of function evaluations = ", func_evals
+            print("\nNumber of iterations = ", iters)
+            print("Number of function evaluations = ", func_evals)
 
         # Verify solution is close to expected
         for i in range(len(sol)):
@@ -1908,8 +1912,8 @@ class TestSchwefel(unittest.TestCase):
             # Print the number of iterations and function evaluations
             iters = len(ssow.x)
             func_evals = len(esow.x)
-            print "\nNumber of iterations = ", iters
-            print "Number of function evaluations = ", func_evals
+            print("\nNumber of iterations = ", iters)
+            print("Number of function evaluations = ", func_evals)
 
         # If solver should terminate immediately, check for that only.
         if iter_limit:
@@ -2110,8 +2114,8 @@ class TestEasom(unittest.TestCase):
             # Print the number of iterations and function evaluations
             iters = len(ssow.x)
             func_evals = len(esow.x)
-            print "\nNumber of iterations = ", iters
-            print "Number of function evaluations = ", func_evals
+            print("\nNumber of iterations = ", iters)
+            print("Number of function evaluations = ", func_evals)
 
         # If solver should terminate immediately, check for that only.
         if iter_limit:
@@ -2312,8 +2316,8 @@ class TestRotatedEllipsoid(unittest.TestCase):
             # Print the number of iterations and function evaluations
             iters = len(ssow.x)
             func_evals = len(esow.x)
-            print "\nNumber of iterations = ", iters
-            print "Number of function evaluations = ", func_evals
+            print("\nNumber of iterations = ", iters)
+            print("Number of function evaluations = ", func_evals)
 
         # If solver should terminate immediately, check for that only.
         if iter_limit:
@@ -2514,8 +2518,8 @@ class TestAckley(unittest.TestCase):
             # Print the number of iterations and function evaluations
             iters = len(ssow.x)
             func_evals = len(esow.x)
-            print "\nNumber of iterations = ", iters
-            print "Number of function evaluations = ", func_evals
+            print("\nNumber of iterations = ", iters)
+            print("Number of function evaluations = ", func_evals)
 
         # If solver should terminate immediately, check for that only.
         if iter_limit:
@@ -2716,8 +2720,8 @@ class TestRastrigin(unittest.TestCase):
             # Print the number of iterations and function evaluations
             iters = len(ssow.x)
             func_evals = len(esow.x)
-            print "\nNumber of iterations = ", iters
-            print "Number of function evaluations = ", func_evals
+            print("\nNumber of iterations = ", iters)
+            print("Number of function evaluations = ", func_evals)
 
         # If solver should terminate immediately, check for that only.
         if iter_limit:
@@ -2917,8 +2921,8 @@ class TestGoldsteinPrice(unittest.TestCase):
             # Print the number of iterations and function evaluations
             iters = len(ssow.x)
             func_evals = len(esow.x)
-            print "\nNumber of iterations = ", iters
-            print "Number of function evaluations = ", func_evals
+            print("\nNumber of iterations = ", iters)
+            print("Number of function evaluations = ", func_evals)
 
         # If solver should terminate immediately, check for that only.
         if iter_limit:
@@ -3121,8 +3125,8 @@ class TestChampion(unittest.TestCase):
             # Print the number of iterations and function evaluations
             iters = len(ssow.x)
             func_evals = len(esow.x)
-            print "\nNumber of iterations = ", iters
-            print "Number of function evaluations = ", func_evals
+            print("\nNumber of iterations = ", iters)
+            print("Number of function evaluations = ", func_evals)
 
         # If solver should terminate immediately, check for that only.
         if iter_limit:
@@ -3325,8 +3329,8 @@ class TestPaviani(unittest.TestCase):
             # Print the number of iterations and function evaluations
             iters = len(ssow.x)
             func_evals = len(esow.x)
-            print "\nNumber of iterations = ", iters
-            print "Number of function evaluations = ", func_evals
+            print("\nNumber of iterations = ", iters)
+            print("Number of function evaluations = ", func_evals)
 
         # If solver should terminate immediately, check for that only.
         if iter_limit:

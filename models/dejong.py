@@ -5,6 +5,11 @@
 # Copyright (c) 1997-2016 California Institute of Technology.
 # License: 3-clause BSD.  The full license text is available at:
 #  - http://trac.mystic.cacr.caltech.edu/project/mystic/browser/mystic/LICENSE
+from __future__ import division
+from __future__ import absolute_import
+from builtins import range
+from past.utils import old_div
+from functools import reduce
 __doc__ = _doc = """
 This is part of Storn's "Differential Evolution" test suite, as defined
 in [2], with 'De Jong' function definitions drawn from [3].
@@ -22,7 +27,7 @@ References::
     Simulated Reannealing: A Comparison" J. of Mathematical and Computer
     Modeling 16(11), 87-100, 1992.
 """
-from abstract_model import AbstractFunction
+from .abstract_model import AbstractFunction
 
 from numpy import sum as numpysum
 from numpy import asarray, transpose, inf
@@ -270,11 +275,11 @@ The minimum is f(x)=0 for x=(-32,-32)"""
         for i in range(25):
 #           r += 1.0/ (1.0*i + pow(x-a1[i],6) + pow(y-a2[i],6) + 1e-15)
             z = 1.0*i + pow(x-a1[i],6) + pow(y-a2[i],6)
-            if z: r += 1.0/z
+            if z: r += old_div(1.0,z)
             else: r += inf
-        return 1.0/(0.002 + r)
+        return old_div(1.0,(0.002 + r))
 
-    minimizers = [(j,i) for (i,j) in sorted(list(permutations(range(-32,33,16),2))+[(i,i) for i in range(-32,33,16)])]
+    minimizers = [(j,i) for (i,j) in sorted(list(permutations(list(range(-32,33,16)),2))+[(i,i) for i in range(-32,33,16)])]
     pass
 
 # cleanup

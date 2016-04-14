@@ -5,6 +5,9 @@
 # Copyright (c) 1997-2016 California Institute of Technology.
 # License: 3-clause BSD.  The full license text is available at:
 #  - http://trac.mystic.cacr.caltech.edu/project/mystic/browser/mystic/LICENSE
+from __future__ import division
+from __future__ import absolute_import
+from past.utils import old_div
 __doc__ = _doc = """
 This is drawn from examples in the NAG Library, with the 'peaks' function
 definition found in [1].
@@ -13,7 +16,7 @@ References::
     [1] Numerical Algorithms Group, "NAG Library", Oxford UK, Mark 24,
     2013. http://www.nag.co.uk/numeric/CL/nagdoc_cl24/pdf/E05/e05jbc.pdf
 """
-from abstract_model import AbstractFunction
+from .abstract_model import AbstractFunction
 
 from math import exp
 
@@ -51,7 +54,7 @@ The minimum is f(x)=-6.551133332835841 at x=(0.22827892, -1.62553496)"""
        #x = asarray(x) #XXX: converting to numpy.array slows by 10x
         x,y = coeffs
         result = 3.*(1. - x)**2*exp(-x**2 - (y + 1.)**2) - \
-                10.*(x*(1./5.) - x**3 - y**5)*exp(-x**2 - y**2) - \
+                10.*(x*(old_div(1.,5.)) - x**3 - y**5)*exp(-x**2 - y**2) - \
                 1./3.*exp(-(x + 1.)**2 - y**2)
         return result
 

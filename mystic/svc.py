@@ -8,6 +8,7 @@
 """
 Simple utility functions for SV-classifications
 """
+from builtins import range
 
 from numpy import multiply, asarray, dot, transpose, sum
 

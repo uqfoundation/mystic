@@ -58,6 +58,10 @@ All solvers included in this module provide the standard signal handling.
 For more information, see `mystic.mystic.abstract_solver`.
 
 """
+from __future__ import division
+from __future__ import absolute_import
+from builtins import range
+from past.utils import old_div
 __all__ = ['NelderMeadSimplexSolver','PowellDirectionalSolver',
            'fmin','fmin_powell']
 
@@ -71,7 +75,7 @@ from numpy import clip, squeeze
 
 abs = absolute
 
-from _scipy060optimize import brent #XXX: local copy to avoid dependency!
+from ._scipy060optimize import brent #XXX: local copy to avoid dependency!
 
 from mystic.abstract_solver import AbstractSolver
 
@@ -79,10 +83,10 @@ class NelderMeadSimplexSolver(AbstractSolver):
     """
 Nelder Mead Simplex optimization adapted from scipy.optimize.fmin.
     """
-    
+
     def __init__(self, dim):
         """
-Takes one initial input: 
+Takes one initial input:
     dim      -- dimensionality of the problem
 
 The size of the simplex is dim+1.
@@ -172,8 +176,6 @@ The size of the simplex is dim+1.
         Note that ExtraArgs should be a *tuple* of extra arguments"""
         # process and activate input settings
         settings = self._process_inputs(kwds)
-        for key in settings:
-            exec "%s = settings['%s']" % (key,key)
 
         # HACK to enable not explicitly calling _decorate_objective
         cost = self._bootstrap_objective(cost, ExtraArgs)
@@ -190,7 +192,7 @@ The size of the simplex is dim+1.
             N = len(x0)
             rank = len(x0.shape)
             if not -1 < rank < 2:
-                raise ValueError, "Initial guess must be a scalar or rank-1 sequence."
+                raise ValueError("Initial guess must be a scalar or rank-1 sequence.")
             if rank == 0:
                 sim = numpy.zeros((N+1,), dtype=x0.dtype)
             else:
@@ -202,7 +204,7 @@ The size of the simplex is dim+1.
 
         elif not self.generations: # do generations = 1
             #--- ensure initial simplex is within bounds ---
-            val = self._setSimplexWithinRangeBoundary(radius)
+            val = self._setSimplexWithinRangeBoundary(settings['radius'])
             #--- end bounds code ---
             sim = self.population
             fsim = self.popEnergy
@@ -220,12 +222,12 @@ The size of the simplex is dim+1.
             sim = self.population
             fsim = self.popEnergy
             N = len(sim[0])
-            one2np1 = range(1,N+1)
+            one2np1 = list(range(1,N+1))
 
             # apply constraints  #XXX: is this the only appropriate place???
             sim[0] = asfarray(self._constraints(sim[0]))
 
-            xbar = numpy.add.reduce(sim[:-1],0) / N
+            xbar = old_div(numpy.add.reduce(sim[:-1],0), N)
             xr = (1+rho)*xbar - rho*sim[-1]
             fxr = cost(xr)
             doshrink = 0
@@ -249,7 +251,7 @@ The size of the simplex is dim+1.
                     if fxr < fsim[-1]:
                         xc = (1+psi*rho)*xbar - psi*rho*sim[-1]
                         fxc = cost(xc)
-    
+
                         if fxc <= fxr:
                             sim[-1] = xc
                             fsim[-1] = fxc
@@ -283,7 +285,8 @@ The size of the simplex is dim+1.
         self._AbstractSolver__save_state()
 
         # do callback
-        if callback is not None: callback(self.bestSolution)
+        if settings['callback'] is not None:
+            settings['callback'](self.bestSolution)
         # initialize termination conditions, if needed
         if init: self._termination(self) #XXX: at generation 0 or always?
         return #XXX: call Terminated ?
@@ -297,11 +300,12 @@ The size of the simplex is dim+1.
         settings = super(NelderMeadSimplexSolver, self)._process_inputs(kwds)
         settings.update({\
         'radius':self.radius}) #percentage change for initial simplex values
-        [settings.update({i:j}) for (i,j) in kwds.items() if i in settings]
+        [settings.update({i:j}) for (i,j) in list(kwds.items()) if i in settings]
         self.radius = settings['radius']
         return settings
 
-    def Solve(self, cost=None, termination=None, ExtraArgs=None, **kwds):
+    def Solve(self, cost=None, termination=None, ExtraArgs=None,
+              callback=None, **kwds):
         """Minimize a function using the downhill simplex algorithm.
 
 Description:
@@ -336,7 +340,7 @@ def fmin(cost, x0, args=(), bounds=None, xtol=1e-4, ftol=1e-4,
          maxiter=None, maxfun=None, full_output=0, disp=1, retall=0,
          callback=None, **kwds):
     """Minimize a function using the downhill simplex algorithm.
-    
+
 Description:
 
     Uses a Nelder-Mead simplex algorithm to find the minimum of
@@ -464,10 +468,10 @@ class PowellDirectionalSolver(AbstractSolver):
 Powell Direction Search optimization,
 adapted from scipy.optimize.fmin_powell.
     """
-    
+
     def __init__(self, dim):
         """
-Takes one initial input: 
+Takes one initial input:
     dim      -- dimensionality of the problem
         """
         AbstractSolver.__init__(self,dim)
@@ -494,8 +498,6 @@ Takes one initial input:
         Note that ExtraArgs should be a *tuple* of extra arguments"""
         # process and activate input settings
         settings = self._process_inputs(kwds)
-        for key in settings:
-            exec "%s = settings['%s']" % (key,key)
 
         # HACK to enable not explicitly calling _decorate_objective
         cost = self._bootstrap_objective(cost, ExtraArgs)
@@ -513,7 +515,7 @@ Takes one initial input:
             N = len(x) #XXX: this should be equal to self.nDim
             rank = len(x.shape)
             if not -1 < rank < 2:
-                raise ValueError, "Initial guess must be a scalar or rank-1 sequence."
+                raise ValueError("Initial guess must be a scalar or rank-1 sequence.")
 
             if direc is None:
                 direc = eye(N, dtype=float)
@@ -526,16 +528,17 @@ Takes one initial input:
                 self._AbstractSolver__save_state()
 
         elif not self.generations: # do generations = 1
-            ilist = range(len(x))
+            ilist = list(range(len(x)))
             x1 = x.copy()
-            # do initial "second half" of solver step 
+            # do initial "second half" of solver step
             fx = fval
             bigind = 0
             delta = 0.0
             for i in ilist:
                 direc1 = self._direc[i]
                 fx2 = fval
-                fval, x, direc1 = _linesearch_powell(cost, x, direc1, tol=xtol*100)
+                fval, x, direc1 = _linesearch_powell(cost, x, direc1,
+                                                     tol=settings['xtol']*100)
                 if (fx2 - fval) > delta:
                     delta = fx2 - fval
                     bigind = i
@@ -559,7 +562,9 @@ Takes one initial input:
                 temp = fx-fx2
                 t -= delta*temp*temp
                 if t < 0.0:
-                    fval, x, direc1 = _linesearch_powell(cost, x, direc1, tol=xtol*100)
+                    fval, x, direc1 = _linesearch_powell(cost, x,
+                                                         direc1,
+                                                         tol=settings['xtol']*100)
                     direc[bigind] = direc[-1]
                     direc[-1] = direc1
 
@@ -576,11 +581,12 @@ Takes one initial input:
             fx = fval
             bigind = 0
             delta = 0.0
-            ilist = range(len(x))
+            ilist = list(range(len(x)))
             for i in ilist:
                 direc1 = direc[i]
                 fx2 = fval
-                fval, x, direc1 = _linesearch_powell(cost, x, direc1, tol=xtol*100)
+                fval, x, direc1 = _linesearch_powell(cost, x, direc1,
+                                                     tol=settings['xtol']*100)
                 if (fx2 - fval) > delta:
                     delta = fx2 - fval
                     bigind = i
@@ -597,7 +603,8 @@ Takes one initial input:
         self.popEnergy[0] = fval # bestEnergy
 
         # do callback
-        if callback is not None: callback(self.bestSolution)
+        if settings['callback'] is not None:
+            settings['callback'](self.bestSolution)
         # initialize termination conditions, if needed
         if init: self._termination(self) #XXX: at generation 0 or always?
         return #XXX: call Terminated ?
@@ -622,7 +629,7 @@ Takes one initial input:
         settings.update({\
         'xtol':self.xtol})   #line-search error tolerance
         direc=self._direc    #initial direction set
-        [settings.update({i:j}) for (i,j) in kwds.items() if i in settings]
+        [settings.update({i:j}) for (i,j) in list(kwds.items()) if i in settings]
         self._direc = kwds['direc'] if 'direc' in kwds else direc
         self.xtol = settings['xtol']
         return settings
@@ -667,7 +674,7 @@ def fmin_powell(cost, x0, args=(), bounds=None, xtol=1e-4, ftol=1e-4,
                 maxiter=None, maxfun=None, full_output=0, disp=1, retall=0,
                 callback=None, direc=None, **kwds):
     """Minimize a function using modified Powell's method.
-    
+
 Description:
 
     Uses a modified Powell Directional Search algorithm to find

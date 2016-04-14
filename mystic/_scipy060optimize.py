@@ -12,6 +12,14 @@
 # License: 3-clause BSD.  The full license text is available at:
 #  - http://trac.mystic.cacr.caltech.edu/project/mystic/browser/mystic/LICENSE
 """local copy of scipy.optimize"""
+from __future__ import division
+from __future__ import print_function
+from __future__ import absolute_import
+from future import standard_library
+standard_library.install_aliases()
+from builtins import range
+from builtins import object
+from past.utils import old_div
 
 #__all__ = ['fmin', 'fmin_powell', 'fmin_ncg', 'fmin_cg', 'fmin_bfgs',
 #           'fminbound','brent', 'golden','bracket','rosen','rosen_der',
@@ -21,7 +29,7 @@
 import numpy
 from numpy import atleast_1d, eye, mgrid, argmin, zeros, shape, empty, \
      squeeze, isscalar, vectorize, asarray, absolute, sqrt, Inf, asfarray, isinf
-import linesearch
+from . import linesearch
 
 # These have been copied from Numeric's MLab.py
 # I don't think they made the transition to scipy_core
@@ -38,9 +46,9 @@ def min(m,axis=0):
     return numpy.minimum.reduce(m,axis)
 
 abs = absolute
-import __builtin__
-pymin = __builtin__.min
-pymax = __builtin__.max
+import builtins
+pymin = builtins.min
+pymax = builtins.max
 __version__="0.7"
 _epsilon = sqrt(numpy.finfo(float).eps)
 
@@ -50,7 +58,7 @@ def vecnorm(x, ord=2):
     elif ord == -Inf:
         return numpy.amin(abs(x))
     else:
-        return numpy.sum(abs(x)**ord,axis=0)**(1.0/ord)
+        return numpy.sum(abs(x)**ord,axis=0)**(old_div(1.0,ord))
 
 def rosen(x):  # The Rosenbrock function
     x = asarray(x)
@@ -171,14 +179,14 @@ def fmin(func, x0, args=(), xtol=1e-4, ftol=1e-4, maxiter=None, maxfun=None,
     N = len(x0)
     rank = len(x0.shape)
     if not -1 < rank < 2:
-        raise ValueError, "Initial guess must be a scalar or rank-1 sequence."
+        raise ValueError("Initial guess must be a scalar or rank-1 sequence.")
     if maxiter is None:
         maxiter = N * 200
     if maxfun is None:
         maxfun = N * 200
 
     rho = 1; chi = 2; psi = 0.5; sigma = 0.5;
-    one2np1 = range(1,N+1)
+    one2np1 = list(range(1,N+1))
 
     if rank == 0:
         sim = numpy.zeros((N+1,), dtype=x0.dtype)
@@ -214,7 +222,7 @@ def fmin(func, x0, args=(), xtol=1e-4, ftol=1e-4, maxiter=None, maxfun=None,
             and max(abs(fsim[0]-fsim[1:])) <= ftol):
             break
 
-        xbar = numpy.add.reduce(sim[:-1],0) / N
+        xbar = old_div(numpy.add.reduce(sim[:-1],0), N)
         xr = (1+rho)*xbar - rho*sim[-1]
         fxr = func(xr)
         doshrink = 0
@@ -276,18 +284,18 @@ def fmin(func, x0, args=(), xtol=1e-4, ftol=1e-4, maxiter=None, maxfun=None,
     if fcalls[0] >= maxfun:
         warnflag = 1
         if disp:
-            print "Warning: Maximum number of function evaluations has "\
-                  "been exceeded."
+            print("Warning: Maximum number of function evaluations has "\
+                  "been exceeded.")
     elif iterations >= maxiter:
         warnflag = 2
         if disp:
-            print "Warning: Maximum number of iterations has been exceeded"
+            print("Warning: Maximum number of iterations has been exceeded")
     else:
         if disp:
-            print "Optimization terminated successfully."
-            print "         Current function value: %f" % fval
-            print "         Iterations: %d" % iterations
-            print "         Function evaluations: %d" % fcalls[0]
+            print("Optimization terminated successfully.")
+            print("         Current function value: %f" % fval)
+            print("         Iterations: %d" % iterations)
+            print("         Function evaluations: %d" % fcalls[0])
 
 
     if full_output:
@@ -328,7 +336,7 @@ def _cubicmin(a,fa,fpa,b,fb,c,fc):
     radical = B*B-3*A*C
     if radical < 0:  return None
     if (A == 0): return None
-    xmin = a + (-B + sqrt(radical))/(3*A)
+    xmin = a + old_div((-B + sqrt(radical)),(3*A))
     return xmin
 
 
@@ -340,9 +348,9 @@ def _quadmin(a,fa,fpa,b,fb):
     C = fpa
     db = b-a*1.0
     if (db==0): return None
-    B = (fb-D-C*db)/(db*db)
+    B = old_div((fb-D-C*db),(db*db))
     if (B <= 0): return None
-    xmin = a  - C / (2.0*B)
+    xmin = a  - old_div(C, (2.0*B))
     return xmin
 
 def zoom(a_lo, a_hi, phi_lo, phi_hi, derphi_lo,
@@ -585,20 +593,20 @@ def line_search_BFGS(f, xk, pk, gfk, old_fval, args=(), c1=1e-4, alpha0=1):
         factor = alpha0**2 * alpha1**2 * (alpha1-alpha0)
         a = alpha0**2 * (phi_a1 - phi0 - derphi0*alpha1) - \
             alpha1**2 * (phi_a0 - phi0 - derphi0*alpha0)
-        a = a / factor
+        a = old_div(a, factor)
         b = -alpha0**3 * (phi_a1 - phi0 - derphi0*alpha1) + \
             alpha1**3 * (phi_a0 - phi0 - derphi0*alpha0)
-        b = b / factor
+        b = old_div(b, factor)
 
-        alpha2 = (-b + numpy.sqrt(abs(b**2 - 3 * a * derphi0))) / (3.0*a)
+        alpha2 = old_div((-b + numpy.sqrt(abs(b**2 - 3 * a * derphi0))), (3.0*a))
         phi_a2 = f(*((xk+alpha2*pk,)+args))
         fc = fc + 1
 
         if (phi_a2 <= phi0 + c1*alpha2*derphi0):
             return alpha2, fc, 0, phi_a2
 
-        if (alpha1 - alpha2) > alpha1 / 2.0 or (1 - alpha2/alpha1) < 0.96:
-            alpha2 = alpha1 / 2.0
+        if (alpha1 - alpha2) > old_div(alpha1, 2.0) or (1 - old_div(alpha2,alpha1)) < 0.96:
+            alpha2 = old_div(alpha1, 2.0)
 
         alpha0 = alpha1
         alpha1 = alpha2
@@ -612,7 +620,7 @@ def approx_fprime(xk,f,epsilon,*args):
     ei = numpy.zeros((len(xk),), float)
     for k in range(len(xk)):
         ei[k] = epsilon
-        grad[k] = (f(*((xk+ei,)+args)) - f0)/epsilon
+        grad[k] = old_div((f(*((xk+ei,)+args)) - f0),epsilon)
         ei[k] = 0.0
     return grad
 
@@ -622,7 +630,7 @@ def check_grad(func, grad, x0, *args):
 def approx_fhess_p(x0,p,fprime,epsilon,*args):
     f2 = fprime(*((x0+epsilon*p,)+args))
     f1 = fprime(*((x0,)+args))
-    return (f2 - f1)/epsilon
+    return old_div((f2 - f1),epsilon)
 
 def fmin_bfgs(f, x0, fprime=None, args=(), gtol=1e-5, norm=Inf,
               epsilon=_epsilon, maxiter=None, full_output=0, disp=1,
@@ -761,13 +769,13 @@ def fmin_bfgs(f, x0, fprime=None, args=(), gtol=1e-5, norm=Inf,
             break
 
         try: # this was handled in numeric, let it remaines for more safety
-            rhok = 1.0 / (numpy.dot(yk,sk))
+            rhok = old_div(1.0, (numpy.dot(yk,sk)))
         except ZeroDivisionError: 
             rhok = 1000.0
-            print "Divide-by-zero encountered: rhok assumed large"
+            print("Divide-by-zero encountered: rhok assumed large")
         if isinf(rhok): # this is patch for numpy
             rhok = 1000.0
-            print "Divide-by-zero encountered: rhok assumed large"
+            print("Divide-by-zero encountered: rhok assumed large")
         A1 = I - sk[:,numpy.newaxis] * yk[numpy.newaxis,:] * rhok
         A2 = I - yk[:,numpy.newaxis] * sk[numpy.newaxis,:] * rhok
         Hk = numpy.dot(A1,numpy.dot(Hk,A2)) + rhok * sk[:,numpy.newaxis] \
@@ -777,27 +785,27 @@ def fmin_bfgs(f, x0, fprime=None, args=(), gtol=1e-5, norm=Inf,
         fval = old_fval
     if warnflag == 2:
         if disp:
-            print "Warning: Desired error not necessarily achieved due to precision loss"
-            print "         Current function value: %f" % fval
-            print "         Iterations: %d" % k
-            print "         Function evaluations: %d" % func_calls[0]
-            print "         Gradient evaluations: %d" % grad_calls[0]
+            print("Warning: Desired error not necessarily achieved due to precision loss")
+            print("         Current function value: %f" % fval)
+            print("         Iterations: %d" % k)
+            print("         Function evaluations: %d" % func_calls[0])
+            print("         Gradient evaluations: %d" % grad_calls[0])
 
     elif k >= maxiter:
         warnflag = 1
         if disp:
-            print "Warning: Maximum number of iterations has been exceeded"
-            print "         Current function value: %f" % fval
-            print "         Iterations: %d" % k
-            print "         Function evaluations: %d" % func_calls[0]
-            print "         Gradient evaluations: %d" % grad_calls[0]
+            print("Warning: Maximum number of iterations has been exceeded")
+            print("         Current function value: %f" % fval)
+            print("         Iterations: %d" % k)
+            print("         Function evaluations: %d" % func_calls[0])
+            print("         Gradient evaluations: %d" % grad_calls[0])
     else:
         if disp:
-            print "Optimization terminated successfully."
-            print "         Current function value: %f" % fval
-            print "         Iterations: %d" % k
-            print "         Function evaluations: %d" % func_calls[0]
-            print "         Gradient evaluations: %d" % grad_calls[0]
+            print("Optimization terminated successfully.")
+            print("         Current function value: %f" % fval)
+            print("         Iterations: %d" % k)
+            print("         Function evaluations: %d" % func_calls[0])
+            print("         Gradient evaluations: %d" % grad_calls[0])
 
     if full_output:
         retlist = xk, fval, gfk, Hk, func_calls[0], grad_calls[0], warnflag
@@ -932,7 +940,7 @@ def fmin_cg(f, x0, fprime=None, args=(), gtol=1e-5, norm=Inf, epsilon=_epsilon,
         if gfkp1 is None:
             gfkp1 = myfprime(xk)
         yk = gfkp1 - gfk
-        beta_k = pymax(0,numpy.dot(yk,gfkp1)/deltak)
+        beta_k = pymax(0,old_div(numpy.dot(yk,gfkp1),deltak))
         pk = -gfkp1 + beta_k * pk
         gfk = gfkp1
         gnorm = vecnorm(gfk,ord=norm)
@@ -945,27 +953,27 @@ def fmin_cg(f, x0, fprime=None, args=(), gtol=1e-5, norm=Inf, epsilon=_epsilon,
         fval = old_fval
     if warnflag == 2:
         if disp:
-            print "Warning: Desired error not necessarily achieved due to precision loss"
-            print "         Current function value: %f" % fval
-            print "         Iterations: %d" % k
-            print "         Function evaluations: %d" % func_calls[0]
-            print "         Gradient evaluations: %d" % grad_calls[0]
+            print("Warning: Desired error not necessarily achieved due to precision loss")
+            print("         Current function value: %f" % fval)
+            print("         Iterations: %d" % k)
+            print("         Function evaluations: %d" % func_calls[0])
+            print("         Gradient evaluations: %d" % grad_calls[0])
 
     elif k >= maxiter:
         warnflag = 1
         if disp:
-            print "Warning: Maximum number of iterations has been exceeded"
-            print "         Current function value: %f" % fval
-            print "         Iterations: %d" % k
-            print "         Function evaluations: %d" % func_calls[0]
-            print "         Gradient evaluations: %d" % grad_calls[0]
+            print("Warning: Maximum number of iterations has been exceeded")
+            print("         Current function value: %f" % fval)
+            print("         Iterations: %d" % k)
+            print("         Function evaluations: %d" % func_calls[0])
+            print("         Gradient evaluations: %d" % grad_calls[0])
     else:
         if disp:
-            print "Optimization terminated successfully."
-            print "         Current function value: %f" % fval
-            print "         Iterations: %d" % k
-            print "         Function evaluations: %d" % func_calls[0]
-            print "         Gradient evaluations: %d" % grad_calls[0]
+            print("Optimization terminated successfully.")
+            print("         Current function value: %f" % fval)
+            print("         Iterations: %d" % k)
+            print("         Function evaluations: %d" % func_calls[0])
+            print("         Gradient evaluations: %d" % grad_calls[0])
 
 
     if full_output:
@@ -1117,11 +1125,11 @@ def fmin_ncg(f, x0, fprime, fhess_p=None, fhess=None, args=(), avextol=1e-5,
                 else:
                     xsupi = xsupi + dri0/curv * psupi
                     break
-            alphai = dri0 / curv
+            alphai = old_div(dri0, curv)
             xsupi = xsupi + alphai * psupi
             ri = ri + alphai * Ap
             dri1 = numpy.dot(ri,ri)
-            betai = dri1 / dri0
+            betai = old_div(dri1, dri0)
             psupi = -ri + betai * psupi
             i = i + 1
             dri0 = dri1          # update numpy.dot(ri,ri) for next time.
@@ -1143,21 +1151,21 @@ def fmin_ncg(f, x0, fprime, fhess_p=None, fhess=None, args=(), avextol=1e-5,
     if k >= maxiter:
         warnflag = 1
         if disp:
-            print "Warning: Maximum number of iterations has been exceeded"
-            print "         Current function value: %f" % fval
-            print "         Iterations: %d" % k
-            print "         Function evaluations: %d" % fcalls[0]
-            print "         Gradient evaluations: %d" % gcalls[0]
-            print "         Hessian evaluations: %d" % hcalls
+            print("Warning: Maximum number of iterations has been exceeded")
+            print("         Current function value: %f" % fval)
+            print("         Iterations: %d" % k)
+            print("         Function evaluations: %d" % fcalls[0])
+            print("         Gradient evaluations: %d" % gcalls[0])
+            print("         Hessian evaluations: %d" % hcalls)
     else:
         warnflag = 0
         if disp:
-            print "Optimization terminated successfully."
-            print "         Current function value: %f" % fval
-            print "         Iterations: %d" % k
-            print "         Function evaluations: %d" % fcalls[0]
-            print "         Gradient evaluations: %d" % gcalls[0]
-            print "         Hessian evaluations: %d" % hcalls
+            print("Optimization terminated successfully.")
+            print("         Current function value: %f" % fval)
+            print("         Iterations: %d" % k)
+            print("         Function evaluations: %d" % fcalls[0])
+            print("         Gradient evaluations: %d" % gcalls[0])
+            print("         Hessian evaluations: %d" % hcalls)
 
     if full_output:
         retlist = xk, fval, fcalls[0], gcalls[0], hcalls, warnflag
@@ -1238,7 +1246,7 @@ def fminbound(func, x1, x2, args=(), xtol=1e-5, maxfun=500,
     """
 
     if x1 > x2:
-        raise ValueError, "The lower bound exceeds the upper bound."
+        raise ValueError("The lower bound exceeds the upper bound.")
 
     flag = 0
     header = ' Func-count     x          f(x)          Procedure'
@@ -1257,13 +1265,13 @@ def fminbound(func, x1, x2, args=(), xtol=1e-5, maxfun=500,
 
     ffulc = fnfc = fx
     xm = 0.5*(a+b)
-    tol1 = sqrt_eps*abs(xf) + xtol / 3.0
+    tol1 = sqrt_eps*abs(xf) + old_div(xtol, 3.0)
     tol2 = 2.0*tol1
 
     if disp > 2:
         print (" ")
         print (header)
-        print "%5.0f   %12.6g %12.6g %s" % (fmin_data + (step,))
+        print("%5.0f   %12.6g %12.6g %s" % (fmin_data + (step,)))
 
 
     while ( abs(xf-xm) > (tol2 - 0.5*(b-a)) ):
@@ -1282,7 +1290,7 @@ def fminbound(func, x1, x2, args=(), xtol=1e-5, maxfun=500,
 
             # Check for acceptability of parabola
             if ( (abs(p) < abs(0.5*q*r)) and (p > q*(a-xf)) and (p < q*(b-xf))):
-                rat = (p+0.0) / q;
+                rat = old_div((p+0.0), q);
                 x = xf + rat
                 step = '       parabolic'
 
@@ -1306,7 +1314,7 @@ def fminbound(func, x1, x2, args=(), xtol=1e-5, maxfun=500,
         num += 1
         fmin_data = (num, x, fu)
         if disp > 2:
-            print "%5.0f   %12.6g %12.6g %s" % (fmin_data + (step,))
+            print("%5.0f   %12.6g %12.6g %s" % (fmin_data + (step,)))
 
         if fu <= fx:
             if x >= xf:
@@ -1328,7 +1336,7 @@ def fminbound(func, x1, x2, args=(), xtol=1e-5, maxfun=500,
                 fulc, ffulc = x, fu
 
         xm = 0.5*(a+b)
-        tol1 = sqrt_eps*abs(xf) + xtol/3.0
+        tol1 = sqrt_eps*abs(xf) + old_div(xtol,3.0)
         tol2 = 2.0*tol1
 
         if num >= maxfun:
@@ -1350,7 +1358,7 @@ def fminbound(func, x1, x2, args=(), xtol=1e-5, maxfun=500,
     else:
         return xf
 
-class Brent:
+class Brent(object):
     #need to rethink design of __init__
     def __init__(self, func, args=(), tol=1.48e-8, maxiter=500, full_output=0):
         self.func = func
@@ -1389,7 +1397,7 @@ class Brent:
             assert ((fb<fa) and (fb < fc)), "Not a bracketing interval."
             funcalls = 3
         else:
-            raise ValueError, "Bracketing interval must be length 2 or 3 sequence."
+            raise ValueError("Bracketing interval must be length 2 or 3 sequence.")
         ### END core bracket_info code ###
 
         return xa,xb,xc,fa,fb,fc,funcalls
@@ -1606,7 +1614,7 @@ def golden(func, args=(), brack=None, tol=_epsilon, full_output=0):
         assert ((fb<fa) and (fb < fc)), "Not a bracketing interval."
         funcalls = 3
     else:
-        raise ValueError, "Bracketing interval must be length 2 or 3 sequence."
+        raise ValueError("Bracketing interval must be length 2 or 3 sequence.")
 
     _gR = 0.61803399
     _gC = 1.0-_gR
@@ -1686,10 +1694,10 @@ def bracket(func, xa=0.0, xb=1.0, args=(), grow_limit=110.0, maxiter=1000):
             denom = 2.0*_verysmall_num
         else:
             denom = 2.0*val
-        w = xb - ((xb-xc)*tmp2-(xb-xa)*tmp1)/denom
+        w = xb - old_div(((xb-xc)*tmp2-(xb-xa)*tmp1),denom)
         wlim = xb + grow_limit*(xc-xb)
         if iter > maxiter:
-            raise RuntimeError, "Too many iterations."
+            raise RuntimeError("Too many iterations.")
         iter += 1
         if (w-xc)*(xb-w) > 0.0:
             fw = func(*((w,)+args))
@@ -1822,7 +1830,7 @@ def fmin_powell(func, x0, args=(), xtol=1e-4, ftol=1e-4, maxiter=None,
     N = len(x)
     rank = len(x.shape)
     if not -1 < rank < 2:
-        raise ValueError, "Initial guess must be a scalar or rank-1 sequence."
+        raise ValueError("Initial guess must be a scalar or rank-1 sequence.")
     if maxiter is None:
         maxiter = N * 1000
     if maxfun is None:
@@ -1837,7 +1845,7 @@ def fmin_powell(func, x0, args=(), xtol=1e-4, ftol=1e-4, maxiter=None,
     fval = squeeze(func(x))
     x1 = x.copy()
     iter = 0;
-    ilist = range(N)
+    ilist = list(range(N))
     while True:
         fx = fval
         bigind = 0
@@ -1879,18 +1887,18 @@ def fmin_powell(func, x0, args=(), xtol=1e-4, ftol=1e-4, maxiter=None,
     if fcalls[0] >= maxfun:
         warnflag = 1
         if disp:
-            print "Warning: Maximum number of function evaluations has "\
-                  "been exceeded."
+            print("Warning: Maximum number of function evaluations has "\
+                  "been exceeded.")
     elif iter >= maxiter:
         warnflag = 2
         if disp:
-            print "Warning: Maximum number of iterations has been exceeded"
+            print("Warning: Maximum number of iterations has been exceeded")
     else:
         if disp:
-            print "Optimization terminated successfully."
-            print "         Current function value: %f" % fval
-            print "         Iterations: %d" % iter
-            print "         Function evaluations: %d" % fcalls[0]
+            print("Optimization terminated successfully.")
+            print("         Current function value: %f" % fval)
+            print("         Iterations: %d" % iter)
+            print("         Function evaluations: %d" % fcalls[0])
 
     x = squeeze(x)
 
@@ -1911,10 +1919,10 @@ def fmin_powell(func, x0, args=(), xtol=1e-4, ftol=1e-4, maxiter=None,
 def _endprint(x, flag, fval, maxfun, xtol, disp):
     if flag == 0:
         if disp > 1:
-            print "\nOptimization terminated successfully;\n the returned value" + \
-                  " satisfies the termination criteria\n (using xtol = ", xtol, ")"
+            print("\nOptimization terminated successfully;\n the returned value" + \
+                  " satisfies the termination criteria\n (using xtol = ", xtol, ")")
     if flag == 1:
-        print "\nMaximum number of function evaluations exceeded --- increase maxfun argument.\n"
+        print("\nMaximum number of function evaluations exceeded --- increase maxfun argument.\n")
     return
 
 
@@ -1971,7 +1979,7 @@ def brute(func, ranges, args=(), Ns=20, full_output=0, finish=fmin):
     """
     N = len(ranges)
     if N > 40:
-        raise ValueError, "Brute Force not possible with more than 40 variables."
+        raise ValueError("Brute Force not possible with more than 40 variables.")
     lrange = list(ranges)
     for k in range(N):
         if type(lrange[k]) is not type(slice(None)):
@@ -1997,7 +2005,7 @@ def brute(func, ranges, args=(), Ns=20, full_output=0, finish=fmin):
     for k in range(N-1,-1,-1):
         thisN = Nshape[k]
         Nindx[k] = indx % Nshape[k]
-        indx = indx / thisN
+        indx = old_div(indx, thisN)
     for k in range(N):
         xmin[k] = grid[k][tuple(Nindx)]
 
@@ -2010,7 +2018,7 @@ def brute(func, ranges, args=(), Ns=20, full_output=0, finish=fmin):
         xmin = vals[0]
         Jmin = vals[1]
         if vals[-1] > 0:
-            print "Warning: Final optimization did not succeed"
+            print("Warning: Final optimization did not succeed")
     if full_output:
         return xmin, Jmin, grid, Jout
     else:
@@ -2023,74 +2031,74 @@ def main():
     times = []
     algor = []
     x0 = [0.8,1.2,0.7]
-    print "Nelder-Mead Simplex"
-    print "==================="
+    print("Nelder-Mead Simplex")
+    print("===================")
     start = time.time()
     x = fmin(rosen,x0)
-    print x
+    print(x)
     times.append(time.time() - start)
     algor.append('Nelder-Mead Simplex\t')
 
-    print
-    print "Powell Direction Set Method"
-    print "==========================="
+    print()
+    print("Powell Direction Set Method")
+    print("===========================")
     start = time.time()
     x = fmin_powell(rosen,x0)
-    print x
+    print(x)
     times.append(time.time() - start)
     algor.append('Powell Direction Set Method.')
 
-    print
-    print "Nonlinear CG"
-    print "============"
+    print()
+    print("Nonlinear CG")
+    print("============")
     start = time.time()
     x = fmin_cg(rosen, x0, fprime=rosen_der, maxiter=200)
-    print x
+    print(x)
     times.append(time.time() - start)
     algor.append('Nonlinear CG     \t')
 
-    print
-    print "BFGS Quasi-Newton"
-    print "================="
+    print()
+    print("BFGS Quasi-Newton")
+    print("=================")
     start = time.time()
     x = fmin_bfgs(rosen, x0, fprime=rosen_der, maxiter=80)
-    print x
+    print(x)
     times.append(time.time() - start)
     algor.append('BFGS Quasi-Newton\t')
 
-    print
-    print "BFGS approximate gradient"
-    print "========================="
+    print()
+    print("BFGS approximate gradient")
+    print("=========================")
     start = time.time()
     x = fmin_bfgs(rosen, x0, gtol=1e-4, maxiter=100)
-    print x
+    print(x)
     times.append(time.time() - start)
     algor.append('BFGS without gradient\t')
 
-    print
-    print "Newton-CG with Hessian product"
-    print "=============================="
+    print()
+    print("Newton-CG with Hessian product")
+    print("==============================")
     start = time.time()
     x = fmin_ncg(rosen, x0, rosen_der, fhess_p=rosen_hess_prod, maxiter=80)
-    print x
+    print(x)
     times.append(time.time() - start)
     algor.append('Newton-CG with hessian product')
 
-    print
-    print "Newton-CG with full Hessian"
-    print "==========================="
+    print()
+    print("Newton-CG with full Hessian")
+    print("===========================")
     start = time.time()
     x = fmin_ncg(rosen, x0, rosen_der, fhess=rosen_hess, maxiter=80)
-    print x
+    print(x)
     times.append(time.time() - start)
     algor.append('Newton-CG with full hessian')
 
-    print
-    print "\nMinimizing the Rosenbrock function of order 3\n"
-    print " Algorithm \t\t\t       Seconds"
-    print "===========\t\t\t      ========="
+    print()
+    print("\nMinimizing the Rosenbrock function of order 3\n")
+    print(" Algorithm \t\t\t       Seconds")
+    print("===========\t\t\t      =========")
     for k in range(len(algor)):
-        print algor[k], "\t -- ", times[k]
+        print(algor[k], "\t -- ", times[k])
 
 if __name__ == "__main__":
     main()

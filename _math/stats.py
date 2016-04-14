@@ -9,6 +9,10 @@
 shortcut (?) math tools related to statistics;
 also, math tools related to gaussian distributions
 """
+from __future__ import division
+from __future__ import print_function
+from builtins import range
+from past.utils import old_div
 import math
 
 #----------------------------------------------------------------
@@ -83,7 +87,7 @@ def _erf(x):
     x = abs(x)
 
     # A&S formula 7.1.26
-    t = 1.0/(1.0 + p*x)
+    t = old_div(1.0,(1.0 + p*x))
     y = 1.0 - (((((a5*t + a4)*t) + a3)*t + a2)*t + a1)*t*math.exp(-x*x)
     return sign*y
 
@@ -107,7 +111,7 @@ def _gamma(x):
     gamma = 0.577215664901532860606512090 # Euler's gamma constant
 
     if x < 0.001:
-        return 1.0/(x*(1.0 + gamma*x))
+        return old_div(1.0,(x*(1.0 + gamma*x)))
 
     ###########################################################################
     # Second interval: [0.001, 12)
@@ -159,7 +163,7 @@ def _gamma(x):
         for i in range(8):
             num = (num + p[i])*z
             den = den*z + q[i]
-        result = num/den + 1.0
+        result = old_div(num,den) + 1.0
 
         # Apply correction if argument was not initially in (1,2)
         if arg_was_less_than_one:
@@ -180,7 +184,7 @@ def _gamma(x):
 
     if x > 171.624:
         # Correct answer too large to display. 
-        return 1.0/0 # float infinity
+        return old_div(1.0,0) # float infinity
 
     return math.exp(log_gamma(x))
 
@@ -200,21 +204,21 @@ def _lgamma(x):
     # A Course in Modern Analysis (1927), page 252
 
     c = [
-         1.0/12.0,
-        -1.0/360.0,
-         1.0/1260.0,
-        -1.0/1680.0,
-         1.0/1188.0,
-        -691.0/360360.0,
-         1.0/156.0,
-        -3617.0/122400.0
+         old_div(1.0,12.0),
+        old_div(-1.0,360.0),
+         old_div(1.0,1260.0),
+        old_div(-1.0,1680.0),
+         old_div(1.0,1188.0),
+        old_div(-691.0,360360.0),
+         old_div(1.0,156.0),
+        old_div(-3617.0,122400.0)
     ]
-    z = 1.0/(x*x)
+    z = old_div(1.0,(x*x))
     sum = c[7]
     for i in range(6, -1, -1):
         sum *= z
         sum += c[i]
-    series = sum/x
+    series = old_div(sum,x)
 
     halfLogTwoPi = 0.91893853320467274178032973640562
     logGamma = (x - 0.5)*math.log(x) - x + halfLogTwoPi + series
@@ -232,7 +236,7 @@ for a Gaussian, given the mean and variance
       from scipy.special import erf
     except ImportError:
       pass
-    return 0.5*(1. + erf((x-mean)/math.sqrt(2.*variance)))
+    return 0.5*(1. + erf(old_div((x-mean),math.sqrt(2.*variance))))
   return cdf
 
 
@@ -244,7 +248,7 @@ for a Gaussian, given the mean and variance
   def pdf(x):
     """Probability density function."""
     return 1./math.sqrt(2.*math.pi*variance)* \
-           math.exp(-(x - mean)**2/(2.*variance))
+           math.exp(old_div(-(x - mean)**2,(2.*variance)))
   return pdf
 
 
@@ -261,12 +265,12 @@ def volume(lb,ub):
 
 def prob_mass(volume,norm):
   """calculates probability mass given volume and norm"""
-  return volume / norm  #XXX: norm != 0
+  return old_div(volume, norm)  #XXX: norm != 0
 
 
 def mean(expectation,volume):
   """calculates mean given expectation and volume"""
-  return expectation / volume  #XXX: volume != 0
+  return old_div(expectation, volume)  #XXX: volume != 0
 
 
 def mcdiarmid_bound(mean,diameter):
@@ -284,7 +288,7 @@ def __mean(xarr):
 def __variance(xarr):
   """var = mean(abs(x - x.mean())**2) / 3""" #interface is [lb,ub]; not lb,ub
   from numpy import var
-  return var(xarr) / 3.0
+  return old_div(var(xarr), 3.0)
 
 
 #----------------------------------------------------------------------------
@@ -297,7 +301,7 @@ def __test_probability_mass():
 
   cuboid_volume = volume(lower,upper)
   probability_mass = prob_mass(cuboid_volume,cuboid_volume)
-  print "probability mass: %s" % probability_mass
+  print("probability mass: %s" % probability_mass)
 
 
 if __name__ == '__main__':

@@ -28,6 +28,9 @@ or an example of using LatticeSolver.
 All solvers included in this module provide the standard signal handling.
 For more information, see `mystic.mystic.abstract_solver`.
 """
+from __future__ import division
+from builtins import range
+from past.utils import old_div
 __all__ = ['LatticeSolver','BuckshotSolver']
 
 from mystic.tools import unpair
@@ -66,7 +69,7 @@ All important class members are inherited from AbstractEnsembleSolver.
         grid_dimensions = self.nDim
         bins = []
         for i in range(grid_dimensions):
-            step = abs(upper[i] - lower[i])/nbins[i]
+            step = old_div(abs(upper[i] - lower[i]),nbins[i])
             bins.append( [lower[i] + (j+0.5)*step for j in range(nbins[i])] )
 
         # build a grid of starting points

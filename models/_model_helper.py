@@ -6,6 +6,9 @@
 # License: 3-clause BSD.  The full license text is available at:
 #  - http://trac.mystic.cacr.caltech.edu/project/mystic/browser/mystic/LICENSE
 
+from __future__ import division
+from builtins import range
+from past.utils import old_div
 chebyshev2coeffs = [2., 0., -1.]
 chebyshev4coeffs = [8., 0., -8., 0., 1.]
 chebyshev6coeffs = [32., 0., -48., 0., 18., 0., -1.]
@@ -16,7 +19,7 @@ def chebyshev(trial, target, M=61):
     from mystic.math import polyeval
     result=0.0
     x=-1.0
-    dx = 2.0 / (M-1)
+    dx = old_div(2.0, (M-1))
     for i in range(M):
         px = polyeval(trial, x)
         if px<-1 or px>1:

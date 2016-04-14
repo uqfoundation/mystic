@@ -44,6 +44,13 @@ Main functions exported are::
 Other tools of interest are in::
     `mystic.mystic.filters` and `mystic.models.poly`
 """
+from __future__ import division
+from __future__ import print_function
+from __future__ import absolute_import
+from builtins import input
+from builtins import range
+from past.utils import old_div
+from functools import reduce
 
 def isiterable(x):
     """check if an object is iterable"""
@@ -80,7 +87,7 @@ def _kdiv(num, denom, type=None):
     if denom is None: denom = 1
     if num is None: num = 1
     if type is not None: num = type(num)
-    return num/denom
+    return old_div(num,denom)
 
 def multiply(x, n, type=list, recurse=False): # list, iter, numpy.array, ...
     """multiply: recursive elementwise casting multiply of x by n"""
@@ -102,14 +109,14 @@ def divide(x, n, type=list, recurse=False): # list, iter, numpy.array, ...
     # short-circuit cases for speed
     if n is None: return x
     try:   # for scalars and vectors (numpy.arrays)
-        return x/n
+        return old_div(x,n)
     except TypeError: pass
     if n is 1: return type(x)
-    if type.__name__ == 'array': return type(x)/n
+    if type.__name__ == 'array': return old_div(type(x),n)
     # divide by n != 1 for iterables (iter and non-iter)
     if recurse:
         return type(divide(i,n,type) for i in x)
-    return type(i/n for i in x)
+    return type(old_div(i,n) for i in x)
 
 def _multiply(x, n):
     """elementwise multiplication of x by n, as if x were an array"""
@@ -130,7 +137,7 @@ def _divide(x, n):
     # short-circuit cases for speed
     if n is None: return x
     try:   # for scalars and vectors (numpy.arrays)
-        return x/n
+        return old_div(x,n)
     except TypeError: pass
     if n is 1: return itertype(x)(x)
     # divide by n != 1 for iterables (iter and non-iter)
@@ -155,7 +162,7 @@ def _idivide(x, n):
     # short-circuit cases for speed
     if n is None: return x
     try:   # for scalars and vectors (numpy.arrays)
-        return iter(x/n)
+        return iter(old_div(x,n))
     except TypeError: pass
     if n is 1: return iter(x)
     # divide by n != 1 for iterables (iter and non-iter)
@@ -179,7 +186,7 @@ def _adivide(x, n):
     import numpy
     x = numpy.asarray(x)
     if n is 1: return x
-    return x/n
+    return old_div(x,n)
 
 def factor(n):
     "generator for factors of a number"
@@ -189,7 +196,7 @@ def factor(n):
     while i <= limit:
         if n % i == 0:
             yield i
-            n = n / i
+            n = old_div(n, i)
             limit = n**0.5
         else:
             i += 1
@@ -254,7 +261,7 @@ def getch(str="Press any key to continue"):
     import sys, subprocess
     if sys.stdin.isatty():
        if str is not None:
-          print str
+          print(str)
        if sys.platform[:3] != 'win':
           raw,cooked = 'stty raw','stty cooked'
        else:
@@ -265,8 +272,8 @@ def getch(str="Press any key to continue"):
        return a
     else:
        if str is not None:
-           print str + " and press enter"
-       return raw_input()
+           print(str + " and press enter")
+       return input()
 
 def random_seed(s=None):
     "sets the seed for calls to 'random()'"
@@ -475,10 +482,10 @@ For example,
     elif isinstance(missing, str): _mask = eval('{%s}' % missing)
     else: _mask = missing
     # raise KeyError if key out of bounds #XXX: also has *any* non-int object
-    first = min([0]+_mask.keys())
+    first = min([0]+list(_mask.keys()))
     if first < 0:
         raise KeyError('invalid argument index: %s' % first)
-    last = max([-1]+_mask.keys())
+    last = max([-1]+list(_mask.keys()))
     if last > len(x)+len(_mask)-1:
         raise KeyError('invalid argument index: %s' % last)
 
@@ -488,7 +495,7 @@ For example,
     code = "%s" % dill.source.getimport(x, alias='xtype')
     if "import" in code:
         code = compile(code, '<string>', 'exec')
-        exec code in _locals
+        exec(code, _locals)
     xtype = _locals['xtype']
 
     # find the new indices due to the mask
@@ -557,7 +564,7 @@ For example,
     """
     def dec(f):
         def func(x, *args, **kwds):
-            for i,j in mask.items():
+            for i,j in list(mask.items()):
                 try: x[i] = j
                 except IndexError: pass
             return f(x, *args, **kwds)
@@ -604,7 +611,7 @@ For example,
     """
     def dec(f):
         def func(x, *args, **kwds):
-            for i,j in mask.items():
+            for i,j in list(mask.items()):
                 try: x[i] = x[j]
                 except TypeError: # value is tuple with f(x) or constant
                   j0,j1 = (j[:2] + (1,))[:2]
@@ -626,7 +633,7 @@ def suppress(x, tol=1e-8, clip=True):
     mask = abs(x) < tol
     if not clip:
         # preserve sum by spreading suppressed values to the non-zero elements
-        x[mask==False] = (x + sum(x[mask])/(len(mask)-sum(mask)))[mask==False]
+        x[mask==False] = (x + old_div(sum(x[mask]),(len(mask)-sum(mask))))[mask==False]
     x[mask] = 0.0
     return x.tolist()
 
@@ -723,11 +730,11 @@ For example,
         r = n if r is None else r
         if r > n:
             return
-        indices = range(n)
-        cycles = range(n, n-r, -1)
+        indices = list(range(n))
+        cycles = list(range(n, n-r, -1))
         yield tuple(pool[i] for i in indices[:r])
         while n:
-            for i in reversed(range(r)):
+            for i in reversed(list(range(r))):
                 cycles[i] -= 1
                 if cycles[i] == 0:
                     indices[i:] = indices[i+1:] + indices[i:i+1]
@@ -745,11 +752,11 @@ For example,
 # backward compatibility
 from dill.source import getblocks as parse_from_history
 from dill.source import getsource as src
-from monitors import Monitor as Sow
-from monitors import VerboseMonitor as VerboseSow
-from monitors import LoggingMonitor as LoggingSow
-from monitors import CustomMonitor as CustomSow
-from monitors import Null
+from .monitors import Monitor as Sow
+from .monitors import VerboseMonitor as VerboseSow
+from .monitors import LoggingMonitor as LoggingSow
+from .monitors import CustomMonitor as CustomSow
+from .monitors import Null
 
 def isNull(mon):
     if isinstance(mon, Null): # is Null()

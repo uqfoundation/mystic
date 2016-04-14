@@ -7,6 +7,8 @@
 #  - http://trac.mystic.cacr.caltech.edu/project/mystic/browser/mystic/LICENSE
 """Tools for building and applying constraints and penalties.
 """
+from builtins import map
+from builtins import range
 
 __all__ = ['with_penalty','with_constraint','as_penalty','as_constraint',
            'with_mean','with_variance','with_std','with_spread','normalized',
@@ -524,7 +526,7 @@ The function's input will be mapped to the given discrete set
         if not len(shape(x)):
             flatten = True
             x = [x]
-        result = tuple(i for i in asarray(map(_argnear, x)).T)
+        result = tuple(i for i in asarray(list(map(_argnear, x))).T)
         if flatten:
             result = tuple(asarray(i[0]) for i in result)
         return result
@@ -538,7 +540,7 @@ The function's input will be mapped to the given discrete set
         _x.flat = [i for i in x]
         _l.flat = [i for i in l]
         _h.flat = [i for i in h]
-        result = asarray(map(_near, x, l, h))
+        result = asarray(list(map(_near, x, l, h)))
         if not has_iterable:
             result = asarray(result[0])
         return result

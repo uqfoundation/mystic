@@ -13,6 +13,13 @@ graphical_distance: for a given dataset (x,y) and a given model (F),
   find the radius(x') that minimizes the graph between reality, y = G(x),
   and an approximating function, y' = F(x')
 """
+from __future__ import division
+from __future__ import print_function
+from future import standard_library
+standard_library.install_aliases()
+from builtins import str
+from builtins import zip
+from past.utils import old_div
 debug = False 
 
 def Lnorm(weights, p=1):
@@ -28,7 +35,7 @@ def Lnorm(weights, p=1):
   else:
     orig = seterr(over='raise', invalid='raise')
     try:
-      w = float(sum(abs(weights**p)))**(1./p)
+      w = float(sum(abs(weights**p)))**(old_div(1.,p))
     except FloatingPointError: # use the infinity norm
       w = float(max(abs(weights)))
     seterr(**orig)
@@ -37,7 +44,7 @@ def Lnorm(weights, p=1):
 def absolute_distance(x, xp=None, up=False, dmin=0):
   """distance = |x - x'|;  (see euclidean_distance for notes)"""
   from numpy import abs, asarray, newaxis as nwxs, zeros_like
-  from __builtin__ import max
+  from builtins import max
   # cast as arrays of the same dimension
   x = asarray(x)
   xp = zeros_like(x) if xp is None else asarray(xp)
@@ -75,7 +82,7 @@ Notes:
   # dmin: force upconvert to x,x' to dimension >= dmin
   dmin = kwds['dmin'] if 'dmin' in kwds else 0 # default dimension
   from numpy import abs, asarray, newaxis as nwxs, zeros_like
-  from __builtin__ import max
+  from builtins import max
   # cast as arrays of the same dimension
   x = asarray(x)
   xp = zeros_like(x) if xp is None else asarray(xp)
@@ -197,7 +204,7 @@ Notes:
   d = euclidean_distance(x,xp,up=up,dmin=dmin)
   orig = seterr(over='raise', invalid='raise')
   try:
-      d = (d**p).sum(axis=axis)**(1./p)
+      d = (d**p).sum(axis=axis)**(old_div(1.,p))
   except FloatingPointError: # use the infinity norm
       d = d.max(axis=axis).astype(float)
   seterr(**orig)
@@ -436,8 +443,8 @@ Notes:
         _y = model(rv)
         if not isfinite(_y): return abs(_y)
         errs = seterr(invalid='ignore', divide='ignore') # turn off warning 
-        z = abs((asarray(x) - rv)/ptp)  # normalize by range
-        m = abs(y - _y)/yptp            # normalize by range
+        z = abs(old_div((asarray(x) - rv),ptp))  # normalize by range
+        m = old_div(abs(y - _y),yptp)            # normalize by range
         seterr(invalid=errs['invalid'], divide=errs['divide']) # turn on warning
         return m + sum(z[isfinite(z)])
     else:  # vertical distance only
@@ -446,8 +453,8 @@ Notes:
         return abs(y - model(rv))
 
     if debug:
-      print "rv: %s" % str(x)
-      print "cost: %s" % cost(x)
+      print("rv: %s" % str(x))
+      print("cost: %s" % cost(x))
 
     # if xtol=0, radius is difference in x,y and x,F(x); skip the optimization
     try:
@@ -459,11 +466,11 @@ Notes:
 
     # set the range constraints
     xtol = asarray(xtol)
-    bounds = zip( x - xtol, x + xtol )
+    bounds = list(zip( x - xtol, x + xtol ))
 
     if debug:
-      print "lower: %s" % str(zip(*bounds)[0])
-      print "upper: %s" % str(zip(*bounds)[1])
+      print("lower: %s" % str(zip(*bounds)[0]))
+      print("upper: %s" % str(zip(*bounds)[1]))
 
     # optimize where initially x' = x
     stepmon = Monitor()
@@ -483,8 +490,8 @@ Notes:
    #solved = results[0]            # x'
     func_opt = MINMAX * results[1] # cost(x')
     if debug:
-      print "solved: %s" % results[0]
-      print "cost: %s" % func_opt
+      print("solved: %s" % results[0])
+      print("cost: %s" % func_opt)
 
     # get the minimum distance |y - F(x')|
     return func_opt
@@ -513,47 +520,47 @@ Notes:
 
 if __name__ == '__main__':
   ### conversions ###
-  print "building a list of params(w,x,Y)..."
+  print("building a list of params(w,x,Y)...")
   pts = (2,2,2)
   param1 = [.5,.5,1,2, .25,.75,3,4, .125,.875,5,6, -1,-2,-3,-4,-5,-6,-7,-8]
-  print "pts: %s" % str(pts)
-  print "params: %s" % param1
+  print("pts: %s" % str(pts))
+  print("params: %s" % param1)
  
-  print "\nbuilding a scenario from the params..."
+  print("\nbuilding a scenario from the params...")
   # [store Y as 'values' OR register(F) for Y=F(X) OR points store y as 'val' ?]
   from mystic.math.discrete import scenario
   pm = scenario()
   pm.load(param1, pts)
-  print "pm.wts: %s" % str(pm.wts)
-  print "pm.pos: %s" % str(pm.pos)
+  print("pm.wts: %s" % str(pm.wts))
+  print("pm.pos: %s" % str(pm.pos))
   W = pm.weights
   X = pm.coords
   Y = pm.values
-  print "pm.weights: %s" % str(W)
-  print "pm.coords: %s" % str(X)
-  print "pm.values: %s" % str(Y)
+  print("pm.weights: %s" % str(W))
+  print("pm.coords: %s" % str(X))
+  print("pm.values: %s" % str(Y))
 
-  print "\nbuilding a dataset from the scenario..."
+  print("\nbuilding a dataset from the scenario...")
   # build a dataset (using X,Y)
   # [store W as 'weights' ?]
   from mystic.math.legacydata import dataset
   d = dataset()
   d.load(X, Y) 
-  print "d.coords: %s" % str(d.coords) 
-  print "d.values: %s" % str(d.values) 
+  print("d.coords: %s" % str(d.coords)) 
+  print("d.values: %s" % str(d.values)) 
 
-  print "\nedit the dataset..."
+  print("\nedit the dataset...")
   d[0].value = 0
-  print "d.values: %s" % str(d.values) 
+  print("d.values: %s" % str(d.values)) 
   # DON'T EDIT d[0].position... IT BREAKS PRODUCT MEASURE!!!
 
-  print "\nupdate the scenario from the dataset..."
+  print("\nupdate the scenario from the dataset...")
   # update pm(w,x,Y | W,X) from dataset(X,Y)
   pm.coords, pm.values = d.fetch()
-  print "then, build a new list of params from the scenario..."
+  print("then, build a new list of params from the scenario...")
   # convert pm(w,x,Y | W,X) to params(w,x,Y)
   param1 = pm.flatten(all=True)
-  print "params: %s" % str(param1)
+  print("params: %s" % str(param1))
 
   ### lipschitz ###
   param2 = [1.,0.,1,1, .75,.25,3,4, .5,.5,1,2, -8,-2,4,4,-3,-8,-8,0]
@@ -561,62 +568,62 @@ if __name__ == '__main__':
   qm.load(param2, pts)
   L = [.25,.5,1.]
 
-  print ""
+  print("")
  #print "param1: %s" % param1
  #print "param2: %s" % param2
-  print "pm1.coords: %s" % pm.coords
-  print "pm2.coords: %s" % qm.coords
-  print "L = %s" % L
+  print("pm1.coords: %s" % pm.coords)
+  print("pm2.coords: %s" % qm.coords)
+  print("L = %s" % L)
 
-  print "manhattan distance..."
-  print "pm1[0:3],pm2[0:3] =>\n", manhattan_distance(pm.coords[0:3],qm.coords[0:3]), "\n"
-  print "pm1[0:1],pm2[0:3] =>\n", manhattan_distance(pm.coords[0:1],qm.coords[0:3]), "\n"
-  print "pm1[0:1],pm2[0:1] =>\n", manhattan_distance(pm.coords[0:1],qm.coords[0:1]), "\n"
+  print("manhattan distance...")
+  print("pm1[0:3],pm2[0:3] =>\n", manhattan_distance(pm.coords[0:3],qm.coords[0:3]), "\n")
+  print("pm1[0:1],pm2[0:3] =>\n", manhattan_distance(pm.coords[0:1],qm.coords[0:3]), "\n")
+  print("pm1[0:1],pm2[0:1] =>\n", manhattan_distance(pm.coords[0:1],qm.coords[0:1]), "\n")
 
-  print "pm1[0:3],pm2[0:3] values =>\n", manhattan_distance(pm.values[0:3],qm.values[0:3]), "\n"
-  print "pm1[0:1],pm2[0:3] values =>\n", manhattan_distance(pm.values[0:1],qm.values[0:3]), "\n"
-  print "pm1[0:1],pm2[0:1] values =>\n", manhattan_distance(pm.values[0:1],qm.values[0:1]), "\n"
+  print("pm1[0:3],pm2[0:3] values =>\n", manhattan_distance(pm.values[0:3],qm.values[0:3]), "\n")
+  print("pm1[0:1],pm2[0:3] values =>\n", manhattan_distance(pm.values[0:1],qm.values[0:3]), "\n")
+  print("pm1[0:1],pm2[0:1] values =>\n", manhattan_distance(pm.values[0:1],qm.values[0:1]), "\n")
    
-  print "lipschitz metric..."
-  print "pm1[0:3],pm2[0:3] =>\n", lipschitz_metric(L, pm.coords[0:3], qm.coords[0:3]), "\n"
-  print "pm1[0:1],pm2[0:3] =>\n", lipschitz_metric(L, pm.coords[0:1], qm.coords[0:3]), "\n"
-  print "pm1[0;1],pm2[0:1] =>\n", lipschitz_metric(L, pm.coords[0:1], qm.coords[0:1]), "\n"
+  print("lipschitz metric...")
+  print("pm1[0:3],pm2[0:3] =>\n", lipschitz_metric(L, pm.coords[0:3], qm.coords[0:3]), "\n")
+  print("pm1[0:1],pm2[0:3] =>\n", lipschitz_metric(L, pm.coords[0:1], qm.coords[0:3]), "\n")
+  print("pm1[0;1],pm2[0:1] =>\n", lipschitz_metric(L, pm.coords[0:1], qm.coords[0:1]), "\n")
   
-  print "lipschitz distance..."
-  print "(don't cutoff):\n%s" % lipschitz_distance(L, pm, qm, cutoff=None)
-  print "from measures:\n%s" % lipschitz_distance(L, pm, qm)
+  print("lipschitz distance...")
+  print("(don't cutoff):\n%s" % lipschitz_distance(L, pm, qm, cutoff=None))
+  print("from measures:\n%s" % lipschitz_distance(L, pm, qm))
   b = dataset()
   id = ['A','B','C','D','E','F','G','H']
   b.load(qm.coords, qm.values, ids=id) 
-  print "from datasets:\n%s" % lipschitz_distance(L, d, b)
-  print "from list of points:\n%s" % lipschitz_distance(L, d.raw, b.raw)
-  print "individual points:\n%s" % lipschitz_distance(L, d.raw[0:1], b.raw[0:1])
+  print("from datasets:\n%s" % lipschitz_distance(L, d, b))
+  print("from list of points:\n%s" % lipschitz_distance(L, d.raw, b.raw))
+  print("individual points:\n%s" % lipschitz_distance(L, d.raw[0:1], b.raw[0:1]))
 
-  print ""
-  print "is short:\n%s" % is_feasible( lipschitz_distance(L, pm, qm) )
+  print("")
+  print("is short:\n%s" % is_feasible( lipschitz_distance(L, pm, qm) ))
 
   ### updates ###
-  print "\nupdates to dataset..."
-  print "original:\n%s" % b
+  print("\nupdates to dataset...")
+  print("original:\n%s" % b)
   b.update(qm.coords, qm.values) 
-  print "points from pm2:\n%s" % b
+  print("points from pm2:\n%s" % b)
   b.update(pm.coords, pm.values) 
-  print "points from pm1:\n%s" % b
+  print("points from pm1:\n%s" % b)
 
-  print "\nupdates to product measure..."
-  print "orig: %s\n %s\n from %s" % (pm, pm.values, pm.flatten(all=True))
+  print("\nupdates to product measure...")
+  print("orig: %s\n %s\n from %s" % (pm, pm.values, pm.flatten(all=True)))
   par = [.25,.75,3,4, .5,.5,1,2, .125,.875,5,6, 0,-1,-2,-3,-4,-5,-6,-7]
   pm.update(par)
-  print "alt: %s\n %s\n from %s" % (pm, pm.values, par)
+  print("alt: %s\n %s\n from %s" % (pm, pm.values, par))
   par = [.25,.75,3,4, .5,.5,1,2, .125,.875,5,6, -1,-2,-3,-4,-5,-6,-7,-8,-9]
   pm.update(par)
-  print "alt2: %s\n %s\n from %s" % (pm, pm.values, par)
+  print("alt2: %s\n %s\n from %s" % (pm, pm.values, par))
   par = [.25,.75,3,4, .5,.5,1,2, .125,.875,5,6, -2,-4,-6,-8]
   pm.update(par)
-  print "alt3: %s\n %s\n from %s" % (pm, pm.values, par)
+  print("alt3: %s\n %s\n from %s" % (pm, pm.values, par))
   par = [.5,.5,1,2, .25,.75,3,4]
   pm.update(par)
-  print "alt4: %s\n %s\n from %s" % (pm, pm.values, par)
+  print("alt4: %s\n %s\n from %s" % (pm, pm.values, par))
 
   ##### indexing #####
   b.update(pm.coords, pm.values)
@@ -629,12 +636,12 @@ if __name__ == '__main__':
   assert pm.select(0,2) == [pm.select(0),pm.select(2)]
 
   # member calls #
-  print "\ntesting mean_value..."
-  print "mean_value: %s" % pm.mean_value()
+  print("\ntesting mean_value...")
+  print("mean_value: %s" % pm.mean_value())
   pm.set_mean_value(5.0)
-  print "mean_value: %s" % pm.mean_value()
+  print("mean_value: %s" % pm.mean_value())
 
-  print "\ntesting shortness, feasibility, validity..."
+  print("\ntesting shortness, feasibility, validity...")
   assert pm.short_wrt_data(b) == True
   b.lipschitz = L
   assert pm.short_wrt_self(L) == False
@@ -649,7 +656,7 @@ if __name__ == '__main__':
   assert pm.valid_wrt_model(model, ytol=Cy, xtol=Cx) == False
   pm.set_valid(model, cutoff=Cy, xtol=Cx)
   assert pm.valid_wrt_model(model, ytol=Cy, xtol=Cx) == True
-  print "...done\n"
+  print("...done\n")
 
 
 # EOF

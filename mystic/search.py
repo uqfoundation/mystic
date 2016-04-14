@@ -7,6 +7,12 @@
 """
 a global searcher
 """
+from __future__ import print_function
+from future import standard_library
+standard_library.install_aliases()
+from builtins import zip
+from builtins import range
+from builtins import object
 
 class Searcher(object):
    #searcher has:
@@ -52,7 +58,7 @@ class Searcher(object):
         from mystic.solvers import BuckshotSolver
         from mystic.solvers import PowellDirectionalSolver
         from mystic.pools import SerialPool as Pool
-        from __builtin__ import map as _map
+        from builtins import map as _map
         self.archive = _archive(cached=False) if archive is None else archive
         self.sprayer = BuckshotSolver if sprayer is None else sprayer
         self.seeker = PowellDirectionalSolver if seeker is None else seeker
@@ -73,7 +79,7 @@ class Searcher(object):
         for _solver in solver._allSolvers:
             bestSol = tuple(round(s, tol) for s in _solver.bestSolution)
             bestRes = round(_solver.bestEnergy, tol)
-            print (bestSol, l*bestRes)
+            print((bestSol, l*bestRes))
 
     def _memoize(self, solver, tol=1):
         from klepto import inf_cache
@@ -101,7 +107,7 @@ class Searcher(object):
 
         # get dimensions
         ndim = len(bounds)
-        _min, _max = zip(*bounds)
+        _min, _max = list(zip(*bounds))
 
         # configure ensemble solver
         self.solver = self.sprayer(ndim, self.npts)
@@ -133,7 +139,7 @@ class Searcher(object):
         sid += len(solver._allSolvers)
 #       self._print(solver, tol=self.tol)
         info = self._memoize(solver, tol=self.memtol).info()
-        if self.disp: print info
+        if self.disp: print(info)
         size = info.size
         return sid, size
 
@@ -170,12 +176,12 @@ class Searcher(object):
         if inv is not None: self._inv = inv
 
     def Values(self, unique=False):
-        vals = self.archive.itervalues()
+        vals = iter(self.archive.values())
         new = set()
         return [v for v in vals if v not in new and not new.add(v)] if unique else list(vals)
 
     def Coordinates(self, unique=False):
-        keys = self.archive.iterkeys()
+        keys = iter(self.archive.keys())
         new = set()
         return [k for k in keys if k not in new and not new.add(k)] if unique else list(keys)
 
@@ -183,11 +189,11 @@ class Searcher(object):
         if tol is None: tol=self.tol
         data = self.archive
         _min = max if self._inv else min
-        _min = _min(data.itervalues())
-        return dict((k,v) for (k,v) in data.iteritems() if round(v, tol) == round(_min, tol))
+        _min = _min(iter(data.values()))
+        return dict((k,v) for (k,v) in data.items() if round(v, tol) == round(_min, tol))
 
     def _summarize(self):
-        from __builtin__ import min as _min
+        from builtins import min as _min
         #NOTE: len(size) = # of dirs; len(vals) = # unique dirs
         keys = self.Coordinates()
         vals = self.Values()
@@ -195,9 +201,9 @@ class Searcher(object):
         name = 'max' if self._inv else 'min'
         min = max if self._inv else _min
         # print the minimum and number of times the minimum was found
-        print "%s: %s (count=%s)" % (name, min(mins.values()), len(mins))
+        print("%s: %s (count=%s)" % (name, min(mins.values()), len(mins)))
         # print number of minima found, number of unique minima, archive size
-        print "pts: %s (values=%s, size=%s)" % (len(set(keys)), len(set(vals)), len(keys))
+        print("pts: %s (values=%s, size=%s)" % (len(set(keys)), len(set(vals)), len(keys)))
         #_i = max(dict(i).values())
         return
 

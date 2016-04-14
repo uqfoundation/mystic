@@ -7,6 +7,10 @@
 """
 tools related to sampling
 """
+from __future__ import division
+from __future__ import print_function
+from builtins import range
+from past.utils import old_div
 # These functions are consolidated and adapted from samples.py and cut.py in 
 # branches/UQ/math/ for general use.
 # sample() is from cut.py, and samplepts() is from examples2/seesaw2d.py, and 
@@ -80,7 +84,7 @@ Inputs:
       ave += Fx
       count += 1
   if not count: return None  #XXX: define 0/0 = None
-  ave = float(ave) / float(count)
+  ave = old_div(float(ave), float(count))
   return ave
 
 
@@ -130,7 +134,7 @@ Inputs:
     xvector = transpose(pts)[i]
     if not f(list(xvector)):
       failure += 1
-  pof = float(failure) / float(npts)
+  pof = old_div(float(failure), float(npts))
   return pof
 
 
@@ -165,7 +169,7 @@ Inputs:
     lb -- a list of lower bounds
     ub -- a list of upper bounds
 """
-  prob = float(sampled_pts(pts,lb,ub)) / float(len(pts[0]))
+  prob = old_div(float(sampled_pts(pts,lb,ub)), float(len(pts[0])))
   return prob
 
 
@@ -182,7 +186,7 @@ Inputs:
 def alpha(n,diameter,epsilon=0.01):
   from math import log
  #return diameter * n**(-0.5) * (-log(epsilon))**(0.5)
-  return diameter * (-log(epsilon) / (2.0 * n))**(0.5)
+  return diameter * (old_div(-log(epsilon), (2.0 * n)))**(0.5)
 
 
 #######################################################################
@@ -197,8 +201,8 @@ if __name__ == '__main__':
     upper = [100.0, 30.0, 2.8]
 
     pts = random_samples(lower,upper,num_sample_points)
-    print "randomly sampled points\nbetween %s and %s" % (lower, upper)
-    print pts
+    print("randomly sampled points\nbetween %s and %s" % (lower, upper))
+    print(pts)
 
   def __test2():
     # From branches/UQ/math/cut.py
@@ -213,10 +217,10 @@ if __name__ == '__main__':
       return 0.0
 
     failure,success = sample(model,lower,upper)
-    pof = float(failure) / float(failure + success)
-    print "PoF using method 1: %s" % pof
+    pof = old_div(float(failure), float(failure + success))
+    print("PoF using method 1: %s" % pof)
     random_seed(123)
-    print "PoF using method 2: %s" % sampled_pof(model,lower,upper)
+    print("PoF using method 2: %s" % sampled_pof(model,lower,upper))
 
     # run the tests
     __test1()

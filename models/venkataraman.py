@@ -5,6 +5,7 @@
 # Copyright (c) 1997-2016 California Institute of Technology.
 # License: 3-clause BSD.  The full license text is available at:
 #  - http://trac.mystic.cacr.caltech.edu/project/mystic/browser/mystic/LICENSE
+from __future__ import absolute_import
 __doc__ = _doc = """
 This is drawn from examples in Applied Optimization with MATLAB programming,
 with the function definition found in [1].
@@ -13,7 +14,7 @@ References::
     [1] Venkataraman, P. "Applied Optimization with MATLAB Programming",
     John Wiley and Sons, Hoboken NJ, 2nd Edition, 2009.
 """
-from abstract_model import AbstractFunction
+from .abstract_model import AbstractFunction
 
 from math import sin
 

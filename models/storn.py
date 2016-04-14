@@ -5,6 +5,10 @@
 # Copyright (c) 1997-2016 California Institute of Technology.
 # License: 3-clause BSD.  The full license text is available at:
 #  - http://trac.mystic.cacr.caltech.edu/project/mystic/browser/mystic/LICENSE
+from __future__ import division
+from __future__ import absolute_import
+from builtins import range
+from past.utils import old_div
 __doc__ = _doc = """
 This is part of Storn's "Differential Evolution" test suite, as defined
 in [2], with 'Corana' function definitions drawn from [3,4], 'Griewangk'
@@ -33,7 +37,7 @@ References::
 
     [6] Zimmermann, W. "Operations Research" Oldenbourg Munchen, Wien, 1990.
 """
-from abstract_model import AbstractFunction
+from .abstract_model import AbstractFunction
 
 from numpy import asarray
 from math import pow, cos, sqrt
@@ -89,7 +93,7 @@ The minimum is f(x)=0 for \abs(x_i) < 0.05 for all i."""
             x = coeffs
         r = 0
         for j in range(4):
-            zj =  floor( abs(x[j]/0.2) + 0.49999 ) * sign(x[j]) * 0.2
+            zj =  floor( abs(old_div(x[j],0.2)) + 0.49999 ) * sign(x[j]) * 0.2
             if abs(x[j]-zj) < 0.05:
                 r += 0.15 * pow(zj - 0.05*sign(zj), 2) * d[j]
             else:
@@ -133,10 +137,10 @@ Inspect with mystic_model_plotter using::
 
 The minimum is f(x)=0.0 for x_i=0.0"""
        #x = asarray(x) #XXX: converting to numpy.array slows by 10x
-        term1 = sum([c*c for c in coeffs])/4000.
+        term1 = old_div(sum([c*c for c in coeffs]),4000.)
         term2 = 1
         for i in range(len(coeffs)):
-            term2 = term2 * cos( coeffs[i] / sqrt(i+1.0) )
+            term2 = term2 * cos( old_div(coeffs[i], sqrt(i+1.0)) )
         return term1 - term2 + 1
 
 
