@@ -37,7 +37,7 @@ from mystic.abstract_ensemble_solver import AbstractEnsembleSolver
 
 class LatticeSolver(AbstractEnsembleSolver):
     """
-parallel mapped optimization starting from the center of N grid points
+parallel mapped optimization starting from the centers of N grid points
     """
     def __init__(self, dim, nbins=8):
         """
@@ -71,12 +71,12 @@ All important class members are inherited from AbstractEnsembleSolver.
 
         # build a grid of starting points
         from mystic.math import gridpts
-        return gridpts(bins)
+        return gridpts(bins, self._dist)
 
 
 class BuckshotSolver(AbstractEnsembleSolver):
     """
-parallel mapped optimization starting from the N random points
+parallel mapped optimization starting from N uniform randomly sampled points
     """
     def __init__(self, dim, npts=8):
         """
@@ -103,7 +103,7 @@ All important class members are inherited from AbstractEnsembleSolver.
 
         # build a grid of starting points
         from mystic.math import samplepts
-        return samplepts(lower,upper,npts)
+        return samplepts(lower,upper,npts, self._dist)
 
 
 def lattice(cost,ndim,nbins=8,args=(),bounds=None,ftol=1e-4,maxiter=None, \
@@ -149,6 +149,8 @@ Additional Inputs:
         penalty(xk), where xk is the current parameter vector.
         This function should return y', with y' == 0 when the encoded
         constraints are satisfied, and y' > 0 otherwise.
+    dist -- an optional mystic.math.Distribution instance.  If provided,
+        this distribution generates randomness in ensemble starting position.
 
 Returns: (xopt, {fopt, iter, funcalls, warnflag, allfuncalls}, {allvecs})
 
@@ -185,6 +187,8 @@ Returns: (xopt, {fopt, iter, funcalls, warnflag, allfuncalls}, {allvecs})
     solver.SetEvaluationLimits(maxiter,maxfun)
     solver.SetEvaluationMonitor(evalmon)
     solver.SetGenerationMonitor(stepmon)
+    if 'dist' in kwds:
+        solver.SetDistribution(kwds['dist'])
     if 'penalty' in kwds:
         solver.SetPenalty(kwds['penalty'])
     if 'constraints' in kwds:
@@ -270,6 +274,8 @@ Additional Inputs:
         penalty(xk), where xk is the current parameter vector.
         This function should return y', with y' == 0 when the encoded
         constraints are satisfied, and y' > 0 otherwise.
+    dist -- an optional mystic.math.Distribution instance.  If provided,
+        this distribution generates randomness in ensemble starting position.
 
 Returns: (xopt, {fopt, iter, funcalls, warnflag, allfuncalls}, {allvecs})
 
@@ -306,6 +312,8 @@ Returns: (xopt, {fopt, iter, funcalls, warnflag, allfuncalls}, {allvecs})
     solver.SetEvaluationLimits(maxiter,maxfun)
     solver.SetEvaluationMonitor(evalmon)
     solver.SetGenerationMonitor(stepmon)
+    if 'dist' in kwds:
+        solver.SetDistribution(kwds['dist'])
     if 'penalty' in kwds:
         solver.SetPenalty(kwds['penalty'])
     if 'constraints' in kwds:

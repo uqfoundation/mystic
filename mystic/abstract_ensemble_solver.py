@@ -117,6 +117,7 @@ Important class members:
 
         # default settings for nested optimization
         #XXX: move nbins and npts to _InitialPoints?
+        self._dist = None #kwds['dist'] if 'dist' in kwds else None
         nbins = kwds['nbins'] if 'nbins' in kwds else [1]*dim
         if isinstance(nbins, int):
             from mystic.math.grid import randomly_bin
@@ -205,11 +206,11 @@ input::
 *** this method must be overwritten ***"""
         raise NotImplementedError, "must be overwritten..."
 
-    def SetDistributionInitialPoints(self, dist):
+    def SetSampledInitialPoints(self, dist=None):
         """Generate Random Initial Points from Distribution (dist)
 
 input::
-    - dist: a scipy.stats distribution instance
+    - dist: a mystic.math.Distribution instance
 
 *** this method must be overwritten ***"""
         raise NotImplementedError, "must be overwritten..."
@@ -269,6 +270,18 @@ Note::
         """decorate the cost function with bounds, penalties, monitors, etc"""
         # rewrap the cost if the solver has been run
         self.Finalize()
+        return
+
+    def SetDistribution(self, dist=None):
+        """Set the distribution used for determining solver starting points
+
+Inputs:
+    - dist: a mystic.math.Distribution instance
+"""
+        from mystic.math import Distribution
+        if dist and Distribution not in dist.__class__.mro():
+            dist = Distribution(dist) #XXX: or throw error?
+        self._dist = dist
         return
 
     def _InitialPoints(self):

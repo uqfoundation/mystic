@@ -13,7 +13,7 @@ tools related to sampling
 # everything else is from samples.py
 
 # SAMPLING #
-def random_samples(lb,ub,npts=10000):
+def _random_samples(lb,ub,npts=10000):
   """
 generate npts random samples between given lb & ub
 
@@ -31,6 +31,38 @@ Inputs:
  #return [list(i) for i in pts]
 
 
+def random_samples(lb,ub, npts=10000, dist=None, clip=False):
+  """
+generate npts samples from the given distribution between given lb & ub
+
+Inputs:
+    dist  --  a mystic.tools.Distribution instance
+    lower bounds  --  a list of the lower bounds
+    upper bounds  --  a list of the upper bounds
+    npts  --  number of sample points [default = 10000]
+    clip  --  if True, clip at bounds, else resample [default = False]
+"""
+  if dist is None:
+    return _random_samples(lb,ub, npts)
+  import numpy as np
+  dim = len(lb)
+  pts = dist((npts,dim)) # transpose of desired shape
+  pts = np.clip(pts, lb, ub).T
+  if clip: return pts  #XXX: returns a numpy.array
+  bad = ((pts.T == lb) + (pts.T == ub)).T
+  new = bad.sum()
+  _n, n = 1, 1000 #FIXME: fixed number of max tries
+  while new:
+    if _n == n: #XXX: slows the while loop...
+      raise RuntimeError('bounds could not be applied in %s iterations' % n)
+    pts[bad] = dist(new)
+    pts = np.clip(pts.T, lb, ub).T
+    bad = ((pts.T == lb) + (pts.T == ub)).T
+    new = bad.sum()
+    _n += 1
+  return pts  #XXX: returns a numpy.array
+
+
 def sample(f,lb,ub,npts=10000):
   """
 return number of failures and successes for some boolean function f
@@ -42,7 +74,7 @@ Inputs:
     npts -- the number of points to sample [Default is npts=10000]
 """
   from numpy import transpose
-  pts = random_samples(lb, ub, npts)
+  pts = _random_samples(lb, ub, npts)
 
   failure = 0; success = 0
   for i in range(npts):
@@ -67,7 +99,7 @@ Inputs:
 """
   from numpy import inf, transpose
   from mystic.tools import wrap_bounds
-  pts = random_samples(lb, ub, npts)
+  pts = _random_samples(lb, ub, npts)
   f = wrap_bounds(f,lb,ub)
   ave = 0; count = 0
   for i in range(len(pts[0])):
@@ -110,7 +142,7 @@ Inputs:
     ub -- a list of upper bounds
     npts -- the number of points to sample [Default is npts=10000]
 """
-  pts = random_samples(lb, ub, npts)
+  pts = _random_samples(lb, ub, npts)
   return _pof_given_samples(f, pts)
 
 
@@ -196,7 +228,7 @@ if __name__ == '__main__':
     lower = [10.0, 0.0, 2.1]
     upper = [100.0, 30.0, 2.8]
 
-    pts = random_samples(lower,upper,num_sample_points)
+    pts = _random_samples(lower,upper,num_sample_points)
     print "randomly sampled points\nbetween %s and %s" % (lower, upper)
     print pts
 

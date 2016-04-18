@@ -28,6 +28,7 @@ These mathematical tools are provided::
     gridpts      -- generate a set of regularly spaced points
     samplepts    -- generate a set of randomly sampled points 
     almostEqual  -- test if equal within some absolute or relative tolerance
+    Distribution -- generate a sampling distribution instance
 
 
 """
@@ -41,5 +42,37 @@ from approx import almostEqual
 from approx import approx_equal
 import discrete as dirac_measure
 import distance as paramtrans
+
+
+# distribution object
+class Distribution(object):
+    """
+Sampling distribution for mystic optimizers
+    """
+    def __init__(self, generator=None, *args, **kwds):
+        """
+generate a sampling distribution with interface dist(size=None)
+
+input::
+    - generator: a 'distribution' method from scipy.stats or numpy.random
+    - args: positional arguments for the distribtution object
+    - kwds: keyword arguments for the distribution object
+
+note::
+    this method only accepts numpy.random methods with the keyword 'size'
+        """
+        from mystic.tools import random_state
+        rng = random_state(module='numpy.random')
+        if generator is None: generator = rng.random
+        if getattr(generator, 'rvs', False): 
+            d = generator(*args, **kwds)
+            self.rvs = lambda size=None: d.rvs(size=size, random_state=rng)
+        else:
+            d = getattr(rng, generator.__name__)
+            self.rvs = lambda size=None: d(size=size, *args, **kwds)
+        return
+    def __call__(self, size=None):
+        """generate a sample of given size (tuple) from the distribution"""
+        return self.rvs(size)
 
 # end of file

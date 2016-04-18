@@ -410,7 +410,7 @@ input::
         matrix: -> the variance matrix. must be the right size!
         """
         from mystic.tools import random_state
-        prng = random_state(module='numpy.random')
+        rng = random_state(module='numpy.random')
         assert(len(mean) == self.nDim)
         if var is None:
             var = numpy.eye(self.nDim)
@@ -422,25 +422,22 @@ input::
             else:
                 var = var * numpy.eye(self.nDim)
         for i in range(len(self.population)):
-            self.population[i] = prng.multivariate_normal(mean, var).tolist()
+            self.population[i] = rng.multivariate_normal(mean, var).tolist()
         return
 
-    def SetDistributionInitialPoints(self, dist, *args):
+    def SetSampledInitialPoints(self, dist=None):
         """Generate Random Initial Points from Distribution (dist)
 
 input::
-    - dist: a scipy.stats distribution instance (or a numpy.random method)
-
-note::
-    this method only accepts numpy.random methods with the keyword 'size'"""
-        from mystic.tools import random_state
-        prng = random_state(module='numpy.random')
-        if not args and type(dist).__name__ is 'rv_frozen': #from scipy.stats
-            for i in range(self.nPop):
-                self.population[i] = dist.rvs(self.nDim, random_state=prng).tolist()
-        else: #from numpy.random with *args and size in kwds
-            for i in range(self.nPop): 
-                self.population[i] = dist(*args, size=self.nDim).tolist()
+    - dist: a mystic.math.Distribution instance
+"""
+        from mystic.math import Distribution
+        if dist is None:
+            dist = Distribution()
+        elif type(Distribution) not in dist.__class__.mro():
+            dist = Distribution(dist) #XXX: or throw error?
+        for i in range(self.nPop):
+            self.population[i] = dist(self.nDim)
         return
 
     def enable_signal_handler(self):#, callback='*'):

@@ -8,10 +8,13 @@
 tools for generating points on a grid
 """
 
-def gridpts(q):
+def gridpts(q, dist=None):
     """
 takes a list of lists of arbitrary length q = [[1,2],[3,4]]
 and produces a list of gridpoints g = [[1,3],[1,4],[2,3],[2,4]]
+
+Note:
+    if a mystic.math.Distribution is provided, use it to inject randomness
     """
     w = [[] for i in range(len(q[-1]))]
     for j in range(len(q)-1,-1,-1):
@@ -19,10 +22,15 @@ and produces a list of gridpoints g = [[1,3],[1,4],[2,3],[2,4]]
         for l in range(k*len(w)/len(q[j]), (k+1)*len(w)/len(q[j])):
           w[l].append(q[j][k])
       if j: w += [i[:] for i in w[:]*(len(q[j-1])-1)]
-    return [list(reversed(w[i])) for i in range(len(w))]
+    pts = [list(reversed(w[i])) for i in range(len(w))]
+    # inject some randomness
+    if dist is None: return pts
+    if not len(pts): return pts
+    pts += dist((len(pts),len(pts[0])))
+    return pts.tolist()
 
 
-def samplepts(lb,ub,npts):
+def samplepts(lb,ub,npts,dist=None):
     """
 takes lower and upper bounds (e.g. lb = [0,3], ub = [2,4])
 produces a list of sample points s = [[1,3],[1,4],[2,3],[2,4]]
@@ -31,12 +39,14 @@ Inputs:
     lb  --  a list of the lower bounds
     ub  --  a list of the upper bounds
     npts  --  number of sample points
+    dist -- a mystic.math.Distribution instance
     """
     from mystic.math.samples import random_samples
-    q = random_samples(lb,ub,npts)
-    q = [list(i) for i in q]
-    q = zip(*q)
-    return [list(i) for i in q]
+    q = random_samples(lb,ub,npts,dist)
+    return q.T.tolist()
+   #q = [list(i) for i in q]
+   #q = zip(*q)
+   #return [list(i) for i in q]
 
 
 def randomly_bin(N, ndim=None, ones=True, exact=True):
