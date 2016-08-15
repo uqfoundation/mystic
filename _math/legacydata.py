@@ -18,11 +18,11 @@ def _fails(filter, data=None):
     data -- a list of data points
 
   Note:
-    if data=None, return the pairs of indicies where data fails
+    if data=None, return the pairs of indices where data fails
   """
   from numpy import where, asarray
   failures = asarray(where(filter == False)).T
-  # if data not given, then return indicies for failure
+  # if data not given, then return indices for failure
   if not data: return failures
   # otherwise, return the list of 'bad' points
   failures = set( failures.flat )
@@ -306,7 +306,7 @@ Inputs:
     data -- a collection of data points (if None, use the dataset itself)
     L -- the lipschitz constant, if different from that of the dataset itself 
     blamelist -- if True, report which points are infeasible
-    pairs -- if True, report indicies of infeasible points
+    pairs -- if True, report indices of infeasible points
     all -- if True, report results for each point (opposed to all points)
     raw -- if True, report numerical results (opposed to boolean results)
 
@@ -352,7 +352,7 @@ Notes:
 Inputs:
     model -- the model function, y' = F(x')
     blamelist -- if True, report which points are infeasible
-    pairs -- if True, report indicies of infeasible points
+    pairs -- if True, report indices of infeasible points
     all -- if True, report results for each point (opposed to all points)
     raw -- if True, report numerical results (opposed to boolean results)
 

@@ -48,9 +48,9 @@ def WeightVector(alpha, X, y):
 
 
 def SupportVectors(alpha, y=None, eps=0):
-    """indicies of nonzero alphas (at tolerance eps)
+    """indices of nonzero alphas (at tolerance eps)
 
-If labels y are provided, then group indicies by label
+If labels y are provided, then group indices by label
     """
     import mystic.svr as svr
     sv = svr.SupportVectors(alpha,eps)

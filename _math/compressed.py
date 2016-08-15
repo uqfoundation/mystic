@@ -33,7 +33,7 @@ def differs_by_one(ith, binaries, all=True, index=True):
   Inputs:
     ith   = the target index
     binaries = a list of binary strings
-    all   = if False, return only the results for indicies < i
+    all   = if False, return only the results for indices < i
     index = if True, return the index of the results (not results themselves)
 """
   from numpy import asarray, where

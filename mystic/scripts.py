@@ -69,8 +69,8 @@ def _parse_input(option):
     """parse 'option' string into 'select', 'axes', and 'mask'
 
 select contains the dimension specifications on which to plot
-axes holds the indicies of the parameters selected to plot
-mask is a dictionary of the parameter indicies and fixed values
+axes holds the indices of the parameters selected to plot
+mask is a dictionary of the parameter indices and fixed values
 
 For example,
     >>> select, axes, mask = _parse_input("-1:10:.1, 0.0, 5.0, -50:50:.5")

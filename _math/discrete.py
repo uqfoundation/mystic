@@ -69,7 +69,7 @@ class measure(list):  #FIXME: meant to only accept point_masses...
 
  methods:
   s.support()  -- get the positions that have corresponding non-zero weights
-  s.support_index()  --  get the indicies of positions that have support
+  s.support_index()  --  get the indices of positions that have support
   s.maximum(f)  --  calculate the maximum for a given function
   s.minimum(f)  --  calculate the minimum for a given function
   s.ess_maximum(f)  --  calculate the maximum for support of a given function
@@ -83,7 +83,7 @@ class measure(list):  #FIXME: meant to only accept point_masses...
 """
 
   def support_index(self, tol=0):
-    """get the indicies of the positions which have non-zero weight
+    """get the indices of the positions which have non-zero weight
 
 Inputs:
     tol -- weight tolerance, where any weight <= tol is considered zero
@@ -496,7 +496,7 @@ string differs by exactly one index
 
   Inputs:
     ith   = the target index
-    all   = if False, return only the results for indicies < i
+    all   = if False, return only the results for indices < i
     index = if True, return the index of the results (not results themselves)
 """
     from mystic.math.compressed import index2binary, differs_by_one
@@ -504,7 +504,7 @@ string differs by exactly one index
     return differs_by_one(ith, b, all, index) 
 
   def select(self, *index, **kwds):
-    """generator for product measure positions due to selected position indicies
+    """generator for product measure positions due to selected position indices
  (NOTE: only works for product measures of dimension 2^K)
 
   >>> r
@@ -620,7 +620,7 @@ class scenario(product_measure):  #FIXME: meant to only accept sets...
 Inputs:
     model -- the model function, y' = F(x')
     blamelist -- if True, report which points are infeasible
-    pairs -- if True, report indicies of infeasible points
+    pairs -- if True, report indices of infeasible points
     all -- if True, report results for each point (opposed to all points)
     raw -- if True, report numerical results (opposed to boolean results)
 
@@ -658,7 +658,7 @@ Notes:
 Inputs:
     L -- the lipschitz constant
     blamelist -- if True, report which points are infeasible
-    pairs -- if True, report indicies of infeasible points
+    pairs -- if True, report indices of infeasible points
     all -- if True, report results for each point (opposed to all points)
     raw -- if True, report numerical results (opposed to boolean results)
 
@@ -693,7 +693,7 @@ Inputs:
     data -- a collection of data points
     L -- the lipschitz constant, if different from that provided with data
     blamelist -- if True, report which points are infeasible
-    pairs -- if True, report indicies of infeasible points
+    pairs -- if True, report indices of infeasible points
     all -- if True, report results for each point (opposed to all points)
     raw -- if True, report numerical results (opposed to boolean results)
 

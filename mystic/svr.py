@@ -24,7 +24,7 @@ def KernelMatrix(X, k=multiply):
 
 
 def SupportVectors(alpha, eps=0):
-    """indicies of nonzero alphas (at tolerance eps)"""
+    """indices of nonzero alphas (at tolerance eps)"""
     return (abs(alpha)>eps).nonzero()[0]
 
 def Bias(x, y, alpha, eps, kernel=InnerProduct):
