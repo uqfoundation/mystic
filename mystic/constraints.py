@@ -11,7 +11,8 @@
 __all__ = ['with_penalty','with_constraint','as_penalty','as_constraint',
            'with_mean','with_variance','with_std','with_spread','normalized',
            'issolution','solve','discrete','integers','near_integers',
-           'unique','has_unique','impose_unique', 'combined']
+           'unique','has_unique','impose_unique','combined','impose_as',
+           'impose_at','impose_measure','impose_position','impose_weight']
 
 from mystic.math.measures import *
 from mystic.math import almostEqual
@@ -571,7 +572,7 @@ def integers(ints=True, index=None):
 
 The function's input will be mapped to the ints, where:
   - if ints is True, return results as ints; otherwise, use floats
-  - if index tuple provided, only round at the given indicies
+  - if index tuple provided, only round at the given indices
 
 >>> @integers()
 ... def identity(x):
@@ -757,6 +758,312 @@ def has_unique(x): # use as a penalty for unique numbers
     return sum(x.count(xi) for xi in x)
    #return len(x) - len(set(x))
 
+
+##### collapse constraints #####
+from mystic.tools import synchronized, connected
+
+#XXX: this is just a less-flexible tools.synchronized... is it useful?
+def _impose_as(mask):
+    """generate a function, where some input tracks another input
+
+mask should be a dictionary of positional index and tracked index (e.g. {0:1}),
+where keys and values should be different integers. However, if a tuple is
+provided instead of the tracked index (e.g. {0:(1,2)}), the second member of
+the tuple will be used as an additive offset for the tracked index. The mask
+will be applied to the input, before the decorated function is called.
+
+functions are expected to take a single argument, a n-dimensional list or array,
+where the mask will be applied to the input array.
+
+operations within a single mask are unordered. If a specific ordering of
+operations is required, apply multiple masks in the desired order.
+
+For example,
+    >>> @_impose_as({0:1, 2:(3,10)})
+    ... def same(x):
+    ...     return x
+    ... 
+    >>> same([0,1,2,3,4,5])
+    [1, 1, 13, 3, 4, 5]
+    >>> same([-1,-2,-3])
+    [-2, -2, -3]
+    >>> same([-1,-2,-3,-4])
+    [-2, -2, 6, -4]
+    >>> 
+    >>> @_impose_as({1:2})
+    ... @_impose_as({0:1})
+    ... def doit(x):
+    ...     return [i+1 for i in x]
+    ... 
+    >>> doit([0,1,2,3,4,5])
+    [3, 3, 3, 4, 5, 6]
+    >>> doit([-1,-2,-3])
+    [-2, -2, -2]
+    >>> doit([-1,-2,-3,-4])
+    [-2, -2, -2, -3]
+    """
+    offset = lambda i: (i if isinstance(i, int) else (i[0], lambda x:(x+i[1])))
+    return synchronized(dict((i,offset(j)) for (i,j) in mask.iteritems()))
+
+
+def impose_as(mask, offset=None):
+    """generate a function, where some input tracks another input
+
+mask should be a set of tuples of positional index and tracked index,
+where the tuple should contain two different integers. The mask will be
+applied to the input, before the decorated function is called.
+
+The offset is applied to the second member of the tuple, and can accumulate.
+
+For example,
+    >>> @impose_as([(0,1),(3,1),(4,5),(5,6),(5,7)])
+    ... def same(x):
+    ...   return x
+    ... 
+    >>> same([9,8,7,6,5,4,3,2,1])
+    [9, 9, 7, 9, 5, 5, 5, 5, 1]
+    >>> same([0,1,0,1])
+    [0, 0, 0, 0]
+    >>> same([-1,-2,-3,-4,-5,-6,-7])
+    [-1, -1, -3, -1, -5, -5, -5]
+    >>> 
+    >>> @impose_as([(0,1),(3,1),(4,5),(5,6),(5,7)], 10)
+    ... def doit(x):
+    ...   return x
+    ... 
+    >>> doit([9,8,7,6,5,4,3,2,1])
+    [9, 19, 7, 9, 5, 15, 25, 25, 1]
+    >>> doit([0,1,0,1])
+    [0, 10, 0, 0]
+    >>> doit([-1,-2,-3,-4,-5,-6])
+    [-1, 9, -3, -1, -5, 5]
+    >>> doit([-1,-2,-3,-4,-5,-6,-7])
+    [-1, 9, -3, -1, -5, 5, 15]
+    """
+    import copy
+    if offset is None: offset = 0
+    def dec(f):
+        def func(x, *args, **kwds):
+            x = copy.copy(x) #XXX: inefficient
+            for i,j in connected(mask).iteritems():
+                for k in j:
+                    try: x[k] = x[i]
+                    except IndexError: pass
+            pairs = list(mask) #XXX: inefficient
+            while pairs: # deal with the offset
+                indx,trac = zip(*pairs)
+                trac = set(trac)
+                for i in trac:
+                    try: x[i] += offset
+                    except IndexError: pass
+                indx = trac.intersection(indx)
+                pairs = [m for m in pairs if m[0] in indx]
+            return f(x, *args, **kwds)
+        func.__wrapped__ = f   #XXX: getattr(f, '__wrapped__', f) ?
+        func.__doc__ = f.__doc__
+        func.mask = mask
+        return func
+    return dec
+
+
+def impose_at(index, target=0.0):
+    """generate a function, where some input is set to the target
+
+index should be a set of indices to be fixed at the target. The target
+can either be a single value (e.g. float), or a list of values.
+
+For example,
+    >>> @impose_at([1,3,4,5,7], -99)
+    ... def same(x):
+    ...   return x
+    ... 
+    >>> same([1,1,1,1,1,1,1])
+    [1, -99, 1, -99, -99, -99, 1]
+    >>> same([1,1,1,1])
+    [1, -99, 1, -99]
+    >>> same([1,1])
+    [1, -99]
+    >>> 
+    >>> @impose_at([1,3,4,5,7], [0,2,4,6])
+    ... def doit(x):
+    ...   return x
+    ... 
+    >>> doit([1,1,1,1,1,1,1])
+    [1, 0, 1, 2, 4, 6, 1]
+    >>> doit([1,1,1,1])
+    [1, 0, 1, 2]
+    >>> doit([1,1])
+    [1, 0]
+    """
+    def dec(f):
+        def func(x, *args, **kwds):
+            xtype = type(x)
+            x = asarray(list(x)) #XXX: faster to use array(x, copy=True) ?
+            x[[i for i in index if i < len(x)]] = target
+            if not type(x) is xtype: x = xtype(x) #XXX: xtype(x.tolist()) ?
+            return f(x, *args, **kwds)
+        func.__wrapped__ = f   #XXX: getattr(f, '__wrapped__', f) ?
+        func.__doc__ = f.__doc__
+        func.target = target
+        return func
+    return dec
+
+
+#NOTE: the above is intended to be used thusly... (e.g. produce constraints)
+"""
+>>> term = Or(ChangeOverGeneration(),CollapseAt(0.0),CollapseAs())
+>>> collapses = collapsed(term(solver, True))
+>>> _fixed = collapses.get(term[1].__doc__)
+>>> _pairs = collapses.get(term[2].__doc__)
+>>> 
+>>> @impose_as(_pairs)
+... @impose_at(_fixed, 0.0)
+... def constrain(x):
+...   return x
+... 
+>>> 
+"""
+#NOTE: and for product_measures... (less decorators the better/faster)
+"""
+>>> stop = Or(ChangeOverGeneration(),CollapsePosition(),CollapseWeight())
+>>> collapses = collapsed(stop(solver, True))
+>>> _pos = collapses.get(stop[1].__doc__)
+>>> _wts = collapses.get(stop[2].__doc__)
+>>>
+>>> @impose_measure(npts, _pos, _wts)
+... def constrain(x):
+...   return x
+...
+>>> 
+"""
+
+
+from mystic.math.discrete import product_measure
+#XXX: split to two decorators?
+def impose_measure(npts, tracking={}, noweight={}):
+    """generate a function, that constrains measure positions and weights
+
+npts is a tuple of the product_measure dimensionality
+
+tracking is a dict of collapses, or a tuple of dicts of collapses.
+a tracking collapse is a dict of {measure: {pairs of indices}}, where the
+pairs of indices are where the positions will be constrained to have the
+same value, and the weight from the second index in the pair will be removed
+and added to the weight of the first index
+
+noweight is a dict of collapses, or a tuple of dicts of collapses.
+a noweight collapse is a dict of {measure: {indices}), where the
+indices are where the measure will be constrained to have zero weight
+
+For example,
+    >>> pos = {0: {(0,1)}, 1:{(0,2)}}
+    >>> wts = {0: {1}, 1: {1, 2}}
+    >>> npts = (3,3)
+    >>> 
+    >>> @impose_measure(npts, pos)
+    ... def same(x):
+    ...   return x
+    ... 
+    >>> same([.5, 0., .5, 2., 4., 6., .25, .5, .25, 6., 4., 2.])
+    [0.5, 0.0, 0.5, 2.0, 2.0, 6.0, 0.5, 0.5, 0.0, 5.0, 3.0, 5.0]
+    >>> same([1./3, 1./3, 1./3, 1., 2., 3., 1./3, 1./3, 1./3, 1., 2., 3.])
+    [0.6666666666666666, 0.0, 0.3333333333333333, 1.3333333333333335, 1.3333333333333335, 3.3333333333333335, 0.6666666666666666, 0.3333333333333333, 0.0, 1.6666666666666667, 2.666666666666667, 1.6666666666666667]
+    >>> 
+    >>> @impose_measure(npts, {}, wts)
+    ... def doit(x):
+    ...   return x
+    ... 
+    >>> doit([.5, 0., .5, 2., 4., 6., .25, .5, .25, 6., 4., 2.])
+    [0.5, 0.0, 0.5, 2.0, 4.0, 6.0, 1.0, 0.0, 0.0, 4.0, 2.0, 0.0]
+    >>> doit([1./3, 1./3, 1./3, 1., 2., 3., 1./3, 1./3, 1./3, 1., 2., 3.])
+    [0.5, 0.0, 0.5, 1.0, 2.0, 3.0, 1.0, 0.0, 0.0, 2.0, 3.0, 4.0]
+    >>> 
+    >>> @impose_measure(npts, pos, wts)
+    ... def both(x):
+    ...   return x
+    ... 
+    >>> both([1./3, 1./3, 1./3, 1., 2., 3., 1./3, 1./3, 1./3, 1., 2., 3.])
+    [0.66666666666666663, 0.0, 0.33333333333333331, 1.3333333333333335, 1.3333333333333335, 3.3333333333333335, 1.0, 0.0, 0.0, 2.0, 3.0, 2.0]
+    >>> 
+    """
+    # takes a dict of collapses, or a tuple of dicts of collapses
+    if type(tracking) is dict: tracking = (tracking,)
+    if type(noweight) is dict: noweight = (noweight,)
+    def dec(f):
+        def func(x, *args, **kwds):
+            # populate a product measure with params
+            c = product_measure()
+            c.load(x, npts)
+            # apply all collapses
+            for clps in tracking:
+                for k,v in clps.iteritems():
+                    c[k].positions, c[k].weights = \
+                      impose_collapse(v, c[k].positions, c[k].weights)
+            for clps in noweight:
+                for k,v in clps.iteritems():
+                    c[k].positions, c[k].weights = \
+                      impose_unweighted(v, c[k].positions, c[k].weights)
+            # convert to params and apply function
+            return f(c.flatten(), *args, **kwds)
+        func.__wrapped__ = f   #XXX: getattr(f, '__wrapped__', f) ?
+        func.__doc__ = f.__doc__
+        func.npts = npts
+        return func
+    return dec
+
+
+def impose_position(npts, tracking):
+    """generate a function, that constrains measure positions
+
+npts is a tuple of the product_measure dimensionality
+
+tracking is a dict of collapses, or a tuple of dicts of collapses.
+a tracking collapse is a dict of {measure: {pairs of indices}}, where the
+pairs of indices are where the positions will be constrained to have the
+same value, and the weight from the second index in the pair will be removed
+and added to the weight of the first index
+
+For example,
+    >>> pos = {0: {(0,1)}, 1:{(0,2)}}
+    >>> npts = (3,3)
+    >>> 
+    >>> @impose_position(npts, pos)
+    ... def same(x):
+    ...   return x
+    ... 
+    >>> same([.5, 0., .5, 2., 4., 6., .25, .5, .25, 6., 4., 2.])
+    [0.5, 0.0, 0.5, 2.0, 2.0, 6.0, 0.5, 0.5, 0.0, 5.0, 3.0, 5.0]
+    >>> same([1./3, 1./3, 1./3, 1., 2., 3., 1./3, 1./3, 1./3, 1., 2., 3.])
+    [0.6666666666666666, 0.0, 0.3333333333333333, 1.3333333333333335, 1.3333333333333335, 3.3333333333333335, 0.6666666666666666, 0.3333333333333333, 0.0, 1.6666666666666667, 2.666666666666667, 1.6666666666666667]
+    >>> 
+    """
+    return impose_measure(npts, tracking, {})
+
+
+def impose_weight(npts, noweight):
+    """generate a function, that constrains measure weights
+
+npts is a tuple of the product_measure dimensionality
+
+noweight is a dict of collapses, or a tuple of dicts of collapses.
+a noweight collapse is a dict of {measure: {indices}), where the
+indices are where the measure will be constrained to have zero weight
+
+For example,
+    >>> wts = {0: {1}, 1: {1, 2}}
+    >>> npts = (3,3)
+    >>> 
+    >>> @impose_weight(npts, wts)
+    ... def doit(x):
+    ...   return x
+    ... 
+    >>> doit([.5, 0., .5, 2., 4., 6., .25, .5, .25, 6., 4., 2.])
+    [0.5, 0.0, 0.5, 2.0, 4.0, 6.0, 1.0, 0.0, 0.0, 4.0, 2.0, 0.0]
+    >>> doit([1./3, 1./3, 1./3, 1., 2., 3., 1./3, 1./3, 1./3, 1., 2., 3.])
+    [0.5, 0.0, 0.5, 1.0, 2.0, 3.0, 1.0, 0.0, 0.0, 2.0, 3.0, 4.0]
+    >>> 
+    """
+    return impose_measure(npts, {}, noweight)
 
 
 # EOF

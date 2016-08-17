@@ -25,7 +25,7 @@ __license__ = """
 
 __all__ = ['solvers', 'termination', 'strategy', 'munge', 'tools', \
            'constraints', 'penalty', 'coupler', 'symbolic', \
-           'model_plotter', 'log_reader']
+           'monitors', 'support', 'model_plotter', 'log_reader']
 
 # solvers
 import solvers

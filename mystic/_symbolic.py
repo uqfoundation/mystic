@@ -126,7 +126,7 @@ Additional Inputs:
     """ #XXX: should simplify first?
     dep.sort()
     indep.sort()
-    # return the actual variable names (not the indicies)
+    # return the actual variable names (not the indices)
     if varname == variables: # then was single variable
         variables = [varname+str(i) for i in range(ndim)]
     dep = [variables[i] for i in dep]

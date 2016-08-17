@@ -142,7 +142,7 @@ Inputs:
   return ssum * inf  # protect against ZeroDivision
 
 def support_index(weights, tol=0): #XXX: no relative tolerance near zero
-  """get the indicies of the positions which have non-zero weight
+  """get the indices of the positions which have non-zero weight
 
 Inputs:
     weights -- a list of sample weights
@@ -620,7 +620,7 @@ def _k(weights, k=0, clip=False, norm=False, eps=15): #XXX: better 9 ?
         klo,khi = .01*klo,.01*khi
     w = np.array(weights, dtype=float)/sum(weights)  #XXX: no dtype?
     w_lo, w_hi = np.cumsum(w), np.cumsum(w[::-1])
-    # calculate the cropped indicies
+    # calculate the cropped indices
     lo = len(w) - sum((w_lo - klo).round(eps) > 0)
     hi = sum((w_hi - khi).round(eps) > 0) - 1
     # flip indices if flipped
@@ -751,6 +751,104 @@ Inputs:
     clip -- if True, winsorize instead of trimming k% of samples
 """
     return impose_tvariance(s**2, samples, weights, k=k, clip=clip)
+
+
+##### collapse methods #####
+#FIXME: add collapse weight/position methods to math.discrete.measure?
+def impose_support(index, samples, weights): #XXX: toggle norm_preserving?
+    """set all weights not appearing in 'index' to zero
+
+Inputs:
+    samples -- a list of sample points
+    weights -- a list of sample weights
+    index -- a list of desired support indices (weights will be non-zero)
+
+For example:
+    >>> impose_support([0,1],[1,2,3,4,5],[.2,.2,.2,.2,.2])
+    ([2.5, 3.5, 4.5, 5.5, 6.5], [0.5, 0.5, 0.0, 0.0, 0.0])
+    >>> impose_support([0,1,2,3],[1,2,3,4,5],[.2,.2,.2,.2,.2])
+    ([1.5, 2.5, 3.5, 4.5, 5.5], [0.25, 0.25, 0.25, 0.25, 0.0])
+    >>> impose_support([4],[1,2,3,4,5],[.2,.2,.2,.2,.2])
+    ([-1.0, 0.0, 1.0, 2.0, 3.0], [0.0, 0.0, 0.0, 0.0, 1.0])
+
+Note: is 'mean-preserving' for samples and 'norm-preserving' for weights
+"""
+    if index is None: index = range(len(weights))
+    # allow negative indexing
+    index = set(len(weights)+i if i<0 else i for i in index)
+    m = mean(samples, weights)
+    n = sum(weights)
+    weights = [w if i in index else 0. for (i,w) in enumerate(weights)]
+    weights = normalize(weights, n)
+    return impose_mean(m, samples, weights), weights
+
+
+#XXX: alternate to the above
+def impose_unweighted(index, samples, weights):
+    """set all weights appearing in 'index' to zero
+
+Inputs:
+    samples -- a list of sample points
+    weights -- a list of sample weights
+    index -- a list of indices where weight is to be zero
+
+For example:
+    >>> impose_unweighted([0,1,2],[1,2,3,4,5],[.2,.2,.2,.2,.2])
+    ([-0.5, 0.5, 1.5, 2.5, 3.5], [0.0, 0.0, 0.0, 0.5, 0.5])
+    >>> impose_unweighted([3,4],[1,2,3,4,5],[.2,.2,.2,.2,.2])
+    ([2.0, 3.0, 4.0, 5.0, 6.0], [0.33333333333333331, 0.33333333333333331, 0.33333333333333331, 0.0, 0.0])
+
+Note: is 'mean-preserving' for samples and 'norm-preserving' for weights
+"""
+    if index is None: index = ()
+    # allow negative indexing
+    index = set(len(weights)+i if i<0 else i for i in index)
+    m = mean(samples, weights)
+    n = sum(weights)
+    weights = [0. if i in index else w for (i,w) in enumerate(weights)]
+    weights = normalize(weights, n)
+    return impose_mean(m, samples, weights), weights
+
+
+def impose_collapse(pairs, samples, weights):
+    """collapse the weight and position of each pair (i,j) in pairs
+
+Collapse is defined as weight[j] += weight[i] and weights[i] = 0,
+with samples[j] = samples[i].
+
+Inputs:
+    samples -- a list of sample points
+    weights -- a list of sample weights
+    pairs -- set of tuples of indices (i,j) where collapse occurs
+
+For example:
+    >>> impose_collapse({(0,1),(0,2)},[1,2,3,4,5],[.2,.2,.2,.2,.2])
+    ([1.5999999999999996, 1.5999999999999996, 1.5999999999999996, 4.5999999999999996, 5.5999999999999996], [0.6000000000000001, 0.0, 0.0, 0.2, 0.2])
+    >>> impose_collapse({(0,1),(3,4)},[1,2,3,4,5],[.2,.2,.2,.2,.2])
+    ([1.3999999999999999, 1.3999999999999999, 3.3999999999999999, 4.4000000000000004, 4.4000000000000004], [0.4, 0.0, 0.2, 0.4, 0.0])
+
+Note: is 'mean-preserving' for samples and 'norm-preserving' for weights
+"""
+    samples, weights = list(samples), list(weights) # don't edit inputs
+    m = mean(samples, weights)
+    # allow negative indexing
+    pairs = zip(*tuple(tuple(len(weights)+i if i<0 else i for i in j) for j in zip(*pairs)))
+    #XXX: any vectorized way to do this?
+    from mystic.tools import connected
+    for i,j in connected(pairs).iteritems():
+        v = weights[i]
+        for k in j:
+            v += weights[k]
+            weights[k] = type(v)(0.0)
+            samples[k] = samples[i]
+        weights[i] = v
+    return impose_mean(m, samples, weights), weights
+    #XXX: any vectorized way to do this?
+#   for i,j in sorted(sorted(pair) for pair in pairs): 
+#       weight = weights[i]+weights[j]
+#       weights[i],weights[j] = type(weight)(0.0),weight #FIXME: also wrong
+#       samples[j] = samples[i] #FIXME: all paired collapses should be equal
+#   return impose_mean(m, samples, weights), weights
 
 
 ##### misc methods #####

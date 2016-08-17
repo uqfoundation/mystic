@@ -11,13 +11,42 @@ Factories that provide termination conditions for a mystic.solver
 """
 
 import numpy
-from numpy import absolute
-abs = absolute
+abs = numpy.absolute
 Inf = numpy.Inf
 null = ""
+_type = type #NOTE: save builtin type
+import mystic.collapse as ct #XXX: avoid if move Collapse* to collapse
 
-# a module level singleton.
+# a module level singleton
 EARLYEXIT = 0
+
+# termination condition interrogator functions
+#FIXME FIXME: assumes NO DUPLICATE TYPES of termination conditions
+def state(condition):
+    '''get state (dict of kwds) used to create termination condition'''
+    #NOTE: keys are termination name; values are termination state
+    _state = {}
+    for term in iter(condition) if isinstance(condition, tuple) else iter((condition,)):
+        if not term.__doc__.split(None,1)[-1].startswith('with '):# Or, And, ...
+            _state.update(state(term))
+        else:
+            kind,kwds = term.__doc__.split(' with ', 1)
+           #_state[kind] = eval(kwds)
+            _state[term.__doc__] = eval(kwds)
+    return _state
+
+def type(condition):
+    '''get object that generated the given termination instance'''
+    if isinstance(condition, _type(lambda :None)): #XXX: type of term conditions
+        try:
+            import importlib
+            module = importlib.import_module(condition.__module__)
+        except ImportError:
+            module = __import__(condition.__module__, globals(), locals(), ['object'], -1)
+        return getattr(module, condition.__name__[1:]) #XXX: start w/ _
+    # otherwise, just figure it's a class or standard object
+    return _type(condition)
+
 
 # Factories that extend termination conditions
 class When(tuple):
@@ -359,5 +388,100 @@ _EARLYEXIT == True"""
         return info(null)
     _SolverInterrupt.__doc__ = doc
     return _SolverInterrupt
+
+##### collapse conditions #####
+def CollapseWeight(tolerance=0.005, generations=50, mask=None, **kwds):
+    """value of weights are < tolerance over a number of generations,
+where mask is (row,column) indices of the selected weights:
+
+bool(collapse_weight(monitor, **kwds))."""
+    _kwds = {'tolerance':tolerance, 'generations':generations, 'mask':mask}
+    kwds.update(_kwds)
+    doc = "CollapseWeight with %s" % kwds #XXX: better kwds or _kwds?
+    def _CollapseWeight(inst, info=False):
+        if info: info = lambda x:x
+        else: info = bool
+        hist = inst.energy_history
+        lg = len(hist)
+        if lg <= generations: return info(null)
+        #XXX: might want to log/utilize *where* collapse happens...
+#       if collapse_weight(inst._stepmon, **kwds): return info(doc)
+        collapsed = ct.collapse_weight(inst._stepmon, **kwds)
+        if collapsed: return info(doc + ' at %s' % str(collapsed))
+        # otherwise bail out
+        return info(null) 
+    _CollapseWeight.__doc__ = doc
+    return _CollapseWeight
+
+def CollapsePosition(tolerance=0.005, generations=50, mask=None, **kwds):
+    """max(pairwise(positions)) < tolerance over a number of generations,
+where (measures,indices) are (row,column) indices of selected positions:
+
+bool(collapse_position(monitor, **kwds))."""
+    _kwds = {'tolerance':tolerance, 'generations':generations, 'mask':mask}
+    kwds.update(_kwds)
+    doc = "CollapsePosition with %s" % kwds #XXX: better kwds or _kwds
+    def _CollapsePosition(inst, info=False):
+        if info: info = lambda x:x
+        else: info = bool
+        hist = inst.energy_history
+        lg = len(hist)
+        if lg <= generations: return info(null)
+        #XXX: might want to log/utilize *where* collapse happens...
+#       if collapse_weight(inst._stepmon, **kwds): return info(doc)
+        collapsed = ct.collapse_position(inst._stepmon, **kwds)
+        if collapsed: return info(doc + ' at %s' % str(collapsed))
+        # otherwise bail out
+        return info(null) 
+    _CollapsePosition.__doc__ = doc
+    return _CollapsePosition
+
+def CollapseAt(target=None, tolerance=1e-4, generations=50, mask=None):
+    """change(x[i]) is < tolerance over a number of generations,
+where target can be a single value or a list of values of x length,
+change(x[i]) = max(x[i]) - min(x[i]) if target=None else abs(x[i] - target),
+and mask is column indices of selected params:
+
+bool(collapse_at(monitor, **kwds))."""
+    kwds = {'tolerance':tolerance, 'generations':generations,
+            'target':target, 'mask':mask}
+    doc = "CollapseAt with %s" % kwds
+    def _CollapseAt(inst, info=False):
+        if info: info = lambda x:x
+        else: info = bool
+        hist = inst.energy_history
+        lg = len(hist)
+        if lg <= generations: return info(null)
+        #XXX: might want to log/utilize *where* collapse happens...
+#       if ct.collapse_at(inst._stepmon, **kwds): return info(doc)
+        collapsed = ct.collapse_at(inst._stepmon, **kwds)
+        if collapsed: return info(doc + ' at %s' % str(collapsed))
+        # otherwise bail out
+        return info(null) 
+    _CollapseAt.__doc__ = doc
+    return _CollapseAt
+
+def CollapseAs(offset=False, tolerance=1e-4, generations=50, mask=None):
+    """max(pairwise(x)) is < tolerance over a number of generations,
+and mask is column indices of selected params:
+
+bool(collapse_as(monitor, **kwds))."""
+    kwds = {'tolerance':tolerance, 'generations':generations,
+            'offset':offset, 'mask':mask}
+    doc = "CollapseAs with %s" % kwds
+    def _CollapseAs(inst, info=False):
+        if info: info = lambda x:x
+        else: info = bool
+        hist = inst.energy_history
+        lg = len(hist)
+        if lg <= generations: return info(null)
+        #XXX: might want to log/utilize *where* collapse happens...
+#       if ct.collapse_as(inst._stepmon, **kwds): return info(doc)
+        collapsed = ct.collapse_as(inst._stepmon, **kwds)
+        if collapsed: return info(doc + ' at %s' % str(collapsed))
+        # otherwise bail out
+        return info(null) 
+    _CollapseAs.__doc__ = doc
+    return _CollapseAs
 
 # end of file

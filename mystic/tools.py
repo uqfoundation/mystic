@@ -38,7 +38,12 @@ Main functions exported are::
     - clipped: generate a function where values outside of bounds are clipped
     - suppressed: generate a function where values less than tol are suppressed
     - suppress: suppress small values less than tol
+    - chain: chain together decorators into a single decorator
+    - connected: generate dict of connected members of a set of tuples (pairs)
     - unpair: convert a 1D array of N pairs to two 1D arrays of N values
+    - pairwise: convert an array of positions to an array of pairwise distances
+    - measure_indices: get the indices corresponding to weights and to positions
+    - select_params: get params for the given indices as a tuple of index,values
     - src: extract source code from a python code object
 
 Other tools of interest are in::
@@ -222,7 +227,7 @@ def flatten_array(sequence, maxlev=999, lev=0):
 def flatten(sequence, maxlev=999, to_expand=list_or_tuple, lev=0):
     """flatten a sequence; returns original sequence type
 
-example usage...
+For example:
     >>> A = [1,2,3,[4,5,6],7,[8,[9]]]
     >>> 
     >>> # Flatten.
@@ -412,7 +417,7 @@ interface to an arraylike interface 'y = f(x)'.  Example usage...
 def reduced(reducer=None, arraylike=False):
     """apply a reducer function to reduce output to a single value
 
-example usage...
+For example:
     >>> @reduced(lambda x,y: x)
     ... def first(x):
     ...   return x
@@ -466,7 +471,7 @@ def insert_missing(x, missing=None):
 missing should be a dictionary of positional index and a value (e.g. {0:1.0}),
 where keys must be integers, and values can be any object (typically a float).
 
-For example,
+For example:
     >>> insert_missing([1,2,4], missing={0:10, 3:-1})
     [10, 1, 2, -1, 4]
     """
@@ -510,7 +515,7 @@ where the mask will be applied to the input array.  Hence, instead of masking
 the inputs, the function is "masked".  Conceptually, f(mask(x)) ==> f'(x),
 instead of f(mask(x)) ==> f(x').
 
-For example,
+For example:
     >>> @masked({0:10,3:-1})
     ... def same(x):
     ...     return x
@@ -545,7 +550,7 @@ where keys must be integers, and values can be any object (typically a float).
 functions are expected to take a single argument, a n-dimensional list or array,
 where the mask will be applied to the input array.
 
-For example,
+For example:
     >>> @partial({0:10,3:-1})
     ... def same(x):
     ...     return x
@@ -579,7 +584,10 @@ the second member of the tuple will be used to scale the tracked index.
 functions are expected to take a single argument, a n-dimensional list or array,
 where the mask will be applied to the input array.
 
-For example,
+operations within a single mask are unordered. If a specific ordering of
+operations is required, apply multiple masks in the desired order.
+
+For example:
     >>> @synchronized({0:1,3:-1})
     ... def same(x):
     ...     return x
@@ -601,6 +609,14 @@ For example,
     [1.0, 1.0, 2.0, -1.0, 4.0]
     >>> doit([0.,9.,2.,3.,6.])
     [0.1111111111111111, 9.0, 2.0, -9.0, 6.0]
+    >>>
+    >>> @synchronized({1:2})
+    ... @synchronized({0:1})
+    ... def invert(x):
+    ...   return [-i for i in x]
+    ... 
+    >>> invert([0,1,2,3,4])
+    [-2, -2, -2, -3, -4]
     """
     def dec(f):
         def func(x, *args, **kwds):
@@ -612,7 +628,7 @@ For example,
                   except IndexError: pass
                 except IndexError: pass
             return f(x, *args, **kwds)
-        func.__wrapped__ = f
+        func.__wrapped__ = f   #XXX: getattr(f, '__wrapped__', f) ?
         func.__doc__ = f.__doc__
         func.mask = mask
         return func
@@ -634,7 +650,7 @@ def suppress(x, tol=1e-8, clip=True):
 def suppressed(tol=1e-8, exit=False, clip=True):
     """generate a function, where values less than tol are suppressed
 
-For example,
+For example:
     >>> @suppressed(1e-8)
     ... def square(x):
     ...     return [i**2 for i in x]
@@ -692,16 +708,91 @@ def wrap_cf(CF, REG=None, cfmult=1.0, regmult=0.0):
     return _
 
 
+def chain(*decorators):
+    """chain together decorators into a single decorator
+
+For example:
+    >>> wm = with_mean(5.0)
+    >>> wv = with_variance(5.0)
+    >>> 
+    >>> @chain(wm, wv)  
+    ... def doit(x):
+    ...     return x
+    ... 
+    >>> res = doit([1,2,3,4,5])
+    >>> mean(res), variance(res)
+    (5.0, 5.0000000000000018)
+"""
+    def dec(f):
+        for _dec in reversed(decorators):
+            f = _dec(f)
+        return f
+    return dec
+
+
+def connected(pairs):
+    """generate dict of connected members of a set of tuples (pairs)
+
+For example:
+    >>> connected({(0,3),(4,2),(3,1),(4,5),(2,6)})
+    {0: set([1, 3]), 4: set([2, 5, 6])}
+    >>> connected({(0,3),(3,1),(4,5),(2,6)})
+    {0: set([1, 3]), 2: set([6]), 4: set([5])}}
+"""
+    collapse = {}
+    #XXX: any vectorized way to do this?
+    for i,j in pairs: #XXX: sorted(sorted(pair) for pair in pairs): # ordering?
+        found = False
+        for k,v in collapse.iteritems():
+            if i in (k,) or i in v:
+                v.add(j); found = True; break
+            if j in (k,) or j in v:
+                v.add(i); found = True; break
+        if not found:
+            collapse[i] = set((j,))
+    return collapse
+
+
 def unpair(pairs):
     '''convert a 1D array of N pairs to two 1D arrays of N values
 
-example usage...
+For example:
     >>> unpair([(a0,b0),(a1,b1),(a2,b2)])
     [a0,a1,a2],[b0,b1,b2]
     '''
     from numpy import asarray
     pairsT = asarray(pairs).transpose()
     return [i.tolist() for i in pairsT]
+
+
+def pairwise(x, indices=False):
+    '''convert an array of positions to an array of pairwise distances
+
+    if indices=True, also return indices to relate input and output arrays'''
+    import numpy as np
+    x = np.asarray(x)
+    shape = x.shape
+    x = x.reshape(-1, x.shape[-1])
+    idx = np.triu_indices(x.shape[-1],k=1)  # get upper triangle indices
+    z = np.zeros(x.shape[:-1] + (idx[0].shape[0],))
+    for i in range(z.shape[-2]):
+        z[i] = np.subtract.outer(x[i],x[i])[idx]
+    z.shape = shape[:-1]+(z.shape[-1],)
+    return abs(z),zip(*idx) if indices else abs(z)  #XXX: abs(z) or z?
+
+
+def _inverted(pairs): # assumes pairs is a list of tuples
+    '''return a list of tuples, where each tuple has been reversed'''
+    # >>> _inverted([(1,2),(3,4),(5,6)])
+    # [(2, 1), (4, 3), (6, 5)]
+    return map(tuple, map(reversed, pairs))
+
+
+def _symmetric(pairs): # assumes pairs is a set of tuples
+    '''returns a set of tuples, where each tuple includes it's inverse'''
+    # >>> _symmetric([(1,2),(3,4),(5,6)])
+    # set([(1, 2), (5, 6), (2, 1), (4, 3), (3, 4), (6, 5)])
+    return set(list(pairs) + _inverted(pairs))
 
 
 try:
@@ -711,7 +802,7 @@ except ImportError:
         """return successive r-length permutations of elements in the iterable.
 Produces a generator object.
 
-For example, 
+For example: 
     >>> print list( permutations(range(3),2) ) 
     [(0,1), (0,2), (1,0), (1,2), (2,0), (2,1)]
     >>> print list( permutations(range(3)) )
@@ -740,6 +831,31 @@ For example,
             else:
                 return
         return
+
+
+def measure_indices(npts):
+    '''get the indices corresponding to weights and to positions'''
+    wts, pos = [], []
+    for (i,n) in enumerate(npts):
+        indx = 2*reduce(lambda x,y:x+y, (0,)+npts[:i])
+        wts.extend(range(indx,n+indx))
+        pos.extend(range(indx+npts[0],n+indx+npts[0]))
+    return wts, pos
+
+
+def select_params(params, index):
+    """get params for the given indices as a tuple of index,values"""
+    if isinstance(index, int): index = (index,)
+    try: # was passed a solver instance
+        params = params.bestSolution
+    except AttributeError:
+        try: # was passed a monitor instance
+            if type(params).__module__ == 'mystic.monitors':
+                params = params._x[-1]
+        except: pass
+    import itertools
+    # returns (tuple(index), tuple(params[index]))
+    return tuple(itertools.izip(*((i,params[i]) for i in index)))
 
 
 # backward compatibility

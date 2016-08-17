@@ -59,9 +59,12 @@ or bound to a cost function by a Solver.  The typical usage pattern is::
 
 
 """
-__all__ = ['Null','Monitor', 'VerboseMonitor', 'LoggingMonitor',
-           'VerboseLoggingMonitor', 'CustomMonitor']
+__all__ = ['Null', 'Monitor', 'VerboseMonitor', 'LoggingMonitor',
+           'VerboseLoggingMonitor', 'CustomMonitor', 
+           '_solutions', '_measures', '_positions', '_weights', '_load']
 
+import os
+import sys
 import numpy
 from mystic.tools import list_or_tuple_or_ndarray
 from mystic.tools import listify, multiply, divide, _kdiv
@@ -118,6 +121,7 @@ example usage...
         self._info = []
        #self._all = all
         self.k = kwds.pop('k', None)
+        self._npts = kwds.pop('npts', None)
 
     def __len__(self):
         return len(self.x)
@@ -183,6 +187,38 @@ example usage...
     def __step(self):
         return len(self.x)
 
+    ##### measures #####
+    def get_iwts(self):
+        wts = []
+        if self._npts is None: return self._npts
+        for (i,n) in enumerate(self._npts):
+            indx = 2*reduce(lambda x,y:x+y, (0,)+self._npts[:i])
+            wts.extend(range(indx,n+indx))
+        return wts
+
+    def get_ipos(self):
+        pos = []
+        if self._npts is None: return self._npts
+        for (i,n) in enumerate(self._npts):
+            indx = 2*reduce(lambda x,y:x+y, (0,)+self._npts[:i])
+            pos.extend(range(indx+self._npts[0],n+indx+self._npts[0])) 
+        return pos
+
+    def get_wts(self):
+        wts = self._wts
+        if wts is None: return wts
+        wts = numpy.array(self.x)[:, wts]
+        wts.shape = (wts.shape[0], len(self._npts), -1)
+        return wts.tolist()  #XXX: as list or array?
+
+    def get_pos(self):
+        pos = self._pos
+        if pos is None: return pos
+        pos = numpy.array(self.x)[:, pos]
+        pos.shape = (pos.shape[0], len(self._npts), -1)
+        return pos.tolist()  #XXX: as list or array?
+    ####################
+
     #BELOW: madness due to monitor k-conversion
 
     def get_y(self): # can be slow if k not in (1, None)
@@ -197,10 +233,10 @@ example usage...
         return divide(monitor._y, _ik, iter)
 
     def get_ix(self):
-        return divide(self._y, 1, iter)
+        return divide(self._y, 1, iter) #XXX: _y ?
 
     def get_ax(self):
-        return divide(self._y, 1, numpy.array)
+        return divide(self._y, 1, numpy.array) #XXX: _y ?
 
     def get_iy(self):
         return divide(self._y, self.k, iter)
@@ -223,6 +259,10 @@ example usage...
     iy = property(get_iy, doc = "Costs")
     ay = property(get_ay, doc = "Costs")
     id = property(get_id, doc = "Id")
+    wts = property(get_wts, doc = "Weights")
+    pos = property(get_pos, doc = "Positions")
+    _wts = property(get_iwts, doc = "Weights")
+    _pos = property(get_ipos, doc = "Positions")
     pass
 
 class VerboseMonitor(Monitor):
@@ -435,6 +475,99 @@ example usage...
     """
     from _genSow import genSow
     return genSow(**kwds)(*args)
+
+
+##### loaders #####
+def _load(path, monitor=None, verbose=False):
+    '''load npts, params, and cost into monitor from file at given path'''
+
+    base = os.path.splitext(os.path.basename(path))[0]
+    root = os.path.realpath(os.path.dirname(path))
+
+    string = '''
+from {base} import params as ___params, cost as ___cost;
+try: from {base} import npts as ___npts;
+except ImportError: ___npts = None;
+import sys;
+sys.modules.pop('{base}', None);
+'''.format(base=base)
+    try:
+        sys.path.insert(0, root)
+        exec(string, globals()) #FIXME: unsafe, potential name conflict
+        npts = globals().get('___npts')
+        params = globals().get('___params')
+        cost = globals().get('___cost')
+        globals().pop('___npts', None)
+        globals().pop('___params', None)
+        globals().pop('___cost', None)
+    except: #XXX: should only catch the appropriate exceptions
+        raise OSError("error reading '%s'" % path)
+    finally:
+        sys.path.remove(root)
+
+    _verbose = bool(verbose and monitor is not None)
+    m = monitor if _verbose else Monitor()
+
+    #for p,c in zip(zip(*params), cost):
+    for p,c in zip((zip(*i)[0] for i in zip(*params)),cost):
+        m(p,c)
+
+    if _verbose:
+        monitor = m
+    else:
+        monitor.extend(m)
+
+    monitor._npts = npts
+
+    return monitor
+
+
+##### readers ##### #XXX: should be class methods?
+def _solutions(monitor, last=None):
+    '''return the params from the last N entries in a monitor'''
+    indx = last if last is None else -last
+    return numpy.array(monitor.x[indx:])
+
+
+def _measures(monitor, last=None, weights=False):
+    '''return positions or weights from the last N entries in a monitor
+
+    this function requires a montor that is monitoring a product_measure'''
+    indx = last if last is None else -last
+    return numpy.array(monitor.wts[indx:] if weights else monitor.pos[indx:])
+
+
+def _positions(monitor, last=None):
+    '''return positions from the last N entries in a monitor
+
+    this function requires a montor that is monitoring a product_measure'''
+    return _measures(monitor, last, weights=False)
+
+
+def _weights(monitor, last=None):
+    '''return weights from the last N entries in a monitor
+    
+    this function requires a montor that is monitoring a product_measure'''
+    return _measures(monitor, last, weights=True)
+
+
+"""
+def __measures(monitor, last=None, weights=False):
+    '''return positions or weights from the last N entries in a monitor
+
+    this function requires a montor that is monitoring a product_measure'''
+    #XXX: alternate, using product_measure
+    from mystic.math.discrete import product_measure
+    # get npts and solution_vector
+    npts, history = monitor._npts, _solutions(monitor, last)
+    # get product_measure.wts for all generations
+    xxx = 'wts' if weights else 'pos'
+    for (i,step) in enumerate(history):
+        c = product_measure()
+        c.load(step, npts)
+        history[i] = getattr(c,xxx)
+    return history
+"""
 
 
 # end of file
