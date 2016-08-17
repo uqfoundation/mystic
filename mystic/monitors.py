@@ -477,7 +477,7 @@ example usage...
     return genSow(**kwds)(*args)
 
 
-##### loaders #####
+##### loaders ##### #XXX: should be class method?
 def _load(path, monitor=None, verbose=False):
     '''load npts, params, and cost into monitor from file at given path'''
 

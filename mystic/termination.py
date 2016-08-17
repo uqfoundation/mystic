@@ -164,6 +164,7 @@ Additional Inputs:
 
 
 # Factories that give termination conditions
+#FIXME: the following should be refactored into classes
 def VTR(tolerance=0.005, target=0.0):
     """cost of last iteration is < tolerance from target:
 
