@@ -2,6 +2,10 @@ import mystic.collapse as ct
 import mystic.mask as ma
 import mystic as my
 m = my.monitors._load('_log.py')
+# cleanup *pyc
+import os
+try: os.remove('_log.pyc')
+except OSError: pass
 
 import mystic.termination as mt
 from mystic.solvers import DifferentialEvolutionSolver

@@ -505,14 +505,14 @@ sys.modules.pop('{base}', None);
     finally:
         sys.path.remove(root)
 
-    _verbose = bool(verbose and monitor is not None)
-    m = monitor if _verbose else Monitor()
+    _new = monitor is None or not verbose
+    m = Monitor() if _new else monitor
 
     #for p,c in zip(zip(*params), cost):
     for p,c in zip((zip(*i)[0] for i in zip(*params)),cost):
         m(p,c)
 
-    if _verbose:
+    if _new:
         monitor = m
     else:
         monitor.extend(m)

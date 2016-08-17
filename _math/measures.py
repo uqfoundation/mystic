@@ -116,8 +116,13 @@ Inputs:
   # contributed by TJS #
   # to prevent function evaluation if weight is "too small":
   # skip evaluation of f(x) if the corresponding weight <= tol
-  yw = [(f(x),w) for (x,w) in zip(samples, weights) if abs(w) > tol]
-  return mean(*zip(*yw))
+  import itertools as it   #XXX: assumes is faster than zip
+  #weights = normalize(weights, mass=1.0) #FIXME: below is atol, should be rtol?
+  if not sum(abs(w) > tol for w in weights):
+      yw = ((0.0,0.0),)
+  else:
+      yw = ((f(x),w) for (x,w) in it.izip(samples, weights) if abs(w) > tol)
+  return mean(*it.izip(*yw))
   ##XXX: at around len(samples) == 150, the following is faster
   #aw = asarray(weights)
   #ax = asarray(samples)

@@ -2,6 +2,10 @@ import mystic.collapse as ct
 import numpy as np
 import mystic as my
 m = my.monitors._load('_log.py')
+# cleanup *pyc
+import os
+try: os.remove('_log.pyc')
+except OSError: pass
 
 # at
 x = ct.collapse_at(m, target=0.0, tolerance=0.05, mask=None)
