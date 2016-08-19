@@ -116,13 +116,13 @@ Inputs:
   # contributed by TJS #
   # to prevent function evaluation if weight is "too small":
   # skip evaluation of f(x) if the corresponding weight <= tol
-  import itertools as it   #XXX: assumes is faster than zip
+  # import itertools as it   #XXX: assumes is faster than zip
   #weights = normalize(weights, mass=1.0) #FIXME: below is atol, should be rtol?
   if not sum(abs(w) > tol for w in weights):
       yw = ((0.0,0.0),)
   else:
-      yw = ((f(x),w) for (x,w) in it.izip(samples, weights) if abs(w) > tol)
-  return mean(*it.izip(*yw))
+      yw = [(f(x),w) for (x,w) in zip(samples, weights) if abs(w) > tol]
+  return mean(*zip(*yw))
   ##XXX: at around len(samples) == 150, the following is faster
   #aw = asarray(weights)
   #ax = asarray(samples)
@@ -789,13 +789,14 @@ Note: is 'mean-preserving' for samples and 'norm-preserving' for weights
 
 
 #XXX: alternate to the above
-def impose_unweighted(index, samples, weights):
+def impose_unweighted(index, samples, weights, nullable=True):
     """set all weights appearing in 'index' to zero
 
 Inputs:
     samples -- a list of sample points
     weights -- a list of sample weights
     index -- a list of indices where weight is to be zero
+    nullable -- if False, avoid null weights by reweighting non-index weights
 
 For example:
     >>> impose_unweighted([0,1,2],[1,2,3,4,5],[.2,.2,.2,.2,.2])
@@ -810,8 +811,10 @@ Note: is 'mean-preserving' for samples and 'norm-preserving' for weights
     index = set(len(weights)+i if i<0 else i for i in index)
     m = mean(samples, weights)
     n = sum(weights)
-    weights = [0. if i in index else w for (i,w) in enumerate(weights)]
-    weights = normalize(weights, n)
+    _weights = [0. if i in index else w for (i,w) in enumerate(weights)]
+    if not nullable and not sum(_weights):
+        _weights = [0. if i in index else 1. for (i,w) in enumerate(weights)]
+    weights = normalize(_weights, n)
     return impose_mean(m, samples, weights), weights
 
 

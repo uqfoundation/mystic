@@ -478,7 +478,7 @@ example usage...
 
 
 ##### loaders ##### #XXX: should be class method?
-def _load(path, monitor=None, verbose=False):
+def _load(path, monitor=None, verbose=False): #XXX: duplicate in mystic.munge?
     '''load npts, params, and cost into monitor from file at given path'''
 
     base = os.path.splitext(os.path.basename(path))[0]

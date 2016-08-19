@@ -1002,7 +1002,7 @@ For example,
             for clps in noweight:
                 for k,v in clps.iteritems():
                     c[k].positions, c[k].weights = \
-                      impose_unweighted(v, c[k].positions, c[k].weights)
+                      impose_unweighted(v, c[k].positions, c[k].weights, False)
             # convert to params and apply function
             return f(c.flatten(), *args, **kwds)
         func.__wrapped__ = f   #XXX: getattr(f, '__wrapped__', f) ?
