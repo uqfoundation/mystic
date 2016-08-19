@@ -321,6 +321,7 @@ if has_setuptools:
 setup_code += """
     scripts=['scripts/mystic_log_reader.py',
              'scripts/mystic_model_plotter.py',
+             'scripts/mystic_collapse_plotter.py',
              'scripts/support_convergence.py',
              'scripts/support_hypercube.py',
              'scripts/support_hypercube_measures.py',
