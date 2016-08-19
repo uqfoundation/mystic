@@ -37,7 +37,6 @@ def optimize(cost,_bounds,_constraints):
   from mystic.strategy import Best1Exp
   from mystic.monitors import VerboseMonitor, Monitor
   from mystic.tools import random_seed
-  import collapse as cc
   from mystic.termination import Or, CollapseWeight, CollapsePosition, state
 
 
@@ -64,7 +63,7 @@ def optimize(cost,_bounds,_constraints):
   term = Or(COG(tol,ngen), CollapseWeight(), CollapsePosition())
   solver.Solve(cost,termination=term,strategy=Best1Exp, \
                CrossProbability=crossover,ScalingFactor=percent_change)
-  while collapse and cc.collapse(solver, verbose): #XXX: total_evaluations?
+  while collapse and solver.Collapse(verbose): #XXX: total_evaluations?
       if debug: print state(solver._termination).keys()
       solver.Solve() #XXX: cost, term, strategy, cross, scale ?
       if debug: solver.SaveSolver('debug.pkl')

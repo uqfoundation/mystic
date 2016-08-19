@@ -152,8 +152,8 @@ Important class members:
         self._termination     = lambda x, *ar, **kw: False if len(ar) < 1 or ar[0] is False or (kw['info'] if 'info' in kw else True) == False else '' #XXX: better default ?
         # (get termination details with self._termination.__doc__)
 
-        import mystic.termination
-        self._EARLYEXIT       = mystic.termination.EARLYEXIT
+        import mystic.termination as mt
+        self._EARLYEXIT       = mt.EARLYEXIT
         self._live            = False 
         return
 
@@ -631,6 +631,36 @@ Note::
         self._live = False
         return
 
+    def Collapse(self, verbose=False):
+        """if solver has terminated by collapse, apply the collapse"""
+        import mystic.collapse as ct
+        collapses = ct.collapsed(self.Terminated(info=True)) or dict()
+        if collapses: # then stomach a bunch of module imports (yuck)
+            import mystic.tools as to
+            import mystic.termination as mt
+            import mystic.constraints as cn
+            import mystic.mask as ma
+            if verbose:
+                print "#", self._stepmon._step-1, "::", \
+                      self.bestEnergy, "@\n#", list(self.bestSolution)
+
+            # get collapse conditions  #XXX: efficient? 4x loops over collapses
+            state = mt.state(self._termination)
+            npts = getattr(self._stepmon, '_npts', None)  #XXX: default?
+            conditions = [cn.impose_at(*to.select_params(self,collapses[k])) if state[k].get('target') is None else cn.impose_at(collapses[k],state[k].get('target')) for k in collapses if k.startswith('CollapseAt')]
+            conditions += [cn.impose_as(collapses[k],state[k].get('offset')) for k in collapses if k.startswith('CollapseAs')]
+            # get measure collapse conditions
+            if npts: #XXX: faster/better if comes first or last?
+                conditions += [cn.impose_measure( npts, [collapses[k] for k in collapses if k.startswith('CollapsePosition')], [collapses[k] for k in collapses if k.startswith('CollapseWeight')] )]
+
+            # update termination and constraints in solver
+            constraints = to.chain(*conditions)(self._constraints)
+            termination = ma.update_mask(self._termination, collapses)
+            self.SetConstraints(constraints)
+            self.SetTermination(termination)
+            #print mt.state(self._termination).keys()
+        return collapses
+
     def _update_objective(self):
         """decorate the cost function with bounds, penalties, monitors, etc"""
         # rewrap the cost if the solver has been run
@@ -855,8 +885,8 @@ Further Inputs:
             continue
 
         # keep stepping if collapse
-#       while collapse and cc.collapse(self, verbose=False):
-#           while not self.Step(**settings):
+#       while collapse and self.Collapse(self, verbose=False):
+#           while not self.Step(**settings): #XXX: or Collapse inside of Step?
 #               continue
 
         # restore default handler for signal interrupts

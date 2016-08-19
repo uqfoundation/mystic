@@ -6,8 +6,6 @@
 # License: 3-clause BSD.  The full license text is available at:
 #  - http://trac.mystic.cacr.caltech.edu/project/mystic/browser/mystic/LICENSE
 
-import collapse as cc
-
 from mystic.termination import Or, CollapseAt, CollapseAs
 from mystic.termination import ChangeOverGeneration as COG
 
@@ -43,7 +41,7 @@ solver.SetTermination(term)
 solver.Solve(model)
 
 #FIXME: collapse should move into solver.Solve! --> activate w/ kwd or method
-while collapse and cc.collapse(solver, verbose):
+while collapse and solver.Collapse(verbose):
   solver.Solve(model)
 
 # we are done; get result
