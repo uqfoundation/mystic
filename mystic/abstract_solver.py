@@ -633,8 +633,9 @@ Note::
 
     def Collapse(self, verbose=False):
         """if solver has terminated by collapse, apply the collapse"""
+        stop = getattr(self, '__stop__', self.Terminated(info=True))
         import mystic.collapse as ct
-        collapses = ct.collapsed(self.Terminated(info=True)) or dict()
+        collapses = ct.collapsed(stop) or dict()
         if collapses: # then stomach a bunch of module imports (yuck)
             import mystic.tools as to
             import mystic.termination as mt
@@ -880,14 +881,23 @@ Further Inputs:
         if termination is not None: self.SetTermination(termination)
         #XXX: self.Step(cost, termination, ExtraArgs, **settings) ?
 
+        collapse,verbose = False,False #FIXME: activate via settings/method
         # the main optimization loop
-        while not self.Step(**settings): #XXX: remove need to pass settings?
+        stop = False
+        while not stop: 
+            stop = self.Step(**settings) #XXX: remove need to pass settings?
             continue
 
-        # keep stepping if collapse
-#       while collapse and self.Collapse(self, verbose=False):
-#           while not self.Step(**settings): #XXX: or Collapse inside of Step?
-#               continue
+        # if collapse, then activate any relevant collapses and continue
+        self.__stop__ = stop  #HACK: avoid re-evaluation of Termination
+        while collapse and self.Collapse(verbose):
+            del self.__stop__ #HACK
+            stop = False
+            while not stop:
+                stop = self.Step(**settings) #XXX: move Collapse inside of Step?
+                continue
+            self.__stop__ = stop  #HACK
+        del self.__stop__ #HACK
 
         # restore default handler for signal interrupts
         if self._handle_sigint:
