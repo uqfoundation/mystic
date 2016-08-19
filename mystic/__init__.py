@@ -24,8 +24,8 @@ __license__ = """
 """ + __license__
 
 __all__ = ['solvers', 'termination', 'strategy', 'munge', 'tools', \
-           'constraints', 'penalty', 'coupler', 'symbolic', \
-           'monitors', 'support', 'model_plotter', 'log_reader']
+           'constraints', 'penalty', 'coupler', 'symbolic', 'monitors', \
+           'support', 'model_plotter', 'log_reader', 'collapse_plotter']
 
 # solvers
 import solvers
@@ -46,7 +46,7 @@ import munge
 import tools
 
 # scripts
-from scripts import model_plotter, log_reader
+from scripts import model_plotter, log_reader, collapse_plotter
 import support
 
 # backward compatibility

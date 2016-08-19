@@ -1,4 +1,4 @@
-2016sr/bin/env python
+#!/usr/bin/env python
 #
 # Author: Mike McKerns (mmckerns @caltech and @uqfoundation)
 # Copyright (c) 1997-2016 California Institute of Technology.

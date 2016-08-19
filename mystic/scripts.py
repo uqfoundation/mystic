@@ -9,7 +9,7 @@ __doc__ = """
 functional interfaces for mystic's visual analytics scripts
 """
 
-__all__ = ['model_plotter','log_reader']
+__all__ = ['model_plotter','log_reader','collapse_plotter']
 
 # globals
 __quit = False
@@ -683,6 +683,189 @@ Additional Inputs:
         fig.savefig(parsed_opts.out)
 
 
+def collapse_plotter(filename, **kwds):
+    """
+generate cost convergence rate plots from file written with 'write_support_file'
+
+Available from the command shell as:
+  mystic_collapse_plotter.py filename [options]
+
+or as a function call as:
+  mystic.collapse_plotter(filename, **options)
+
+The option "col" takes a string of comma-separated integers indicating
+iteration numbers where parameter collapse has occurred.  If a second set of
+integers is provided (delineated by a semicolon), the additional set of integers
+will be plotted with a different linestyle (to indicate a different type of
+collapse).
+
+The option "label" takes a label string. For example, label = "y"
+will label the y-axis plot with 'y'. LaTeX is also accepted. For example,
+label = " log-cost, $ log_{10}(\hat{P} - \hat{P}_{max})$" will label the
+y-axis with standard LaTeX math formatting. Note that the leading space is
+required, and the text is aligned along the axis.
+
+Required Inputs:
+  filename            name of the python convergence logfile (e.g paramlog.py)
+"""
+    import shlex
+    global __quit
+    __quit = False
+
+    instance = None
+    # handle the special case where list is provided by sys.argv
+    if isinstance(filename, (list,tuple)) and not kwds:
+        cmdargs = filename # (above is used by script to parse command line)
+    elif isinstance(filename, basestring) and not kwds:
+        cmdargs = shlex.split(filename)
+    # 'everything else' is essentially the functional interface
+    else:
+        cmdargs = kwds.get('kwds', '')
+        if not cmdargs:
+            out = kwds.get('out', None)
+            dots = kwds.get('dots', False)
+           #line = kwds.get('line', False)
+            linear = kwds.get('linear', False)
+            iter = kwds.get('iter', None)
+            label = kwds.get('label', None)
+            col = kwds.get('col', None)
+
+            # process "commandline" arguments
+            cmdargs = ''
+            cmdargs += '' if out is None else '--out={} '.format(out)
+            cmdargs += '' if dots == False else '--dots '
+            cmdargs += '' if linear == False else '--linear '
+           #cmdargs += '' if line == False else '--line '
+            cmdargs += '' if iter is None else '--iter={} '.format(iter)
+            cmdargs += '' if label == None else '--label={} '.format(label)
+            cmdargs += '' if col is None else '--col="{}" '.format(col)
+        else:
+            cmdargs = ' ' + cmdargs
+        if isinstance(filename, basestring):
+            cmdargs = filename.split() + shlex.split(cmdargs)
+        else: # special case of passing in monitor instance
+            instance = filename
+            cmdargs = shlex.split(cmdargs)
+
+    #XXX: note that 'argparse' is new as of python2.7
+    from optparse import OptionParser
+    def _exit(self, errno=None, msg=None):
+      global __quit
+      __quit = True
+      if errno or msg:
+        msg = msg.split(': error: ')[-1].strip()
+        raise IOError(msg)
+    OptionParser.exit = _exit
+
+    parser = OptionParser(usage=collapse_plotter.__doc__.split('\n\nOptions:')[0])
+    parser.add_option("-d","--dots",action="store_true",dest="dots",\
+                      default=False,help="show data points in plot")
+    #parser.add_option("-l","--line",action="store_true",dest="line",\
+    #                  default=False,help="connect data points with a line")
+    parser.add_option("-y","--linear",action="store_true",dest="linear",\
+                      default=False,help="plot y-axis in linear scale")
+    parser.add_option("-u","--out",action="store",dest="out",\
+                      metavar="STR",default=None,
+                      help="filepath to save generated plot")
+    parser.add_option("-i","--iter",action="store",dest="stop",metavar="INT",\
+                      default=None,help="the largest iteration to plot")
+    parser.add_option("-l","--label",action="store",dest="label",\
+                      metavar="STR",default="",\
+                      help="string to assign label to y-axis")
+    parser.add_option("-c","--col",action="store",dest="collapse",\
+                      metavar="STR",default="",
+                      help="string to indicate collapse indices")
+#   import sys
+#   if 'mystic_collapse_plotter.py' not in sys.argv:
+    from StringIO import StringIO
+    f = StringIO()
+    parser.print_help(file=f)
+    f.seek(0)
+    if 'Options:' not in collapse_plotter.__doc__:
+      collapse_plotter.__doc__ += '\nOptions:%s' % f.read().split('Options:')[-1]
+    f.close()
+
+    try:
+      parsed_opts, parsed_args = parser.parse_args(cmdargs)
+    except UnboundLocalError:
+      pass
+    if __quit: return
+
+    style = '-' # default linestyle
+    if parsed_opts.dots:
+      mark = 'o'
+      # when using 'dots', also turn off 'line'
+      #if not parsed_opts.line:
+      #  style = 'None'
+    else:
+      mark = ''
+
+    try: # select labels for the axes
+      label = parsed_opts.label  # format is "x" or " $x$"
+    except:
+      label = 'log-cost, $log_{10}(y - y_{min})$'
+
+    try: # get logfile name
+      filename = parsed_args[0]
+    except:
+      raise IOError, "please provide log file name"
+
+    try: # select which iteration to stop plotting at
+      stop = int(parsed_opts.stop)
+    except:
+      stop = None
+
+    try: # select collapse boundaries to plot
+      collapse = parsed_opts.collapse.split(';')  # format is "2, 3; 4, 5, 6; 7"
+      collapse = [eval("(%s,)" % i) if i.strip() else () for i in collapse]
+    except:
+      collapse = []
+
+    # read file
+    from mystic.munge import read_history
+    params, cost = read_history(filename)
+
+    # ignore everything after 'stop'
+    cost = cost[:stop]
+    params = params[:stop]
+
+    # get the minimum cost
+    import numpy as np
+    cost_min = min(cost)
+
+    # convert to log scale
+    x = np.arange(len(cost))
+    settings = np.seterr(all='ignore')
+    if parsed_opts.linear:
+      y = np.array(cost)
+     #y = np.abs(cost_min - np.array(cost))
+    else:
+      y = np.log10(np.abs(cost_min - np.array(cost)))
+    np.seterr(**settings)
+
+    import matplotlib.pyplot as plt
+    fig = plt.figure()
+    plt.plot(x, y, linestyle=style, marker=mark, markersize=1)
+
+    colors = ['orange','red','brown','pink']
+    linestyles = ['--','-.',':','-']
+
+    for param,color,style in zip(collapse,colors,linestyles):
+      for clps in set(param):
+        plt.axvline(x=clps, ymin=-10, ymax=1, hold=None, linestyle=style, linewidth=param.count(clps), color=color)
+
+    if label:
+        #plt.title('convergence rate')
+        plt.xlabel('iteration number, $n$')
+        plt.ylabel(label)
+        #plt.ylabel('$log-error,\; log_{10}(\hat{P} - \hat{P}_{max})$')
+
+    if not parsed_opts.out:
+        plt.show()
+    else:
+        fig.savefig(parsed_opts.out)
+
+
 def log_reader(filename, **kwds):
     """
 plot parameter convergence from file written with 'LoggingMonitor'
@@ -933,6 +1116,9 @@ try: log_reader()
 except TypeError:
     pass
 try: model_plotter()
+except TypeError:
+    pass
+try: collapse_plotter()
 except TypeError:
     pass
 
