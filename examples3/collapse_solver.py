@@ -14,8 +14,7 @@ from mystic.termination import ChangeOverGeneration as COG
 ## conditions are: COG(), Collapse*(), and possibly others.
 # takes termination condition (or solver?) and returns termination condition
 # also requires updated masks as input
-verbose = False
-collapse = True
+verbose = True#False
 
 #from mystic.models import rosen as model; target = 1.0
 from mystic.models import sphere as model; target = 0.0
@@ -38,11 +37,10 @@ solver.SetTermination(term)
 
 #from mystic.termination import state
 #print state(solver._termination).keys()
-solver.Solve(model)
+solver.Solve(model, disp=verbose)
 
-#FIXME: collapse should move into solver.Solve! --> activate w/ kwd or method
-while collapse and solver.Collapse(verbose):
-  solver.Solve(model)
+# while collapse and solver.Collapse(verbose):
+#   solver.Solve(model)
 
 # we are done; get result
 print solver.Terminated(info=True)

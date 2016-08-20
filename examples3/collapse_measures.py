@@ -7,7 +7,6 @@
 
 debug = False
 verbose = True
-collapse = True
 MINMAX = -1  ## NOTE: sup = maximize = -1; inf = minimize = 1
 #######################################################################
 # scaling and mpi info; also optimizer configuration parameters
@@ -61,12 +60,12 @@ def optimize(cost,_bounds,_constraints):
 
   tol = convergence_tol
   term = Or(COG(tol,ngen), CollapseWeight(), CollapsePosition())
-  solver.Solve(cost,termination=term,strategy=Best1Exp, \
+  solver.Solve(cost,termination=term,strategy=Best1Exp, disp=verbose, \
                CrossProbability=crossover,ScalingFactor=percent_change)
-  while collapse and solver.Collapse(verbose): #XXX: total_evaluations?
-      if debug: print state(solver._termination).keys()
-      solver.Solve() #XXX: cost, term, strategy, cross, scale ?
-      if debug: solver.SaveSolver('debug.pkl')
+ #while collapse and solver.Collapse(verbose): #XXX: total_evaluations?
+ #    if debug: print state(solver._termination).keys()
+ #    solver.Solve() #XXX: cost, term, strategy, cross, scale ?
+ #    if debug: solver.SaveSolver('debug.pkl')
 
   solved = solver.bestSolution
  #print "solved: %s" % solver.Solution()

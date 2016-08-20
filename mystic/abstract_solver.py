@@ -149,6 +149,7 @@ Important class members:
         self._reducer         = None
         self._cost            = (None, None, None)
         #                       (cost, raw_cost, args) #,callback)
+        self._collapse        = False
         self._termination     = lambda x, *ar, **kw: False if len(ar) < 1 or ar[0] is False or (kw['info'] if 'info' in kw else True) == False else '' #XXX: better default ?
         # (get termination details with self._termination.__doc__)
 
@@ -604,6 +605,10 @@ Note::
         """set the termination conditions"""
         #XXX: validate that termination is a 'condition' ?
         self._termination = termination
+        self._collapse = False
+        if termination is not None:
+            from mystic.termination import state
+            self._collapse = any(key.startswith('Collapse') for key in state(termination).iterkeys())
         return
 
     def SetObjective(self, cost, ExtraArgs=None):  # callback=None/False ?
@@ -631,20 +636,31 @@ Note::
         self._live = False
         return
 
-    def Collapse(self, verbose=False):
-        """if solver has terminated by collapse, apply the collapse"""
+    def Collapsed(self, disp=False, info=False):
+        """check if the solver meets the given collapse conditions
+
+Input::
+    - disp = if True, print details about the solver state at collapse
+    - info = if True, return collapsed state (instead of boolean)
+"""
         stop = getattr(self, '__stop__', self.Terminated(info=True))
         import mystic.collapse as ct
         collapses = ct.collapsed(stop) or dict()
+        if collapses and disp:
+            for (k,v) in collapses.iteritems():
+                print "         %s: %s" % (k.split()[0],v)
+           #print "# Collapse at: Generation", self._stepmon._step-1, \
+           #      "with", self.bestEnergy, "@\n#", list(self.bestSolution)
+        return collapses if info else bool(collapses) 
+
+    def Collapse(self, disp=False):
+        """if solver has terminated by collapse, apply the collapse"""
+        collapses = self.Collapsed(disp=disp, info=True)
         if collapses: # then stomach a bunch of module imports (yuck)
             import mystic.tools as to
             import mystic.termination as mt
             import mystic.constraints as cn
             import mystic.mask as ma
-            if verbose:
-                print "#", self._stepmon._step-1, "::", \
-                      self.bestEnergy, "@\n#", list(self.bestSolution)
-
             # get collapse conditions  #XXX: efficient? 4x loops over collapses
             state = mt.state(self._termination)
             npts = getattr(self._stepmon, '_npts', None)  #XXX: default?
@@ -863,6 +879,7 @@ Further Inputs:
         # process and activate input settings
         sigint_callback = kwds.pop('sigint_callback', None)
         settings = self._process_inputs(kwds)
+        disp = settings.get('disp', False)
 
         # set up signal handler
         self._EARLYEXIT = False  #XXX: why not use EARLYEXIT singleton?
@@ -881,7 +898,6 @@ Further Inputs:
         if termination is not None: self.SetTermination(termination)
         #XXX: self.Step(cost, termination, ExtraArgs, **settings) ?
 
-        collapse,verbose = False,False #FIXME: activate via settings/method
         # the main optimization loop
         stop = False
         while not stop: 
@@ -890,7 +906,7 @@ Further Inputs:
 
         # if collapse, then activate any relevant collapses and continue
         self.__stop__ = stop  #HACK: avoid re-evaluation of Termination
-        while collapse and self.Collapse(verbose):
+        while self._collapse and self.Collapse(disp=disp):
             del self.__stop__ #HACK
             stop = False
             while not stop:
