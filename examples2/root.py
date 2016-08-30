@@ -6,7 +6,7 @@
 #  - http://trac.mystic.cacr.caltech.edu/project/mystic/browser/mystic/LICENSE
 """
     Solve:
-               -3*x[0] - cos(x[1]*x[2]) + a = 0
+                3*x[0] - cos(x[1]*x[2]) + a = 0
   x[0]**2 - 81*(x[1]+.1)**2 + sin(x[2]) + b = 0
               exp(-x[0]*x[1]) + 20*x[2] + c = 0           
 
@@ -45,8 +45,8 @@ if __name__ == '__main__':
 
   from mystic.solvers import diffev2, fmin_powell
   from mystic.math import almostEqual
-# from mystic.monitors import VerboseMonitor
-# mon = VerboseMonitor(10)
+  from mystic.monitors import VerboseMonitor
+  mon = VerboseMonitor(10)
 
   result = diffev2(objective, args=args, x0=bounds, bounds=bounds, npop=40, ftol=1e-8, disp=False, full_output=True)#, itermon=mon)
 # print result[0]
