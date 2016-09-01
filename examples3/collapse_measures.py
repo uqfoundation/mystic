@@ -99,6 +99,8 @@ def maximize(params,npts,bounds):
   #    rv = [wxi]*nx + [xi]*nx + [wyi]*ny + [yi]*ny + [wzi]*nz + [zi]*nz
 
   # generate primary constraints function
+  from mystic import suppressed
+  @suppressed(1e-2)
   def constraints(rv):
     c = product_measure()
     c.load(rv, npts)

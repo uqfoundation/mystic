@@ -45,8 +45,8 @@ if __name__ == '__main__':
 
   from mystic.solvers import diffev2, fmin_powell
   from mystic.math import almostEqual
-  from mystic.monitors import VerboseMonitor
-  mon = VerboseMonitor(10)
+# from mystic.monitors import VerboseMonitor
+# mon = VerboseMonitor(10)
 
   result = diffev2(objective, args=args, x0=bounds, bounds=bounds, npop=40, ftol=1e-8, disp=False, full_output=True)#, itermon=mon)
 # print result[0]

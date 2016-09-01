@@ -7,6 +7,7 @@
 #  - http://trac.mystic.cacr.caltech.edu/project/mystic/browser/mystic/LICENSE
 
 from mystic.termination import Or, CollapseAt, CollapseAs
+#from mystic.termination import VTRChangeOverGeneration as COG
 from mystic.termination import ChangeOverGeneration as COG
 
 # update termination condition with new masks
@@ -24,6 +25,10 @@ n = 10
 term = Or((COG(generations=500), CollapseAt(target, generations=100)))
 #term = COG(generations=500)
 
+from mystic import suppressed
+@suppressed(1e-8)
+def constrain(x):
+    return x
 
 from mystic.solvers import DifferentialEvolutionSolver as TheSolver
 #from mystic.solvers import PowellDirectionalSolver as TheSolver
@@ -32,6 +37,7 @@ from mystic.solvers import BuckshotSolver
 solver = TheSolver(n)
 solver.SetRandomInitialPoints()
 solver.SetStrictRanges(min=[0]*n, max=[5]*n)
+solver.SetConstraints(constrain)
 solver.SetEvaluationLimits(evaluations=320000, generations=1000)
 solver.SetTermination(term)
 
