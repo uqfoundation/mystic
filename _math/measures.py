@@ -129,12 +129,13 @@ Inputs:
   #w = aw > tol
   #return mean(ax[w], aw[w])
 
-def mean(samples, weights=None):
+def mean(samples, weights=None, tol=0):
   """calculate the (weighted) mean for a list of points
 
 Inputs:
     samples -- a list of sample points
     weights -- a list of sample weights
+    tol -- mean tolerance, where a mean <= tol is considered zero
 """
   if weights is None:
     weights = [1.0/float(len(samples))] * len(samples)
@@ -142,7 +143,9 @@ Inputs:
   ssum = sum(i*j for i,j in zip(samples, weights))
   # normalize by sum of the weights
   wts = float(sum(weights))
-  if wts: return ssum / wts
+  if wts:
+    ssum = ssum / wts
+    return 0.0 if abs(ssum) <= tol else ssum
   from numpy import inf
   return ssum * inf  # protect against ZeroDivision
 
@@ -165,21 +168,46 @@ Inputs:
 """
   return [samples[i] for (i,w) in enumerate(weights) if w > tol]
 
-def variance(samples, weights=None): #, _mean=None):
+def moment(samples, weights=None, order=1, tol=0): #, _mean=None):
+  """calculate the (weighted) nth-order moment for a list of points
+
+Inputs:
+    samples -- a list of sample points
+    weights -- a list of sample weights
+    order -- a positive integer degree
+    tol -- mean tolerance, where a mean <= tol is considered zero
+"""
+  if order is 0: return 1.0 #XXX: error if order < 0
+  if order is 1: return 0.0
+  if weights is None:
+    weights = [1.0/float(len(samples))] * len(samples)
+ #if _mean is None:
+  _mean = mean(samples, weights)
+  mom = [(s - _mean)**order for s in samples] #XXX: abs(s - _mean) ???
+  return mean(mom,weights,tol) #XXX: sample_moment (Bessel correction) *N/(N-1)?
+
+def standard_moment(samples, weights=None, order=1, tol=0):
+  """calculate the (weighted) nth-order standard moment for a list of points
+
+Inputs:
+    samples -- a list of sample points
+    weights -- a list of sample weights
+    order -- a positive integer degree
+    tol -- mean tolerance, where a mean <= tol is considered zero
+"""
+  if order is 2: return 1.0 #XXX: error if order < 0
+  return moment(samples, weights, order, tol)/std(samples, weights)**order
+
+def variance(samples, weights=None): #,tol=0, _mean=None):
   """calculate the (weighted) variance for a list of points
 
 Inputs:
     samples -- a list of sample points
     weights -- a list of sample weights
 """
-  if weights is None:
-    weights = [1.0/float(len(samples))] * len(samples)
- #if _mean is None:
-  _mean = mean(samples, weights)
-  svar = [abs(s - _mean)**2 for s in samples]
-  return mean(svar, weights)
+  return moment(samples, weights, order=2)
 
-def std(samples, weights=None): #, _mean=None):
+def std(samples, weights=None): #,tol=0, _mean=None):
   """calculate the (weighted) standard deviation for a list of points
 
 Inputs:
@@ -189,10 +217,28 @@ Inputs:
   from numpy import sqrt
   return sqrt(variance(samples, weights)) # _mean)
 
+def skewness(samples, weights=None): #,tol=0, _mean=None):
+  """calculate the (weighted) skewness for a list of points
+
+Inputs:
+    samples -- a list of sample points
+    weights -- a list of sample weights
+"""
+  return standard_moment(samples, weights, order=3) # _mean)
+
+def kurtosis(samples, weights=None): #,tol=0, _mean=None):
+  """calculate the (weighted) kurtosis for a list of points
+
+Inputs:
+    samples -- a list of sample points
+    weights -- a list of sample weights
+"""
+  return standard_moment(samples, weights, order=4) # _mean)
+
 
 ##### coordinate shift methods #####
 from numpy import asarray
-def impose_mean(m, samples, weights=None):
+def impose_mean(m, samples, weights=None): #,tol=0):
   """impose a mean on a list of (weighted) points
   (this function is 'range-preserving' and 'variance-preserving')
 
@@ -209,7 +255,7 @@ Inputs:
   return list(samples)
 
 
-def impose_variance(v, samples, weights=None):
+def impose_variance(v, samples, weights=None): #,tol=0):
   """impose a variance on a list of (weighted) points
   (this function is 'mean-preserving')
 
@@ -222,6 +268,8 @@ Inputs:
   samples = asarray(list(samples)) #XXX: faster to use x = array(x, copy=True) ?
   sv = variance(samples,weights) #,m)
   if not sv:  # protect against ZeroDivision when variance = 0
+    if not v: # variance is to be 0
+      return [float(i) for i in samples] #samples.tolist()
     from numpy import nan
     return [nan]*len(samples) #XXX: better to space pts evenly across range?
   from numpy import sqrt
@@ -243,6 +291,62 @@ Inputs:
     weights -- a list of sample weights
 """
   return impose_variance(s**2, samples, weights)
+
+
+def impose_moment(m, samples, weights=None, order=1, tol=0, skew=None):
+  """impose the selected moment on a list of (weighted) points
+  (this function is 'mean-preserving')
+
+Inputs:
+    m -- the target moment
+    samples -- a list of sample points
+    weights -- a list of sample weights
+    order -- a positive integer degree
+    tol -- mean tolerance, where a mean <= tol is considered zero
+    skew -- boolean to allow the introduction of skew to the samples
+"""
+  v = m #NOTE: change of variables, so code is consistent witn impose_variance
+  if order is 0:
+    if v == 1: return [float(i) for i in samples]
+    else:
+      from numpy import nan
+      return [nan]*len(samples)
+  if order is 1:
+    if not v: return [float(i) for i in samples]
+    else:
+      from numpy import nan
+      return [nan]*len(samples)
+  if not order%2 and v < 0.0:
+    from numpy import nan
+    return [nan]*len(samples)
+  m = mean(samples, weights)
+  if skew is None: skew = order%2 # if odd
+  if skew: samples = [i**2 for i in samples]
+  sv = moment(samples,weights,order,tol)
+  if not sv: #moment is 0     #NOTE: caution if ~0.0 or -v
+    if not order%2: # not odd
+      return [m]*len(samples)
+    if not v: # moment is to be 0
+      return [float(i) for i in samples] #samples.tolist()
+   #if skew: then unskewed should have worked. XXX: handle this?
+    from numpy import nan
+    return [nan]*len(samples)
+  samples = asarray(list(samples))
+  from numpy import power, flipud
+  fact = float(v)/sv
+  # temporarily account for negative fact
+  if order%2 and fact < 0: flip = True
+  else: flip = False
+ #try:
+  scale = power(abs(fact), 1./order)
+ #except ZeroDivisionError:
+ #  from numpy import nan
+ #  return [nan]*len(samples)
+  if flip: samples = max(samples) + min(samples) - samples
+ #if flip: samples = flipud(max(samples) + min(samples) - samples)
+  samples = samples * scale
+  return impose_mean(m, samples, weights)
+
 
 def impose_spread(r, samples, weights=None): #FIXME: fails if len(samples) = 1
   """impose a range on a list of (weighted) points
