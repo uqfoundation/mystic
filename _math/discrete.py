@@ -385,7 +385,7 @@ where f takes a list of (product_measure) positions and returns a single value
 Inputs:
     f -- a function that returns True for 'success' and False for 'failure'
 """
-    u = 0
+    u = 0.0
     set = zip(self.positions, self.weights)
     for x in set:
       if f(x[0]) <= 0.0:
@@ -780,7 +780,7 @@ where f takes a list of (scenario) values and returns a single value
 Inputs:
     f -- a function that returns True for 'success' and False for 'failure'
 """
-    u = 0
+    u = 0.0
     set = zip(self.values, self.weights)
     for x in set:
       if f(x[0]) <= 0.0:
