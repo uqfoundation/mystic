@@ -1,0 +1,15 @@
+Files in this directory demonstrate use cases for some of mystic's "advanced"
+features, such as using dimensional collapse detectors, building a surrogate
+for an unknown surface, or using support vectors in optimization.
+
+
+== Notes on mystic examples3 ==
+Dependencies:
+  - examples with "svc" in the name require `matplotlib`.
+  - examples with "surface" and "searcher" require `scipy` and `matplotlib`.
+
+Naming convention:
+  - `collapse` denotes use of dimensional collapse detectors
+  - `searcher` denotes using mystic to find all minima and maxima
+  - `surface` denotes using mystic to interpolate an unknown surface
+  - `svc` denotes use of support vectors in classification

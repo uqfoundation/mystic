@@ -1,0 +1,15 @@
+Files in this directory demonstrate several use cases for mystic's
+constraints solvers and penalty functions, including working with
+symbolic constraints, inequality constraints, and special cases
+like constraining to the set of integers.
+
+
+== Notes on mystic examples2 ==
+Dependencies:
+ - No new dependencies are required.
+
+Naming conventions:
+ - Several problems are reused to demonstrate alternate formulations. Alternate formulations are denoted by appending `_alt` and `_alt2` to the name. Variants
+show different ways to build mystic's constraints and penalty funtions. Also,
+within a single file, there may be multiple solutions for the same problem,
+using a penalty, constraints, or both.

@@ -1,3 +1,9 @@
+Files in this directory demonstrate basic use of mystic.  The most common
+case demonstrated is fitting a standard test function from mystic.models,
+however the use of constraints, the use of ensemble solvers, and the use
+of parallel computing is also demonstrated.
+
+
 == Notes on mystic examples ==
 Dependencies:
  - Several of the examples require matplotlib to be installed.

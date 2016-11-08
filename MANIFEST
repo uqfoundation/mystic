@@ -162,6 +162,7 @@ examples/test_twistedgaussian2.py
 examples/test_twistedgaussian3.py
 examples/test_wavy.py
 examples/test_zimmermann.py
+examples2/README
 examples2/beam.py
 examples2/crypta.py
 examples2/crypto.py
@@ -216,6 +217,7 @@ examples2/vessel.py
 examples2/vessel_alt.py
 examples3/DATA/g1.pts
 examples3/DATA/g2.pts
+examples3/README
 examples3/collapse_measures.py
 examples3/collapse_solver.py
 examples3/surface.py
@@ -225,6 +227,7 @@ examples3/test_surface.py
 examples3/test_surface_ct.py
 examples3/test_svc1.py
 examples3/test_svc2.py
+examples4/README
 examples4/MM2_surrogate_diam_batchgrid.py
 examples4/MM_surrogate_diam.py
 examples4/MPI2_surrogate_diam_batchgrid.py
@@ -248,6 +251,7 @@ examples4/TEST_surrogate_samples.py
 examples4/TEST_surrogate_smartcut.py
 examples4/pool_helper.py
 examples4/surrogate.py
+examples5/README
 examples5/TEST4d_OUQ_surrogate_diam.py
 examples5/TEST_OUQ_surrogate_diam.py
 examples5/surrogate.py

@@ -1,0 +1,29 @@
+Files in this directory demonstrate use of mystic to solve for conservative
+estimates of uncertainty bounds using McDairmid's inequality. The basic problem
+of solving for McDiarmid bounds is extended to calculations of subregions of
+parameter space, and compared to the solved diameter for the entire region.
+In many cases, mystic's ensemble solvers are used, and parallel computing using
+pathos or pyina is demonstrated.
+
+
+== Notes on mystic examples4 ==
+Dependencies:
+ - examples with "PP" or "MM" require pathos to be installed.
+ - examples with "MPI", "MSUB", or "QUSB" require pyina to be installed.
+ - examples with "SUB" require a specific cluster scheduler (see below).
+
+Naming conventions:
+ - examples with "TEST" do not use parallel computing.
+ - examples with "surrogate" are different uses of McDiarmid's inequality.
+ - examples with "diam" are calculations of McDiarmid's bounds.
+ - examples with "McD" compare McDiarmid bounds of a region to it's subregions.
+ - examples with "cut" compare region to subregions, w/ alternate cut algoritms.
+ - examples with "samples" compare subregion sampled and McDairmid prob mass.
+ - examples with "batchgrid" use mystic's `LatticeSolver`.
+ - examples with "scatter" use mystic's `BuckshotSolver`.
+ - examples with "PP" use pathos's `ParallelPool`.
+ - examples with "MM" use pathos's `ProcessPool`.
+ - examples with "MPI" use pyina's `Mpi` launcher.
+ - examples with "MSUB" use pyina's `MoabSlurm` launcher.
+ - examples with "QSUB" use pyina's `TorqueMpi` launcher.
+

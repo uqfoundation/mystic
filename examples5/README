@@ -1,0 +1,14 @@
+Files in this directory demonstrate use of mystic to solve for optimal
+uncertainty bounds using OUQ. The same basic problem is reused with different
+input and output moment constraints applied.
+
+
+== Notes on mystic examples5 ==
+Dependencies:
+ - No new dependencies are required.
+
+Naming conventions:
+ - examples with "TEST" do not use parallel computing.
+ - examples with "OUQ" use optimal uncertainty quantification (OUQ).
+ - examples with "diam" are calculations of optimal bounds.
+
