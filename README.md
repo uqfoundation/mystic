@@ -133,7 +133,6 @@ Important classes and functions are found here::
 * `mystic.symbolic`                 [symbolic math in constaints]
 * `mystic.constraints`              [constraints functions]
 * `mystic.penalty`                  [penalty functions]
-* `mystic.scripts`                  [model and results plotters]
 * `mystic.collapse`                 [checks for dimensional collapse]
 * `mystic.coupler`                  [decorators for function coupling]
 * `mystic.pools`                    [parallel worker pool interface]
