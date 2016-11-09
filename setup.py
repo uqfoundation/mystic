@@ -11,7 +11,7 @@ import sys
 
 # set version numbers
 stable_version = '0.3.0'
-target_version = '0.3.0'
+target_version = '0.3.1'
 is_release = stable_version == target_version
 
 # check if easy_install is available
@@ -80,7 +80,7 @@ Optimization algorithms in `mystic` can accept parameter constraints,
 either in the form of penaties (which "penalize" regions of solution
 space that violate the constraints), or as constraints (which "constrain" 
 the solver to only search in regions of solution space where the
-the constraints are respected), or both. `mystic` provides a large 
+constraints are respected), or both. `mystic` provides a large 
 selection of constraints, including probabistic and dimensionally
 reducing constraints. By providing a robust interface designed to
 enable the user to easily configure and control solvers, `mystic`
