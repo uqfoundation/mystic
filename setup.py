@@ -48,9 +48,9 @@ with open('LICENSE') as file:
 
 # generate the readme text
 long_description = \
-"""---------------------------------------------------------
-mystic: highly-constrained non-convex optimization and UQ
----------------------------------------------------------
+"""---------------------------------------------------------------------------------
+mystic: highly-constrained non-convex optimization and uncertainty quantification
+---------------------------------------------------------------------------------
 
 About Mystic
 ============
@@ -336,17 +336,23 @@ write_info_py()
 setup_code = """
 setup(name='mystic',
       version='%s',
-      description='highly-constrained non-convex optimization and UQ',
+      description='highly-constrained non-convex optimization and uncertainty quantification',
       long_description = '''%s''',
       author = 'Mike McKerns',
+      author_email = 'mmckerns at uqfoundation dot org',
       maintainer = 'Mike McKerns',
-      maintainer_email = 'mmckerns@uqfoundation.org',
-      license = 'BSD',
-      platforms = ['any'],
+      maintainer_email = 'mmckerns at uqfoundation dot org',
+      license = '3-clause BSD',
+      platforms = ['Linux', 'Windows', 'Mac'],
       url = 'http://www.cacr.caltech.edu/~mmckerns',
-      classifiers = ('Intended Audience :: Developers',
-                     'Programming Language :: Python',
-                     'Topic :: Physics Programming'),
+      download_url = 'http://dev.danse.us/packages',
+      classifiers = ('Development Status :: 5 - Production/Stable',
+                     'Intended Audience :: Developers',
+                     'Intended Audience :: Science/Research',
+                     'License :: OSI Approved :: BSD License',
+                     'Programming Language :: Python :: 2',
+                     'Topic :: Scientific/Engineering',
+                     'Topic :: Software Development'),
 
       packages = ['mystic','mystic.models','mystic.math','mystic.cache'],
       package_dir = {'mystic':'mystic','mystic.models':'models',
