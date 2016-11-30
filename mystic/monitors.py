@@ -493,13 +493,14 @@ sys.modules.pop('{base}', None);
 '''.format(base=base)
     try:
         sys.path.insert(0, root)
-        exec(string, globals()) #FIXME: unsafe, potential name conflict
-        npts = globals().get('___npts')
-        params = globals().get('___params')
-        cost = globals().get('___cost')
-        globals().pop('___npts', None)
-        globals().pop('___params', None)
-        globals().pop('___cost', None)
+        _globals = {}
+        _globals.update(globals())
+        code = compile(string, '<string>', 'exec')
+        exec code in _globals
+        npts = _globals.get('___npts')
+        params = _globals.get('___params')
+        cost = _globals.get('___cost')
+        del _globals
     except: #XXX: should only catch the appropriate exceptions
         raise OSError("error reading '%s'" % path)
     finally:

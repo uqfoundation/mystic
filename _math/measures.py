@@ -370,7 +370,7 @@ Inputs:
 
 def impose_expectation(param, f, npts, bounds=None, weights=None, **kwds):
   """impose a given expextation value (m +/- D) on a given function f.
-Optimiziation on f over the given bounds seeks a mean 'm' with deviation 'D'.
+Optimization on f over the given bounds seeks a mean 'm' with deviation 'D'.
   (this function is not 'mean-, range-, or variance-preserving')
 
 Inputs:
@@ -383,6 +383,9 @@ Inputs:
 Additional Inputs:
     constraints -- a function that takes a nested list of N x 1D discrete
         measure positions and weights   x' = constraints(x, w)
+    npop -- size of the trial solution population
+    maxiter -- number - the maximum number of iterations to perform
+    maxfun -- number - the maximum number of function evaluations
 
 Outputs:
     samples -- a list of sample positions
@@ -443,8 +446,9 @@ For example:
 
   # construct and configure optimizer
   debug = kwds['debug'] if 'debug' in kwds else False
-  npop = 200
-  maxiter = 1000;  maxfun = 1e+6
+  npop = kwds.pop('npop', 200)
+  maxiter = kwds.pop('maxiter', 1000)
+  maxfun = kwds.pop('maxfun', 1e+6)
   crossover = 0.9; percent_change = 0.9
 
   def optimize(cost,(lb,ub),tolerance,_constraints):

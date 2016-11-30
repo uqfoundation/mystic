@@ -201,7 +201,7 @@ Inputs:
     positions = [(i,) for i in self.positions]
     return expectation(f, positions, self.weights)
 
-  def set_expect(self, (m,D), f, bounds=None, constraints=None):
+  def set_expect(self, (m,D), f, bounds=None, constraints=None, **kwds):
     """impose a expectation on a dirac measure
 
 Inputs:
@@ -211,6 +211,7 @@ Inputs:
     constraints -- a function that takes a product_measure  c' = constraints(c)
 """ #XXX: maybe more natural if f takes a positional value x, not a list x ?
     #XXX: maybe also natural c' = constraints(c) where c is a measure ?
+    #FIXME: undocumented npop, maxiter, maxfun
 
     if constraints:  # then need to adjust interface for 'impose_expectation'
       def cnstr(x, w):
@@ -219,7 +220,7 @@ Inputs:
         return decompose(c)[0]
     else: cnstr = constraints  # 'should' be None
     positions = impose_expectation((m,D), f, [self.npts], bounds, \
-                                           self.weights,  constraints=cnstr) 
+                                   self.weights, constraints=cnstr, **kwds)
     from numpy import array
     self.positions = list(array(positions)[:,0])
    #from numpy import squeeze
@@ -357,7 +358,7 @@ Inputs:
     from mystic.math.measures import expectation
     return expectation(f, self.positions, self.weights)
 
-  def set_expect(self, (m,D), f, bounds=None, constraints=None):
+  def set_expect(self, (m,D), f, bounds=None, constraints=None, **kwds):
     """impose a expectation on a product measure
 
 Inputs:
@@ -366,6 +367,7 @@ Inputs:
     bounds -- tuple of lists of bounds  (lower_bounds, upper_bounds)
     constraints -- a function that takes a product_measure  c' = constraints(c)
 """
+   #FIXME: undocumented npop, maxiter, maxfun
    #self.__center = m
    #self.__delta = D
     if constraints:  # then need to adjust interface for 'impose_expectation'
@@ -375,7 +377,7 @@ Inputs:
         return decompose(c)[0]
     else: cnstr = constraints  # 'should' be None
     self.positions = impose_expectation((m,D), f, self.pts, bounds, \
-                                        self.weights, constraints=cnstr) 
+                                        self.weights, constraints=cnstr, **kwds)
     return
 
   def pof(self, f):
