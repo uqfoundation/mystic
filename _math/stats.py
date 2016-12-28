@@ -220,6 +220,41 @@ def _lgamma(x):
     logGamma = (x - 0.5)*math.log(x) - x + halfLogTwoPi + series
     return logGamma
 
+#----------------------------------------------------------------
+
+def _lefttail(percent):
+    "calculate left-area percent from center-area percent"
+    return 100 - .5*(100 - percent)
+
+def stderr(std, npts):
+    "standard error"
+    return std/npts**.5
+
+def meanconf(std, npts, percent=95):
+    "mean confidence interval: returns conf, where interval = mean +/- conf"
+    import scipy.stats as ss
+    scale = ss.norm.ppf(.01*_lefttail(percent))
+    return scale * stderr(std, npts)
+
+def sampvar(var, npts):
+    "sample variance from variance"
+    return var * npts/(npts-1)
+
+def _varconf(var, npts, percent=95):
+    "var confidence interval: returns interval, where var in interval"
+    s = var * npts
+    import scipy.stats as ss
+    chihi = ss.chi2.isf(.01*_lefttail(percent), npts-1)
+    chilo = ss.chi2.isf(1 - .01*_lefttail(percent), npts-1)
+    return s/chihi, s/chilo
+
+def varconf(var, npts, percent=95, tight=False):
+    "var confidence interval: returns max interval distance from var"
+    hi,lo = _varconf(var, npts, percent)
+    select = min if tight else max
+    return select(abs(hi-var),abs(var-lo))
+
+#----------------------------------------------------------------
 
 def cdf_factory(mean, variance):
   """

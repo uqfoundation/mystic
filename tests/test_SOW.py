@@ -123,4 +123,10 @@ if __name__ == '__main__':
  #write_converge_file(monitor,'paramlog2.py') #XXX: no existing plotters?
  #write_raw_file(monitor,'paramlog3.py') #XXX: no existing plotters?
 
+  import os
+  for fname in ('paramlog1.py',):
+    if os.path.exists(fname):
+      os.remove(fname)
+
+
 # EOF
