@@ -1,11 +1,4 @@
+.tox/
+.cache/
+*.egg-info/
 *.pyc
-__pycache__
-.project
-.pydevproject
-.settings
-.idea
-build
-dist
-mystic.egg-info
-mystic/info.py
-README
