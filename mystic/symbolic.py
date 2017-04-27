@@ -14,7 +14,7 @@
 from __future__ import division
 
 __all__ = ['linear_symbolic','replace_variables','get_variables',
-           'solve','simplify','comparator',
+           'solve','simplify','comparator', 'flip', '_flip', 'condense',
            'penalty_parser','constraints_parser','generate_conditions',
            'generate_solvers','generate_penalty','generate_constraint']
 
@@ -101,13 +101,66 @@ Inputs:
 
 
 def comparator(equation):
-    """identify the comparator (e.g. '<', '=', ...) in a constraints equation"""
+    "identify the comparator (e.g. '<', '=', ...) in a constraints equation"
     if '\n' in equation.strip(): #XXX: failure throws error or returns ''?
         return [comparator(eqn) for eqn in equation.strip().split('\n') if eqn]
     return '<=' if equation.count('<=') else '<' if equation.count('<') else \
            '>=' if equation.count('>=') else '>' if equation.count('>') else \
            '!=' if equation.count('!=') else \
            '==' if equation.count('==') else '=' if equation.count('=') else ''
+
+
+def _flip(cmp): # to invert the sign when dividing by negative value
+    "flip the comparator (i.e. '<' to '>', and '<=' to '>=')"
+    return '<=' if cmp == '>=' else '<' if cmp == '>' else \
+           '>=' if cmp == '<=' else '>' if cmp == '<' else cmp
+
+
+def flip(equation):
+    "flip the comparator if the equation is an inequality (i.e. '<' to '>')"
+    cmp = comparator(equation)
+    return _flip(cmp).join(equation.split(cmp)) if cmp else equation
+
+
+def condense(*equations, **kwds):
+    """condense tuples of equations to the simplest representation
+
+Inputs:
+    equations -- tuples of inequalities or equalities
+
+    For example:
+    >>> condense(('C <= 0', 'B <= 0'), ('C <= 0', 'B >= 0'))
+    [('C <= 0',)]
+    >>> condense(('C <= 0', 'B <= 0'), ('C >= 0', 'B <= 0'))
+    [('B <= 0',)]
+    >>> condense(('C <= 0', 'B <= 0'), ('C >= 0', 'B >= 0'))
+    [('C <= 0', 'B <= 0'), ('C >= 0', 'B >= 0')]
+
+Additional Inputs:
+    verbose -- if True, print diagnostic information. Default is False.
+"""
+    verbose = kwds.get('verbose', False)
+    result, miss = [],[]
+    skip = set()
+    found = False
+    for i,u in enumerate(equations):
+        if i in skip: continue
+        for j,v in enumerate(equations[i+1:],i+1):
+            if verbose: print "try: ", u, v
+            left = []
+            same = tuple(k for k in u if k in v or left.append(flip(k)))
+            if len(same) is len(u) - 1 and all(k in v for k in left):
+                if same: result.append(same)
+                skip.add(i); skip.add(j)
+                found = True
+                break
+        if not found: miss.append(u)
+        else: found = False
+    if verbose:
+        print "matches: ", result
+        print "misses: ", miss
+    return condense(*result) + miss if result else miss
+
 
 def simplify(constraints, variables='x', target=None, **kwds):
     """simplify a system of symbolic constraints equations.
@@ -152,6 +205,7 @@ Further Inputs:
         If cycle is True, there should be more variety on the left-hand side
         of the simplified equations. By default, the variables do not cycle.
 """
+    all = False #XXX: return all simplifications (due to negative values)
     import random
     _locals = {}
     # default is _locals with numpy and math imported
@@ -164,12 +218,34 @@ Further Inputs:
     code = compile(code, '<string>', 'exec')
     exec code in _locals
 
-    def _flip(cmp):
-        "flip the comparator (i.e. '<' to '>', and '<=' to '>=')"
-        return '<=' if cmp == '>=' else '<' if cmp == '>' else \
-               '>=' if cmp == '<=' else '>' if cmp == '<' else cmp
+    def _equals(before, after, vals=None, variants=None, **kwds):
+        'determine if the equation before and after simplification are equal'
+        verbose = kwds.get('verbose', False)
+        vars = kwds.get('variables', 'x')
+        _vars = get_variables(after, vars)
+        locals = kwds['locals'] if 'locals' in kwds else None
+        if locals is None: locals = {}
+        if vals is None: vals = {}
+        locals.update(vals)
+        if verbose: print locals
+        locals_ = _locals.copy()
+        locals_.update(locals) #XXX: allow this?
+        while variants:
+            try:
+                after, before = eval(after,{},locals_), eval(before,{},locals_)
+                break
+            except ValueError as error:  #FIXME: python2.5
+                if error.message.startswith('negative number') and \
+                   error.message.endswith('raised to a fractional power'):
+                    val = variants.pop()
+                    [locals_.update({k:v+val}) for k,v in locals_.items() if k in _vars]
+                else:
+                    raise error
+        else: #END HACK
+            after, before = eval(after,{},locals_), eval(before,{},locals_)
+        return before is after
 
-    def _simplify(eqn, rand=random.random, target=None, **kwds):
+    def _simplify(eqn, rand=random.random, target=None, all=False, **kwds):
         'isolate one variable on the lhs'
         verbose = kwds.get('verbose', False)
         vars = kwds.get('variables', 'x')
@@ -178,40 +254,46 @@ Further Inputs:
         _eqn = res.replace('=',cmp)
         if verbose: print 'in: %s\nout: %s' % (eqn, _eqn)
         if not cmp.count('<')+cmp.count('>'):
-            return _eqn 
-        # evaluate expression to see if comparator needs to be flipped
-        locals = kwds['locals'] if 'locals' in kwds else None
-        if locals is None: locals = {}
-        locals.update(dict((var,rand()) for var in get_variables(eqn, vars)))
-        if verbose: print locals
-        locals_ = _locals.copy()
-        locals_.update(locals) #XXX: allow this?
+            return _eqn
+
         # make sure '=' is '==' so works in eval
         _cmp = comparator(_eqn)
-        variants = [100000,-200000,100100,-200,110,-20,11,-2,1] #HACK
-        #HACK: avoid (rand-M)**(1/N) where (rand-M) negative; sqrt(x) to x**.5
         before = eqn.replace(cmp, '==') if cmp == '=' else eqn
         after = _eqn.replace(_cmp, '==') if _cmp == '=' else _eqn
+        #HACK: avoid (rand-M)**(1/N) where (rand-M) negative; sqrt(x) to x**.5
         before = before.replace('sqrt','_sqrt')
         after = after.replace('sqrt','_sqrt')
-        while variants:
-            try:
-                after, before = eval(after, locals_), eval(before, locals_)
-                break
-            except ValueError as error:  #FIXME: python2.5
-                if error.message.startswith('negative number') and \
-                   error.message.endswith('raised to a fractional power'):
-                    val = variants.pop()
-                    [locals_.update({k:v+val}) for k,v in locals_.items() if k in get_variables(_eqn, vars)]
-                else:
-                    raise error
-        else: #END HACK
-            after, before = eval(after, locals_), eval(before, locals_)
-        if before == after:
-            return _eqn
-        # flip comparator, then return
-        cmp = _flip(cmp)
-        return res.replace('=',cmp)
+
+        # evaluate expression to see if comparator needs to be flipped
+        variants = (100000,-200000,100100,-200,110,-20,11,-2,1) #HACK
+        allvars = get_variables(eqn, vars)
+        keep, invert = [],[]
+        posvars,negvars = _eqn.split(_cmp)
+        posvars = get_variables(posvars, allvars)
+        negvars = get_variables(negvars, allvars)
+        import itertools as it
+        # dicts of test varialbles, with all combinations of pos/neg
+        testvars = (dict(it.izip(posvars+negvars,(j*rand() for j in (1,)+i))) for i in it.product((1,-1),repeat=len(negvars)))
+        # classify as 'flipped' or 'unflipped'
+        for vals in testvars:
+            keys = tuple(k+' %s 0' % ('>' if v>0 else '<') for k,v in vals.iteritems() if k not in posvars)
+            if keys: keep.append(keys) if _equals(before, after, vals, list(variants), **kwds) else invert.append(keys)
+        # reduce the flipped and unflipped to simplest representation
+        keep, invert = condense(*keep), condense(*invert)
+        # gather the results
+        results = {}
+        kept = _eqn
+        flipped = flip(_eqn)
+        if keep: results[kept] = keep
+        if invert: results[flipped] = invert
+        # convert results to a tuple of multiline strings
+        results = tuple(it.chain(*([k + '\n' + '\n'.join(j for j in i) for i in v] for k,v in results.iteritems())))
+        if len(results) is 1: results = results[0]
+        elif len(results) is 0: results = None
+        #print '###: ', results
+        _result = flipped if invert else kept #XXX: if both, prefers invert
+        return (results or _result) if all else _result
+
     cycle = kwds.get('cycle', False)
     eqns = []
     used = []
@@ -223,7 +305,7 @@ Further Inputs:
         if cycle: vars = [var for var in vars if var not in used] + used
         while vars:
             try: # cycle through variables trying 'simplest' first
-                res = _simplify(eqn, variables=variables, target=vars, **kwds)
+                res = _simplify(eqn, variables=variables, target=vars, all=all, **kwds)
                 eqns.append(res)
                 used.append(res.split(comparator(res),1)[0].strip())
                 break
@@ -231,7 +313,7 @@ Further Inputs:
                 if isinstance(vars, basestring): vars = []
                 else: vars.pop(0)
         else: # failure... so re-raise error
-            res = _simplify(eqn, variables=variables, target=target, **kwds)
+            res = _simplify(eqn, variables=variables, target=target, all=all, **kwds)
             eqns.append(res)
    #eqns = (_simplify(eqn, **kwds) for eqn in constraints.strip().split('\n'))
     return '\n'.join(eqns)
@@ -362,7 +444,7 @@ Additional Inputs:
     return varnamelist
 
 
-def penalty_parser(constraints, variables='x', nvars=None):
+def penalty_parser(constraints, variables='x', nvars=None):#FIXME: eps if w/o =
     """parse symbolic constraints into penalty constraints.
 Returns a tuple of inequality constraints and a tuple of equality constraints.
 
@@ -449,7 +531,7 @@ Additional Inputs:
     return tuple(ineqconstraints), tuple(eqconstraints)
 
 
-def constraints_parser(constraints, variables='x', nvars=None):
+def constraints_parser(constraints, variables='x', nvars=None):#FIXME: eps
     """parse symbolic constraints into a tuple of constraints solver equations.
 The left-hand side of each constraint must be simplified to support assignment.
 
@@ -550,7 +632,7 @@ Additional Inputs:
 
     return tuple(parsed)
 
-
+#FIXME: if given a tuple, pick at random unless certain index is selected
 def generate_conditions(constraints, variables='x', nvars=None, locals=None):
     """generate penalty condition functions from a set of constraint strings
 
@@ -622,6 +704,7 @@ del %(container)s_%(name)s""" % fdict
    #return results
 
 
+#FIXME: if given a tuple, pick at random unless certain index is selected
 def generate_solvers(constraints, variables='x', nvars=None, locals=None):
     """generate constraints solver functions from a set of constraint strings
 
