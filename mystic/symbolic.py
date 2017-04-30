@@ -13,8 +13,8 @@
 """
 from __future__ import division
 
-__all__ = ['linear_symbolic','replace_variables','get_variables',
-           'solve','simplify','comparator', 'flip', '_flip', 'condense',
+__all__ = ['linear_symbolic','replace_variables','get_variables','merge',
+           'solve','simplify','comparator','flip','_flip','condense',
            'penalty_parser','constraints_parser','generate_conditions',
            'generate_solvers','generate_penalty','generate_constraint']
 
@@ -110,16 +110,19 @@ def comparator(equation):
            '==' if equation.count('==') else '=' if equation.count('=') else ''
 
 
-def _flip(cmp): # to invert the sign when dividing by negative value
+def _flip(cmp, bounds=False): # to invert sign if dividing by negative value
     "flip the comparator (i.e. '<' to '>', and '<=' to '>=')"
+    if bounds:
+        return '<' if cmp == '>=' else '<=' if cmp == '>' else \
+               '>' if cmp == '<=' else '>=' if cmp == '<' else cmp
     return '<=' if cmp == '>=' else '<' if cmp == '>' else \
            '>=' if cmp == '<=' else '>' if cmp == '<' else cmp
 
 
-def flip(equation):
+def flip(equation, bounds=False):
     "flip the comparator if the equation is an inequality (i.e. '<' to '>')"
     cmp = comparator(equation)
-    return _flip(cmp).join(equation.split(cmp)) if cmp else equation
+    return _flip(cmp, bounds).join(equation.split(cmp)) if cmp else equation
 
 
 def condense(*equations, **kwds):
@@ -160,6 +163,52 @@ Additional Inputs:
         print "matches: ", result
         print "misses: ", miss
     return condense(*result) + miss if result else miss
+
+
+def merge(*equations, **kwds):
+    """merge bounds in a sequence of equations (e.g. [A<0, A>0] --> [A!=0])
+
+Inputs:
+    equations -- a sequence of equations
+
+    For example,
+    >>> merge(*['A > 0', 'A > 0', 'B >= 0', 'B <= 0'], inclusive=False)
+    ('A > 0', 'B = 0')
+    >>> merge(*['A > 0', 'A > 0', 'B >= 0', 'B <= 0'], inclusive=True)
+    ('A > 0',)
+
+Additional Inputs:
+    inclusive -- if True (default), bounds are inclusive; else exclusive bounds
+
+NOTE: if bounds are invalid, returns None
+"""
+    inclusive = kwds.get('inclusive', True)
+    if inclusive:
+        '''
+        if ('X > 0', 'X < 0') then 'X != 0'
+        if ('X > 0', 'X <= 0') then ''
+        if ('X >= 0', 'X < 0') then ''
+        if ('X >= 0', 'X <= 0') then ''
+        '''
+        # sub >< with !=
+        equations = tuple(i.replace(comparator(i),'!=') if (comparator(i) in ('>','<')) and (flip(i) in equations) else i for i in equations)
+        # sub other inequality pairs with ''; delete duplicate entries
+        equations = set('' if ('>' in i or '<' in i) and (flip(i) in equations or flip(i,True) in equations) else i for i in equations)
+        # delete '' entries
+        return tuple(i for i in equations if i != '')
+    # else exclusive
+    '''
+    if ('X > 0', 'X < 0') then None
+    if ('X > 0', 'X <= 0') then None
+    if ('X >= 0', 'X < 0') then None
+    if ('X >= 0', 'X <= 0') then 'X = 0'
+    '''
+    # sub >< with =
+    equations = tuple(i.replace(comparator(i),'=') if ('>=' in i or '<=' in i) and (flip(i) in equations) else i for i in equations)
+    # sub other inequality pairs with None; delete duplicate entries
+    equations = set(None if ('>' in i or '<' in i) and (flip(i) in equations or flip(i,True) in equations) else i for i in equations)
+    # if None in entries then return None (i.e. not valid)
+    return None if None in equations else tuple(equations)
 
 
 def simplify(constraints, variables='x', target=None, **kwds):
@@ -204,9 +253,15 @@ Further Inputs:
     cycle -- boolean to cycle the order for which the variables are solved.
         If cycle is True, there should be more variety on the left-hand side
         of the simplified equations. By default, the variables do not cycle.
+    all -- boolean to return all simplifications due to negative values.
+        When dividing by a possibly negative variable, an inequality may flip,
+        thus creating alternate simplifications. If all is True, return all
+        of the possible simplifications due to negative values in an inequalty.
+        The default is False, returning only one possible simplification.
 """
-    all = False #XXX: return all simplifications (due to negative values)
+    all = kwds.get('all', False)
     import random
+    import itertools as it
     _locals = {}
     # default is _locals with numpy and math imported
     # numpy throws an 'AttributeError', but math passes error to sympy
@@ -245,7 +300,7 @@ Further Inputs:
             after, before = eval(after,{},locals_), eval(before,{},locals_)
         return before is after
 
-    def _simplify(eqn, rand=random.random, target=None, all=False, **kwds):
+    def _simplify(eqn, rand=random.random, target=None, **kwds):
         'isolate one variable on the lhs'
         verbose = kwds.get('verbose', False)
         vars = kwds.get('variables', 'x')
@@ -271,7 +326,6 @@ Further Inputs:
         posvars,negvars = _eqn.split(_cmp)
         posvars = get_variables(posvars, allvars)
         negvars = get_variables(negvars, allvars)
-        import itertools as it
         # dicts of test varialbles, with all combinations of pos/neg
         testvars = (dict(it.izip(posvars+negvars,(j*rand() for j in (1,)+i))) for i in it.product((1,-1),repeat=len(negvars)))
         # classify as 'flipped' or 'unflipped'
@@ -286,13 +340,13 @@ Further Inputs:
         flipped = flip(_eqn)
         if keep: results[kept] = keep
         if invert: results[flipped] = invert
+        _result = flipped if invert else kept #XXX: if both, prefers invert
         # convert results to a tuple of multiline strings
         results = tuple(it.chain(*([k + '\n' + '\n'.join(j for j in i) for i in v] for k,v in results.iteritems())))
         if len(results) is 1: results = results[0]
         elif len(results) is 0: results = None
         #print '###: ', results
-        _result = flipped if invert else kept #XXX: if both, prefers invert
-        return (results or _result) if all else _result
+        return results or _result
 
     cycle = kwds.get('cycle', False)
     eqns = []
@@ -305,18 +359,34 @@ Further Inputs:
         if cycle: vars = [var for var in vars if var not in used] + used
         while vars:
             try: # cycle through variables trying 'simplest' first
-                res = _simplify(eqn, variables=variables, target=vars, all=all, **kwds)
+                res = _simplify(eqn, variables=variables, target=vars, **kwds)
+                #print '#:', res
+                res = res if type(res) is tuple else (res,)
                 eqns.append(res)
-                used.append(res.split(comparator(res),1)[0].strip())
+                r = res[0] #XXX: only add the 'primary' variable to used
+                used.append(r.split(comparator(r.split('\n')[0]),1)[0].strip())
+                #print "v,u: ", vars, used
                 break
             except ValueError:
                 if isinstance(vars, basestring): vars = []
                 else: vars.pop(0)
+                #print "v,u: ", vars, used
         else: # failure... so re-raise error
-            res = _simplify(eqn, variables=variables, target=target, all=all, **kwds)
+            res = _simplify(eqn, variables=variables, target=target, **kwds)
+            #print 'X:', res
+            res = res if type(res) is tuple else (res,)
             eqns.append(res)
-   #eqns = (_simplify(eqn, **kwds) for eqn in constraints.strip().split('\n'))
-    return '\n'.join(eqns)
+    #print eqns
+    _eqns = it.product(*eqns)
+    eqns = tuple('\n'.join(i) for i in _eqns)
+    # "merge" the multiple equations to find simplest bounds
+    eqns = tuple(merge(*e.split('\n'), inclusive=False) for e in eqns)
+    if eqns.count(None) is len(eqns): return None
+    #   msg = 'No solution'
+    #   raise ValueError(msg) #XXX: return None? throw Error? or ???
+    eqns = tuple('\n'.join(e) for e in eqns if e != None)
+    #XXX: if all=False, is possible to return "most True" (smallest penalty)?
+    return (eqns if all else eqns[random.randint(0,len(eqns)-1)]) if len(eqns) > 1 else (eqns[0] if len(eqns) else '')
 
 
 def replace_variables(constraints, variables=None, markers='$'):
