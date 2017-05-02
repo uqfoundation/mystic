@@ -592,7 +592,8 @@ Additional Inputs:
             if len(split) == 1:
                 print "Invalid constraint: ", constraint
             # Use epsilon whenever '<' or '>' is comparator
-            eps = ' + e_' if comparator(constraint) in ('<','>') else ''
+            eps = comparator(constraint)
+            eps = ' + e_' if eps == '>' else (' - e_' if eps == '<' else '')
             eqn = {'lhs':split[0].rstrip('=').strip(), \
                    'rhs':split[-1].lstrip('=').strip() + eps}
             expression = '%(lhs)s - (%(rhs)s)' % eqn
@@ -601,10 +602,9 @@ Additional Inputs:
             elif direction == '<':
                 ineqconstraints.append(expression)
             elif direction == '>':
-                ineqconstraints.append('-(' + expression + ')')
-            else: #XXX: use '!expression' to flag '!='
-                eqconstraints.append('!(' + expression + ')')
-                raise NotImplementedError #XXX: remove when works in generate_*
+                ineqconstraints.append('-('+ expression +')')
+            else: #XXX: better value than 1 for when '!=' expression is False?
+                eqconstraints.append('0. if ('+ expression +') != 0 else 1')
 
     return tuple(ineqconstraints), tuple(eqconstraints)
 
@@ -671,7 +671,8 @@ Additional Inputs:
             if constraint.find('prod(') != -1:
                 constraint = constraint.replace('prod(', 'product(')
             # Use epsilon whenever '<' or '>' is comparator
-            eps = ' + e_' if comparator(constraint) in ('<','>') else ''
+            eps = comparator(constraint)
+            eps = ' + e_' if eps == '>' else (' - e_' if eps == '<' else '')
 
             #XXX: below this line the code is different than penalty_parser
             # convert "<" to min(LHS, RHS) and ">" to max(LHS,RHS)
@@ -712,13 +713,12 @@ Additional Inputs:
             expression = "=".join([lhs,rhs])
 
             if comparator(constraint) == '!=':
-                raise NotImplementedError #XXX: remove when works in generate_*
+                raise NotImplementedError #XXX: fix in generate_solvers
             parsed.append(expression)
 
     return tuple(parsed)
 
 #FIXME: if given a tuple, pick at random unless certain index is selected
-#FIXME: handle '!expression' format for '!=' penalties
 def generate_conditions(constraints, variables='x', nvars=None, locals=None):
     """generate penalty condition functions from a set of constraint strings
 
