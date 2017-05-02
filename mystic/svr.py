@@ -24,22 +24,22 @@ def KernelMatrix(X, k=multiply):
     return k(X[:,None], X[None,:])
 
 
-def SupportVectors(alpha, eps=0):
-    """indices of nonzero alphas (at tolerance eps)"""
-    return (abs(alpha)>eps).nonzero()[0]
+def SupportVectors(alpha, epsilon=0):
+    """indices of nonzero alphas (at tolerance epsilon)"""
+    return (abs(alpha)>epsilon).nonzero()[0]
 
-def Bias(x, y, alpha, eps, kernel=InnerProduct):
+def Bias(x, y, alpha, epsilon, kernel=InnerProduct):
     """ Compute regression bias for epsilon insensitive loss regression """
     N = len(alpha)/2
     ap, am = alpha[:N],  alpha[N:]
     sv = SupportVectors(alpha)[0]
-    # functionally: b = eps + y[sv] + sum( (ap-am) * map(lambda xx: kernel(xx, x[sv]), x) )
-    b = eps + y[sv] + sum( (ap-am) * multiply.outer(x, x[sv]) )
+    # functionally: b = epsilon + y[sv] + sum( (ap-am) * map(lambda xx: kernel(xx, x[sv]), x) )
+    b = epsilon + y[sv] + sum( (ap-am) * multiply.outer(x, x[sv]) )
     return b
 
-def RegressionFunction(x, y, alpha, eps, kernel=InnerProduct):
+def RegressionFunction(x, y, alpha, epsilon, kernel=InnerProduct):
     """ The Support Vector expansion. f(x) = Sum (ap - am) K(xi, x) + b """
-    bias = Bias(x, y, alpha, eps, kernel)
+    bias = Bias(x, y, alpha, epsilon, kernel)
     N = len(alpha)/2
     ap, am = alpha[:N],  alpha[N:]
     ad = ap-am

@@ -79,7 +79,7 @@ print "minimum 0.5*x'Qx + b'*x: ", solver.bestEnergy
 
 # calculate weight vectors, support vectors, and bias
 wv = WeightVector(alpha, X, y)
-sv1, sv2 = SupportVectors(alpha,y,eps=1e-6)
+sv1, sv2 = SupportVectors(alpha,y,epsilon=1e-6)
 bias = Bias(alpha, X, y)
 
 ym = (y.flatten()<0).nonzero()[0]

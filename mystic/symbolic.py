@@ -514,7 +514,7 @@ Additional Inputs:
     return varnamelist
 
 
-def penalty_parser(constraints, variables='x', nvars=None):#FIXME: eps if w/o =
+def penalty_parser(constraints, variables='x', nvars=None):
     """parse symbolic constraints into penalty constraints.
 Returns a tuple of inequality constraints and a tuple of equality constraints.
 
@@ -584,24 +584,32 @@ Additional Inputs:
                 split = constraint.split('<')
                 direction = '<'
             if len(split) == 1:
+                split = constraint.split('!=')
+                direction = '!='
+            if len(split) == 1:
                 split = constraint.split('=')
                 direction = '='
             if len(split) == 1:
                 print "Invalid constraint: ", constraint
+            # Use epsilon whenever '<' or '>' is comparator
+            eps = ' + e_' if comparator(constraint) in ('<','>') else ''
             eqn = {'lhs':split[0].rstrip('=').strip(), \
-                   'rhs':split[-1].lstrip('=').strip()}
+                   'rhs':split[-1].lstrip('=').strip() + eps}
             expression = '%(lhs)s - (%(rhs)s)' % eqn
             if direction == '=':
                 eqconstraints.append(expression)
             elif direction == '<':
                 ineqconstraints.append(expression)
-            else:
+            elif direction == '>':
                 ineqconstraints.append('-(' + expression + ')')
+            else: #XXX: use '!expression' to flag '!='
+                eqconstraints.append('!(' + expression + ')')
+                raise NotImplementedError #XXX: remove when works in generate_*
 
     return tuple(ineqconstraints), tuple(eqconstraints)
 
 
-def constraints_parser(constraints, variables='x', nvars=None):#FIXME: eps
+def constraints_parser(constraints, variables='x', nvars=None):
     """parse symbolic constraints into a tuple of constraints solver equations.
 The left-hand side of each constraint must be simplified to support assignment.
 
@@ -662,6 +670,8 @@ Additional Inputs:
                 constraint = constraint.replace('var(', 'variance(')
             if constraint.find('prod(') != -1:
                 constraint = constraint.replace('prod(', 'product(')
+            # Use epsilon whenever '<' or '>' is comparator
+            eps = ' + e_' if comparator(constraint) in ('<','>') else ''
 
             #XXX: below this line the code is different than penalty_parser
             # convert "<" to min(LHS, RHS) and ">" to max(LHS,RHS)
@@ -671,12 +681,15 @@ Additional Inputs:
                 split = constraint.split('<')
                 expression = '%(lhs)s = min(%(rhs)s, %(lhs)s)'
             if len(split) == 1: # didn't contain '>' or '<'
+                split = constraint.split('!=')
+                expression = '%(lhs)s != %(rhs)s'
+            if len(split) == 1: # didn't contain '>', '<', or '!='
                 split = constraint.split('=')
                 expression = '%(lhs)s = %(rhs)s'
-            if len(split) == 1: # didn't contain '>', '<', or '='
+            if len(split) == 1: # didn't contain '>', '<', '!=', or '='
                 print "Invalid constraint: ", constraint
             eqn = {'lhs':split[0].rstrip('=').strip(), \
-                   'rhs':split[-1].lstrip('=').strip()}
+                   'rhs':split[-1].lstrip('=').strip() + eps}
             expression = expression % eqn
 
             # allow mystic.math.measures impose_* on LHS
@@ -698,11 +711,14 @@ Additional Inputs:
               rhs = ' impose_product( (' + rhs.lstrip() + '),' + lhs + ')'
             expression = "=".join([lhs,rhs])
 
+            if comparator(constraint) == '!=':
+                raise NotImplementedError #XXX: remove when works in generate_*
             parsed.append(expression)
 
     return tuple(parsed)
 
 #FIXME: if given a tuple, pick at random unless certain index is selected
+#FIXME: handle '!expression' format for '!=' penalties
 def generate_conditions(constraints, variables='x', nvars=None, locals=None):
     """generate penalty condition functions from a set of constraint strings
 
@@ -734,11 +750,19 @@ Additional Inputs:
         don't have the same base, and can include variables that are not
         found in the constraints equation string.
     locals -- a dictionary of additional variables used in the symbolic
-        constraints equations, and their desired values.
+        constraints equations, and their desired values.  Default is
+        {'e_': 1e-16}, where 'e_' is the minimum numerical distance between
+        '<' and '<=', and must be <= 0. For e_=0, '<' is essentially '<='.
     """
     ineqconstraints, eqconstraints = penalty_parser(constraints, \
                                       variables=variables, nvars=nvars)
 
+    # parse epsilon
+    if locals is None: locals = {}
+    locals['e_'] = epsilon = locals.get('e_', 1e-16)
+    if epsilon < 0:
+        msg = 'math domain error'
+        raise ValueError(msg)
     # default is globals with numpy and math imported
     globals = {}
     code = """from math import *; from numpy import *;"""
@@ -746,7 +770,6 @@ Additional Inputs:
    #code += """from mystic.math.measures import spread, variance, mean;"""
     code = compile(code, '<string>', 'exec')
     exec code in globals
-    if locals is None: locals = {}
     globals.update(locals) #XXX: allow this?
     
     # build an empty local scope to exec the code and build the functions
@@ -775,6 +798,7 @@ del %(container)s_%(name)s""" % fdict
 
 
 #FIXME: if given a tuple, pick at random unless certain index is selected
+#FIXME: handle '!=' format for '!=' constraints
 def generate_solvers(constraints, variables='x', nvars=None, locals=None):
     """generate constraints solver functions from a set of constraint strings
 
@@ -807,11 +831,19 @@ Additional Inputs:
         don't have the same base, and can include variables that are not
         found in the constraints equation string.
     locals -- a dictionary of additional variables used in the symbolic
-        constraints equations, and their desired values.
+        constraints equations, and their desired values.  Default is
+        {'e_': 1e-16}, where 'e_' is the minimum numerical distance between
+        '<' and '<=', and must be <= 0. For e_=0, '<' is essentially '<='.
     """
     _constraints = constraints_parser(constraints, \
                                       variables=variables, nvars=nvars)
 
+    # parse epsilon
+    if locals is None: locals = {}
+    locals['e_'] = epsilon = locals.get('e_', 1e-16)
+    if epsilon < 0:
+        msg = 'math domain error'
+        raise ValueError(msg)
     # default is globals with numpy and math imported
     globals = {}
     code = """from math import *; from numpy import *;"""
@@ -822,7 +854,6 @@ Additional Inputs:
     code += """from mystic.math.measures import impose_variance;"""
     code = compile(code, '<string>', 'exec')
     exec code in globals
-    if locals is None: locals = {}
     globals.update(locals) #XXX: allow this?
     
     # build an empty local scope to exec the code and build the functions

@@ -48,13 +48,13 @@ def WeightVector(alpha, X, y):
     return sum(aXy, 0)
 
 
-def SupportVectors(alpha, y=None, eps=0):
-    """indices of nonzero alphas (at tolerance eps)
+def SupportVectors(alpha, y=None, epsilon=0):
+    """indices of nonzero alphas (at tolerance epsilon)
 
 If labels y are provided, then group indices by label
     """
     import mystic.svr as svr
-    sv = svr.SupportVectors(alpha,eps)
+    sv = svr.SupportVectors(alpha,epsilon)
     if y is None:
         return sv
     else:
@@ -66,7 +66,7 @@ If labels y are provided, then group indices by label
 
 def Bias(alpha, X, y, kernel=dot):
     """Compute classification bias. """
-    sv1, sv2 = SupportVectors(alpha, y,eps=1e-6)
+    sv1, sv2 = SupportVectors(alpha, y, epsilon=1e-6)
     pt1, pt2 = X[sv1[0],:], X[sv2[0],:]
     k1, k2 = kernel(X, pt1), kernel(X,pt2)
     return -0.5 * (sum(alpha*y*k1) + sum(alpha*y*k2))
