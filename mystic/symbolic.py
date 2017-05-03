@@ -593,9 +593,10 @@ Additional Inputs:
                 print "Invalid constraint: ", constraint
             # Use epsilon whenever '<' or '>' is comparator
             eps = comparator(constraint)
-            eps = ' + e_' if eps == '>' else (' - e_' if eps == '<' else '')
+            eps = ' + e_ ' if eps == '>' else (' - e_ ' if eps == '<' else '')
             eqn = {'lhs':split[0].rstrip('=').strip(), \
-                   'rhs':split[-1].lstrip('=').strip() + eps}
+                   'rhs':split[-1].lstrip('=').strip()}
+            eqn['rhs'] += eps.replace('e_', '_tol(%s,tol,rel)' % eqn['rhs'])
             expression = '%(lhs)s - (%(rhs)s)' % eqn
             if direction == '=':
                 eqconstraints.append(expression)
@@ -603,8 +604,8 @@ Additional Inputs:
                 ineqconstraints.append(expression)
             elif direction == '>':
                 ineqconstraints.append('-('+ expression +')')
-            else: #XXX: better value than 1 for when '!=' expression is False?
-                eqconstraints.append('0. if ('+ expression +') != 0 else 1')
+            else: #XXX: better value than 1 for when '==' is True?
+                eqconstraints.append('('+ expression +') == 0')
 
     return tuple(ineqconstraints), tuple(eqconstraints)
 
@@ -672,7 +673,7 @@ Additional Inputs:
                 constraint = constraint.replace('prod(', 'product(')
             # Use epsilon whenever '<' or '>' is comparator
             eps = comparator(constraint)
-            eps = ' + e_' if eps == '>' else (' - e_' if eps == '<' else '')
+            eps = ' + e_ ' if eps == '>' else (' - e_ ' if eps == '<' else '')
 
             #XXX: below this line the code is different than penalty_parser
             # convert "<" to min(LHS, RHS) and ">" to max(LHS,RHS)
@@ -682,15 +683,16 @@ Additional Inputs:
                 split = constraint.split('<')
                 expression = '%(lhs)s = min(%(rhs)s, %(lhs)s)'
             if len(split) == 1: # didn't contain '>' or '<'
-                split = constraint.split('!=')
-                expression = '%(lhs)s != %(rhs)s'
+                split = constraint.split('!=') #XXX: != broken, use 1? eta?
+                expression = '%(lhs)s = %(lhs)s + equal(%(lhs)s,%(rhs)s)'#FIXME
             if len(split) == 1: # didn't contain '>', '<', or '!='
                 split = constraint.split('=')
                 expression = '%(lhs)s = %(rhs)s'
             if len(split) == 1: # didn't contain '>', '<', '!=', or '='
                 print "Invalid constraint: ", constraint
             eqn = {'lhs':split[0].rstrip('=').strip(), \
-                   'rhs':split[-1].lstrip('=').strip() + eps}
+                   'rhs':split[-1].lstrip('=').strip()}
+            eqn['rhs'] += eps.replace('e_', '_tol(%s,tol,rel)' % eqn['rhs'])
             expression = expression % eqn
 
             # allow mystic.math.measures impose_* on LHS
@@ -712,13 +714,13 @@ Additional Inputs:
               rhs = ' impose_product( (' + rhs.lstrip() + '),' + lhs + ')'
             expression = "=".join([lhs,rhs])
 
-            if comparator(constraint) == '!=':
-                raise NotImplementedError #XXX: fix in generate_solvers
+            if comparator(constraint) == '!=': #FIXME: remove when fix !=
+              raise NotImplementedError 
             parsed.append(expression)
 
     return tuple(parsed)
 
-#FIXME: if given a tuple, pick at random unless certain index is selected
+#FIXME: if given a tuple, pick randomly if index is not selected? or recursive?
 def generate_conditions(constraints, variables='x', nvars=None, locals=None):
     """generate penalty condition functions from a set of constraint strings
 
@@ -751,16 +753,18 @@ Additional Inputs:
         found in the constraints equation string.
     locals -- a dictionary of additional variables used in the symbolic
         constraints equations, and their desired values.  Default is
-        {'e_': 1e-16}, where 'e_' is the minimum numerical distance between
-        '<' and '<=', and must be <= 0. For e_=0, '<' is essentially '<='.
+        {'tol': 1e-15, 'rel': 1e-15}, where 'tol' and 'rel' are the absolute
+        and relative difference from the extremal value in a given inequality.
+        For more details, see `mystic.math.tolerance`.
     """
     ineqconstraints, eqconstraints = penalty_parser(constraints, \
                                       variables=variables, nvars=nvars)
 
     # parse epsilon
     if locals is None: locals = {}
-    locals['e_'] = epsilon = locals.get('e_', 1e-16)
-    if epsilon < 0:
+    locals['tol'] = tol = locals.get('tol', 1e-15)
+    locals['rel'] = rel = locals.get('rel', 1e-15)
+    if tol < 0 or rel < 0:
         msg = 'math domain error'
         raise ValueError(msg)
     # default is globals with numpy and math imported
@@ -768,6 +772,7 @@ Additional Inputs:
     code = """from math import *; from numpy import *;"""
     code += """from numpy import mean as average;""" # use np.mean not average
    #code += """from mystic.math.measures import spread, variance, mean;"""
+    code += """from mystic.math import tolerance as _tol;"""
     code = compile(code, '<string>', 'exec')
     exec code in globals
     globals.update(locals) #XXX: allow this?
@@ -797,8 +802,7 @@ del %(container)s_%(name)s""" % fdict
    #return results
 
 
-#FIXME: if given a tuple, pick at random unless certain index is selected
-#FIXME: handle '!=' format for '!=' constraints
+#FIXME: if given a tuple, pick randomly if index is not selected? or recursive?
 def generate_solvers(constraints, variables='x', nvars=None, locals=None):
     """generate constraints solver functions from a set of constraint strings
 
@@ -832,16 +836,18 @@ Additional Inputs:
         found in the constraints equation string.
     locals -- a dictionary of additional variables used in the symbolic
         constraints equations, and their desired values.  Default is
-        {'e_': 1e-16}, where 'e_' is the minimum numerical distance between
-        '<' and '<=', and must be <= 0. For e_=0, '<' is essentially '<='.
+        {'tol': 1e-15, 'rel': 1e-15}, where 'tol' and 'rel' are the absolute
+        and relative difference from the extremal value in a given inequality.
+        For more details, see `mystic.math.tolerance`.
     """
     _constraints = constraints_parser(constraints, \
                                       variables=variables, nvars=nvars)
 
     # parse epsilon
     if locals is None: locals = {}
-    locals['e_'] = epsilon = locals.get('e_', 1e-16)
-    if epsilon < 0:
+    locals['tol'] = tol = locals.get('tol', 1e-15)
+    locals['rel'] = rel = locals.get('rel', 1e-15)
+    if tol < 0 or rel < 0:
         msg = 'math domain error'
         raise ValueError(msg)
     # default is globals with numpy and math imported
@@ -852,6 +858,7 @@ Additional Inputs:
     code += """from mystic.math.measures import impose_spread, impose_mean;"""
     code += """from mystic.math.measures import impose_sum, impose_product;"""
     code += """from mystic.math.measures import impose_variance;"""
+    code += """from mystic.math import tolerance as _tol;"""
     code = compile(code, '<string>', 'exec')
     exec code in globals
     globals.update(locals) #XXX: allow this?

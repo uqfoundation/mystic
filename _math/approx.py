@@ -114,4 +114,9 @@ def almostEqual(x, y, tol=1e-18, rel=1e-7):
     return allclose(x, y, rtol=rel, atol=tol)
 
 
+def tolerance(x, tol=1e-15, rel=1e-15):
+    """relative plus absolute difference"""
+    return tol + abs(x)*rel
+
+
 # end of file

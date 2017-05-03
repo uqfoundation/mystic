@@ -28,6 +28,7 @@ These mathematical tools are provided::
     poly1d       -- generate a 1d polynomial instance
     gridpts      -- generate a set of regularly spaced points
     samplepts    -- generate a set of randomly sampled points 
+    tolerance    -- absolute difference plus relative difference
     almostEqual  -- test if equal within some absolute or relative tolerance
     Distribution -- generate a sampling distribution instance
 
@@ -36,7 +37,7 @@ These mathematical tools are provided::
 # functions and tools
 from poly import polyeval, poly1d
 from grid import gridpts, samplepts
-from approx import almostEqual
+from approx import almostEqual, tolerance
 
 
 # backward compatibility
