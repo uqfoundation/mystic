@@ -49,8 +49,8 @@ def test_numpy_penalty():
 def test_generate_constraint():
 
   constraints = """
-  mean([x0, x1, x2]) = 5.0
-  spread([x0, x1, x2]) = 10.0"""
+  spread([x0, x1, x2]) = 10.0
+  mean([x0, x1, x2]) = 5.0"""
 
   from mystic.math.measures import mean, spread
   solv = generate_solvers(constraints)
@@ -90,6 +90,61 @@ def test_simplify():
   assert mean(x) <= 5.0
   assert x[0] <= x[1] + x[2]
 
+def test_simplify_ne():
+  equations = '''
+  A > 0
+  B >= 0
+  A != B
+  C < A + B
+  C < 100
+  '''
+  vars = list('ABC')
+  p = generate_penalty(generate_conditions(equations, vars))
+  assert p([-100, -100, -100]) > p([-10, -10, -10])
+  assert p([-1, -1, 0]) > p([-1, -1, -1]) > p([-1, -1, -2])
+  assert p([-1, -1, -2]) == p([-1, -1, -5])
+  assert p([0, -1, -5]) > p([0, 0, -5])
+  assert p([1, 1, -5]) > p([1, 0, -5])
+  assert p([0, 1, -5]) > p([1e-5, 1, -5])
+  assert p([0, 1, -5]) == p([1, -1e-15, -5])
+  c = generate_constraint(generate_solvers(equations, vars))
+  d = dict(zip(vars, c([0,0,0])))
+  assert all(eval(i,d) for i in equations.strip().split('\n'))
+  d = dict(zip(vars, c([3,-9,-6])))
+  assert all(eval(i,d) for i in equations.strip().split('\n'))
+  d = dict(zip(vars, c([100,100,100])))
+  assert all(eval(i,d) for i in equations.strip().split('\n'))
+
+def test_simplify_ne_more():
+  equations = '''
+  A != B
+  B != A + C
+  A >= C + 1
+  C >= -1
+  B <= 0
+  '''
+  vars = list('ABC')
+  c = generate_constraint(generate_solvers(equations, vars))
+  d = dict(zip(vars, c([0,0,0])))
+  assert all(eval(i,d) for i in equations.strip().split('\n'))
+  d = dict(zip(vars, c([4,-2,6])))
+  assert all(eval(i,d) for i in equations.strip().split('\n'))
+  equations = '''
+  A != B
+  B != C
+  C != A + B
+  C >= 4
+  B <= 3
+  A >= 5
+  '''
+  c = generate_constraint(generate_solvers(equations, vars))
+  d = dict(zip(vars, c([0,0,0])))
+  assert all(eval(i,d) for i in equations.strip().split('\n'))
+  d = dict(zip(vars, c([5,0,5])))
+  assert all(eval(i,d) for i in equations.strip().split('\n'))
+  d = dict(zip(vars, c([-1,5,-1])))
+  assert all(eval(i,d) for i in equations.strip().split('\n'))
+
 
 if __name__ == '__main__':
   test_generate_penalty()
@@ -97,4 +152,6 @@ if __name__ == '__main__':
   test_generate_constraint()
   test_solve_constraint()
   test_simplify()
+  test_simplify_ne()
+  test_simplify_ne_more()
 

@@ -649,42 +649,87 @@ Additional Inputs:
         else: ndim = 0
     if nvars is not None: ndim = nvars
 
+    def _process_line(line):
+        'string processing from line to expression'
+        # Iterate in reverse in case ndim > 9.
+        indices = list(range(ndim))
+        indices.reverse()
+        for i in indices:
+            line = line.replace(varname + str(i), 'x[' + str(i) + ']') 
+        constraint = line.strip()
+
+        # Replace 'ptp', 'average', and 'var' (uses mystic, not numpy)
+        if constraint.find('ptp(') != -1:
+            constraint = constraint.replace('ptp(', 'spread(')
+        if constraint.find('average(') != -1:
+            constraint = constraint.replace('average(', 'mean(')
+        if constraint.find('var(') != -1:
+            constraint = constraint.replace('var(', 'variance(')
+        if constraint.find('prod(') != -1:
+            constraint = constraint.replace('prod(', 'product(')
+        return constraint
+
+    def _process_expression(expression):
+        ' allow mystic.math.measures impose_* on LHS '
+        lhs,rhs = expression.split('=')
+        if lhs.find('spread(') != -1:
+          lhs = lhs.split('spread')[-1]
+          rhs = ' impose_spread( (' + rhs.lstrip() + '),' + lhs + ')'
+        if lhs.find('mean(') != -1:
+          lhs = lhs.split('mean')[-1]
+          rhs = ' impose_mean( (' + rhs.lstrip() + '),' + lhs + ')'
+        if lhs.find('variance(') != -1:
+          lhs = lhs.split('variance')[-1]
+          rhs = ' impose_variance( (' + rhs.lstrip() + '),' + lhs + ')'
+        if lhs.find('sum(') != -1:
+          lhs = lhs.split('sum')[-1]
+          rhs = ' impose_sum( (' + rhs.lstrip() + '),' + lhs + ')'
+        if lhs.find('product(') != -1:
+          lhs = lhs.split('product')[-1]
+          rhs = ' impose_product( (' + rhs.lstrip() + '),' + lhs + ')'
+        return lhs,rhs
+
     # Parse the constraints string
     lines = constraints.splitlines()
     parsed = [] #XXX: in penalty_parser is eqconstraints, ineqconstraints
+    xLHS, xRHS = [],[]
     for line in lines:
         if line.strip():
-            fixed = line
-            # Iterate in reverse in case ndim > 9.
-            indices = list(range(ndim))
-            indices.reverse()
-            for i in indices:
-                fixed = fixed.replace(varname + str(i), 'x[' + str(i) + ']') 
-            constraint = fixed.strip()
+            constraint = _process_line(line)
+            # Skip whenever '!=' is not the comparator
+            if '!=' != comparator(constraint):
+                continue
+            eta = ' * (_tol(%(rhs)s,tol,rel) * 1.1) '#XXX: better 1.1*e_ or ???
+            # collect the LHS and RHS of all != cases, to use later.
+            split = constraint.split('!=') #XXX: better to use 1? eta? or ???
+            expression = '%(lhs)s = %(lhs)s + equal(%(lhs)s,%(rhs)s)' + eta
+            eqn = {'lhs':split[0].rstrip('=').strip(), \
+                   'rhs':split[-1].lstrip('=').strip()}
+            xLHS.append(eqn['lhs'])
+            xRHS.append(eqn['rhs'])
+            lhs, rhs = _process_expression(expression % eqn)
+            parsed.append("=".join((lhs,rhs)))
 
-            # Replace 'ptp', 'average', and 'var' (uses mystic, not numpy)
-            if constraint.find('ptp(') != -1:
-                constraint = constraint.replace('ptp(', 'spread(')
-            if constraint.find('average(') != -1:
-                constraint = constraint.replace('average(', 'mean(')
-            if constraint.find('var(') != -1:
-                constraint = constraint.replace('var(', 'variance(')
-            if constraint.find('prod(') != -1:
-                constraint = constraint.replace('prod(', 'product(')
-            # Use epsilon whenever '<' or '>' is comparator
+    # iterate again, actually processing strings knowing where the '!=' are.
+    for line in lines:
+        if line.strip():
+            constraint = _process_line(line)
+            # Skip whenever '!=' is the comparator
             eps = comparator(constraint)
+            if eps == '!=':
+                continue  #XXX: use 1.1? or ???
+            eta = '(_tol(%(rhs)s,tol,rel) * any(equal(%(rhs)s,%(neq)s)))'
+            # Use eta whenever '<=' or '>=' is comparator
+            eta = (' + ' + eta) if '>=' == eps else ((' - ' + eta) if '<=' == eps else '') #XXX: '>' in eps, or '>=' == eps?
+            # Use epsilon whenever '<' or '>' is comparator
             eps = ' + e_ ' if eps == '>' else (' - e_ ' if eps == '<' else '')
 
-            #XXX: below this line the code is different than penalty_parser
             # convert "<" to min(LHS, RHS) and ">" to max(LHS,RHS)
             split = constraint.split('>')
             expression = '%(lhs)s = max(%(rhs)s, %(lhs)s)'
-            if len(split) == 1: # didn't contain '>'
+            if len(split) == 1: # didn't contain '>' or '!='
                 split = constraint.split('<')
                 expression = '%(lhs)s = min(%(rhs)s, %(lhs)s)'
-            if len(split) == 1: # didn't contain '>' or '<'
-                split = constraint.split('!=') #XXX: != broken, use 1? eta?
-                expression = '%(lhs)s = %(lhs)s + equal(%(lhs)s,%(rhs)s)'#FIXME
             if len(split) == 1: # didn't contain '>', '<', or '!='
                 split = constraint.split('=')
                 expression = '%(lhs)s = %(rhs)s'
@@ -692,33 +737,15 @@ Additional Inputs:
                 print "Invalid constraint: ", constraint
             eqn = {'lhs':split[0].rstrip('=').strip(), \
                    'rhs':split[-1].lstrip('=').strip()}
-            eqn['rhs'] += eps.replace('e_', '_tol(%s,tol,rel)' % eqn['rhs'])
-            expression = expression % eqn
+            # get list of LHS,RHS that != forces not to appear
+            eqn['neq'] = '[' + ','.join(j for (i,j) in zip(xLHS+xRHS,xRHS+xLHS) if eqn['lhs'] == i) + ']'
+            eqn['rhs'] += eps.replace('e_', '_tol(%(rhs)s,tol,rel)' % eqn) \
+                          or eta % eqn
+            expression = "=".join(_process_expression(expression % eqn))
 
-            # allow mystic.math.measures impose_* on LHS
-            lhs,rhs = expression.split('=')
-            if lhs.find('spread(') != -1:
-              lhs = lhs.split('spread')[-1]
-              rhs = ' impose_spread( (' + rhs.lstrip() + '),' + lhs + ')'
-            if lhs.find('mean(') != -1:
-              lhs = lhs.split('mean')[-1]
-              rhs = ' impose_mean( (' + rhs.lstrip() + '),' + lhs + ')'
-            if lhs.find('variance(') != -1:
-              lhs = lhs.split('variance')[-1]
-              rhs = ' impose_variance( (' + rhs.lstrip() + '),' + lhs + ')'
-            if lhs.find('sum(') != -1:
-              lhs = lhs.split('sum')[-1]
-              rhs = ' impose_sum( (' + rhs.lstrip() + '),' + lhs + ')'
-            if lhs.find('product(') != -1:
-              lhs = lhs.split('product')[-1]
-              rhs = ' impose_product( (' + rhs.lstrip() + '),' + lhs + ')'
-            expression = "=".join([lhs,rhs])
-
-            if comparator(constraint) == '!=': #FIXME: remove when fix !=
-              raise NotImplementedError 
             parsed.append(expression)
 
-    return tuple(parsed)
+    return tuple(reversed(parsed))
 
 #FIXME: if given a tuple, pick randomly if index is not selected? or recursive?
 def generate_conditions(constraints, variables='x', nvars=None, locals=None):
