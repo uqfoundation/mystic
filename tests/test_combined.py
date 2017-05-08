@@ -52,6 +52,8 @@ if __name__ == '__main__':
 
     from mystic.math.measures import impose_product, impose_sum, impose_mean
     from mystic.constraints import as_penalty
+    from mystic import random_seed
+    random_seed(123)
 
     t = t1,t2,t3 = (impose_sum, impose_product, impose_mean)
    #c = [lambda x: ti(xi, x) for (xi,ti) in zip(x,t)] #XXX
