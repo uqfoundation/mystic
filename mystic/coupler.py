@@ -166,5 +166,107 @@ cost function evaluation.
 #XXX: can do multiple @additive; but better is compound penalty with And,Or,..?
 #XXX: create a counter for n += 1 ?
 
+# penalty coupling "language"  #XXX: was initially 'constraints.combined'
+def and_(*penalties, **settings): #XXX: not a decorator, should be?
+    """combine several penalties into a single penalty function by summation
 
-# EOF
+Inputs:
+    penalties -- penalty functions (or penalty conditions)
+
+Additional Inputs:
+    ptype -- penalty function type [default: linear_equality]
+    args -- arguments for the penalty function [default: ()]
+    kwds -- keyword arguments for the penalty function [default: {}]
+    k -- penalty multiplier [default: 1]
+    h -- iterative multiplier [default: 5]
+
+NOTE: The defaults provide a linear combination of the individual penalties
+    without any scaling. A different ptype (from 'mystic.penalty') will
+    apply a nonlinear scaling to the combined penalty, while a different
+    k will apply a linear scaling.
+
+NOTE: This function is also useful for combining constraints solvers
+    into a single constraints solver, however can not do so directly.  
+    Constraints solvers must first be converted to penalty functions
+    (i.e. with 'as_penalty'), then combined, then can be converted to
+    a constraints solver (i.e. with 'as_constraint'). The resulting
+    constraints will likely be more expensive to evaluate and less
+    accurate than writing the constraints solver from scratch.
+    """
+    k = settings.setdefault('k', 1)
+    if k is None: del settings['k']
+    ptype = settings.pop('ptype', None)
+    if ptype is None:
+        from mystic.penalty import linear_equality as ptype
+    penalty = lambda x: sum(p(x) for p in penalties)
+    return ptype(penalty, **settings)(lambda x:0.)
+
+
+def or_(*penalties, **settings): #XXX: not a decorator, should be?
+    """create a single penalty that selects the minimum of several penalties
+
+Inputs:
+    penalties -- penalty functions (or penalty conditions)
+
+Additional Inputs:
+    ptype -- penalty function type [default: linear_equality]
+    args -- arguments for the penalty function [default: ()]
+    kwds -- keyword arguments for the penalty function [default: {}]
+    k -- penalty multiplier [default: 1]
+    h -- iterative multiplier [default: 5]
+
+NOTE: The defaults provide a linear combination of the individual penalties
+    without any scaling. A different ptype (from 'mystic.penalty') will
+    apply a nonlinear scaling to the combined penalty, while a different
+    k will apply a linear scaling.
+
+NOTE: This function is also useful for combining constraints solvers
+    into a single constraints solver, however can not do so directly.  
+    Constraints solvers must first be converted to penalty functions
+    (i.e. with 'as_penalty'), then combined, then can be converted to
+    a constraints solver (i.e. with 'as_constraint'). The resulting
+    constraints will likely be more expensive to evaluate and less
+    accurate than writing the constraints solver from scratch.
+    """
+    k = settings.setdefault('k', 1)
+    if k is None: del settings['k']
+    ptype = settings.pop('ptype', None)
+    if ptype is None:
+        from mystic.penalty import linear_equality as ptype
+    penalty = lambda x: min(p(x) for p in penalties)
+    return ptype(penalty, **settings)(lambda x:0.)
+
+
+def not_(penalty, **settings): #XXX: not a decorator, should be?
+    """invert, so penalizes the region where the given penalty is valid
+
+Inputs:
+    penalty -- a penalty function (or penalty condition)
+
+Additional Inputs:
+    ptype -- penalty function type [default: linear_equality]
+    args -- arguments for the penalty function [default: ()]
+    kwds -- keyword arguments for the penalty function [default: {}]
+    k -- penalty multiplier [default: 1]
+    h -- iterative multiplier [default: 5]
+    """
+    k = settings.setdefault('k', 1)
+    if k is None: del settings['k']
+    ptype = settings.pop('ptype', None)
+    if ptype is None:
+        import mystic.penalty as mp
+        try:
+            ptype = getattr(mp, penalty.ptype)
+        except AttributeError: 
+            ptype = mp.linear_equality
+    try:
+        condition = penalty.func # is a penalty
+    except AttributeError:
+        condition = penalty # is a raw condition
+    if ptype.__name__.endswith('_inequality'):
+        _penalty = lambda x: 0 - condition(x)
+    else:
+        _penalty = lambda x: not condition(x)
+    return ptype(_penalty, **settings)(lambda x:0.)
+
+

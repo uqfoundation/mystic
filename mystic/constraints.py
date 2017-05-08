@@ -12,8 +12,9 @@
 __all__ = ['with_penalty','with_constraint','as_penalty','as_constraint',
            'with_mean','with_variance','with_std','with_spread','normalized',
            'issolution','solve','discrete','integers','near_integers',
-           'unique','has_unique','impose_unique','combined','impose_as',
-           'impose_at','impose_measure','impose_position','impose_weight']
+           'unique','has_unique','impose_unique','impose_as','impose_at',
+           'impose_measure','impose_position','impose_weight','and_','or_',
+           'not_']
 
 from mystic.math.measures import *
 from mystic.math import almostEqual
@@ -433,45 +434,102 @@ Additional Inputs:
     return penalty
 
 
-def combined(*penalties, **settings): #XXX: is this in the right module?
-    """combine several penalties into a single penalty function
+# constraints 'language'
+def and_(*constraints, **settings): #XXX: not a decorator, should be?
+    """combine several constraints into a single constraint
 
 Inputs:
-    penalties -- penalty functions (or penalty conditions)
+    constraints -- constraint functions (or constraint solvers)
 
 Additional Inputs:
-    ptype -- penalty function type [default: linear_equality]
-    args -- arguments for the penalty function [default: ()]
-    kwds -- keyword arguments for the penalty function [default: {}]
-    k -- penalty multiplier [default: 1]
-    h -- iterative multiplier [default: 5]
+    maxiter -- maximum number of iterations to attempt to solve [default: 100]
 
-NOTE: The defaults provide a linear combination of the individual penalties
-    without any scaling. A different ptype (from 'mystic.penalty') will
-    apply a nonlinear scaling to the combined penalty, while a different
-    k will apply a linear scaling.
-
-NOTE: This function is also useful for combining constraints solvers
-    into a single constraints solver, however can not do so directly.  
-    Constraints solvers must first be converted to penalty functions
-    (i.e. with 'as_penalty'), then combined, then can be converted to
-    a constraints solver (i.e. with 'as_constraint'). The resulting
-    constraints will likely be more expensive to evaluate and less
-    accurate than writing the constraints solver from scratch.
+NOTE: 
+    If a repeating cycle is detected, some of the inputs may be randomized.
     """
-   #k = settings.pop('k', None)
-   #h = settings.pop('h', None)
-   #if k is not None: settings['k'] = k
-   #if h is not None: settings['h'] = h
-    k = settings.setdefault('k', 1)
-    if k is None: del settings['k']
-    ptype = settings.pop('ptype', None)
-    if ptype is None:
-        from mystic.penalty import linear_equality as ptype
-    penalty = lambda x: sum(p(x) for p in penalties)
-    return ptype(penalty, **settings)(lambda x:0.)
-   #from mystic.constraints import as_constraint
-   #return as_constraint(penalty, **settings)
+    import itertools as it
+    import random as rnd
+    n = len(constraints)
+    maxiter = settings.pop('maxiter', 100) * n
+    def _constraint(x): #XXX: inefficient, rewrite without append
+        x = [x]
+        # apply all constaints once
+        for c in constraints:
+            x.append(c(x[-1]))
+        if all(xi == x[-1] for xi in x[1:]): return x[-1]
+        # cycle constraints until there's no change
+        _constraints = it.cycle(constraints) 
+        for j in range(n,maxiter):
+            x.append(next(_constraints)(x[-1]))
+            if all(xi == x[-1] for xi in x[-n:]): return x[-1]
+            # may be trapped in a cycle... randomize
+            if x[-1] == x[-(n+1)]:
+                x[-1] = [(i+rnd.randint(-1,1))*rnd.random() for i in x[-1]]
+            if not j%(2*n):
+                del x[:n]
+        # give up
+        return x[-1] #XXX: or fail by throwing Error?
+    return lambda x: _constraint(x)
+
+
+def or_(*constraints, **settings): #XXX: not a decorator, should be?
+    """create a constraint that is satisfied if any constraints are satisfied
+
+Inputs:
+    constraints -- constraint functions (or constraint solvers)
+
+Additional Inputs:
+    maxiter -- maximum number of iterations to attempt to solve [default: 100]
+
+NOTE: 
+    If a repeating cycle is detected, some of the inputs may be randomized.
+    """
+    import itertools as it
+    import random as rnd
+    n = len(constraints)
+    maxiter = settings.pop('maxiter', 100) * n
+    def _constraint(x): #XXX: inefficient, rewrite without append
+        x = [x]
+        # check if initial input is valid
+        for c in constraints:
+            x.append(c(x[0]))
+            if x[-1] == x[0]: return x[-1]
+        # cycle constraints until there's no change
+        _constraints = it.cycle(constraints) 
+        for j in range(n,maxiter):
+            x.append(next(_constraints)(x[-n]))
+            if x[-1] == x[-(n+1)]: return x[-1]
+            else: # may be trapped in a rut... randomize
+                x[-1] = x[-rnd.randint(1,n)]
+            if not j%(2*n):
+                del x[:n]
+        # give up
+        return x[-1] #XXX: or fail by throwing Error?
+    return lambda x: _constraint(x)
+
+
+def not_(constraint, **settings): #XXX: not a decorator, should be?
+    """invert the region where the given constraints are valid, then solve
+
+Inputs:
+    constraint -- constraint function (or constraint solver)
+
+Additional Inputs:
+    maxiter -- maximum number of iterations to attempt to solve [default: 100]
+
+NOTE: 
+    If a repeating cycle is detected, some of the inputs may be randomized.
+    """
+    import random as rnd
+    maxiter = settings.pop('maxiter', 100)
+    def _constraint(x):
+        # check if initial input is valid, else randomize and try again
+        for j in range(0,maxiter):
+            if constraint(x) != x: return x
+            x = [(i+rnd.randint(-1,1))*rnd.random() for i in x]
+        # give up
+        return x #XXX: or fail by throwing Error?
+    return lambda x: _constraint(x)
 
 
 from numpy import asfarray, asarray, choose, zeros, ones, ndarray

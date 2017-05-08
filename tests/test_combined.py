@@ -6,10 +6,12 @@
 # License: 3-clause BSD.  The full license text is available at:
 #  - http://trac.mystic.cacr.caltech.edu/project/mystic/browser/mystic/LICENSE
 '''
-combine several penalty conditions to build a single constraint solver
+combine several penalty conditions to build a single constraint solver,
+then show examples of using (and_, or_, not_) for penalties and constraints
 '''
 
-from mystic.constraints import combined
+from mystic.coupler import and_, or_, not_
+from mystic.constraints import and_ as _and, or_ as _or, not_ as _not
  
 
 if __name__ == '__main__':
@@ -34,7 +36,7 @@ if __name__ == '__main__':
     p3 = lambda x: abs(x3 - f3(x))
     p = (p1,p2,p3)
     p = [ptype(pi)(lambda x:0.) for pi in p]
-    penalty = combined(*p, k=k)
+    penalty = and_(*p, k=k)
     constraint = as_constraint(penalty, solver=solver)
 
     x = [1,2,3,4,5]
@@ -67,7 +69,7 @@ if __name__ == '__main__':
     ptype = linear_equality #quadratic_equality
 
     p = [as_penalty(ci, ptype) for ci in c]
-    penalty = combined(*p, k=k)
+    penalty = and_(*p, k=k)
     constraint = as_constraint(penalty, solver=solver)
 
     x = [1,2,3,4,5]
@@ -81,4 +83,77 @@ if __name__ == '__main__':
 
 
 
-# EOF
+    # etc: more coupling of constraints
+    from mystic.constraints import with_mean, discrete
+
+    @with_mean(5.0)
+    def meanie(x):
+      return x
+    
+    @discrete(range(11))
+    def integers(x):
+      return x
+    
+    c = _and(integers, meanie)
+    x = c([1,2,3])
+    assert x == integers(x) == meanie(x)
+    x = c([9,2,3])
+    assert x == integers(x) == meanie(x)
+    x = c([0,-2,3])
+    assert x == integers(x) == meanie(x)
+    x = c([9,-200,344])
+    assert x == integers(x) == meanie(x)
+
+    c = _or(meanie, integers)
+    x = c([1.1234, 4.23412, -9])
+    assert x == meanie(x) and x != integers(x)
+    x = c([7.0, 10.0, 0.0])
+    assert x == integers(x) and x != meanie(x)
+    x = c([6.0, 9.0, 0.0])
+    assert x == integers(x) == meanie(x)
+    x = c([3,4,5])
+    assert x == integers(x) and x != meanie(x)
+    x = c([3,4,5.5])
+    assert x == meanie(x) and x != integers(x)
+
+    c = _not(integers)
+    x = c([1,2,3])
+    assert x != integers(x) and x != [1,2,3] and x == c(x)
+    x = c([1.1,2,3])
+    assert x != integers(x) and x == [1.1,2,3] and x == c(x)
+    c = _not(meanie)
+    x = c([1,2,3])
+    assert x != meanie(x) and x == [1,2,3] and x == c(x)
+    x = c([4,5,6])
+    assert x != meanie(x) and x != [4,5,6] and x == c(x)
+    c = _not(_and(meanie, integers))
+    x = c([4,5,6])
+    assert x != meanie(x) and x != integers(x) and x != [4,5,6] and x == c(x)
+
+
+    # etc: more coupling of penalties
+    from mystic.penalty import quadratic_inequality
+
+    p1 = lambda x: sum(x) - 5
+    p2 = lambda x: min(i**2 for i in x)
+    p = p1,p2
+
+    p = [quadratic_inequality(pi)(lambda x:0.) for pi in p]
+    p1,p2 = p
+    penalty = and_(*p)
+
+    x = [[1,2],[-2,-1],[5,-5]]
+    for xi in x:
+        assert p1(xi) + p2(xi) == penalty(xi)
+
+    penalty = or_(*p)
+    for xi in x:
+        assert min(p1(xi),p2(xi)) == penalty(xi)
+
+    penalty = not_(p1)
+    for xi in x:
+        assert bool(p1(xi)) != bool(penalty(xi))
+    penalty = not_(p2)
+    for xi in x:
+        assert bool(p2(xi)) != bool(penalty(xi))
+
