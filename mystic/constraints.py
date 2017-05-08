@@ -38,6 +38,8 @@ and f(x) <= 0.0 for inequality constraints. ptype is a mystic.penalty type.
       @ptype(condition, *args, **kwds)
       def penalty(x):
           return 0.0
+      penalty.func = condition
+      penalty.ptype = ptype.__name__ 
       return penalty
     return dec
 
@@ -426,6 +428,8 @@ Additional Inputs:
     def penalty(x):
         return 0.0
 
+    penalty.func = rnorm
+    penalty.ptype = ptype.__name__ 
     return penalty
 
 

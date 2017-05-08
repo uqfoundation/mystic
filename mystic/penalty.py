@@ -83,6 +83,8 @@ the condition f(x) is satisfied when f(x) == 0.0
             pf = condition(x, *args, **kwds)
             _k = k * pow(h,_n[0])
             return float(_k)*pf**2 + f(x, *argz, **kwdz)
+        func.func = condition
+        func.ptype = 'quadratic_equality'  
         func.iter = iter
         func.iteration = iteration
         func.store = store
@@ -134,6 +136,8 @@ the condition f(x) is satisfied when f(x) == 0.0
             pf = condition(x, *args, **kwds)
             _k = k * pow(h,_n[0])
             return float(_k)*abs(pf) + f(x, *argz, **kwdz)
+        func.func = condition
+        func.ptype = 'linear_equality'  
         func.iter = iter
         func.iteration = iteration
         func.store = store
@@ -185,6 +189,8 @@ the condition f(x) is satisfied when f(x) == 0.0
             pf = condition(x, *args, **kwds)
             _k = float(k) * pow(h,_n[0]) if pf else 0.0
             return _k + f(x, *argz, **kwdz)
+        func.func = condition
+        func.ptype = 'uniform_equality'  
         func.iter = iter
         func.iteration = iteration
         func.store = store
@@ -236,6 +242,8 @@ the condition f(x) is satisfied when f(x) <= 0.0
             pf = condition(x, *args, **kwds)
             _k = float(k) * pow(h,_n[0]) if pf > 0 else 0.0
             return _k + f(x, *argz, **kwdz)
+        func.func = condition
+        func.ptype = 'uniform_inequality'  
         func.iter = iter
         func.iteration = iteration
         func.store = store
@@ -292,6 +300,8 @@ the condition f(x) is satisfied when f(x) <= 0.0
             # inequality constraint is satisfied
             _k = k * pow(h,_n[0])
             return -.5/_k*log(-pf) + f(x, *argz, **kwdz) #XXX: use 2*k or k=200?
+        func.func = condition
+        func.ptype = 'barrier_inequality'  
         func.iter = iter
         func.iteration = iteration
         func.store = store
@@ -343,6 +353,8 @@ the condition f(x) is satisfied when f(x) <= 0.0
             pf = condition(x, *args, **kwds)
             _k = k * pow(h,_n[0])
             return float(2*_k)*max(0., pf)**2 + f(x, *argz, **kwdz) #XXX: use 2*k or k=200?
+        func.func = condition
+        func.ptype = 'quadratic_inequality'  
         func.iter = iter
         func.iteration = iteration
         func.store = store
@@ -394,6 +406,8 @@ the condition f(x) is satisfied when f(x) <= 0.0
             pf = condition(x, *args, **kwds)
             _k = k * pow(h,_n[0])
             return float(2*_k)*abs(max(0., pf)) + f(x, *argz, **kwdz) #XXX: use 2*k or k=200?
+        func.func = condition
+        func.ptype = 'linear_inequality'  
         func.iter = iter
         func.iteration = iteration
         func.store = store
@@ -455,6 +469,8 @@ the condition f(x) is satisfied when f(x) <= 0.0
                 _k *= h
             mpf = max(-beta/(2.*_k), pf)
             return float(_k)*mpf**2 + beta*mpf + f(x, *argz, **kwdz)
+        func.func = condition
+        func.ptype = 'lagrange_inequality'  
         func.iter = iter
         func.iteration = iteration
         func.store = store
@@ -515,6 +531,8 @@ the condition f(x) is satisfied when f(x) = 0.0
                 lam += 2.*_k*stored(i)
                 _k *= h
             return float(_k)*pf**2 + lam*pf + f(x, *argz, **kwdz)
+        func.func = condition
+        func.ptype = 'lagrange_equality'  
         func.iter = iter
         func.iteration = iteration
         func.store = store
