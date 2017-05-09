@@ -439,7 +439,7 @@ def and_(*constraints, **settings): #XXX: not a decorator, should be?
     """combine several constraints into a single constraint
 
 Inputs:
-    constraints -- constraint functions (or constraint solvers)
+    constraints -- constraint functions
 
 Additional Inputs:
     maxiter -- maximum number of iterations to attempt to solve [default: 100]
@@ -469,14 +469,18 @@ NOTE:
                 del x[:n]
         # give up
         return x[-1] #XXX: or fail by throwing Error?
-    return lambda x: _constraint(x)
+    cf = lambda x: _constraint(x)
+    cfdoc = "\n".join(c.__doc__ for c in constraints if c.__doc__)
+    cf.__doc__ = cfdoc.rstrip('\n')
+    cf.__name__ = 'constraint'
+    return cf
 
 
 def or_(*constraints, **settings): #XXX: not a decorator, should be?
     """create a constraint that is satisfied if any constraints are satisfied
 
 Inputs:
-    constraints -- constraint functions (or constraint solvers)
+    constraints -- constraint functions
 
 Additional Inputs:
     maxiter -- maximum number of iterations to attempt to solve [default: 100]
@@ -505,14 +509,18 @@ NOTE:
                 del x[:n]
         # give up
         return x[-1] #XXX: or fail by throwing Error?
-    return lambda x: _constraint(x)
+    cf = lambda x: _constraint(x)
+    cfdoc = "\n-- OR --\n".join(c.__doc__ for c in constraints if c.__doc__)
+    cf.__doc__ = cfdoc.rstrip('\n')
+    cf.__name__ = 'constraint'
+    return cf
 
 
 def not_(constraint, **settings): #XXX: not a decorator, should be?
     """invert the region where the given constraints are valid, then solve
 
 Inputs:
-    constraint -- constraint function (or constraint solver)
+    constraint -- constraint function
 
 Additional Inputs:
     maxiter -- maximum number of iterations to attempt to solve [default: 100]
@@ -529,7 +537,11 @@ NOTE:
             x = [(i+rnd.randint(-1,1))*rnd.random() for i in x]
         # give up
         return x #XXX: or fail by throwing Error?
-    return lambda x: _constraint(x)
+    cf = lambda x: _constraint(x)
+    cfdoc = 'NOT( '+ constraint.__doc__ +' )' if constraint.__doc__ else ""
+    cf.__doc__ = cfdoc.rstrip('\n')
+    cf.__name__ = 'constraint'
+    return cf
 
 
 from numpy import asfarray, asarray, choose, zeros, ones, ndarray

@@ -171,7 +171,7 @@ def and_(*penalties, **settings): #XXX: not a decorator, should be?
     """combine several penalties into a single penalty function by summation
 
 Inputs:
-    penalties -- penalty functions (or penalty conditions)
+    penalties -- penalty functions
 
 Additional Inputs:
     ptype -- penalty function type [default: linear_equality]
@@ -199,14 +199,18 @@ NOTE: This function is also useful for combining constraints solvers
     if ptype is None:
         from mystic.penalty import linear_equality as ptype
     penalty = lambda x: sum(p(x) for p in penalties)
-    return ptype(penalty, **settings)(lambda x:0.)
+    pf = ptype(penalty, **settings)(lambda x:0.)
+    pfdoc = "\n".join(p.__doc__ for p in penalties if p.__doc__)
+    pf.__doc__ = pfdoc.rstrip('\n')
+    pf.__name__ = 'penalty'
+    return pf
 
 
 def or_(*penalties, **settings): #XXX: not a decorator, should be?
     """create a single penalty that selects the minimum of several penalties
 
 Inputs:
-    penalties -- penalty functions (or penalty conditions)
+    penalties -- penalty functions
 
 Additional Inputs:
     ptype -- penalty function type [default: linear_equality]
@@ -234,14 +238,18 @@ NOTE: This function is also useful for combining constraints solvers
     if ptype is None:
         from mystic.penalty import linear_equality as ptype
     penalty = lambda x: min(p(x) for p in penalties)
-    return ptype(penalty, **settings)(lambda x:0.)
+    pf = ptype(penalty, **settings)(lambda x:0.)
+    pfdoc = "\n-- OR --\n".join(p.__doc__ for p in penalties if p.__doc__)
+    pf.__doc__ = pfdoc.rstrip('\n')
+    pf.__name__ = 'penalty'
+    return pf
 
 
 def not_(penalty, **settings): #XXX: not a decorator, should be?
     """invert, so penalizes the region where the given penalty is valid
 
 Inputs:
-    penalty -- a penalty function (or penalty condition)
+    penalty -- a penalty function
 
 Additional Inputs:
     ptype -- penalty function type [default: linear_equality]
@@ -267,6 +275,10 @@ Additional Inputs:
         _penalty = lambda x: 0 - condition(x)
     else:
         _penalty = lambda x: not condition(x)
-    return ptype(_penalty, **settings)(lambda x:0.)
+    pf = ptype(_penalty, **settings)(lambda x:0.)
+    pfdoc = 'NOT( '+ penalty.__doc__ +' )' if penalty.__doc__ else ""
+    pf.__doc__ = pfdoc.rstrip('\n')
+    pf.__name__ = 'penalty'
+    return pf
 
 

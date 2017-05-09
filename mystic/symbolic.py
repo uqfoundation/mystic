@@ -747,7 +747,7 @@ Additional Inputs:
 
     return tuple(reversed(parsed))
 
-#FIXME: if given a tuple, pick randomly if index is not selected? or recursive?
+
 def generate_conditions(constraints, variables='x', nvars=None, locals=None):
     """generate penalty condition functions from a set of constraint strings
 
@@ -756,6 +756,9 @@ Inputs:
         equation per line. Constraints can be equality and/or inequality
         constraints. Standard python syntax should be followed (with the
         math and numpy modules already imported).
+
+    NOTE: Alternately, constraints may be a tuple of strings of symbolic
+          constraints. Will return a tuple of penalty condition functions.
 
     For example:
         >>> constraints = '''
@@ -784,6 +787,9 @@ Additional Inputs:
         and relative difference from the extremal value in a given inequality.
         For more details, see `mystic.math.tolerance`.
     """
+    if not isinstance(constraints, basestring):
+        return tuple(generate_conditions(constraint, variables, nvars, locals) for constraint in constraints)
+
     ineqconstraints, eqconstraints = penalty_parser(constraints, \
                                       variables=variables, nvars=nvars)
 
@@ -829,7 +835,6 @@ del %(container)s_%(name)s""" % fdict
    #return results
 
 
-#FIXME: if given a tuple, pick randomly if index is not selected? or recursive?
 def generate_solvers(constraints, variables='x', nvars=None, locals=None):
     """generate constraints solver functions from a set of constraint strings
 
@@ -839,6 +844,9 @@ Inputs:
         constraints. Standard python syntax should be followed (with the
         math and numpy modules already imported). The left-hand side of
         each equation must be simplified to support assignment.
+
+    NOTE: Alternately, constraints may be a tuple of strings of symbolic
+          constraints. Will return a tuple of constraint solver functions.
 
     For example:
         >>> constraints = '''
@@ -867,6 +875,9 @@ Additional Inputs:
         and relative difference from the extremal value in a given inequality.
         For more details, see `mystic.math.tolerance`.
     """
+    if not isinstance(constraints, basestring):
+        return tuple(generate_solvers(constraint, variables, nvars, locals) for constraint in constraints)
+
     _constraints = constraints_parser(constraints, \
                                       variables=variables, nvars=nvars)
 
@@ -916,6 +927,7 @@ del %(container)s_%(name)s""" % fdict
    #return results
 
 
+#FIXME: if given tuple of tuple of conditions, enable use of or/and
 def generate_penalty(conditions, ptype=None, **kwds):
     """Converts a penalty constraint function to a mystic.penalty function.
 
@@ -971,6 +983,7 @@ Additional Inputs:
     return pf
 
 
+#FIXME: if given tuple of tuple of conditions, enable use of or/and
 def generate_constraint(conditions, ctype=None, **kwds):
     """Converts a constraint solver to a mystic.constraints function.
 
