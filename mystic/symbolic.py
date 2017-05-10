@@ -927,14 +927,15 @@ del %(container)s_%(name)s""" % fdict
    #return results
 
 
-#FIXME: if given tuple of tuple of conditions, enable use of or/and
-def generate_penalty(conditions, ptype=None, **kwds):
+def generate_penalty(conditions, ptype=None, join=None, **kwds):
     """Converts a penalty constraint function to a mystic.penalty function.
 
 Inputs:
     conditions -- a penalty constraint function, or list of constraint functions
     ptype -- a mystic.penalty type, or a list of mystic.penalty types
         of the same length as the given conditions
+    join -- either (and_, or_) from mystic.coupler, or None. The default is
+        to iteratively apply the penalties.
 
     For example:
         >>> constraints = '''
@@ -955,6 +956,25 @@ Additional Inputs:
     if not list_or_tuple_or_ndarray(conditions):
         conditions = list((conditions,))
     else: pass #XXX: should be fine...
+
+    # discover the nested structure of conditions and ptype
+    nc = nt = 0
+    if ptype is None or not list_or_tuple_or_ndarray(ptype):
+        nt = -1
+    else:
+        while tuple(flatten(conditions, nc)) != tuple(flatten(conditions)):
+            nc += 1
+        while tuple(flatten(ptype, nt)) != tuple(flatten(ptype)):
+            nt += 1
+
+    if join is None: pass  # don't use 'and/or' to join the conditions
+    #elif nc >= 2: # join when is tuple of tuples of conditions
+    else: # always use join, if given (instead of only if nc >= 2)
+        if nt >= nc: # there as many or more nested ptypes than conditions
+            p = iter(ptype)
+            return join(*(generate_penalty(c, next(p), **kwds) for c in conditions))
+        return join(*(generate_penalty(c, ptype, **kwds) for c in conditions))
+    # flatten everything and produce the penalty
     conditions = list(flatten(conditions))
 
     # allow for single ptype, list of ptypes, or nested list
@@ -983,14 +1003,15 @@ Additional Inputs:
     return pf
 
 
-#FIXME: if given tuple of tuple of conditions, enable use of or/and
-def generate_constraint(conditions, ctype=None, **kwds):
+def generate_constraint(conditions, ctype=None, join=None, **kwds):
     """Converts a constraint solver to a mystic.constraints function.
 
 Inputs:
     conditions -- a constraint solver, or list of constraint solvers
-    ctype -- a mystic.constraints type, or a list of mystic.constraints types
+    ctype -- a mystic.coupler type, or a list of mystic.coupler types
         of the same length as the given conditions
+    join -- either (and_, or_) from mystic.constraints, or None. The default
+        is to iteratively apply the constraints.
 
 NOTES:
     This simple constraint generator doesn't check for conflicts in conditions,
@@ -1032,6 +1053,25 @@ NOTES:
     if not list_or_tuple_or_ndarray(conditions):
         conditions = list((conditions,))
     else: pass #XXX: should be fine...
+
+    # discover the nested structure of conditions and ctype
+    nc = nt = 0
+    if ctype is None or not list_or_tuple_or_ndarray(ctype):
+        nt = -1
+    else:
+        while tuple(flatten(conditions, nc)) != tuple(flatten(conditions)):
+            nc += 1
+        while tuple(flatten(ctype, nt)) != tuple(flatten(ctype)):
+            nt += 1
+
+    if join is None: pass  # don't use 'and/or' to join the conditions
+    #elif nc >= 2: # join when is tuple of tuples of conditions
+    else: # always use join, if given (instead of only if nc >= 2)
+        if nt >= nc: # there as many or more nested ctypes than conditions
+            p = iter(ctype)
+            return join(*(generate_constraint(c, next(p), **kwds) for c in conditions))
+        return join(*(generate_constraint(c, ctype, **kwds) for c in conditions))
+    # flatten everything and produce the constraint
     conditions = list(flatten(conditions))
 
     # allow for single ctype, list of ctypes, or nested list
