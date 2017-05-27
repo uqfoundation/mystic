@@ -14,7 +14,7 @@
 from __future__ import division
 
 __all__ = ['linear_symbolic','replace_variables','get_variables','merge',
-           'solve','simplify','comparator','flip','_flip','condense',
+           'solve','simplify','comparator','flip','_flip','condense','equals',
            'penalty_parser','constraints_parser','generate_conditions',
            'generate_solvers','generate_penalty','generate_constraint']
 
@@ -125,6 +125,7 @@ def flip(equation, bounds=False):
     return _flip(cmp, bounds).join(equation.split(cmp)) if cmp else equation
 
 
+#FIXME: if 'cycle=True', do all perumtations (and select shortest)?
 def condense(*equations, **kwds):
     """condense tuples of equations to the simplest representation
 
@@ -162,7 +163,7 @@ Additional Inputs:
     if verbose:
         print "matches: ", result
         print "misses: ", miss
-    return condense(*result) + miss if result else miss
+    return condense(*result, **kwds) + miss if result else miss
 
 
 def merge(*equations, **kwds):
@@ -211,6 +212,119 @@ NOTE: if bounds are invalid, returns None
     return None if None in equations else tuple(equations)
 
 
+#XXX: finds (X-1) not (X-1)**2, however tan(X-1) not (X-1)
+def _denominator(equation, variables=None):
+    """find denominators containing the given variables in an equation"""
+    import re
+    # deal with the lhs and rhs separately
+    cmp = comparator(equation)
+    if cmp:
+        lhs,equation = equation.split(cmp,1)
+        lhs = _denominator(lhs, variables)
+    else: lhs = []
+    # remove the enclosing parenthesis
+    par = lambda eqn: eqn.startswith('(') and eqn.endswith(')') and eqn.count(')')+eqn.count('(') is 2
+    nopar = lambda eqn: eqn[1:-1] if (par(eqn) or (re.findall('^\([^\)]*\(', eqn) and re.findall('\)[^\(]*\)$', eqn))) else eqn
+    equation = nopar(equation.strip())
+    # check if variables x are found in eqn
+    has = lambda eqn,x: (get_variables(eqn,x) if x else True)
+    # check if parentheses are unbalanced
+    unbalanced = lambda eqn: (eqn.find(')') < eqn.find('('))
+    res = []
+    var, expr = equation.count('/'), equation.count('\(')
+    ### find ['x1', 'tan(x1-x2)']
+    if var > expr:
+        _res = [i.strip('/') for i in re.findall('/\S+', equation) if not i.startswith('/(')]
+        res.extend([i.split(')')[0] if unbalanced(i) else i for i in _res if has(i,variables)])
+        if len(res) != len(_res): var -= len(_res)
+        del _res
+        #XXX: recurse/etc on f(x)?
+    if var is len(res): return lhs+res
+    ### find ['1/(x1 - x2)']
+    l = len(res)
+    _res = [i.strip('/') for i in re.findall('/\([^\(]*\)', equation)]
+    res.extend([i for i in _res if has(i,variables)])
+    if len(res) - l != len(_res): var -= len(_res)
+    del _res
+    if var is len(res): return lhs+res
+    ### find ['1/(x1 - (x2*x1))', etc]
+    l = len(res)
+    _res = [i.strip('/') for i in re.findall('/\(.*\)', equation)]
+    res.extend([i for i in _res if has(i,variables)])
+    if len(res) - l != len(_res): var -= len(_res)
+    del _res
+    if var is len(res): return lhs+res
+    ### still missing some... check recursively
+    _res = [_denominator(nopar(i),variables) for i in res]
+    for i in _res:
+        res.extend(i)
+    del _res
+    if var > len(res):
+        msg = '%s of %s denominators were not found' % (var-len(res), var)
+        raise ValueError(msg)
+    return lhs+res
+
+
+#XXX: add target=None to kwds?
+def _solve_zeros(equation, variables=None, implicit=True):
+    '''symbolic solve the equation for when produces a ZeroDivisionError'''
+    res = _denominator(equation, variables)#XXX: w/o this, is a general solve
+    x = variables or 'x'
+    for i,eqn in enumerate(res):
+        _eqn = eqn+' = 0'
+        try:
+            _eqn = solve(_eqn, target=variables, variables=x)
+            if not _eqn: raise ValueError()
+        except ValueError:
+            if not implicit:
+               msg = "cannot simplify '%s'" % _eqn
+               raise ValueError(msg)
+            #else: pass
+        res[i] = _eqn
+    return res
+
+
+def equals(before, after, vals=None, **kwds):
+    """check if equations before and after are equal for the given vals
+
+Inputs:
+    before -- an equation string
+    after -- an equation string
+    vals -- a dict with variable names as keys and floats as values
+
+Additional Inputs:
+    variables -- a list of variable names
+    locals -- a dict with variable names as keys and 'fixed' values
+    variants -- a list of ints to use as variants for fractional powers
+    verbose -- print debug messages
+"""
+    variants = kwds.get('variants', None)
+    verbose = kwds.get('verbose', False)
+    vars = kwds.get('variables', 'x')
+    _vars = get_variables(after, vars)
+    locals = kwds['locals'] if 'locals' in kwds else None
+    if locals is None: locals = {}
+    if vals is None: vals = {}
+    locals.update(vals)
+    if verbose: print locals
+    locals_ = locals.copy() #XXX: HACK _locals
+    while variants:
+        try:
+            after, before = eval(after,{},locals_), eval(before,{},locals_)
+            break
+        except ValueError as error:  #FIXME: python2.5
+            if error.message.startswith('negative number') and \
+               error.message.endswith('raised to a fractional power'):
+                val = variants.pop()
+                [locals_.update({k:v+val}) for k,v in locals_.items() if k in _vars]
+            else:
+                raise error
+    else: #END HACK
+        after, before = eval(after,{},locals_), eval(before,{},locals_)
+    return before is after
+
+
+#FIXME: should minimize number of times LHS is reused; (or use 'and_')?
 def simplify(constraints, variables='x', target=None, **kwds):
     """simplify a system of symbolic constraints equations.
 
@@ -262,6 +376,7 @@ Further Inputs:
     all = kwds.get('all', False)
     import random
     import itertools as it
+    locals = kwds['locals'] if 'locals' in kwds else {} #XXX: HACK _locals
     _locals = {}
     # default is _locals with numpy and math imported
     # numpy throws an 'AttributeError', but math passes error to sympy
@@ -272,82 +387,90 @@ Further Inputs:
     code += """_sqrt = lambda x:x**.5;""" # 'domain error' to 'negative power'
     code = compile(code, '<string>', 'exec')
     exec code in _locals
-
-    def _equals(before, after, vals=None, variants=None, **kwds):
-        'determine if the equation before and after simplification are equal'
-        verbose = kwds.get('verbose', False)
-        vars = kwds.get('variables', 'x')
-        _vars = get_variables(after, vars)
-        locals = kwds['locals'] if 'locals' in kwds else None
-        if locals is None: locals = {}
-        if vals is None: vals = {}
-        locals.update(vals)
-        if verbose: print locals
-        locals_ = _locals.copy()
-        locals_.update(locals) #XXX: allow this?
-        while variants:
-            try:
-                after, before = eval(after,{},locals_), eval(before,{},locals_)
-                break
-            except ValueError as error:  #FIXME: python2.5
-                if error.message.startswith('negative number') and \
-                   error.message.endswith('raised to a fractional power'):
-                    val = variants.pop()
-                    [locals_.update({k:v+val}) for k,v in locals_.items() if k in _vars]
-                else:
-                    raise error
-        else: #END HACK
-            after, before = eval(after,{},locals_), eval(before,{},locals_)
-        return before is after
+    _locals.update(locals)
+    kwds['locals'] = _locals
+    del locals
 
     def _simplify(eqn, rand=random.random, target=None, **kwds):
         'isolate one variable on the lhs'
         verbose = kwds.get('verbose', False)
         vars = kwds.get('variables', 'x')
         cmp = comparator(eqn)
-        res = solve(eqn.replace(cmp,'='), target=target, **kwds)
+        # get all variables used
+        allvars = get_variables(eqn, vars)
+        # find where the sign flips might occur (from before)
+        res = eqn.replace(cmp,'=')
+        zro = _solve_zeros(res, allvars)
+        # check which variables have been used
+        lhs = lambda zro: tuple(z.split('=')[0].strip() for z in zro)
+        used = lhs(zro) #XXX: better as iterator?
+        # cycle used variables to the rear
+        _allvars = []
+        _allvars = [i for i in allvars if i not in used or (_allvars.append(i) if i not in _allvars else False)] + _allvars
+        # simplify so lhs has only one variable
+        res = solve(res, target=target, **kwds)
         _eqn = res.replace('=',cmp)
-        if verbose: print 'in: %s\nout: %s' % (eqn, _eqn)
+        # find where the sign flips might occur (from after)
+        zro += _solve_zeros(res, get_variables(res.split('=')[-1],_allvars))
+        _zro = [z.replace('=','!=') for z in zro]
+        if verbose: print 'in: %s\nout: %s\nzero: %s' % (eqn, _eqn, _zro)
+        # if no inequalities, then return
         if not cmp.count('<')+cmp.count('>'):
-            return _eqn
+            return '\n'.join([_eqn]+_zro) if _zro else _eqn
+        del _zro
 
         # make sure '=' is '==' so works in eval
-        _cmp = comparator(_eqn)
-        before = eqn.replace(cmp, '==') if cmp == '=' else eqn
-        after = _eqn.replace(_cmp, '==') if _cmp == '=' else _eqn
-        #HACK: avoid (rand-M)**(1/N) where (rand-M) negative; sqrt(x) to x**.5
-        before = before.replace('sqrt','_sqrt')
-        after = after.replace('sqrt','_sqrt')
+        before,after = (eqn,_eqn) if cmp != '=' else (eqn.replace(cmp,'=='),_eqn.replace(cmp,'=='))
+        #HACK: avoid (rand-M)**(1/N) w/ (rand-M) negative; sqrt(x) to x**.5
+        before = before.replace('sqrt(','_sqrt(')
+        after = after.replace('sqrt(','_sqrt(')
+
+        # sort zeros so equations with least variables are first
+        zro.sort(key=lambda z: len(get_variables(z, vars))) #XXX: best order?
+        # build dicts of test variables, with +/- epsilon at solved zeros
+        testvars = dict((i,2*rand()-1) for i in allvars)
+        eps = str(.01 * rand()) #XXX: better epsilon?
+        #FIXME: following not sufficient w/multiple 'zs' (A != 0, A != -B)
+        testvals = it.product(*((z+'+'+eps,z+'-'+eps) for z in zro))
+        # build tuple of corresponding comparators for testvals
+        signs = it.product(*(('>','<') for z in zro))
+
+        def _testvals(testcode):
+            '''generate dict of test values as directed by the testcode'''
+            locals = _locals.copy()
+            locals.update(testvars)
+            code = ';'.join(i for i in testcode)
+            code = compile(code, '<string>', 'exec')
+            try:
+                exec code in locals
+            except SyntaxError as error:
+                msg = "cannot simplify '%s'" % testcode
+                raise SyntaxError(msg,)
+            return dict((i,locals[i]) for i in allvars)
+
+        # iterator of dicts of test values
+        testvals = it.imap(_testvals, testvals)
 
         # evaluate expression to see if comparator needs to be flipped
+        results = []
         variants = (100000,-200000,100100,-200,110,-20,11,-2,1) #HACK
-        allvars = get_variables(eqn, vars)
-        keep, invert = [],[]
-        posvars,negvars = _eqn.split(_cmp)
-        posvars = get_variables(posvars, allvars)
-        negvars = get_variables(negvars, allvars)
-        # dicts of test varialbles, with all combinations of pos/neg
-        testvars = (dict(it.izip(posvars+negvars,(j*rand() for j in (1,)+i))) for i in it.product((1,-1),repeat=len(negvars)))
-        # classify as 'flipped' or 'unflipped'
-        for vals in testvars:
-            keys = tuple(k+' %s 0' % ('>' if v>0 else '<') for k,v in vals.iteritems() if k not in posvars)
-            if keys: keep.append(keys) if _equals(before, after, vals, list(variants), **kwds) else invert.append(keys)
-        # reduce the flipped and unflipped to simplest representation
-        keep, invert = condense(*keep), condense(*invert)
-        # gather the results
-        results = {}
-        kept = _eqn
-        flipped = flip(_eqn)
-        if keep: results[kept] = keep
-        if invert: results[flipped] = invert
-        _result = flipped if invert else kept #XXX: if both, prefers invert
-        # convert results to a tuple of multiline strings
-        results = tuple(it.chain(*([k + '\n' + '\n'.join(j for j in i) for i in v] for k,v in results.iteritems())))
-        if len(results) is 1: results = results[0]
-        elif len(results) is 0: results = None
-        #print '###: ', results
-        return results or _result
+        kwds['variants'] = list(variants)
+        for sign in signs:
+            if equals(before,after,testvals.next(),**kwds):
+                new = [after]
+            else:
+                new = [after.replace(cmp,flip(cmp))]
+            new.extend(z.replace('=',i) for (z,i) in it.izip(zro,sign))
+            results.append(new)
 
+        # reduce the results to the simplest representation
+       #results = condense(*results, **kwds) #XXX: remove depends on testvals
+        # convert results to a tuple of multiline strings
+        results = tuple('\n'.join(i).replace('_sqrt(','sqrt(') for i in results)
+        if len(results) is 1: results = results[0]
+        return results
+
+    #### ...the rest is simplify()... ###
     cycle = kwds.get('cycle', False)
     eqns = []
     used = []
