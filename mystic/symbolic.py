@@ -111,7 +111,7 @@ def comparator(equation):
 
 
 def _flip(cmp, bounds=False): # to invert sign if dividing by negative value
-    "flip the comparator (i.e. '<' to '>', and '<=' to '>=')"
+    "flip the comparator (i.e. '<' to '>', or  '<' to '>=' if bounds=True)"
     if bounds:
         return '<' if cmp == '>=' else '<=' if cmp == '>' else \
                '>' if cmp == '<=' else '>=' if cmp == '<' else cmp
@@ -120,12 +120,18 @@ def _flip(cmp, bounds=False): # to invert sign if dividing by negative value
 
 
 def flip(equation, bounds=False):
-    "flip the comparator if the equation is an inequality (i.e. '<' to '>')"
+    """flip the inequality in the equation (i.e. '<' to '>'), if one exists
+
+Inputs:
+    equation -- an equation string; can be an equality or inequality
+    bounds -- if True, ensure set boundaries are respected (i.e. '<' to '>=')
+"""
     cmp = comparator(equation)
     return _flip(cmp, bounds).join(equation.split(cmp)) if cmp else equation
 
 
 #FIXME: if 'cycle=True', do all perumtations (and select shortest)?
+#FIXME: should be better, currenlty only condenses exact matches
 def condense(*equations, **kwds):
     """condense tuples of equations to the simplest representation
 
@@ -268,6 +274,7 @@ def _denominator(equation, variables=None):
 #XXX: add target=None to kwds?
 def _solve_zeros(equation, variables=None, implicit=True):
     '''symbolic solve the equation for when produces a ZeroDivisionError'''
+    # if implicit = True, can solve to functions of a variable (i.e. sin(A)=1)
     res = _denominator(equation, variables)#XXX: w/o this, is a general solve
     x = variables or 'x'
     for i,eqn in enumerate(res):
@@ -284,8 +291,9 @@ def _solve_zeros(equation, variables=None, implicit=True):
     return res
 
 
+#XXX: if error=False, should return None? or ???
 def equals(before, after, vals=None, **kwds):
-    """check if equations before and after are equal for the given vals
+    """check if equations before and after are equal at the given vals
 
 Inputs:
     before -- an equation string
@@ -295,9 +303,11 @@ Inputs:
 Additional Inputs:
     variables -- a list of variable names
     locals -- a dict with variable names as keys and 'fixed' values
+    error -- if False, ZeroDivisionError evaluates as None
     variants -- a list of ints to use as variants for fractional powers
     verbose -- print debug messages
 """
+    errors = kwds.get('error',True) #XXX: default should be False?
     variants = kwds.get('variants', None)
     verbose = kwds.get('verbose', False)
     vars = kwds.get('variables', 'x')
@@ -319,12 +329,37 @@ Additional Inputs:
                 [locals_.update({k:v+val}) for k,v in locals_.items() if k in _vars]
             else:
                 raise error
+        except ZeroDivisionError as error:
+            if errors: raise error
+            try:
+                eval(after,{},locals_)
+            except ZeroDivisionError:
+                try:
+                    eval(before,{},locals_)
+                    return False
+                except ZeroDivisionError:
+                    return True
+            return False
     else: #END HACK
-        after, before = eval(after,{},locals_), eval(before,{},locals_)
+        try:
+            after, before = eval(after,{},locals_), eval(before,{},locals_)
+        except ZeroDivisionError as error:
+            if errors: raise error
+            try:
+                eval(after,{},locals_)
+            except ZeroDivisionError:
+                try:
+                    eval(before,{},locals_)
+                    return False
+                except ZeroDivisionError:
+                    return True
+            return False
     return before is after
 
 
 #FIXME: should minimize number of times LHS is reused; (or use 'and_')?
+#FIXME: should not fail at ZeroDivisionError (what should it do there?)
+#FIXME: should order better (e.g. C > 0; B == C - 5; A > B + 2)
 def simplify(constraints, variables='x', target=None, **kwds):
     """simplify a system of symbolic constraints equations.
 
@@ -373,6 +408,11 @@ Further Inputs:
         of the possible simplifications due to negative values in an inequalty.
         The default is False, returning only one possible simplification.
 """
+    ### undocumented ###
+   #rand -- random number generator [default: random.random]
+   #error -- if False, ZeroDivisionError evaluates as None [default: True]
+   #verbose -- print debug messages [default: False]
+    ####################
     all = kwds.get('all', False)
     import random
     import itertools as it
@@ -459,7 +499,7 @@ Further Inputs:
             if equals(before,after,testvals.next(),**kwds):
                 new = [after]
             else:
-                new = [after.replace(cmp,flip(cmp))]
+                new = [after.replace(cmp,flip(cmp))] #XXX: or flip(cmp,True)?
             new.extend(z.replace('=',i) for (z,i) in it.izip(zro,sign))
             results.append(new)
 

@@ -435,6 +435,7 @@ Additional Inputs:
 
 
 # constraints 'language'
+#XXX: should have the same interface as 'inner' and 'outer'?
 def and_(*constraints, **settings): #XXX: not a decorator, should be?
     """combine several constraints into a single constraint
 
@@ -476,6 +477,7 @@ NOTE:
     return cf
 
 
+#XXX: should have the same interface as 'inner' and 'outer'?
 def or_(*constraints, **settings): #XXX: not a decorator, should be?
     """create a constraint that is satisfied if any constraints are satisfied
 

@@ -167,6 +167,7 @@ cost function evaluation.
 #XXX: create a counter for n += 1 ?
 
 # penalty coupling "language"  #XXX: was initially 'constraints.combined'
+#XXX: should have the same interface as 'inner' and 'outer'? ...or ???
 def and_(*penalties, **settings): #XXX: not a decorator, should be?
     """combine several penalties into a single penalty function by summation
 
@@ -206,6 +207,7 @@ NOTE: This function is also useful for combining constraints solvers
     return pf
 
 
+#XXX: should have the same interface as 'inner' and 'outer'? ...or ???
 def or_(*penalties, **settings): #XXX: not a decorator, should be?
     """create a single penalty that selects the minimum of several penalties
 
@@ -245,6 +247,7 @@ NOTE: This function is also useful for combining constraints solvers
     return pf
 
 
+#XXX: should have the same interface as 'inner' and 'outer'? ...or ???
 def not_(penalty, **settings): #XXX: not a decorator, should be?
     """invert, so penalizes the region where the given penalty is valid
 
