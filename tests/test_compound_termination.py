@@ -53,7 +53,7 @@ def test_me(info='self'):
     c = ChangeOverGeneration()
     n = NormalizedChangeOverGeneration()
 
-    if disp: print "define conditions..."
+    if disp: print("define conditions...")
     _v = When(v)
     _c = When(c)
     _n = When(n)
@@ -91,21 +91,21 @@ def test_me(info='self'):
     assert c_and_v in c_or__c_and_v and _c in c_or__c_and_v
 
     if disp:
-        print "_v:", _v
-        print "_c:", _c
-        print "_n:", _n
-        print "v_and_c:", v_and_c
-        print "v_and_n:", v_and_n
-        print "v_or_c:", v_or_c
-        print "v_or_n:", v_or_n
-        print "v_and_c__or_n:", v_and_c__or_n
-        print "v_and_c__or_c:", v_and_c__or_c
-        print "v_and_n__or_n:", v_and_n__or_n
-        print "c_and_v:", c_and_v
-        print "c_or_v:", c_or_v
-        print "c_or__c_and_v:", c_or__c_and_v
+        print("_v:%s" % _v)
+        print("_c:%s" % _c)
+        print("_n:%s" % _n)
+        print("v_and_c:%s" % v_and_c)
+        print("v_and_n:%s" % v_and_n)
+        print("v_or_c:%s" % v_or_c)
+        print("v_or_n:%s" % v_or_n)
+        print("v_and_c__or_n:%s" % v_and_c__or_n)
+        print("v_and_c__or_c:%s" % v_and_c__or_c)
+        print("v_and_n__or_n:%s" % v_and_n__or_n)
+        print("c_and_v:%s" % c_and_v)
+        print("c_or_v:%s" % c_or_v)
+        print("c_or__c_and_v:%s" % c_or__c_and_v)
 
-    if disp: print "initial conditions..."
+    if disp: print("initial conditions...")
     _v_and_c = v_and_c(s, info)
     _v_and_n = v_and_n(s, info)
     _v_or_c = v_or_c(s, info)
@@ -117,12 +117,12 @@ def test_me(info='self'):
     assert not _v_or_n
 
     if disp:
-        print "v_and_c:", _v_and_c
-        print "v_and_n:", _v_and_n
-        print "v_or_c:", _v_or_c
-        print "v_or_n:", _v_or_n
+        print("v_and_c:%s" % _v_and_c)
+        print("v_and_n:%s" % _v_and_n)
+        print("v_or_c:%s" % _v_or_c)
+        print("v_or_n:%s" % _v_or_n)
 
-    if disp: print "after convergence toward zero..."
+    if disp: print("after convergence toward zero...")
     s.energy_history = [0,0,0,0,0,0,0,0,0,0,0,0]
     # _v and _n are True, _c is False
     _v_and_c = v_and_c(s, info)
@@ -140,12 +140,12 @@ def test_me(info='self'):
         assert v in _v_or_n and n in _v_or_n
 
     if disp:
-        print "v_and_c:", _v_and_c
-        print "v_and_n:", _v_and_n
-        print "v_or_c:", _v_or_c
-        print "v_or_n:", _v_or_n
+        print("v_and_c:%s" % _v_and_c)
+        print("v_and_n:%s" % _v_and_n)
+        print("v_or_c:%s" % _v_or_c)
+        print("v_or_n:%s" % _v_or_n)
 
-    if disp: print "nested compound termination..."
+    if disp: print("nested compound termination...")
     # _v and _n are True, _c is False
     _v_and_c__or_n = v_and_c__or_n(s, info)
     _v_and_c__or_c = v_and_c__or_c(s, info)
@@ -161,11 +161,11 @@ def test_me(info='self'):
         assert v not in _v_and_n__or_n and n not in _v_and_n__or_n
 
     if disp:
-        print "v_and_c__or_n:", _v_and_c__or_n
-        print "v_and_c__or_c:", _v_and_c__or_c
-        print "v_and_n__or_n:", _v_and_n__or_n
+        print("v_and_c__or_n:%s" % _v_and_c__or_n)
+        print("v_and_c__or_c:%s" % _v_and_c__or_c)
+        print("v_and_n__or_n:%s" % _v_and_n__or_n)
 
-    if disp: print "individual conditions..."
+    if disp: print("individual conditions...")
     __v = _v(s, info)
     __c = _c(s, info)
     __n = _n(s, info)
@@ -176,11 +176,11 @@ def test_me(info='self'):
         assert v in __v and n in __n
 
     if disp:
-        print "v:", __v
-        print "c:", __c
-        print "n:", __n
+        print("v:%s" % __v)
+        print("c:%s" % __c)
+        print("n:%s" % __n)
 
-    if disp: print "conditions with false first..."
+    if disp: print("conditions with false first...")
     _c_and_v = c_and_v(s, info)
     _c_or_v = c_or_v(s, info)
     _c_or__c_and_v = c_or__c_and_v(s, info)
@@ -192,9 +192,9 @@ def test_me(info='self'):
         assert v in _c_or_v and c not in _c_or_v
 
     if disp:
-        print "c_and_v:", _c_and_v
-        print "c_or_v:", _c_or_v
-        print "c_or__c_and_v:", _c_or__c_and_v
+        print("c_and_v:%s" % _c_and_v)
+        print("c_or_v:%s" % _c_or_v)
+        print("c_or__c_and_v:%s" % _c_or__c_and_v)
 
 
 if __name__ == '__main__':

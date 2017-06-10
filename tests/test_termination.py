@@ -22,37 +22,37 @@ from mystic.termination import *
 from numpy import inf
 
 def test_terminators(test, func=lambda x:x[0], info=False, verbose=False):
-  print test(lambda x,y:"", func, info, verbose) #XXX: just print settings
-  print "VTR():", test(VTR(), func, info)
-  print "VTR(inf):", test(VTR(inf), func, info)
-  print "COG():", test(ChangeOverGeneration(), func, info)
-  print "COG(gen=5):", test(ChangeOverGeneration(generations=5), func, info)
-  print "NCOG():", test(NormalizedChangeOverGeneration(), func, info)
-  print "NCOG(gen=5):", test(NormalizedChangeOverGeneration(generations=5), func, info)
-  print "CTR():", test(CandidateRelativeTolerance(), func, info)
-  print "CTR(ftol=inf):", test(CandidateRelativeTolerance(ftol=inf), func, info)
-  print "CTR(inf):", test(CandidateRelativeTolerance(inf), func, info)
-  print "SI():", test(SolutionImprovement(), func, info)
-  print "SI(inf):", test(SolutionImprovement(inf), func, info)
-  print "NCT():", test(NormalizedCostTarget(), func, info)
-  print "NCT(gen=5):", test(NormalizedCostTarget(generations=5), func, info)
-  print "NCT(gen=None):", test(NormalizedCostTarget(generations=None), func, info)
-  print "NCT(inf,inf):", test(NormalizedCostTarget(inf,inf), func, info)
-  print "VCOG():", test(VTRChangeOverGeneration(), func, info)
-  print "VCOG(gen=5):", test(VTRChangeOverGeneration(generations=5), func, info)
-  print "VCOG(inf):", test(VTRChangeOverGeneration(inf), func, info)
-  print "PS():", test(PopulationSpread(), func, info)
-  print "PS(inf):", test(PopulationSpread(inf), func, info)
- #print "GNT():", test(GradientNormTolerance(), func, info)
+  print(test(lambda x,y:"", func, info, verbose)) #XXX: just print settings
+  print("VTR():%s" % test(VTR(), func, info))
+  print("VTR(inf):%s" % test(VTR(inf), func, info))
+  print("COG():%s" % test(ChangeOverGeneration(), func, info))
+  print("COG(gen=5):%s" % test(ChangeOverGeneration(generations=5), func, info))
+  print("NCOG():%s" % test(NormalizedChangeOverGeneration(), func, info))
+  print("NCOG(gen=5):%s" % test(NormalizedChangeOverGeneration(generations=5), func, info))
+  print("CTR():%s" % test(CandidateRelativeTolerance(), func, info))
+  print("CTR(ftol=inf):%s" % test(CandidateRelativeTolerance(ftol=inf), func, info))
+  print("CTR(inf):%s" % test(CandidateRelativeTolerance(inf), func, info))
+  print("SI():%s" % test(SolutionImprovement(), func, info))
+  print("SI(inf):%s" % test(SolutionImprovement(inf), func, info))
+  print("NCT():%s" % test(NormalizedCostTarget(), func, info))
+  print("NCT(gen=5):%s" % test(NormalizedCostTarget(generations=5), func, info))
+  print("NCT(gen=None):%s" % test(NormalizedCostTarget(generations=None), func, info))
+  print("NCT(inf,inf):%s" % test(NormalizedCostTarget(inf,inf), func, info))
+  print("VCOG():%s" % test(VTRChangeOverGeneration(), func, info))
+  print("VCOG(gen=5):%s" % test(VTRChangeOverGeneration(generations=5), func, info))
+  print("VCOG(inf):%s" % test(VTRChangeOverGeneration(inf), func, info))
+  print("PS():%s" % test(PopulationSpread(), func, info))
+  print("PS(inf):%s" % test(PopulationSpread(inf), func, info))
+ #print("GNT():%s" % test(GradientNormTolerance(), func, info))
   return
 
 def verbosity(solver):
-    print "energy_history:", solver.energy_history
-    print "population:", solver.population
-    print "popEnergy:", solver.popEnergy
-    print "bestSolution:", solver.bestSolution
-    print "trialSolution:", solver.trialSolution
-    print "bestEnergy:", solver.bestEnergy
+    print("energy_history:%s" % solver.energy_history)
+    print("population:%s" % solver.population)
+    print("popEnergy:%s" % solver.popEnergy)
+    print("bestSolution:%s" % solver.bestSolution)
+    print("trialSolution:%s" % solver.trialSolution)
+    print("bestEnergy:%s" % solver.bestEnergy)
     return
 
 def test01(terminate, func=lambda x:x[0], info=False, debug=False):

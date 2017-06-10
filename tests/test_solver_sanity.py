@@ -10,7 +10,11 @@
 # should report clock-time, # of iterations, and # of function evaluations
 
 import sys
-from StringIO import StringIO
+PY3 = (sys.hexversion >= 0x30000f0)
+if PY3:
+    from io import StringIO
+else:
+    from StringIO import StringIO
 import unittest
 from math import *
 from mystic.math import almostEqual
@@ -130,7 +134,7 @@ class TestRosenbrock(unittest.TestCase):
             return
 
         # Verify solution is close to exact
-       #print sol
+       #print(sol)
         for i in range(len(sol)):
             self.assertAlmostEqual(sol[i], self.exact[i], self.precision)
         return

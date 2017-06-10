@@ -32,37 +32,37 @@ def test_calculate_methods(npts=2):
   # generate initial coordinates, weights 
   # -------------------------------------
   # get a random distribution of points
-  if disp: print "generate random points and weights"
+  if disp: print("generate random points and weights")
   coordinates = samplepts(lower_bounds, upper_bounds, npts)
   D0 = D = [i[0] for i in coordinates]
-  if disp: print "positions: %s" % D
+  if disp: print("positions: %s" % D)
 
   # calculate sample range
   R0 = R = spread(D)
-  if disp: print "range: %s" % R
+  if disp: print("range: %s" % R)
 
   # select weights randomly in [0,1], then normalize so sum(weights) = 1
   wts = random_samples([0],[1], npts)[0]
   weights = normalize(wts, 0.0, zsum=True)
-  if disp: print "weights (when normalized to 0.0): %s" % weights
+  if disp: print("weights (when normalized to 0.0): %s" % weights)
   assert almostEqual(sum(weights), 0.0, tol=1e-15)
   weights = normalize(wts, 1.0)
   assert almostEqual(sum(weights), 1.0, tol=1e-15)
-  if disp: print "weights (when normalized to 1.0): %s" % weights
+  if disp: print("weights (when normalized to 1.0): %s" % weights)
   w = norm(weights)
-  if disp: print "norm: %s" % w
+  if disp: print("norm: %s" % w)
   assert almostEqual(w, sum(weights)/npts)
 
   # calculate sample mean
   m0 = m = mean(D,weights)
-  if disp: print "mean: %s" % m
-  if disp: print ""
+  if disp: print("mean: %s" % m)
+  if disp: print("")
 
   # -------------------------------------
   # modify coordinates, maintaining mean & range 
   # -------------------------------------
   # get new random distribution
-  if disp: print "modify positions, maintaining mean and range"
+  if disp: print("modify positions, maintaining mean and range")
   coordinates = samplepts(lower_bounds, upper_bounds, npts)
   D = [i[0] for i in coordinates]
 
@@ -71,59 +71,59 @@ def test_calculate_methods(npts=2):
   D = impose_mean(m, D, weights)
 
   # print results
-  if disp: print "positions: %s" % D
+  if disp: print("positions: %s" % D)
   R = spread(D)
-  if disp: print "range: %s" % R
+  if disp: print("range: %s" % R)
   assert almostEqual(R, R0)
   m = mean(D, weights)
-  if disp: print "mean: %s" % m
+  if disp: print("mean: %s" % m)
   assert almostEqual(m, m0)
-  if disp: print ""
+  if disp: print("")
 
   # -------------------------------------
   # modify weights, maintaining mean & norm
   # -------------------------------------
   # select weights randomly in [0,1]
-  if disp: print "modify weights, maintaining mean and range"
+  if disp: print("modify weights, maintaining mean and range")
   wts = random_samples([0],[1], npts)[0]
 
   # print intermediate results
- #print "weights: %s" % wts
+ #print("weights: %s" % wts)
  #sm = mean(D, wts)
- #print "tmp mean: %s" % sm
- #print ""
+ #print("tmp mean: %s" % sm)
+ #print("")
 
   # impose mean and weight norm on the points
   D = impose_mean(m, D, wts)
   DD, weights = impose_weight_norm(D, wts)
 
   # print results
-  if disp: print "weights: %s" % weights
+  if disp: print("weights: %s" % weights)
   w = norm(weights)
-  if disp: print "norm: %s" % w
+  if disp: print("norm: %s" % w)
   assert almostEqual(w, sum(weights)/npts)
-  if disp: print "positions: %s" % DD
+  if disp: print("positions: %s" % DD)
   R = spread(DD)
-  if disp: print "range: %s" % R
+  if disp: print("range: %s" % R)
   assert almostEqual(R, R0)
   sm = mean(DD, weights)
-  if disp: print "mean: %s" % sm
+  if disp: print("mean: %s" % sm)
   assert almostEqual(sm, m0)
   sv = variance(DD, weights)
-  if disp: print "var: %s" % sv
+  if disp: print("var: %s" % sv)
   assert not almostEqual(sv, R)
   assert almostEqual(sv, 0.0, tol=.2)
 
   # -------------------------------------
   # modify variance, maintaining mean
   # -------------------------------------
-  if disp: print "\nmodify variance, maintaining mean"
+  if disp: print("\nmodify variance, maintaining mean")
   DD = impose_variance(R, DD, weights)
   sm = mean(DD, weights)
-  if disp: print "mean: %s" % sm
+  if disp: print("mean: %s" % sm)
   assert almostEqual(sm, m0)
   sv = variance(DD, weights)
-  if disp: print "var: %s" % sv
+  if disp: print("var: %s" % sv)
   assert almostEqual(sv, R)
   
 
@@ -218,12 +218,12 @@ def test_collection_behavior():
   ywts = c[1].weights
   zwts = c[2].weights
   if disp:
-    print "x_positions: %s" % xpos
-    print "y_positions: %s" % ypos
-    print "z_positions: %s" % zpos
-    print "x_weights: %s" % xwts
-    print "y_weights: %s" % ywts
-    print "z_weights: %s" % zwts
+    print("x_positions: %s" % xpos)
+    print("y_positions: %s" % ypos)
+    print("z_positions: %s" % zpos)
+    print("x_weights: %s" % xwts)
+    print("y_weights: %s" % ywts)
+    print("z_weights: %s" % zwts)
   assert xpos == sx.positions
   assert ypos == sy.positions
   assert zpos == sz.positions
@@ -236,10 +236,10 @@ def test_collection_behavior():
   weights = c.weights
   assert supp == [p for (p,w) in zip(positions,weights) if w > tol]
   if disp:
-    print "support points:\n %s" % supp
-    print "npts: %s (i.e. %s)" % (c.npts, c.pts)
-    print "weights: %s" % weights
-    print "positions: %s" % positions
+    print("support points:\n %s" % supp)
+    print("npts: %s (i.e. %s)" % (c.npts, c.pts))
+    print("weights: %s" % weights)
+    print("positions: %s" % positions)
   assert c.npts == sx.npts * sy.npts * sz.npts
   assert len(weights) == len(positions) == c.npts
   assert sx.positions in c.pos
@@ -251,13 +251,13 @@ def test_collection_behavior():
 
   c_exp = c.expect(f)
   if disp:
-    print "mass: %s" % c.mass
-    print "expect: %s" % c_exp
+    print("mass: %s" % c.mass)
+    print("expect: %s" % c_exp)
   assert c.mass == [sx.mass, sy.mass, sz.mass]
   assert c_exp == expectation(f, c.positions, c.weights)
 
- #print "center: %s" % c.center
- #print "delta: %s" % c.delta
+ #print("center: %s" % c.center)
+ #print("delta: %s" % c.delta)
 
   # change the positions in the collection
   points = [ list(i) for i in positions[::3] ]
@@ -271,10 +271,10 @@ def test_collection_behavior():
   _zpos = c[2].positions
   _cexp = c.expect(f)
   if disp:
-    print "x_positions: %s" % _xpos
-    print "y_positions: %s" % _ypos
-    print "z_positions: %s" % _zpos
-    print "expect: %s" % _cexp
+    print("x_positions: %s" % _xpos)
+    print("y_positions: %s" % _ypos)
+    print("z_positions: %s" % _zpos)
+    print("expect: %s" % _cexp)
   assert _xpos == [0.5] + xpos[1:]
   assert _ypos == ypos
   assert _zpos == zpos
@@ -286,9 +286,9 @@ def test_collection_behavior():
   c.set_expect((_mean,_range), f, npop=40, maxiter=200)
   _exp = c.expect(f)
   if disp:
-    print "mean: %s" % _mean
-    print "range: %s" % _range
-    print "expect: %s" % _exp
+    print("mean: %s" % _mean)
+    print("range: %s" % _range)
+    print("expect: %s" % _exp)
   assert almostEqual(_mean, _exp, tol=_mean*0.01)
 
   # a test function for probability of failure
@@ -298,8 +298,8 @@ def test_collection_behavior():
   pof = c.pof(g)
   spof = c.sampled_pof(g, npts=10000)
   if disp:
-    print "pof: %s" % pof
-    print "sampled_pof: %s" % spof
+    print("pof: %s" % pof)
+    print("sampled_pof: %s" % spof)
   assert almostEqual(pof, spof, tol=0.02)
   return
 

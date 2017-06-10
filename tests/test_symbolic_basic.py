@@ -34,7 +34,7 @@ def test_sumt1():
     ndim = 2
     x0 = [3., 2.]
     npop = 25
-    # print "constraints equations:%s" % (constraints_string.rstrip(),)
+    # print("constraints equations:%s" % (constraints_string.rstrip(),))
 
     from mystic.solvers import DifferentialEvolutionSolver
     from mystic.solvers import NelderMeadSimplexSolver
@@ -48,9 +48,9 @@ def test_sumt1():
                                 term, disp=True)
     soln = end_solver.Solution()
     assert issolution(constraints_string, soln)
-    # print "final answer:", soln
-    # print "constraints satisfied:", issolution(constraints_string, soln)
-    # print "expected: [1., 1.]", "\n"
+    # print("final answer: %s" % soln)
+    # print("constraints satisfied: %s" % issolution(constraints_string, soln))
+    # print("expected: [1., 1.]\n")
 
 def test_sumt2():
     def costfunc(x):
@@ -62,7 +62,7 @@ def test_sumt2():
     4.*x1-5.*x3 < -1.
     (x1-10.)**2 + (x2+1.)**2 < 50. 
     """
-    # print "constraints equations:%s" % (constraints_string.rstrip(),)
+    # print("constraints equations:%s" % (constraints_string.rstrip(),))
     from mystic.solvers import DifferentialEvolutionSolver
     from mystic.solvers import NelderMeadSimplexSolver
     from mystic.termination import VTR
@@ -75,9 +75,9 @@ def test_sumt2():
                                 term, disp=True)
     soln = end_solver.Solution()
     assert issolution(constraints_string, soln)
-    # print "final answer:", soln
-    # print "constraints satisfied:", issolution(constraints_string, soln)
-    # print "expected: [ 6.25827968  4.999961    5.20662288]", "\n"
+    # print("final answer: %s" % soln)
+    # print("constraints satisfied: %s" % issolution(constraints_string, soln))
+    # print("expected: [ 6.25827968  4.999961    5.20662288]\n")
 
 def test_form_constraints_function():
     # Test a nonlinear constraints example.
@@ -85,24 +85,24 @@ def test_form_constraints_function():
     x1*x2 = 1.
     x2 = x0 - 3.
     """
-    # print "building constraints function for:%s" % string.rstrip()
+    # print("building constraints function for:%s" % string.rstrip())
     x0 = [0.8,1.2,-0.7]
-    # print 'initial parameters: %s' % asarray(x0)
+    # print('initial parameters: %s' % asarray(x0))
     cf = generate_constraint(generate_solvers(solve(string)))
-    # print 'constraints satisfied?', issolution(cf, x0)
+    # print('constraints satisfied? %s' % issolution(cf, x0))
     assert not issolution(cf, x0)
     x = cf(x0)
-    # print 'after imposing constraints: %s' % asarray(x)
-    # print 'constraints satisfied?', issolution(cf, x)
+    # print('after imposing constraints: %s' % asarray(x))
+    # print('constraints satisfied? %s' % issolution(cf, x))
     assert issolution(cf, x)
 
     x0 = [1.,1.,1.]
-    # print 'initial parameters: %s' % asarray(x0)
-    # print 'constraints satisfied?', issolution(cf, x0)
+    # print('initial parameters: %s' % asarray(x0))
+    # print('constraints satisfied? %s' % issolution(cf, x0))
     assert not issolution(cf, x0)
     x = cf(x0)
-    # print 'after imposing constraints: %s' % asarray(x)
-    # print 'constraints satisfied?', issolution(cf, x), "\n"
+    # print('after imposing constraints: %s' % asarray(x))
+    # print('constraints satisfied? %s' % issolution(cf, x), "\n")
     assert issolution(cf, x)
 
 def test_matrix_interface():
@@ -112,18 +112,18 @@ def test_matrix_interface():
     b = asarray([0., 0.])
     G = [1., 0., 0.]
     h = [5.]
-    # print "equality constraints"
-    # print "G: %s" % G
-    # print "h: %s" % h
-    # print "inequality constraints"
-    # print "A:\n%s" % A
-    # print "b: %s" % b
+    # print("equality constraints")
+    # print("G: %s" % G)
+    # print("h: %s" % h)
+    # print("inequality constraints")
+    # print("A:\n%s" % A)
+    # print("b: %s" % b)
     constraints_string = linear_symbolic(A=A, b=b, G=G, h=h)
     cs = constraints_string.split('\n')
     assert cs[0] == "1.0*x0 + 0.0*x1 + 0.0*x2 <= 5.0"
     assert cs[1] == "3.0*x0 + 4.0*x1 + 5.0*x2 = 0.0"
     assert cs[2] == "1.0*x0 + 6.0*x1 + -9.0*x2 = 0.0"
-    # print "symbolic string:\n", constraints_string.rstrip()
+    # print("symbolic string:\n%s" % constraints_string.rstrip())
     pf = generate_penalty(generate_conditions(constraints_string))
     cn = as_constraint(pf)
 
@@ -135,7 +135,7 @@ def test_varnamelist():
     # Demonstrates usage of varnamelist
     varnamelist = ['length', 'width', 'height']
     string = "length = height**2 - 3.5*width"
-    # print "symbolic string:\n", string.rstrip()
+    # print("symbolic string:\n%s" % string.rstrip())
     string = replace_variables(string, varnamelist, 'x')
     cf = generate_constraint(generate_solvers(string))
 
@@ -144,9 +144,9 @@ def test_varnamelist():
         return x[0]
 
     #XXX: implement: wrap_constraint( cf, lambda x: x[0], ctype='inner') ?
-    # print "c = constraints wrapped around x[0]"
+    # print("c = constraints wrapped around x[0]")
     x0 = [2., 2., 3.]
-    # print "c(%s): %s\n" % (x0, wrappedfunc(x0)) # Expected: 2.0
+    # print("c(%s): %s\n" % (x0, wrappedfunc(x0))) # Expected: 2.0
     assert almostEqual(wrappedfunc(x0), 2.0, tol=1e-15)
 
 def test_feasible_pt():
@@ -158,15 +158,15 @@ def test_feasible_pt():
     conf = generate_constraint(solv)
     soln = _solve(conf, guess=[1.]*8)
     assert soln == [3.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
-    # print 'actual solution:', soln, "\n"
+    # print('actual solution: %s\n' % soln)
 
 def test_varnamelist2():
     # Test tricky cases of varnamelist
     varnamelist = ['x', 'y', 'x3']
     string = "x + y + x3 = 0"
-    # print "symbolic string:\n", string.rstrip()
+    # print("symbolic string:\n%s" % string.rstrip())
     newstring = replace_variables(string, varnamelist, 'x')
-    # print "new symbolic string:\n", newstring.rstrip()
+    # print("new symbolic string:\n%s" % newstring.rstrip()
     assert newstring == 'x0 + x1 + x2 = 0'
 
 

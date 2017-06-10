@@ -42,8 +42,8 @@ if __name__ == '__main__':
     x = [1,2,3,4,5]
     x_ = constraint(x)
 
-#   print "target: %s, %s, %s" % (x1, x2, x3)
-#   print "solved: %s, %s, %s" % (f1(x_), f2(x_), f3(x_))
+#   print("target: %s, %s, %s" % (x1, x2, x3))
+#   print("solved: %s, %s, %s" % (f1(x_), f2(x_), f3(x_)))
     assert round(f1(x_)) == round(x1)
     assert round(f2(x_)) == round(x2)
     assert round(f3(x_)) == round(x3)
@@ -75,8 +75,8 @@ if __name__ == '__main__':
     x = [1,2,3,4,5]
     x_ = constraint(x)
 
-#   print "target: %s, %s, %s" % (x1, x2, x3)
-#   print "solved: %s, %s, %s" % (f1(x_), f2(x_), f3(x_))
+#   print("target: %s, %s, %s" % (x1, x2, x3))
+#   print("solved: %s, %s, %s" % (f1(x_), f2(x_), f3(x_)))
     assert round(f1(x_)) == round(x1)
     assert round(f2(x_)) == round(x2)
     assert round(f3(x_)) == round(x3)
@@ -90,7 +90,7 @@ if __name__ == '__main__':
     def meanie(x):
       return x
     
-    @discrete(range(11))
+    @discrete(list(range(11)))
     def integers(x):
       return x
     

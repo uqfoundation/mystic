@@ -38,7 +38,7 @@ assert _solve_zeros(eqn, var) == []
 eqn = 'A**2 + B*(2 - C) < C*A'
 var = list('ABC')
 res = simplify(eqn, variables=var, target=list('CAB'), all=True)
-#print '\n#####\n'.join(res)
+#print('\n#####\n'.join(res))
 assert equals(eqn, res[0].split('\n')[-1], dict(A=-0.9,B=1.,C=1.))
 assert equals(eqn, res[0].split('\n')[-1], dict(A=-0.9,B=1.,C=-1.))
 assert equals(eqn, res[0].split('\n')[-1], dict(A=1.1,B=-1.,C=1.))
@@ -49,7 +49,7 @@ assert equals(eqn, res[1].split('\n')[-1], dict(A=0.9,B=-1.,C=-1.))
 assert equals(eqn, res[1].split('\n')[-1], dict(A=0.9,B=-1.,C=1.))
 
 res = simplify(eqn, variables=var, target=list('BCA'), all=True)
-#print '\n#####\n'.join(res)
+#print('\n#####\n'.join(res))
 assert equals(eqn, res[0].split('\n')[-1], dict(A=1.,B=1.,C=2.1))
 assert equals(eqn, res[0].split('\n')[-1], dict(A=1.,B=-1.,C=2.1))
 assert equals(eqn, res[0].split('\n')[-1], dict(A=-1.,B=-1.,C=2.1))
@@ -64,7 +64,7 @@ random_seed(321) #FIXME: should be commented out
 
 #FIXME: tests in this block sometimes fail... (due to negative sqrt?)
 res = simplify(eqn, variables=var, target=list('ABC'), all=True)
-#print res
+#print(res)
 sqrt = lambda x:x**.5
 #_ = eval(res.split('<')[-1],dict(B=0.,C=1.,sqrt=sqrt))
 assert equals(eqn, res, dict(A=1.1,B=0.,C=1.,sqrt=sqrt))
@@ -72,7 +72,7 @@ assert equals(eqn, res, dict(A=0.9,B=0.,C=1.,sqrt=sqrt))
 
 eqn = 'A + B*(2 - C)/A < C'
 res = simplify(eqn, variables=var, target=list('CAB'), all=True)
-#print '\n#####\n'.join(res)
+#print('\n#####\n'.join(res))
 assert equals(eqn, res[0].split('\n')[-1], dict(A=0.1,B=0.0,C=1.))
 assert equals(eqn, res[0].split('\n')[-1], dict(A=0.1,B=0.0,C=-1.))
 assert equals(eqn, res[1].split('\n')[-1], dict(A=0.1,B=-0.2,C=1.))
@@ -83,7 +83,7 @@ assert equals(eqn, res[3].split('\n')[-1], dict(A=-0.1,B=0.0,C=-1.))
 assert equals(eqn, res[3].split('\n')[-1], dict(A=-0.1,B=0.0,C=1.))
 
 res = simplify(eqn, variables=var, target=list('BCA'), all=True)
-#print '\n#####\n'.join(res)
+#print('\n#####\n'.join(res))
 assert equals(eqn, res[0].split('\n')[-1], dict(A=0.1,B=1.,C=2.1))
 assert equals(eqn, res[0].split('\n')[-1], dict(A=0.1,B=-1.,C=2.1))
 assert equals(eqn, res[1].split('\n')[-1], dict(A=0.1,B=1.,C=1.9))
@@ -95,7 +95,7 @@ assert equals(eqn, res[3].split('\n')[-1], dict(A=-0.1,B=-1.,C=1.9))
 
 #FIXME: tests in this block sometimes fail... (due to negative sqrt?)
 res = simplify(eqn, variables=var, target=list('ABC'), all=True)
-#print '\n#####\n'.join(res)
+#print('\n#####\n'.join(res))
 #_ = eval(res.split('<')[-1],dict(B=0.,C=1.,sqrt=sqrt))
 #_ = eval(res.split('<')[-1],dict(B=2.,C=-10.,sqrt=sqrt))
 assert equals(eqn, res[0].split('\n')[-1], dict(A=0.1,B=0.,C=1.,sqrt=sqrt))

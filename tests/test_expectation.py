@@ -80,10 +80,10 @@ def test_expect(constrain=False):
   bounds = (lower_bounds,upper_bounds)
 
   if debug:
-    print " model: f(x) = %s(x)" % function_name
-    print " mean: %s" % _mean
-    print " range: %s" % _range
-    print "..............\n"
+    print(" model: f(x) = %s(x)" % function_name)
+    print(" mean: %s" % _mean)
+    print(" range: %s" % _range)
+    print("..............\n")
 
   if debug:
     param_string = "["
@@ -95,10 +95,10 @@ def test_expect(constrain=False):
       param_string += "'z%s', " % str(i+1)
     param_string = param_string[:-2] + "]"
 
-    print " parameters: %s" % param_string
-    print " lower bounds: %s" % lower_bounds
-    print " upper bounds: %s" % upper_bounds
-  # print " ..."
+    print(" parameters: %s" % param_string)
+    print(" lower bounds: %s" % lower_bounds)
+    print(" upper bounds: %s" % upper_bounds)
+  # print(" ...")
 
   wx = [1.0 / float(nx)] * nx
   wy = [1.0 / float(ny)] * ny
@@ -116,8 +116,8 @@ def test_expect(constrain=False):
     v_mean = (v_upper[0] + v_lower[0]) / 2.0
     v_error = 0.05
     if debug:
-      print "impose: mean[x] = %s +/- %s" % (str(h_mean),str(h_error))
-      print "impose: mean[z] = %s +/- %s" % (str(v_mean),str(v_error))
+      print("impose: mean[x] = %s +/- %s" % (str(h_mean),str(h_error)))
+      print("impose: mean[z] = %s +/- %s" % (str(v_mean),str(v_error)))
     def constraints(x, w):
       from mystic.math.discrete import compose, decompose
       c = compose(x,w)
@@ -137,17 +137,17 @@ def test_expect(constrain=False):
   if debug:
     from numpy import array
     # rv = [xi]*nx + [yi]*ny + [zi]*nz
-    print "\nsolved [x]: %s" % array( smp[0] )
-    print "solved [y]: %s" % array( smp[1] )
-    print "solved [z]: %s" % array( smp[2] )
-    #print "solved: %s" % smp
+    print("\nsolved [x]: %s" % array( smp[0] ))
+    print("solved [y]: %s" % array( smp[1] ))
+    print("solved [z]: %s" % array( smp[2] ))
+    #print("solved: %s" % smp)
   mx = mean(smp[0])
   my = mean(smp[1])
   mz = mean(smp[2])
   if debug:
-    print "\nmean[x]: %s" % mx  # weights are all equal
-    print "mean[y]: %s" % my  # weights are all equal
-    print "mean[z]: %s\n" % mz  # weights are all equal
+    print("\nmean[x]: %s" % mx)  # weights are all equal
+    print("mean[y]: %s" % my)  # weights are all equal
+    print("mean[z]: %s\n" % mz)  # weights are all equal
   if constrain:
     assert almostEqual(mx, h_mean, tol=h_error)
     assert almostEqual(mz, v_mean, tol=v_error)
@@ -155,8 +155,8 @@ def test_expect(constrain=False):
   Ex = expectation(G, samples, weights)
   cost = (Ex - _mean)**2
   if debug:
-    print "expect: %s" % Ex
-    print "cost = (E[G] - m)^2: %s" % cost
+    print("expect: %s" % Ex)
+    print("cost = (E[G] - m)^2: %s" % cost)
   assert almostEqual(cost, 0.0, 0.01)
 
 
