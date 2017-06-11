@@ -73,9 +73,9 @@ solver.SetTermination(stop)
 solver.Solve(objective, ExtraArgs=(Q,b), disp=1)
 alpha = solver.bestSolution
 
-print 'solved x: ', alpha
-print "constraint A*x == 0: ", inner(Aeq, alpha)
-print "minimum 0.5*x'Qx + b'*x: ", solver.bestEnergy
+print('solved x: %s' % alpha)
+print("constraint A*x == 0: %s" % inner(Aeq, alpha))
+print("minimum 0.5*x'Qx + b'*x: %s" % solver.bestEnergy)
 
 # calculate weight vectors, support vectors, and bias
 wv = WeightVector(alpha, X, y)
@@ -87,10 +87,10 @@ yp = (y.flatten()>0).nonzero()[0]
 ii = inner(wv, X)
 bias2 = -0.5 *( max(ii[ym]) + min(ii[yp]) )
 
-print 'weight vector: ', wv
-print 'support vectors: ', sv1, sv2
-print 'bias (from points): ', bias
-print 'bias (with vectors): ', bias2
+print('weight vector: %s' % wv)
+print('support vectors: %s %s' % (sv1, sv2))
+print('bias (from points): %s' % bias)
+print('bias (with vectors): %s' % bias2)
 
 # plot data
 pylab.plot(c1[:,0], c1[:,1], 'bo', markersize=5)

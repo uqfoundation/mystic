@@ -92,8 +92,8 @@ class Surface(object):
         self.Interpolate(**kwds)
         # check extrema  #XXX: put _min,_max in Interpolate? (downsampled)
         f = lambda x,z: (z,surface.surrogate(*x))
-        print "min: {}; min@f: {}".format(*f(*surface._min()))
-        print "max: {}; max@f: {}".format(*f(*urfacef._max()))
+        print("min: {}; min@f: {}".format(*f(*surface._min())))
+        print("max: {}; max@f: {}".format(*f(*urfacef._max())))
         # plot surface
         self.Plot(step, scale, shift, density, axes, vals, maxpts)
         return
@@ -158,7 +158,7 @@ class Surface(object):
             raise ValueError("the input array lengths must match exactly")
         if maxpts is not None and len(z) > maxpts:
             N = max(int(round(len(z)/float(maxpts))),1)
-        #   print "for speed, sampling {} down to {}".format(len(z),len(z)/N)
+        #   print("for speed, sampling {} down to {}".format(len(z),len(z)/N))
         #   ax.plot(x[:,0], x[:,1], z, 'ko', linewidth=2, markersize=4)
             x = x[::N]
             z = z[::N]

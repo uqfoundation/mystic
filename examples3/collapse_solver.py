@@ -43,16 +43,16 @@ solver.SetEvaluationLimits(evaluations=320000, generations=1000)
 solver.SetTermination(term)
 
 #from mystic.termination import state
-#print state(solver._termination).keys()
+#print(state(solver._termination).keys())
 solver.Solve(model, disp=verbose)
 
 # while collapse and solver.Collapse(verbose):
 #   solver.Solve(model)
 
 # we are done; get result
-print solver.Terminated(info=True)
-print solver.bestEnergy, "@"
-print solver.bestSolution
+print(solver.Terminated(info=True))
+print('%s @' % solver.bestEnergy)
+print(solver.bestSolution)
 
 
 

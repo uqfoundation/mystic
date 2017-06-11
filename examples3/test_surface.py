@@ -34,8 +34,8 @@ if __name__ == '__main__':
     self.Interpolate(**kwds)
     # check extrema  #XXX: put _min,_max in Interpolate? (downsampled)
     f = lambda x,z: (z,self.surrogate(*x))
-    print "min: {}; min@f: {}".format(*f(*self._min()))
-    print "max: {}; max@f: {}".format(*f(*self._max()))
+    print("min: {}; min@f: {}".format(*f(*self._min())))
+    print("max: {}; max@f: {}".format(*f(*self._max())))
     # plot surface
     self.Plot(step, scale, shift, density)
     """
@@ -87,10 +87,10 @@ if __name__ == '__main__':
         itermon = LoggingMonitor(1, filename='inv.txt') #XXX: log.txt?
     else:
         stepmon = itermon = None
-    if archive:
-        ar_name = '__%s_%sD_cache__' % (model.im_class.__name__,ndim)
+    if archive: #python2.5
+        ar_name = '__%s_%sD_cache__' % (model.__self__.__class__.__name__,ndim)
         archive = dir_archive(ar_name, serialized=True, cached=False)
-        ar_name = '__%s_%sD_invcache__' % (model.im_class.__name__,ndim)
+        ar_name = '__%s_%sD_invcache__' % (model.__self__.__class__.__name__,ndim)
         ivcache = dir_archive(ar_name, serialized=True, cached=False)
     else:
         archive = ivcache = None
@@ -120,16 +120,16 @@ if __name__ == '__main__':
 
     # get trajectories
     surface.Sample(bounds, stop)
-    print "TOOK: %s" % (time.time() - start)
+    print("TOOK: %s" % (time.time() - start))
 #   exit()
     # get interpolated function
     surface.Interpolate(**args)
     # check extrema  #XXX: put _min,_max in Interpolate? (downsampled)
     f = lambda x,z: (z,surface.surrogate(*x))
-    print "min: {}; min@f: {}".format(*f(*surface._min()))
-    print "max: {}; max@f: {}".format(*f(*surface._max()))
+    print("min: {}; min@f: {}".format(*f(*surface._min())))
+    print("max: {}; max@f: {}".format(*f(*surface._max())))
 
-#   print "TOOK: %s" % (time.time() - start)
+#   print("TOOK: %s" % (time.time() - start))
 
     # plot surface
     axes = (0,1)
@@ -143,15 +143,15 @@ if __name__ == '__main__':
         archive = file_archive('models.pkl', serialized=True, cached=False)
         archive[model.im_class.__name__.lower()] = surface.surrogate
     except Exception:
-        print "serialization failed"
+        print("serialization failed")
     """
 
     # some testing of interpolated model
     import numpy as np
     actual = np.asarray(surface.z)           # downsample?
     interp = surface.surrogate(*surface.x.T) # downsample?
-    print "sum diff squares"
-    print "actual and interp: %s" % np.sum((actual - interp)**2)
+    print("sum diff squares")
+    print("actual and interp: %s" % np.sum((actual - interp)**2))
 
 
 # EOF

@@ -57,8 +57,8 @@ if __name__ == '__main__':
     #CUTE: 'configure' monitor and archive if they are desired
     if stepmon: stepmon = LoggingMonitor(1) # montor for all runs
     else: stepmon = None
-    if archive:
-        ar_name = '__%s_%sD_cache__' % (model.im_class.__name__,ndim)
+    if archive: #python2.5
+        ar_name = '__%s_%sD_cache__' % (model.__self__.__class__.__name__,ndim)
         archive = dir_archive(ar_name, serialized=True, cached=False)
     else: archive = None
 
@@ -80,8 +80,8 @@ if __name__ == '__main__':
     if stepmon not in (None, False):
         itermon = LoggingMonitor(1, filename='inv.txt') #XXX: log.txt?
     else: itermon = None
-    if archive not in (None, False):
-        ar_name = '__%s_%sD_invcache__' % (model.im_class.__name__,ndim)
+    if archive not in (None, False): #python2.5
+        ar_name = '__%s_%sD_invcache__' % (model.__self__.__class__.__name__,ndim)
         archive = dir_archive(ar_name, serialized=True, cached=False)
     else: archive = None
 
@@ -92,7 +92,7 @@ if __name__ == '__main__':
     ##### extract results #####
     import numpy as np
     xyz = np.hstack((xyz, searcher.Samples()))
-#   print "TOOK: %s" % (time.time() - start)
+#   print("TOOK: %s" % (time.time() - start))
 
     ########## interpolate ##########
     from scipy.interpolate import Rbf
@@ -116,7 +116,7 @@ if __name__ == '__main__':
 
     if len(z) > N:
         N = max(int(round(len(z)/float(N))),1)
-        print "for speed, sampling {} down to {}".format(len(z),len(z)/N)
+        print("for speed, sampling {} down to {}".format(len(z),len(z)/N))
         x, _x, z = x[::N], _x[::N], z[::N]
 
     f = Rbf(*np.vstack((_x.T, z)), **args)
@@ -126,11 +126,11 @@ if __name__ == '__main__':
     _model.__doc__ = f.__doc__
 
     mz = np.argmin(z)
-    print "min: {}; min@f: {}".format(z[mz], f(*x[mz]))
+    print("min: {}; min@f: {}".format(z[mz], f(*x[mz])))
     mz = np.argmax(z)
-    print "max: {}; max@f: {}".format(z[mz], f(*x[mz]))
+    print("max: {}; max@f: {}".format(z[mz], f(*x[mz])))
 
-#   print "TOOK: %s" % (time.time() - start)
+#   print("TOOK: %s" % (time.time() - start))
 
     # plot
     #############
@@ -198,18 +198,18 @@ if __name__ == '__main__':
         archive = file_archive('models.pkl', serialized=True, cached=False)
         archive[model.im_class.__name__.lower()] = f
     except Exception:
-        print "serialization failed"
+        print("serialization failed")
     """
 
     # some testing of interpolated model
     data = np.asarray(z)
 #   actual = [model([xi,yi]) for (xi,yi) in zip(x,y)]
     interp = f(*x.T)
-    print "sum diff squares"
-#   print "data and actual: %s" % np.sum((data - actual)**2)
-#   print "data and interp: %s" % np.sum((data - interp)**2)
-#   print "actual and interp: %s" % np.sum((actual - interp)**2)
-    print "actual and interp: %s" % np.sum((data - interp)**2)
+    print("sum diff squares")
+#   print("data and actual: %s" % np.sum((data - actual)**2))
+#   print("data and interp: %s" % np.sum((data - interp)**2))
+#   print("actual and interp: %s" % np.sum((actual - interp)**2))
+    print("actual and interp: %s" % np.sum((data - interp)**2))
 
 
 # EOF

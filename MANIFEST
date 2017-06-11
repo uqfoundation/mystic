@@ -255,12 +255,12 @@ examples5/README
 examples5/TEST4d_OUQ_surrogate_diam.py
 examples5/TEST_OUQ_surrogate_diam.py
 examples5/surrogate.py
+tests/__init__.py
 tests/_log.py
 tests/solver_test_best_performance.py
 tests/solver_test_suite.py
 tests/test_1d2d_expect.py
 tests/test_SOW.py
-tests/test_SOW2.py
 tests/test_collapse.py
 tests/test_collapsed.py
 tests/test_combined.py
@@ -280,4 +280,5 @@ tests/test_solver_sanity.py
 tests/test_solver_state.py
 tests/test_symbolic.py
 tests/test_symbolic_basic.py
+tests/test_symbolic_solve.py
 tests/test_termination.py

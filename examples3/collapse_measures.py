@@ -64,12 +64,12 @@ def optimize(cost,_bounds,_constraints):
   solver.Solve(cost,termination=term,strategy=Best1Exp, disp=verbose, \
                CrossProbability=crossover,ScalingFactor=percent_change)
  #while collapse and solver.Collapse(verbose): #XXX: total_evaluations?
- #    if debug: print state(solver._termination).keys()
+ #    if debug: print(state(solver._termination).keys())
  #    solver.Solve() #XXX: cost, term, strategy, cross, scale ?
  #    if debug: solver.SaveSolver('debug.pkl')
 
   solved = solver.bestSolution
- #print "solved: %s" % solver.Solution()
+ #print("solved: %s" % solver.Solution())
   func_max = MINMAX * solver.bestEnergy       #NOTE: -solution assumes -Max
  #func_max = 1.0 + MINMAX*solver.bestEnergy   #NOTE: 1-sol => 1-success = fail
   func_evals = solver.evaluations
@@ -115,7 +115,7 @@ def maximize(params,npts,bounds):
     E = float(c.expect(model))
     if not (E <= float(target[0] + error[0])) \
     or not (float(target[0] - error[0]) <= E):
-#     if debug: print c
+#     if debug: print(c)
       c.set_expect((target[0],error[0]), model, (x_lb,x_ub))
     ###################### end function-specific ######################
     # extract weights and positions
@@ -127,7 +127,7 @@ def maximize(params,npts,bounds):
     c.load(rv, npts)
     E = float(c.expect(model))
     if E > (target[0] + error[0]) or E < (target[0] - error[0]):
-      if debug: print "skipping expect: %s" % E
+      if debug: print("skipping expect: %s" % E)
       return inf  #XXX: FORCE TO SATISFY E CONSTRAINTS
     return MINMAX * c.pof(model)
 
@@ -135,10 +135,10 @@ def maximize(params,npts,bounds):
   solved, func_max, func_evals = optimize(cost,(lb,ub),constraints)
 
   if MINMAX == 1:
-    print "func_minimum: %s" % func_max  # inf
+    print("func_minimum: %s" % func_max)  # inf
   else:
-    print "func_maximum: %s" % func_max  # sup
-  print "func_evals: %s" % func_evals
+    print("func_maximum: %s" % func_max)  # sup
+  print("func_evals: %s" % func_evals)
 
   return solved, func_max
 
@@ -169,20 +169,20 @@ if __name__ == '__main__':
                + (ny * w_upper) + (ny * a_upper) \
                + (nz * w_upper) + (nz * v_upper) 
 
-  print "...SETTINGS..."
-  print "npop = %s" % npop
-  print "maxiter = %s" % maxiter
-  print "maxfun = %s" % maxfun
-  print "convergence_tol = %s" % convergence_tol
-  print "crossover = %s" % crossover
-  print "percent_change = %s" % percent_change
-  print "..............\n"
+  print("...SETTINGS...")
+  print("npop = %s" % npop)
+  print("maxiter = %s" % maxiter)
+  print("maxfun = %s" % maxfun)
+  print("convergence_tol = %s" % convergence_tol)
+  print("crossover = %s" % crossover)
+  print("percent_change = %s" % percent_change)
+  print("..............\n")
 
-  print " model: f(x) = %s(x)" % function_name
-  print " target: %s" % str(target)
-  print " error: %s" % str(error)
-  print " npts: %s" % str((nx,ny,nz))
-  print "..............\n"
+  print(" model: f(x) = %s(x)" % function_name)
+  print(" target: %s" % str(target))
+  print(" error: %s" % str(error))
+  print(" npts: %s" % str((nx,ny,nz)))
+  print("..............\n")
 
   param_string = "["
   for i in range(nx):
@@ -199,10 +199,10 @@ if __name__ == '__main__':
     param_string += "'z%s', " % str(i+1)
   param_string = param_string[:-2] + "]"
 
-  print " parameters: %s" % param_string
-  print " lower bounds: %s" % lower_bounds
-  print " upper bounds: %s" % upper_bounds
-# print " ..."
+  print(" parameters: %s" % param_string)
+  print(" lower bounds: %s" % lower_bounds)
+  print(" upper bounds: %s" % upper_bounds)
+# print(" ...")
   pars = (target,error)
   npts = (nx,ny,nz)
   bounds = (lower_bounds,upper_bounds)
@@ -212,10 +212,10 @@ if __name__ == '__main__':
   from mystic.math.discrete import product_measure
   c = product_measure()
   c.load(solved,npts)
-  print "solved: [wx,x]\n%s" % array(zip(c[0].weights,c[0].positions))
-  print "solved: [wy,y]\n%s" % array(zip(c[1].weights,c[1].positions))
-  print "solved: [wz,z]\n%s" % array(zip(c[2].weights,c[2].positions))
+  print("solved: [wx,x]\n%s" % array(list(zip(c[0].weights,c[0].positions))))
+  print("solved: [wy,y]\n%s" % array(list(zip(c[1].weights,c[1].positions))))
+  print("solved: [wz,z]\n%s" % array(list(zip(c[2].weights,c[2].positions))))
 
-  print "expect: %s" % str( c.expect(model) )
+  print("expect: %s" % str( c.expect(model) ))
 
 # EOF
