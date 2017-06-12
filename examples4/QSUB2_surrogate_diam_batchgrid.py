@@ -89,7 +89,7 @@ def optimize(cost,lower,upper,nbins):
   # map:: params, energy, func_evals = local_optimize(cost,x0,lb,ub)
   config = {'queue':queue, 'timelimit':timelimit}
   results = Pool(nnodes, **config).map(local_optimize,cf,initial_values,lb,ub)
-  #print "results = %s" % results
+  #print("results = %s" % results)
 
   # get the results with the lowest energy
   best = list(results[0][0]), results[0][1]
@@ -100,7 +100,7 @@ def optimize(cost,lower,upper,nbins):
       best = list(result[0]), result[1]
 
   # return best
-  print "solved: %s" % best[0]
+  print("solved: %s" % best[0])
   scale = 1.0
   diameter_squared = -best[1] / scale  #XXX: scale != 0
   return diameter_squared, func_evals
@@ -126,18 +126,18 @@ def UQ(start,end,lower,upper):
 
   #construct cost function and run optimizer
   results = Pool(nnodes).map(optimize, cf,lb,ub,nb)
-  #print "results = %s" % results
+  #print("results = %s" % results)
 
-  results = zip(*results)
+  results = list(zip(*results))
   diameters = list(results[0])
   function_evaluations = list(results[1])
 
   total_func_evals = sum(function_evaluations)
   total_diameter = sum(diameters)
 
-  print "subdiameters (squared): %s" % diameters
-  print "diameter (squared): %s" % total_diameter
-  print "func_evals: %s => %s" % (function_evaluations, total_func_evals)
+  print("subdiameters (squared): %s" % diameters)
+  print("diameter (squared): %s" % total_diameter)
+  print("func_evals: %s => %s" % (function_evaluations, total_func_evals))
 
   return total_diameter
 
@@ -172,16 +172,16 @@ if __name__ == '__main__':
   maxfun = 1e+6
   convergence_tol = 1e-4
 
-  print "...SETTINGS..."
-  print "nbins = %s" % nbins
-  print "maxiter = %s" % maxiter
-  print "maxfun = %s" % maxfun
-  print "convergence_tol = %s" % convergence_tol
-  #print "crossover = %s" % crossover
-  #print "percent_change = %s" % percent_change
-  print "..............\n\n"
+  print("...SETTINGS...")
+  print("nbins = %s" % nbins)
+  print("maxiter = %s" % maxiter)
+  print("maxfun = %s" % maxfun)
+  print("convergence_tol = %s" % convergence_tol)
+  #print("crossover = %s" % crossover)
+  #print("percent_change = %s" % percent_change)
+  print("..............\n\n")
 
-  print " model: f(x) = %s(x)" % function_name
+  print(" model: f(x) = %s(x)" % function_name)
   param_string = "["
   for i in range(RVmax+1): 
     param_string += "'x%s'" % str(i+1)
@@ -190,11 +190,11 @@ if __name__ == '__main__':
     else:
       param_string += ", "
 
-  print " parameters: %s" % param_string
-  print "  varying 'xi', with i = %s" % range(RVstart+1,RVend+2)
-  print " lower bounds: %s" % lower_bounds
-  print " upper bounds: %s" % upper_bounds
-# print " ..."
+  print(" parameters: %s" % param_string)
+  print("  varying 'xi', with i = %s" % list(range(RVstart+1,RVend+2)))
+  print(" lower bounds: %s" % lower_bounds)
+  print(" upper bounds: %s" % upper_bounds)
+# print(" ...")
   nbins.append(None) #XXX: kind of hackish
   diameter = UQ(RVstart,RVend,lower_bounds,upper_bounds)
 

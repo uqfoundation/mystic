@@ -35,7 +35,7 @@ from mystic.models.poly import chebyshev8coeffs as Chebyshev8
 from mystic.models.poly import chebyshev8cost as ChebyshevCost
 
 def print_solution(func):
-    print poly1d(func)
+    print(poly1d(func))
     return
 
 def plot_solution(func, benchmark=Chebyshev8):
@@ -59,7 +59,7 @@ def plot_solution(func, benchmark=Chebyshev8):
         pylab.legend(('Fitted','Chebyshev'))
         pylab.show()
     except ImportError:
-        print "Install matplotlib for visualization"
+        print("Install matplotlib for visualization")
         pass
 
 

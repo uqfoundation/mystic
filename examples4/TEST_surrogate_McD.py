@@ -92,7 +92,7 @@ def optimize(cost,lb,ub):
   solver.Solve(cost,termination=CRT(tol,tol),strategy=Best1Exp, \
                CrossProbability=crossover,ScalingFactor=percent_change)
 
-  print "solved: %s" % solver.bestSolution
+  print("solved: %s" % solver.bestSolution)
   diameter_squared = -solver.bestEnergy / scale  #XXX: scale != 0
   func_evals = solver.evaluations
   return diameter_squared, func_evals
@@ -122,9 +122,9 @@ def UQ(start,end,lower,upper):
     total_func_evals += function_evaluations[-1]
     total_diameter += diameters[-1]
 
-  print "subdiameters (squared): %s" % diameters
-  print "diameter (squared): %s" % total_diameter
-  print "func_evals: %s => %s" % (function_evaluations, total_func_evals)
+  print("subdiameters (squared): %s" % diameters)
+  print("diameter (squared): %s" % total_diameter)
+  print("func_evals: %s => %s" % (function_evaluations, total_func_evals))
 
   return total_diameter
 
@@ -163,16 +163,16 @@ if __name__ == '__main__':
   lbounds = lower_bounds[RVstart:1+RVend]
   ubounds = upper_bounds[RVstart:1+RVend]
 
-  print "...SETTINGS..."
-  print "npop = %s" % npop
-  print "maxiter = %s" % maxiter
-  print "maxfun = %s" % maxfun
-  print "convergence_tol = %s" % convergence_tol
-  print "crossover = %s" % crossover
-  print "percent_change = %s" % percent_change
-  print "..............\n\n"
+  print("...SETTINGS...")
+  print("npop = %s" % npop)
+  print("maxiter = %s" % maxiter)
+  print("maxfun = %s" % maxfun)
+  print("convergence_tol = %s" % convergence_tol)
+  print("crossover = %s" % crossover)
+  print("percent_change = %s" % percent_change)
+  print("..............\n\n")
 
-  print " model: f(x) = %s(x)" % function_name
+  print(" model: f(x) = %s(x)" % function_name)
   param_string = "["
   for i in range(RVmax): 
     param_string += "'x%s'" % str(i+1)
@@ -181,21 +181,21 @@ if __name__ == '__main__':
     else:
       param_string += ", "
 
-  print " parameters: %s" % param_string
-  print " lower bounds: %s" % lower_bounds
-  print " upper bounds: %s" % upper_bounds
-# print " ..."
+  print(" parameters: %s" % param_string)
+  print(" lower bounds: %s" % lower_bounds)
+  print(" upper bounds: %s" % upper_bounds)
+# print(" ...")
  #cuboid_volume = volume(lower_bounds,upper_bounds)
   cuboid_volume = volume(lbounds,ubounds)
   probability_mass = prob_mass(cuboid_volume,cuboid_volume)
-  print " probability mass: %s" % probability_mass
+  print(" probability mass: %s" % probability_mass)
   expectation = expectation_value(model,lower_bounds,upper_bounds)
-  print " expectation: %s" % expectation
+  print(" expectation: %s" % expectation)
   mean_value = mean(expectation,cuboid_volume)
-  print " mean value: %s" % mean_value
+  print(" mean value: %s" % mean_value)
   diameter = UQ(RVstart,RVend,lower_bounds,upper_bounds)
   mcdiarmid = mcdiarmid_bound(mean_value,sqrt(diameter))
-  print "McDiarmid bound: %s" % mcdiarmid
+  print("McDiarmid bound: %s" % mcdiarmid)
 
  #if RVstart != 0 or RVend != 2: # abort when not a 3-D problem
  #  break #FIXME: break? or exit? or pass/else? or ???
@@ -230,31 +230,31 @@ if __name__ == '__main__':
   ub.append([105.0, 30.0, 2.8])
 
   for i in range(len(lb)):
-    print "\n"
-    print " lower bounds: %s" % lb[i]
-    print " upper bounds: %s" % ub[i]
-#   print " ..."
+    print("\n")
+    print(" lower bounds: %s" % lb[i])
+    print(" upper bounds: %s" % ub[i])
+#   print(" ...")
     subcuboid_volume = volume(lb[i],ub[i])
     sub_prob_mass = prob_mass(subcuboid_volume,cuboid_volume)
     sanity.append(sub_prob_mass)
-    print " probability mass: %s" % sub_prob_mass
+    print(" probability mass: %s" % sub_prob_mass)
     expect_value = expectation_value(model,lb[i],ub[i])
-    print " expectation: %s" % expect_value
+    print(" expectation: %s" % expect_value)
     sub_mean_value = mean(expect_value,subcuboid_volume)
-    print " mean value: %s" % sub_mean_value
+    print(" mean value: %s" % sub_mean_value)
     sub_diameter = UQ(RVstart,RVend,lb[i],ub[i])
     sub_mcdiarmid = mcdiarmid_bound(sub_mean_value,sqrt(sub_diameter))
-    print "McDiarmid bound: %s" % sub_mcdiarmid
+    print("McDiarmid bound: %s" % sub_mcdiarmid)
     weighted_bound.append(sub_prob_mass * sub_mcdiarmid)
 
   # compare weighted to McDiarmid
-  print "\n\n.............."
+  print("\n\n..............")
   p_mcdiarmid = probability_mass * mcdiarmid
-  print "McDiarmid: %s" % p_mcdiarmid
+  print("McDiarmid: %s" % p_mcdiarmid)
   weighted = sum(weighted_bound)
-  print "weighted McDiarmid: %s" % weighted
+  print("weighted McDiarmid: %s" % weighted)
   try:
-    print "relative change: %s" % (weighted / p_mcdiarmid)
+    print("relative change: %s" % (weighted / p_mcdiarmid))
   except ZeroDivisionError:
     pass
   assert sum(sanity) == probability_mass

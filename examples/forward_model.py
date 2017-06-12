@@ -26,9 +26,9 @@ if __name__=='__main__':
     fe = A.getForwardEvaluator(stations)
     p = [random.random() for i in range(8)]
     c =  fe(p)
-    print len(c)
-    print sum(c).shape
-    print A
+    print(len(c))
+    print(sum(c).shape)
+    print(A)
 
 
 # End of file

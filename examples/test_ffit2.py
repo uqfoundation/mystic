@@ -59,13 +59,13 @@ def main():
 
     solution = solver.Solution()
   
-    print "\nsolved: "
-    print poly1d(solution)
-    print "\ntarget: "
-    print poly1d(Chebyshev16)
-   #print "actual coefficients vs computed:"
+    print("\nsolved: ")
+    print(poly1d(solution))
+    print("\ntarget: ")
+    print(poly1d(Chebyshev16))
+   #print("actual coefficients vs computed:")
    #for actual,computed in zip(Chebyshev16, solution):
-   #    print "%f %f" % (actual, computed)
+   #    print("%f %f" % (actual, computed))
 
     plot_solution(solution, Chebyshev16)
 
@@ -74,6 +74,6 @@ if __name__ == '__main__':
     from timeit import Timer
     t = Timer("main()", "from __main__ import main")
     timetaken =  t.timeit(number=1)
-    print "\nCPU Time: %s" % timetaken
+    print("\nCPU Time: %s" % timetaken)
 
 # end of file

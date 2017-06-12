@@ -71,8 +71,8 @@ if __name__ == '__main__':
     from pathos.helpers import freeze_support
     freeze_support() # help Windows use multiprocessing
 
-    print "Powell's Method"
-    print "==============="
+    print("Powell's Method")
+    print("===============")
 
     # dimensional information
     from mystic.tools import random_seed
@@ -96,10 +96,10 @@ if __name__ == '__main__':
     solution = solver.Solution()
 
     # use pretty print for polynomials
-    print poly1d(solution)
+    print(poly1d(solution))
 
     # compare solution with actual 8th-order Chebyshev coefficients
-    print "\nActual Coefficients:\n %s\n" % poly1d(chebyshev8coeffs)
+    print("\nActual Coefficients:\n %s\n" % poly1d(chebyshev8coeffs))
 
     # plot solution versus exact coefficients
     plot_solution(solution) 

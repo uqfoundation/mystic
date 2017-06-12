@@ -27,7 +27,7 @@ iter = 0
 def print_params(params):
     global iter
     from numpy import asarray
-    print "Generation %d has best fit parameters: %s" % (iter,asarray(params))
+    print("Generation %d has best fit parameters: %s" % (iter,asarray(params)))
     iter += 1
     return
 
@@ -40,6 +40,6 @@ if __name__ == '__main__':
 
     # use Powell's method to minimize the Rosenbrock function
     solution = fmin_powell(rosen,x0,disp=1,callback=print_params,handler=True)
-    print solution
+    print(solution)
 
 # end of file

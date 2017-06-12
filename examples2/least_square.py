@@ -96,7 +96,7 @@ if __name__ == '__main__':
 
     result = diffev2(objective, x0=bounds, bounds=bounds, penalty=penalty, constraints=constraint, npop=40, ftol=1e-8, gtol=200, disp=True, full_output=True, cross=0.8, scale=0.9, itermon=mon)
 
-    print result[0]
+    print(result[0])
     assert almostEqual(result[0], xs, rel=1e-2)
     assert almostEqual(result[1], ys, rel=1e-2)
 

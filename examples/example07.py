@@ -58,8 +58,8 @@ def plot_solution(params,style='y-'):
 
 if __name__ == '__main__':
 
-    print "Differential Evolution"
-    print "======================"
+    print("Differential Evolution")
+    print("======================")
 
     # set range for random initial guess
     ndim = 9
@@ -74,10 +74,10 @@ if __name__ == '__main__':
     solution = diffev(chebyshev8cost,x0,npop)
 
     # use pretty print for polynomials
-    print poly1d(solution)
+    print(poly1d(solution))
 
     # compare solution with actual 8th-order Chebyshev coefficients
-    print "\nActual Coefficients:\n %s\n" % poly1d(chebyshev8coeffs)
+    print("\nActual Coefficients:\n %s\n" % poly1d(chebyshev8coeffs))
 
     # plot solution versus exact coefficients
     plot_solution(solution)

@@ -91,7 +91,7 @@ if __name__ == '__main__':
     t2 = time.time()
 
     print_solution(solution)
-    print "Finished in %0.3f s" % ((t2-t1))
+    print("Finished in %0.3f s" % ((t2-t1)))
     plot_solution(solution)
 
 # end of file

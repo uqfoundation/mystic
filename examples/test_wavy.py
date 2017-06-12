@@ -43,7 +43,7 @@ def plot_solution(sol=None):
         try: show()
         except ImportError: pylab.show()
     except ImportError:
-        print "Install matplotlib for visualization"
+        print("Install matplotlib for visualization")
         pass
 
 
@@ -78,8 +78,8 @@ if __name__ == '__main__':
     desol, solver = main()
     #plot_solution(scipysol)
     #plot_solution(desol)
-    print "fmin: ", scipysol, wavy(scipysol)
-    print "dife: ", desol, wavy(desol)
+    print("fmin: %s %s" % (scipysol, wavy(scipysol)))
+    print("dife: %s %s" % (desol, wavy(desol)))
     try:
         import pylab
         x = arange(-40,40,0.01)
@@ -94,6 +94,6 @@ if __name__ == '__main__':
         try: show()
         except ImportError: pylab.show()
     except ImportError:
-        print "Install matplotlib for visualization"
+        print("Install matplotlib for visualization")
 
 # end of file

@@ -125,9 +125,9 @@ if __name__ == '__main__':
         leastsq = None
     #
     desol, dstepmon = de_solve()
-    print "desol: ", desol
-    print "dstepmon 50: ", dstepmon.x[50]
-    print "dstepmon 100: ", dstepmon.x[100]
+    print("desol: %s" % desol)
+    print("dstepmon 50: %s" % dstepmon.x[50])
+    print("dstepmon 100: %s" % dstepmon.x[100])
     #
     # this will try to use nelder_mean from a relatively "near by" point (very sensitive)
     point = [1234., -500., 10., 0.001] # both cg and nm does fine
@@ -143,15 +143,15 @@ if __name__ == '__main__':
     solver.Solve(cost_function, CRT())
     sol = solver.Solution()
 
-    print "\nsimplex solution: ", sol
+    print("\nsimplex solution: %s" % sol)
     #
     solcg = fmin_cg(cost_function, point)
-    print "\nConjugate-Gradient (Polak Rubiere) : ", solcg
+    print("\nConjugate-Gradient (Polak Rubiere) : %s" % solcg)
     #
     if leastsq:
         sollsq = leastsq(vec_cost_function, point)
         sollsq = sollsq[0]
-        print "\nLeast Squares (Levenberg Marquardt) : ", sollsq
+        print("\nLeast Squares (Levenberg Marquardt) : %s" % sollsq)
     #
     legend = ['Noisy data', 'Differential Evolution', 'Nelder Mead', 'Polak Ribiere']
     plot_noisy_data()

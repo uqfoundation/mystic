@@ -26,7 +26,7 @@ python mpmap_desolve.py
 try:
   from pathos.pools import ProcessPool as Pool
 except:
-  print __doc__
+  print(__doc__)
 
 
 from mystic.solvers import DifferentialEvolutionSolver2
@@ -53,25 +53,25 @@ if __name__=='__main__':
     freeze_support() # help Windows use multiprocessing
 
     def print_solution(func):
-        print poly1d(func)
+        print(poly1d(func))
         return
 
     psow = VerboseMonitor(10)
     ssow = VerboseMonitor(10)
 
     random_seed(seed)
-    print "first sequential..."
+    print("first sequential...")
     solver = DifferentialEvolutionSolver2(ND,NP)
     solver.SetRandomInitialPoints(min=[-100.0]*ND, max=[100.0]*ND)
     solver.SetEvaluationLimits(generations=MAX_GENERATIONS)
     solver.SetGenerationMonitor(ssow)
     solver.Solve(ChebyshevCost, VTR(0.01), strategy=Best1Exp, \
                  CrossProbability=1.0, ScalingFactor=0.9, disp=1)
-    print ""
+    print("")
     print_solution( solver.bestSolution )
 
     random_seed(seed)
-    print "\n and now parallel..."
+    print("\n and now parallel...")
     solver2 = DifferentialEvolutionSolver2(ND,NP)
     solver2.SetMapper(Pool(NNODES).map) # parallel
     solver2.SetRandomInitialPoints(min=[-100.0]*ND, max=[100.0]*ND)
@@ -79,7 +79,7 @@ if __name__=='__main__':
     solver2.SetGenerationMonitor(psow)
     solver2.Solve(ChebyshevCost, VTR(0.01), strategy=Best1Exp, \
                   CrossProbability=1.0, ScalingFactor=0.9, disp=1)
-    print ""
+    print("")
     print_solution( solver2.bestSolution )
 
 # end of file

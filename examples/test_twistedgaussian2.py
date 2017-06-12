@@ -15,7 +15,7 @@ Now we will use n-chain SCEM .
 from test_twistedgaussian import *
 
 a = initpop(q*m, n)
-b = map(target, a)
+b = list(map(target, a))
 a,b = sort_ab_with_b(a,b)
 Cs = sequential_deal(a, q)
 As = [xx.tolist() for xx in sequential_deal(b, q)]
@@ -23,14 +23,18 @@ As = [xx.tolist() for xx in sequential_deal(b, q)]
 if __name__=='__main__':
     from mystic.metropolis import *
     import time
+    import sys
+    PY3 = (sys.hexversion >= 0x30000f0)
+    if PY3:
+        xrange = range
 
-    Sk = [ [Cs[i][0]] for i in range(q) ]
-    Sak = [ [As[i][0]] for i in range(q) ]
+    Sk = [ [Cs[i][0]] for i in xrange(q) ]
+    Sak = [ [As[i][0]] for i in xrange(q) ]
 
-    for iter in range(5):
+    for iter in xrange(5):
        # this is parallel
-       print "iteration: %s" % str(iter+1)
-       for chain in range(q):
+       print("iteration: %s" % str(iter+1))
+       for chain in xrange(q):
            for i in xrange(1000):
               scem(Cs[chain], As[chain], Sk[chain], Sak[chain], target, 0.1)
 
@@ -42,7 +46,7 @@ if __name__=='__main__':
 
     Sk = [a[100:] for a in Sk] # throw away the first 100 pts of each chain
     sk = flatten_array(Sk,1)
-    #print "length of sk: %s" % len(sk)
+    #print("length of sk: %s" % len(sk))
     
     import pylab
     pylab.plot(sk[:,0],sk[:,1],'r.')

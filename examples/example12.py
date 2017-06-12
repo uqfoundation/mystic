@@ -46,7 +46,7 @@ def PolyCostFactory(evalpts,datapts,ndim):
 def data(params):
     """generate 'data' from polynomial coefficients"""
     from numpy import array
-    x = 0.1*(array([range(101)])-50.)[0]
+    x = 0.1*(array([list(range(101))])-50.)[0]
     fwd = ForwardPolyFactory(params)
     return x,fwd(x)
 
@@ -83,8 +83,8 @@ def plot_solution(params,style='b-'):
 
 if __name__ == '__main__':
 
-    print "Powell's Method"
-    print "==============="
+    print("Powell's Method")
+    print("===============")
 
     # target and initial guess
     target = [-1.,4.,-5.,20.,5.]
@@ -104,8 +104,8 @@ if __name__ == '__main__':
     solution = fmin_powell(costfunction,x0)
 
     # compare solution with actual target 5th-order polynomial coefficients
-    print "\nSolved Coefficients:\n %s\n" % ForwardPolyFactory(solution)
-    print "Target Coefficients:\n %s\n" % ForwardPolyFactory(target)
+    print("\nSolved Coefficients:\n %s\n" % ForwardPolyFactory(solution))
+    print("Target Coefficients:\n %s\n" % ForwardPolyFactory(target))
  
     # plot solution versus target coefficients
     plot_solution(solution)

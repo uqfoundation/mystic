@@ -57,20 +57,20 @@ mon = VerboseMonitor(10)
 
 # solve for alpha
 from mystic.solvers import diffev
-alpha = diffev(objective, zip(lb,.1*ub), args=(Q,b), npop=N*3, gtol=200, \
+alpha = diffev(objective, list(zip(lb,.1*ub)), args=(Q,b), npop=N*3, gtol=200, \
                itermon=mon, \
-               ftol=1e-5, bounds=zip(lb,ub), constraints=conserve, disp=1)
+               ftol=1e-5, bounds=list(zip(lb,ub)), constraints=conserve, disp=1)
 
-print 'solved x: ', alpha
-print "constraint A*x == 0: ", inner(Aeq, alpha)
-print "minimum 0.5*x'Qx + b'*x: ", objective(alpha, Q, b)
+print('solved x: %s' % alpha)
+print("constraint A*x == 0: %s" % inner(Aeq, alpha))
+print("minimum 0.5*x'Qx + b'*x: %s" % objective(alpha, Q, b))
 
 # calculate support vectors and regression function
 sv1 = SupportVectors(alpha[:nx])
 sv2 = SupportVectors(alpha[nx:])
 R = RegressionFunction(x, y, alpha, svr_epsilon, LinearKernel)
 
-print 'support vectors: ', sv1, sv2
+print('support vectors: %s %s' % (sv1, sv2))
 
 # plot data
 pylab.plot(x, y, 'k+', markersize=10)

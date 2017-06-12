@@ -15,7 +15,7 @@ Now we will use n-chain SCEM / in parallel.
 from test_twistedgaussian import *
 
 a = initpop(q*m, n)
-b = map(target, a)
+b = list(map(target, a))
 a,b = sort_ab_with_b(a,b)
 Cs = sequential_deal(a, q)
 As = [xx.tolist() for xx in sequential_deal(b, q)]
@@ -24,7 +24,7 @@ def scemmap(Q):
     from test_twistedgaussian import scem
     Cs, As, Sk, Sak, target, cn = Q
     niter = 1000
-    for i in xrange(niter):
+    for i in range(niter):
         scem(Cs, As, Sk, Sak, target, 0.1)
     return Cs,As,Sk,Sak
         
@@ -32,6 +32,10 @@ def scemmap(Q):
 if __name__=='__main__':
     import time
     from mystic.metropolis import *
+    import sys
+    PY3 = (sys.hexversion >= 0x30000f0)
+    if PY3:
+        xrange = range
     # if available, use a multiprocessing worker pool
     try:
         from pathos.helpers import freeze_support
@@ -41,16 +45,16 @@ if __name__=='__main__':
     except ImportError:
         pass
 
-    Sk = [ [Cs[i][0]] for i in range(q) ]
-    Sak = [ [As[i][0]] for i in range(q) ]
+    Sk = [ [Cs[i][0]] for i in xrange(q) ]
+    Sak = [ [As[i][0]] for i in xrange(q) ]
 
-    args = [(Cs[chain], As[chain], Sk[chain], Sak[chain], target, 0.1) for chain in range(q)]
+    args = [(Cs[chain], As[chain], Sk[chain], Sak[chain], target, 0.1) for chain in xrange(q)]
 
-    for iter in range(5):
+    for iter in xrange(5):
        # this is parallel
-       print "iteration: %s" % str(iter+1)
+       print("iteration: %s" % str(iter+1))
 
-       res = map(scemmap, args)
+       res = list(map(scemmap, args))
 
        Cs = [x[0] for x in res]
        As = [x[1] for x in res]
@@ -60,7 +64,7 @@ if __name__=='__main__':
        # need to gather and remix
        Cs , As = remix(Cs, As)
 
-       args = [(Cs[chain], As[chain], Sk[chain], Sak[chain], target, 0.1) for chain in range(q)]
+       args = [(Cs[chain], As[chain], Sk[chain], Sak[chain], target, 0.1) for chain in xrange(q)]
 
     
     from mystic.tools import flatten_array
@@ -68,13 +72,13 @@ if __name__=='__main__':
     Sk = [a[100:] for a in Sk] # throw away the first 100 pts of each chain
     sk = flatten_array(Sk,1)
     #import dill
-    #print "Writing to data file"
+    #print("Writing to data file")
     #dill.dump(sk, open('tg3.pkl','w'))
     
     try:
         import pylab
     except:
-        print "Install matplotlib for visualization"
+        print("Install matplotlib for visualization")
     else:
         pylab.plot(sk[:,0],sk[:,1],'r.')
         pylab.show()

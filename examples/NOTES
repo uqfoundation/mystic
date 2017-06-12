@@ -31,7 +31,7 @@ def ForwardPolyFactory(params):
 """
 def data(params):
     fwd = ForwardPolyFactory(params)
-    x = (array([range(101)])-50.)[0]
+    x = (array([list(range(101))])-50.)[0]
     return fwd(x)
 
 
@@ -74,7 +74,7 @@ datapts = data(target)
 - myCost is an instance of a Cost Function
 - (default metric) calculates the LeastSquared difference for fwd(x) & datapts
 """
-x = (array([range(101)])-50.)[0]
+x = (array([list(range(101))])-50.)[0]
 F = CostFactory()
 F.addModel(ForwardPolyFactory,3,'poly')
 myCost = F.getCostFunction(evalpts=x, observations=datapts)
@@ -147,7 +147,7 @@ def de_solve(CF):
 - _only_one_ configuration parameter is (currently) allowed
 """
 def plot_sol(params,linestyle='b-'):
-    x = (array([range(101)])-50.)[0]
+    x = (array([list(range(101))])-50.)[0]
     d = data(params)
     pylab.plot(x,d,'%s'%linestyle,linewidth=2.0)
     pylab.axis(plotview)

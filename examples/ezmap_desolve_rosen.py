@@ -29,7 +29,7 @@ try:
   from pyina.launchers import Mpi as Pool
 # from pyina.launchers import TorqueMpi as Pool
 except:
-  print __doc__
+  print(__doc__)
 
 
 from mystic.solvers import DifferentialEvolutionSolver2
@@ -56,25 +56,25 @@ seed = 100
 
 if __name__=='__main__':
     def print_solution(func):
-        print func
+        print(func)
         return
 
     psow = VerboseMonitor(10)
     ssow = VerboseMonitor(10)
 
     random_seed(seed)
-    print "first sequential..."
+    print("first sequential...")
     solver = DifferentialEvolutionSolver2(ND,NP)  #XXX: sequential
     solver.SetRandomInitialPoints(min=[-100.0]*ND, max=[100.0]*ND)
     solver.SetEvaluationLimits(generations=MAX_GENERATIONS)
     solver.SetGenerationMonitor(ssow)
     solver.Solve(myCost, VTR(TOL), strategy=Best1Exp, \
                  CrossProbability=CROSS, ScalingFactor=SCALE, disp=1)
-    print ""
+    print("")
     print_solution( solver.bestSolution )
 
     random_seed(seed)
-    print "\n and now parallel..."
+    print("\n and now parallel...")
     solver2 = DifferentialEvolutionSolver2(ND,NP)  #XXX: parallel
     solver2.SetMapper(Pool(NNODES).map)
 #   solver2.SetMapper(Pool(NNODES, queue=QUEUE, timelimit=TIMELIMIT).map)
@@ -83,7 +83,7 @@ if __name__=='__main__':
     solver2.SetGenerationMonitor(psow)
     solver2.Solve(myCost, VTR(TOL), strategy=Best1Exp, \
                   CrossProbability=CROSS, ScalingFactor=SCALE, disp=1)
-    print ""
+    print("")
     print_solution( solver2.bestSolution )
 
 # end of file

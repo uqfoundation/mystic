@@ -60,13 +60,13 @@ def conserve(x):
 
 # solve the dual for alpha
 from mystic.solvers import diffev
-alpha = diffev(objective, zip(lb,ub), args=(Q,b), npop=nx*3, gtol=200, \
+alpha = diffev(objective, list(zip(lb,ub)), args=(Q,b), npop=nx*3, gtol=200, \
 #              itermon=mon, \
-               ftol=1e-8, bounds=zip(lb,ub), constraints=conserve, disp=1)
+               ftol=1e-8, bounds=list(zip(lb,ub)), constraints=conserve, disp=1)
 
-print 'solved x: ', alpha
-print "constraint A*x == 0: ", inner(Aeq, alpha)
-print "minimum 0.5*x'Qx + b'*x: ", objective(alpha, Q, b)
+print('solved x: %s' % alpha)
+print("constraint A*x == 0: %s" % inner(Aeq, alpha))
+print("minimum 0.5*x'Qx + b'*x: %s" % objective(alpha, Q, b))
 
 # calculate weight vectors, support vectors, and bias
 wv = WeightVector(alpha, X, y)
@@ -78,10 +78,10 @@ yp = (y.flatten()>0).nonzero()[0]
 ii = inner(wv, X)
 bias2 = -0.5 *( max(ii[ym]) + min(ii[yp]) )
 
-print 'weight vector: ', wv
-print 'support vectors: ', sv1, sv2
-print 'bias (from points): ', bias
-print 'bias (with vectors): ', bias2
+print('weight vector: %s' % wv)
+print('support vectors: %s %s' % (sv1, sv2))
+print('bias (from points): %s' % bias)
+print('bias (with vectors): %s' % bias2)
 
 # plot data
 pylab.plot(c1[:,0], c1[:,1], 'bo', markersize=5)

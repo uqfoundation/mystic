@@ -29,7 +29,7 @@ from numpy import array
 
 def data(params):
     fwd = ForwardPolyFactory(params)
-    x = (array([range(101)])-50.)[0]
+    x = (array([list(range(101))])-50.)[0]
     return x,fwd(x)
 
 def de_solve(CF):
@@ -78,13 +78,13 @@ if __name__ == '__main__':
     import pylab
     pylab.ion()
 
-    print "target: ",target
+    print("target: %s" % target)
     plot_sol(target,'r-')
     solution, stepmon = de_solve(myCost)
-    print "solution: ",solution
+    print("solution: %s" % solution)
     plot_sol(solution,'g-')
-    print ""
-#   print "at step 10: ",stepmon.x[10]
+    print("")
+#   print("at step 10: %s" % stepmon.x[10])
 
     getch()
 

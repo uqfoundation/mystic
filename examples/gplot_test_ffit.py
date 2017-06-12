@@ -45,7 +45,7 @@ def plot_solution(func):
                )
         getch('Press any key to exit plot')
     except ImportError:
-        print "Install Gnuplot and Gnuplot.py for visualization"
+        print("Install Gnuplot and Gnuplot.py for visualization")
         pass
 
 

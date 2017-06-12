@@ -72,7 +72,7 @@ def optimize(cost,lb,ub):
                CrossProbability=crossover,ScalingFactor=percent_change)
 
   solved = solver.bestSolution
- #if DEBUG: print "solved: %s" % solved
+ #if DEBUG: print("solved: %s" % solved)
   diameter_squared = -solver.bestEnergy / scale  #XXX: scale != 0
   func_evals = solver.evaluations
   return solved, diameter_squared, func_evals
@@ -107,10 +107,10 @@ def UQ(start,end,lower,upper):
 
   if DEBUG:
     for solved in params:
-      print "solved: %s" % solved
-    print "subdiameters (squared): %s" % diameters
-    print "diameter (squared): %s" % total_diameter
-    print "func_evals: %s => %s" % (function_evaluations, total_func_evals)
+      print("solved: %s" % solved)
+    print("subdiameters (squared): %s" % diameters)
+    print("diameter (squared): %s" % total_diameter)
+    print("func_evals: %s => %s" % (function_evaluations, total_func_evals))
 
   return params, total_diameter, diameters
 
@@ -140,14 +140,14 @@ def test_cuboids(lb,ub,RVstart,RVend,cuboid_volume):
 # subdivisions
   for i in range(len(lb)):
     if DEBUG:
-      print "\n"
-      print " lower bounds: %s" % lb[i]
-      print " upper bounds: %s" % ub[i]
+      print("\n")
+      print(" lower bounds: %s" % lb[i])
+      print(" upper bounds: %s" % ub[i])
     if i in NEW_SLICES or not NEW_SLICES:
       subcuboid_volume = volume(lb[i],ub[i])
       sub_prob_mass = prob_mass(subcuboid_volume,cuboid_volume)
       probmass.append(sub_prob_mass)
-      if DEBUG: print " probability mass: %s" % sub_prob_mass
+      if DEBUG: print(" probability mass: %s" % sub_prob_mass)
       solved, diameter, subdiameters = UQ(RVstart,RVend,lb[i],ub[i])
 
       solved_p.append(solved)
@@ -155,7 +155,7 @@ def test_cuboids(lb,ub,RVstart,RVend,cuboid_volume):
       tot_diam.append(diameter)
     else:
       probmass.append(PROBABILITY_MASS[i])
-      if DEBUG: print " probability mass: %s" % PROBABILITY_MASS[i]
+      if DEBUG: print(" probability mass: %s" % PROBABILITY_MASS[i])
       solved_p.append(SOLVED_PARAMETERS[i])
       subdiams.append(SUB_DIAMETERS[i])
       tot_diam.append(TOTAL_DIAMETERS[i])
@@ -171,7 +171,7 @@ def make_cut(lb,ub,RVStart,RVend,vol):
   params, subdiams, diam, probmass = test_cuboids(lb,ub,RVstart,RVend,vol)
   SOLVED_PARAMETERS, SUB_DIAMETERS = params, subdiams
   TOTAL_DIAMETERS, PROBABILITY_MASS = diam, probmass
-  if DEBUG: print "\nSTATUS = %s" % STATUS
+  if DEBUG: print("\nSTATUS = %s" % STATUS)
 
   # get region with largest probability mass
   # region = probmass.index(max(probmass))
@@ -217,7 +217,7 @@ def make_cut(lb,ub,RVStart,RVend,vol):
     ncut += 1
     TOTAL_CUTS[0] += 1
     if TOTAL_CUTS[0] >= max_cuts[0]:
-      print "\nmaximum number of cuts performed."
+      print("\nmaximum number of cuts performed.")
       max_cuts[0] = 0
       STATUS = newstatus[:i+1+ncut] + STATUS[i+1:] # patially use 'old' status
       return lb,ub
@@ -242,16 +242,16 @@ if __name__ == '__main__':
   max_cuts[0] = 1          #      maximum number of cuts
   num_sample_points = 5    #NOTE: number of sample data points
 
-  print "...SETTINGS..."
-  print "npop = %s" % npop
-  print "maxiter = %s" % maxiter
-  print "maxfun = %s" % maxfun
-  print "convergence_tol = %s" % convergence_tol
-  print "crossover = %s" % crossover
-  print "percent_change = %s" % percent_change
-  print "..............\n\n"
+  print("...SETTINGS...")
+  print("npop = %s" % npop)
+  print("maxiter = %s" % maxiter)
+  print("maxfun = %s" % maxfun)
+  print("convergence_tol = %s" % convergence_tol)
+  print("crossover = %s" % crossover)
+  print("percent_change = %s" % percent_change)
+  print("..............\n\n")
 
-  print " model: f(x) = %s(x)" % function_name
+  print(" model: f(x) = %s(x)" % function_name)
   RVmax = len(lower_bounds)
   param_string = "["
   for i in range(RVmax): 
@@ -261,7 +261,7 @@ if __name__ == '__main__':
     else:
       param_string += ", "
 
-  print " parameters: %s" % param_string
+  print(" parameters: %s" % param_string)
 
   # get diameter for entire cuboid 
   lb,ub = [lower_bounds],[upper_bounds]
@@ -270,121 +270,121 @@ if __name__ == '__main__':
                                                       cuboid_volume)
   SOLVED_PARAMETERS, SUB_DIAMETERS = params0, subdiams0
   TOTAL_DIAMETERS, PROBABILITY_MASS = diam0, probmass0
-  if DEBUG: print "\nSTATUS = %s" % STATUS
+  if DEBUG: print("\nSTATUS = %s" % STATUS)
 
   if not DEBUG:
     pts = random_samples(lb[0],ub[0])
     pof = sampled_pof(model,pts)
-    print "Exact PoF: %s" % pof
+    print("Exact PoF: %s" % pof)
     # prepare new set of random samples (across entire domain) as 'data'
     if not PER_AI:
       pts = random_samples(lb[0],ub[0],num_sample_points)
 
     for i in range(len(lb)):
-      print "\n"
-      print " lower bounds: %s" % lb[i]
-      print " upper bounds: %s" % ub[i]
+      print("\n")
+      print(" lower bounds: %s" % lb[i])
+      print(" upper bounds: %s" % ub[i])
     for solved in params0[0]:
-      print "solved: %s" % solved
-    print "subdiameters (squared): %s" % subdiams0[0]
-    print "diameter (squared): %s" % diam0[0]
-    print " probability mass: %s" % probmass0[0]
+      print("solved: %s" % solved)
+    print("subdiameters (squared): %s" % subdiams0[0])
+    print("diameter (squared): %s" % diam0[0])
+    print(" probability mass: %s" % probmass0[0])
     expectation = expectation_value(model,lower_bounds,upper_bounds)
-   #print " expectation: %s" % expectation
+   #print(" expectation: %s" % expectation)
     mean_value = mean(expectation,cuboid_volume)
-    print " mean value: %s" % mean_value
+    print(" mean value: %s" % mean_value)
     if STATUS[0] == SUCCESS and MCZERO: #XXX: should be false, or we are done
       mcdiarmid = 0.0
     else:
       mcdiarmid = mcdiarmid_bound(mean_value,sqrt(diam0[0]))
-    print "McDiarmid bound: %s" % mcdiarmid
+    print("McDiarmid bound: %s" % mcdiarmid)
 
   # determine 'best' cuts to cuboid
   for cut in range(max_cut_iterations):
     if max_cuts[0]:  #XXX: abort if max_cuts was set to zero
-      print "\n..... cut iteration #%s ....." % (cut+1)
+      print("\n..... cut iteration #%s ....." % (cut+1))
       lb,ub = make_cut(lb,ub,RVstart,RVend,cuboid_volume)
 
   if DEBUG:
-    print "\n..... %s cuboids ....." % (cut+2) #XXX: ?; was max_cut_iterations+1
+    print("\n..... %s cuboids ....." % (cut+2)) #XXX: ?; was max_cut_iterations+1
   # get diameter for each subcuboid 
   params, subdiams, diam, probmass = test_cuboids(lb,ub,RVstart,RVend,\
                                                   cuboid_volume)
   SOLVED_PARAMETERS, SUB_DIAMETERS = params, subdiams
   TOTAL_DIAMETERS, PROBABILITY_MASS = diam, probmass
-  print "\nSTATUS = %s" % STATUS
+  print("\nSTATUS = %s" % STATUS)
   if not DEBUG:
     weighted_bound = []
     sampled_bound = []
     for i in range(len(lb)):
-      print "\n"
-      print " lower bounds: %s" % lb[i]
-      print " upper bounds: %s" % ub[i]
+      print("\n")
+      print(" lower bounds: %s" % lb[i])
+      print(" upper bounds: %s" % ub[i])
       for solved in params[i]:
-        print "solved: %s" % solved
-      print "subdiameters (squared): %s" % subdiams[i]
-      print "diameter (squared): %s" % diam[i]
-      print " probability mass: %s" % probmass[i]
+        print("solved: %s" % solved)
+      print("subdiameters (squared): %s" % subdiams[i])
+      print("diameter (squared): %s" % diam[i])
+      print(" probability mass: %s" % probmass[i])
       #calculate remainder of the statistics, McDiarmid for cube & subcuboids
       subcuboid_volume = volume(lb[i],ub[i])
       expect_value = expectation_value(model,lb[i],ub[i])
-     #print " expectation: %s" % expect_value
+     #print(" expectation: %s" % expect_value)
       sub_mean_value = mean(expect_value,subcuboid_volume)
-      print " mean value: %s" % sub_mean_value
+      print(" mean value: %s" % sub_mean_value)
       if STATUS[i] == SUCCESS and MCZERO:
         sub_mcdiarmid = 0.0
       else:
         sub_mcdiarmid = mcdiarmid_bound(sub_mean_value,sqrt(diam[i]))
-      print "McDiarmid bound: %s" % sub_mcdiarmid
+      print("McDiarmid bound: %s" % sub_mcdiarmid)
       weighted_bound.append(probmass[i] * sub_mcdiarmid)
-      print "weighted McDiarmid: %s" % weighted_bound[-1]
+      print("weighted McDiarmid: %s" % weighted_bound[-1])
 
       # prepare new set of random samples (on each subcuboid) as 'data'
       if PER_AI:
         pts = random_samples(lb[i],ub[i],num_sample_points)
       npts_i = sampled_pts(pts,lb[i],ub[i])
-      print "Number of sample points: %s" % npts_i
+      print("Number of sample points: %s" % npts_i)
       if not npts_i:
-        print "Warning, no sample points in bounded region"
+        print("Warning, no sample points in bounded region")
         alpha_i = 0.0 #FIXME: defining undefined alpha to be 0.0
       else:
        #alpha_i = alpha(npts_i,sub_mcdiarmid)  #XXX: oops... was wrong
         alpha_i = alpha(npts_i,sqrt(diam[i]))
-      print "alpha: %s" % alpha_i
+      print("alpha: %s" % alpha_i)
 
       s_prob = sampled_prob(pts,lb[i],ub[i])
-      print "Sampled probability mass: %s" % s_prob
+      print("Sampled probability mass: %s" % s_prob)
       s_mean = sampled_mean(pts,lb[i],ub[i])
       if s_mean == None:
          s_mean = 0.0 #FIXME: defining undefined means to be 0.0
-      print "Sampled mean value: %s" % s_mean
+      print("Sampled mean value: %s" % s_mean)
       if STATUS[i] == SUCCESS and MCZERO:
         samp_mcdiarmid = 0.0
       else:
         samp_mcdiarmid = mcdiarmid_bound((s_mean-alpha_i),sqrt(diam[i]))
-      print "Sampled McDiarmid bound: %s" % samp_mcdiarmid
+      print("Sampled McDiarmid bound: %s" % samp_mcdiarmid)
       if PER_AI: #XXX: 'cheat' by using probmass for uniform Ai
         sampled_bound.append(probmass[i] * samp_mcdiarmid)
       else:
         sampled_bound.append(s_prob * samp_mcdiarmid)
-      print "weighted sampled McDiarmid: %s" % sampled_bound[-1]
+      print("weighted sampled McDiarmid: %s" % sampled_bound[-1])
 
     # compare weighted to McDiarmid
-    print "\n\n.............."
+    print("\n\n..............")
     p_mcdiarmid = probmass0[0] * mcdiarmid
-    print "McDiarmid: %s" % p_mcdiarmid
+    print("McDiarmid: %s" % p_mcdiarmid)
     weighted = sum(weighted_bound)
-    print "weighted McDiarmid: %s" % weighted
+    print("weighted McDiarmid: %s" % weighted)
     try:
-      print "relative change: %s" % (weighted / p_mcdiarmid)
+      print("relative change: %s" % (weighted / p_mcdiarmid))
     except ZeroDivisionError:
       pass
    #if not PER_AI:
     sampled = sum(sampled_bound)
-    print "weighted sampled McDiarmid: %s" % sampled
+    print("weighted sampled McDiarmid: %s" % sampled)
 
-  print "\n.............."
-  print " sum probability mass: %s" % sum(probmass)
+  print("\n..............")
+  print(" sum probability mass: %s" % sum(probmass))
 
 
 # EOF

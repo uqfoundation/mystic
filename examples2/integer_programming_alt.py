@@ -53,7 +53,7 @@ if __name__ == '__main__':
 
     result = diffev2(objective, x0=bounds, bounds=bounds, penalty=penalty, constraints=round, npop=30, gtol=50, disp=True, full_output=True)
 
-    print result[0]
+    print(result[0])
     assert almostEqual(result[0], xs, tol=1e-8) #XXX: fails b/c rel & zero?
     assert almostEqual(result[1], ys, tol=1e-4)
 

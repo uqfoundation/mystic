@@ -47,7 +47,7 @@ def plot_frame(label=None):
  
 # plot the polynomial trajectories
 def plot_params(monitor):
-    x = range(len(monitor))
+    x = list(range(len(monitor)))
     y = monitor.y
     pylab.plot(x,y,'b-')
     pylab.axis([1,0.5*x[-1],0,y[1]],'k-')
@@ -57,8 +57,8 @@ def plot_params(monitor):
 
 if __name__ == '__main__':
 
-    print "Differential Evolution"
-    print "======================"
+    print("Differential Evolution")
+    print("======================")
 
     # set range for random initial guess
     ndim = 9
@@ -84,8 +84,8 @@ if __name__ == '__main__':
     # get solved coefficients and Chi-Squared (from solver members)
     iterations = solver.generations
     cost = solver.bestEnergy
-    print "Generation %d has best Chi-Squared: %f" % (iterations, cost)
-    print "Solved Coefficients:\n %s\n" % poly1d(solver.bestSolution)
+    print("Generation %d has best Chi-Squared: %f" % (iterations, cost))
+    print("Solved Coefficients:\n %s\n" % poly1d(solver.bestSolution))
 
     # plot convergence of coefficients per iteration
     plot_frame('iterations')

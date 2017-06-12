@@ -10,49 +10,49 @@ if __name__ == '__main__':
     A*B + C > 1
     B < 0
     """
-    print equations
+    print(equations)
 
     var = list('ABC')
     eqns = ms.simplify(equations, variables=var, all=True)
-    if isinstance(eqns, basestring):
+    if isinstance(eqns, str):
       _join = join_ = None
-      print eqns
+      print(eqns)
     else:
       _join,join_ = _or,or_
       for eqn in eqns:
-        print eqn + '\n----------------------'
+        print(eqn + '\n----------------------')
 
     constrain = ms.generate_constraint(ms.generate_solvers(eqns, var, locals=dict(e_=eps)), join=_join)
     solution = constrain([1,-2,1])
 
-    print 'solved: ', dict(zip(var, solution))
+    print('solved: %s' % dict(zip(var, solution)))
 
     penalty = ms.generate_penalty(ms.generate_conditions(eqns, var, locals=dict(e_=eps)), join=join_)
-    print 'penalty: ', penalty(solution)
+    print('penalty: %s' % penalty(solution))
 
     equations = """
     A*(B-C) + 2*C > 1
     B + C = 2*D
     D < 0
     """
-    print equations
+    print(equations)
     var = list('ABCD')
     eqns = ms.simplify(equations, variables=var, all=True)
-    if isinstance(eqns, basestring):
+    if isinstance(eqns, str):
       _join = join_ = None
-      print eqns
+      print(eqns)
     else:
       _join,join_ = _or,or_
       for eqn in eqns:
-        print eqn + '\n----------------------'
+        print(eqn + '\n----------------------')
 
     constrain = ms.generate_constraint(ms.generate_solvers(eqns, var, locals=dict(e_=eps)), join=_join)
     solution = constrain([1,2,1,-1])
 
-    print 'solved: ', dict(zip(var, solution))
+    print('solved: %s' % dict(zip(var, solution)))
 
     penalty = ms.generate_penalty(ms.generate_conditions(eqns, var, locals=dict(e_=eps)), join=join_)
-    print 'penalty: ', penalty(solution)
+    print('penalty: %s' % penalty(solution))
     #XXX: worry about ZeroDivisionError ?
 
     equations = """
@@ -60,96 +60,96 @@ if __name__ == '__main__':
     A*C < 3
     -A*B > 4
     """
-    print equations
+    print(equations)
     vars = list('ABC')
     eqns = ms.simplify(equations, variables=var, all=True)
-    if isinstance(eqns, basestring):
+    if isinstance(eqns, str):
       _join = join_ = None
-      print eqns
+      print(eqns)
     else:
       _join,join_ = _or,or_
       for eqn in eqns:
-        print eqn + '\n----------------------'
+        print(eqn + '\n----------------------')
 
     constrain = ms.generate_constraint(ms.generate_solvers(eqns, var, locals=dict(e_=eps)), join=_join)
     solution = constrain([1,2,-1])
 
-    print 'solved: ', dict(zip(var, solution))
+    print('solved: %s' % dict(zip(var, solution)))
 
     penalty = ms.generate_penalty(ms.generate_conditions(eqns, var, locals=dict(e_=eps)), join=join_)
-    print 'penalty: ', penalty(solution)
+    print('penalty: %s' % penalty(solution))
 
     equations = """
     A*B*C > 1
     A + C < 3
     A - B > 4
     """
-    print equations
+    print(equations)
     vars = list('ABC')
     eqns = ms.simplify(equations, variables=var, all=True)
-    if isinstance(eqns, basestring):
+    if isinstance(eqns, str):
       _join = join_ = None
-      print eqns
+      print(eqns)
     else:
       _join,join_ = _or,or_
       for eqn in eqns:
-        print eqn + '\n----------------------'
+        print(eqn + '\n----------------------')
 
     constrain = ms.generate_constraint(ms.generate_solvers(eqns, var, locals=dict(e_=eps)), join=_join)
     solution = constrain([1,2,-1])
 
-    print 'solved: ', dict(zip(var, solution))
+    print('solved: %s' % dict(zip(var, solution)))
 
     penalty = ms.generate_penalty(ms.generate_conditions(eqns, var, locals=dict(e_=eps)), join=join_)
-    print 'penalty: ', penalty(solution)
+    print('penalty: %s' % penalty(solution))
 
     equations = """
     A*B + 2*C > 1
     B < 0
     C > 0
     """
-    print equations
+    print(equations)
     vars = list('ABC')
     eqns = ms.simplify(equations, variables=var, all=True)
-    if isinstance(eqns, basestring):
+    if isinstance(eqns, str):
       _join = join_ = None
-      print eqns
+      print(eqns)
     else:
       _join,join_ = _or,or_
       for eqn in eqns:
-        print eqn + '\n----------------------'
+        print(eqn + '\n----------------------')
 
     constrain = ms.generate_constraint(ms.generate_solvers(eqns, var, locals=dict(e_=eps)), join=_join)
     solution = constrain([1,2,-1])
 
-    print 'solved: ', dict(zip(var, solution))
+    print('solved: %s' % dict(zip(var, solution)))
 
     penalty = ms.generate_penalty(ms.generate_conditions(eqns, var, locals=dict(e_=eps)), join=join_)
-    print 'penalty: ', penalty(solution)
+    print('penalty: %s' % penalty(solution))
 
     equations = """
     A*B > 1
     B > 0
     """
-    print equations
+    print(equations)
     vars = list('AB')
     eqns = ms.simplify(equations, variables=var, all=True)
-    print eqns
-    if isinstance(eqns, basestring):
+    print(eqns)
+    if isinstance(eqns, str):
       _join = join_ = None
-      print eqns
+      print(eqns)
     else:
       _join,join_ = _or,or_
       for eqn in eqns:
-        print eqn + '\n----------------------'
+        print(eqn + '\n----------------------')
 
     constrain = ms.generate_constraint(ms.generate_solvers(eqns, var, locals=dict(e_=eps)), join=_join)
     solution = constrain([1,2])
 
-    print 'solved: ', dict(zip(var, solution))
+    print('solved: %s' % dict(zip(var, solution)))
 
     penalty = ms.generate_penalty(ms.generate_conditions(eqns, var, locals=dict(e_=eps)), join=join_)
-    print 'penalty: ', penalty(solution)
+    print('penalty: %s' % penalty(solution))
 
 
     equations = '''
@@ -159,23 +159,23 @@ if __name__ == '__main__':
     M > 0
     T == B + P + M
     '''
-    print equations
+    print(equations)
     var = list('MTBP')
     eqns = ms.simplify(equations, variables=var, all=True)
-    if isinstance(eqns, basestring):
+    if isinstance(eqns, str):
       _join = join_ = None
-      print eqns
+      print(eqns)
     else:
       _join,join_ = _or,or_
       for eqn in eqns:
-        print eqn + '\n----------------------'
+        print(eqn + '\n----------------------')
 
     constrain = ms.generate_constraint(ms.generate_solvers(eqns, var, locals=dict(e_=eps)), join=_join)
     solution = constrain([4,4,4,4])
-    print 'solved: ', dict(zip(var, solution))
+    print('solved: %s' % dict(zip(var, solution)))
 
     penalty = ms.generate_penalty(ms.generate_conditions(eqns, var, locals=dict(e_=eps)), join=join_)
-    print 'penalty: ', penalty(solution)
+    print('penalty: %s' % penalty(solution))
 
 
     equations = """
@@ -187,20 +187,20 @@ if __name__ == '__main__':
 
     var = list('ABCD')
     eqns = ms.simplify(equations, variables=var, all=True)
-    if isinstance(eqns, basestring):
+    if isinstance(eqns, str):
       _join = join_ = None
-      print eqns
+      print(eqns)
     else:
       _join,join_ = _or,or_
       for eqn in eqns:
-        print eqn + '\n----------------------'
+        print(eqn + '\n----------------------')
 
     constrain = ms.generate_constraint(ms.generate_solvers(eqns, var, locals=dict(e_=eps)), join=_join)
     solution = constrain([4,4,4,4])
-    print 'solved: ', dict(zip(var, solution))
+    print('solved: %s' % dict(zip(var, solution)))
 
     penalty = ms.generate_penalty(ms.generate_conditions(eqns, var, locals=dict(e_=eps)), join=join_)
-    print penalty(solution)
+    print('penalty: %s' % penalty(solution))
 
 
 # EOF

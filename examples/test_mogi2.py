@@ -90,7 +90,7 @@ if __name__ == '__main__':
     pylab.ion()
     plot_noisy_data()
     desol, dstepmon = de_solve()
-    print "desol: ", desol
+    print("desol: %s" % desol)
    #plot_sol(dstepmon.x[-100],'k-')
 
     plot_sol(desol,'r-')

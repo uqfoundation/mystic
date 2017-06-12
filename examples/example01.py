@@ -23,14 +23,14 @@ from mystic.models import rosen
 
 if __name__ == '__main__':
 
-    print "Powell's Method"
-    print "==============="
+    print("Powell's Method")
+    print("===============")
 
     # initial guess
     x0 = [0.8,1.2,0.7]
 
     # use Powell's method to minimize the Rosenbrock function
     solution = fmin_powell(rosen,x0)
-    print solution
+    print(solution)
  
 # end of file

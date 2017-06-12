@@ -74,7 +74,7 @@ if __name__ == '__main__':
     # solve with mystic's differential evolution solver
     solution = solver.Solution()
     sx, sy, sr = solution
-    print "DEsol : (%f, %f) @ R = %f" % (sx, sy, sr)
+    print("DEsol : (%f, %f) @ R = %f" % (sx, sy, sr))
 
     # plot DEsolver solution
     c = circle(sx, sy, sr)
@@ -84,7 +84,7 @@ if __name__ == '__main__':
     # solve with scipy.fmin
     from mystic.solvers import fmin
     sol = fmin(cost, guess)
-    print "scipy.fmin sol: ", sol
+    print("scipy.fmin sol: %s" % sol)
     ax, ay, ar = sol
 
     # plot scipy.fmin solution
@@ -96,7 +96,7 @@ if __name__ == '__main__':
    #from mystic._scipyoptimize import brute
    #ranges = tuple(zip(minrange,maxrange))
    #sol = brute(cost, ranges, Ns=NP)
-   #print "scipy.brute sol: ", sol
+   #print("scipy.brute sol: %s" % sol)
    #bx, by, br = sol
 
     # plot scipy.brute solution
@@ -106,12 +106,12 @@ if __name__ == '__main__':
 
     # find & draw the support vectors from DE
     svl = sv(xy, sx,sy,sr)
-    print "DE support vectors: ", svl
+    print("DE support vectors: %s" % svl)
     pylab.plot(xy[svl,0],xy[svl,1],'bx',markersize=6)
 
     # find & draw the support vectors from scipy.brute
    #svl = sv(xy, bx,by,br)
-   #print "Brute support vectors: ", svl
+   #print("Brute support vectors: %s" % svl)
    #pylab.plot(xy[svl,0],xy[svl,1],'yx',markersize=6)
 
     pylab.legend(legend)

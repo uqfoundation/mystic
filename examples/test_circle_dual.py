@@ -78,18 +78,18 @@ if __name__ == '__main__':
 
     # solve the constrained quadratic programming problem
     from mystic.solvers import fmin_powell
-    x = fmin_powell(objective, UB/npt, args=(H, f), bounds=zip(LB,UB), \
+    x = fmin_powell(objective, UB/npt, args=(H, f), bounds=list(zip(LB,UB)), \
                     constraints=norm, ftol=1e-8, disp=1)
 
     # find support vectors
     sv = where(x > 0.001)[0]
-    print "support vectors: ", sv
+    print("support vectors: %s" % sv)
 
     # compare solved center and radius to generating center and radius
     center = dot(x,xy)
     R = linalg.norm(xy[sv[0],:]-center)
-    print "x0, y0: (%f, %f) @ R0 = %f" % (x0,y0,R0)
-    print "center: (%f, %f) @ R  = %f" % (center[0],center[1],R)
+    print("x0, y0: (%f, %f) @ R0 = %f" % (x0,y0,R0))
+    print("center: (%f, %f) @ R  = %f" % (center[0],center[1],R))
 
     plot(xy, sv, x0, y0, R0, center, R)
 

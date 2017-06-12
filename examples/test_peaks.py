@@ -33,16 +33,16 @@ term = VTR(tol)
 #term = COG()
 solver.Solve(peaks, term, disp=True)
 sol = solver.Solution()
-print 'solution = ', sol
-print 'expected = [0.23, -1.63]'
+print('solution = %s' % sol)
+print('expected = [0.23, -1.63]')
 
 try:
     from scipy.stats import uniform
 except ImportError:
     exit()
 
-print '-'*60
-print 'using a uniform distribution...'
+print('-'*60)
+print('using a uniform distribution...')
 solver = DifferentialEvolutionSolver(nd, npop)
 solver.SetDistributionInitialPoints(uniform(lb[0],ub[0]))
 solver.SetStrictRanges(lb, ub)
@@ -50,8 +50,8 @@ term = VTR(tol)
 #term = COG()
 solver.Solve(peaks, term, disp=True)
 sol = solver.Solution()
-print 'solution = ', sol
-print 'expected = [0.23, -1.63]'
+print('solution = %s' % sol)
+print('expected = [0.23, -1.63]')
 
 
 

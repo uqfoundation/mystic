@@ -41,31 +41,31 @@ def main():
                  CrossProbability=0.5, ScalingFactor=0.6, disp=1)
 
     solution = solver.bestSolution
-   #print "Current function value: %s" % solver.bestEnergy
-   #print "Iterations: %s" % solver.generations
-   #print "Function evaluations: %s" % solver.evaluations
+   #print("Current function value: %s" % solver.bestEnergy)
+   #print("Iterations: %s" % solver.generations)
+   #print("Function evaluations: %s" % solver.evaluations)
   
-    print solution
+    print(solution)
 
 
 
 if __name__ == '__main__':
     from numpy import inf
-    print "without bounds..."
+    print("without bounds...")
     from timeit import Timer
-    print "Differential Evolution"
-    print "======================"
+    print("Differential Evolution")
+    print("======================")
     t = Timer("main()", "from __main__ import main")
     timetaken =  t.timeit(number=1)
-    print "CPU Time: %s\n" % timetaken
+    print("CPU Time: %s\n" % timetaken)
 
-    print "with bounds..."
+    print("with bounds...")
     import time
     times = []
     algor = []
 
-    print "Differential Evolution"
-    print "======================"
+    print("Differential Evolution")
+    print("======================")
     start = time.time()
     esow= Monitor()
     ssow= Monitor()
@@ -82,7 +82,7 @@ if __name__ == '__main__':
  #  min = [-0.999, -0.999, 0.999]     #XXX: tight range and non-randomness
  #  max = [2.001, 1.001, 1.001]       #...: is _bad_ for DE solvers
 
-   #print diffev(rosen,xinit,NP,retall=0,full_output=0)
+   #print(diffev(rosen,xinit,NP,retall=0,full_output=0))
     solver = DifferentialEvolutionSolver(len(xinit), NP)
     solver.SetInitialPoints(xinit)
     solver.SetStrictRanges(min,max)
@@ -92,21 +92,21 @@ if __name__ == '__main__':
     solver.Solve(rosen, VTR(0.0001), \
                  CrossProbability=0.5, ScalingFactor=0.6, disp=1)
     sol = solver.bestSolution
-    print sol
-   #print "Current function value: %s" % solver.bestEnergy
-   #print "Iterations: %s" % solver.generations
-   #print "Function evaluations: %s" % solver.evaluations
+    print(sol)
+   #print("Current function value: %s" % solver.bestEnergy)
+   #print("Iterations: %s" % solver.generations)
+   #print("Function evaluations: %s" % solver.evaluations)
  
     times.append(time.time() - start)
     algor.append('Differential Evolution\t')
 
-    for k in range(len(algor)):
-        print algor[k], "\t -- took", times[k]
+    for k,t in zip(algor,times):
+        print("%s\t -- took %s" % (k, t))
 
-   #print len(esow.x)
-   #print len(ssow.x)
-   #print "\nstep x:\n", ssow.x[1:10][0]
-   #print "\nstep y:\n", ssow.y[1:10][0]
+   #print(len(esow.x))
+   #print(len(ssow.x))
+   #print("\nstep x:\n%s" % ssow.x[1:10][0])
+   #print("\nstep y:\n%s" % ssow.y[1:10][0])
 
 
 

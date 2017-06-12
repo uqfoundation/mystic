@@ -77,7 +77,7 @@ def constraint(x):
     x0,x1 = x[:-2],x[-2:]
     x0 = clip(x0, 0,9)       #XXX: hack to impose bounds
     x1 = clip(x1, 0,1)       #XXX: hack to impose bounds
-    x0 = unique(x0, range(0,10))
+    x0 = unique(x0, list(range(0,10)))
     return hstack([x0, x1])
 
 
@@ -94,7 +94,7 @@ if __name__ == '__main__':
     #FIXME: SOLVES at about 20%?... but w/ last 2 fixed 90%?
     result = diffev2(objective, x0=bounds, bounds=bounds, penalty=penalty, constraints=constraint, npop=360, ftol=1e-8, gtol=200, disp=True, full_output=True, cross=0.2, scale=0.9, itermon=mon)
 
-    print result[0]
+    print(result[0])
     assert almostEqual(result[0], xs, tol=1e-8) #XXX: fails b/c rel & zero?
     assert almostEqual(result[1], ys, tol=1e-4)
 

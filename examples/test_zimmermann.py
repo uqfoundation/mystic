@@ -46,7 +46,7 @@ def main():
 
     solution = solver.Solution()
   
-    print solution
+    print(solution)
 
 
 
@@ -54,7 +54,7 @@ if __name__ == '__main__':
     from timeit import Timer
     t = Timer("main()", "from __main__ import main")
     timetaken =  t.timeit(number=1)
-    print "CPU Time: %s" % timetaken
+    print("CPU Time: %s" % timetaken)
 
     from mystic.monitors import Monitor
     from mystic.solvers import NelderMeadSimplexSolver as fmin
@@ -71,6 +71,6 @@ if __name__ == '__main__':
     solver.SetGenerationMonitor(simplex)
     solver.Solve(CostFunction, CRT())
     sol = solver.Solution()
-    print "fmin solution: ", sol
+    print("fmin solution: %s" % sol)
 
 # end of file

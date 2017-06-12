@@ -1,4 +1,4 @@
-2016sr/bin/env python
+#!/usr/bin/env python
 #
 # Problem definition:
 # A-R Hedar and M Fukushima, "Derivative-Free Filter Simulated Annealing

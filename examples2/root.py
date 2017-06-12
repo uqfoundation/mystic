@@ -50,7 +50,7 @@ if __name__ == '__main__':
 # mon = VerboseMonitor(10)
 
   result = diffev2(objective, args=args, x0=bounds, bounds=bounds, npop=40, ftol=1e-8, disp=False, full_output=True)#, itermon=mon)
-# print result[0]
+# print(result[0])
   assert almostEqual(result[0], xs, tol=1e-8) \
       or almostEqual(result[0], xs_,tol=1e-8)
   assert almostEqual(result[1], ys, tol=1e-5)

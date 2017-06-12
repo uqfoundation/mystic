@@ -30,8 +30,8 @@ if __name__=='__main__':
   # max = [200.001, 100.001, numpy.inf]
  #  min = [-0.999, -0.999, 0.999]
  #  max = [2.001, 1.001, 1.001]
-    print "Powell Direction Set Method"
-    print "==========================="
+    print("Powell Direction Set Method")
+    print("===========================")
     start = time.time()
     from mystic.monitors import Monitor, VerboseMonitor
     stepmon = VerboseMonitor(1,1)
@@ -40,7 +40,7 @@ if __name__=='__main__':
 
    #from mystic._scipyoptimize import fmin_powell
     from mystic.solvers import fmin_powell, PowellDirectionalSolver
-   #print fmin_powell(rosen,x0,retall=0,full_output=0)#,maxiter=14)
+   #print(fmin_powell(rosen,x0,retall=0,full_output=0)#,maxiter=14))
     solver = PowellDirectionalSolver(len(x0))
     solver.SetInitialPoints(x0)
     solver.SetStrictRanges(min,max)
@@ -49,15 +49,15 @@ if __name__=='__main__':
     solver.SetConstraints(constrain)
     solver.enable_signal_handler()
     solver.Solve(rosen, NCOG(tolerance=1e-4), disp=1)
-    print solver.bestSolution
-   #print "Current function value: %s" % solver.bestEnergy
-   #print "Iterations: %s" % solver.generations
-   #print "Function evaluations: %s" % solver.evaluations
+    print(solver.bestSolution)
+   #print("Current function value: %s" % solver.bestEnergy)
+   #print("Iterations: %s" % solver.generations)
+   #print("Function evaluations: %s" % solver.evaluations)
 
     times.append(time.time() - start)
     algor.append("Powell's Method\t")
 
-    for k in range(len(algor)):
-        print algor[k], "\t -- took", times[k]
+    for k,t in zip(algor,times):
+        print("%s\t -- took %s" % (k, t))
 
 # end of file

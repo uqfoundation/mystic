@@ -27,15 +27,15 @@ import pylab
 
 if __name__ == '__main__':
 
-    print "Nelder-Mead Simplex"
-    print "==================="
+    print("Nelder-Mead Simplex")
+    print("===================")
 
     # initial guess
     x0 = [0.8,1.2,0.7]
 
     # use Nelder-Mead to minimize the Rosenbrock function
     solution = fmin(rosen,x0)
-    print solution
+    print(solution)
  
     # plot the Rosenbrock function (one plot per axis)
     x = [0.01*i for i in range(200)]

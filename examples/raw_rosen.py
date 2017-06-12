@@ -26,6 +26,6 @@ minimum is f(x)=0.0 at xi=1.0"""
 
 if __name__=='__main__':
     target = [1., 1., 1.]
-    print target
-    print ""
-    print rosen(target)
+    print(target)
+    print("")
+    print(rosen(target))

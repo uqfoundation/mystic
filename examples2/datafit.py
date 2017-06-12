@@ -58,7 +58,7 @@ if __name__ == '__main__':
 # mon = VerboseMonitor(10)
 
   result = diffev2(objective, args=args, x0=bounds, bounds=bounds, npop=40, ftol=1e-8, gtol=100, disp=False, full_output=True)#, itermon=mon)
-# print result[0], xs
+# print("%s %s" % (result[0], xs))
   assert almostEqual(result[0], xs, rel=2e-1)
   assert almostEqual(result[1], ys, rel=2e-1)
 

@@ -38,6 +38,6 @@ M evaluation points between [-1, 1], and two end points"""
 if __name__=='__main__':
     from mystic.models.poly import chebyshev8coeffs as target
     from mystic.math import poly1d
-    print poly1d(target)
-    print ""
-    print chebyshev8cost(target)
+    print(poly1d(target))
+    print("")
+    print(chebyshev8cost(target))

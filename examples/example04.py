@@ -60,13 +60,13 @@ if __name__ == '__main__':
     x0 = [0.8,1.2,0.7]
 
     # suggest that the user interacts with the solver
-    print "NOTE: while solver is running, press 'Ctrl-C' in console window"
+    print("NOTE: while solver is running, press 'Ctrl-C' in console window")
     getch()
     plot_frame()
 
     # use Nelder-Mead to minimize the Rosenbrock function
     solution = fmin(rosen,x0,disp=1,callback=plot_params,handler=True)
-    print solution
+    print(solution)
 
     # don't exit until user is ready
     getch()

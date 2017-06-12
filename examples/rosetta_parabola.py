@@ -37,7 +37,7 @@ def ForwardPolyFactory(params):
 
 def data(params):
     fwd = ForwardPolyFactory(params)
-    x = (array([range(101)])-50.)[0]
+    x = (array([list(range(101))])-50.)[0]
     return x,fwd(x)
 
 
@@ -104,7 +104,7 @@ class Data1D(object):
         return
 
     def residuals(self,model):
-        x = (array([range(101)])-50.)[0]
+        x = (array([list(range(101))])-50.)[0]
         return (model(x) - self.z).flatten()
     pass
 
@@ -131,7 +131,7 @@ def park_optimize(point):
     result=park.fit.fit([(model,data1d)],fitter=fitter,handler=handler)
 
     # print results
-   #print result.calls     # print number of function calls
+   #print(result.call)     # print number of function calls
    #result.print_summary() # print solution
 
     # get the results back into a python object
@@ -159,7 +159,7 @@ if __name__ == '__main__':
 
     # Let the "actual parameters" be :
     target = [1., 2., 1.]
-    print "Target: %s" % target
+    print("Target: %s" % target)
 
     # Here is the "observed data"
     x,datapts = data(target)
@@ -173,15 +173,15 @@ if __name__ == '__main__':
     # DO OPTIMIZATION STUFF HERE TO GET SOLUTION
     if parsed_opts.park:
         if __park:
-            print "Solving with park's DE optimizer..."
+            print("Solving with park's DE optimizer...")
             solution = park_optimize(point)
         else:
             print('This option requires park to be installed')
             exit()
     else:
-        print "Solving with mystic's fmin optimizer..."
+        print("Solving with mystic's fmin optimizer...")
         solution = mystic_optimize(point)
-    print "Solved: %s" % solution
+    print("Solved: %s" % solution)
 
     # plot the solution
     plot_sol(solution,'g-')

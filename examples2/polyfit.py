@@ -52,23 +52,23 @@ if __name__ == '__main__':
 # mon = VerboseMonitor(10)
 
   result = diffev2(objective, args=args, x0=bounds, bounds=bounds, npop=40, ftol=1e-8, gtol=100, disp=False, full_output=True)#, itermon=mon)
-# print result[0], xs
+# print("%s %s" % (result[0], xs))
   assert almostEqual(result[0], xs, rel=1e-1)
   assert almostEqual(result[1], ys, rel=1e-1)
 
   result = fmin_powell(objective, args=args, x0=[0.0,0.0], bounds=bounds, disp=False, full_output=True)
-# print result[0], xs
+# print("%s %s" % (result[0], xs))
   assert almostEqual(result[0], xs, rel=1e-1)
   assert almostEqual(result[1], ys, rel=1e-1)
 
 # mon = VerboseMonitor(10)
   result = diffev2(objective, args=args, x0=bounds_, bounds=bounds_, npop=40, ftol=1e-8, gtol=100, disp=False, full_output=True)#, itermon=mon)
-# print result[0], xs_
+# print("%s %s" % (result[0], xs_))
   assert almostEqual(result[0], xs_, tol=1e-1)
   assert almostEqual(result[1], ys_, rel=1e-1)
 
   result = fmin_powell(objective, args=args, x0=[0.0,0.0,0.0], bounds=bounds_, disp=False, full_output=True)
-# print result[0], xs_
+# print("%s %s" % (result[0], xs_))
   assert almostEqual(result[0], xs_, tol=1e-1)
   assert almostEqual(result[1], ys_, rel=1e-1)
 

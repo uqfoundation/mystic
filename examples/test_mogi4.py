@@ -45,7 +45,7 @@ if __name__ == '__main__':
     F.addModel(ForwardMogiFactory, 4, 'mogi1', outputFilter = PickComponent(2, -1))
     F.addModel(ForwardMogiFactory, 4, 'mogi2', outputFilter = PickComponent(2, -1))
     myCostFunction = F.getCostFunction(evalpts = stations, observations = data_z)
-    print F
+    print(F)
 
     def C2(x):
         "This is the new version"
@@ -59,14 +59,14 @@ if __name__ == '__main__':
     def test():
         "call me to see if the functions return the same thing"
         rp = F.getRandomParams()
-        print "C2: ", C2(rp)
-        print "C3: ", C3(rp)
+        print("C2: %s" % C2(rp))
+        print("C3: %s" % C3(rp))
 
     test()
     import pylab
     plot_noisy_data()
     desol, dstepmon = de_solve(C2)
-    print "desol: ", desol
+    print("desol: %s" % desol)
 
    #plot_sol(dstepmon.x[-100],'k-')
     plot_sol(desol,'r-')

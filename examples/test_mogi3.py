@@ -38,23 +38,23 @@ if __name__ == '__main__':
     F = CostFactory()
     F.addModel(ForwardMogiFactory, 4, 'mogi1', outputFilter = PickComponent(2))
     myCostFunction = F.getCostFunction(evalpts = stations, observations = data_z)
-    print F
+    print(F)
     rp =  F.getRandomParams()
-    print "new Cost Function : %s " % myCostFunction(rp)
-    print "orig Cost Function: %s " % cost_function(rp)
+    print("new Cost Function : %s " % myCostFunction(rp))
+    print("orig Cost Function: %s " % cost_function(rp))
 
     f1 = ForwardMogiFactory(rp)
     f2 = ForwardMogiFactory(rp)
 
-    print 'start cf'
+    print('start cf')
     for i in range(3000):
         xx = cost_function(rp)
-    print 'end cf'
+    print('end cf')
 
-    print 'start cf2'
+    print('start cf2')
     for i in range(3000):
         xx = myCostFunction(rp)
-    print 'end cf2'
+    print('end cf2')
 
     #de_solve(cost_function)
     de_solve(myCostFunction)

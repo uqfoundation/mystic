@@ -31,8 +31,8 @@ if __name__=='__main__':
  #  min = [-0.999, -0.999, 0.999]
  #  max = [2.001, 1.001, 1.001]
     npop = 5*len(x0)
-    print "Differential Evolution"
-    print "======================"
+    print("Differential Evolution")
+    print("======================")
     start = time.time()
     from mystic.monitors import Monitor, VerboseMonitor
     stepmon = VerboseMonitor(1,1)
@@ -41,7 +41,7 @@ if __name__=='__main__':
 
    #from mystic.solvers import diffev, DifferentialEvolutionSolver
     from mystic.solvers import diffev2, DifferentialEvolutionSolver2
-   #print diffev2(rosen,x0,npop,retall=0,full_output=0)#,maxiter=14)
+   #print(diffev2(rosen,x0,npop,retall=0,full_output=0)#,maxiter=14))
     solver = DifferentialEvolutionSolver2(len(x0), npop)
     solver.SetInitialPoints(x0)
     solver.SetStrictRanges(min,max)
@@ -50,15 +50,15 @@ if __name__=='__main__':
     solver.SetConstraints(constrain)
     solver.enable_signal_handler()
     solver.Solve(rosen, NCOG(tolerance=1e-4), disp=1)
-    print solver.bestSolution
-   #print "Current function value: %s" % solver.bestEnergy
-   #print "Iterations: %s" % solver.generations
-   #print "Function evaluations: %s" % solver.evaluations
+    print(solver.bestSolution)
+   #print("Current function value: %s" % solver.bestEnergy)
+   #print("Iterations: %s" % solver.generations)
+   #print("Function evaluations: %s" % solver.evaluations)
 
     times.append(time.time() - start)
     algor.append("Differential Evolution\t")
 
-    for k in range(len(algor)):
-        print algor[k], "\t -- took", times[k]
+    for k,t in zip(algor,times):
+        print("%s\t -- took %s" % (k, t))
 
 # end of file

@@ -44,7 +44,7 @@ def main():
 
     solution = solver.Solution()
   
-    print solution
+    print(solution)
 
 
 
@@ -52,18 +52,18 @@ if __name__ == '__main__':
     from timeit import Timer
     t = Timer("main()", "from __main__ import main")
     timetaken =  t.timeit(number=1)
-    print "CPU Time: %s" % timetaken
+    print("CPU Time: %s" % timetaken)
 
     try:
         from mystic.solvers import fmin
        #from mystic._scipyoptimize import fmin
         import random
-        print  "\nScipy: "
+        print( "\nScipy: ")
         sol = fmin(corana, [random.random() for j in range(4)], full_output=0, retall=1)
-        print "solution: ", sol[-1][0]
-        print "\nCorana 1 with Scipy"
+        print("solution: %s" % sol[-1][0])
+        print("\nCorana 1 with Scipy")
         sol = fmin(corana1, [random.random()], full_output=1, retall=1)
-        print "solution: ", sol[-1][0]
+        print("solution: %s" % sol[-1][0])
     except:
         pass
 

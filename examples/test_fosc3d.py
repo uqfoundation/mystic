@@ -57,26 +57,26 @@ if __name__ == '__main__':
    #from mystic._scipyoptimize import fmin
     draw_contour()
     solution = main()
-    print "solution: ", solution
+    print("solution: %s" % solution)
     pylab.plot([solution[0]],[solution[1]],'wo',markersize=10)
-    print "Differential Evolution: Min: %s, sol = %s" % (fOsc3D(solution), solution)
+    print("Differential Evolution: Min: %s, sol = %s" % (fOsc3D(solution), solution))
 
-    print "\nTrying scipy.optimize.fmin (Nelder-Mead Simplex)..."
+    print("\nTrying scipy.optimize.fmin (Nelder-Mead Simplex)...")
 
     m = fmin(fOsc3D, [0.1, 0.1])
     pylab.plot([m[0]],[m[1]],'ro',markersize=5)
-    print "solution w/ initial conditions (0.1,0.1): %s\n" % m
+    print("solution w/ initial conditions (0.1,0.1): %s\n" % m)
 
     m = fmin(fOsc3D, [1, 1])
     pylab.plot([m[0]],[m[1]],'ro',markersize=5)
-    print "solution w/ initial conditions (1,1): %s\n" % m
+    print("solution w/ initial conditions (1,1): %s\n" % m)
 
     m = fmin(fOsc3D, [-1, 1])
-    print "solution w/ initial conditions (-1,1): %s\n" % m
+    print("solution w/ initial conditions (-1,1): %s\n" % m)
     pylab.plot([m[0]],[m[1]],'ro',markersize=5)
 
 #   m = fmin(fOsc3D, [0, 2])
-#   print "solution w/ initial conditions (0,2): %s\n" % m
+#   print("solution w/ initial conditions (0,2): %s\n" % m)
 #   pylab.plot([m[0]],[m[1]],'ro',markersize=5)
 
     pylab.title('White dot: DE, Red dots: Nelder-Mead')

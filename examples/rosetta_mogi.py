@@ -173,7 +173,7 @@ def park_optimize(point):
     result=park.fit.fit([(model,data2d)],fitter=fitter,handler=handler)
 
     # print results
-   #print result.calls     # print number of function calls
+   #print(result.calls)    # print number of function calls
    #result.print_summary() # print solution
 
     # get the results back into a python object
@@ -205,7 +205,7 @@ if __name__ == '__main__':
     # Let the "actual parameters" be :
     actual_params = [1234.,-500., 10., .1]
     actual_forward = ForwardMogiFactory(actual_params)
-    print "Target: %s" % actual_params
+    print("Target: %s" % actual_params)
 
     # The data to be "fitted" 
     xstations = array([random.uniform(-30,30) for i in range(300)])+actual_params[0]
@@ -227,18 +227,18 @@ if __name__ == '__main__':
     # DO OPTIMIZATION STUFF HERE TO GET SOLUTION
     if parsed_opts.park:     #solve with park's DE
         if __park:
-            print "Solving with park's DE optimizer..."
+            print("Solving with park's DE optimizer...")
             solution = park_optimize(point)
         else:
             print('This option requires park to be installed')
             exit()
     elif parsed_opts.mystic: #solve with mystic's DE
-        print "Solving with mystic's DE optimizer..."
+        print("Solving with mystic's DE optimizer...")
         solution = mystic_optimize2(point)
     else:                    #solve with mystic's fmin
-        print "Solving with mystic's fmin optimizer..."
+        print("Solving with mystic's fmin optimizer...")
         solution = mystic_optimize(point)
-    print "Solved: %s" % solution
+    print("Solved: %s" % solution)
 
     # plot the solution
     plot_sol(solution,'r-')

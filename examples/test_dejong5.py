@@ -41,7 +41,7 @@ def main():
 
     solution = solver.Solution()
   
-    print solution
+    print(solution)
 
 
 
@@ -50,6 +50,6 @@ if __name__ == '__main__':
     # optimize with DESolver
     t = Timer("main()", "from __main__ import main")
     timetaken =  t.timeit(number=1)
-    print "CPU Time: %s\n" % timetaken
+    print("CPU Time: %s\n" % timetaken)
 
 # end of file

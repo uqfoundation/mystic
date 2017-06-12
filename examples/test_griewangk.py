@@ -43,7 +43,7 @@ def main():
 
     solution = solver.Solution()
   
-    print solution
+    print(solution)
 
 
 
@@ -52,14 +52,14 @@ if __name__ == '__main__':
     from timeit import Timer
     t = Timer("main()", "from __main__ import main")
     timetaken =  t.timeit(number=1)
-    print "CPU Time: %s" % timetaken
+    print("CPU Time: %s" % timetaken)
 
     import random
-    print "Scipy fmin"
+    print("Scipy fmin")
     for i in [400,200,100,40,20,10,4,2,1]:
-        print "\ninitializing with range (-%d, %d)" % (i,i)
+        print("\ninitializing with range (-%d, %d)" % (i,i))
         sol = fmin(Griewangk_cost, [random.uniform(-i,i) for j in range(10)])
-        print "sol: ", sol
-        print "cost: ", Griewangk_cost(sol)
+        print("sol: %s" % sol)
+        print("cost: %s" % Griewangk_cost(sol))
 
 # end of file

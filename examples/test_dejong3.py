@@ -43,7 +43,7 @@ def main():
 
     solution = solver.Solution()
   
-    print solution
+    print(solution)
 
 
 
@@ -53,10 +53,10 @@ if __name__ == '__main__':
     # optimize with DESolver
     t = Timer("main()", "from __main__ import main")
     timetaken =  t.timeit(number=1)
-    print "CPU Time: %s\n" % timetaken
+    print("CPU Time: %s\n" % timetaken)
 
     # optimize with fmin
     from mystic.solvers import fmin
-    print fmin(DeJong3, [0 for i in range(ND)])
+    print(fmin(DeJong3, [0 for i in range(ND)]))
 
 # end of file

@@ -46,7 +46,7 @@ def plot_frame(label=None):
  
 # plot the polynomial trajectories
 def plot_params(monitor):
-    x = range(len(monitor))
+    x = list(range(len(monitor)))
     y = monitor.y
     pylab.plot(x,y,'b-')
     pylab.axis([1,0.5*x[-1],0,y[1]],'k-')
@@ -81,8 +81,8 @@ def plot_solution(params,style='y-'):
 
 if __name__ == '__main__':
 
-    print "Nelder-Mead Simplex"
-    print "==================="
+    print("Nelder-Mead Simplex")
+    print("===================")
 
     # initial guess
     import random
@@ -92,7 +92,7 @@ if __name__ == '__main__':
     x0 = [random.uniform(-5,5) + chebyshev8coeffs[i] for i in range(ndim)]
 
     # suggest that the user interacts with the solver
-    print "NOTE: while solver is running, press 'Ctrl-C' in console window"
+    print("NOTE: while solver is running, press 'Ctrl-C' in console window")
     getch()
 
     # draw frame and exact coefficients
@@ -122,11 +122,11 @@ if __name__ == '__main__':
     # get solved coefficients and Chi-Squared (from solver members)
     iterations = solver.generations
     cost = solver.bestEnergy
-    print "Generation %d has best Chi-Squared: %f" % (iterations, cost)
-    print "Solved Coefficients:\n %s\n" % poly1d(solver.bestSolution)
+    print("Generation %d has best Chi-Squared: %f" % (iterations, cost))
+    print("Solved Coefficients:\n %s\n" % poly1d(solver.bestSolution))
 
     # compare solution with actual 8th-order Chebyshev coefficients
-    print "Actual Coefficients:\n %s\n" % poly1d(chebyshev8coeffs)
+    print("Actual Coefficients:\n %s\n" % poly1d(chebyshev8coeffs))
 
     # plot solution versus exact coefficients
     plot_solution(solution)

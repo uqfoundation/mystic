@@ -101,7 +101,7 @@ def dakota(cost,lb,ub):
   solver.Solve(cost,termination=CRT(tol,tol),strategy=Best1Exp, \
                CrossProbability=crossover,ScalingFactor=percent_change)
 
-  print solver.bestSolution
+  print(solver.bestSolution)
   diameter = -solver.bestEnergy / scale
   func_evals = solver.evaluations
   return diameter, func_evals
@@ -131,9 +131,9 @@ def UQ(start,end,lower,upper):
     total_func_evals += function_evaluations[-1]
     total_diameter += diameters[-1]
 
-  print "subdiameters (squared): %s" % diameters
-  print "diameter (squared): %s" % total_diameter
-  print "func_evals: %s => %s" % (function_evaluations, total_func_evals)
+  print("subdiameters (squared): %s" % diameters)
+  print("diameter (squared): %s" % total_diameter)
+  print("func_evals: %s => %s" % (function_evaluations, total_func_evals))
 
   return
 
@@ -148,11 +148,11 @@ if __name__ == '__main__':
   lower_bounds = [1.0,2.0,3.0]
   upper_bounds = [1.1,2.2,3.3]
 
-  print " function: f = x1*x2 + x3 + 2.0"
-  print " parameters: ['x1', 'x2', 'x3']"
-  print " lower bounds: %s" % lower_bounds
-  print " upper bounds: %s" % upper_bounds
-  print " ..."
+  print(" function: f = x1*x2 + x3 + 2.0")
+  print(" parameters: ['x1', 'x2', 'x3']")
+  print(" lower bounds: %s" % lower_bounds)
+  print(" upper bounds: %s" % upper_bounds)
+  print(" ...")
 
   UQ(RVstart,RVend,lower_bounds,upper_bounds)
 

@@ -40,7 +40,7 @@ def show():
 def plot_sol(solver=None):
     def _(params):
         import signal
-        print "plotting params: ", params
+        print("plotting params: %s" % params)
         pylab.errorbar(binsc, histo, sqrt(histo), fmt='b+')
         x = arange(xmin, xmax, (0.1* binwidth))
         pylab.plot(x, pdf(x)*N,'b:')
@@ -84,7 +84,7 @@ if __name__ == '__main__':
     N = npts * binwidth
     xmin, xmax = 0.0, 3.0
     pdf = F(target)          # normalized
-    print "pdf(1): ", pdf(1)
+    print("pdf(1): %s" % pdf(1))
 
     data = gendata(target, xmin, xmax, npts)  # data is 'unnormalized'
     #pylab.plot(data[1:N],0*data[1:N],'k.')
@@ -93,18 +93,18 @@ if __name__ == '__main__':
     #pylab.clf()
 
     binsc, histo = histogram(data, binwidth, xmin,xmax)
-    print "binsc:  ", binsc
-    print "count:  ", histo
-    print "ncount: ", histo/N
-    print "exact : ", pdf(binsc)
+    print("binsc:  %s" % binsc)
+    print("count:  %s" % histo)
+    print("ncount: %s" % histo/N)
+    print("exact : %s" % pdf(binsc))
 
-    print "now with DE..."
+    print("now with DE...")
     from mystic.forward_model import CostFactory
     CF = CostFactory()
     CF.addModel(F, ND, 'lorentz')
     myCF = CF.getCostFunction(binsc, histo/N)
     sol, steps = de_solve(myCF)
     plot_sol()(sol)
-    #print "steps: ", steps.x, steps.y
+    #print("steps: %s %s" % (steps.x, steps.y))
 
 # end of file

@@ -84,7 +84,7 @@ from numpy import round, hstack, clip
 def constraint(x):
     x = round(x).astype(int) # force round and convert type to int
     x = clip(x, 1,nletters)  #XXX: hack to impose bounds
-    x = unique(x, range(1,nletters+1))
+    x = unique(x, list(range(1,nletters+1)))
     return x
 
 
@@ -102,7 +102,7 @@ if __name__ == '__main__':
    #result = diffev2(objective, x0=bounds, bounds=bounds, penalty=pf, constraints=constraint, npop=260, ftol=1e-8, gtol=500, disp=True, full_output=True, cross=0.1, scale=0.9, itermon=mon)
    #result = diffev2(objective, x0=bounds, bounds=bounds, penalty=pf, constraints=constraint, npop=520, ftol=1e-8, gtol=100, disp=True, full_output=True, cross=0.1, scale=0.9, itermon=mon)
 
-    print result[0]
+    print(result[0])
     assert almostEqual(result[0], xs, tol=1e-8)
     assert almostEqual(result[1], ys, tol=1e-4)
 

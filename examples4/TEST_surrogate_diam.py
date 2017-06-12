@@ -89,7 +89,7 @@ def optimize(cost,lb,ub):
   solver.Solve(cost,termination=CRT(tol,tol),strategy=Best1Exp, \
                CrossProbability=crossover,ScalingFactor=percent_change)
 
-  print "solved: %s" % solver.bestSolution
+  print("solved: %s" % solver.bestSolution)
   diameter_squared = -solver.bestEnergy / scale  #XXX: scale != 0
   func_evals = solver.evaluations
   return diameter_squared, func_evals
@@ -118,9 +118,9 @@ def UQ(start,end,lower,upper):
     total_func_evals += function_evaluations[-1]
     total_diameter += diameters[-1]
 
-  print "subdiameters (squared): %s" % diameters
-  print "diameter (squared): %s" % total_diameter
-  print "func_evals: %s => %s" % (function_evaluations, total_func_evals)
+  print("subdiameters (squared): %s" % diameters)
+  print("diameter (squared): %s" % total_diameter)
+  print("func_evals: %s => %s" % (function_evaluations, total_func_evals))
 
   return total_diameter
 
@@ -150,16 +150,16 @@ if __name__ == '__main__':
   lbounds = lower_bounds[RVstart:1+RVend]
   ubounds = upper_bounds[RVstart:1+RVend]
 
-  print "...SETTINGS..."
-  print "npop = %s" % npop
-  print "maxiter = %s" % maxiter
-  print "maxfun = %s" % maxfun
-  print "convergence_tol = %s" % convergence_tol
-  print "crossover = %s" % crossover
-  print "percent_change = %s" % percent_change
-  print "..............\n\n"
+  print("...SETTINGS...")
+  print("npop = %s" % npop)
+  print("maxiter = %s" % maxiter)
+  print("maxfun = %s" % maxfun)
+  print("convergence_tol = %s" % convergence_tol)
+  print("crossover = %s" % crossover)
+  print("percent_change = %s" % percent_change)
+  print("..............\n\n")
 
-  print " model: f(x) = %s(x)" % function_name
+  print(" model: f(x) = %s(x)" % function_name)
   param_string = "["
   for i in range(RVmax+1): 
     param_string += "'x%s'" % str(i+1)
@@ -168,11 +168,11 @@ if __name__ == '__main__':
     else:
       param_string += ", "
 
-  print " parameters: %s" % param_string
-  print "  varying 'xi', with i = %s" % range(RVstart+1,RVend+2)
-  print " lower bounds: %s" % lower_bounds
-  print " upper bounds: %s" % upper_bounds
-# print " ..."
+  print(" parameters: %s" % param_string)
+  print("  varying 'xi', with i = %s" % list(range(RVstart+1,RVend+2)))
+  print(" lower bounds: %s" % lower_bounds)
+  print(" upper bounds: %s" % upper_bounds)
+# print(" ...")
   diameter = UQ(RVstart,RVend,lower_bounds,upper_bounds)
 
 # EOF
