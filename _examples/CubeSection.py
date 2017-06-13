@@ -9,7 +9,11 @@
 # This example is a derivative of vtk's ClipCow
 # It is a visualization of Prince Rupert's problem
 
-import vtk, Tkinter
+try:
+    import tkinter
+except ImportError:
+    import Tkinter as tkinter
+import vtk
 from vtk.tk.vtkTkRenderWindowInteractor import \
      vtkTkRenderWindowInteractor
 from numpy import array, cross
@@ -192,16 +196,16 @@ def Cut(v):
     cutMapper.Update()
     renWin.Render()
  
-root = Tkinter.Tk()
+root = tkinter.Tk()
 vtkw = vtkTkRenderWindowInteractor(root, rw=renWin, width=800)
 
 def set_cut(sz):
     sz = float(sz)
-    # print ren.GetActiveCamera()
+    # print(ren.GetActiveCamera())
     Cut(sz)
 
 # propagate this GUI setting to the corresponding VTK object.
-size_slider = Tkinter.Scale(root, from_=0.0,
+size_slider = tkinter.Scale(root, from_=0.0,
                             to=2.0, res=0.01,
                             orient='horizontal', label="Clipping Center", 
                             command=set_cut)

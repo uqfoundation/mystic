@@ -39,7 +39,7 @@ def plot_sol(solver=None, linestyle='k-'):
     import pylab
     def _(params):
         import signal
-        print "plotting params: ", params
+        print("plotting params: %s" % params)
         # because of the log ordinate axis, will draw errorbars the dumb way
         pylab.semilogy(data[:,0],data[:,1],'k.')
         for i, j in data:
@@ -89,14 +89,14 @@ def error2d(myCF, sol, cx, cy):
     def curry(x):
         return myCF([x[0], x[1], x[2], cx, cy])
     sol = fmin(curry, x0)
-    print sol
+    print(sol)
 
 if __name__ == '__main__':
     sol, steps = de_solve(myCF)
     a1, a2, a3, a4, a5 = sol
     minChiSq = steps.y[-1]
     #
-    print sol
+    print(sol)
     plot_sol()(sol)
     # plot the "precomputed" confidence interval too
     s4, ss4 = de_solve(myCF, a4=29.5, a5=163)
@@ -108,7 +108,7 @@ if __name__ == '__main__':
 
     # compute the 'uncertainty' of the last parameter, and fit a parabola
     # disable for now
-    ## print "redo a5 at several points"
+    ## print("redo a5 at several points")
     ## a5x = [a5-30, a5, a5+30]
     ## a5y = [] 
     ## for a in a5x:
@@ -123,7 +123,7 @@ if __name__ == '__main__':
     ## a1 = -(-x2*y1 + x3*y1 + x1*y2-x3*y2-x1*y3+x2*y3)/(x2-x3)/(x1*x1-x1*x2-x1*x3+x2*x3)
     ## a2 = -(x2*x2*y1-x3*x3*y1-x1*x1*y2+x3*x3*y2+x1*x1*y3-x2*x2*y3)/(x1-x2)/(x1-x3)/(x2-x3)
     ## a3 = -(-x2*x2*x3*y1+x2*x3*x3*y1+x1*x1*x3*y2-x1*x3*x3*y2-x1*x1*x2*y3+x1*x2*x2*y3)/((x2-x3)*(x1*x1-x1*x2-x1*x3+x2*x3))
-    ## print a1, a2, a3
+    ## print("%s %s %s" % (a1, a2, a3))
     ## x = arange(150,270)
     ## from mystic.math import polyeval
     ## pylab.plot(x, polyeval([a1,a2,a3],x),'k-')
@@ -143,6 +143,6 @@ if __name__ == '__main__':
         pylab.contour(X,Y,V, minChiSq + array([1,2,3]),colors='black')
         myshow()
     except IOError:
-        print "Run test_br8_mpi to create dataset."
+        print("Run test_br8_mpi to create dataset.")
 
 # end of file

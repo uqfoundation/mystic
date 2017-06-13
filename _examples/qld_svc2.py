@@ -56,8 +56,8 @@ alpha,xxx = quapro.quadprog(H, f, None, None, Aeq, Beq, lb, ub)
 #   alpha,xxx = quapro.quadprog(H, f, None, None, Aeq, Beq, lb, ub)
 #   #alpha = qld.quadprog2(H, f, None, None, Aeq, Beq, lb, ub)
 #t2 = time.time()
-#print "1000 calls to QP took %0.3f s" % (t2-t1)
-print alpha
+#print("1000 calls to QP took %0.3f s" % (t2-t1))
+print(alpha)
 
 # the labels and the points
 X = concatenate([c1,c2])
@@ -67,9 +67,9 @@ wv = WeightVector(alpha, X, y)
 sv1, sv2 = SupportVectors(alpha,y, eps=1e-6)
 bias = Bias(alpha, X, y)
 
-print wv
-print sv1, sv2
-print bias
+print(wv)
+print("%s %s" % (sv1,sv2))
+print(bias)
 
 # Eqn of hyperplane:
 # wv[0] x + wv[1] y + bias = 0

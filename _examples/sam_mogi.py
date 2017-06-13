@@ -74,7 +74,7 @@ def run_once_xy():
     solver.SetGenerationMonitor(simplex)
     solver.Solve(cost_function, termination=CRT())
     sol = solver.Solution()
-    print sol
+    print(sol)
     
     for x in simplex.x:
         sam.putarray('x',x)
@@ -93,7 +93,7 @@ def run_once_xv():
     solver.SetGenerationMonitor(simplex)
     solver.Solve(cost_function, termination=CRT())
     sol = solver.Solution()
-    print sol
+    print(sol)
 
     for x in simplex.x:
         sam.putarray('x',x)

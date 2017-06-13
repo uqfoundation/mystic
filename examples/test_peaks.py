@@ -44,7 +44,7 @@ except ImportError:
 print('-'*60)
 print('using a uniform distribution...')
 solver = DifferentialEvolutionSolver(nd, npop)
-solver.SetDistributionInitialPoints(uniform(lb[0],ub[0]))
+solver.SetSampledInitialPoints(uniform(lb[0],ub[0]))
 solver.SetStrictRanges(lb, ub)
 term = VTR(tol) 
 #term = COG()

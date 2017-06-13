@@ -14,9 +14,10 @@ g.clear()
 x = numpy.arange(-4, 4, 0.01)
 y = numpy.cos(x)
 y2 = numpy.cos(2* x)
-g.plot(Gnuplot.Data(x, y, with='line'))
+kwds = {'with':'line'}
+g.plot(Gnuplot.Data(x, y, **kwds))
 getch('next: any key')
-g.plot(Gnuplot.Data(x, y2, with='line'))
+g.plot(Gnuplot.Data(x, y2, **kwds))
 getch('any key to quit')
 
 # end of file

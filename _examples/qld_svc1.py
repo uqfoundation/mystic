@@ -47,10 +47,10 @@ ub = zeros(nx) + 99999
 
 #alpha = qld.quadprog2(H, f, None, None, Aeq, Beq, lb, ub)
 alpha, xxx= quapro.quadprog(H, f, None, None, Aeq=Aeq, beq=Beq, LB=lb, UB=ub)
-print alpha
+print(alpha)
 #alpha = array([fil(x) for x in alpha])
-print "cons:", inner(Aeq,alpha)
-print "obj min: 0.5 * x'Hx + <x,f>",  0.5*inner(alpha,inner(H,alpha))+inner(f,alpha)
+print("cons:%s" % inner(Aeq,alpha))
+print("obj min: 0.5 * x'Hx + <x,f> %s" % 0.5*inner(alpha,inner(H,alpha))+inner(f,alpha))
 
 
 # the labels and the points
@@ -66,10 +66,10 @@ yp = (y.flatten()>0).nonzero()[0]
 ii = inner(wv, X)
 bias2 = -0.5 *( max(ii[ym]) + min(ii[yp]) )
 
-print wv
-print sv1, sv2
-print bias
-print bias2
+print(wv)
+print("%s %s" % (sv1, sv2))
+print(bias)
+print(bias2)
 
 # Eqn of hyperplane:
 # wv[0] x + wv[1] y + bias = 0

@@ -143,13 +143,13 @@ def output_chebyshev():
     # Chebyshev8 polynomial
     from mystic.models.poly import chebyshev8coeffs as target_coeffs
     from mystic.models.poly import poly1d
-    print "target:\n", poly1d(target_coeffs)
-    print "\nSolver Solution:\n", poly1d(app.solution)
+    print("target:\n%s" % poly1d(target_coeffs))
+    print("\nSolver Solution:\n%s" % poly1d(app.solution))
 
 def output_rosen():
     # rosenbrock
-    print "target: [1. 1. 1.]"
-    print "solver solution: ", app.solution
+    print("target: [1. 1. 1.]")
+    print("solver solution: %s" % app.solution)
 
 # main
 if __name__ == '__main__':

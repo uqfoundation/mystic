@@ -58,7 +58,7 @@ pylab.plot(x,R(x)-svr_epsilon, 'k--')
 pylab.plot(x[sv1],y[sv1],'ro')
 pylab.plot(x[sv2],y[sv2],'go')
 
-print alpha
+print(alpha)
 
 pylab.show()
 

@@ -7,6 +7,6 @@
 #  - http://trac.mystic.cacr.caltech.edu/project/mystic/browser/mystic/LICENSE
 
 import sys
-print sys.argv
+print(sys.argv)
 
 # end of file

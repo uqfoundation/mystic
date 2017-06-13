@@ -61,7 +61,7 @@ if __name__ == '__main__':
     x = qld.quadprog2(H, f, None, None, A, b, zeros(npt), ones(npt))
 
     center = dot(x,xy)
-    print "center: " , center
+    print("center: %s" % center)
     # find support vectors (find numpy way please)
     
     sv = []
@@ -69,7 +69,7 @@ if __name__ == '__main__':
        if v > 0.001: sv.append(i)
     sv0 = sv[0]
     
-    print sv
+    print(sv)
     R = linalg.norm(xy[sv0,:]-center)
 
     plot(xy, sv, x0, y0, R0, center, R)

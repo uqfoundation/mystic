@@ -53,13 +53,13 @@ def conserve(x):
 #mon = VerboseMonitor(1)
 
 from mystic.solvers import diffev
-alpha = diffev(objective, zip(lb,ub), args=(H,f), npop=nx*3, gtol=200, \
+alpha = diffev(objective, list(zip(lb,ub)), args=(H,f), npop=nx*3, gtol=200, \
 #              itermon=mon, \
-               ftol=1e-8, bounds=zip(lb,ub), constraints=conserve, disp=1)
+               ftol=1e-8, bounds=list(zip(lb,ub)), constraints=conserve, disp=1)
 
-print 'solved x: ', alpha
-print "constraint A*x == 0: ", inner(Aeq, alpha)
-print "minimum 0.5*x'Hx + f'*x: ", objective(alpha, H, f)
+print('solved x: %s' % alpha)
+print("constraint A*x == 0: %s" % inner(Aeq, alpha))
+print("minimum 0.5*x'Hx + f'*x: %s" % objective(alpha, H, f))
 
 
 # let's play. We will need to bootstrap the SMO with an initial
@@ -141,11 +141,11 @@ def smo_sub2d(Q, y, alpha, X, i, j, ym, yp):
     if y1 != y2:
         U = max(0, a2-a1)
         V = min(C, C-a1 + a2)
-        print "1 U/V: ", U, V
+        print("1 U/V: %s %s" % (U, V))
     else:
         U = max(0., a1+a2-C)
         V = min(C, a1+a2)
-        print "2 U/V: ", U, V
+        print("2 U/V: %s %s" % (U, V))
     a2trial = a2 + y2*(E1-E2)/k
     if a2trial > V:
         a2new = V
@@ -154,8 +154,8 @@ def smo_sub2d(Q, y, alpha, X, i, j, ym, yp):
     else:
         a2new = a2trial
     a1new = a1 + y1*y2*(a2-a2new)
-    print "E1/E2:", E1,E2
-    print "C:",C
+    print("E1/E2: %s %s" % (E1,E2))
+    print("C: %s" % C)
     return a1new, a2new
 
 def QP_smo(Q, p, a, b, c, y, tau, a0, X):
@@ -180,9 +180,9 @@ Minimizes xQx + Px,
         B = getViolatingPair(Isets[0], Iub, Ilb, F, tau)
         # now solve the 2d subproblem
         aa = smo_sub2d(Q, y, alpha, X, B[0], B[1], ym,yp)
-        print "aa: ", aa
+        print("aa: %s" % str(aa))
         alpha[B[0]], alpha[B[1]] = aa
-        print alpha
+        print(alpha)
         break
 
 X = concatenate([c1,c2])
