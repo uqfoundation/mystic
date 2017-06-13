@@ -40,11 +40,12 @@ try:
     from scipy.stats import uniform
 except ImportError:
     exit()
+from mystic.math import Distribution
 
 print('-'*60)
 print('using a uniform distribution...')
 solver = DifferentialEvolutionSolver(nd, npop)
-solver.SetSampledInitialPoints(uniform(lb[0],ub[0]))
+solver.SetSampledInitialPoints(Distribution(uniform, lb[0], ub[0]))
 solver.SetStrictRanges(lb, ub)
 term = VTR(tol) 
 #term = COG()

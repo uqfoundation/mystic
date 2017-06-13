@@ -434,9 +434,10 @@ input::
     - dist: a mystic.math.Distribution instance
 """
         from mystic.math import Distribution
+        _dist = Distribution()
         if dist is None:
-            dist = Distribution()
-        elif type(Distribution) not in dist.__class__.mro():
+            dist = _dist
+        elif type(_dist) not in dist.__class__.mro():
             dist = Distribution(dist) #XXX: or throw error?
         for i in range(self.nPop):
             self.population[i] = dist(self.nDim)
