@@ -64,6 +64,7 @@ mystic/scemtools.py
 mystic/scipy_optimize.py
 mystic/scripts.py
 mystic/search.py
+mystic/signal.py
 mystic/solvers.py
 mystic/strategy.py
 mystic/support.py

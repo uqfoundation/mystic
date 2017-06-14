@@ -6,6 +6,8 @@
 # Copyright (c) 2016-2017 The Uncertainty Quantification Foundation.
 # License: 3-clause BSD.  The full license text is available at:
 #  - http://trac.mystic.cacr.caltech.edu/project/mystic/browser/mystic/LICENSE
+from __future__ import absolute_import
+
 __doc__ = _doc = """
 This is drawn from Mathematica's example suites, with the 'fOsc3D'
 function definition found in [1], and the 'XXX' function found in [2].
@@ -18,7 +20,7 @@ References::
     Collection on Constrained Optimization", Wolfram Research, USA, 2008.
     http://reference.wolfram.com/language/guide/Optimization.html
 """
-from abstract_model import AbstractFunction
+from .abstract_model import AbstractFunction
 
 from math import sin, exp
 

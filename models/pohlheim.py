@@ -6,6 +6,8 @@
 # Copyright (c) 2016-2017 The Uncertainty Quantification Foundation.
 # License: 3-clause BSD.  The full license text is available at:
 #  - http://trac.mystic.cacr.caltech.edu/project/mystic/browser/mystic/LICENSE
+from __future__ import absolute_import
+
 __doc__ = _doc = """
 This is part of Pohlheim's "GEATbx" test suite in [1], with function
 definitions drawn from [1], [2], [3], [4], [5], [6], and [7].
@@ -36,7 +38,7 @@ References::
 #   [8] Dixon, L.C.W. and Szego, G.P. "The Optimization Problem: An
 #   Introduction", in "Toward Global Optimization II", North Holland,
 #   New York, 1978.
-from abstract_model import AbstractFunction
+from .abstract_model import AbstractFunction
 
 from math import sin, cos, sqrt, pi, exp
 

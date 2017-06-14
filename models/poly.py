@@ -21,7 +21,9 @@ References::
     [3] Storn, R. "Constrained Optimization" Dr. Dobb's Journal, May,
     119-123, 1995.
 """
-from abstract_model import AbstractModel
+from __future__ import absolute_import
+
+from .abstract_model import AbstractModel
 
 from numpy import sum as numpysum
 from numpy import asarray
@@ -66,7 +68,7 @@ NOTE: default is T8(z)"""
         elif order == 6:  self.coeffs = chebyshev6coeffs
         elif order == 8:  self.coeffs = chebyshev8coeffs
         elif order == 16:  self.coeffs = chebyshev16coeffs
-        else: raise NotImplementedError, "provide self.coeffs 'by hand'"
+        else: raise NotImplementedError("provide self.coeffs 'by hand'")
         return
 
     def __call__(self,*args,**kwds):
@@ -79,15 +81,15 @@ NOTE: default is T8(z)"""
 
     def ForwardFactory(self,coeffs):
         """generates a 1-D polynomial instance from a list of coefficients"""
-        raise NotImplementedError, "use Polynomial.ForwardFactory(coeffs)"
+        raise NotImplementedError("use Polynomial.ForwardFactory(coeffs)")
 
     def CostFactory(self,target,pts):
         """generates a cost function instance from list of coefficients & evaluation points"""
-        raise NotImplementedError, "use Polynomial.CostFactory(targets,pts)"
+        raise NotImplementedError("use Polynomial.CostFactory(targets,pts)")
 
     def CostFactory2(self,pts,datapts,nparams):
         """generates a cost function instance from datapoints & evaluation points"""
-        raise NotImplementedError, "use Polynomial.CostFactory2(pts,datapts,nparams)"
+        raise NotImplementedError("use Polynomial.CostFactory2(pts,datapts,nparams)")
 
     def cost(self,trial,M=61):
         """The costfunction for order-n Chebyshev fitting.

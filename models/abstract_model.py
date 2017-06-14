@@ -64,7 +64,7 @@ Takes optional input 'ndim' (number of dimensions).
             self.minimizer = self.minimizers[0] # global *must* be first
 
         # get the mimima
-        self.minima = map(self.function, self.minimizers)
+        self.minima = list(map(self.function, self.minimizers))
         self.minimum = min(self.minima) if self.minima else None
         if self.minima and self.minima.index(self.minimum):
             raise ValueError('global minimum must be at index = 0')
@@ -78,7 +78,7 @@ Takes optional input 'ndim' (number of dimensions).
 
     def function(self,coeffs):
         """takes a list of coefficients x, returns f(x)"""
-        raise NotImplementedError, "overwrite function for each derived class"
+        raise NotImplementedError("overwrite function for each derived class")
 
 #   def forward(self,pts):
 #       """takes points p=(x,y,...), returns f(xi,yi,...)"""
@@ -135,11 +135,11 @@ Inputs::
 
     def evaluate(self,coeffs,x):
         """takes list of coefficients & evaluation points, returns f(x)"""
-        raise NotImplementedError, "overwrite for each derived class"
+        raise NotImplementedError("overwrite for each derived class")
 
     def ForwardFactory(self,coeffs):
         """generates a forward model instance from a list of coefficients"""
-        raise NotImplementedError, "overwrite for each derived class"
+        raise NotImplementedError("overwrite for each derived class")
 
     def CostFactory(self,target,pts):
         """generates a cost function instance from list of coefficients 

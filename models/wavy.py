@@ -6,6 +6,8 @@
 # Copyright (c) 2016-2017 The Uncertainty Quantification Foundation.
 # License: 3-clause BSD.  The full license text is available at:
 #  - http://trac.mystic.cacr.caltech.edu/project/mystic/browser/mystic/LICENSE
+from __future__ import absolute_import
+
 __doc__ = _doc = """
 Multi-minima example functions with vector outputs, which require
 a 'reducing' function to provide scalar return values.
@@ -13,7 +15,7 @@ a 'reducing' function to provide scalar return values.
 References::
     None.
 """
-from abstract_model import AbstractFunction
+from .abstract_model import AbstractFunction
 
 from numpy import absolute as abs
 from numpy import asarray

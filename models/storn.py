@@ -6,6 +6,8 @@
 # Copyright (c) 2016-2017 The Uncertainty Quantification Foundation.
 # License: 3-clause BSD.  The full license text is available at:
 #  - http://trac.mystic.cacr.caltech.edu/project/mystic/browser/mystic/LICENSE
+from __future__ import absolute_import
+
 __doc__ = _doc = """
 This is part of Storn's "Differential Evolution" test suite, as defined
 in [2], with 'Corana' function definitions drawn from [3,4], 'Griewangk'
@@ -34,7 +36,7 @@ References::
 
     [6] Zimmermann, W. "Operations Research" Oldenbourg Munchen, Wien, 1990.
 """
-from abstract_model import AbstractFunction
+from .abstract_model import AbstractFunction
 
 from numpy import asarray
 from math import pow, cos, sqrt

@@ -12,8 +12,10 @@
 References::
     None
 """
+from __future__ import absolute_import
+
 #FIXME: cost function seems to apply penalty when r=R0... it should not
-from abstract_model import AbstractModel
+from .abstract_model import AbstractModel
 
 from numpy import array, pi, arange
 from numpy import sin, cos
@@ -111,7 +113,7 @@ def gencircle(coeffs,interval=0.02):
 coeffs = (x,y,r)"""
     x,y,r = coeffs
     theta = arange(0, 2*pi, interval)
-    xy = array(zip(r*cos(theta)+x, r*sin(theta)+y))
+    xy = array(list(zip(r*cos(theta)+x, r*sin(theta)+y)))
     return xy
 
 def gendata(coeffs,npts=20):

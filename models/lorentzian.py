@@ -12,7 +12,9 @@ Lorentzian peak model
 References::
     None
 """
-from abstract_model import AbstractModel
+from __future__ import absolute_import
+
+from .abstract_model import AbstractModel
 
 from numpy import sum as numpysum
 from numpy import array, pi, asarray, arange
@@ -65,6 +67,8 @@ def gendata(params,xmin,xmax,npts=4000):
             if t2 < t3:
                 return t1
     fwd = F(params)
+    import sys
+    if sys.hexversion >= 0x30000f0: xrange = range
     return array([gensample(fwd, xmin,xmax) for i in xrange(npts)])
 
 # probably shouldn't be in here...

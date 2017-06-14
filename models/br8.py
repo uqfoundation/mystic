@@ -14,7 +14,9 @@ References::
     Data Reduction and Error Analysis for the Physical Sciences,
     Second Edition, McGraw-Hill, Inc., New York.
 """
-from abstract_model import AbstractModel
+from __future__ import absolute_import
+
+from .abstract_model import AbstractModel
 
 from numpy import array, asarray
 from numpy import sum as numpysum

@@ -463,48 +463,6 @@ input::
         """disable workflow interrupt handler while solver is running"""
         self._handle_sigint = False
 
-    def _generateHandler(self,sigint_callback):
-        """factory to generate signal handler
-
-Available switches::
-    - sol  --> Print current best solution.
-    - cont --> Continue calculation.
-    - call --> Executes sigint_callback, if provided.
-    - exit --> Exits with current best solution.
-"""
-        def handler(signum, frame):
-            import inspect
-            print inspect.getframeinfo(frame)
-            print inspect.trace()
-            while 1:
-                s = raw_input(\
-"""
- 
- Enter sense switch.
-
-    sol:  Print current best solution.
-    cont: Continue calculation.
-    call: Executes sigint_callback [%s].
-    exit: Exits with current best solution.
-
- >>> """ % sigint_callback)
-                if s.lower() == 'sol': 
-                    print self.bestSolution
-                elif s.lower() == 'cont': 
-                    return
-                elif s.lower() == 'call': 
-                    # sigint call_back
-                    if sigint_callback is not None:
-                        sigint_callback(self.bestSolution)
-                elif s.lower() == 'exit': 
-                    self._EARLYEXIT = True
-                    return
-                else:
-                    print "unknown option : %s" % s
-            return
-        self.signal_handler = handler
-        return
-
     def SetSaveFrequency(self, generations=None, filename=None, **kwds):
         """set frequency for saving solver restart file
 
@@ -879,13 +837,12 @@ Further Inputs:
     disp -- non-zero to print convergence messages.
         """
         # process and activate input settings
-        sigint_callback = kwds.pop('sigint_callback', None)
+        self.sigint_callback = kwds.pop('sigint_callback', None)
         settings = self._process_inputs(kwds)
         disp = settings.get('disp', False)
 
         # set up signal handler
         self._EARLYEXIT = False  #XXX: why not use EARLYEXIT singleton?
-        self._generateHandler(sigint_callback)
 
         # activate signal handler
        #import threading as thread
@@ -893,7 +850,8 @@ Further Inputs:
        #if mainthread: #XXX: if not mainthread, signal will raise ValueError
         import signal
         if self._handle_sigint:
-            signal.signal(signal.SIGINT,self.signal_handler)
+            from mystic.signal import Handler
+            signal.signal(signal.SIGINT,Handler(self,self.sigint_callback))
 
         # register: cost, termination, ExtraArgs
         cost = self._bootstrap_objective(cost, ExtraArgs)

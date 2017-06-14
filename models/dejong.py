@@ -6,6 +6,8 @@
 # Copyright (c) 2016-2017 The Uncertainty Quantification Foundation.
 # License: 3-clause BSD.  The full license text is available at:
 #  - http://trac.mystic.cacr.caltech.edu/project/mystic/browser/mystic/LICENSE
+from __future__ import absolute_import
+
 __doc__ = _doc = """
 This is part of Storn's "Differential Evolution" test suite, as defined
 in [2], with 'De Jong' function definitions drawn from [3].
@@ -23,7 +25,7 @@ References::
     Simulated Reannealing: A Comparison" J. of Mathematical and Computer
     Modeling 16(11), 87-100, 1992.
 """
-from abstract_model import AbstractFunction
+from .abstract_model import AbstractFunction
 
 from numpy import sum as numpysum
 from numpy import asarray, transpose, inf
@@ -32,6 +34,7 @@ from math import floor
 import random
 from math import pow
 from mystic.tools import permutations
+from functools import reduce
 
 class Sphere(AbstractFunction):
     __doc__ = \

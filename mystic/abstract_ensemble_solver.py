@@ -318,7 +318,7 @@ Further Inputs:
     disp -- non-zero to print convergence messages.         [default = 0]
         """
         # process and activate input settings
-        sigint_callback = kwds.pop('sigint_callback', None)
+        self.sigint_callback = kwds.pop('sigint_callback', None)
         settings = self._process_inputs(kwds)
         disp = settings['disp'] if 'disp' in settings else False
         echo = settings['callback'] if 'callback' in settings else None
@@ -338,7 +338,6 @@ Further Inputs:
 
         # set up signal handler
        #self._EARLYEXIT = False
-        self._generateHandler(sigint_callback) 
 
         # activate signal_handler
        #import threading as thread
@@ -346,7 +345,8 @@ Further Inputs:
        #if mainthread: #XXX: if not mainthread, signal will raise ValueError
         import signal
         if self._handle_sigint:
-            signal.signal(signal.SIGINT,self.signal_handler)
+            from mystic.signal import Handler
+            signal.signal(signal.SIGINT,Handler(self,self.sigint_callback))
 
         # register termination function
         if termination is not None: self.SetTermination(termination)
