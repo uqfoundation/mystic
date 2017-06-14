@@ -333,7 +333,7 @@ def __test_probability_mass():
 
   cuboid_volume = volume(lower,upper)
   probability_mass = prob_mass(cuboid_volume,cuboid_volume)
-  print "probability mass: %s" % probability_mass
+  print("probability mass: %s" % probability_mass)
 
 
 if __name__ == '__main__':

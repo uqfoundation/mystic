@@ -9,6 +9,8 @@
 Classes for discrete measure data objects.
 Includes point_mass, measure, product_measure, and scenario classes.
 """
+from __future__ import absolute_import
+
 # Adapted from seesaw2d.py in branches/UQ/math/examples2/ 
 # For usage example, see seesaw2d_inf_example.py .
 
@@ -89,7 +91,7 @@ class measure(list):  #FIXME: meant to only accept point_masses...
 Inputs:
     tol -- weight tolerance, where any weight <= tol is considered zero
 """
-    from measures import support_index
+    from .measures import support_index
     return support_index(self.weights, tol)
 
   def support(self, tol=0):
@@ -98,7 +100,7 @@ Inputs:
 Inputs:
     tol -- weight tolerance, where any weight <= tol is considered zero
 """
-    from measures import support
+    from .measures import support
     return support(self.positions, self.weights, tol)
 
   def __weights(self):
@@ -160,7 +162,7 @@ Inputs:
 Inputs:
     f -- a function that takes a list and returns a number
 """
-    from measures import maximum
+    from .measures import maximum
     return maximum(f, self.positions)
 
   def ess_maximum(self, f, tol=0.):
@@ -170,7 +172,7 @@ Inputs:
     f -- a function that takes a list and returns a number
     tol -- weight tolerance, where any weight <= tol is considered zero
 """
-    from measures import ess_maximum
+    from .measures import ess_maximum
     return ess_maximum(f, self.positions, self.weights, tol)
 
   def minimum(self, f):
@@ -179,7 +181,7 @@ Inputs:
 Inputs:
     f -- a function that takes a list and returns a number
 """
-    from measures import minimum
+    from .measures import minimum
     return minimum(f, self.positions)
 
   def ess_minimum(self, f, tol=0.):
@@ -189,7 +191,7 @@ Inputs:
     f -- a function that takes a list and returns a number
     tol -- weight tolerance, where any weight <= tol is considered zero
 """
-    from measures import ess_minimum
+    from .measures import ess_minimum
     return ess_minimum(f, self.positions, self.weights, tol)
 
   def expect(self, f):
@@ -202,18 +204,18 @@ Inputs:
     positions = [(i,) for i in self.positions]
     return expectation(f, positions, self.weights)
 
-  def set_expect(self, (m,D), f, bounds=None, constraints=None, **kwds):
+  def set_expect(self, expected, f, bounds=None, constraints=None, **kwds):
     """impose a expectation on a dirac measure
 
 Inputs:
-    (m,D) -- tuple of expectation m and acceptable deviation D
+    expected -- tuple of expectation m and acceptable deviation D
     f -- a function that takes a list and returns a number
     bounds -- tuple of lists of bounds  (lower_bounds, upper_bounds)
     constraints -- a function that takes a product_measure  c' = constraints(c)
 """ #XXX: maybe more natural if f takes a positional value x, not a list x ?
     #XXX: maybe also natural c' = constraints(c) where c is a measure ?
     #FIXME: undocumented npop, maxiter, maxfun
-
+    m,D = expected
     if constraints:  # then need to adjust interface for 'impose_expectation'
       def cnstr(x, w):
         c = compose(x,w)
@@ -277,7 +279,7 @@ class product_measure(list):  #FIXME: meant to only accept sets...
   - weight wxi should be same for each (yj,zk) at xi; similarly for wyi & wzi
 """
   def __val(self):
-    raise NotImplementedError, "'value' is undefined in a measure"
+    raise NotImplementedError("'value' is undefined in a measure")
 
   def __pts(self):
     return [i.npts for i in self]
@@ -302,11 +304,11 @@ class product_measure(list):  #FIXME: meant to only accept sets...
     return product(self.pts)
 
   def support_index(self, tol=0):
-    from measures import support_index
+    from .measures import support_index
     return support_index(self.weights, tol)
 
   def support(self, tol=0): #XXX: better if generated positions only when needed
-    from measures import support
+    from .measures import support
     return support(self.positions, self.weights, tol)
 
   def __weights(self):
@@ -359,18 +361,19 @@ Inputs:
     from mystic.math.measures import expectation
     return expectation(f, self.positions, self.weights)
 
-  def set_expect(self, (m,D), f, bounds=None, constraints=None, **kwds):
+  def set_expect(self, expected, f, bounds=None, constraints=None, **kwds):
     """impose a expectation on a product measure
 
 Inputs:
-    (m,D) -- tuple of expectation m and acceptable deviation D
+    expected -- tuple of expectation m and acceptable deviation D
     f -- a function that takes a list and returns a number
     bounds -- tuple of lists of bounds  (lower_bounds, upper_bounds)
     constraints -- a function that takes a product_measure  c' = constraints(c)
 """
-   #FIXME: undocumented npop, maxiter, maxfun
-   #self.__center = m
-   #self.__delta = D
+    #FIXME: undocumented npop, maxiter, maxfun
+    #self.__center = m
+    #self.__delta = D
+    m,D = expected
     if constraints:  # then need to adjust interface for 'impose_expectation'
       def cnstr(x, w):
         c = compose(x,w)
@@ -503,7 +506,7 @@ string differs by exactly one index
     index = if True, return the index of the results (not results themselves)
 """
     from mystic.math.compressed import index2binary, differs_by_one
-    b = index2binary(range(self.npts), self.npts)
+    b = index2binary(list(range(self.npts)), self.npts)
     return differs_by_one(ith, b, all, index) 
 
   def select(self, *index, **kwds):
@@ -881,7 +884,7 @@ For example:
     >>> c.npts == d[0].npts
     True
 """
-  x = zip(*samples)                     # 'mimic' to a nested list
+  x = list(zip(*samples))               # 'mimic' to a nested list
   w = [weights for i in range(len(x))]  # 'mimic' to a nested list
   return compose(x,w)
 
@@ -964,11 +967,11 @@ def bounded_mean(mean_x, samples, xmin, xmax, wts=None):
   from numpy import asarray
   a = impose_mean(mean_x, samples, wts)
   if min(a) < xmin:   # maintain the bound
-    #print "violate lo(a)"
+    #print("violate lo(a)")
     s = spread(a) - 2*(xmin - min(a)) #XXX: needs compensation (as below) ?
     a = impose_mean(mean_x, impose_spread(s, samples, wts), wts)
   if max(a) > xmax:   # maintain the bound
-    #print "violate hi(a)"
+    #print("violate hi(a)")
     s = spread(a) + 2*(xmax - max(a)) #XXX: needs compensation (as below) ?
     a = impose_mean(mean_x, impose_spread(s, samples, wts), wts)
   return asarray(a)
@@ -1055,7 +1058,7 @@ Outputs:
   from mystic.math.distance import lipschitz_distance, infeasibility, _npts
   if guess is None:
     message = "Requires a guess scenario, or a tuple of scenario dimensions."
-    raise TypeError, message
+    raise TypeError(message)
   # get initial guess
   if hasattr(guess, 'pts'): # guess is a scenario
     pts = guess.pts    # number of x
@@ -1125,9 +1128,9 @@ Outputs:
   ftol = abs(tol); gtol = None
 
   if debug:
-    print "lower bounds: %s" % bounds.T[0]
-    print "upper bounds: %s" % bounds.T[1]
-  # print "initial value: %s" % guess
+    print("lower bounds: %s" % bounds.T[0])
+    print("upper bounds: %s" % bounds.T[1])
+  # print("initial value: %s" % guess)
   # use optimization to get feasible points
   from mystic.solvers import diffev2, fmin_powell
   from mystic.monitors import Monitor, VerboseMonitor
@@ -1148,9 +1151,9 @@ Outputs:
   # repack the results
   pm = scenario()
   pm.load(results[0], pts)            # params: w,x,y
- #if debug: print "final cost: %s" % results[1]
+ #if debug: print("final cost: %s" % results[1])
   if debug and results[2] >= maxiter: # iterations
-    print "Warning: constraints solver terminated at maximum iterations"
+    print("Warning: constraints solver terminated at maximum iterations")
  #func_evals = results[3]           # evaluation
   return pm
 
@@ -1191,7 +1194,7 @@ Notes:
   from mystic.math.distance import graphical_distance, infeasibility, _npts
   if guess is None:
     message = "Requires a guess scenario, or a tuple of scenario dimensions."
-    raise TypeError, message
+    raise TypeError(message)
   # get initial guess
   if hasattr(guess, 'pts'): # guess is a scenario
     pts = guess.pts    # number of x
@@ -1256,9 +1259,9 @@ Notes:
   ftol = abs(tol); gtol = None #XXX: optimally, should be VTRCOG...
 
   if debug:
-    print "lower bounds: %s" % bounds.T[0]
-    print "upper bounds: %s" % bounds.T[1]
-  # print "initial value: %s" % guess
+    print("lower bounds: %s" % bounds.T[0])
+    print("upper bounds: %s" % bounds.T[1])
+  # print("initial value: %s" % guess)
   # use optimization to get model-valid points
   from mystic.solvers import diffev2, fmin_powell
   from mystic.monitors import Monitor, VerboseMonitor
@@ -1279,9 +1282,9 @@ Notes:
   # repack the results
   pm = scenario()
   pm.load(results[0], pts)            # params: w,x,y
- #if debug: print "final cost: %s" % results[1]
+ #if debug: print("final cost: %s" % results[1])
   if debug and results[2] >= maxiter: # iterations
-    print "Warning: constraints solver terminated at maximum iterations"
+    print("Warning: constraints solver terminated at maximum iterations")
  #func_evals = results[3]           # evaluation
   return pm
 
@@ -1317,9 +1320,9 @@ if __name__ == '__main__':
   _data.lipschitz = data.lipschitz
   from numpy import sum
   ans = sum(lipschitz_distance(L, pm, _data))
-  print "original: %s @ %s\n" % (ans, a)
- #print "pm: %s" % pm
- #print "data: %s" % data
+  print("original: %s @ %s\n" % (ans, a))
+ #print("pm: %s" % pm)
+ #print("data: %s" % data)
   #---
   lb = [0,.5,-100,-100,  0,.5,-100,-100,  0,.5,-100,-100,   0,0,0,0,0,0,0,0]
   ub = [.5,1, 100, 100,  .5,1, 100, 100,  .5,1, 100, 100,   9,9,9,9,9,9,9,9]
@@ -1329,29 +1332,29 @@ if __name__ == '__main__':
   results = impose_feasible(feasability, data, guess=pts, tol=deviation, \
                             bounds=bounds, constraints=_constrain)
   from mystic.math.measures import mean
-  print "solved: %s" % results.flatten(all=True)
-  print "mean(y): %s >= %s" % (mean(results.values, results.weights), y_mean)
-  print "sum(wi): %s == 1.0" % [sum(w) for w in results.wts]
+  print("solved: %s" % results.flatten(all=True))
+  print("mean(y): %s >= %s" % (mean(results.values, results.weights), y_mean))
+  print("sum(wi): %s == 1.0" % [sum(w) for w in results.wts])
 
-  print "\n---------------------------------------------------\n"
+  print("\n---------------------------------------------------\n")
 
   bc = bc[:-2]
   ids = ['1','2','3']
   t = dataset()
-  t.load(bc, map(model, bc), ids)
-  t.update(t.coords, map(model, t.coords))
+  t.load(bc, list(map(model, bc)), ids)
+  t.update(t.coords, list(map(model, t.coords)))
 # r = dataset()
 # r.load(t.coords, t.values)
 # L = [0.1, 0.0, 0.0]
-  print "%s" % t
-  print "L: %s" % L
-  print "shortness:"
-  print lipschitz_distance(L, t, t, tol=0.0)
+  print("%s" % t)
+  print("L: %s" % L)
+  print("shortness:")
+  print(lipschitz_distance(L, t, t, tol=0.0))
   
-  print "\n---------------------------------------------------\n"
+  print("\n---------------------------------------------------\n")
 
-  print "Y: %s" % str(results.values)
-  print "sum(wi): %s == 1.0" % [sum(w) for w in results.wts]
+  print("Y: %s" % str(results.values))
+  print("sum(wi): %s == 1.0" % [sum(w) for w in results.wts])
 
 
 # EOF

@@ -230,8 +230,8 @@ if __name__ == '__main__':
     upper = [100.0, 30.0, 2.8]
 
     pts = _random_samples(lower,upper,num_sample_points)
-    print "randomly sampled points\nbetween %s and %s" % (lower, upper)
-    print pts
+    print("randomly sampled points\nbetween %s and %s" % (lower, upper))
+    print(pts)
 
   def __test2():
     # From branches/UQ/math/cut.py
@@ -247,9 +247,9 @@ if __name__ == '__main__':
 
     failure,success = sample(model,lower,upper)
     pof = float(failure) / float(failure + success)
-    print "PoF using method 1: %s" % pof
+    print("PoF using method 1: %s" % pof)
     random_seed(123)
-    print "PoF using method 2: %s" % sampled_pof(model,lower,upper)
+    print("PoF using method 2: %s" % sampled_pof(model,lower,upper))
 
     # run the tests
     __test1()

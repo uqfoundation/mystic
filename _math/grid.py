@@ -64,6 +64,8 @@ Inputs:
     if N == 0: return [0] if ndim else [0]*ndim
     from itertools import chain
     from mystic.tools import random_state
+    from mystic import PY3
+    if PY3: xrange = range
     random = random_state().random
     def factors(n):
         result = list()
@@ -110,7 +112,7 @@ if __name__ == '__main__':
 
   # build a grid of starting points
   initial_values = gridpts(bins)
-  print "grid: %s" % initial_values
+  print("grid: %s" % initial_values)
 
   npts = 10
   lower = [0.0, 3.0, 6.0]
@@ -118,7 +120,7 @@ if __name__ == '__main__':
 
   # generate a set of random starting points
   initial_values = samplepts(lower,upper,npts)
-  print "scatter: %s" % initial_values
+  print("scatter: %s" % initial_values)
 
 
 # EOF

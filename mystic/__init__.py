@@ -28,6 +28,11 @@ __all__ = ['solvers', 'termination', 'strategy', 'munge', 'tools', \
            'constraints', 'penalty', 'coupler', 'symbolic', 'monitors', \
            'support', 'model_plotter', 'log_reader', 'collapse_plotter']
 
+# internal
+import sys
+PY3 = (sys.hexversion >= 0x30000f0)
+del sys
+
 # solvers
 import solvers
 

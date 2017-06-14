@@ -422,9 +422,9 @@ For example:
   else: #XXX: better to use a standard "xk' = constrain(xk)" interface ?
     def constraints(rv):
       coords = _pack( _nested(rv,npts) )
-      coords = zip(*coords)              # 'mimic' a nested list
+      coords = list(zip(*coords))              # 'mimic' a nested list
       coords = constrain(coords, [weights for i in range(len(coords))])
-      coords = zip(*coords)              # revert back to a packed list
+      coords = list(zip(*coords))              # revert back to a packed list
       return _flat( _unpack(coords,npts) )
 
   # construct cost function to reduce deviation from expectation value
@@ -452,7 +452,8 @@ For example:
   maxfun = kwds.pop('maxfun', 1e+6)
   crossover = 0.9; percent_change = 0.9
 
-  def optimize(cost,(lb,ub),tolerance,_constraints):
+  def optimize(cost, bounds, tolerance, _constraints):
+    (lb,ub) = bounds
     from mystic.solvers import DifferentialEvolutionSolver2
     from mystic.termination import VTR
     from mystic.strategy import Best1Exp
@@ -590,7 +591,7 @@ def impose_reweighted_mean(m, samples, weights=None, solver=None):
 
     #XXX: better to fail immediately if xlo < m < xhi... or the below?
     if warn or not almostEqual(_norm, norm):
-        print "Warning: could not impose mean through reweighting"
+        print("Warning: could not impose mean through reweighting")
         return None #impose_mean(m, samples, weights), weights
 
     return wts #samples, wts
@@ -637,7 +638,7 @@ def impose_reweighted_variance(v, samples, weights=None, solver=None):
 
     #XXX: better to fail immediately if xlo < m < xhi... or the below?
     if warn or not almostEqual(_norm, norm):
-        print "Warning: could not impose mean through reweighting"
+        print("Warning: could not impose mean through reweighting")
         return None #impose_variance(v, samples, weights), weights
 
     return wts #samples, wts  # "mean-preserving"
@@ -952,7 +953,8 @@ Note: is 'mean-preserving' for samples and 'norm-preserving' for weights
     pairs = zip(*tuple(tuple(len(weights)+i if i<0 else i for i in j) for j in zip(*pairs)))
     #XXX: any vectorized way to do this?
     from mystic.tools import connected
-    for i,j in connected(pairs).iteritems():
+    pairs = connected(pairs)
+    for i,j in getattr(pairs,'iteritems',pairs.items)():
         v = weights[i]
         for k in j:
             v += weights[k]

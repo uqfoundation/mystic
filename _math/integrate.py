@@ -156,8 +156,8 @@ def __test_integrator1():
     return x[0]/2. + x[1]**3 + 3.*x[2]
   lb = [1., 1., 1.]
   ub = [2., 2., 2.]
-  print "monte_carlo_integrate says:", monte_carlo_integrate(f, lb, ub)
-  print "_scipy_integrate says: ", _scipy_integrate(f, lb, ub)
+  print("monte_carlo_integrate says: %s" % monte_carlo_integrate(f, lb, ub))
+  print("_scipy_integrate says: %s" % _scipy_integrate(f, lb, ub))
   return
 
 def __test_mean():
@@ -166,8 +166,8 @@ def __test_mean():
   lb = [0.]
   ub = [1.]
   from mystic.math.samples import sampled_mean
-  print "Sampled mean says:", sampled_mean(f, lb, ub)
-  print "Integrated mean says:", integrated_mean(f, lb, ub)
+  print("Sampled mean says: %s" % sampled_mean(f, lb, ub))
+  print("Integrated mean says: %s" % integrated_mean(f, lb, ub))
 
 if __name__ == '__main__':
   __test_integrator1()

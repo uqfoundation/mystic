@@ -68,8 +68,7 @@ L = 10000
 if __name__=='__main__':
     from mystic.metropolis import *
     import time
-    import sys
-    PY3 = (sys.hexversion >= 0x30000f0)
+    from mystic import PY3
     if PY3:
         xrange = range
 

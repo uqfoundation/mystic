@@ -16,8 +16,7 @@ from numpy import mean, cov
 if __name__=='__main__':
     from numpy import random
     import time
-    import sys
-    PY3 = (sys.hexversion >= 0x30000f0)
+    from mystic import PY3
     if PY3:
         xrange = range
 
