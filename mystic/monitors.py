@@ -481,6 +481,12 @@ example usage...
 
 
 ##### loaders ##### #XXX: should be class method?
+if (sys.hexversion >= 0x30000f0):
+    exec_string = 'exec(code, _globals)'
+else:
+    exec_string = 'exec code in _globals'
+#FIXME: remove this head-standing to workaround python2.6 exec bug
+def_load = """
 def _load(path, monitor=None, verbose=False): #XXX: duplicate in mystic.munge?
     '''load npts, params, and cost into monitor from file at given path'''
 
@@ -494,18 +500,20 @@ except ImportError: ___npts = None;
 import sys;
 sys.modules.pop('{base}', None);
 '''.format(base=base)
+
     try:
         sys.path.insert(0, root)
         _globals = {}
         _globals.update(globals())
         code = compile(string, '<string>', 'exec')
-        exec code in _globals #FIXME: SyntaxError in python3
+        %s
         npts = _globals.get('___npts')
         params = _globals.get('___params')
         cost = _globals.get('___cost')
         del _globals
     except: #XXX: should only catch the appropriate exceptions
-        raise OSError("error reading '%s'" % path)
+        raise OSError("error reading '{path}'".format(path=path))
+
     finally:
         sys.path.remove(root)
 
@@ -524,7 +532,9 @@ sys.modules.pop('{base}', None);
     monitor._npts = npts
 
     return monitor
-
+""" % exec_string
+exec(def_load)
+del def_load, exec_string
 
 ##### readers ##### #XXX: should be class methods?
 def _solutions(monitor, last=None):

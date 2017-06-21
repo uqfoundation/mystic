@@ -17,7 +17,14 @@ __all__ = ['convergence', 'hypercube', 'hypercube_measures', \
 # globals
 __quit = False
 ZERO = 1.0e-6  # zero-ish
-
+import sys
+if (sys.hexversion >= 0x30000f0):
+    exec_string = 'exec(code, globals)'
+else:
+    exec_string = 'exec code in globals'
+NL = '\n'
+NL2 = '\n\n'
+#FIXME: remove this head-standing to workaround python2.6 exec bug
 
 def best_dimensions(n):
   "get the 'best' dimensions (n x m) for arranging plots"
@@ -272,6 +279,7 @@ def swap(alist, index=None):
   return alist[:index] + alist[index+1:] + alist[index:index+1]
 
 
+def_convergence = '''
 def convergence(filename, **kwds):
     """
 generate parameter convergence plots from file written with 'write_support_file'
@@ -353,7 +361,7 @@ Required Inputs:
             raise IOError(msg)
     OptionParser.exit = _exit
 
-    parser = OptionParser(usage=convergence.__doc__.split('\n\nOptions:')[0])
+    parser = OptionParser(usage=convergence.__doc__.split(NL2+'Options:')[0])
     parser.add_option("-u","--out",action="store",dest="out",\
                       metavar="STR",default=None,
                       help="filepath to save generated plot")
@@ -377,7 +385,7 @@ Required Inputs:
     parser.print_help(file=f)
     f.seek(0)
     if 'Options:' not in convergence.__doc__:
-        convergence.__doc__ += '\nOptions:%s' % f.read().split('Options:')[-1]
+        convergence.__doc__ += NL+'Options:{0}'.format(f.read().split('Options:')[-1])
     f.close()
 
     try:
@@ -393,7 +401,7 @@ Required Inputs:
     params, cost = read_history(instance)
 
     if parsed_opts.cost: # also plot the cost
-       #exec "from %s import cost" % file
+       #exec "from {file} import cost".format(file=file)
         pass
     else:
         cost = None
@@ -456,7 +464,7 @@ Required Inputs:
     fig = plt.figure()
     ax1 = fig.add_subplot(dim1,dim2,1)
     ax1.set_ylabel(label[0])
-    data = eval("params[%s]" % select[0])
+    data = eval("params[{0}]".format(select[0]))
     try:
         n = int(select[0].split(":")[0])
     except ValueError:
@@ -468,35 +476,36 @@ Required Inputs:
 
     globals = {'fig':fig, 'dim1':dim1, 'dim2':dim2, 'ax1':ax1, 'label':label}
     for i in range(2, plots + 1):
-        code = "ax%d = fig.add_subplot(dim1,dim2,%d, sharex=ax1);" % (i,i)
-        code += "ax%d.set_ylabel(label[%d]);" % (i,i-1)
+        code = "ax{0:d} = fig.add_subplot(dim1,dim2,{0:d}, sharex=ax1);".format(i)
+        code += "ax{0:d}.set_ylabel(label[{1:d}]);".format(i,i-1)
         code = compile(code, '<string>', 'exec')
-        exec codes in globals #FIXME: SyntaxError in python3
-        data = eval("params[%s]" % select[i-1])
+        %(exec_string)s
+        data = eval("params[{0}]".format(select[i-1]))
         try:
             n = int(select[i-1].split(":")[0])
         except ValueError:
             n = 0
         for line in data:
             globals['line'] = line
-            code = "ax%d.plot(line,label='%s')#, marker='o')" % (i,n)
+            code = "ax{0:d}.plot(line,label='{1}')#, marker='o')".format(i,n)
             code = compile(code, '<string>', 'exec')
-            exec code in globals #FIXME: SyntaxError in python3
+            %(exec_string)s
             n += 1
         if legend: plt.legend()
     if cost:
         globals['cost'] = cost
-        code = "cx1 = fig.add_subplot(dim1,dim2,%d, sharex=ax1);" % int(plots+1)
+        code = "cx1 = fig.add_subplot(dim1,dim2,{0:d}, sharex=ax1);".format(int(plots+1))
         code += "cx1.plot(cost,label='cost');"#, marker='o')"
         if max(0, len(label) - plots): code += "cx1.set_ylabel(label[-1]);"
         code = compile(code, '<string>', 'exec')
-        exec code in globals #FIXME: SyntaxError in python3
+        %(exec_string)s
         if legend: plt.legend()
 
     if not parsed_opts.out:
         plt.show()
     else:
         fig.savefig(parsed_opts.out)
+''' % dict(exec_string=exec_string)
 
     ### USUAL WAY OF CREATING PLOTS ###
     #fig = plt.figure()
@@ -520,6 +529,7 @@ Required Inputs:
     ###################################
 
 
+def_hypercube = '''
 def hypercube(filename, **kwds):
     """
 generate parameter support plots from file written with 'write_support_file'
@@ -610,7 +620,7 @@ Required Inputs:
             raise IOError(msg)
     OptionParser.exit = _exit
 
-    parser = OptionParser(usage=hypercube.__doc__.split('\n\nOptions:')[0])
+    parser = OptionParser(usage=hypercube.__doc__.split(NL2+'Options:')[0])
     parser.add_option("-u","--out",action="store",dest="out",\
                       metavar="STR",default=None,
                       help="filepath to save generated plot")
@@ -639,7 +649,7 @@ Required Inputs:
     parser.print_help(file=f)
     f.seek(0)
     if 'Options:' not in hypercube.__doc__:
-        hypercube.__doc__ += '\nOptions:%s' % f.read().split('Options:')[-1]
+        hypercube.__doc__ += NL+'Options:{0}'.format(f.read().split('Options:')[-1])
     f.close()
 
     try:
@@ -654,7 +664,7 @@ Required Inputs:
     from mystic.munge import read_history
     params, _cost = read_history(instance)
     # would be nice to use meta = ['wx','wx2','x','x2','wy',...]
-    # exec "from %s import meta" % file
+    # exec "from {file} import meta".format(file=file)
 
     try: # select the bounds
         bounds = parsed_opts.bounds.split(",")  # format is "60:105, 0:30, 2.1:2.8"
@@ -752,11 +762,11 @@ Required Inputs:
     globals = {'plt':plt,'fig':fig,'dim1':dim1,'dim2':dim2,\
                'Subplot3D':Subplot3D,'bounds':bounds,'label':label}
     if not flatten:
-        code = "plt.title('iterations[%s]');" % select[0]
+        code = "plt.title('iterations[{0}]');".format(select[0])
     else: 
         code = "plt.title('iterations[*]');"
     code = compile(code, '<string>', 'exec')
-    exec code in globals #FIXME: SyntaxError in python3
+    %(exec_string)s
     ax1.set_xlabel(label[0])
     ax1.set_ylabel(label[1])
     ax1.set_zlabel(label[2])
@@ -765,15 +775,15 @@ Required Inputs:
     # set up additional plots
     if not flatten:
         for i in range(2, plots + 1):
-            code = "ax = ax%d = Subplot3D(fig, dim1,dim2,%d);" % (i,i)
+            code = "ax = ax{0:d} = Subplot3D(fig, dim1,dim2,{0:d});".format(i)
             code += "ax.plot([bounds[0][0]],[bounds[1][0]],[bounds[2][0]]);"
             code += "ax.plot([bounds[0][1]],[bounds[1][1]],[bounds[2][1]]);"
-            code += "plt.title('iterations[%s]');" % select[i - 1]
+            code += "plt.title('iterations[{0}]');".format(select[i - 1])
             code += "ax.set_xlabel(label[0]);"
             code += "ax.set_ylabel(label[1]);"
             code += "ax.set_zlabel(label[2]);"
             code = compile(code, '<string>', 'exec')
-            exec code in globals #FIXME: SyntaxError in python3
+            %(exec_string)s
             a.append(globals['ax'])
 
     # turn each "n:m" in select to a list
@@ -789,7 +799,7 @@ Required Inputs:
         if p[0][0] == '-': p[0] = "len(x)"+p[0]
         if p[1][0] == '-': p[1] = "len(x)"+p[1]
         select[i] = p[0]+":"+p[1]
-    steps = [eval("range(%s)" % sel.replace(":",",")) for sel in select]
+    steps = [eval("range({0})".format(sel.replace(":",","))) for sel in select]
 
     # at this point, we should have:
     #xyz = [(0,1),(4,5),(8,9)] for any length tuple
@@ -807,17 +817,19 @@ Required Inputs:
         for s in steps[v]:
             # dot color determined by number of simultaneous iterations
             t = str((s/qp)**scale)
-            for i in eval("[params[q][%s] for q in xyz[0]]" % s):
-                for j in eval("[params[q][%s] for q in xyz[1]]" % s):
-                    for k in eval("[params[q][%s] for q in xyz[2]]" % s):
+            for i in eval("[params[q][{0}] for q in xyz[0]]".format(s)):
+                for j in eval("[params[q][{0}] for q in xyz[1]]".format(s)):
+                    for k in eval("[params[q][{0}] for q in xyz[2]]".format(s)):
                         a[v].plot(i,j,k,marker='o',color=t,ms=10)
 
     if not parsed_opts.out:
         plt.show()
     else:
         fig.savefig(parsed_opts.out)
+''' % dict(exec_string=exec_string)
 
 
+def_hypercube_measures = '''
 def hypercube_measures(filename, **kwds):
     """
 generate measure support plots from file written with 'write_support_file'
@@ -914,7 +926,7 @@ Required Inputs:
             raise IOError(msg)
     OptionParser.exit = _exit
 
-    parser = OptionParser(usage=hypercube_measures.__doc__.split('\n\nOptions:')[0])
+    parser = OptionParser(usage=hypercube_measures.__doc__.split(NL2+'Options:')[0])
     parser.add_option("-u","--out",action="store",dest="out",\
                       metavar="STR",default=None,
                       help="filepath to save generated plot")
@@ -946,7 +958,7 @@ Required Inputs:
     parser.print_help(file=f)
     f.seek(0)
     if 'Options:' not in hypercube_measures.__doc__:
-        hypercube_measures.__doc__ += '\nOptions:%s' % f.read().split('Options:')[-1]
+        hypercube_measures.__doc__ += NL+'Options:{0}'.format(f.read().split('Options:')[-1])
     f.close()
 
     try:
@@ -961,7 +973,7 @@ Required Inputs:
     from mystic.munge import read_history
     params, _cost = read_history(instance)
     # would be nice to use meta = ['wx','wx2','x','x2','wy',...]
-    # exec "from %s import meta" % file
+    # exec "from {file} import meta".format(file=file)
 
     try: # select the bounds
         bounds = parsed_opts.bounds.split(",")  # format is "60:105, 0:30, 2.1:2.8"
@@ -1069,11 +1081,11 @@ Required Inputs:
     globals = {'plt':plt,'fig':fig,'dim1':dim1,'dim2':dim2,\
                'Subplot3D':Subplot3D,'bounds':bounds,'label':label}
     if not flatten:
-        code = "plt.title('iterations[%s]');" % select[0]
+        code = "plt.title('iterations[{0}]');".format(select[0])
     else: 
         code = "plt.title('iterations[*]');"
     code = compile(code, '<string>', 'exec')
-    exec code in globals #FIXME: SyntaxError in python3
+    %(exec_string)s
     ax1.set_xlabel(label[0])
     ax1.set_ylabel(label[1])
     ax1.set_zlabel(label[2])
@@ -1082,15 +1094,15 @@ Required Inputs:
     # set up additional plots
     if not flatten:
         for i in range(2, plots + 1):
-            code = "ax = ax%d = Subplot3D(fig, dim1,dim2,%d);" % (i,i)
+            code = "ax = ax{0:d} = Subplot3D(fig, dim1,dim2,{0:d});".format(i)
             code += "ax.plot([bounds[0][0]],[bounds[1][0]],[bounds[2][0]]);"
             code += "ax.plot([bounds[0][1]],[bounds[1][1]],[bounds[2][1]]);"
-            code += "plt.title('iterations[%s]');" % select[i - 1]
+            code += "plt.title('iterations[{0}]');".format(select[i - 1])
             code += "ax.set_xlabel(label[0]);"
             code += "ax.set_ylabel(label[1]);"
             code += "ax.set_zlabel(label[2]);"
             code = compile(code, '<string>', 'exec')
-            exec code in globals #FIXME: SyntaxError in python3
+            %(exec_string)s
             a.append(globals['ax'])
 
     # turn each "n:m" in select to a list
@@ -1106,8 +1118,8 @@ Required Inputs:
    #    if p[0][0] == '-': p[0] = "len(x)"+p[0]
    #    if p[1][0] == '-': p[1] = "len(x)"+p[1]
    #    select[i] = p[0]+":"+p[1]
-   #steps = [eval("range(%s)" % sel.replace(":",",")) for sel in select]
-    steps = [eval("[int(%s)]" % sel) for sel in select]
+   #steps = [eval("range({0})".format(sel.replace(":",","))) for sel in select]
+    steps = [eval("[int({0})]".format(sel)) for sel in select]
 
     # at this point, we should have:
     #xyz = [(2,3),(6,7),(10,11)] for any length tuple
@@ -1126,9 +1138,9 @@ Required Inputs:
     for v in range(len(steps)):
         t.append([])
         for s in steps[v]:
-            for i in eval("[params[q][%s] for q in wxyz[0]]" % s):
-                for j in eval("[params[q][%s] for q in wxyz[1]]" % s):
-                    for k in eval("[params[q][%s] for q in wxyz[2]]" % s):
+            for i in eval("[params[q][{0}] for q in wxyz[0]]".format(s)):
+                for j in eval("[params[q][{0}] for q in wxyz[1]]".format(s)):
+                    for k in eval("[params[q][{0}] for q in wxyz[2]]".format(s)):
                         t[v].append([str((1.0 - i[q]*j[q]*k[q])**scale) for q in range(len(i))])
                         if float(t[v][-1][-1]) > 1.0 or float(t[v][-1][-1]) < 0.0:
                             raise ValueError("Weights must be in range 0-1. Check normalization and/or assignment.")
@@ -1137,9 +1149,9 @@ Required Inputs:
     for v in range(len(steps)):
         for s in steps[v]:
             u = 0
-            for i in eval("[params[q][%s] for q in xyz[0]]" % s):
-                for j in eval("[params[q][%s] for q in xyz[1]]" % s):
-                    for k in eval("[params[q][%s] for q in xyz[2]]" % s):
+            for i in eval("[params[q][{0}] for q in xyz[0]]".format(s)):
+                for j in eval("[params[q][{0}] for q in xyz[1]]".format(s)):
+                    for k in eval("[params[q][{0}] for q in xyz[2]]".format(s)):
                         for q in range(len(t[v][u])):
                             a[v].plot([i[q]],[j[q]],[k[q]],marker='o',color=t[v][u][q],ms=10)
                         u += 1
@@ -1148,8 +1160,10 @@ Required Inputs:
         plt.show()
     else:
         fig.savefig(parsed_opts.out)
+''' % dict(exec_string=exec_string)
 
 
+def_hypercube_scenario = '''
 def hypercube_scenario(filename, datafile=None, **kwds):
     """
 generate scenario support plots from file written with 'write_support_file';
@@ -1259,7 +1273,7 @@ Additional Inputs:
             raise IOError(msg)
     OptionParser.exit = _exit
 
-    parser = OptionParser(usage=hypercube_scenario.__doc__.split('\n\nOptions:')[0])
+    parser = OptionParser(usage=hypercube_scenario.__doc__.split(NL2+'Options:')[0])
     parser.add_option("-u","--out",action="store",dest="out",\
                       metavar="STR",default=None,
                       help="filepath to save generated plot")
@@ -1303,7 +1317,7 @@ Additional Inputs:
     parser.print_help(file=f)
     f.seek(0)
     if 'Options:' not in hypercube_scenario.__doc__:
-        hypercube_scenario.__doc__ += '\nOptions:%s' % f.read().split('Options:')[-1]
+        hypercube_scenario.__doc__ += NL+'Options:{0}'.format(f.read().split('Options:')[-1])
     f.close()
 
     try:
@@ -1318,7 +1332,7 @@ Additional Inputs:
     from mystic.munge import read_history
     params, _cost = read_history(instance)
     # would be nice to use meta = ['wx','wx2','x','x2','wy',...]
-    # exec "from %s import meta" % file
+    # exec "from {file} import meta".format(file=file)
 
     from mystic.math.discrete import scenario
     from mystic.math.legacydata import dataset
@@ -1457,9 +1471,9 @@ Additional Inputs:
     if data:
         slope = _get_slope(data, xs, cs)
         coords = _get_coords(data, xs, cs)
-        #print("bounds: %s" % bounds)
-        #print("slope: %s" % slope)
-        #print("coords: %s" % coords)
+        #print("bounds: {0}".format(bounds))
+        #print("slope: {0}".format(slope))
+        #print("coords: {0}".format(coords))
    #else:
    #    slope = []
    #    coords = []
@@ -1511,11 +1525,11 @@ Additional Inputs:
     globals = {'plt':plt,'fig':fig,'dim1':dim1,'dim2':dim2,\
                'Subplot3D':Subplot3D,'bounds':bounds,'label':label}
     if not flatten:
-        code = "plt.title('iterations[%s]');" % select[0]
+        code = "plt.title('iterations[{0}]');".format(select[0])
     else: 
         code = "plt.title('iterations[*]');"
     code = compile(code, '<string>', 'exec')
-    exec code in globals #FIXME: SyntaxError in python3
+    %(exec_string)s
     if cones and data and xs in range(len(bounds)):
         if _2D:
             _plot_bowtie(ax1,coords,slope,bounds,axis=axis,tol=gap)
@@ -1531,16 +1545,16 @@ Additional Inputs:
     if not flatten:
         for i in range(2, plots + 1):
             if _2D:
-                code = "ax%d = ax = fig.add_subplot(dim1,dim2,%d);" % (i,i)
+                code = "ax{0:d} = ax = fig.add_subplot(dim1,dim2,{0:d});".format(i)
                 code += "ax.plot([bounds[0][0]],[bounds[1][0]]);"
                 code += "ax.plot([bounds[0][1]],[bounds[1][1]]);"
             else:
-                code = "ax%d = ax = Subplot3D(fig, dim1,dim2,%d);" % (i,i)
+                code = "ax{0:d} = ax = Subplot3D(fig, dim1,dim2,{0:d});".format(i)
                 code += "ax.plot([bounds[0][0]],[bounds[1][0]],[bounds[2][0]]);"
                 code += "ax.plot([bounds[0][1]],[bounds[1][1]],[bounds[2][1]]);"
-            code += "plt.title('iterations[%s]');" % select[i - 1]
+            code += "plt.title('iterations[{0}]');".format(select[i - 1])
             code = compile(code, '<string>', 'exec')
-            exec code in globals #FIXME: SyntaxError in python3
+            %(exec_string)s
             ax = globals['ax']
             if cones and data and xs in range(len(bounds)):
                 if _2D:
@@ -1566,7 +1580,7 @@ Additional Inputs:
         if p[0][0] == '-': p[0] = "len(x)"+p[0]
         if p[1][0] == '-': p[1] = "len(x)"+p[1]
         select[i] = p[0]+":"+p[1]
-    steps = [eval("range(%s)" % sel.replace(":",",")) for sel in select]
+    steps = [eval("range({0})".format(sel.replace(":",","))) for sel in select]
 
     # at this point, we should have:
     #steps = [[0,1],[1,2],[2,3],[3,4,5,6,7,8]] or similar
@@ -1581,7 +1595,7 @@ Additional Inputs:
         if len(steps[v]) > 1: qp = float(max(steps[v]))
         else: qp = inf
         for s in steps[v]:
-            par = eval("[params[q][%s][0] for q in range(len(params))]" % s)
+            par = eval("[params[q][{0}][0] for q in range(len(params))]".format(s))
             pm = scenario()
             pm.load(par, npts)
             d = dataset()
@@ -1607,6 +1621,14 @@ Additional Inputs:
         plt.show()
     else:
         fig.savefig(parsed_opts.out)
+''' % dict(exec_string=exec_string)
+
+exec(def_convergence)
+exec(def_hypercube)
+exec(def_hypercube_measures)
+exec(def_hypercube_scenario)
+del exec_string, def_convergence, def_hypercube
+del def_hypercube_measures, def_hypercube_scenario
 
 
 if __name__ == '__main__':
