@@ -24,7 +24,7 @@ where exclude is the candidate to exclude from selection.
 
 Thus, get_random_candidates(x,1,2) randomly selects two nPop[i],
 where i != 1"""
-    return random.sample(range(exclude)+range(exclude+1,NP), N)
+    return random.sample(list(range(exclude))+list(range(exclude+1,NP)), N)
 
 
 #################### #################### #################### ####################

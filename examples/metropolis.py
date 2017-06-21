@@ -16,8 +16,9 @@ from numpy import mean, cov
 if __name__=='__main__':
     from numpy import random
     import time
-    from mystic import PY3
-    if PY3:
+    try:
+        xrange
+    except NameError:
         xrange = range
 
     def prop(x):

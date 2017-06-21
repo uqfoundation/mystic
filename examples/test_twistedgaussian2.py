@@ -23,8 +23,9 @@ As = [xx.tolist() for xx in sequential_deal(b, q)]
 if __name__=='__main__':
     from mystic.metropolis import *
     import time
-    from mystic import PY3
-    if PY3:
+    try:
+        xrange
+    except NameError:
         xrange = range
 
     Sk = [ [Cs[i][0]] for i in xrange(q) ]

@@ -13,8 +13,7 @@ Some of following code is taken from Ka-Ping Yee's pydoc module
 
 def commandfy(text):
     """Format a command string"""
-    from string import join
-    return join(map(lambda ch: ch + '\b' + ch, text), '')
+    return ''.join([ch + '\b' + ch for ch in text])
 
 
 def commandstring(text, BoldQ):

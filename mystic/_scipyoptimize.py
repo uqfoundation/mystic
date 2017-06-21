@@ -19,9 +19,9 @@
 #           'rosen_hess', 'rosen_hess_prod', 'brute', 'approx_fprime',
 #           'line_search', 'check_grad']
 
-from _scipy060optimize import *
-from _scipy060optimize import _cubicmin, _quadmin, _epsilon
-from _scipy060optimize import _linesearch_powell, _endprint
+from mystic._scipy060optimize import *
+from mystic._scipy060optimize import _cubicmin, _quadmin, _epsilon
+from mystic._scipy060optimize import _linesearch_powell, _endprint
 
 def line_search(f, myfprime, xk, pk, gfk, old_fval, old_old_fval,
                 args=(), c1=1e-4, c2=0.9, amax=50, self=None):

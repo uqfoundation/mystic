@@ -67,8 +67,10 @@ def gendata(params,xmin,xmax,npts=4000):
             if t2 < t3:
                 return t1
     fwd = F(params)
-    import sys
-    if sys.hexversion >= 0x30000f0: xrange = range
+    try:
+        xrange
+    except NameError:
+        xrange = range
     return array([gensample(fwd, xmin,xmax) for i in xrange(npts)])
 
 # probably shouldn't be in here...

@@ -11,15 +11,13 @@
 # refactored by Mike McKerns, 2012
 """Tools for working with symbolic constraints.
 """
-from __future__ import division
-
 __all__ = ['linear_symbolic','replace_variables','get_variables','merge',
            'solve','simplify','comparator','flip','_flip','condense','equals',
            'penalty_parser','constraints_parser','generate_conditions',
            'generate_solvers','generate_penalty','generate_constraint']
 
 from numpy import ndarray, asarray
-from _symbolic import solve
+from mystic._symbolic import solve
 from mystic.tools import list_or_tuple_or_ndarray, flatten
 
 # XXX: another function for the inverse... symbolic to matrix? (good for scipy)
@@ -42,7 +40,7 @@ Inputs:
     >>> b = [0., 0.]
     >>> G = [1., 0., 0.]
     >>> h = [5.]
-    >>> print linear_symbolic(A,b,G,h)
+    >>> print(linear_symbolic(A,b,G,h))
     1.0*x0 + 0.0*x1 + 0.0*x2 <= 5.0
     3.0*x0 + 4.0*x1 + 5.0*x2 = 0.0
     1.0*x0 + 6.0*x1 + -9.0*x2 = 0.0
@@ -156,7 +154,7 @@ Additional Inputs:
     for i,u in enumerate(equations):
         if i in skip: continue
         for j,v in enumerate(equations[i+1:],i+1):
-            if verbose: print "try: ", u, v
+            if verbose: print("try: %s %s" % (u, v))
             left = []
             same = tuple(k for k in u if k in v or left.append(flip(k)))
             if len(same) is len(u) - 1 and all(k in v for k in left):
@@ -167,8 +165,8 @@ Additional Inputs:
         if not found: miss.append(u)
         else: found = False
     if verbose:
-        print "matches: ", result
-        print "misses: ", miss
+        print("matches: %s" % result)
+        print("misses: %s" % miss)
     return condense(*result, **kwds) + miss if result else miss
 
 
@@ -316,7 +314,7 @@ Additional Inputs:
     if locals is None: locals = {}
     if vals is None: vals = {}
     locals.update(vals)
-    if verbose: print locals
+    if verbose: print(locals)
     locals_ = locals.copy() #XXX: HACK _locals
     while variants:
         try:
@@ -326,7 +324,7 @@ Additional Inputs:
             if error.message.startswith('negative number') and \
                error.message.endswith('raised to a fractional power'):
                 val = variants.pop()
-                [locals_.update({k:v+val}) for k,v in locals_.items() if k in _vars]
+                [locals_.update({k:v+val}) for k,v in getattr(locals_, 'iteritems', locals_.items)() if k in _vars]
             else:
                 raise error
         except ZeroDivisionError as error:
@@ -376,13 +374,13 @@ Inputs:
         >>> constraints = '''
         ...     x0 - x2 <= 2.
         ...     x2 = x3*2.'''
-        >>> print simplify(constraints)
+        >>> print(simplify(constraints))
         x0 <= x2 + 2.0
         x2 = 2.0*x3
         >>> constraints = '''
         ...     x0 - x1 - 1.0 = mean([x0,x1])   
         ...     mean([x0,x1,x2]) >= x2'''
-        >>> print simplify(constraints)
+        >>> print(simplify(constraints))
         x0 = 3.0*x1 + 2.0
         x0 >= -x1 + 2*x2
 
@@ -426,7 +424,7 @@ Further Inputs:
     code += """from numpy import ptp as spread;"""   # look like mystic.math
     code += """_sqrt = lambda x:x**.5;""" # 'domain error' to 'negative power'
     code = compile(code, '<string>', 'exec')
-    exec code in _locals
+    exec(code, _locals)
     _locals.update(locals)
     kwds['locals'] = _locals
     del locals
@@ -453,7 +451,7 @@ Further Inputs:
         # find where the sign flips might occur (from after)
         zro += _solve_zeros(res, get_variables(res.split('=')[-1],_allvars))
         _zro = [z.replace('=','!=') for z in zro]
-        if verbose: print 'in: %s\nout: %s\nzero: %s' % (eqn, _eqn, _zro)
+        if verbose: print('in: %s\nout: %s\nzero: %s' % (eqn, _eqn, _zro))
         # if no inequalities, then return
         if not cmp.count('<')+cmp.count('>'):
             return '\n'.join([_eqn]+_zro) if _zro else _eqn
@@ -482,25 +480,25 @@ Further Inputs:
             code = ';'.join(i for i in testcode)
             code = compile(code, '<string>', 'exec')
             try:
-                exec code in locals
+                exec(code, locals)
             except SyntaxError as error:
                 msg = "cannot simplify '%s'" % testcode
                 raise SyntaxError(msg,)
             return dict((i,locals[i]) for i in allvars)
 
         # iterator of dicts of test values
-        testvals = it.imap(_testvals, testvals)
+        testvals = getattr(it, 'imap', map)(_testvals, testvals)
 
         # evaluate expression to see if comparator needs to be flipped
         results = []
         variants = (100000,-200000,100100,-200,110,-20,11,-2,1) #HACK
         kwds['variants'] = list(variants)
         for sign in signs:
-            if equals(before,after,testvals.next(),**kwds):
+            if equals(before,after,next(testvals),**kwds):
                 new = [after]
             else:
                 new = [after.replace(cmp,flip(cmp))] #XXX: or flip(cmp,True)?
-            new.extend(z.replace('=',i) for (z,i) in it.izip(zro,sign))
+            new.extend(z.replace('=',i) for (z,i) in getattr(it, 'izip', zip)(zro,sign))
             results.append(new)
 
         # reduce the results to the simplest representation
@@ -523,23 +521,27 @@ Further Inputs:
         while vars:
             try: # cycle through variables trying 'simplest' first
                 res = _simplify(eqn, variables=variables, target=vars, **kwds)
-                #print '#:', res
+                #print('#: %s' % res)
                 res = res if type(res) is tuple else (res,)
                 eqns.append(res)
                 r = res[0] #XXX: only add the 'primary' variable to used
                 used.append(r.split(comparator(r.split('\n')[0]),1)[0].strip())
-                #print "v,u: ", vars, used
+                #print("v,u: %s %s" (vars, used))
                 break
             except ValueError:
+                try:
+                    basestring
+                except NameError:
+                    basestring = str
                 if isinstance(vars, basestring): vars = []
                 else: vars.pop(0)
-                #print "v,u: ", vars, used
+                #print("v,u: %s %s" (vars, used))
         else: # failure... so re-raise error
             res = _simplify(eqn, variables=variables, target=target, **kwds)
-            #print 'X:', res
+            #print('X: %s' % res)
             res = res if type(res) is tuple else (res,)
             eqns.append(res)
-    #print eqns
+    #print(eqns)
     _eqns = it.product(*eqns)
     eqns = tuple('\n'.join(i) for i in _eqns)
     # "merge" the multiple equations to find simplest bounds
@@ -569,7 +571,7 @@ Inputs:
     For example:
         >>> variables = ['spam', 'eggs']
         >>> constraints = '''spam + eggs - 42'''
-        >>> print replace_variables(constraints, variables, 'x')
+        >>> print(replace_variables(constraints, variables, 'x'))
         'x0 + x1 - 42'
 
 Additional Inputs:
@@ -580,7 +582,7 @@ Additional Inputs:
     For example:
         >>> variables = ['x1','x2','x3']
         >>> constraints = "min(x1*x2) - sin(x3)"
-        >>> print replace_variables(constraints, variables, ['x','y','z'])
+        >>> print(replace_variables(constraints, variables, ['x','y','z']))
         'min(x*y) - sin(z)'
 """
     if variables is None: variables = []
@@ -617,7 +619,7 @@ Additional Inputs:
     '''Bug demonstrated here:
     >>> equation = """x3 = max(y,x) + x"""
     >>> vars = ['x','y','z','x3']
-    >>> print replace_variables(equation,vars)
+    >>> print(replace_variables(equation,vars))
     $4 = ma$1($2,$1) + $1
     ''' #FIXME: don't parse if __name__ in __builtins__, globals, or locals?
     for i in indices: #FIXME: or better, use 're' pattern matching
@@ -753,7 +755,7 @@ Additional Inputs:
                 split = constraint.split('=')
                 direction = '='
             if len(split) == 1:
-                print "Invalid constraint: ", constraint
+                print("Invalid constraint: %s" % constraint)
             # Use epsilon whenever '<' or '>' is comparator
             eps = comparator(constraint)
             eps = ' + e_ ' if eps == '>' else (' - e_ ' if eps == '<' else '')
@@ -897,7 +899,7 @@ Additional Inputs:
                 split = constraint.split('=')
                 expression = '%(lhs)s = %(rhs)s'
             if len(split) == 1: # didn't contain '>', '<', '!=', or '='
-                print "Invalid constraint: ", constraint
+                print("Invalid constraint: %s" % constraint)
             eqn = {'lhs':split[0].rstrip('=').strip(), \
                    'rhs':split[-1].lstrip('=').strip()}
             # get list of LHS,RHS that != forces not to appear
@@ -928,11 +930,11 @@ Inputs:
         ...     x0**2 = 2.5*x3 - 5.0
         ...     exp(x2/x0) >= 7.0'''
         >>> ineqf,eqf = generate_conditions(constraints, nvars=4)
-        >>> print ineqf[0].__doc__
+        >>> print(ineqf[0].__doc__)
         '-(exp(x[2]/x[0]) - (7.0))'
         >>> ineqf[0]([1,0,1,0])
         4.2817181715409554
-        >>> print eqf[0].__doc__
+        >>> print(eqf[0].__doc__)
         'x[0]**2 - (2.5*x[3] - 5.0)'
         >>> eqf[0]([1,0,1,0])
         6.0
@@ -950,6 +952,10 @@ Additional Inputs:
         and relative difference from the extremal value in a given inequality.
         For more details, see `mystic.math.tolerance`.
     """
+    try:
+        basestring
+    except NameError:
+        basestring = str
     if not isinstance(constraints, basestring):
         return tuple(generate_conditions(constraint, variables, nvars, locals) for constraint in constraints)
 
@@ -970,7 +976,7 @@ Additional Inputs:
    #code += """from mystic.math.measures import spread, variance, mean;"""
     code += """from mystic.math import tolerance as _tol;"""
     code = compile(code, '<string>', 'exec')
-    exec code in globals
+    exec(code, globals)
     globals.update(locals) #XXX: allow this?
     
     # build an empty local scope to exec the code and build the functions
@@ -991,7 +997,7 @@ def %(container)s_%(name)s(x): return eval('%(equation)s')
 %(container)s.append(%(container)s_%(name)s)
 del %(container)s_%(name)s""" % fdict
         code = compile(code, '<string>', 'exec')
-        exec code in globals, results
+        exec(code, globals, results)
 
     #XXX: what's best form to return?  will couple these with ptypes
     return tuple(results['inequality']), tuple(results['equality'])
@@ -1016,11 +1022,11 @@ Inputs:
         ...     x2 = x0/2.
         ...     x0 >= 0.'''
         >>> solv = generate_solvers(constraints, nvars=3)
-        >>> print solv[0].__doc__
+        >>> print(solv[0].__doc__)
         'x[2] = x[0]/2.'
         >>> solv[0]([1,2,3])
         [1, 2, 0.5]
-        >>> print solv[1].__doc__
+        >>> print(solv[1].__doc__)
         'x[0] = max(0., x[0])'
         >>> solv[1]([-1,2,3])
         [0.0, 2, 3]
@@ -1038,6 +1044,10 @@ Additional Inputs:
         and relative difference from the extremal value in a given inequality.
         For more details, see `mystic.math.tolerance`.
     """
+    try:
+        basestring
+    except NameError:
+        basestring = str
     if not isinstance(constraints, basestring):
         return tuple(generate_solvers(constraint, variables, nvars, locals) for constraint in constraints)
 
@@ -1061,7 +1071,7 @@ Additional Inputs:
     code += """from mystic.math.measures import impose_variance;"""
     code += """from mystic.math import tolerance as _tol;"""
     code = compile(code, '<string>', 'exec')
-    exec code in globals
+    exec(code, globals)
     globals.update(locals) #XXX: allow this?
     
     # build an empty local scope to exec the code and build the functions
@@ -1083,7 +1093,7 @@ def %(container)s_%(name)s(x):
 %(container)s.append(%(container)s_%(name)s)
 del %(container)s_%(name)s""" % fdict
         code = compile(code, '<string>', 'exec')
-        exec code in globals, results
+        exec(code, globals, results)
 
     #XXX: what's best form to return?  will couple these with ctypes ?
     return tuple(results['solver'])
@@ -1202,9 +1212,9 @@ NOTES:
         ...     x2 = x0/2.
         ...     x0 >= 0.'''
         >>> solv = generate_solvers(constraints, nvars=3)
-        >>> print solv[0].__doc__
+        >>> print(solv[0].__doc__)
         'x[2] = x[0]/2.'
-        >>> print solv[1].__doc__
+        >>> print(solv[1].__doc__)
         'x[0] = max(0., x[0])'
         >>> constraint = generate_constraint(solv)
         >>> constraint([1,2,3])

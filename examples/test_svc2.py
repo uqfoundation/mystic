@@ -99,7 +99,7 @@ ii = inner(wv, X)
 bias2 = -0.5 *( max(ii[ym]) + min(ii[yp]) )
 
 print('weight vector: %s' % wv)
-print('support vectors: %s %s' % i(sv1, sv2))
+print('support vectors: %s %s' % (sv1, sv2))
 print('bias (from points): %s' % bias)
 print('bias (with vectors): %s' % bias2)
 

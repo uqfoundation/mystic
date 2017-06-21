@@ -38,7 +38,7 @@ def myshow():
 def plot_sol(solver=None, linestyle='k-'):
     import pylab
     def _(params):
-        import signal
+        import mystic._signal as signal
         print("plotting params: %s" % params)
         # because of the log ordinate axis, will draw errorbars the dumb way
         pylab.semilogy(data[:,0],data[:,1],'k.')
@@ -51,7 +51,7 @@ def plot_sol(solver=None, linestyle='k-'):
         f = F(params)
         pylab.plot(x, f(x), linestyle)
         if solver is not None:
-            signal.signal(signal.SIGINT, solver.signal_handler)
+            signal.signal(signal.SIGINT, signal.Hander(solver))
     return _
 
 ND = 5

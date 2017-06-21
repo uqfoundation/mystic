@@ -68,8 +68,9 @@ L = 10000
 if __name__=='__main__':
     from mystic.metropolis import *
     import time
-    from mystic import PY3
-    if PY3:
+    try:
+        xrange
+    except NameError:
         xrange = range
 
     t1 = time.time()

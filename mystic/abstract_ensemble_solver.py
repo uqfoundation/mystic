@@ -81,6 +81,7 @@ __all__ = ['AbstractEnsembleSolver']
 from mystic.monitors import Null
 from mystic.abstract_map_solver import AbstractMapSolver
 from mystic.tools import wrap_function
+from functools import reduce
 
 
 class AbstractEnsembleSolver(AbstractMapSolver):
@@ -151,7 +152,7 @@ input::
         if isinstance(solver, AbstractSolver): # is a configured solver instance
             return solver
         if not hasattr(solver, "Solve"):       # is an Error...
-            raise TypeError, "%s is not a valid solver" % solver
+            raise TypeError("%s is not a valid solver" % solver)
 
         # otherwise, this is a solver class and needs configuring
        #from mystic.monitors import Monitor
@@ -182,7 +183,7 @@ input::
         for i!=0 when a simplex-type initial guess in required
 
 *** this method must be overwritten ***"""
-        raise NotImplementedError, "must be overwritten..."
+        raise NotImplementedError("must be overwritten...")
     
     def SetRandomInitialPoints(self, min=None, max=None):
         """Generate Random Initial Points within given Bounds
@@ -192,7 +193,7 @@ input::
     - each min[i] should be <= the corresponding max[i]
 
 *** this method must be overwritten ***"""
-        raise NotImplementedError, "must be overwritten..."
+        raise NotImplementedError("must be overwritten...")
 
     def SetMultinormalInitialPoints(self, mean, var=None):
         """Generate Initial Points from Multivariate Normal.
@@ -205,7 +206,7 @@ input::
         matrix: -> the variance matrix. must be the right size!
 
 *** this method must be overwritten ***"""
-        raise NotImplementedError, "must be overwritten..."
+        raise NotImplementedError("must be overwritten...")
 
     def SetSampledInitialPoints(self, dist=None):
         """Generate Random Initial Points from Distribution (dist)
@@ -214,7 +215,7 @@ input::
     - dist: a mystic.math.Distribution instance
 
 *** this method must be overwritten ***"""
-        raise NotImplementedError, "must be overwritten..."
+        raise NotImplementedError("must be overwritten...")
 
     def Terminated(self, disp=False, info=False, termination=None):
         """check if the solver meets the given termination conditions
@@ -246,22 +247,22 @@ Note::
         if solver._fcalls[0] >= solver._maxfun and solver._maxfun is not None:
             msg = lim #XXX: prefer the default stop ?
             if disp:
-                print "Warning: Maximum number of function evaluations has "\
-                      "been exceeded."
+                print("Warning: Maximum number of function evaluations has "\
+                      "been exceeded.")
         elif solver.generations >= solver._maxiter and solver._maxiter is not None:
             msg = lim #XXX: prefer the default stop ?
             if disp:
-                print "Warning: Maximum number of iterations has been exceeded"
+                print("Warning: Maximum number of iterations has been exceeded")
         elif solver._EARLYEXIT: #XXX: self or solver ?
             msg = sig
             if disp:
-                print "Warning: Optimization terminated with signal interrupt."
+                print("Warning: Optimization terminated with signal interrupt.")
         elif msg and disp:
-            print "Optimization terminated successfully."
-            print "         Current function value: %f" % solver.bestEnergy
-            print "         Iterations: %d" % solver.generations
-            print "         Function evaluations: %d" % solver._fcalls[0]
-            print "         Total function evaluations: %d" % self._total_evals
+            print("Optimization terminated successfully.")
+            print("         Current function value: %f" % solver.bestEnergy)
+            print("         Iterations: %d" % solver.generations)
+            print("         Function evaluations: %d" % solver._fcalls[0])
+            print("         Total function evaluations: %d" % self._total_evals)
 
         if info:
             return msg
@@ -289,7 +290,7 @@ Inputs:
         """Generate a grid of starting points for the ensemble of optimizers
 
 *** this method must be overwritten ***"""
-        raise NotImplementedError, "a sampling algorithm was not provided"
+        raise NotImplementedError("a sampling algorithm was not provided")
 
     #FIXME: should take cost=None, ExtraArgs=None... and utilize Step
     def Solve(self, cost, termination=None, ExtraArgs=(), **kwds):
@@ -328,7 +329,7 @@ Further Inputs:
         else: verbose = False
         #-------------------------------------------------------------
 
-        from python_map import python_map
+        from mystic.python_map import python_map
         if self._map != python_map:
             #FIXME: EvaluationMonitor fails for MPI, throws error for 'pp'
             from mystic.monitors import Null
@@ -343,10 +344,9 @@ Further Inputs:
        #import threading as thread
        #mainthread = isinstance(thread.current_thread(), thread._MainThread)
        #if mainthread: #XXX: if not mainthread, signal will raise ValueError
-        import signal
+        import mystic._signal as signal
         if self._handle_sigint:
-            from mystic.signal import Handler
-            signal.signal(signal.SIGINT,Handler(self,self.sigint_callback))
+            signal.signal(signal.SIGINT, signal.Handler(self))
 
         # register termination function
         if termination is not None: self.SetTermination(termination)
@@ -451,7 +451,7 @@ Further Inputs:
 
         # restore default handler for signal interrupts
         if self._handle_sigint:
-            signal.signal(signal.SIGINT,signal.default_int_handler)
+            signal.signal(signal.SIGINT, signal.default_int_handler)
 
         # log any termination messages
         msg = self.Terminated(disp=disp, info=True)

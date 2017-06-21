@@ -39,7 +39,7 @@ def show():
 
 def plot_sol(solver=None):
     def _(params):
-        import signal
+        import mystic._signal as signal
         print("plotting params: %s" % params)
         pylab.errorbar(binsc, histo, sqrt(histo), fmt='b+')
         x = arange(xmin, xmax, (0.1* binwidth))
@@ -50,7 +50,7 @@ def plot_sol(solver=None):
         try: show()
         except ImportError: pylab.show()
         if solver is not None:
-            signal.signal(signal.SIGINT, solver.signal_handler)
+            signal.signal(signal.SIGINT, signal.Handler(solver))
     return _
 
 ND = 7
@@ -95,7 +95,7 @@ if __name__ == '__main__':
     binsc, histo = histogram(data, binwidth, xmin,xmax)
     print("binsc:  %s" % binsc)
     print("count:  %s" % histo)
-    print("ncount: %s" % histo/N)
+    print("ncount: %s" % (histo/N))
     print("exact : %s" % pdf(binsc))
 
     print("now with DE...")

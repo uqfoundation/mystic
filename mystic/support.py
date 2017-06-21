@@ -299,6 +299,12 @@ Required Inputs:
   filename            name of the python convergence logfile (e.g paramlog.py)
 """
     import shlex
+    try:
+        basestring
+        from StringIO import StringIO
+    except NameError:
+        basestring = str
+        from io import StringIO
     global __quit
     __quit = False
 
@@ -367,7 +373,6 @@ Required Inputs:
     parser.add_option("-g","--legend",action="store_true",dest="legend",\
                       default=False,help="show the legend")
 
-    from StringIO import StringIO
     f = StringIO()
     parser.print_help(file=f)
     f.seek(0)
@@ -466,7 +471,7 @@ Required Inputs:
         code = "ax%d = fig.add_subplot(dim1,dim2,%d, sharex=ax1);" % (i,i)
         code += "ax%d.set_ylabel(label[%d]);" % (i,i-1)
         code = compile(code, '<string>', 'exec')
-        exec code in globals
+        exec(code, globals)
         data = eval("params[%s]" % select[i-1])
         try:
             n = int(select[i-1].split(":")[0])
@@ -476,7 +481,7 @@ Required Inputs:
             globals['line'] = line
             code = "ax%d.plot(line,label='%s')#, marker='o')" % (i,n)
             code = compile(code, '<string>', 'exec')
-            exec code in globals
+            exec(code, globals)
             n += 1
         if legend: plt.legend()
     if cost:
@@ -485,7 +490,7 @@ Required Inputs:
         code += "cx1.plot(cost,label='cost');"#, marker='o')"
         if max(0, len(label) - plots): code += "cx1.set_ylabel(label[-1]);"
         code = compile(code, '<string>', 'exec')
-        exec code in globals
+        exec(code, globals)
         if legend: plt.legend()
 
     if not parsed_opts.out:
@@ -549,6 +554,12 @@ Required Inputs:
   filename            name of the python convergence logfile (e.g paramlog.py)
 """
     import shlex
+    try:
+        basestring
+        from StringIO import StringIO
+    except NameError:
+        basestring = str
+        from io import StringIO
     global __quit
     __quit = False
 
@@ -624,7 +635,6 @@ Required Inputs:
     parser.add_option("-f","--flat",action="store_true",dest="flatten",\
                       default=False,help="show selected iterations in a single plot")
 
-    from StringIO import StringIO
     f = StringIO()
     parser.print_help(file=f)
     f.seek(0)
@@ -746,7 +756,7 @@ Required Inputs:
     else: 
         code = "plt.title('iterations[*]');"
     code = compile(code, '<string>', 'exec')
-    exec code in globals
+    exec(code, globals)
     ax1.set_xlabel(label[0])
     ax1.set_ylabel(label[1])
     ax1.set_zlabel(label[2])
@@ -763,7 +773,7 @@ Required Inputs:
             code += "ax.set_ylabel(label[1]);"
             code += "ax.set_zlabel(label[2]);"
             code = compile(code, '<string>', 'exec')
-            exec code in globals
+            exec(code, globals)
             a.append(globals['ax'])
 
     # turn each "n:m" in select to a list
@@ -846,6 +856,12 @@ Required Inputs:
   filename            name of the python convergence logfile (e.g paramlog.py)
 """
     import shlex
+    try:
+        basestring
+        from StringIO import StringIO
+    except NameError:
+        basestring = str
+        from io import StringIO
     global __quit
     __quit = False
 
@@ -926,7 +942,6 @@ Required Inputs:
     parser.add_option("-f","--flat",action="store_true",dest="flatten",\
                       default=False,help="show selected iterations in a single plot")
 
-    from StringIO import StringIO
     f = StringIO()
     parser.print_help(file=f)
     f.seek(0)
@@ -1058,7 +1073,7 @@ Required Inputs:
     else: 
         code = "plt.title('iterations[*]');"
     code = compile(code, '<string>', 'exec')
-    exec code in globals
+    exec(code, globals)
     ax1.set_xlabel(label[0])
     ax1.set_ylabel(label[1])
     ax1.set_zlabel(label[2])
@@ -1075,7 +1090,7 @@ Required Inputs:
             code += "ax.set_ylabel(label[1]);"
             code += "ax.set_zlabel(label[2]);"
             code = compile(code, '<string>', 'exec')
-            exec code in globals
+            exec(code, globals)
             a.append(globals['ax'])
 
     # turn each "n:m" in select to a list
@@ -1176,6 +1191,12 @@ Additional Inputs:
   datafile            name of the dataset textfile (e.g. StAlDataset.txt)
 """
     import shlex
+    try:
+        basestring
+        from StringIO import StringIO
+    except NameError:
+        basestring = str
+        from io import StringIO
     global __quit
     __quit = False
 
@@ -1278,7 +1299,6 @@ Additional Inputs:
     parser.add_option("-f","--flat",action="store_true",dest="flatten",\
                       default=False,help="show selected iterations in a single plot")
 
-    from StringIO import StringIO
     f = StringIO()
     parser.print_help(file=f)
     f.seek(0)
@@ -1437,9 +1457,9 @@ Additional Inputs:
     if data:
         slope = _get_slope(data, xs, cs)
         coords = _get_coords(data, xs, cs)
-        #print "bounds: %s" % bounds
-        #print "slope: %s" % slope
-        #print "coords: %s" % coords
+        #print("bounds: %s" % bounds)
+        #print("slope: %s" % slope)
+        #print("coords: %s" % coords)
    #else:
    #    slope = []
    #    coords = []
@@ -1495,7 +1515,7 @@ Additional Inputs:
     else: 
         code = "plt.title('iterations[*]');"
     code = compile(code, '<string>', 'exec')
-    exec code in globals
+    exec(code, globals)
     if cones and data and xs in range(len(bounds)):
         if _2D:
             _plot_bowtie(ax1,coords,slope,bounds,axis=axis,tol=gap)
@@ -1520,7 +1540,7 @@ Additional Inputs:
                 code += "ax.plot([bounds[0][1]],[bounds[1][1]],[bounds[2][1]]);"
             code += "plt.title('iterations[%s]');" % select[i - 1]
             code = compile(code, '<string>', 'exec')
-            exec code in globals
+            exec(code, globals)
             ax = globals['ax']
             if cones and data and xs in range(len(bounds)):
                 if _2D:

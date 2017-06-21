@@ -48,7 +48,7 @@ expanded version of the following can be found in `mystic.examples.example12`.
     >>> # pass the cost function to the optimizer
     >>> initial_guess = [1.,-2.,1.]
     >>> solution = fmin_powell(cost, initial_guess)
-    >>> print solution
+    >>> print(solution)
     [ 2.00495233 -5.0126248   2.72873734]
 
 
@@ -108,7 +108,7 @@ Example:
                 name = 'model'+str(i)
                 if name not in self._names: break
         elif name in self._names:
-            print "Model [%s] already in database." % name
+            print("Model [%s] already in database." % name)
             raise AssertionError
         self._names.append(name)
         self._forwardFactories.append(model)
@@ -129,7 +129,7 @@ Inputs:
         """
         #NOTE: better to replace "old-style" addModel above?
         if name in self._names:
-            print "Model [%s] already in database." % name
+            print("Model [%s] already in database." % name)
             raise AssertionError
         self._names.append(name)
         self._forwardFactories.append(model)

@@ -152,6 +152,7 @@ from mystic.abstract_solver import AbstractSolver
 from mystic.abstract_map_solver import AbstractMapSolver
 
 from numpy import asfarray, ravel
+import collections
 
 class DifferentialEvolutionSolver(AbstractSolver):
     """
@@ -211,15 +212,15 @@ input::
       will satisfy the desired (i.e. encoded) constraints."""
         if not constraints:
             self._constraints = lambda x: x
-        elif not callable(constraints):
-            raise TypeError, "'%s' is not a callable function" % constraints
+        elif not isinstance(constraints, collections.Callable):
+            raise TypeError("'%s' is not a callable function" % constraints)
         else: #XXX: check for format: x' = constraints(x) ?
             self._constraints = constraints
         return # doesn't use wrap_nested
 
     def _decorate_objective(self, cost, ExtraArgs=None):
         """decorate cost function with bounds, penalties, monitors, etc"""
-        #print ("@", cost, ExtraArgs, max)
+        #print("@%r %r %r" % (cost, ExtraArgs, max))
         raw = cost
         if ExtraArgs is None: ExtraArgs = ()
         self._fcalls, cost = wrap_function(cost, ExtraArgs, self._evalmon)
@@ -244,7 +245,7 @@ input::
         # process and activate input settings
         settings = self._process_inputs(kwds)
         for key in settings:
-            exec "%s = settings['%s']" % (key,key)
+            exec("%s = settings['%s']" % (key,key))
 
         # HACK to enable not explicitly calling _decorate_objective
         cost = self._bootstrap_objective(cost, ExtraArgs)
@@ -313,7 +314,7 @@ input::
         'strategy': strategy})       #mutation strategy (see mystic.strategy)
         probability=self.probability #potential for parameter cross-mutation
         scale=self.scale             #multiplier for mutation impact
-        [settings.update({i:j}) for (i,j) in kwds.items() if i in settings]
+        [settings.update({i:j}) for (i,j) in getattr(kwds, 'iteritems', kwds.items)() if i in settings]
         word = 'CrossProbability'
         self.probability = kwds[word] if word in kwds else probability
         word = 'ScalingFactor'
@@ -403,18 +404,18 @@ input::
       will satisfy the desired (i.e. encoded) constraints."""
         if not constraints:
             self._constraints = lambda x: x
-        elif not callable(constraints):
-            raise TypeError, "'%s' is not a callable function" % constraints
+        elif not isinstance(constraints, collections.Callable):
+            raise TypeError("'%s' is not a callable function" % constraints)
         else: #XXX: check for format: x' = constraints(x) ?
             self._constraints = constraints
         return # doesn't use wrap_nested
 
     def _decorate_objective(self, cost, ExtraArgs=None):
         """decorate cost function with bounds, penalties, monitors, etc"""
-        #print ("@", cost, ExtraArgs, max)
+        #print("@%r %r %r" % (cost, ExtraArgs, max))
         raw = cost
         if ExtraArgs is None: ExtraArgs = ()
-        from python_map import python_map
+        from mystic.python_map import python_map
         if self._map != python_map:
             #FIXME: EvaluationMonitor fails for MPI, throws error for 'pp'
             from mystic.monitors import Null
@@ -442,7 +443,7 @@ input::
         # process and activate input settings
         settings = self._process_inputs(kwds)
         for key in settings:
-            exec "%s = settings['%s']" % (key,key)
+            exec("%s = settings['%s']" % (key,key))
 
         # HACK to enable not explicitly calling _decorate_objective
         cost = self._bootstrap_objective(cost, ExtraArgs)
@@ -517,7 +518,7 @@ input::
         'strategy': strategy})       #mutation strategy (see mystic.strategy)
         probability=self.probability #potential for parameter cross-mutation
         scale=self.scale             #multiplier for mutation impact
-        [settings.update({i:j}) for (i,j) in kwds.items() if i in settings]
+        [settings.update({i:j}) for (i,j) in getattr(kwds, 'iteritems', kwds.items)() if i in settings]
         word = 'CrossProbability'
         self.probability = kwds[word] if word in kwds else probability
         word = 'ScalingFactor'
@@ -748,18 +749,18 @@ Returns: (xopt, {fopt, iter, funcalls, warnflag}, {allvecs})
     if fcalls >= solver._maxfun:
         warnflag = 1
         if disp:
-            print "Warning: Maximum number of function evaluations has "\
-                  "been exceeded."
+            print("Warning: Maximum number of function evaluations has "\
+                  "been exceeded.")
     elif iterations >= solver._maxiter:
         warnflag = 2
         if disp:
-            print "Warning: Maximum number of iterations has been exceeded"
+            print("Warning: Maximum number of iterations has been exceeded")
     else:
         if disp:
-            print "Optimization terminated successfully."
-            print "         Current function value: %f" % fval
-            print "         Iterations: %d" % iterations
-            print "         Function evaluations: %d" % fcalls
+            print("Optimization terminated successfully.")
+            print("         Current function value: %f" % fval)
+            print("         Iterations: %d" % iterations)
+            print("         Function evaluations: %d" % fcalls)
 
     if full_output:
         retlist = x, fval, iterations, fcalls, warnflag

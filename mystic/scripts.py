@@ -1,3 +1,4 @@
+import collections
 #!/usr/bin/env python
 #
 # Author: Mike McKerns (mmckerns @caltech and @uqfoundation)
@@ -59,7 +60,7 @@ def _get_instance(location, *args, **kwds):
 args and kwds will be passed to the constructor of the model class
     """
     package, target = location.rsplit('.',1)
-    exec "from %s import %s as model" % (package, target)
+    exec("from %s import %s as model" % (package, target))
     import inspect
     if inspect.isclass(model):
         model = model(*args, **kwds)
@@ -359,6 +360,12 @@ Additional Inputs:
     # - if trajectory outside contour grid, will increase bounds
     #   (see support_hypercube.py for how to fix bounds)
     import shlex
+    try:
+        basestring
+        from StringIO import StringIO
+    except NameError:
+        basestring = str
+        from io import StringIO
     global __quit
     __quit = False
     _model = None
@@ -400,11 +407,11 @@ Additional Inputs:
                 bounds = cmdargs[:-2]
                 cmdargs = ''
 
-            if callable(reduce): _reducer, reduce = reduce, None
+            if isinstance(reduce, collections.Callable): _reducer, reduce = reduce, None
 
         # special case: model passed as model instance
        #model.__doc__.split('using::')[1].split()[0].strip()
-        if callable(model): _model, model = model, "None"
+        if isinstance(model, collections.Callable): _model, model = model, "None"
 
         # handle logfile if given
         if logfile:
@@ -481,7 +488,6 @@ Additional Inputs:
 
 #   import sys
 #   if 'mystic_model_plotter.py' not in sys.argv:
-    from StringIO import StringIO
     f = StringIO()
     parser.print_help(file=f)
     f.seek(0)
@@ -596,7 +602,7 @@ Additional Inputs:
         raise RuntimeError('a model or a results file is required')
     if model:
         model = _model or _get_instance(model)
-        if verbose: print model.__doc__
+        if verbose: print(model.__doc__)
         # need a reducer if model returns an array
         if reducer: model = reduced(reducer, arraylike=False)(model)
 
@@ -710,6 +716,12 @@ Required Inputs:
   filename            name of the python convergence logfile (e.g paramlog.py)
 """
     import shlex
+    try:
+        basestring
+        from StringIO import StringIO
+    except NameError:
+        basestring = str
+        from io import StringIO
     global __quit
     __quit = False
 
@@ -778,7 +790,6 @@ Required Inputs:
                       help="string to indicate collapse indices")
 #   import sys
 #   if 'mystic_collapse_plotter.py' not in sys.argv:
-    from StringIO import StringIO
     f = StringIO()
     parser.print_help(file=f)
     f.seek(0)
@@ -809,7 +820,7 @@ Required Inputs:
     try: # get logfile name
       filename = parsed_args[0]
     except:
-      raise IOError, "please provide log file name"
+      raise IOError("please provide log file name")
 
     try: # select which iteration to stop plotting at
       stop = int(parsed_opts.stop)
@@ -886,6 +897,12 @@ Required Inputs:
   filename            name of the convergence logfile (e.g log.txt)
 """
     import shlex
+    try:
+        basestring
+        from StringIO import StringIO
+    except NameError:
+        basestring = str
+        from io import StringIO
     global __quit
     __quit = False
 
@@ -957,7 +974,6 @@ Required Inputs:
 
 #   import sys
 #   if 'mystic_log_reader.py' not in sys.argv:
-    from StringIO import StringIO
     f = StringIO()
     parser.print_help(file=f)
     f.seek(0)
@@ -1054,7 +1070,7 @@ Required Inputs:
       id = [0 for i in step]
 
     # build the list of selected parameters
-    params = range(len(param[0]))
+    params = list(range(len(param[0])))
     selected = []
     for i in select:
       selected.extend(eval("params[%s]" % i))
@@ -1082,9 +1098,9 @@ Required Inputs:
         cost_conv.append([])
         iter_conv.append([])
 
-    #print "iter_conv = %s" % iter_conv
-    #print "cost_conv = %s" % cost_conv
-    #print "conv = %s" % conv
+    #print("iter_conv = %s" % iter_conv)
+    #print("cost_conv = %s" % cost_conv)
+    #print("conv = %s" % conv)
 
     import matplotlib.pyplot as plt
     fig = plt.figure()

@@ -21,7 +21,7 @@ def get_mask(condition): #FIXME: gets None if is None *and* if no mask
 def update_mask(condition, collapse, new=False):
     '''update the termination condition with the given collapse (dict)'''
     if collapse is None: return condition
-    for kind,mask in collapse.iteritems():
+    for kind,mask in getattr(collapse, 'iteritems', collapse.items)():
         condition = _update_masks(condition, mask, kind, new)
     return condition
 
@@ -44,7 +44,7 @@ def _update_masks(condition, mask, kind='', new=False):
 def _replace_mask(condition, mask):
     '''replace the mask in the termination condition with the given mask'''
     kwds = _term.state(condition).popitem()[-1]
-    if kwds.has_key('mask'): kwds['mask'] = mask
+    if 'mask' in kwds: kwds['mask'] = mask
     return _term.type(condition)(**kwds)
 
 def _extend_mask(condition, mask):
@@ -53,7 +53,7 @@ def _extend_mask(condition, mask):
         return condition
     kwds = _term.state(condition).popitem()[-1]
     # short-circiut: if no kwds['mask'], then abort
-    if not kwds.has_key('mask'): return _term.type(condition)(**kwds)
+    if 'mask' not in kwds: return _term.type(condition)(**kwds)
     # extend current mask
     _mask = kwds['mask']
     if not _mask: # mask is None, {}, set(), or ()
@@ -61,7 +61,7 @@ def _extend_mask(condition, mask):
     elif type(_mask) is set: # assumes mask is set
         kwds['mask'].update(mask)
     elif type(_mask) is dict: # assumes mask is dict
-        for k,v in mask.iteritems():
+        for k,v in getattr(mask, 'iteritems', mask.items)():
             _mask.setdefault(k,v).update(v)
         kwds['mask'] = _mask
     else: # assumes mask is tuple (or list)

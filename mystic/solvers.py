@@ -62,19 +62,19 @@ or the API documentation found here::
 
 """
 # global optimizers
-from differential_evolution import DifferentialEvolutionSolver
-from differential_evolution import DifferentialEvolutionSolver2
-from differential_evolution import diffev, diffev2
+from mystic.differential_evolution import DifferentialEvolutionSolver
+from mystic.differential_evolution import DifferentialEvolutionSolver2
+from mystic.differential_evolution import diffev, diffev2
 
 # pseudo-global optimizers
-from ensemble import BuckshotSolver
-from ensemble import LatticeSolver
-from ensemble import buckshot, lattice
+from mystic.ensemble import BuckshotSolver
+from mystic.ensemble import LatticeSolver
+from mystic.ensemble import buckshot, lattice
 
 # local-search optimizers
-from scipy_optimize import NelderMeadSimplexSolver
-from scipy_optimize import PowellDirectionalSolver
-from scipy_optimize import fmin, fmin_powell
+from mystic.scipy_optimize import NelderMeadSimplexSolver
+from mystic.scipy_optimize import PowellDirectionalSolver
+from mystic.scipy_optimize import fmin, fmin_powell
 
 
 # load a solver from a restart file
@@ -97,7 +97,7 @@ def LoadSolver(filename=None, **kwds):
         code = "from mystic.solvers import %s;" % solver._type
         code += "self = %s(solver.nDim);" % solver._type
         code = compile(code, '<string>', 'exec')
-        exec code in _locals
+        exec(code, _locals)
         self = _locals['self']
     finally:
         f.close()

@@ -10,8 +10,8 @@
 
 # get version numbers, license, and long description
 try:
-    from info import this_version as __version__
-    from info import readme as __doc__, license as __license__
+    from mystic.info import this_version as __version__
+    from mystic.info import readme as __doc__, license as __license__
 except ImportError:
     msg = """First run 'python setup.py build' to build mystic."""
     raise ImportError(msg)
@@ -28,45 +28,40 @@ __all__ = ['solvers', 'termination', 'strategy', 'munge', 'tools', \
            'constraints', 'penalty', 'coupler', 'symbolic', 'monitors', \
            'support', 'model_plotter', 'log_reader', 'collapse_plotter']
 
-# internal
-import sys
-PY3 = (sys.hexversion >= 0x30000f0)
-del sys
-
 # solvers
-import solvers
+import mystic.solvers as solvers
 
 # strategies, termination conditions
-import termination
-import strategy
+import mystic.termination as termination
+import mystic.strategy as strategy
 
 # constraints and penalties
-import constraints
-import penalty
-import coupler
-import symbolic
+import mystic.constraints as constraints
+import mystic.penalty as penalty
+import mystic.coupler as coupler
+import mystic.symbolic as symbolic
 
 # monitors, function wrappers, and other tools
-import monitors
-import munge
-import tools
+import mystic.monitors as monitors
+import mystic.munge as munge
+import mystic.tools as tools
 
 # scripts
-from scripts import model_plotter, log_reader, collapse_plotter
-import support
+from mystic.scripts import model_plotter, log_reader, collapse_plotter
+import mystic.support as support
 
 # backward compatibility
-from tools import *
+from mystic.tools import *
 
 
 def license():
     """print license"""
-    print __license__
+    print(__license__)
     return
 
 def citation():
     """print citation"""
-    print __doc__[-526:-123]
+    print(__doc__[-526:-123])
     return
 
 # end of file

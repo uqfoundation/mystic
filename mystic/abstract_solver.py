@@ -82,6 +82,7 @@ from numpy import inf, shape, asarray, absolute, asfarray, seterr
 from mystic.tools import wrap_function, wrap_nested, wrap_reducer
 from mystic.tools import wrap_bounds, wrap_penalty, reduced
 from klepto import isvalid, validate
+import collections
 
 abs = absolute
 null = lambda x: None
@@ -125,7 +126,7 @@ Important class members:
         self._state           = None
         self._type            = self.__class__.__name__
 
-        self.signal_handler   = None
+        self.sigint_callback  = None
         self._handle_sigint   = False
         self._useStrictRange  = False
         self._defaultMin      = [-1e3] * dim
@@ -224,8 +225,8 @@ input::
       (e.g. lambda x,y: x+y), taking two scalars and producing a scalar."""
         if not reducer:
             self._reducer = None
-        elif not callable(reducer):
-            raise TypeError, "'%s' is not a callable function" % reducer
+        elif not isinstance(reducer, collections.Callable):
+            raise TypeError("'%s' is not a callable function" % reducer)
         elif not arraylike:
             self._reducer = wrap_reducer(reducer)   
         else: #XXX: check if is arraylike?
@@ -245,8 +246,8 @@ input::
       evaluates to a non-positive number."""
         if not penalty:
             self._penalty = lambda x: 0.0
-        elif not callable(penalty):
-            raise TypeError, "'%s' is not a callable function" % penalty
+        elif not isinstance(penalty, collections.Callable):
+            raise TypeError("'%s' is not a callable function" % penalty)
         else: #XXX: check for format: y' = penalty(x) ?
             self._penalty = penalty
         return self._update_objective()
@@ -261,8 +262,8 @@ input::
       will satisfy the desired (i.e. encoded) constraints."""
         if not constraints:
             self._constraints = lambda x: x
-        elif not callable(constraints):
-            raise TypeError, "'%s' is not a callable function" % constraints
+        elif not isinstance(constraints, collections.Callable):
+            raise TypeError("'%s' is not a callable function" % constraints)
         else: #XXX: check for format: x' = constraints(x) ?
             self._constraints = constraints
         return self._update_objective()
@@ -281,7 +282,7 @@ input::
             if monitor.__module__ in ['mystic._genSow']:
                 self._stepmon = monitor #FIXME: need .prepend(current)
         else:
-            raise TypeError, "'%s' is not a monitor instance" % monitor
+            raise TypeError("'%s' is not a monitor instance" % monitor)
         self.energy_history   = None # sync with self._stepmon
         self.solution_history = None # sync with self._stepmon
         return
@@ -300,7 +301,7 @@ input::
             if monitor.__module__ in ['mystic._genSow']:
                 self._evalmon = monitor #FIXME: need .prepend(current)
         else:
-            raise TypeError, "'%s' is not a monitor instance" % monitor
+            raise TypeError("'%s' is not a monitor instance" % monitor)
         return
 
     def SetStrictRanges(self, min=None, max=None):
@@ -325,9 +326,9 @@ note::
 
         min = asarray(min); max = asarray(max)
         if numpy.any(( min > max ),0):
-            raise ValueError, "each min[i] must be <= the corresponding max[i]"
+            raise ValueError("each min[i] must be <= the corresponding max[i]")
         if len(min) != self.nDim:
-            raise ValueError, "bounds array must be length %s" % self.nDim
+            raise ValueError("bounds array must be length %s" % self.nDim)
         self._useStrictRange = True
         self._strictMin = min
         self._strictMax = max
@@ -366,9 +367,9 @@ input::
             x0 = asfarray([x0])
             rank = 1
         if not -1 < rank < 2:
-            raise ValueError, "Initial guess must be a scalar or rank-1 sequence."
+            raise ValueError("Initial guess must be a scalar or rank-1 sequence.")
         if len(x0) != self.nDim:
-            raise ValueError, "Initial guess must be length %s" % self.nDim
+            raise ValueError("Initial guess must be length %s" % self.nDim)
 
         #slightly alter initial values for solvers that depend on randomness
         min = x0*(1-radius)
@@ -391,7 +392,7 @@ input::
        #if numpy.any(( asarray(min) > asarray(max) ),0):
        #    raise ValueError, "each min[i] must be <= the corresponding max[i]"
         if len(min) != self.nDim or len(max) != self.nDim:
-            raise ValueError, "bounds array must be length %s" % self.nDim
+            raise ValueError("bounds array must be length %s" % self.nDim)
         # when 'some' of the bounds are given as 'None', replace with default
         for i in range(len(min)): 
             if min[i] is None: min[i] = self._defaultMin[0]
@@ -541,21 +542,21 @@ Note::
         if self._fcalls[0] >= self._maxfun and self._maxfun is not None:
             msg = lim #XXX: prefer the default stop ?
             if disp:
-                print "Warning: Maximum number of function evaluations has "\
-                      "been exceeded."
+                print("Warning: Maximum number of function evaluations has "\
+                      "been exceeded.")
         elif self.generations >= self._maxiter and self._maxiter is not None:
             msg = lim #XXX: prefer the default stop ?
             if disp:
-                print "Warning: Maximum number of iterations has been exceeded"
+                print("Warning: Maximum number of iterations has been exceeded")
         elif self._EARLYEXIT:
             msg = sig
             if disp:
-                print "Warning: Optimization terminated with signal interrupt."
+                print("Warning: Optimization terminated with signal interrupt.")
         elif msg and disp:
-            print "Optimization terminated successfully."
-            print "         Current function value: %f" % self.bestEnergy
-            print "         Iterations: %d" % self.generations
-            print "         Function evaluations: %d" % self._fcalls[0]
+            print("Optimization terminated successfully.")
+            print("         Current function value: %f" % self.bestEnergy)
+            print("         Iterations: %d" % self.generations)
+            print("         Function evaluations: %d" % self._fcalls[0])
 
         if info:
             return msg
@@ -568,7 +569,9 @@ Note::
         self._collapse = False
         if termination is not None:
             from mystic.termination import state
-            self._collapse = any(key.startswith('Collapse') for key in state(termination).iterkeys())
+            stop = state(termination)
+            stop = getattr(stop, 'iterkeys', stop.keys)()
+            self._collapse = any(key.startswith('Collapse') for key in stop)
         return
 
     def SetObjective(self, cost, ExtraArgs=None):  # callback=None/False ?
@@ -607,10 +610,10 @@ Input::
         import mystic.collapse as ct
         collapses = ct.collapsed(stop) or dict()
         if collapses and disp:
-            for (k,v) in collapses.iteritems():
-                print "         %s: %s" % (k.split()[0],v)
-           #print "# Collapse at: Generation", self._stepmon._step-1, \
-           #      "with", self.bestEnergy, "@\n#", list(self.bestSolution)
+            for (k,v) in getattr(collapses, 'iteritems', collapses.items)():
+                print("         %s: %s" % (k.split()[0],v))
+           #print("# Collapse at: Generation", self._stepmon._step-1, \
+           #      "with", self.bestEnergy, "@\n#", list(self.bestSolution))
         return collapses if info else bool(collapses) 
 
     def Collapse(self, disp=False):
@@ -635,7 +638,7 @@ Input::
             termination = ma.update_mask(self._termination, collapses)
             self.SetConstraints(constraints)
             self.SetTermination(termination)
-            #print mt.state(self._termination).keys()
+            #print(mt.state(self._termination).keys())
         return collapses
 
     def _update_objective(self):
@@ -649,7 +652,7 @@ Input::
 
     def _decorate_objective(self, cost, ExtraArgs=None):
         """decorate the cost function with bounds, penalties, monitors, etc"""
-        #print ("@", cost, ExtraArgs, max)
+        #print("@%r %r %r" % (cost, ExtraArgs, max))
         raw = cost
         if ExtraArgs is None: ExtraArgs = ()
         self._fcalls, cost = wrap_function(cost, ExtraArgs, self._evalmon)
@@ -685,7 +688,7 @@ Input::
         """perform a single optimization iteration
 
 *** this method must be overwritten ***"""
-        raise NotImplementedError, "an optimization algorithm was not provided"
+        raise NotImplementedError("an optimization algorithm was not provided")
 
     def SaveSolver(self, filename=None, **kwds):
         """save solver state to a restart file"""
@@ -848,10 +851,9 @@ Further Inputs:
        #import threading as thread
        #mainthread = isinstance(thread.current_thread(), thread._MainThread)
        #if mainthread: #XXX: if not mainthread, signal will raise ValueError
-        import signal
+        import mystic._signal as signal
         if self._handle_sigint:
-            from mystic.signal import Handler
-            signal.signal(signal.SIGINT,Handler(self,self.sigint_callback))
+            signal.signal(signal.SIGINT, signal.Handler(self))
 
         # register: cost, termination, ExtraArgs
         cost = self._bootstrap_objective(cost, ExtraArgs)
@@ -877,7 +879,7 @@ Further Inputs:
 
         # restore default handler for signal interrupts
         if self._handle_sigint:
-            signal.signal(signal.SIGINT,signal.default_int_handler)
+            signal.signal(signal.SIGINT, signal.default_int_handler)
         return
 
     def __copy__(self):

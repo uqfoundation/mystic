@@ -64,7 +64,7 @@ def sequential_deal(inarray, n):
   a 4-list of index. (see below)
 
 >>> for l in sequential_deal(range(20),5):
-...    print l
+...    print(l)
 ...
 [ 0  5 10 15]
 [ 1  6 11 16]
@@ -78,12 +78,12 @@ def sequential_deal(inarray, n):
     N = len(cards)
     # this bit of numpy will give, for N=20, n = 5
     # ord = [ [0,5,10,15], [1,6,11,16], [2,7,12,17], [3,8,13,18], [4,9,14,19] ]
-    ord = numpy.transpose(numpy.array(range(N)).reshape(N/n, n))
+    ord = numpy.transpose(numpy.array(list(range(N))).reshape(N/n, n))
     return [cards[x] for x in ord] 
 
 def sort_and_deal(cards, target, nplayers):
     import numpy
-    c = numpy.array(map(target, cards))
+    c = numpy.array(list(map(target, cards)))
     o = list(reversed(numpy.argsort(c)))
     # from best to worst
     sorted_deck = cards[o]
@@ -112,7 +112,7 @@ def sort_complex(c, a):
     # this is dumb, because c (i.e., a, are almost sorted)
     # should use the one below instead.
     import numpy
-    D = zip(a,c)
+    D = list(zip(a,c))
     def mycmp(x,y):
         if x[0] < y[0]:
             return 1
@@ -209,10 +209,10 @@ This is the SCEM algorithm starting from line [35] of the reference [1].
 
     # Sort Ck according to ak
     #Ck, ak = sort_complex0(Ck, ak) 
-    #print "ak before: ", ak
+    #print("ak before: %s" % ak)
     #Ck, ak = sort_complex(Ck, ak) 
     sort_complex2(Ck, ak) 
-    #print "ak after: ", ak
+    #print("ak after: %s" % ak)
 
     # number of points per complex
     M = Ck.shape[0]
@@ -242,7 +242,7 @@ This is the SCEM algorithm starting from line [35] of the reference [1].
     Yt = prng.multivariate_normal(basept, cn*cn * Sigma)
     cY = target(Yt)    
 
-    # print "new/orig : ", cY, Sak[-1]
+    # print("new/orig : %s %s" % (cY, Sak[-1]))
 
     r = min( cY / (Sak[-1]+TINY), 1)
 

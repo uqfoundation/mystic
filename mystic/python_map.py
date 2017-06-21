@@ -61,8 +61,8 @@ Further Input: [***disabled***]
     timelimit -- string representation of maximum run time (e.g. '00:02')
     queue -- string name of selected queue (e.g. 'normal')
 """
-   #print "ignoring: %s" % kwds  #XXX: should allow use of **kwds
-    result = map(func, *arglist) #     see pathos.pyina.ez_map
+   #print("ignoring: %s" % kwds)  #XXX: should allow use of **kwds
+    result = list(map(func, *arglist)) #     see pathos.pyina.ez_map
     return result
 
 def worker_pool():
@@ -78,7 +78,7 @@ carddealer_mapper = worker_pool
 
 if __name__=='__main__':
     f = lambda x:x**2
-    print python_map(f,range(5),nodes=10)
+    print(python_map(f,range(5),nodes=10))
 
     import subprocess
     d = {'progargs': """-c "print('hello')" """}

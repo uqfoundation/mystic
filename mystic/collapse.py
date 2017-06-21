@@ -118,7 +118,7 @@ def collapse_weight(stepmon, tolerance=0.005, generations=50, mask=None):
                 msg = "bad element '%s' in mask" % str(i)
                 raise ValueError(msg)
     elif type(mask) is dict:
-        for (i,j) in mask.iteritems():
+        for (i,j) in getattr(mask, 'iteritems', mask.items)():
             if type(j) is not set or type(i) is not int:
                 msg = "bad entry '%s:%s' in mask" % (str(i),str(j))
                 raise ValueError(msg)
@@ -143,8 +143,8 @@ def collapse_weight(stepmon, tolerance=0.005, generations=50, mask=None):
     wts = (tuple(i) for i in np.where(weights) if len(i))
     # apply mask and selected format...
     if pairs: # return explicit 'pairs' {(measure,index)}
-        import itertools as it
-        return mask(set(it.izip(*wts)))
+        import itertools
+        return mask(set(getattr(itertools, 'izip', zip)(*wts)))
     if pairs is None: # return 'where' format [measures,indices]
         return mask(wts)
     # returns a dict of {measure:indices}
@@ -178,7 +178,7 @@ def collapse_position(stepmon, tolerance=0.005, generations=50, mask=None):
                 msg = "bad element '%s' in mask" % str(i)
                 raise ValueError(msg)
     elif type(mask) is dict:
-        for (i,j) in mask.iteritems():
+        for (i,j) in getattr(mask, 'iteritems', mask.items)():
             if type(j) is not set or type(i) is not int:
                 msg = "bad entry '%s:%s' in mask" % (str(i),str(j))
                 raise ValueError(msg)
@@ -219,15 +219,15 @@ def collapse_position(stepmon, tolerance=0.005, generations=50, mask=None):
     select, pairs = _position_filter(mask)
     # convert to selected format...
     if pairs: # return explicit 'pairs' {(measure,indices)}
-        import itertools as it
+        import itertools
         mask = set()
         for i,j in distances:
-            [mask.add(k) for k in it.izip(*((i,)*len(j), j))]
+            [mask.add(k) for k in getattr(itertools, 'izip', zip)(*((i,)*len(j), j))]
     elif pairs is None: # return 'where' format [measures,indices]
-        import itertools as it
+        import itertools
         # tuple of where,pairs
         measures,mask = (),()
-        for (i,j) in (zip(*((j[0],i) for i in j[1])) for j in distances):
+        for (i,j) in (getattr(itertools, 'izip', zip)(*((j[0],i) for i in j[1])) for j in distances):
             measures += i
             mask += j
         mask = (measures,mask) if len(measures) else ()
@@ -272,11 +272,12 @@ def _weight_filter(mask):
         selector = lambda x: x - mask
     elif type(mask) is dict:
         pairs = False
-        selector = lambda x: dict((k,v) for (k,v) in ((i,j - mask.get(i,set())) for (i,j) in x.iteritems()) if v)
+        selector = lambda x: dict((k,v) for (k,v) in ((i,j - mask.get(i,set())) for (i,j) in getattr(x, 'iteritems', x.items)()) if v)
     else:
-        import itertools as it
+        import itertools
+        _zip = getattr(itertools, 'izip', zip)
         pairs = None #XXX: special case, use where notation
-        selector = lambda x: tuple(it.izip(*(i for i in it.izip(*x) if i not in it.izip(*mask)))) #FIXME: searching set would be faster
+        selector = lambda x: tuple(_zip(*(i for i in _zip(*x) if i not in _zip(*mask)))) #FIXME: searching set would be faster
     return selector, pairs
 
 def _position_filter(mask):
@@ -285,25 +286,27 @@ def _position_filter(mask):
         pairs = False # the default format
         selector = lambda x: x
     elif type(mask) is set:
-        import itertools as it
+        import itertools
+        _zip = getattr(itertools, 'izip', zip)
         if mask:
             from mystic.tools import _inverted
-            _mask,pairs = it.izip(*mask)
-            _mask = set(it.izip(_mask,_inverted(pairs)))
+            _mask,pairs = _zip(*mask)
+            _mask = set(_zip(_mask,_inverted(pairs)))
         else: _mask = mask
         pairs = True
         selector = lambda x: x - mask - _mask
     elif type(mask) is dict:
         pairs = False
         from mystic.tools import _symmetric
-        selector = lambda x: dict((k,v) for (k,v) in ((i,j - _symmetric(mask.get(i,set()))) for (i,j) in x.iteritems()) if v)
+        selector = lambda x: dict((k,v) for (k,v) in ((i,j - _symmetric(mask.get(i,set()))) for (i,j) in getattr(x, 'iteritems', x.items)()) if v)
     else:
-        import itertools as it
+        import itertools
         from mystic.tools import _inverted
+        _zip = getattr(itertools, 'izip', zip)
         _mask,pairs = mask
         mask = _mask+_mask, tuple(pairs)+tuple(_inverted(pairs))
         pairs = None #XXX: special case, use where notation
-        selector = lambda x: tuple(it.izip(*(i for i in it.izip(*x) if i not in it.izip(*mask)))) #FIXME: searching set would be faster
+        selector = lambda x: tuple(_zip(*(i for i in _zip(*x) if i not in _zip(*mask)))) #FIXME: searching set would be faster
     return selector, pairs
 
 

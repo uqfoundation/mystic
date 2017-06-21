@@ -10,7 +10,6 @@
 # flatten was adapted from the python cookbook
 # wrap_function was adapted from numpy
 # wrap_bounds was adapted from park
-
 """
 Various python tools
 
@@ -50,6 +49,8 @@ Main functions exported are::
 Other tools of interest are in::
     `mystic.mystic.filters` and `mystic.models.poly`
 """
+import collections
+from functools import reduce
 
 def isiterable(x):
     """check if an object is iterable"""
@@ -260,7 +261,7 @@ def getch(str="Press any key to continue"):
     import sys, subprocess
     if sys.stdin.isatty():
        if str is not None:
-          print str
+          print(str)
        if sys.platform[:3] != 'win':
           raw,cooked = 'stty raw','stty cooked'
        else:
@@ -271,8 +272,8 @@ def getch(str="Press any key to continue"):
        return a
     else:
        if str is not None:
-           print str + " and press enter"
-       return raw_input()
+           print(str + " and press enter")
+       return input()
 
 def random_seed(s=None):
     "sets the seed for calls to 'random()'"
@@ -481,10 +482,10 @@ For example:
     elif isinstance(missing, str): _mask = eval('{%s}' % missing)
     else: _mask = missing
     # raise KeyError if key out of bounds #XXX: also has *any* non-int object
-    first = min([0]+_mask.keys())
+    first = min([0]+list(_mask.keys()))
     if first < 0:
         raise KeyError('invalid argument index: %s' % first)
-    last = max([-1]+_mask.keys())
+    last = max([-1]+list(_mask.keys()))
     if last > len(x)+len(_mask)-1:
         raise KeyError('invalid argument index: %s' % last)
 
@@ -494,7 +495,7 @@ For example:
     code = "%s" % dill.source.getimport(x, alias='xtype')
     if "import" in code:
         code = compile(code, '<string>', 'exec')
-        exec code in _locals
+        exec(code, _locals)
     xtype = _locals['xtype']
 
     # find the new indices due to the mask
@@ -563,7 +564,7 @@ For example:
     """
     def dec(f):
         def func(x, *args, **kwds):
-            for i,j in mask.items():
+            for i,j in getattr(mask, 'iteritems', mask.items)():
                 try: x[i] = j
                 except IndexError: pass
             return f(x, *args, **kwds)
@@ -621,11 +622,11 @@ For example:
     """
     def dec(f):
         def func(x, *args, **kwds):
-            for i,j in mask.items():
+            for i,j in getattr(mask, 'iteritems', mask.items)():
                 try: x[i] = x[j]
                 except TypeError: # value is tuple with f(x) or constant
                   j0,j1 = (j[:2] + (1,))[:2]
-                  try: x[i] = j1(x[j0]) if callable(j1) else j1*x[j0]
+                  try: x[i] = j1(x[j0]) if isinstance(j1, collections.Callable) else j1*x[j0]
                   except IndexError: pass
                 except IndexError: pass
             return f(x, *args, **kwds)
@@ -744,7 +745,7 @@ For example:
     #XXX: any vectorized way to do this?
     for i,j in pairs: #XXX: sorted(sorted(pair) for pair in pairs): # ordering?
         found = False
-        for k,v in collapse.iteritems():
+        for k,v in getattr(collapse, 'iteritems', collapse.items)():
             if i in (k,) or i in v:
                 v.add(j); found = True; break
             if j in (k,) or j in v:
@@ -779,14 +780,14 @@ def pairwise(x, indices=False):
     for i in range(z.shape[-2]):
         z[i] = np.subtract.outer(x[i],x[i])[idx]
     z.shape = shape[:-1]+(z.shape[-1],)
-    return abs(z),zip(*idx) if indices else abs(z)  #XXX: abs(z) or z?
+    return abs(z),list(zip(*idx)) if indices else abs(z)  #XXX: abs(z) or z?
 
 
 def _inverted(pairs): # assumes pairs is a list of tuples
     '''return a list of tuples, where each tuple has been reversed'''
     # >>> _inverted([(1,2),(3,4),(5,6)])
     # [(2, 1), (4, 3), (6, 5)]
-    return map(tuple, map(reversed, pairs))
+    return list(map(tuple, map(reversed, pairs)))
 
 
 def _symmetric(pairs): # assumes pairs is a set of tuples
@@ -804,9 +805,9 @@ except ImportError:
 Produces a generator object.
 
 For example: 
-    >>> print list( permutations(range(3),2) ) 
+    >>> print(list( permutations(range(3),2) ))
     [(0,1), (0,2), (1,0), (1,2), (2,0), (2,1)]
-    >>> print list( permutations(range(3)) )
+    >>> print(list( permutations(range(3)) ))
     [(0,1,2), (0,2,1), (1,0,2), (1,2,0), (2,0,1), (2,1,0)]
         """
         # code from http://docs.python.org/library/itertools.html
@@ -815,8 +816,8 @@ For example:
         r = n if r is None else r
         if r > n:
             return
-        indices = range(n)
-        cycles = range(n, n-r, -1)
+        indices = list(range(n))
+        cycles = list(range(n, n-r, -1))
         yield tuple(pool[i] for i in indices[:r])
         while n:
             for i in reversed(range(r)):
@@ -856,17 +857,17 @@ def select_params(params, index):
         except: pass
     import itertools
     # returns (tuple(index), tuple(params[index]))
-    return tuple(itertools.izip(*((i,params[i]) for i in index)))
+    return tuple(getattr(itertools, 'izip', zip)(*((i,params[i]) for i in index)))
 
 
 # backward compatibility
 from dill.source import getblocks as parse_from_history
 from dill.source import getsource as src
-from monitors import Monitor as Sow
-from monitors import VerboseMonitor as VerboseSow
-from monitors import LoggingMonitor as LoggingSow
-from monitors import CustomMonitor as CustomSow
-from monitors import Null
+from mystic.monitors import Monitor as Sow
+from mystic.monitors import VerboseMonitor as VerboseSow
+from mystic.monitors import LoggingMonitor as LoggingSow
+from mystic.monitors import CustomMonitor as CustomSow
+from mystic.monitors import Null
 
 def isNull(mon):
     if isinstance(mon, Null): # is Null()

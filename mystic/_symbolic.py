@@ -55,7 +55,7 @@ Additional Inputs:
         found in the constraints equation string.
 """
     if ">" in constraints or "<" in constraints:
-        raise NotImplementedError, "cannot classify inequalities" 
+        raise NotImplementedError("cannot classify inequalities") 
 
     from mystic.symbolic import replace_variables, get_variables
     #XXX: use solve? or first if not in form xi = ... ?
@@ -72,7 +72,7 @@ Additional Inputs:
     if nvars is not None: ndim = nvars
 
     eqns = constraints.splitlines()
-    indices = range(ndim)
+    indices = list(range(ndim))
     dep = []
     indep = []
     for eqn in eqns: # find which variables are used
@@ -155,16 +155,16 @@ Inputs:
         ...     x4 - x3 = 0.
         ...     x4 - x0 = x2'''
         >>> code, lhs, rhs, vars, neqn = _prepare_sympy(constraints, nvars=5)
-        >>> print code
+        >>> print(code)
         x0=Symbol('x0')
         x1=Symbol('x1')
         x2=Symbol('x2')
         x3=Symbol('x3')
         x4=Symbol('x4')
         rand = Symbol('rand')
-        >>> print lhs, rhs
+        >>> print("%s %s" % (lhs, rhs))
         ['x0 ', 'x4 - x3 ', 'x4 - x0 '] [' x4**2', ' 0.', ' x2']
-        print "%s in %s eqns" % (vars, neqn)        
+        >>> print("%s in %s eqns" % (vars, neqn))
         x0,x1,x2,x3,x4, in 3 eqns
 
 Additional Inputs:
@@ -176,7 +176,7 @@ Additional Inputs:
         found in the constraints equation string.
 """
     if ">" in constraints or "<" in constraints:
-        raise NotImplementedError, "cannot simplify inequalities" 
+        raise NotImplementedError("cannot simplify inequalities") 
 
     from mystic.symbolic import replace_variables, get_variables
     #XXX: if constraints contain x0,x1,x3 for 'x', should x2 be in code,xlist?
@@ -203,7 +203,7 @@ Additional Inputs:
 
             # If equation is blank on one side, raise error.
             if len(splitlist[0].strip()) == 0 or len(splitlist[1].strip()) == 0:
-                print eq, "is not an equation!" # Raise exception?
+                print("%r is not an equation!" % eq) # Raise exception?
             else:
                 left.append(splitlist[0])
                 right.append(splitlist[1])
@@ -211,7 +211,7 @@ Additional Inputs:
 
         # If equation doesn't have one equal sign, raise error.
         if len(splitlist) != 2 and len(splitlist) != 1:
-            print eq, "is not an equation!" # Raise exception?
+            print("%r is not an equation!" % eq) # Raise exception?
 
     # First create list of x variables
     xlist = ""
@@ -240,7 +240,7 @@ Inputs:
 
     For example:
         >>> equation = "x1 - 3. = x0*x2"
-        >>> print _solve_single(equation)
+        >>> print(_solve_single(equation))
         x0 = -(3.0 - x1)/x2
 
 Additional Inputs:
@@ -253,7 +253,7 @@ Additional Inputs:
 
     For example:
         >>> equation = "x1 - 3. = x0*x2"
-        >>> print _solve_single(equation, target='x1')
+        >>> print(_solve_single(equation, target='x1'))
         x1 = 3.0 + x0*x2
 
 Further Inputs:
@@ -262,9 +262,9 @@ Further Inputs:
 """ #XXX: an very similar version of this code is found in _solve_linear XXX#
     # for now, we abort on multi-line equations or inequalities
     if len(constraint.replace('==','=').split('=')) != 2:
-        raise NotImplementedError, "requires a single valid equation" 
+        raise NotImplementedError("requires a single valid equation") 
     if ">" in constraint or "<" in constraint:
-        raise NotImplementedError, "cannot simplify inequalities" 
+        raise NotImplementedError("cannot simplify inequalities") 
 
     nvars = None
     permute = False # if True, return all permutations
@@ -318,9 +318,9 @@ Further Inputs:
         code = """from sympy import Eq, Symbol;"""
         code += """from sympy import solve as symsol;"""
         code = compile(code, '<string>', 'exec')
-        exec code in _locals
+        exec(code, _locals)
     except ImportError: # Equation will not be simplified."
-        if warn: print "Warning: sympy not installed."
+        if warn: print("Warning: sympy not installed.")
         return constraint
 
     # default is _locals with numpy and math imported
@@ -330,7 +330,7 @@ Further Inputs:
     code += """from numpy import var as variance;""" # look like mystic.math
     code += """from numpy import ptp as spread;"""   # look like mystic.math
     code = compile(code, '<string>', 'exec')
-    exec code in _locals
+    exec(code, _locals)
     _locals.update(locals) #XXX: allow this?
 
     code,left,right,xlist,neqns = _prepare_sympy(constraints, varname, ndim)
@@ -367,24 +367,25 @@ Further Inputs:
         code += 'soln = soln if isinstance(soln, dict) else {' + target[0] + ': soln[-1][-1]} if soln else ""\n'
     ########################################################################
 
-    if verbose: print code
+    if verbose: print(code)
     code = compile(code, '<string>', 'exec')
     try: 
-        exec code in globals(), _locals
+        exec(code, globals(), _locals)
         soln = _locals['soln']
         if not soln:
-            if warn: print "Warning: target variable is not valid"
+            if warn: print("Warning: target variable is not valid")
             soln = {}
     except NotImplementedError: # catch 'multivariate' error for older sympy
-        if warn: print "Warning: could not simplify equation."
+        if warn: print("Warning: could not simplify equation.")
         return constraint      #FIXME: resolve diff with _solve_linear
-    except NameError, error: # catch when variable is not defined
-        if warn: print "Warning:", error
+    except NameError as error: # catch when variable is not defined
+        if warn: print("Warning: %s" % error)
         soln = {}
-    if verbose: print soln
+    if verbose: print(soln)
 
     #XXX handles multiple solutions?
-    soln = dict([(str(key),str(value)) for key, value in soln.iteritems()])
+    soln = getattr(soln, 'iteritems', soln.items)()
+    soln = dict([(str(key),str(value)) for key, value in soln])
     soln = [(i,soln[i]) for i in targeted if i in soln] #XXX: order as targeted?
     
     solns = []; solved = ""
@@ -411,7 +412,7 @@ Inputs:
         >>> constraints = '''
         ...     x0 - x2 = 2.
         ...     x2 = x3*2.'''
-        >>> print _solve_linear(constraints)
+        >>> print(_solve_linear(constraints))
         x2 = 2.0*x3
         x0 = 2.0 + 2.0*x3
 
@@ -429,7 +430,7 @@ Additional Inputs:
         >>> constraints = '''
         ...     x0 - x2 = 2.
         ...     x2 = x3*2.'''
-        >>> print _solve_linear(constraints, target=['x3','x2'])
+        >>> print(_solve_linear(constraints, target=['x3','x2']))
         x3 = -1.0 + 0.5*x0
         x2 = -2.0 + x0
 
@@ -490,9 +491,9 @@ Further Inputs:
         code = """from sympy import Eq, Symbol;"""
         code += """from sympy import solve as symsol;"""
         code = compile(code, '<string>', 'exec')
-        exec code in _locals
+        exec(code, _locals)
     except ImportError: # Equation will not be simplified."
-        if warn: print "Warning: sympy not installed."
+        if warn: print("Warning: sympy not installed.")
         return constraints
 
     # default is _locals with numpy and math imported
@@ -502,7 +503,7 @@ Further Inputs:
     code += """from numpy import var as variance;""" # look like mystic.math
     code += """from numpy import ptp as spread;"""   # look like mystic.math
     code = compile(code, '<string>', 'exec')
-    exec code in _locals
+    exec(code, _locals)
     _locals.update(locals) #XXX: allow this?
 
     code,left,right,xlist,neqns = _prepare_sympy(_constraints, varname, ndim)
@@ -543,24 +544,24 @@ Further Inputs:
         # returns: {x0: f(xn,...), x1: f(xn,...), ...}
         _code += 'soln = symsol([' + eqlist + '], [' + xlist + '])'
         #XXX: need to convert/check soln similarly as in _solve_single ?
-        if verbose: print _code
+        if verbose: print(_code)
         _code = compile(_code, '<string>', 'exec')
         try: 
-            exec _code in globals(), _locals
+            exec(_code, globals(), _locals)
             soln = _locals['soln']
             if not soln:
-                if warn: print "Warning: could not simplify equation."
+                if warn: print("Warning: could not simplify equation.")
                 soln = {}
         except NotImplementedError: # catch 'multivariate' error
-            if warn: print "Warning: could not simplify equation."
+            if warn: print("Warning: could not simplify equation.")
             soln = {}
-        except NameError, error: # catch when variable is not defined
-            if warn: print "Warning:", error
+        except NameError as error: # catch when variable is not defined
+            if warn: print("Warning: %s" % error)
             soln = {}
-        if verbose: print soln
+        if verbose: print(soln)
 
         solved = ""
-        for key, value in soln.iteritems():
+        for key, value in getattr(soln, 'iteritems', soln.items)():
             solved += str(key) + ' = ' + str(value) + '\n'
         if solved: solns.append( restore(variables, solved.rstrip()) )
 
@@ -605,13 +606,13 @@ Inputs:
         >>> constraints = '''
         ...     x0 - x2 = 2.
         ...     x2 = x3*2.'''
-        >>> print solve(constraints)
+        >>> print(solve(constraints))
         x2 = 2.0*x3
         x0 = 2.0 + 2.0*x3
         >>> constraints = '''
         ...     spread([x0,x1]) - 1.0 = mean([x0,x1])   
         ...     mean([x0,x1,x2]) = x2'''
-        >>> print solve(constraints)
+        >>> print(solve(constraints))
         x0 = -0.5 + 0.5*x2
         x1 = 0.5 + 1.5*x2
 
@@ -629,7 +630,7 @@ Additional Inputs:
         >>> constraints = '''
         ...     x0 - x2 = 2.
         ...     x2 = x3*2.'''
-        >>> print solve(constraints, target=['x3','x2'])
+        >>> print(solve(constraints, target=['x3','x2']))
         x3 = -1.0 + 0.5*x0
         x2 = -2.0 + x0
 
@@ -675,12 +676,12 @@ Inputs:
 
     For example:
         >>> constraints = '''x1 = x3*3. + x0*x2'''
-        >>> print _solve_nonlinear(constraints)
+        >>> print(_solve_nonlinear(constraints))
         x0 = (x1 - 3.0*x3)/x2
         >>> constraints = '''
         ...     spread([x0,x1]) - 1.0 = mean([x0,x1])   
         ...     mean([x0,x1,x2]) = x2'''
-        >>> print _solve_nonlinear(constraints)
+        >>> print(_solve_nonlinear(constraints))
         x0 = -0.5 + 0.5*x2
         x1 = 0.5 + 1.5*x2
 
@@ -698,7 +699,7 @@ Additional Inputs:
         >>> constraints = '''
         ...     spread([x0,x1]) - 1.0 = mean([x0,x1])   
         ...     mean([x0,x1,x2]) = x2'''
-        >>> print _solve_nonlinear(constraints, target=['x1'])
+        >>> print(_solve_nonlinear(constraints, target=['x1']))
         x1 = -0.833333333333333 + 0.166666666666667*x2
         x0 = -0.5 + 0.5*x2
 
@@ -835,13 +836,13 @@ Further Inputs:
             continue
 
         if verbose:
-            print _classify_variables(simplified, variables, ndim)
+            print(_classify_variables(simplified, variables, ndim))
         return simplified
 
     warning='Warning: an error occurred in building the constraints.'
-    if warn: print warning
+    if warn: print(warning)
     if verbose:
-        print _classify_variables(simplified, variables, ndim)
+        print(_classify_variables(simplified, variables, ndim))
     if permute: #FIXME: target='x3,x1' may order correct, while 'x1,x3' doesn't
         filter = []; results = []
         for i in complete_list:

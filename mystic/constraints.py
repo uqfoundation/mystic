@@ -58,7 +58,7 @@ ctype is a mystic.coupler type [inner, outer, inner_proxy, outer_proxy].
     ...   return impose_mean(target, x)
     ... 
     >>> x = constraint([1,2,3,4,5])
-    >>> print x
+    >>> print(x)
     [3.0, 4.0, 5.0, 6.0, 7.0]
     >>> mean(x)
     5.0
@@ -102,7 +102,7 @@ function c(x), such that:  x' = impose_mean(target, c(x)).
     ...   return x
     ... 
     >>> x = constraint([1,2,3,4])
-    >>> print x
+    >>> print(x)
     [4.25, 5.25, 6.25, 4.25]
     >>> mean(x)
     5.0
@@ -136,7 +136,7 @@ constraints function c(x), such that:  x' = impose_variance(target, c(x)).
     ...   return x
     ... 
     >>> x = constraint([1,2,3])
-    >>> print x
+    >>> print(x)
     [0.6262265521467858, 2.747546895706428, 0.6262265521467858]
     >>> variance(x)
     0.99999999999999956
@@ -170,7 +170,7 @@ constraints function c(x), such that:  x' = impose_std(target, c(x)).
     ...   return x
     ... 
     >>> x = constraint([1,2,3])
-    >>> print x
+    >>> print(x)
     [0.6262265521467858, 2.747546895706428, 0.6262265521467858]
     >>> std(x)
     0.99999999999999956
@@ -194,7 +194,7 @@ function c(x), such that:  x' = impose_spread(target, c(x)).
     ...   return [i**2 for i in x]
     ... 
     >>> x = constraint([1,2,3,4])
-    >>> print x
+    >>> print(x)
     [3.1666666666666665, 5.1666666666666661, 8.5, 13.166666666666666]
     >>> spread(x)
     10.0
@@ -602,7 +602,7 @@ The function's input will be mapped to the given discrete set
         if not len(shape(x)):
             flatten = True
             x = [x]
-        result = tuple(i for i in asarray(map(_argnear, x)).T)
+        result = tuple(i for i in asarray(list(map(_argnear, x))).T)
         if flatten:
             result = tuple(asarray(i[0]) for i in result)
         return result
@@ -616,7 +616,7 @@ The function's input will be mapped to the given discrete set
         _x.flat = [i for i in x]
         _l.flat = [i for i in l]
         _h.flat = [i for i in h]
-        result = asarray(map(_near, x, l, h))
+        result = asarray(list(map(_near, x, l, h)))
         if not has_iterable:
             result = asarray(result[0])
         return result
@@ -811,7 +811,7 @@ def impose_unique(seq=None):
     >>> try:
     ...     doit([1,2,3,1,2,13])
     ... except ValueError:
-    ...     print "Bad Input"
+    ...     print("Bad Input")
     ...
     Bad Input
 """
@@ -880,7 +880,7 @@ For example,
     [-2, -2, -2, -3]
     """
     offset = lambda i: (i if isinstance(i, int) else (i[0], lambda x:(x+i[1])))
-    return synchronized(dict((i,offset(j)) for (i,j) in mask.iteritems()))
+    return synchronized(dict((i,offset(j)) for (i,j) in getattr(mask, 'iteritems', mask.items)()))
 
 
 def impose_as(mask, offset=None):
@@ -922,7 +922,9 @@ For example,
     def dec(f):
         def func(x, *args, **kwds):
             x = copy.copy(x) #XXX: inefficient
-            for i,j in connected(mask).iteritems():
+            pairs = connected(mask)
+            pairs = getattr(pairs, 'iteritems', pairs.items)()
+            for i,j in pairs:
                 for k in j:
                     try: x[k] = x[i]
                     except IndexError: pass
@@ -1073,11 +1075,11 @@ For example,
             c.load(x, npts)
             # apply all collapses
             for clps in tracking:
-                for k,v in clps.iteritems():
+                for k,v in getattr(clps, 'iteritems', clps.items)():
                     c[k].positions, c[k].weights = \
                       impose_collapse(v, c[k].positions, c[k].weights)
             for clps in noweight:
-                for k,v in clps.iteritems():
+                for k,v in getattr(clps, 'iteritems', clps.items)():
                     c[k].positions, c[k].weights = \
                       impose_unweighted(v, c[k].positions, c[k].weights, False)
             # convert to params and apply function

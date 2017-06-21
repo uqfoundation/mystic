@@ -32,8 +32,9 @@ def scemmap(Q):
 if __name__=='__main__':
     import time
     from mystic.metropolis import *
-    from mystic import PY3
-    if PY3:
+    try:
+        xrange
+    except NameError:
         xrange = range
     # if available, use a multiprocessing worker pool
     try:

@@ -64,8 +64,10 @@ Inputs:
     if N == 0: return [0] if ndim else [0]*ndim
     from itertools import chain
     from mystic.tools import random_state
-    from mystic import PY3
-    if PY3: xrange = range
+    try:
+        xrange
+    except NameError:
+        xrange = range
     random = random_state().random
     def factors(n):
         result = list()

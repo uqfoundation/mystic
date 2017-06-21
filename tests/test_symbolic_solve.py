@@ -1,5 +1,8 @@
 from mystic.symbolic import _denominator, _solve_zeros, equals, simplify
 
+from mystic import random_seed
+random_seed(123) #FIXME: should be commented out
+
 var = list('BC')
 eqn = 'A = (B + 1/C)/(B*C/tan(B))'
 assert _denominator(eqn, var) == ['C', '(B*C/tan(B))', 'tan(B)']
@@ -58,9 +61,6 @@ assert equals(eqn, res[1].split('\n')[-1], dict(A=1.,B=1.,C=1.9))
 assert equals(eqn, res[1].split('\n')[-1], dict(A=1.,B=-1.,C=1.9))
 assert equals(eqn, res[1].split('\n')[-1], dict(A=-1.,B=-1.,C=1.9))
 assert equals(eqn, res[1].split('\n')[-1], dict(A=-1.,B=1.,C=1.9))
-
-from mystic import random_seed
-random_seed(321) #FIXME: should be commented out
 
 #FIXME: tests in this block sometimes fail... (due to negative sqrt?)
 res = simplify(eqn, variables=var, target=list('ABC'), all=True)
