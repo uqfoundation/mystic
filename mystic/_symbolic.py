@@ -19,6 +19,15 @@
 
 from mystic.tools import permutations
 from mystic.tools import list_or_tuple_or_ndarray
+import sys
+if (sys.hexversion >= 0x30000f0):
+    exec_locals_ = 'exec(code, _locals)'
+    exec_globals_ = 'exec(code, globals(), _locals)'
+else:
+    exec_locals_ = 'exec code in _locals'
+    exec_globals_ = 'exec code in globals(), _locals'
+NL = '\n'
+#FIXME: remove this head-standing to workaround python2.6 exec bug
 
 def _classify_variables(constraints, variables='x', nvars=None): 
     """Takes a string of constraint equations and determines which variables
@@ -229,6 +238,7 @@ Additional Inputs:
     return code, left, right, xlist, neqns
 
 
+def_solve_single = '''
 def _solve_single(constraint, variables='x', target=None, **kwds):
     """Solve a symbolic constraints equation for a single variable.
 
@@ -318,7 +328,7 @@ Further Inputs:
         code = """from sympy import Eq, Symbol;"""
         code += """from sympy import solve as symsol;"""
         code = compile(code, '<string>', 'exec')
-        exec code in _locals #FIXME: SyntaxError in python3
+        %(exec_locals_)s
     except ImportError: # Equation will not be simplified."
         if warn: print("Warning: sympy not installed.")
         return constraint
@@ -330,7 +340,7 @@ Further Inputs:
     code += """from numpy import var as variance;""" # look like mystic.math
     code += """from numpy import ptp as spread;"""   # look like mystic.math
     code = compile(code, '<string>', 'exec')
-    exec code in _locals #FIXME: SyntaxError in python3
+    %(exec_locals_)s
     _locals.update(locals) #XXX: allow this?
 
     code,left,right,xlist,neqns = _prepare_sympy(constraints, varname, ndim)
@@ -339,7 +349,7 @@ Further Inputs:
     for i in range(1, neqns+1):
         eqn = 'eq' + str(i)
         eqlist += eqn + ","
-        code += eqn + '= Eq(' + left[i-1] + ',' + right[i-1] + ')\n'
+        code += eqn + '= Eq(' + left[i-1] + ',' + right[i-1] + ')'+NL
     eqlist = eqlist.rstrip(',')
 
     # get full list of variables in 'targeted' order
@@ -356,21 +366,21 @@ Further Inputs:
     # solve each xi: symsol(single_equation, [x0,x1,...,xi,...,xn])
     # returns: {x0: f(xn,...), x1: f(xn,...), ..., xn: f(...,x0)}
     if permute or not target: #XXX: the goal is solving *only one* equation
-        code += '_xlist = %s\n' % ','.join(targeted)
-        code += '_elist = [symsol(['+eqlist+'], [i]) for i in _xlist]\n'
-        code += '_elist = [i if isinstance(i, dict) else {j:i[-1][-1]} for j,i in zip(_xlist,_elist) if i]\n'
-        code += 'soln = {}\n'
-        code += '[soln.update(i) for i in _elist if i]\n'
+        code += '_xlist = {0}'.format(','.join(targeted)) + NL
+        code += '_elist = [symsol(['+eqlist+'], [i]) for i in _xlist]' + NL
+        code += '_elist = [i if isinstance(i, dict) else {j:i[-1][-1]} for j,i in zip(_xlist,_elist) if i]' + NL
+        code += 'soln = dict()' + NL
+        code += '[soln.update(i) for i in _elist if i]' + NL
     else:
-        code += 'soln = symsol([' + eqlist + '], [' + target[0] + '])\n'
-       #code += 'soln = symsol([' + eqlist + '], [' + targeted[0] + '])\n'
-        code += 'soln = soln if isinstance(soln, dict) else {' + target[0] + ': soln[-1][-1]} if soln else ""\n'
+        code += 'soln = symsol([' + eqlist + '], [' + target[0] + '])' + NL
+       #code += 'soln = symsol([' + eqlist + '], [' + targeted[0] + '])' + NL
+        code += 'soln = soln if isinstance(soln, dict) else {' + target[0] + ': soln[-1][-1]} if soln else ""' + NL
     ########################################################################
 
     if verbose: print(code)
     code = compile(code, '<string>', 'exec')
     try: 
-        exec code in globals(), _locals #FIXME: SyntaxError in python3
+        %(exec_globals_)s
         soln = _locals['soln']
         if not soln:
             if warn: print("Warning: target variable is not valid")
@@ -379,7 +389,7 @@ Further Inputs:
         if warn: print("Warning: could not simplify equation.")
         return constraint      #FIXME: resolve diff with _solve_linear
     except NameError as error: # catch when variable is not defined
-        if warn: print("Warning: %s" % error)
+        if warn: print("Warning: {0}".format(error))
         soln = {}
     if verbose: print(soln)
 
@@ -390,17 +400,18 @@ Further Inputs:
     
     solns = []; solved = ""
     for key,value in soln:
-        solved = str(key) + ' = ' + str(value) + '\n'
+        solved = str(key) + ' = ' + str(value) + NL
         if solved: solns.append( restore(variables, solved.rstrip()) )
 
     if not permute:
         sol = None if not solns[:1] else solns[0]
         return '' if sol and not sol.strip() else sol
     return tuple(solns)
+''' % dict(exec_locals_=exec_locals_, exec_globals_=exec_globals_)
+exec(def_solve_single)
+del def_solve_single
 
-
-def _solve_linear(constraints, variables='x', target=None, **kwds):
-    """Solve a system of symbolic linear constraints equations.
+doc_solve_linear = """Solve a system of symbolic linear constraints equations.
 
 Inputs:
     constraints -- a string of symbolic constraints, with one constraint
@@ -438,6 +449,8 @@ Further Inputs:
     locals -- a dictionary of additional variables used in the symbolic
         constraints equations, and their desired values.
 """
+def_solve_linear = '''
+def _solve_linear(constraints, variables='x', target=None, **kwds):
     nvars = None
     permute = False # if True, return all permutations
     warn = True  # if True, don't suppress warnings
@@ -491,7 +504,7 @@ Further Inputs:
         code = """from sympy import Eq, Symbol;"""
         code += """from sympy import solve as symsol;"""
         code = compile(code, '<string>', 'exec')
-        exec code in _locals #FIXME: SyntaxError in python3
+        %(exec_locals_)s
     except ImportError: # Equation will not be simplified."
         if warn: print("Warning: sympy not installed.")
         return constraints
@@ -503,7 +516,7 @@ Further Inputs:
     code += """from numpy import var as variance;""" # look like mystic.math
     code += """from numpy import ptp as spread;"""   # look like mystic.math
     code = compile(code, '<string>', 'exec')
-    exec code in _locals #FIXME: SyntaxError in python3
+    %(exec_locals_)s
     _locals.update(locals) #XXX: allow this?
 
     code,left,right,xlist,neqns = _prepare_sympy(_constraints, varname, ndim)
@@ -512,7 +525,7 @@ Further Inputs:
     for i in range(1, neqns+1):
         eqn = 'eq' + str(i)
         eqlist += eqn + ","
-        code += eqn + '= Eq(' + left[i-1] + ',' + right[i-1] + ')\n'
+        code += eqn + '= Eq(' + left[i-1] + ',' + right[i-1] + ')' + NL
     eqlist = eqlist.rstrip(',')
 
     # get full list of variables in 'targeted' order
@@ -547,7 +560,7 @@ Further Inputs:
         if verbose: print(_code)
         _code = compile(_code, '<string>', 'exec')
         try: 
-            exec _code in globals(), _locals #FIXME: SyntaxError in python3
+            %(exec_globals_)s
             soln = _locals['soln']
             if not soln:
                 if warn: print("Warning: could not simplify equation.")
@@ -556,13 +569,13 @@ Further Inputs:
             if warn: print("Warning: could not simplify equation.")
             soln = {}
         except NameError as error: # catch when variable is not defined
-            if warn: print("Warning: %s" % error)
+            if warn: print("Warning: {0}".format(error))
             soln = {}
         if verbose: print(soln)
 
         solved = ""
         for key, value in getattr(soln, 'iteritems', soln.items)():
-            solved += str(key) + ' = ' + str(value) + '\n'
+            solved += str(key) + ' = ' + str(value) + NL
         if solved: solns.append( restore(variables, solved.rstrip()) )
 
     if not permute:
@@ -571,11 +584,16 @@ Further Inputs:
     # Remove duplicates
     filter = []; results = []
     for i in solns:
-        _eqs = '\n'.join(sorted(i.split('\n')))
+        _eqs = NL.join(sorted(i.split(NL)))
         if _eqs not in filter:
             filter.append(_eqs)
             results.append(i)
     return tuple(results)
+
+_solve_linear.__doc__ = doc_solve_linear
+''' % dict(exec_locals_=exec_locals_, exec_globals_=exec_globals_)
+exec(def_solve_linear)
+del def_solve_linear, doc_solve_linear, exec_locals_, exec_globals_
 
     # Create strings of all permutations of the solved equations.
     # Remove duplicates, then take permutations of the lines of equations
