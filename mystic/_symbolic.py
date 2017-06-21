@@ -318,7 +318,7 @@ Further Inputs:
         code = """from sympy import Eq, Symbol;"""
         code += """from sympy import solve as symsol;"""
         code = compile(code, '<string>', 'exec')
-        exec(code, _locals)
+        exec code in _locals #FIXME: SyntaxError in python3
     except ImportError: # Equation will not be simplified."
         if warn: print("Warning: sympy not installed.")
         return constraint
@@ -330,7 +330,7 @@ Further Inputs:
     code += """from numpy import var as variance;""" # look like mystic.math
     code += """from numpy import ptp as spread;"""   # look like mystic.math
     code = compile(code, '<string>', 'exec')
-    exec(code, _locals)
+    exec code in _locals #FIXME: SyntaxError in python3
     _locals.update(locals) #XXX: allow this?
 
     code,left,right,xlist,neqns = _prepare_sympy(constraints, varname, ndim)
@@ -370,7 +370,7 @@ Further Inputs:
     if verbose: print(code)
     code = compile(code, '<string>', 'exec')
     try: 
-        exec(code, globals(), _locals)
+        exec code in globals(), _locals #FIXME: SyntaxError in python3
         soln = _locals['soln']
         if not soln:
             if warn: print("Warning: target variable is not valid")
@@ -491,7 +491,7 @@ Further Inputs:
         code = """from sympy import Eq, Symbol;"""
         code += """from sympy import solve as symsol;"""
         code = compile(code, '<string>', 'exec')
-        exec(code, _locals)
+        exec code in _locals #FIXME: SyntaxError in python3
     except ImportError: # Equation will not be simplified."
         if warn: print("Warning: sympy not installed.")
         return constraints
@@ -503,7 +503,7 @@ Further Inputs:
     code += """from numpy import var as variance;""" # look like mystic.math
     code += """from numpy import ptp as spread;"""   # look like mystic.math
     code = compile(code, '<string>', 'exec')
-    exec(code, _locals)
+    exec code in _locals #FIXME: SyntaxError in python3
     _locals.update(locals) #XXX: allow this?
 
     code,left,right,xlist,neqns = _prepare_sympy(_constraints, varname, ndim)
@@ -547,7 +547,7 @@ Further Inputs:
         if verbose: print(_code)
         _code = compile(_code, '<string>', 'exec')
         try: 
-            exec(_code, globals(), _locals)
+            exec _code in globals(), _locals #FIXME: SyntaxError in python3
             soln = _locals['soln']
             if not soln:
                 if warn: print("Warning: could not simplify equation.")

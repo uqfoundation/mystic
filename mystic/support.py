@@ -471,7 +471,7 @@ Required Inputs:
         code = "ax%d = fig.add_subplot(dim1,dim2,%d, sharex=ax1);" % (i,i)
         code += "ax%d.set_ylabel(label[%d]);" % (i,i-1)
         code = compile(code, '<string>', 'exec')
-        exec(code, globals)
+        exec codes in globals #FIXME: SyntaxError in python3
         data = eval("params[%s]" % select[i-1])
         try:
             n = int(select[i-1].split(":")[0])
@@ -481,7 +481,7 @@ Required Inputs:
             globals['line'] = line
             code = "ax%d.plot(line,label='%s')#, marker='o')" % (i,n)
             code = compile(code, '<string>', 'exec')
-            exec(code, globals)
+            exec code in globals #FIXME: SyntaxError in python3
             n += 1
         if legend: plt.legend()
     if cost:
@@ -490,7 +490,7 @@ Required Inputs:
         code += "cx1.plot(cost,label='cost');"#, marker='o')"
         if max(0, len(label) - plots): code += "cx1.set_ylabel(label[-1]);"
         code = compile(code, '<string>', 'exec')
-        exec(code, globals)
+        exec code in globals #FIXME: SyntaxError in python3
         if legend: plt.legend()
 
     if not parsed_opts.out:
@@ -756,7 +756,7 @@ Required Inputs:
     else: 
         code = "plt.title('iterations[*]');"
     code = compile(code, '<string>', 'exec')
-    exec(code, globals)
+    exec code in globals #FIXME: SyntaxError in python3
     ax1.set_xlabel(label[0])
     ax1.set_ylabel(label[1])
     ax1.set_zlabel(label[2])
@@ -773,7 +773,7 @@ Required Inputs:
             code += "ax.set_ylabel(label[1]);"
             code += "ax.set_zlabel(label[2]);"
             code = compile(code, '<string>', 'exec')
-            exec(code, globals)
+            exec code in globals #FIXME: SyntaxError in python3
             a.append(globals['ax'])
 
     # turn each "n:m" in select to a list
@@ -1073,7 +1073,7 @@ Required Inputs:
     else: 
         code = "plt.title('iterations[*]');"
     code = compile(code, '<string>', 'exec')
-    exec(code, globals)
+    exec code in globals #FIXME: SyntaxError in python3
     ax1.set_xlabel(label[0])
     ax1.set_ylabel(label[1])
     ax1.set_zlabel(label[2])
@@ -1090,7 +1090,7 @@ Required Inputs:
             code += "ax.set_ylabel(label[1]);"
             code += "ax.set_zlabel(label[2]);"
             code = compile(code, '<string>', 'exec')
-            exec(code, globals)
+            exec code in globals #FIXME: SyntaxError in python3
             a.append(globals['ax'])
 
     # turn each "n:m" in select to a list
@@ -1515,7 +1515,7 @@ Additional Inputs:
     else: 
         code = "plt.title('iterations[*]');"
     code = compile(code, '<string>', 'exec')
-    exec(code, globals)
+    exec code in globals #FIXME: SyntaxError in python3
     if cones and data and xs in range(len(bounds)):
         if _2D:
             _plot_bowtie(ax1,coords,slope,bounds,axis=axis,tol=gap)
@@ -1540,7 +1540,7 @@ Additional Inputs:
                 code += "ax.plot([bounds[0][1]],[bounds[1][1]],[bounds[2][1]]);"
             code += "plt.title('iterations[%s]');" % select[i - 1]
             code = compile(code, '<string>', 'exec')
-            exec(code, globals)
+            exec code in globals #FIXME: SyntaxError in python3
             ax = globals['ax']
             if cones and data and xs in range(len(bounds)):
                 if _2D:

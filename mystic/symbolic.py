@@ -424,7 +424,7 @@ Further Inputs:
     code += """from numpy import ptp as spread;"""   # look like mystic.math
     code += """_sqrt = lambda x:x**.5;""" # 'domain error' to 'negative power'
     code = compile(code, '<string>', 'exec')
-    exec(code, _locals)
+    exec code in _locals #FIXME: SyntaxError in python3
     _locals.update(locals)
     kwds['locals'] = _locals
     del locals
@@ -480,7 +480,7 @@ Further Inputs:
             code = ';'.join(i for i in testcode)
             code = compile(code, '<string>', 'exec')
             try:
-                exec(code, locals)
+                exec code in locals #FIXME: SyntaxError in python3
             except SyntaxError as error:
                 msg = "cannot simplify '%s'" % testcode
                 raise SyntaxError(msg,)
@@ -976,7 +976,7 @@ Additional Inputs:
    #code += """from mystic.math.measures import spread, variance, mean;"""
     code += """from mystic.math import tolerance as _tol;"""
     code = compile(code, '<string>', 'exec')
-    exec(code, globals)
+    exec code in globals #FIXME: SyntaxError in python3
     globals.update(locals) #XXX: allow this?
     
     # build an empty local scope to exec the code and build the functions
@@ -997,7 +997,7 @@ def %(container)s_%(name)s(x): return eval('%(equation)s')
 %(container)s.append(%(container)s_%(name)s)
 del %(container)s_%(name)s""" % fdict
         code = compile(code, '<string>', 'exec')
-        exec(code, globals, results)
+        exec code in globals, results #FIXME: SyntaxError in python3
 
     #XXX: what's best form to return?  will couple these with ptypes
     return tuple(results['inequality']), tuple(results['equality'])
@@ -1071,7 +1071,7 @@ Additional Inputs:
     code += """from mystic.math.measures import impose_variance;"""
     code += """from mystic.math import tolerance as _tol;"""
     code = compile(code, '<string>', 'exec')
-    exec(code, globals)
+    exec code in globals #FIXME: SyntaxError in python3
     globals.update(locals) #XXX: allow this?
     
     # build an empty local scope to exec the code and build the functions
@@ -1093,7 +1093,7 @@ def %(container)s_%(name)s(x):
 %(container)s.append(%(container)s_%(name)s)
 del %(container)s_%(name)s""" % fdict
         code = compile(code, '<string>', 'exec')
-        exec(code, globals, results)
+        exec code in globals, results #FIXME: SyntaxError in python3
 
     #XXX: what's best form to return?  will couple these with ctypes ?
     return tuple(results['solver'])

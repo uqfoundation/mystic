@@ -499,7 +499,7 @@ sys.modules.pop('{base}', None);
         _globals = {}
         _globals.update(globals())
         code = compile(string, '<string>', 'exec')
-        exec(code, _globals)
+        exec code in _globals #FIXME: SyntaxError in python3
         npts = _globals.get('___npts')
         params = _globals.get('___params')
         cost = _globals.get('___cost')
