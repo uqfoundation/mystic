@@ -390,7 +390,7 @@ setup_code += """
 """
 
 # exec the 'setup' code
-exec setup_code
+exec(setup_code)
 
 # if dependencies are missing, print a warning
 try:
@@ -401,15 +401,15 @@ try:
     #import scipy
     #import matplotlib #XXX: has issues being zip_safe
 except ImportError:
-    print "\n***********************************************************"
-    print "WARNING: One of the following dependencies is unresolved:"
-    print "    numpy %s" % numpy_version
-    print "    sympy %s" % sympy_version
-    print "    klepto %s" % klepto_version
-    print "    dill %s" % dill_version
-    print "    scipy %s (optional)" % scipy_version
-    print "    matplotlib %s (optional)" % matplotlib_version
-    print "***********************************************************\n"
+    print("\n***********************************************************")
+    print("WARNING: One of the following dependencies is unresolved:")
+    print("    numpy %s" % numpy_version)
+    print("    sympy %s" % sympy_version)
+    print("    klepto %s" % klepto_version)
+    print("    dill %s" % dill_version)
+    print("    scipy %s (optional)" % scipy_version)
+    print("    matplotlib %s (optional)" % matplotlib_version)
+    print("***********************************************************\n")
 
 
 if __name__=='__main__':
