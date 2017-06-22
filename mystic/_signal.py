@@ -29,8 +29,8 @@ Available switches::
         self.sigint_callback = sigint_callback or solver.sigint_callback
     def __call__(self, signum, frame):
         import inspect
-        print inspect.getframeinfo(frame)
-        print inspect.trace()
+        print(inspect.getframeinfo(frame))
+        print(inspect.trace())
         while 1:
             s = input(\
 """
@@ -44,7 +44,7 @@ Available switches::
 
  >>> """ % sigint_callback)
             if s.lower() == 'sol':
-                print self.solver.bestSolution
+                print(self.solver.bestSolution)
             elif s.lower() == 'cont':
                 return
             elif s.lower() == 'call':
@@ -55,7 +55,7 @@ Available switches::
                 self.solver._EARLYEXIT = True
                 return
             else:
-                print "unknown option : %s" % s
+                print("unknown option : %s" % s)
         return
 
 # EOF
