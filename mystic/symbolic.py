@@ -161,7 +161,7 @@ Inputs:
 Additional Inputs:
     verbose -- if True, print diagnostic information. Default is False.
 """
-    verbose = kwds.get('verbose', False)
+    verbose = kwds['verbose'] if 'verbose' in kwds else False
     result, miss = [],[]
     skip = set()
     found = False
@@ -201,7 +201,7 @@ Additional Inputs:
 
 NOTE: if bounds are invalid, returns None
 """
-    inclusive = kwds.get('inclusive', True)
+    inclusive = kwds['inclusive'] if 'inclusive' in kwds else True
     if inclusive:
         '''
         if ('X > 0', 'X < 0') then 'X != 0'
@@ -319,10 +319,10 @@ Additional Inputs:
     variants -- a list of ints to use as variants for fractional powers
     verbose -- print debug messages
 """
-    errors = kwds.get('error',True) #XXX: default should be False?
-    variants = kwds.get('variants', None)
-    verbose = kwds.get('verbose', False)
-    vars = kwds.get('variables', 'x')
+    errors = kwds['error'] if 'error' in kwds else True#XXX: default of False?
+    variants = kwds['variants'] if 'variants' in kwds else None
+    verbose = kwds['verbose'] if 'verbose' in kwds else False
+    vars = kwds['variables'] if 'variables' in kwds else 'x'
     _vars = get_variables(after, vars)
     locals = kwds['locals'] if 'locals' in kwds else None
     if locals is None: locals = {}
@@ -426,7 +426,7 @@ def simplify(constraints, variables='x', target=None, **kwds):
    #error -- if False, ZeroDivisionError evaluates as None [default: True]
    #verbose -- print debug messages [default: False]
     ####################
-    all = kwds.get('all', False)
+    all = kwds['all'] if 'all' in kwds else False
     import random
     import itertools as it
     locals = kwds['locals'] if 'locals' in kwds else {} #XXX: HACK _locals
@@ -446,8 +446,8 @@ def simplify(constraints, variables='x', target=None, **kwds):
 
     def _simplify(eqn, rand=random.random, target=None, **kwds):
         'isolate one variable on the lhs'
-        verbose = kwds.get('verbose', False)
-        vars = kwds.get('variables', 'x')
+        verbose = kwds['verbose'] if 'verbose' in kwds else False
+        vars = kwds['variables'] if 'variables' in kwds else 'x'
         cmp = comparator(eqn)
         # get all variables used
         allvars = get_variables(eqn, vars)
@@ -527,7 +527,7 @@ def simplify(constraints, variables='x', target=None, **kwds):
         return results
 
     #### ...the rest is simplify()... ###
-    cycle = kwds.get('cycle', False)
+    cycle = kwds['cycle'] if 'cycle' in kwds else False
     eqns = []
     used = []
     for eqn in constraints.strip().split(NL):
@@ -987,8 +987,8 @@ def generate_conditions(constraints, variables='x', nvars=None, locals=None):
 
     # parse epsilon
     if locals is None: locals = {}
-    locals['tol'] = tol = locals.get('tol', 1e-15)
-    locals['rel'] = rel = locals.get('rel', 1e-15)
+    locals['tol'] = tol = locals['tol'] if 'tol' in locals else 1e-15
+    locals['rel'] = rel = locals['rel'] if 'rel' in locals else 1e-15
     if tol < 0 or rel < 0:
         msg = 'math domain error'
         raise ValueError(msg)
@@ -1084,8 +1084,8 @@ def generate_solvers(constraints, variables='x', nvars=None, locals=None):
 
     # parse epsilon
     if locals is None: locals = {}
-    locals['tol'] = tol = locals.get('tol', 1e-15)
-    locals['rel'] = rel = locals.get('rel', 1e-15)
+    locals['tol'] = tol = locals['tol'] if 'tol' in locals else 1e-15
+    locals['rel'] = rel = locals['rel'] if 'rel' in locals else 1e-15
     if tol < 0 or rel < 0:
         msg = 'math domain error'
         raise ValueError(msg)

@@ -272,7 +272,7 @@ def _weight_filter(mask):
         selector = lambda x: x - mask
     elif type(mask) is dict:
         pairs = False
-        selector = lambda x: dict((k,v) for (k,v) in ((i,j - mask.get(i,set())) for (i,j) in getattr(x, 'iteritems', x.items)()) if v)
+        selector = lambda x: dict((k,v) for (k,v) in ((i,j - (mask[i] if i in mask else set())) for (i,j) in getattr(x, 'iteritems', x.items)()) if v)
     else:
         import itertools
         _zip = getattr(itertools, 'izip', zip)
@@ -298,7 +298,7 @@ def _position_filter(mask):
     elif type(mask) is dict:
         pairs = False
         from mystic.tools import _symmetric
-        selector = lambda x: dict((k,v) for (k,v) in ((i,j - _symmetric(mask.get(i,set()))) for (i,j) in getattr(x, 'iteritems', x.items)()) if v)
+        selector = lambda x: dict((k,v) for (k,v) in ((i,j - _symmetric((mask[i] if i in mask else set()))) for (i,j) in getattr(x, 'iteritems', x.items)()) if v)
     else:
         import itertools
         from mystic.tools import _inverted

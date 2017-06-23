@@ -842,7 +842,7 @@ Further Inputs:
         # process and activate input settings
         self.sigint_callback = kwds.pop('sigint_callback', None)
         settings = self._process_inputs(kwds)
-        disp = settings.get('disp', False)
+        disp = settings['disp'] if 'disp' in settings else False
 
         # set up signal handler
         self._EARLYEXIT = False  #XXX: why not use EARLYEXIT singleton?

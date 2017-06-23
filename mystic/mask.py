@@ -14,7 +14,8 @@ def get_mask(condition): #FIXME: gets None if is None *and* if no mask
     condition = _term.state(condition)
     if not condition: return None
     if isinstance(condition, tuple): return None
-    return condition.popitem()[-1].get('mask', None)
+    condition = condition.popitem()[-1]
+    return condition['mask'] if 'mask' in condition else None
 
 
 #FIXME: get collapses by evaluating condition (not requiring already evaluated)?

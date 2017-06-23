@@ -122,7 +122,7 @@ Other class members:
                 raise TypeError(msg)
             except KeyError:
                 nodes = args[0]
-        else: nodes = kwds.get('nodes', self.__nodes)
+        else: nodes = kwds['nodes'] if 'nodes' in kwds else self.__nodes
         try: self.nodes = nodes
         except TypeError: pass  # then self.nodes is read-only
         return

@@ -507,9 +507,9 @@ sys.modules.pop('{base}', None);
         _globals.update(globals())
         code = compile(string, '<string>', 'exec')
         %s
-        npts = _globals.get('___npts')
-        params = _globals.get('___params')
-        cost = _globals.get('___cost')
+        npts = _globals['___npts'] if '___npts' in _globals else None
+        params = _globals['___params'] if '___params' in _globals else None
+        cost = _globals['___cost'] if '___cost' in _globals else None
         del _globals
     except: #XXX: should only catch the appropriate exceptions
         raise OSError("error reading '{path}'".format(path=path))

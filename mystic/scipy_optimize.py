@@ -173,8 +173,10 @@ The size of the simplex is dim+1.
         Note that ExtraArgs should be a *tuple* of extra arguments"""
         # process and activate input settings
         settings = self._process_inputs(kwds)
-        for key in settings:
-            exec("%s = settings['%s']" % (key,key))
+        #(hardwired: due to python3.x exec'ing to locals())
+        callback = settings['callback'] if 'callback' in settings else None
+        disp = settings['disp'] if 'disp' in settings else False
+        radius = settings['radius'] if 'radius' in settings else self.radius
 
         # HACK to enable not explicitly calling _decorate_objective
         cost = self._bootstrap_objective(cost, ExtraArgs)
@@ -495,8 +497,10 @@ Takes one initial input:
         Note that ExtraArgs should be a *tuple* of extra arguments"""
         # process and activate input settings
         settings = self._process_inputs(kwds)
-        for key in settings:
-            exec("%s = settings['%s']" % (key,key))
+        #(hardwired: due to python3.x exec'ing to locals())
+        callback = settings['callback'] if 'callback' in settings else None
+        disp = settings['disp'] if 'disp' in settings else False
+        xtol = settings['xtol'] if 'xtol' in settings else self.xtol
 
         # HACK to enable not explicitly calling _decorate_objective
         cost = self._bootstrap_objective(cost, ExtraArgs)

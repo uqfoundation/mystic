@@ -755,8 +755,8 @@ def unique(seq, full=None):
         _type = full.pop('type', float) #NOTE: undocumented keys: min,max,type
         minu = min(unique)
         maxu = max(unique)
-        _min = full.get('min', minu)
-        _max = full.get('max', maxu)
+        _min = full['min'] if 'min' in full else minu
+        _max = full['max'] if 'max' in full else maxu
         ok = minu >= _min and maxu < _max
         if not ok:
             oops = list(unique - set(range(_min,_max)))

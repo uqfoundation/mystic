@@ -244,8 +244,10 @@ input::
         Note that ExtraArgs should be a *tuple* of extra arguments"""
         # process and activate input settings
         settings = self._process_inputs(kwds)
-        for key in settings:
-            exec("%s = settings['%s']" % (key,key))
+        #(hardwired: due to python3.x exec'ing to locals())
+        callback = settings['callback'] if 'callback' in settings else None
+        disp = settings['disp'] if 'disp' in settings else False
+        strategy = settings['strategy'] if 'strategy' in settings else self.strategy
 
         # HACK to enable not explicitly calling _decorate_objective
         cost = self._bootstrap_objective(cost, ExtraArgs)
@@ -442,8 +444,10 @@ input::
         Note that ExtraArgs should be a *tuple* of extra arguments"""
         # process and activate input settings
         settings = self._process_inputs(kwds)
-        for key in settings:
-            exec("%s = settings['%s']" % (key,key))
+        #(hardwired: due to python3.x exec'ing to locals())
+        callback = settings['callback'] if 'callback' in settings else None
+        disp = settings['disp'] if 'disp' in settings else False
+        strategy = settings['strategy'] if 'strategy' in settings else self.strategy
 
         # HACK to enable not explicitly calling _decorate_objective
         cost = self._bootstrap_objective(cost, ExtraArgs)

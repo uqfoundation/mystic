@@ -24,6 +24,8 @@ random_seed(321)
 def test_solvers(solver1, solver2, x0, **kwds):
   exec("s1 = solvers.%s" % solver1)
   exec("s2 = solvers.%s" % solver2)
+  s1 = locals()['s1'] if 's1' in locals() else s1
+  s2 = locals()['s2'] if 's2' in locals() else s2
   maxiter = kwds['maxiter'] if 'maxiter' in kwds else None
   maxfun = kwds['maxfun'] if 'maxfun' in kwds else None
   s1_x = s1(rosen, x0, disp=0, full_output=True, **kwds)
@@ -48,6 +50,8 @@ def test_solvers(solver1, solver2, x0, **kwds):
 def test_compare(solvername, x0, **kwds):
   exec("my = solvers.%s" % solvername)
   exec("sp = %s" % solvername)
+  my = locals()['my'] if 'my' in locals() else my
+  sp = locals()['sp'] if 'sp' in locals() else sp
   maxiter = kwds['maxiter'] if 'maxiter' in kwds else None
   maxfun = kwds['maxfun'] if 'maxfun' in kwds else None
   my_x = my(rosen, x0, disp=0, full_output=True, **kwds)
