@@ -113,14 +113,7 @@ def sort_complex(c, a):
     # should use the one below instead.
     import numpy
     D = list(zip(a,c))
-    def mycmp(x,y):
-        if x[0] < y[0]:
-            return 1
-        elif x[0] > y[0]:
-            return -1
-        else:
-            return 0
-    D.sort(cmp = mycmp)
+    D.sort(key=lambda x:x[0], reverse=True)
     return numpy.array([x[1] for x in D]), [x[0] for x in D]
 
 def myinsert(a, x):

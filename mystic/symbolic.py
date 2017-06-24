@@ -622,9 +622,7 @@ Additional Inputs:
     # Sort by decreasing length of variable name, so that if one variable name 
     # is a substring of another, that won't be a problem. 
     variablescopy = variables[:]
-    def comparator(x, y):
-        return len(y) - len(x)
-    variablescopy.sort(comparator)
+    variablescopy.sort(key=lambda x: -len(x))
 
     # Figure out which index goes with which variable.
     indices = []

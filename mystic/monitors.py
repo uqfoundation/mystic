@@ -521,7 +521,7 @@ sys.modules.pop('{base}', None);
     m = Monitor() if _new else monitor
 
     #for p,c in zip(zip(*params), cost):
-    for p,c in zip((zip(*i)[0] for i in zip(*params)),cost):
+    for p,c in zip((list(zip(*i))[0] for i in zip(*params)),cost):
         m(p,c)
 
     if _new:

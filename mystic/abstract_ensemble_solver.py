@@ -386,8 +386,8 @@ Further Inputs:
             return solver, sm, em
 
         # map:: solver = local_optimize(solver, x0, id, verbose)
-        results = self._map(local_optimize, op, initial_values, id, \
-                                            vb, cb, **self._mapconfig)
+        results = list(self._map(local_optimize, op, initial_values, id, \
+                                                 vb, cb, **self._mapconfig))
 
         # save initial state
         self._AbstractSolver__save_state()

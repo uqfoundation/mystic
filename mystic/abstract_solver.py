@@ -627,8 +627,24 @@ Input::
             # get collapse conditions  #XXX: efficient? 4x loops over collapses
             state = mt.state(self._termination)
             npts = getattr(self._stepmon, '_npts', None)  #XXX: default?
-            conditions = [cn.impose_at(*to.select_params(self,collapses[k])) if state[k].get('target') is None else cn.impose_at(collapses[k],state[k].get('target')) for k in collapses if k.startswith('CollapseAt')]
-            conditions += [cn.impose_as(collapses[k],state[k].get('offset')) for k in collapses if k.startswith('CollapseAs')]
+           #conditions = [cn.impose_at(*to.select_params(self,collapses[k])) if state[k].get('target') is None else cn.impose_at(collapses[k],state[k].get('target')) for k in collapses if k.startswith('CollapseAt')]
+           #conditions += [cn.impose_as(collapses[k],state[k].get('offset')) for k in collapses if k.startswith('CollapseAs')]
+            conditions = []; _conditions = []
+            for k in collapses:
+                if k.startswith('CollapseAt'):
+                    t = state[k]
+                    t = t['target'] if target in t else None
+                    if t is None:
+                        t = cn.impose_at(*to.select_params(self,collapses[k]))
+                    else:
+                        t = cn.impose_at(collapses[k],t)
+                    conditions.append(t)
+                elif k.startswith('CollapseAs'):
+                    t = state[k]
+                    t = t['offset'] if 'offset' in t else None
+                    _conditions.append(cn.impose_as(collapses[k],t))
+            conditions.extend(_conditions)
+            del _conditions
             # get measure collapse conditions
             if npts: #XXX: faster/better if comes first or last?
                 conditions += [cn.impose_measure( npts, [collapses[k] for k in collapses if k.startswith('CollapsePosition')], [collapses[k] for k in collapses if k.startswith('CollapseWeight')] )]
@@ -701,7 +717,7 @@ Input::
                 os.close(fd)
             filename = self._state
         self._state = filename
-        f = file(filename, 'wb')
+        f = open(filename, 'wb')
         try:
             dill.dump(self, f, **kwds)
             self._stepmon.info('DUMPED("%s")' % filename) #XXX: before / after ?

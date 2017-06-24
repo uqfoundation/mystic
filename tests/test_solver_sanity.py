@@ -260,16 +260,22 @@ class TestRosenbrock(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    suite1 = unittest.TestLoader().loadTestsFromTestCase(TestRosenbrock)
-    allsuites = unittest.TestSuite([suite1])
-    runner = unittest.TextTestRunner(verbosity=verbosity)
+    def prepare():
+        suite1 = unittest.TestLoader().loadTestsFromTestCase(TestRosenbrock)
+        allsuites = unittest.TestSuite([suite1])
+        runner = unittest.TextTestRunner(verbosity=verbosity)
+        return allsuites, runner
 
+    allsuites, runner = prepare()
     my_maxiter = 0
     runner.run(allsuites)
+    allsuites, runner = prepare()
     my_maxiter = 1
     runner.run(allsuites)
+    allsuites, runner = prepare()
     my_maxiter = 2
     runner.run(allsuites)
+    allsuites, runner = prepare()
     my_maxiter = None
     runner.run(allsuites)
 

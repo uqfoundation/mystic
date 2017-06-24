@@ -84,7 +84,8 @@ if __name__ == '__main__':
   sol = solvers.diffev(rosen, x0, npop=40, disp=0, full_output=True)
   assert almostEqual(sol[1], 0.0020640145337293249, tol=3e-3)
   sol = solvers.diffev2(rosen, x0, npop=40, disp=0, full_output=True)
-  assert almostEqual(sol[1], 0.0017516784703663288, tol=3e-3)
+  assert (almostEqual(sol[1], 0.0017516784703663288, tol=3e-3) or
+         almostEqual(sol[1], 0.00496876027278, tol=3e-3)) # python3.x
   sol = solvers.fmin_powell(rosen, x0, disp=0, full_output=True)
   assert almostEqual(sol[1], 8.3173488898295291e-23)
   sol = solvers.fmin(rosen, x0, disp=0, full_output=True)
