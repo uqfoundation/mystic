@@ -512,7 +512,7 @@ input::
             self._maxiter = (N * self.nPop * iterscale) + self.generations
         if self._maxfun is None:
             self._maxfun = N * self.nPop * evalscale
-        elif self._maxiter == "*":
+        elif self._maxfun == "*":
             self._maxfun = (N * self.nPop * evalscale) + self.evaluations
         return
 

@@ -127,7 +127,7 @@ class TestRosenbrock(unittest.TestCase):
             self.assertTrue(solver.evaluations in calls) 
             self.assertTrue(solver.generations in iters)
             return
-        if self.uselimits and self.maxiter >= 2 and self.maxiter <= 5:
+        if self.uselimits and self.maxiter and 2 <= self.maxiter <= 5:
             calls += [52, 79, 107, 141] #Powell's
             self.assertTrue(solver.evaluations in calls) 
             self.assertTrue(solver.generations in iters)
