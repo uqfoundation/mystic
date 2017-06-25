@@ -123,8 +123,12 @@ example usage...
         self._id = []
         self._info = []
        #self._all = all
-        self.k = kwds.pop('k', None)
-        self._npts = kwds.pop('npts', None)
+        if 'k' in kwds:
+            self.k = kwds['k']; del kwds['k']
+        else: self.k = None
+        if 'npts' in kwds:
+            self._npts = kwds['npts']; del kwds['npts']
+        else: self._npts = None
 
     def __len__(self):
         return len(self.x)

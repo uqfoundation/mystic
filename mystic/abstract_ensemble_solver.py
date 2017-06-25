@@ -319,7 +319,10 @@ Further Inputs:
     disp -- non-zero to print convergence messages.         [default = 0]
         """
         # process and activate input settings
-        self.sigint_callback = kwds.pop('sigint_callback', None)
+        if 'sigint_callback' in kwds:
+            self.sigint_callback = kwds['sigint_callback']
+            del kwds['sigint_callback']
+        else: self.sigint_callback = None
         settings = self._process_inputs(kwds)
         disp = settings['disp'] if 'disp' in settings else False
         echo = settings['callback'] if 'callback' in settings else None

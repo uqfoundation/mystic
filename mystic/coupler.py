@@ -196,7 +196,9 @@ NOTE: This function is also useful for combining constraints solvers
     """
     k = settings.setdefault('k', 1)
     if k is None: del settings['k']
-    ptype = settings.pop('ptype', None)
+    if 'ptype' in settings:
+        ptype = settings['ptype']; del settings['ptype']
+    else: ptype = None
     if ptype is None:
         from mystic.penalty import linear_equality as ptype
     penalty = lambda x: sum(p(x) for p in penalties)
@@ -236,7 +238,9 @@ NOTE: This function is also useful for combining constraints solvers
     """
     k = settings.setdefault('k', 1)
     if k is None: del settings['k']
-    ptype = settings.pop('ptype', None)
+    if 'ptype' in settings:
+        ptype = settings['ptype']; del settings['ptype']
+    else: ptype = None
     if ptype is None:
         from mystic.penalty import linear_equality as ptype
     penalty = lambda x: min(p(x) for p in penalties)
@@ -263,7 +267,9 @@ Additional Inputs:
     """
     k = settings.setdefault('k', 1)
     if k is None: del settings['k']
-    ptype = settings.pop('ptype', None)
+    if 'ptype' in settings:
+        ptype = settings['ptype']; del settings['ptype']
+    else: ptype = None
     if ptype is None:
         import mystic.penalty as mp
         try:

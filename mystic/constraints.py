@@ -451,7 +451,9 @@ NOTE:
     import itertools as it
     import random as rnd
     n = len(constraints)
-    maxiter = settings.pop('maxiter', 100) * n
+    if 'maxiter' in settings:
+        maxiter = settings['maxiter'] * n; del settings['maxiter']
+    else: maxiter = 100 * n
     def _constraint(x): #XXX: inefficient, rewrite without append
         x = [x]
         # apply all constaints once
@@ -493,7 +495,9 @@ NOTE:
     import itertools as it
     import random as rnd
     n = len(constraints)
-    maxiter = settings.pop('maxiter', 100) * n
+    if 'maxiter' in settings:
+        maxiter = settings['maxiter'] * n; del settings['maxiter']
+    else: maxiter = 100 * n
     def _constraint(x): #XXX: inefficient, rewrite without append
         x = [x]
         # check if initial input is valid
@@ -531,7 +535,9 @@ NOTE:
     If a repeating cycle is detected, some of the inputs may be randomized.
     """
     import random as rnd
-    maxiter = settings.pop('maxiter', 100)
+    if 'maxiter' in settings:
+        maxiter = settings['maxiter']; del settings['maxiter']
+    else: maxiter = 100
     def _constraint(x):
         # check if initial input is valid, else randomize and try again
         for j in range(0,maxiter):
@@ -752,7 +758,9 @@ def unique(seq, full=None):
         _min = min(unique)
         _max = max(unique)
     elif isinstance(full, dict): # specified min/max for floats
-        _type = full.pop('type', float) #NOTE: undocumented keys: min,max,type
+        if 'type' in full: #NOTE: undocumented keys: min,max,type
+            _type = full['type']; del full['type']
+        else: _type = float
         minu = min(unique)
         maxu = max(unique)
         _min = full['min'] if 'min' in full else minu

@@ -806,7 +806,9 @@ Notes:
     To run the solver until termination, call "Solve()".  Alternately, use
     Terminated()" as the condition in a while loop over "Step".
         """
-        disp = kwds.pop('disp', False)
+        if 'disp' in kwds:
+            disp = kwds['disp']; del kwds['disp']
+        else: disp = False
 
         # register: cost, termination, ExtraArgs
         cost = self._bootstrap_objective(cost, ExtraArgs)
@@ -856,7 +858,10 @@ Further Inputs:
     disp -- non-zero to print convergence messages.
         """
         # process and activate input settings
-        self.sigint_callback = kwds.pop('sigint_callback', None)
+        if 'sigint_callback' in kwds:
+            self.sigint_callback = kwds['sigint_callback']
+            del kwds['sigint_callback']
+        else: self.sigint_callback = None
         settings = self._process_inputs(kwds)
         disp = settings['disp'] if 'disp' in settings else False
 
