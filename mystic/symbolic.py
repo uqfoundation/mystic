@@ -334,9 +334,11 @@ Additional Inputs:
         try:
             after, before = eval(after,{},locals_), eval(before,{},locals_)
             break
-        except ValueError as error:  #FIXME: python2.5
-            if error.message.startswith('negative number') and \
-               error.message.endswith('raised to a fractional power'):
+        except (ValueError,TypeError) as error:  #FIXME: python2.5
+            if (error.args[0].startswith('negative number') and \
+               error.args[0].endswith('raised to a fractional power')) or \
+               (error.args[0].find('not supported') and \
+               error.args[0].rfind("'complex'")):
                 val = variants.pop()
                 [locals_.update({k:v+val}) for k,v in getattr(locals_, 'iteritems', locals_.items)() if k in _vars]
             else:

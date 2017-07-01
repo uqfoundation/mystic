@@ -101,12 +101,14 @@ assert equals(eqn, res[2].split('\n')[-1], dict(A=-0.1,B=-1.,C=2.1))
 assert equals(eqn, res[3].split('\n')[-1], dict(A=-0.1,B=1.,C=1.9))
 assert equals(eqn, res[3].split('\n')[-1], dict(A=-0.1,B=-1.,C=1.9))
 
-#FIXME: tests in this block sometimes fail... (due to negative sqrt?)
 res = simplify(eqn, variables=var, target=list('ABC'), all=True)
 #print('\n#####\n'.join(res))
 #_ = eval(res.split('<')[-1],dict(B=0.,C=1.,sqrt=sqrt))
 #_ = eval(res.split('<')[-1],dict(B=2.,C=-10.,sqrt=sqrt))
 bylen = lambda x: len(x)
 res = ['\n'.join(sorted(eqns.split('\n'), key=bylen)) for eqns in res]
-assert equals(eqn, res[0].split('\n')[-1], dict(A=0.1,B=0.,C=1.,sqrt=sqrt))
-assert equals(eqn, res[1].split('\n')[-1], dict(A=-0.1,B=2.,C=-10.,sqrt=sqrt))
+resA = res[0].split('\n')[-1]
+resB = res[1].split('\n')[-1]
+if res[0].count('<') != res[0].count('>'): resA,resB = resB,resA #XXX: why in python3?
+assert equals(eqn, resA, dict(A=0.1,B=0.,C=1.,sqrt=sqrt))
+assert equals(eqn, resB, dict(A=-0.1,B=2.,C=-10.,sqrt=sqrt))

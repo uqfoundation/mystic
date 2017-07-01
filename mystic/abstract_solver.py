@@ -633,7 +633,7 @@ Input::
             for k in collapses:
                 if k.startswith('CollapseAt'):
                     t = state[k]
-                    t = t['target'] if target in t else None
+                    t = t['target'] if 'target' in t else None
                     if t is None:
                         t = cn.impose_at(*to.select_params(self,collapses[k]))
                     else:

@@ -45,7 +45,7 @@ from mystic.models.poly import chebyshev8cost as ChebyshevCost  # no helper
 ND = 9
 NP = 40
 MAX_GENERATIONS = NP*NP
-NNODES = NP/5
+NNODES = NP//5
 
 seed = 321
 

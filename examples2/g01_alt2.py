@@ -19,8 +19,9 @@ from g01 import objective, bounds, xs, ys
 from g01_alt import penalty1, penalty2, penalty3, penalty4, penalty5, \
                     penalty6, penalty7, penalty8, penalty9
 
-from mystic.constraints import as_constraint, combined
+from mystic.constraints import as_constraint
 from mystic.penalty import linear_inequality
+from mystic.coupler import and_ as combined
 
 penalties = (penalty1,penalty2,penalty3,penalty4,penalty5,\
              penalty6,penalty7,penalty8,penalty9)

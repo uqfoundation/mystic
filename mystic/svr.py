@@ -30,7 +30,7 @@ def SupportVectors(alpha, epsilon=0):
 
 def Bias(x, y, alpha, epsilon, kernel=InnerProduct):
     """ Compute regression bias for epsilon insensitive loss regression """
-    N = len(alpha)/2
+    N = len(alpha)//2
     ap, am = alpha[:N],  alpha[N:]
     sv = SupportVectors(alpha)[0]
     # functionally: b = epsilon + y[sv] + sum( (ap-am) * map(lambda xx: kernel(xx, x[sv]), x) )
@@ -40,7 +40,7 @@ def Bias(x, y, alpha, epsilon, kernel=InnerProduct):
 def RegressionFunction(x, y, alpha, epsilon, kernel=InnerProduct):
     """ The Support Vector expansion. f(x) = Sum (ap - am) K(xi, x) + b """
     bias = Bias(x, y, alpha, epsilon, kernel)
-    N = len(alpha)/2
+    N = len(alpha)//2
     ap, am = alpha[:N],  alpha[N:]
     ad = ap-am
     def _(x_in):

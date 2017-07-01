@@ -42,15 +42,15 @@ Available switches::
     call: Executes sigint_callback [%s].
     exit: Exits with current best solution.
 
- >>> """ % sigint_callback)
+ >>> """ % self.sigint_callback)
             if s.lower() == 'sol':
                 print(self.solver.bestSolution)
             elif s.lower() == 'cont':
                 return
             elif s.lower() == 'call':
                 # sigint call_back
-                if sigint_callback is not None:
-                    sigint_callback(self.solver.bestSolution)
+                if self.sigint_callback is not None:
+                    self.sigint_callback(self.solver.bestSolution)
             elif s.lower() == 'exit':
                 self.solver._EARLYEXIT = True
                 return

@@ -125,7 +125,7 @@ References:
   x = [random_samples(lb, ub, npts=1) for k in range(1, n+1)]
   r = map(f, x)  #FIXME: , nnodes=nnodes, launcher=launcher)
   s = sum(r)[0]
-  I = (vol/k)*s
+  I = (vol/n)*s
   return float(I)
 
 

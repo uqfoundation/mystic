@@ -78,7 +78,7 @@ def sequential_deal(inarray, n):
     N = len(cards)
     # this bit of numpy will give, for N=20, n = 5
     # ord = [ [0,5,10,15], [1,6,11,16], [2,7,12,17], [3,8,13,18], [4,9,14,19] ]
-    ord = numpy.transpose(numpy.array(list(range(N))).reshape(N/n, n))
+    ord = numpy.transpose(numpy.array(list(range(N))).reshape(N//n, n))
     return [cards[x] for x in ord] 
 
 def sort_and_deal(cards, target, nplayers):

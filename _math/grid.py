@@ -20,7 +20,7 @@ Note:
     w = [[] for i in range(len(q[-1]))]
     for j in range(len(q)-1,-1,-1):
       for k in range(len(q[j])):
-        for l in range(k*len(w)/len(q[j]), (k+1)*len(w)/len(q[j])):
+        for l in range(k*len(w)//len(q[j]), (k+1)*len(w)//len(q[j])):
           w[l].append(q[j][k])
       if j: w += [i[:] for i in w[:]*(len(q[j-1])-1)]
     pts = [list(reversed(w[i])) for i in range(len(w))]
@@ -74,7 +74,7 @@ Inputs:
         for i in chain([2],xrange(3,n+1,2)):
             s = 0
             while n%i == 0:
-                n /= i
+                n //= i
                 s += 1
             result.extend([i]*s)
             if n == 1:
@@ -82,7 +82,7 @@ Inputs:
     result = factors(N)
     dim = nfact = len(result)
     prime = nfact == 1
-    if ndim: result += [1] * (ndim - (nfact / ndim));  dim = ndim
+    if ndim: result += [1] * (ndim - (nfact // ndim));  dim = ndim
     elif ones: result += [1] # add some 'randomness' by adding a "1"
     # if ones, mix in the 1s; otherwise, only use 1s when ndim < len(result)
     if ones: result = sorted(result, key=lambda v: random())
@@ -109,7 +109,7 @@ if __name__ == '__main__':
   grid_dimensions = len(lower)
   bins = []
   for i in range(grid_dimensions):  #XXX: different nbins for each direction?
-    step = abs(upper[i] - lower[i])/nbins
+    step = abs(upper[i] - lower[i])//nbins  #XXX: // or / ?
     bins.append( [lower[i] + (j+0.5)*step for j in range(nbins)] )
 
   # build a grid of starting points

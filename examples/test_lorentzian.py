@@ -95,14 +95,14 @@ if __name__ == '__main__':
     binsc, histo = histogram(data, binwidth, xmin,xmax)
     print("binsc:  %s" % binsc)
     print("count:  %s" % histo)
-    print("ncount: %s" % (histo/N))
+    print("ncount: %s" % (histo//N))
     print("exact : %s" % pdf(binsc))
 
     print("now with DE...")
     from mystic.forward_model import CostFactory
     CF = CostFactory()
     CF.addModel(F, ND, 'lorentz')
-    myCF = CF.getCostFunction(binsc, histo/N)
+    myCF = CF.getCostFunction(binsc, histo//N)
     sol, steps = de_solve(myCF)
     plot_sol()(sol)
     #print("steps: %s %s" % (steps.x, steps.y))
