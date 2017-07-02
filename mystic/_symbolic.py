@@ -22,10 +22,10 @@ from mystic.tools import list_or_tuple_or_ndarray
 import sys
 if (sys.hexversion >= 0x30000f0):
     exec_locals_ = 'exec(code, _locals)'
-    exec_globals_ = 'exec(code, globals(), _locals)'
+    exec_globals_ = 'exec(_code, globals(), _locals)'
 else:
     exec_locals_ = 'exec code in _locals'
-    exec_globals_ = 'exec code in globals(), _locals'
+    exec_globals_ = 'exec _code in globals(), _locals'
 NL = '\n'
 #FIXME: remove this head-standing to workaround python2.6 exec bug
 
@@ -375,13 +375,14 @@ Further Inputs:
         code += 'soln = symsol([' + eqlist + '], [' + target[0] + '])' + NL
        #code += 'soln = symsol([' + eqlist + '], [' + targeted[0] + '])' + NL
         code += 'soln = soln if isinstance(soln, dict) else {' + target[0] + ': soln[-1][-1]} if soln else ""' + NL
+    #code += 'print(soln)' + NL
     ########################################################################
 
     if verbose: print(code)
-    code = compile(code, '<string>', 'exec')
+    _code = compile(code, '<string>', 'exec')
     try: 
         %(exec_globals_)s
-        soln = _locals['soln']
+        soln = _locals['soln'] if 'soln' in _locals else None
         if not soln:
             if warn: print("Warning: target variable is not valid")
             soln = {}
@@ -561,7 +562,7 @@ def _solve_linear(constraints, variables='x', target=None, **kwds):
         _code = compile(_code, '<string>', 'exec')
         try: 
             %(exec_globals_)s
-            soln = _locals['soln']
+            soln = _locals['soln'] if 'soln' in _locals else None
             if not soln:
                 if warn: print("Warning: could not simplify equation.")
                 soln = {}
@@ -819,31 +820,33 @@ Further Inputs:
         for m in range(nmissing):
             usedvars.append(varname + str(len(tempusedvar) + m))
 
+        #FIXME: not sure if the code below should be totally trusted...
         for i in range(neqns):
             # Trying to use xi as a pivot. Loop through the equations
             # looking for one containing xi.
-            _target = usedvars[i]
+            _target = usedvars[i%len(usedvars)] #XXX: ...to make it len of neqns
             for eqn in actual_eqns[i:]:
                 invertedstring = _solve_single(eqn, variables=varname, target=_target, warn=warn)
                 if invertedstring:
                     warn = False
                     break
+            if invertedstring is None: continue #XXX: ...when _solve_single fails
             # substitute into the remaining equations. the equations' order
             # in the list newsystem is like in a linear coefficient matrix.
             newsystem = ['']*neqns
             j = actual_eqns.index(eqn)
-            newsystem[j] = eqn
+            newsystem[j] = invertedstring #XXX: ...was eqn. I think correct now
             othereqns = actual_eqns[:j] + actual_eqns[j+1:]
             for othereqn in othereqns:
                 expression = invertedstring.split("=")[1]
                 fixed = othereqn.replace(_target, '(' + expression + ')')
                 k = actual_eqns.index(othereqn)
                 newsystem[k] = fixed
-            actual_eqns = newsystem
-            
+            actual_eqns = newsystem #XXX: potentially carrying too many eqns
+
         # Invert so that it can be fed properly to generate_constraint
         simplified = []
-        for eqn in actual_eqns:
+        for eqn in actual_eqns[:len(usedvars)]: #XXX: ...needs to be same len
             _target = usedvars[actual_eqns.index(eqn)]
             mysoln = _solve_single(eqn, variables=varname, target=_target, warn=warn)
             if mysoln: simplified.append(mysoln)
