@@ -289,18 +289,26 @@ def _solve_zeros(equation, variables=None, implicit=True):
     # if implicit = True, can solve to functions of a variable (i.e. sin(A)=1)
     res = _denominator(equation, variables)#XXX: w/o this, is a general solve
     x = variables or 'x'
+    _res = []
     for i,eqn in enumerate(res):
         _eqn = eqn+' = 0'
         try:
-            _eqn = solve(_eqn, target=variables, variables=x)
-            if not _eqn: raise ValueError()
+            eqn_ = solve(_eqn, target=variables, variables=x)
+            if not eqn_:
+                msg = "cannot simplify '%s'" % _eqn
+                raise ValueError(msg)
+            vars = set(get_variables(eqn,x)).difference(get_variables(eqn_,x))
+            while vars: # solve for missing variables
+                alt = solve(_eqn, target=vars.pop(), variables=x)
+                if alt: _res.append(alt) 
+            _eqn = eqn_
         except ValueError:
             if not implicit:
-               msg = "cannot simplify '%s'" % _eqn
-               raise ValueError(msg)
+                msg = "cannot simplify '%s'" % _eqn
+                raise ValueError(msg)
             #else: pass
         res[i] = _eqn
-    return res
+    return res + _res
 
 
 #XXX: if error=False, should return None? or ???
@@ -317,18 +325,17 @@ Additional Inputs:
     locals -- a dict with variable names as keys and 'fixed' values
     error -- if False, ZeroDivisionError evaluates as None
     variants -- a list of ints to use as variants for fractional powers
-    verbose -- print debug messages
-"""
+""" #verbose -- print debug messages
     errors = kwds['error'] if 'error' in kwds else True#XXX: default of False?
     variants = kwds['variants'] if 'variants' in kwds else None
-    verbose = kwds['verbose'] if 'verbose' in kwds else False
+    #verbose = kwds['verbose'] if 'verbose' in kwds else False
     vars = kwds['variables'] if 'variables' in kwds else 'x'
     _vars = get_variables(after, vars)
     locals = kwds['locals'] if 'locals' in kwds else None
     if locals is None: locals = {}
     if vals is None: vals = {}
     locals.update(vals)
-    if verbose: print(locals)
+    #if verbose: print(locals)
     locals_ = locals.copy() #XXX: HACK _locals
     while variants:
         try:
@@ -368,7 +375,7 @@ Additional Inputs:
                 except ZeroDivisionError:
                     return True
             return False
-    return before is after
+    return before == after
 
 
 doc_simplify = """simplify a system of symbolic constraints equations.
@@ -530,6 +537,7 @@ def simplify(constraints, variables='x', target=None, **kwds):
 
     #### ...the rest is simplify()... ###
     cycle = kwds['cycle'] if 'cycle' in kwds else False
+    verbose = kwds['verbose'] if 'verbose' in kwds else False
     eqns = []
     used = []
     for eqn in constraints.strip().split(NL):
@@ -541,7 +549,7 @@ def simplify(constraints, variables='x', target=None, **kwds):
         while vars:
             try: # cycle through variables trying 'simplest' first
                 res = _simplify(eqn, variables=variables, target=vars, **kwds)
-                #print('#: {0}'.format(res))
+                if verbose: print('#: {0}'.format(res))
                 res = res if type(res) is tuple else (res,)
                 eqns.append(res)
                 r = res[0] #XXX: only add the 'primary' variable to used
@@ -555,13 +563,13 @@ def simplify(constraints, variables='x', target=None, **kwds):
                     basestring = str
                 if isinstance(vars, basestring): vars = []
                 else: vars.pop(0)
+                if verbose: print('PASS')
                 #print("v,u: {0} {1}".format(vars, used))
         else: # failure... so re-raise error
             res = _simplify(eqn, variables=variables, target=target, **kwds)
-            #print('X: {0}'.format(res))
+            if verbose: print('X: {0}'.format(res))
             res = res if type(res) is tuple else (res,)
             eqns.append(res)
-    #print(eqns)
     _eqns = it.product(*eqns)
     eqns = tuple(NL.join(i) for i in _eqns)
     # "merge" the multiple equations to find simplest bounds

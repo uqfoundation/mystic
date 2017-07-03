@@ -169,7 +169,7 @@ Requirements
 
 `mystic` requires::
 
-    - python, version >= 2.6, version < 3.0
+    - python2, version >= 2.6  *or*  python3, version >= 3.1
     - numpy, version >= 1.0
     - sympy, version >= 0.6.7
     - dill, version >= 0.2.6
@@ -352,6 +352,7 @@ setup(name='mystic',
                      'Intended Audience :: Science/Research',
                      'License :: OSI Approved :: BSD License',
                      'Programming Language :: Python :: 2',
+                     'Programming Language :: Python :: 3',
                      'Topic :: Scientific/Engineering',
                      'Topic :: Software Development'),
 
