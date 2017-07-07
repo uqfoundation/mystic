@@ -706,9 +706,10 @@ Additional Inputs:
             p = [p[int(i)] for i in select[:2]]
             px,py = p # _draw_trajectory requires two parameters
             # ignore everything after 'stop'
-            _x = eval('px[%s]' % stop)
-            _y = eval('py[%s]' % stop)
-            _c = eval('c[%s]' % stop) if surface else None
+            locals = dict(px=px, py=py, c=c)
+            _x = eval('px[%s]' % stop, locals)
+            _y = eval('py[%s]' % stop, locals)
+            _c = eval('c[%s]' % stop, locals) if surface else None
             fig = _draw_trajectory(_x,_y,_c, style=style, scale=scale, shift=shift, figure=fig)
 
     import matplotlib.pyplot as plt
@@ -1109,8 +1110,9 @@ Required Inputs:
     # build the list of selected parameters
     params = list(range(len(param[0])))
     selected = []
+    locals = dict(params=params)
     for i in select:
-      selected.extend(eval("params[%s]" % i))
+      selected.extend(eval("params[%s]" % i, locals))
     selected = list(set(selected))
 
     results = [[] for i in range(max(id) + 1)]

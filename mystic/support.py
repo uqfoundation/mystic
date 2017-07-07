@@ -464,7 +464,8 @@ Required Inputs:
     fig = plt.figure()
     ax1 = fig.add_subplot(dim1,dim2,1)
     ax1.set_ylabel(label[0])
-    data = eval("params[{0}]".format(select[0]))
+    locals = dict(params=params)
+    data = eval("params[{0}]".format(select[0]), locals)
     try:
         n = int(select[0].split(":")[0])
     except ValueError:
@@ -480,7 +481,7 @@ Required Inputs:
         code += "ax{0:d}.set_ylabel(label[{1:d}]);".format(i,i-1)
         code = compile(code, '<string>', 'exec')
         %(exec_string)s
-        data = eval("params[{0}]".format(select[i-1]))
+        data = eval("params[{0}]".format(select[i-1]), locals)
         try:
             n = int(select[i-1].split(":")[0])
         except ValueError:
@@ -799,7 +800,8 @@ Required Inputs:
         if p[0][0] == '-': p[0] = "len(x)"+p[0]
         if p[1][0] == '-': p[1] = "len(x)"+p[1]
         select[i] = p[0]+":"+p[1]
-    steps = [eval("range({0})".format(sel.replace(":",","))) for sel in select]
+    locals = dict(x=x, params=params, xyz=xyz)
+    steps = [eval("list(range({0}))".format(sel.replace(":",",")), locals) for sel in select]
 
     # at this point, we should have:
     #xyz = [(0,1),(4,5),(8,9)] for any length tuple
@@ -817,9 +819,9 @@ Required Inputs:
         for s in steps[v]:
             # dot color determined by number of simultaneous iterations
             t = str((s/qp)**scale)
-            for i in eval("[params[q][{0}] for q in xyz[0]]".format(s)):
-                for j in eval("[params[q][{0}] for q in xyz[1]]".format(s)):
-                    for k in eval("[params[q][{0}] for q in xyz[2]]".format(s)):
+            for i in eval("[params[q][{0}] for q in xyz[0]]".format(s), locals):
+                for j in eval("[params[q][{0}] for q in xyz[1]]".format(s), locals):
+                    for k in eval("[params[q][{0}] for q in xyz[2]]".format(s), locals):
                         a[v].plot(i,j,k,marker='o',color=t,ms=10)
 
     if not parsed_opts.out:
@@ -1119,7 +1121,8 @@ Required Inputs:
    #    if p[1][0] == '-': p[1] = "len(x)"+p[1]
    #    select[i] = p[0]+":"+p[1]
    #steps = [eval("range({0})".format(sel.replace(":",","))) for sel in select]
-    steps = [eval("[int({0})]".format(sel)) for sel in select]
+    locals = dict(x=x, params=params, wxyz=wxyz, xyz=xyz)
+    steps = [eval("[int({0})]".format(sel), locals) for sel in select]
 
     # at this point, we should have:
     #xyz = [(2,3),(6,7),(10,11)] for any length tuple
@@ -1138,9 +1141,9 @@ Required Inputs:
     for v in range(len(steps)):
         t.append([])
         for s in steps[v]:
-            for i in eval("[params[q][{0}] for q in wxyz[0]]".format(s)):
-                for j in eval("[params[q][{0}] for q in wxyz[1]]".format(s)):
-                    for k in eval("[params[q][{0}] for q in wxyz[2]]".format(s)):
+            for i in eval("[params[q][{0}] for q in wxyz[0]]".format(s), locals):
+                for j in eval("[params[q][{0}] for q in wxyz[1]]".format(s), locals):
+                    for k in eval("[params[q][{0}] for q in wxyz[2]]".format(s), locals):
                         t[v].append([str((1.0 - i[q]*j[q]*k[q])**scale) for q in range(len(i))])
                         if float(t[v][-1][-1]) > 1.0 or float(t[v][-1][-1]) < 0.0:
                             raise ValueError("Weights must be in range 0-1. Check normalization and/or assignment.")
@@ -1149,9 +1152,9 @@ Required Inputs:
     for v in range(len(steps)):
         for s in steps[v]:
             u = 0
-            for i in eval("[params[q][{0}] for q in xyz[0]]".format(s)):
-                for j in eval("[params[q][{0}] for q in xyz[1]]".format(s)):
-                    for k in eval("[params[q][{0}] for q in xyz[2]]".format(s)):
+            for i in eval("[params[q][{0}] for q in xyz[0]]".format(s), locals):
+                for j in eval("[params[q][{0}] for q in xyz[1]]".format(s), locals):
+                    for k in eval("[params[q][{0}] for q in xyz[2]]".format(s), locals):
                         for q in range(len(t[v][u])):
                             a[v].plot([i[q]],[j[q]],[k[q]],marker='o',color=t[v][u][q],ms=10)
                         u += 1
@@ -1580,7 +1583,8 @@ Additional Inputs:
         if p[0][0] == '-': p[0] = "len(x)"+p[0]
         if p[1][0] == '-': p[1] = "len(x)"+p[1]
         select[i] = p[0]+":"+p[1]
-    steps = [eval("range({0})".format(sel.replace(":",","))) for sel in select]
+    locals = dict(x=x, params=params)
+    steps = [eval("range({0})".format(sel.replace(":",",")), locals) for sel in select]
 
     # at this point, we should have:
     #steps = [[0,1],[1,2],[2,3],[3,4,5,6,7,8]] or similar
@@ -1595,7 +1599,7 @@ Additional Inputs:
         if len(steps[v]) > 1: qp = float(max(steps[v]))
         else: qp = inf
         for s in steps[v]:
-            par = eval("[params[q][{0}][0] for q in range(len(params))]".format(s))
+            par = eval("[params[q][{0}][0] for q in range(len(params))]".format(s), locals)
             pm = scenario()
             pm.load(par, npts)
             d = dataset()
