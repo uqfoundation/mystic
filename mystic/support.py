@@ -19,8 +19,10 @@ __quit = False
 ZERO = 1.0e-6  # zero-ish
 import sys
 if (sys.hexversion >= 0x30000f0):
+    PY3 = True
     exec_string = 'exec(code, globals)'
 else:
+    PY3 = False
     exec_string = 'exec code in globals'
 NL = '\n'
 NL2 = '\n\n'
@@ -381,12 +383,16 @@ Required Inputs:
     parser.add_option("-g","--legend",action="store_true",dest="legend",\
                       default=False,help="show the legend")
 
-    f = StringIO()
-    parser.print_help(file=f)
-    f.seek(0)
-    if 'Options:' not in convergence.__doc__:
-        convergence.__doc__ += NL+'Options:{0}'.format(f.read().split('Options:')[-1])
-    f.close()
+    if PY3:
+        f = StringIO()
+        parser.print_help(file=f)
+        f.seek(0)
+        if 'Options:' not in convergence.__doc__:
+            convergence.__doc__ += NL+'Options:{0}'.format(f.read().split('Options:')[-1])
+        f.close()
+    else:
+        if 'Options:' not in convergence.__doc__:
+            convergence.__doc__ += NL+'Options:{0}'.format(parser.format_help().split('Options:')[-1])
 
     try:
         parsed_opts, parsed_args = parser.parse_args(cmdargs)
@@ -646,12 +652,16 @@ Required Inputs:
     parser.add_option("-f","--flat",action="store_true",dest="flatten",\
                       default=False,help="show selected iterations in a single plot")
 
-    f = StringIO()
-    parser.print_help(file=f)
-    f.seek(0)
-    if 'Options:' not in hypercube.__doc__:
-        hypercube.__doc__ += NL+'Options:{0}'.format(f.read().split('Options:')[-1])
-    f.close()
+    if PY3:
+        f = StringIO()
+        parser.print_help(file=f)
+        f.seek(0)
+        if 'Options:' not in hypercube.__doc__:
+            hypercube.__doc__ += NL+'Options:{0}'.format(f.read().split('Options:')[-1])
+        f.close()
+    else:
+        if 'Options:' not in hypercube.__doc__:
+            hypercube.__doc__ += NL+'Options:{0}'.format(parser.format_help().split('Options:')[-1])
 
     try:
         parsed_opts, parsed_args = parser.parse_args(cmdargs)
@@ -956,12 +966,16 @@ Required Inputs:
     parser.add_option("-f","--flat",action="store_true",dest="flatten",\
                       default=False,help="show selected iterations in a single plot")
 
-    f = StringIO()
-    parser.print_help(file=f)
-    f.seek(0)
-    if 'Options:' not in hypercube_measures.__doc__:
-        hypercube_measures.__doc__ += NL+'Options:{0}'.format(f.read().split('Options:')[-1])
-    f.close()
+    if PY3:
+        f = StringIO()
+        parser.print_help(file=f)
+        f.seek(0)
+        if 'Options:' not in hypercube_measures.__doc__:
+            hypercube_measures.__doc__ += NL+'Options:{0}'.format(f.read().split('Options:')[-1])
+        f.close()
+    else:
+        if 'Options:' not in hypercube_measures.__doc__:
+            hypercube_measures.__doc__ += NL+'Options:{0}'.format(parser.format_help().split('Options:')[-1])
 
     try:
         parsed_opts, parsed_args = parser.parse_args(cmdargs)
@@ -1316,12 +1330,16 @@ Additional Inputs:
     parser.add_option("-f","--flat",action="store_true",dest="flatten",\
                       default=False,help="show selected iterations in a single plot")
 
-    f = StringIO()
-    parser.print_help(file=f)
-    f.seek(0)
-    if 'Options:' not in hypercube_scenario.__doc__:
-        hypercube_scenario.__doc__ += NL+'Options:{0}'.format(f.read().split('Options:')[-1])
-    f.close()
+    if PY3:
+        f = StringIO()
+        parser.print_help(file=f)
+        f.seek(0)
+        if 'Options:' not in hypercube_scenario.__doc__:
+            hypercube_scenario.__doc__ += NL+'Options:{0}'.format(f.read().split('Options:')[-1])
+        f.close()
+    else:
+        if 'Options:' not in hypercube_scenario.__doc__:
+            hypercube_scenario.__doc__ += NL+'Options:{0}'.format(parser.format_help().split('Options:')[-1])
 
     try:
         parsed_opts, parsed_args = parser.parse_args(cmdargs)

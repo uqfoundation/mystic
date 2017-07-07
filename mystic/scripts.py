@@ -18,8 +18,10 @@ __quit = False
 import sys
 if (sys.hexversion >= 0x30000f0):
     exec_string = 'exec(code, globals)'
+    PY3 = True
 else:
     exec_string = 'exec code in globals'
+    PY3 = False 
 
 
 #XXX: better if reads single id only? (e.g. same interface as read_history)
@@ -525,12 +527,16 @@ Additional Inputs:
 
 #   import sys
 #   if 'mystic_model_plotter.py' not in sys.argv:
-    f = StringIO()
-    parser.print_help(file=f)
-    f.seek(0)
-    if 'Options:' not in model_plotter.__doc__:
-      model_plotter.__doc__ += '\nOptions:%s' % f.read().split('Options:')[-1]
-    f.close()
+    if PY3:
+      f = StringIO()
+      parser.print_help(file=f)
+      f.seek(0)
+      if 'Options:' not in model_plotter.__doc__:
+        model_plotter.__doc__ += '\nOptions:%s' % f.read().split('Options:')[-1]
+      f.close()
+    else:
+      if 'Options:' not in model_plotter.__doc__:
+        model_plotter.__doc__ += '\nOptions:%s' % parser.format_help().split('Options:')[-1]
 
     try:
       parsed_opts, parsed_args = parser.parse_args(cmdargs)
@@ -828,12 +834,16 @@ Required Inputs:
                       help="string to indicate collapse indices")
 #   import sys
 #   if 'mystic_collapse_plotter.py' not in sys.argv:
-    f = StringIO()
-    parser.print_help(file=f)
-    f.seek(0)
-    if 'Options:' not in collapse_plotter.__doc__:
-      collapse_plotter.__doc__ += '\nOptions:%s' % f.read().split('Options:')[-1]
-    f.close()
+    if PY3:
+      f = StringIO()
+      parser.print_help(file=f)
+      f.seek(0)
+      if 'Options:' not in collapse_plotter.__doc__:
+        collapse_plotter.__doc__ += '\nOptions:%s' % f.read().split('Options:')[-1]
+      f.close()
+    else:
+      if 'Options:' not in collapse_plotter.__doc__:
+        collapse_plotter.__doc__ += '\nOptions:%s' % parser.format_help().split('Options:')[-1]
 
     try:
       parsed_opts, parsed_args = parser.parse_args(cmdargs)
@@ -1012,12 +1022,16 @@ Required Inputs:
 
 #   import sys
 #   if 'mystic_log_reader.py' not in sys.argv:
-    f = StringIO()
-    parser.print_help(file=f)
-    f.seek(0)
-    if 'Options:' not in log_reader.__doc__:
-      log_reader.__doc__ += '\nOptions:%s' % f.read().split('Options:')[-1]
-    f.close()
+    if PY3:
+      f = StringIO()
+      parser.print_help(file=f)
+      f.seek(0)
+      if 'Options:' not in log_reader.__doc__:
+        log_reader.__doc__ += '\nOptions:%s' % f.read().split('Options:')[-1]
+      f.close()
+    else:
+      if 'Options:' not in log_reader.__doc__:
+        log_reader.__doc__ += '\nOptions:%s' % parser.format_help().split('Options:')[-1]
 
     try:
       parsed_opts, parsed_args = parser.parse_args(cmdargs)
