@@ -9,6 +9,12 @@
 from mystic.tools import list_or_tuple_or_ndarray as sequence
 from mystic.tools import isNull
 
+import sys
+if (sys.hexversion >= 0x30000f0):
+    exec_string = 'exec(code, globals)'
+else:
+    exec_string = 'exec code in globals'
+
 # generalized history reader
 
 def read_history(source):
@@ -19,12 +25,14 @@ def read_history(source):
     monitor = solver = False
     from mystic.monitors import Monitor, Null
     from mystic.abstract_solver import AbstractSolver
-    if isinstance(source, file):
-        return read_history(source.name)
     try:
         basestring
     except NameError:
         basestring = str
+        import io
+        file = io.IOBase
+    if isinstance(source, file):
+        return read_history(source.name)
     if isinstance(source, basestring):
         import re
         source = re.sub('\.py*.$', '', source)  # strip off .py* extension
@@ -170,6 +178,7 @@ def read_raw_file(file_in):
   steps, energy = read_import(file_in, "params", "cost")
   return steps, energy  # was 'from file_in import params as steps', etc
 
+def_read_import = '''
 def read_import(file, *targets):
   "import the targets; targets are name strings"
   import re, os, sys
@@ -178,22 +187,31 @@ def read_import(file, *targets):
   curdir = os.path.abspath(os.curdir)
   sys.path.append('.')
   results = []
+  globals = {}
   try:
     if _dir: os.chdir(_dir)
     if len(targets):
       for target in targets:
-        exec("from %s import %s" % (file, target))
-        exec("results.append(%s)" % target)
+        code = "from {0} import {1} as result".format(file, target)
+        code = compile(code, '<string>', 'exec')
+        %(exec_string)s
+        results.append(globals['result'])
     else:
-        exec("import %s" % file)
-        exec("results.append(%s)" % file)
+        code = "import {0} as result".format(file)
+        code = compile(code, '<string>', 'exec')
+        %(exec_string)s
+        results.append(globals['result'])
   except ImportError:
-    raise RuntimeError('File: %s not found' % file)
+    raise RuntimeError('File: {0} not found'.format(file))
   finally:
     if _dir: os.chdir(curdir)
     sys.path.pop()
   if not len(results): return None
   return results[-1] if (len(results) == 1) else results
+''' % dict(exec_string=exec_string)
+
+exec(def_read_import)
+del def_read_import
 
 def read_converge_file(file_in):
   steps, energy = read_raw_file(file_in)

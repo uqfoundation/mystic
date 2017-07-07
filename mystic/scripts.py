@@ -15,6 +15,11 @@ __all__ = ['model_plotter','log_reader','collapse_plotter']
 
 # globals
 __quit = False
+import sys
+if (sys.hexversion >= 0x30000f0):
+    exec_string = 'exec(code, globals)'
+else:
+    exec_string = 'exec code in globals'
 
 
 #XXX: better if reads single id only? (e.g. same interface as read_history)
@@ -54,17 +59,26 @@ if provided, ids are the list of 'run ids' to select
     return params, costs
 
 
+def_get_instance = '''
 def _get_instance(location, *args, **kwds):
     """given the import location of a model or model class, return the model
 
 args and kwds will be passed to the constructor of the model class
     """
+    globals = {}
     package, target = location.rsplit('.',1)
-    exec("from %s import %s as model" % (package, target))
+    code = "from {0} import {1} as model".format(package, target)
+    code = compile(code, '<string>', 'exec')
+    %(exec_string)s
+    model = globals['model']
     import inspect
     if inspect.isclass(model):
         model = model(*args, **kwds)
     return model
+''' % dict(exec_string=exec_string)
+
+exec(def_get_instance)
+del def_get_instance
 
 
 def _parse_input(option):
@@ -97,6 +111,7 @@ For example,
     return select, axes, mask
 
 
+def_parse_axes = '''
 def _parse_axes(option, grid=True):
     """parse option string into grid axes; using modified numpy.ogrid notation
 
@@ -110,38 +125,60 @@ For example:
 
 Returns tuple (x,y) with 'x,y' defined above.
     """
-    import numpy
     option = option.split(',')
+    msg = "invalid format string: '{0}'".format(','.join(option))
     opt = dict(zip(['x','y','z'],option))
     if len(option) > 2 or len(option) < 1:
-        raise ValueError("invalid format string: '%s'" % ','.join(option))
+        msg = "invalid format string: '{0}'".format(','.join(option))
+        raise ValueError(msg)
     z = bool(grid)
     if len(option) == 1: opt['y'] = '0'
     xd = True if ':' in opt['x'] else False
     yd = True if ':' in opt['y'] else False
     #XXX: accepts option='3:1', '1:1', and '1:2:10' (try to catch?)
+    globals = {}
+    code = 'import numpy;'
     if xd and yd:
         try: # x,y form a 2D grid
-            exec('x,y = numpy.ogrid[%s,%s]' % (opt['x'],opt['y']))
+            code += 'x,y = numpy.ogrid[{0},{1}]'.format(opt['x'],opt['y'])
+            code = compile(code, '<string>', 'exec')
+            %(exec_string)s
+            x = globals['x']
+            y = globals['y']
         except: # AttributeError:
-            raise ValueError("invalid format string: '%s'" % ','.join(option))
+            msg = "invalid format string: '{0}'".format(','.join(option))
+            raise ValueError(msg)
     elif xd and not z:
         try:
-            exec('x = numpy.ogrid[%s]' % opt['x'])
+            code += 'x = numpy.ogrid[{0}]'.format(opt['x'])
+            code = compile(code, '<string>', 'exec')
+            %(exec_string)s
+            x = globals['x']
             y = float(opt['y'])
         except: # (AttributeError, SyntaxError, ValueError):
-            raise ValueError("invalid format string: '%s'" % ','.join(option))
+            msg = "invalid format string: '{0}'".format(','.join(option))
+            raise ValueError(msg)
     elif yd and not z:
         try:
             x = float(opt['x'])
-            exec('y = numpy.ogrid[%s]' % opt['y'])
+            code += 'y = numpy.ogrid[{0}]'.format(opt['y'])
+            code = compile(code, '<string>', 'exec')
+            %(exec_string)s
+            y = globals['y']
         except: # (AttributeError, SyntaxError, ValueError):
-            raise ValueError("invalid format string: '%s'" % ','.join(option))
+            msg = "invalid format string: '{0}'".format(','.join(option))
+            raise ValueError(msg)
     else:
-        raise ValueError("invalid format string: '%s'" % ','.join(option))
+        msg = "invalid format string: '{0}'".format(','.join(option))
+        raise ValueError(msg)
     if not x.size or not y.size:
-        raise ValueError("invalid format string: '%s'" % ','.join(option))
+        msg = "invalid format string: '{0}'".format(','.join(option))
+        raise ValueError(msg)
     return x,y
+''' % dict(exec_string=exec_string)
+
+exec(def_parse_axes)
+del def_parse_axes
 
 
 def _draw_projection(x, cost, scale=True, shift=False, style=None, figure=None):

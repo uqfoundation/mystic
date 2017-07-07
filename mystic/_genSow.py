@@ -37,7 +37,7 @@ Takes string names of properties (given as *args), and sets the
 corresponding properties as required inputs for the Monitor.
         """
         self.__args = [ i for i in args if i in self.__dict ]
-        exec(self._genClass()) # generates Monitor()
+        exec(self._genClass()) # generates Monitor() #FIXME: fail in python3.x
         return Monitor()
        #return self._genClass()
 

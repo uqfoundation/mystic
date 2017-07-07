@@ -33,7 +33,7 @@ def best_dimensions(n):
   from numpy import product
   cand = [1] + [product(allfactors[:i+1]) for i in range(len(allfactors))]
  #return cand[-1], n/cand[-1]
-  best = [cand[len(cand)/2], n/cand[len(cand)/2]]
+  best = [cand[len(cand)//2], n//cand[len(cand)//2]]
   best.sort(reverse=True)
   return tuple(best)
 # if len(cand)%2:
