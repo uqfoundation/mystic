@@ -363,10 +363,10 @@ setup(name='mystic',
 sysversion = sys.version_info[:2]
 if sysversion < (2,6) or (sysversion >= (3,0) and sysversion <= (3,1)):
     numpy_version = '>=1.0, <1.8.0'
-    sympy_version = '>=0.6.7'#, <0.7.1'
+    sympy_version = '>=0.6.7, <1.1'
 elif sysversion == (2,6) or (sysversion >= (3,2) and sysversion <= (3,3)):
     numpy_version = '>=1.0, <1.12.0'
-    sympy_version = '>=0.6.7'#, <0.7.4'
+    sympy_version = '>=0.6.7, <1.1'
 else:
     numpy_version = '>=1.0'
     sympy_version = '>=0.6.7'#, <0.7.4'
