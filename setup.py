@@ -11,7 +11,7 @@ import os
 import sys
 
 # set version numbers
-stable_version = '0.3.0'
+stable_version = '0.3.1'
 target_version = '0.3.1'
 is_release = stable_version == target_version
 
@@ -173,14 +173,14 @@ Requirements
     - numpy, version >= 1.0
     - sympy, version >= 0.6.7
     - dill, version >= 0.2.7
-    - klepto, version >= 0.1.3
+    - klepto, version >= 0.1.4
 
 Optional requirements::
 
     - setuptools, version >= 0.6
     - matplotlib, version >= 0.91
     - scipy, version >= 0.6.0
-    - pathos, version >= 0.2.0
+    - pathos, version >= 0.2.1
     - pyina, version >= 0.2.0.dev0
 
 
@@ -371,7 +371,7 @@ else:
     numpy_version = '>=1.0'
     sympy_version = '>=0.6.7'#, <0.7.4'
 dill_version = '>=0.2.7'
-klepto_version = '>=0.1.3'
+klepto_version = '>=0.1.4'
 scipy_version = '>=0.6.0'
 matplotlib_version = '>=0.91'
 if has_setuptools:
