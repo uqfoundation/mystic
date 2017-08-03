@@ -5,7 +5,7 @@
 # Copyright (c) 1997-2016 California Institute of Technology.
 # Copyright (c) 2016-2017 The Uncertainty Quantification Foundation.
 # License: 3-clause BSD.  The full license text is available at:
-#  - http://trac.mystic.cacr.caltech.edu/project/mystic/browser/mystic/LICENSE
+#  - https://github.com/uqfoundation/mystic/blob/master/LICENSE
 """
 Base classes for mystic's provided models::
     AbstractFunction   -- evaluates f(x) for given evaluation points x

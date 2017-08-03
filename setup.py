@@ -4,7 +4,7 @@
 # Copyright (c) 1997-2016 California Institute of Technology.
 # Copyright (c) 2016-2017 The Uncertainty Quantification Foundation.
 # License: 3-clause BSD.  The full license text is available at:
-#  - http://trac.mystic.cacr.caltech.edu/project/mystic/browser/mystic/LICENSE
+#  - https://github.com/uqfoundation/mystic/blob/master/LICENSE
 
 from __future__ import with_statement
 import os
@@ -89,7 +89,7 @@ greatly reduces the barrier to solving hard optimization problems.
 
 `mystic` is in active development, so any user feedback, bug reports, comments,
 or suggestions are highly appreciated.  A list of known issues is maintained
-at http://trac.mystic.cacr.caltech.edu/project/mystic/query, with a public
+at http://trac.mystic.cacr.caltech.edu/project/mystic/query.html, with a public
 ticket list at https://github.com/uqfoundation/mystic/issues.
 
 
@@ -120,7 +120,7 @@ This version is `mystic-%(relver)s`.
 
 The latest released version of `mystic` is available from::
 
-    http://trac.mystic.cacr.caltech.edu/project/mystic
+    https://pypi.org/project/mystic
 
 `mystic` is distributed under a 3-clause BSD license.
 
@@ -343,8 +343,8 @@ setup(name='mystic',
       maintainer = 'Mike McKerns',
       license = '3-clause BSD',
       platforms = ['Linux', 'Windows', 'Mac'],
-      url = 'http://www.cacr.caltech.edu/~mmckerns',
-      download_url = 'http://dev.danse.us/packages',
+      url = 'https://pypi.org/project/mystic',
+      download_url = 'https://github.com/uqfoundation/mystic/releases/download/mystic-%s/mystic-%s.tar.gz',
       classifiers = ('Development Status :: 5 - Production/Stable',
                      'Intended Audience :: Developers',
                      'Intended Audience :: Science/Research',
@@ -357,7 +357,7 @@ setup(name='mystic',
       packages = ['mystic','mystic.models','mystic.math','mystic.cache'],
       package_dir = {'mystic':'mystic','mystic.models':'models',
                      'mystic.math':'_math','mystic.cache':'cache'},
-""" % (target_version, long_description)
+""" % (target_version, long_description, stable_version, stable_version)
 
 # add dependencies
 sysversion = sys.version_info[:2]
@@ -377,7 +377,6 @@ matplotlib_version = '>=0.91'
 if has_setuptools:
     setup_code += """
       zip_safe=False,
-      dependency_links = ['http://dev.danse.us/packages/'],
       install_requires = ('numpy%s', 'sympy%s', 'klepto%s', 'dill%s'),
 """ % (numpy_version, sympy_version, klepto_version, dill_version)
 

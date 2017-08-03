@@ -10,7 +10,7 @@
 # Copyright (c) 1997-2016 California Institute of Technology.
 # Copyright (c) 2016-2017 The Uncertainty Quantification Foundation.
 # License: 3-clause BSD.  The full license text is available at:
-#  - http://trac.mystic.cacr.caltech.edu/project/mystic/browser/mystic/LICENSE
+#  - https://github.com/uqfoundation/mystic/blob/master/LICENSE
 
 from integer_programming import objective, bounds, xs, ys
 # bounds = [(0,11)]*2  #XXX: MOD = range(11) instead of LARGE

@@ -37,7 +37,7 @@ greatly reduces the barrier to solving hard optimization problems.
 
 `mystic` is in active development, so any user feedback, bug reports, comments,
 or suggestions are highly appreciated.  A list of known issues is maintained
-at http://trac.mystic.cacr.caltech.edu/project/mystic/query, with a public
+at http://trac.mystic.cacr.caltech.edu/project/mystic/query.html, with a public
 ticket list at https://github.com/uqfoundation/mystic/issues.
 
 
@@ -63,7 +63,7 @@ To get up and running quickly, `mystic` also provides infrastructure to::
 Current Release
 ---------------
 The latest released version of `mystic` is available from::
-    http://trac.mystic.cacr.caltech.edu/project/mystic
+    https://pypi.org/project/mystic
 
 `mystic` is distributed under a 3-clause BSD license.
 
