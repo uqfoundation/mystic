@@ -3,15 +3,17 @@
 mystic package documentation
 ============================
 
-.. toctree::
-   :maxdepth: 4
-   :caption: Contents:
-
 .. automodule:: mystic
-   :members:
-   :undoc-members:
-   :show-inheritance:
+    :members:
+    :undoc-members:
+    :show-inheritance:
 
+.. toctree::
+    :maxdepth: 2
+    :caption: Contents:
+
+    mystic
+    scripts
 
 Indices and tables
 ==================

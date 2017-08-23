@@ -7,7 +7,11 @@ abstract_ensemble_solver module
 .. automodule:: mystic.abstract_ensemble_solver
     :members:
     :undoc-members:
+    :private-members:
+    :special-members:
     :show-inheritance:
+    :imported-members:
+..  :exclude-members:
 
 abstract_launcher module
 ------------------------
@@ -15,7 +19,11 @@ abstract_launcher module
 .. automodule:: mystic.abstract_launcher 
     :members:
     :undoc-members:
+    :private-members:
+    :special-members:
     :show-inheritance:
+    :imported-members:
+..  :exclude-members:
 
 abstract_map_solver module
 --------------------------
@@ -23,7 +31,11 @@ abstract_map_solver module
 .. automodule:: mystic.abstract_map_solver
     :members:
     :undoc-members:
+    :private-members:
+    :special-members:
     :show-inheritance:
+    :imported-members:
+..  :exclude-members:
 
 abstract_solver module
 ----------------------
@@ -31,7 +43,11 @@ abstract_solver module
 .. automodule:: mystic.abstract_solver
     :members:
     :undoc-members:
+    :private-members:
+    :special-members:
     :show-inheritance:
+    :imported-members:
+..  :exclude-members:
 
 cache module
 ------------
@@ -39,7 +55,17 @@ cache module
 .. automodule:: mystic.cache
     :members:
     :undoc-members:
+    :private-members:
+    :special-members:
     :show-inheritance:
+    :imported-members:
+..  :exclude-members:
+
+.. toctree::
+    :maxdepth: 2
+    :caption: Contents:
+
+    cache
 
 collapse module
 ---------------
@@ -47,7 +73,11 @@ collapse module
 .. automodule:: mystic.collapse
     :members:
     :undoc-members:
+    :private-members:
+    :special-members:
     :show-inheritance:
+    :imported-members:
+..  :exclude-members:
 
 constraints module
 ------------------
@@ -55,7 +85,11 @@ constraints module
 .. automodule:: mystic.constraints
     :members:
     :undoc-members:
+    :private-members:
+    :special-members:
     :show-inheritance:
+    :imported-members:
+..  :exclude-members:
 
 coupler module
 --------------
@@ -63,7 +97,11 @@ coupler module
 .. automodule:: mystic.coupler 
     :members:
     :undoc-members:
+    :private-members:
+    :special-members:
     :show-inheritance:
+    :imported-members:
+..  :exclude-members:
 
 differential_evolution module
 -----------------------------
@@ -71,7 +109,11 @@ differential_evolution module
 .. automodule:: mystic.differential_evolution
     :members:
     :undoc-members:
+    :private-members:
+    :special-members:
     :show-inheritance:
+    :imported-members:
+..  :exclude-members:
 
 ensemble module
 ---------------
@@ -79,7 +121,11 @@ ensemble module
 .. automodule:: mystic.ensemble 
     :members:
     :undoc-members:
+    :private-members:
+    :special-members:
     :show-inheritance:
+    :imported-members:
+..  :exclude-members:
 
 filters module
 --------------
@@ -87,7 +133,11 @@ filters module
 .. automodule:: mystic.filters 
     :members:
     :undoc-members:
+    :private-members:
+    :special-members:
     :show-inheritance:
+    :imported-members:
+..  :exclude-members:
 
 forward_model module
 --------------------
@@ -95,7 +145,11 @@ forward_model module
 .. automodule:: mystic.forward_model
     :members:
     :undoc-members:
+    :private-members:
+    :special-members:
     :show-inheritance:
+    :imported-members:
+..  :exclude-members:
 
 helputil module
 ---------------
@@ -103,7 +157,11 @@ helputil module
 .. automodule:: mystic.helputil
     :members:
     :undoc-members:
+    :private-members:
+    :special-members:
     :show-inheritance:
+    :imported-members:
+..  :exclude-members:
 
 linesearch module
 -----------------
@@ -111,7 +169,11 @@ linesearch module
 .. automodule:: mystic.linesearch 
     :members:
     :undoc-members:
+    :private-members:
+    :special-members:
     :show-inheritance:
+    :imported-members:
+..  :exclude-members:
 
 mask module
 -----------
@@ -119,7 +181,11 @@ mask module
 .. automodule:: mystic.mask 
     :members:
     :undoc-members:
+    :private-members:
+    :special-members:
     :show-inheritance:
+    :imported-members:
+..  :exclude-members:
 
 math module
 -----------
@@ -127,7 +193,17 @@ math module
 .. automodule:: mystic.math 
     :members:
     :undoc-members:
+    :private-members:
+    :special-members:
     :show-inheritance:
+    :imported-members:
+..  :exclude-members:
+
+.. toctree::
+    :maxdepth: 2
+    :caption: Contents:
+
+    math
 
 metropolis module
 -----------------
@@ -135,7 +211,11 @@ metropolis module
 .. automodule:: mystic.metropolis
     :members:
     :undoc-members:
+    :private-members:
+    :special-members:
     :show-inheritance:
+    :imported-members:
+..  :exclude-members:
 
 models module
 -------------
@@ -143,7 +223,17 @@ models module
 .. automodule:: mystic.models
     :members:
     :undoc-members:
+    :private-members:
+    :special-members:
     :show-inheritance:
+    :imported-members:
+..  :exclude-members:
+
+.. toctree::
+    :maxdepth: 2
+    :caption: Contents:
+
+    models
 
 monitors module
 ---------------
@@ -151,7 +241,11 @@ monitors module
 .. automodule:: mystic.monitors
     :members:
     :undoc-members:
+    :private-members:
+    :special-members:
     :show-inheritance:
+    :imported-members:
+..  :exclude-members:
 
 munge module
 ------------
@@ -159,7 +253,11 @@ munge module
 .. automodule:: mystic.munge
     :members:
     :undoc-members:
+    :private-members:
+    :special-members:
     :show-inheritance:
+    :imported-members:
+..  :exclude-members:
 
 penalty module
 --------------
@@ -167,7 +265,11 @@ penalty module
 .. automodule:: mystic.penalty 
     :members:
     :undoc-members:
+    :private-members:
+    :special-members:
     :show-inheritance:
+    :imported-members:
+..  :exclude-members:
 
 pools module
 ------------
@@ -175,7 +277,11 @@ pools module
 .. automodule:: mystic.pools
     :members:
     :undoc-members:
+    :private-members:
+    :special-members:
     :show-inheritance:
+    :imported-members:
+..  :exclude-members:
 
 python_map module
 -----------------
@@ -183,7 +289,11 @@ python_map module
 .. automodule:: mystic.python_map
     :members:
     :undoc-members:
+    :private-members:
+    :special-members:
     :show-inheritance:
+    :imported-members:
+..  :exclude-members:
 
 scemtools module
 ----------------
@@ -191,7 +301,11 @@ scemtools module
 .. automodule:: mystic.scemtools
     :members:
     :undoc-members:
+    :private-members:
+    :special-members:
     :show-inheritance:
+    :imported-members:
+..  :exclude-members:
 
 scipy_optimize module
 ---------------------
@@ -199,7 +313,11 @@ scipy_optimize module
 .. automodule:: mystic.scipy_optimize
     :members:
     :undoc-members:
+    :private-members:
+    :special-members:
     :show-inheritance:
+    :imported-members:
+..  :exclude-members:
 
 scripts module
 --------------
@@ -207,7 +325,11 @@ scripts module
 .. automodule:: mystic.scripts
     :members:
     :undoc-members:
+    :private-members:
+    :special-members:
     :show-inheritance:
+    :imported-members:
+..  :exclude-members:
 
 search module
 -------------
@@ -215,7 +337,11 @@ search module
 .. automodule:: mystic.search
     :members:
     :undoc-members:
+    :private-members:
+    :special-members:
     :show-inheritance:
+    :imported-members:
+..  :exclude-members:
 
 solvers module
 --------------
@@ -223,7 +349,11 @@ solvers module
 .. automodule:: mystic.solvers
     :members:
     :undoc-members:
+    :private-members:
+    :special-members:
     :show-inheritance:
+    :imported-members:
+..  :exclude-members:
 
 strategy module
 ---------------
@@ -231,7 +361,11 @@ strategy module
 .. automodule:: mystic.strategy
     :members:
     :undoc-members:
+    :private-members:
+    :special-members:
     :show-inheritance:
+    :imported-members:
+..  :exclude-members:
 
 support module
 --------------
@@ -239,7 +373,11 @@ support module
 .. automodule:: mystic.support
     :members:
     :undoc-members:
+    :private-members:
+    :special-members:
     :show-inheritance:
+    :imported-members:
+..  :exclude-members:
 
 svc module
 ----------
@@ -247,7 +385,11 @@ svc module
 .. automodule:: mystic.svc
     :members:
     :undoc-members:
+    :private-members:
+    :special-members:
     :show-inheritance:
+    :imported-members:
+..  :exclude-members:
 
 svr module
 ----------
@@ -255,7 +397,11 @@ svr module
 .. automodule:: mystic.svr
     :members:
     :undoc-members:
+    :private-members:
+    :special-members:
     :show-inheritance:
+    :imported-members:
+..  :exclude-members:
 
 symbolic module
 ---------------
@@ -263,7 +409,11 @@ symbolic module
 .. automodule:: mystic.symbolic
     :members:
     :undoc-members:
+    :private-members:
+    :special-members:
     :show-inheritance:
+    :imported-members:
+..  :exclude-members:
 
 termination module
 ------------------
@@ -271,7 +421,11 @@ termination module
 .. automodule:: mystic.termination
     :members:
     :undoc-members:
+    :private-members:
+    :special-members:
     :show-inheritance:
+    :imported-members:
+..  :exclude-members:
 
 tools module
 ------------
@@ -279,5 +433,9 @@ tools module
 .. automodule:: mystic.tools
     :members:
     :undoc-members:
+    :private-members:
+    :special-members:
     :show-inheritance:
+    :imported-members:
+..  :exclude-members:
 
