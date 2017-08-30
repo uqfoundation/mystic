@@ -12,6 +12,11 @@ from mystic.termination import VTR, ChangeOverGeneration, When, Or
 from mystic.models import rosen
 from mystic.solvers import LoadSolver
 import os
+import sys
+is_pypy = hasattr(sys, 'pypy_version_info')
+if is_pypy:
+    print('Skipping: test_solver_sanity.py')
+    exit()
 
 solver = PowellDirectionalSolver(3)
 solver.SetRandomInitialPoints([0.,0.,0.],[10.,10.,10.])
