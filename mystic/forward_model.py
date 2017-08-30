@@ -66,6 +66,8 @@ from mystic.filters import NullChecker
 from inspect import getargspec
 from numpy import pi, sqrt, array, mgrid, random, real, conjugate, arange, sum
 
+__all__ = ['CostFactory']
+
 class CostFactory(object):
     """
 A cost function generator.

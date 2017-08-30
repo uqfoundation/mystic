@@ -12,6 +12,9 @@ Simple utility functions for SV-Regressions
 
 from numpy import multiply, ndarray, vectorize, array, asarray
 
+__all__ = ['InnerProduct','LinearKernel','KernelMatrix','SupportVectors', \
+           'Bias','RegressionFunction']
+
 def InnerProduct(i1, i2): # numpy.multiply(x,x)
     return i1 * i2
 

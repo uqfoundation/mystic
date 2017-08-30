@@ -284,29 +284,40 @@ def swap(alist, index=None):
 def_convergence = '''
 def convergence(filename, **kwds):
     """
-generate parameter convergence plots from file written with 'write_support_file'
+generate parameter convergence plots from file written with ``write_support_file``
 
-Available from the command shell as:
-  support_convergence.py filename [options]
+Available from the command shell as::
 
-or as a function call as:
-  mystic.support.convergence(filename, **options)
+    support_convergence.py filename [options]
 
-The option "param" takes an indicator string. The indicator string is built
-from comma-separated array slices. For example, params = ":" will plot all
-parameters in a single plot.  Alternatively, params = ":2, 2:" will split the
-parameters into two plots, and params = "0" will only plot the first parameter.
+or as a function call::
 
-The option "label" takes comma-separated strings. For example, label = "x,y,"
-will label the y-axis of the first plot with 'x', a second plot with 'y', and
-not add a label to a third or subsequent plots. If more labels are given than
-plots, then the last label will be used for the y-axis of the 'cost' plot.
-LaTeX is also accepted. For example, label = "$ h$, $ {\\alpha}$, $ v$" will
-label the axes with standard LaTeX math formatting. Note that the leading
-space is required, and the text is aligned along the axis.
+    mystic.support.convergence(filename, **options)
 
-Required Inputs:
-  filename            name of the python convergence logfile (e.g paramlog.py)
+Args:
+    filename (str): name of the convergence logfile (e.g ``paramlog.py``)
+
+Returns:
+    None
+
+Note:
+    - The option *out* takes a string of the filepath for the generated plot.
+    - The option *iter* takes an integer of the largest iteration to plot.
+    - The option *param* takes an indicator string. The indicator string is
+      built from comma-separated array slices. For example, ``params = ":"``
+      will plot all parameters in a single plot.  Alternatively,
+      ``params = ":2, 2:"`` will split the parameters into two plots, and
+      ``params = "0"`` will only plot the first parameter.
+    - The option *label* takes comma-separated strings. For example,
+      ``label = "x,y,"`` will label the y-axis of the first plot with 'x', a
+      second plot with 'y', and not add a label to a third or subsequent plots.      If more labels are given than plots, then the last label will be used
+      for the y-axis of the 'cost' plot. LaTeX is also accepted. For example,
+      ``label = "$ h$, $ a$, $ v$"`` will label the axes with standard
+      LaTeX math formatting. Note that the leading space is required, and the
+      text is aligned along the axis.
+    - The option *nid* takes an integer of the nth simultaneous points to plot.
+    - The option *cost* takes a boolean, and will also plot the parameter cost.
+    - The option *legend* takes a boolean, and will display the legend.
 """
     import shlex
     try:
@@ -539,36 +550,41 @@ Required Inputs:
 def_hypercube = '''
 def hypercube(filename, **kwds):
     """
-generate parameter support plots from file written with 'write_support_file'
+generate parameter support plots from file written with ``write_support_file``
 
-Available from the command shell as:
-  support_hypercube.py filename [options]
+Available from the command shell as::
 
-or as a function call as:
-  mystic.support.hypercube(filename, **options)
+    support_hypercube.py filename [options]
 
-The options "bounds", "axes", and "iters" all take indicator strings.
-The bounds should be given as comma-separated slices. For example, using
-bounds = "60:105, 0:30, 2.1:2.8" will set the lower and upper bounds for
-x to be (60,105), y to be (0,30), and z to be (2.1,2.8).  Similarly, axes
-also accepts comma-separated groups of ints; however, for axes, each entry
-indicates which parameters are to be plotted along each axis -- the first
-group for the x direction, the second for the y direction, and third for z. 
-Thus, axes = "2 3, 6 7, 10 11" would set 2nd and 3rd parameters along x.
-Iters also accepts a string built from comma-separated array slices. For
-example, iters = ":" will plot all iters in a single plot. Alternatively,
-iters = ":2, 2:" will split the iters into two plots, while iters = "0" will
-only plot the first iteration.
+or as a function call::
 
-The option "label" takes comma-separated strings. For example, label = "x,y,"
-will place 'x' on the x-axis, 'y' on the y-axis, and nothing on the z-axis.
-LaTeX is also accepted. For example, label = "$ h $, $ {\\alpha}$, $ v$" will
-label the axes with standard LaTeX math formatting. Note that the leading
-space is required, while a trailing space aligns the text with the axis
-instead of the plot frame.
+    mystic.support.hypercube(filename, **options)
 
-Required Inputs:
-  filename            name of the python convergence logfile (e.g paramlog.py)
+Args:
+    filename (str): name of the convergence logfile (e.g ``paramlog.py``)
+
+Returns:
+    None
+
+Note:
+    - The option *out* takes a string of the filepath for the generated plot.
+    - The options *bounds*, *axes*, and *iters* all take indicator strings.
+      The bounds should be given as comma-separated slices. For example, using
+      ``bounds = "60:105, 0:30, 2.1:2.8"`` will set the lower and upper bounds
+      for x to be (60,105), y to be (0,30), and z to be (2.1,2.8). Similarly,
+      axes also accepts comma-separated groups of ints; however, for axes, each      entry indicates which parameters are to be plotted along each axis -- the
+      first group for the x direction, the second for the y direction, and
+      third for z. Thus, ``axes = "2 3, 6 7, 10 11"`` would set 2nd and 3rd
+      parameters along x. Iters also accepts strings built from comma-separated      array slices. For example, ``iters = ":"`` will plot all iters in a
+      single plot. Alternatively, ``iters = ":2, 2:"`` will split the iters
+      into two plots, while ``iters = "0"`` will only plot the first iteration.
+    - The option *label* takes comma-separated strings. Thus ``label = "x,y,"``      will place 'x' on the x-axis, 'y' on the y-axis, and nothing on the
+      z-axis. LaTeX, such as ``label = "$ h $, $ a$, $ v$"`` will label the
+      axes with standard LaTeX math formatting. Note that the leading space is
+      required, while a trailing space aligns the text with the axis instead of      the plot frame.
+    - The option *nid* takes an integer of the nth simultaneous points to plot.
+    - The option *scale* takes an integer as a grayscale contrast multiplier.
+    - The option *flat* takes a boolean, to plot results in a single plot.
 """
     import shlex
     try:
@@ -844,40 +860,49 @@ Required Inputs:
 def_hypercube_measures = '''
 def hypercube_measures(filename, **kwds):
     """
-generate measure support plots from file written with 'write_support_file'
+generate measure support plots from file written with ``write_support_file``
 
-Available from the command shell as:
-  support_hypercube_measures.py filename [options]
+Available from the command shell as::
 
-or as a function call as:
-  mystic.support.hypercube_measures(filename, **options)
+    support_hypercube_measures.py filename [options]
 
-The options "bounds", "axes", 'weight", and "iters" all take indicator strings.
-The bounds should be given as comma-separated slices. For example, using
-bounds = "60:105, 0:30, 2.1:2.8" will set the lower and upper bounds for
-x to be (60,105), y to be (0,30), and z to be (2.1,2.8).  Similarly, axes
-also accepts comma-separated groups of ints; however, for axes, each entry
-indicates which parameters are to be plotted along each axis -- the first
-group for the x direction, the second for the y direction, and third for z. 
-Thus, axes = "2 3, 6 7, 10 11" would set 2nd and 3rd parameters along x. The
-corresponding weights are used to color the measure points, where 1.0 is black
-and 0.0 is white. For example, using weight = "0 1, 4 5, 8 9" would use
-the 0th and 1st parameters to weight x. Iters is also similar, however only
-accepts comma-separated ints. Hence, iters = "-1" will plot the last iteration,
-while iters = "0, 300, 700" will plot the 0th, 300th, and 700th in three plots.
-***Note that if weights are not normalized (to 1), an error will be thrown.***
+or as a function call::
 
-The option "label" takes comma-separated strings. For example, label = "x,y,"
-will place 'x' on the x-axis, 'y' on the y-axis, and nothing on the z-axis.
-LaTeX is also accepted. For example, label = "$ h $, $ {\\alpha}$, $ v$" will
-label the axes with standard LaTeX math formatting. Note that the leading
-space is required, while a trailing space aligns the text with the axis
-instead of the plot frame.
+    mystic.support.hypercube_measures(filename, **options)
 
-INTENDED FOR VISUALIZING WEIGHTED MEASURES (i.e. weights and positions)
+Args:
+    filename (str): name of the convergence logfile (e.g ``paramlog.py``)
 
-Required Inputs:
-  filename            name of the python convergence logfile (e.g paramlog.py)
+Returns:
+    None
+
+Note:
+    - The option *out* takes a string of the filepath for the generated plot.
+    - The options *bounds*, *axes*, *weight*, and *iters* all take indicator
+      strings. The bounds should be given as comma-separated slices. For
+      example, using ``bounds = "60:105, 0:30, 2.1:2.8"`` will set lower and
+      upper bounds for x to be (60,105), y to be (0,30), and z to be (2.1,2.8).      Similarly, axes also accepts comma-separated groups of ints; however, for      axes, each entry indicates which parameters are to be plotted along each
+      axis -- the first group for the x direction, the second for the y
+      direction, and third for z. Thus, ``axes = "2 3, 6 7, 10 11"`` would set
+      2nd and 3rd parameters along x. The corresponding weights are used to
+      color the measure points, where 1.0 is black and 0.0 is white. For
+      example, using ``weight = "0 1, 4 5, 8 9"`` would use the 0th and 1st
+      parameters to weight x. Iters is also similar, however only accepts
+      comma-separated ints. Hence, ``iters = "-1"`` will plot the last
+      iteration, while ``iters = "0, 300, 700"`` will plot the 0th, 300th, and
+      700th in three plots.
+    - The option *label* takes comma-separated strings. Thus ``label = "x,y,"``      will place 'x' on the x-axis, 'y' on the y-axis, and nothing on the
+      z-axis. LaTeX, such as ``label = "$ h $, $ a$, $ v$"`` will label the
+      axes with standard LaTeX math formatting. Note that the leading space is
+      required, while a trailing space aligns the text with the axis instead of      the plot frame.
+    - The option *nid* takes an integer of the nth simultaneous points to plot.
+    - The option *scale* takes an integer as a grayscale contrast multiplier.
+    - The option *flat* takes a boolean, to plot results in a single plot.
+
+Warning:
+    This function is intended to visualize weighted measures (i.e. weights
+    and positions), where the weights must be normalized (to 1) or an error
+    will be thrown.
 """
     import shlex
     try:
@@ -1183,43 +1208,53 @@ Required Inputs:
 def_hypercube_scenario = '''
 def hypercube_scenario(filename, datafile=None, **kwds):
     """
-generate scenario support plots from file written with 'write_support_file';
-generate legacy data and cones from a dataset file, if provided
+generate scenario support plots from file written with ``write_support_file``;
+and generate legacy data and cones from a dataset file, if provided
 
-Available from the command shell as:
-  support_hypercube_scenario.py filename (datafile) [options]
+Available from the command shell as::
 
-or as a function call as:
-  mystic.support.hypercube_scenario(filename, datafile=None, **options)
+    support_hypercube_scenario.py filename (datafile) [options]
 
-The options "bounds", "dim", and "iters" all take indicator strings.
-The bounds should be given as comma-separated slices. For example, using
-bounds = ".062:.125, 0:30, 2300:3200" will set the lower and upper bounds
-for x to be (.062,.125), y to be (0,30), and z to be (2300,3200). If all
-bounds are to not be strictly enforced, append an asterisk '*' to the string. 
-The dim (dimensions of the scenario) should comma-separated ints. For example,
-dim = "1, 1, 2" will convert the params to a two-member 3-D dataset. Iters
-accepts a string built from comma-separated array slices. For example,
-iters = ":" will plot all iters in a single plot. Alternatively,
-iters = ":2, 2:" will split the iters into two plots, while iters = "0"
-will only plot the first iteration.
+or as a function call::
 
-The option "label" takes comma-separated strings. For example, label = "x,y,"
-will place 'x' on the x-axis, 'y' on the y-axis, and nothing on the z-axis.
-LaTeX is also accepted. For example, label = "$ h $, $ {\\alpha}$, $ v$" will
-label the axes with standard LaTeX math formatting. Note that the leading
-space is required, while a trailing space aligns the text with the axis
-instead of the plot frame. The option "filter" is used to select datapoints
-from a given dataset, and takes comma-separated ints. A "mask" is given as
-comma-separated ints; when the mask has more than one int, the plot will be
-2D. The option "vertical" will plot the dataset values on the vertical axis;
-for 2D plots, cones are always plotted on the vertical axis.
+    mystic.support.hypercube_scenario(filename, datafile=None, **options)
 
-Required Inputs:
-  filename            name of the python convergence logfile (e.g. paramlog.py)
+Args:
+    filename (str): name of the convergence logfile (e.g. ``paramlog.py``)
+    datafile (str, default=None): name of the dataset file (e.g. ``data.txt``)
 
-Additional Inputs:
-  datafile            name of the dataset textfile (e.g. StAlDataset.txt)
+Returns:
+    None
+
+Note:
+    - The option *out* takes a string of the filepath for the generated plot.
+    - The options *bounds*, *dim*, and *iters* all take indicator strings.
+      The bounds should be given as comma-separated slices. For example, using
+      ``bounds = ".062:.125, 0:30, 2300:3200"`` will set lower and upper bounds
+      for x to be (.062,.125), y to be (0,30), and z to be (2300,3200). If all
+      bounds are to not be strictly enforced, append an asterisk ``*`` to the
+      string. The dim (dimensions of the scenario) should comma-separated ints.      For example, ``dim = "1, 1, 2"`` will convert the params to a two-member
+      3-D dataset. Iters accepts a string built from comma-separated array
+      slices. Thus, ``iters = ":"`` will plot all iters in a single plot.
+      Alternatively, ``iters = ":2, 2:"`` will split the iters into two plots,
+      while ``iters = "0"`` will only plot the first iteration.
+    - The option *label* takes comma-separated strings. Thus ``label = "x,y,"``
+      will place 'x' on the x-axis, 'y' on the y-axis, and nothing on the
+      z-axis. LaTeX, such as ``label = "$ h $, $ a$, $ v$"`` will label the
+      axes with standard LaTeX math formatting. Note that the leading space is
+      required, while a trailing space aligns the text with the axis instead of      the plot frame.
+    - The option "filter" is used to select datapoints from a given dataset,
+      and takes comma-separated ints.
+    - A "mask" is given as comma-separated ints. When the mask has more than
+      one int, the plot will be 2D.
+    - The option "vertical" will plot the dataset values on the vertical axis;
+      for 2D plots, cones are always plotted on the vertical axis.
+    - The option *nid* takes an integer of the nth simultaneous points to plot.
+    - The option *scale* takes an integer as a grayscale contrast multiplier.
+    - The option *gap* takes an integer distance from cone center to vertex.
+    - The option *data* takes a boolean, to plot legacy data, if provided.
+    - The option *cones* takes a boolean, to plot cones, if provided.
+    - The option *flat* takes a boolean, to plot results in a single plot.
 """
     import shlex
     try:

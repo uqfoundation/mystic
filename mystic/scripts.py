@@ -344,46 +344,59 @@ use density to adjust the number of contour lines
 
 def model_plotter(model, logfile=None, **kwds):
     """
-generate surface contour plots for model, specified by full import path
+generate surface contour plots for model, specified by full import path; and
 generate model trajectory from logfile (or solver restart file), if provided
 
-Available from the command shell as:
-  mystic_model_plotter.py model (filename) [options]
+Available from the command shell as::
 
-or as a function call as:
-  mystic.model_plotter(model, filename=None, **options)
+    mystic_model_plotter.py model (logfile) [options]
 
-The option "bounds" takes an indicator string, where the bounds should
-be given as comma-separated slices. For example, using bounds = "-1:10, 0:20"
-will set the lower and upper bounds for x to be (-1,10) and y to be (0,20).
-The "step" can also be given, to control the number of lines plotted in the
-grid. Thus "-1:10:.1, 0:20" would set the bounds as above, but use increments
-of .1 along x and the default step along y.  For models with > 2D, the bounds
-can be used to specify 2 dimensions plus fixed values for remaining dimensions.
-Thus, "-1:10, 0:20, 1.0" would plot the 2D surface where the z-axis was fixed
-at z=1.0.  When called from a script, slice objects can be used instead of a
-string, thus "-1:10:.1, 0:20, 1.0" becomes (slice(-1,10,.1), slice(20), 1.0).
+or as a function call::
 
-The option "label" takes comma-separated strings. For example, label = "x,y,"
-will place 'x' on the x-axis, 'y' on the y-axis, and nothing on the z-axis.
-LaTeX is also accepted. For example, label = "$ h $, $ {\\alpha}$, $ v$" will
-label the axes with standard LaTeX math formatting. Note that the leading
-space is required, while a trailing space aligns the text with the axis
-instead of the plot frame.
+    mystic.model_plotter(model, logfile=None, **options)
 
-The option "reduce" can be given to reduce the output of a model to a scalar,
-thus converting 'model(params)' to 'reduce(model(params))'. A reducer is given
-by the import path (e.g. 'numpy.add'). The option "scale" will convert the plot
-to log-scale, and scale the cost by 'z=log(4*z*scale+1)+2'. This is useful for
-visualizing small contour changes around the minimium. If using log-scale
-produces negative numbers, the option "shift" can be used to shift the cost
-by 'z=z+shift'. Both shift and scale are intended to help visualize contours.
+Args:
+    model (str): full import path for the model (e.g. ``mystic.models.rosen``)
+    logfile (str, default=None): name of convergence logfile (e.g. ``log.txt``)
 
-Required Inputs:
-  model               full import path for the model (e.g. mystic.models.rosen)
+Returns:
+    None
 
-Additional Inputs:
-  filename            name of the convergence logfile (e.g. log.txt)
+Note:
+    - The option *out* takes a string of the filepath for the generated plot.
+    - The option *bounds* takes an indicator string, where bounds are given as
+      comma-separated slices. For example, using ``bounds = "-1:10, ^0:20"``
+      will set lower and upper bounds for x to be (-1,10) and y to be (0,20).
+      The "step" can also be given, to control the number of lines plotted in
+      the grid. Thus ``"-1:10:.1, 0:20"`` sets the bounds as above, but uses
+      increments of .1 along x and the default step along y.  For models > 2D,
+      the bounds can be used to specify 2 dimensions plus fixed values for
+      remaining dimensions. Thus, ``"-1:10, 0:20, 1.0"`` plots the 2D surface
+      where the z-axis is fixed at z=1.0. When called from a script, slice
+      objects can be used instead of a string, thus ``"-1:10:.1, 0:20, 1.0"``
+      becomes ``(slice(-1,10,.1), slice(20), 1.0)``.
+    - The option *label* takes comma-separated strings. For example,
+      ``label = "x,y,"`` will place 'x' on the x-axis, 'y' on the y-axis, and
+      nothing on the z-axis.  LaTeX is also accepted. For example,
+      ``label = "$ h $, $ {\\alpha}$, $ v$"`` will label the axes with standard
+      LaTeX math formatting. Note that the leading space is required, while a
+      trailing space aligns the text with the axis instead of the plot frame.
+    - The option *nid* takes an integer of the nth simultaneous points to plot.
+    - The option *iter* takes an integer of the largest iteration to plot.
+    - The option *reduce* can be given to reduce the output of a model to a
+      scalar, thus converting ``model(params)`` to ``reduce(model(params))``.
+      A reducer is given by the import path (e.g. ``numpy.add``).
+    - The option *scale* will convert the plot to log-scale, and scale the
+      cost by ``z=log(4*z*scale+1)+2``. This is useful for visualizing small
+      contour changes around the minimium.
+    - If using log-scale produces negative numbers, the option *shift* can be
+      used to shift the cost by ``z=z+shift``. Both *shift* and *scale* are
+      intended to help visualize contours.
+    - The option *fill* takes a boolean, to plot using filled contours.
+    - The option *depth* takes a boolean, to plot contours in 3D.
+    - The option *dots* takes a boolean, to show trajectory points in the plot.
+    - The option *join* takes a boolean, to connect trajectory points.
+    - The option *verb* takes a boolean, to print the model documentation.
 """
     #FIXME: should be able to:
     # - apply a constraint as a region of NaN -- apply when 'xx,yy=x[ij],y[ij]'
@@ -736,28 +749,37 @@ Additional Inputs:
 
 def collapse_plotter(filename, **kwds):
     """
-generate cost convergence rate plots from file written with 'write_support_file'
+generate cost convergence rate plots from file written with ``write_support_file``
 
-Available from the command shell as:
-  mystic_collapse_plotter.py filename [options]
+Available from the command shell as::
 
-or as a function call as:
-  mystic.collapse_plotter(filename, **options)
+    mystic_collapse_plotter.py filename [options]
 
-The option "col" takes a string of comma-separated integers indicating
-iteration numbers where parameter collapse has occurred.  If a second set of
-integers is provided (delineated by a semicolon), the additional set of integers
-will be plotted with a different linestyle (to indicate a different type of
-collapse).
+or as a function call::
 
-The option "label" takes a label string. For example, label = "y"
-will label the y-axis plot with 'y'. LaTeX is also accepted. For example,
-label = " log-cost, $ log_{10}(\hat{P} - \hat{P}_{max})$" will label the
-y-axis with standard LaTeX math formatting. Note that the leading space is
-required, and the text is aligned along the axis.
+    mystic.collapse_plotter(filename, **options)
 
-Required Inputs:
-  filename            name of the python convergence logfile (e.g paramlog.py)
+Args:
+    filename (str): name of the convergence logfile (e.g ``paramlog.py``).
+
+Returns:
+    None
+
+Note:
+    - The option *dots* takes a boolean, and will show data points in the plot.
+    - The option *linear* takes a boolean, and will plot in a linear scale.
+    - The option *out* takes a string of the filepath for the generated plot.
+    - The option *iter* takes an integer of the largest iteration to plot.
+    - The option *label* takes a label string. For example, ``label = "y"``
+      will label the plot with a 'y', while ``label = " log-cost,
+      $ log_{10}(\hat{P} - \hat{P}_{max})$"`` will label the y-axis with
+      standard LaTeX math formatting. Note that the leading space is required,
+      and that the text is aligned along the axis.
+    - The option *col* takes a string of comma-separated integers indicating
+      iteration numbers where parameter collapse has occurred. If a second set
+      of integers is provided (delineated by a semicolon), the additional set
+      of integers will be plotted with a different linestyle (to indicate a
+      different type of collapse).
 """
     import shlex
     try:
@@ -928,21 +950,33 @@ Required Inputs:
 
 def log_reader(filename, **kwds):
     """
-plot parameter convergence from file written with 'LoggingMonitor'
+plot parameter convergence from file written with ``LoggingMonitor``
 
-Available from the command shell as:
-  mystic_log_reader.py filename [options]
+Available from the command shell as::
 
-or as a function call as:
-  mystic.log_reader(filename, **options)
+    mystic_log_reader.py filename [options]
 
-The option "param" takes an indicator string. The indicator string is built
-from comma-separated array slices. For example, params = ":" will plot all
-parameters.  Alternatively, params = ":2, 3:" will plot all parameters except
-for the third parameter, while params = "0" will only plot the first parameter.
+or as a function call::
 
-Required Inputs:
-  filename            name of the convergence logfile (e.g log.txt)
+    mystic.log_reader(filename, **options)
+
+Args:
+    filename (str): name of the convergence logfile (e.g ``log.txt``).
+
+Returns:
+    None
+
+Note:
+    - The option *out* takes a string of the filepath for the generated plot.
+    - The option *dots* takes a boolean, and will show data points in the plot.
+    - The option *line* takes a boolean, and will connect the data with a line.
+    - The option *iter* takes an integer of the largest iteration to plot.
+    - The option *legend* takes a boolean, and will display the legend.
+    - The option *nid* takes an integer of the nth simultaneous points to plot.
+    - The option *param* takes an indicator string. The indicator string is
+      built from comma-separated array slices. For example, ``params = ":"``
+      will plot all parameters.  Alternatively, ``params = ":2, 3:"`` will plot      all parameters except for the third parameter, while ``params = "0"``
+      will only plot the first parameter.
 """
     import shlex
     try:
