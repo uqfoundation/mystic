@@ -29,12 +29,12 @@ Examples:
 
 References:
     1. http://en.wikipedia.org/wiki/Penalty_method
-    2. Applied Optimization with MATLAB Programming, by Venkataraman.
+    2. "Applied Optimization with MATLAB Programming", by Venkataraman,
        Wiley, 2nd edition, 2009.
     3. http://www.srl.gatech.edu/education/ME6103/Penalty-Barrier.ppt
     4. "An Augmented Lagrange Multiplier Based Method for Mixed Integer
        Discrete Continuous Optimization and Its Applications to
-       Mechanical Design", by Kannan and Kramer. 1994.
+       Mechanical Design", by Kannan and Kramer, 1994.
 """
 
 from numpy import inf, log

@@ -114,10 +114,10 @@ Inputs:
     n -- the number of points to sample [Default is n=10000]
 
 References:
-    This code is adapted from A Primer on Scientific Programming with Python
-    by Hans Petter Langtangen, page 443-445.
-    Also, see http://en.wikipedia.org/wiki/Monte_Carlo_integration
-    and http://math.fullerton.edu/mathews/n2003/MonteCarloMod.html
+    1. "A Primer on Scientific Programming with Python", by Hans Petter
+       Langtangen, page 443-445, 2014.
+    2. http://en.wikipedia.org/wiki/Monte_Carlo_integration
+    3. http://math.fullerton.edu/mathews/n2003/MonteCarloMod.html
 """
   from mystic.math.stats import volume
   from mystic.math.samples import random_samples

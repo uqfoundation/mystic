@@ -15,25 +15,27 @@ monitors: callable class instances that record data
 Monitors
 ========
 
-Montors provide the ability to monitor progress as the optimization
+Monitors provide the ability to monitor progress as the optimization
 is underway. Monitors also can be used to extract and prepare information
 for mystic's analysis viewers. Each of mystic's monitors are customizable,
 and provide the user with a different type of output. The following
 monitors are available::
-    - Monitor        -- the basic monitor; only writes to internal state
-    - LoggingMonitor -- a logging monitor; also writes to a logfile
-    - VerboseMonitor -- a verbose monitor; also writes to stdout/stderr
-    - VerboseLoggingMonitor -- a verbose logging monitor; best of both worlds
-    - CustomMonitor  -- a customizable 'n-variable' version of Monitor
-    - Null           -- a null object, which reliably does nothing
+
+    Monitor        -- the basic monitor; only writes to internal state
+    LoggingMonitor -- a logging monitor; also writes to a logfile
+    VerboseMonitor -- a verbose monitor; also writes to stdout/stderr
+    VerboseLoggingMonitor -- a verbose logging monitor; best of both worlds
+    CustomMonitor  -- a customizable 'n-variable' version of Monitor
+    Null           -- a null object, which reliably does nothing
 
 
 Usage
 =====
 
-Typically monitors are either bound to a model function by a modelFactory,
-or bound to a cost function by a Solver.  The typical usage pattern is::
+Typically monitors are either bound to a model function by a ``modelFactory``,
+or bound to a cost function by a ``Solver``.
 
+Examples:
     >>> # get and configure monitors
     >>> from mystic.monitors import Monitor, VerboseMonitor
     >>> evalmon = Monitor()
@@ -57,8 +59,6 @@ or bound to a cost function by a Solver.  The typical usage pattern is::
     >>> # access the 'evaluation' history
     >>> evalmon.x     # parameters after each evaluation
     >>> evalmon.y     # cost after each evaluation
-
-
 """
 __all__ = ['Null', 'Monitor', 'VerboseMonitor', 'LoggingMonitor',
            'VerboseLoggingMonitor', 'CustomMonitor', 

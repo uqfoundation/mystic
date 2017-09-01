@@ -38,7 +38,7 @@ def serial_launcher(kdict={}):
 prepare launch for standard execution
 syntax:  (python) (program) (progargs)
 
-Note:
+Notes:
     run non-python shell commands by setting ``python`` to a null string: 
     ``kdict = {'python':'', ...}``
     """
@@ -53,7 +53,7 @@ def python_map(func, *arglist, **kwds):
 Provides the standard python map function, however also accepts *kwds* in
 order to conform with the (deprecated) ``pyina.ez_map`` interface.
 
-Note:
+Notes:
     The following *kwds* used in ``ez_map`` are accepted, but disabled:
         * nodes -- the number of parallel nodes
         * launcher -- the launcher object

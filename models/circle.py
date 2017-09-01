@@ -9,7 +9,7 @@
 """
 2d array representation of a circle
 
-References::
+References:
     None
 """
 from __future__ import absolute_import

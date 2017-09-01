@@ -14,27 +14,22 @@ in [2], with 'Corana' function definitions drawn from [3,4], 'Griewangk'
 function definitions drawn from [5], and 'Zimmermann' function definitions
 drawn from [6].
 
-References::
-    [1] Storn, R. and Price, K. "Differential Evolution - A Simple and
-    Efficient Heuristic for Global Optimization over Continuous Spaces"
-    Journal of Global Optimization 11: 341-359, 1997.
-
-    [2] Storn, R. and Price, K. "Differential Evolution - A Simple and
-    Efficient Heuristic for Global Optimization over Continuous Spaces"
-    TR-95-012, ICSI, 1995. http://www.icsi.berkeley.edu/~storn/TR-95-012.pdf
-
-    [3] Ingber, L. "Simulated Annealing: Practice Versus Theory" J. of
-    Mathematical and Computer Modeling 18(11), 29-57, 1993.
-
-    [4] Corana, A. and Marchesi, M. and Martini, C. and Ridella, S.
-    "Minimizing Multimodal Functions of Continuous Variables with the
-    'Simulated Annealing Algorithm'" ACM Transactions on Mathematical
-    Software, March, 272-280, 1987.
-
-    [5] Griewangk, A.O. "Generalized Descent for Global Optimization"
-    Journal of Optimization Theory and Applications 34: 11-39, 1981.
-
-    [6] Zimmermann, W. "Operations Research" Oldenbourg Munchen, Wien, 1990.
+References:
+    1. Storn, R. and Price, K. "Differential Evolution - A Simple and
+       Efficient Heuristic for Global Optimization over Continuous Spaces"
+       Journal of Global Optimization 11: 341-359, 1997.
+    2. Storn, R. and Price, K. "Differential Evolution - A Simple and
+       Efficient Heuristic for Global Optimization over Continuous Spaces"
+       TR-95-012, ICSI, 1995. http://www.icsi.berkeley.edu/~storn/TR-95-012.pdf
+    3. Ingber, L. "Simulated Annealing: Practice Versus Theory" J. of
+       Mathematical and Computer Modeling 18(11), 29-57, 1993.
+    4. Corana, A. and Marchesi, M. and Martini, C. and Ridella, S.
+       "Minimizing Multimodal Functions of Continuous Variables with the
+       'Simulated Annealing Algorithm'" ACM Transactions on Mathematical
+       Software, March, 272-280, 1987.
+    5. Griewangk, A.O. "Generalized Descent for Global Optimization"
+       Journal of Optimization Theory and Applications 34: 11-39, 1981.
+    6. Zimmermann, W. "Operations Research" Oldenbourg Munchen, Wien, 1990.
 """
 from .abstract_model import AbstractFunction
 

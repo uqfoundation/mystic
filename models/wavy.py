@@ -12,8 +12,8 @@ __doc__ = _doc = """
 Multi-minima example functions with vector outputs, which require
 a 'reducing' function to provide scalar return values.
 
-References::
-    None.
+References:
+    None
 """
 from .abstract_model import AbstractFunction
 

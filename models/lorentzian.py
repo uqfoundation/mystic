@@ -9,7 +9,7 @@
 """
 Lorentzian peak model
 
-References::
+References:
     None
 """
 from __future__ import absolute_import

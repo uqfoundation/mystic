@@ -12,18 +12,16 @@ __doc__ = _doc = """
 This is part of Storn's "Differential Evolution" test suite, as defined
 in [2], with 'De Jong' function definitions drawn from [3].
 
-References::
-    [1] Storn, R. and Price, K. "Differential Evolution - A Simple and
-    Efficient Heuristic for Global Optimization over Continuous Spaces"
-    Journal of Global Optimization 11: 341-359, 1997.
-
-    [2] Storn, R. and Price, K. "Differential Evolution - A Simple and
-    Efficient Heuristic for Global Optimization over Continuous Spaces"
-    TR-95-012, ICSI, 1995. http://www.icsi.berkeley.edu/~storn/TR-95-012.pdf
-
-    [3] Ingber, L. and Rosen, B. "Genetic Algorithms and Very Fast
-    Simulated Reannealing: A Comparison" J. of Mathematical and Computer
-    Modeling 16(11), 87-100, 1992.
+References:
+    1. Storn, R. and Price, K. "Differential Evolution - A Simple and
+       Efficient Heuristic for Global Optimization over Continuous Spaces"
+       Journal of Global Optimization 11: 341-359, 1997.
+    2. Storn, R. and Price, K. "Differential Evolution - A Simple and
+       Efficient Heuristic for Global Optimization over Continuous Spaces"
+       TR-95-012, ICSI, 1995. http://www.icsi.berkeley.edu/~storn/TR-95-012.pdf
+    3. Ingber, L. and Rosen, B. "Genetic Algorithms and Very Fast
+       Simulated Reannealing: A Comparison" J. of Mathematical and Computer
+       Modeling 16(11), 87-100, 1992.
 """
 from .abstract_model import AbstractFunction
 

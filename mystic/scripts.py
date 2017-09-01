@@ -362,7 +362,7 @@ Args:
 Returns:
     None
 
-Note:
+Notes:
     - The option *out* takes a string of the filepath for the generated plot.
     - The option *bounds* takes an indicator string, where bounds are given as
       comma-separated slices. For example, using ``bounds = "-1:10, ^0:20"``
@@ -765,7 +765,7 @@ Args:
 Returns:
     None
 
-Note:
+Notes:
     - The option *dots* takes a boolean, and will show data points in the plot.
     - The option *linear* takes a boolean, and will plot in a linear scale.
     - The option *out* takes a string of the filepath for the generated plot.
@@ -966,7 +966,7 @@ Args:
 Returns:
     None
 
-Note:
+Notes:
     - The option *out* takes a string of the filepath for the generated plot.
     - The option *dots* takes a boolean, and will show data points in the plot.
     - The option *line* takes a boolean, and will connect the data with a line.

@@ -311,7 +311,7 @@ Args:
 Returns:
     None
 
-Note:
+Notes:
     - The option *out* takes a string of the filepath for the generated plot.
     - The option *iter* takes an integer of the largest iteration to plot.
     - The option *param* takes an indicator string. The indicator string is
@@ -577,7 +577,7 @@ Args:
 Returns:
     None
 
-Note:
+Notes:
     - The option *out* takes a string of the filepath for the generated plot.
     - The options *bounds*, *axes*, and *iters* all take indicator strings.
       The bounds should be given as comma-separated slices. For example, using
@@ -887,7 +887,7 @@ Args:
 Returns:
     None
 
-Note:
+Notes:
     - The option *out* takes a string of the filepath for the generated plot.
     - The options *bounds*, *axes*, *weight*, and *iters* all take indicator
       strings. The bounds should be given as comma-separated slices. For
@@ -1237,7 +1237,7 @@ Args:
 Returns:
     None
 
-Note:
+Notes:
     - The option *out* takes a string of the filepath for the generated plot.
     - The options *bounds*, *dim*, and *iters* all take indicator strings.
       The bounds should be given as comma-separated slices. For example, using

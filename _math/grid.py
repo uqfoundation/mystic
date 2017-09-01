@@ -14,7 +14,7 @@ def gridpts(q, dist=None):
 takes a list of lists of arbitrary length q = [[1,2],[3,4]]
 and produces a list of gridpoints g = [[1,3],[1,4],[2,3],[2,4]]
 
-Note:
+Notes:
     if a mystic.math.Distribution is provided, use it to inject randomness
     """
     w = [[] for i in range(len(q[-1]))]

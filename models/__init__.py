@@ -14,8 +14,9 @@ Functions
 =========
 
 Mystic provides a set of standard fitting functions that derive from
-the function API found in `mystic.models.abstract_model`. These standard
+the function API found in ``mystic.models.abstract_model``. These standard
 functions are provided::
+
     sphere     -- De Jong's spherical function
     rosen      -- Rosenbrock's function
     step       -- De Jong's step function
@@ -46,7 +47,8 @@ Models
 ======
 
 Mystic also provides a set of example models that derive from the model API
-found in `mystic.models.abstract_model`. These standard models are provided::
+found in ``mystic.models.abstract_model``. These standard models are provided::
+
     poly       -- 1d model representation for polynomials
     circle     -- 2d array representation of a circle
     lorentzian -- Lorentzian peak model
@@ -54,15 +56,15 @@ found in `mystic.models.abstract_model`. These standard models are provided::
     mogi       -- Mogi's model of surface displacements from a point spherical
                   source in an elastic half space
 
-Additionally, circle has been extended to provide three additional models,
+Additionally, ``circle`` has been extended to provide three additional models,
 each with different packing densities::
-    - dense_circle, sparse_circle, and minimal_circle
 
-Poly also provides additional models for 2nd, 4th, 6th, 8th, and 16th order
-Chebyshev polynomials::
-    - chebyshev2, chebyshev4, chebyshev6, chebyshev8, chebyshev16
+    dense_circle, sparse_circle, and minimal_circle
 
+Further, ``poly`` provides additional models for 2nd, 4th, 6th, 8th, and 16th
+order Chebyshev polynomials::
 
+    chebyshev2, chebyshev4, chebyshev6, chebyshev8, chebyshev16
 """
 from __future__ import absolute_import
 

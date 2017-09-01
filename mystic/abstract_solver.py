@@ -524,7 +524,7 @@ Input::
     - info = if True, return termination message (instead of boolean)
     - termination = termination conditions to check against
 
-Note::
+Notes::
     If no termination conditions are given, the solver's stored
     termination conditions will be used.
         """

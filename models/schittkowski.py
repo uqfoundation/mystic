@@ -12,14 +12,13 @@ __doc__ = _doc = """
 This is part of Hock and Schittkowski's test suite in [1], with function
 definitions drawn from [1] and [2].
 
-References::
-    [1] Hock, W. and Schittkowski, K. "Test Examples for Nonlinear Programming
-    Codes", Lecture Notes in Economics and Mathematical Systems, Vol. 187,
-    Springer, 1981. http://www.ai7.uni-bayreuth.de/test_problem_coll.pdf
-
-    [2] Paviani, D.A. "A new method for the solution of the general
-    nonlinear programming problem", Ph.D. dissertation, The University
-    of Texas, Austin, TX, 1969.
+References:
+    1. Hock, W. and Schittkowski, K. "Test Examples for Nonlinear Programming
+       Codes", Lecture Notes in Economics and Mathematical Systems, Vol. 187,
+       Springer, 1981. http://www.ai7.uni-bayreuth.de/test_problem_coll.pdf
+    2. Paviani, D.A. "A new method for the solution of the general
+       nonlinear programming problem", Ph.D. dissertation, The University
+       of Texas, Austin, TX, 1969.
 """
 from .abstract_model import AbstractFunction
 

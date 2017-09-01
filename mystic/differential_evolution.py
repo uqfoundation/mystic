@@ -131,16 +131,12 @@ All solvers included in this module provide the standard signal handling.
 For more information, see `mystic.mystic.abstract_solver`.
 
 
-References
-==========
-
-[1] Storn, R. and Price, K. Differential Evolution - A Simple and Efficient
-Heuristic for Global Optimization over Continuous Spaces. Journal of Global
-Optimization 11: 341-359, 1997.
-
-[2] Price, K., Storn, R., and Lampinen, J. - Differential Evolution,
-A Practical Approach to Global Optimization. Springer, 1st Edition, 2005
-
+References:
+    1. Storn, R. and Price, K. Differential Evolution - A Simple and Efficient
+       Heuristic for Global Optimization over Continuous Spaces. Journal of
+       Global Optimization 11: 341-359, 1997.
+    2. Price, K., Storn, R., and Lampinen, J. - Differential Evolution, A
+       Practical Approach to Global Optimization. Springer, 1st Edition, 2005.
 """
 __all__ = ['DifferentialEvolutionSolver','DifferentialEvolutionSolver2',\
            'diffev','diffev2']
@@ -595,7 +591,7 @@ Args:
 Returns:
     ``(xopt, {fopt, iter, funcalls, warnflag}, {allvecs})``
 
-Note:
+Notes:
     - xopt (*ndarray*): the minimizer of the cost function
     - fopt (*float*): value of cost function at minimum: ``fopt = cost(xopt)``
     - iter (*int*): number of iterations
@@ -657,7 +653,7 @@ Args:
 Returns:
     ``(xopt, {fopt, iter, funcalls, warnflag}, {allvecs})``
 
-Note:
+Notes:
     - xopt (*ndarray*): the minimizer of the cost function
     - fopt (*float*): value of cost function at minimum: ``fopt = cost(xopt)``
     - iter (*int*): number of iterations

@@ -9,10 +9,9 @@
 """
 Bevington & Robinson's model of dual exponential decay
 
-References::
-    [5] Bevington & Robinson (1992).
-    Data Reduction and Error Analysis for the Physical Sciences,
-    Second Edition, McGraw-Hill, Inc., New York.
+References:
+    1. "Data Reduction and Error Analysis for the Physical Sciences",
+       Bevington & Robinson, Second Edition, McGraw-Hill, New York (1992).
 """
 from __future__ import absolute_import
 
@@ -25,7 +24,7 @@ from mystic.forward_model import CostFactory as CF
 
 class BevingtonDecay(AbstractModel):
     """
-Computes dual exponential decay [5].
+Computes dual exponential decay [1].
 y = a1 + a2 Exp[-t / a4] + a3 Exp[-t/a5]
     """
 
@@ -70,7 +69,7 @@ with (a1,a2,a3,a4,a5) = (%s,%s,%s,%s,%s)""" % (a1,a2,a3,a4,a5)
 # prepared instances
 decay = BevingtonDecay() #FIXME: look up the correct name for the model!
 
-# data from Chapter 8 of [5].
+# data from Chapter 8 of [1].
 data = array([[15, 775], [30, 479], [45, 380], [60, 302],
 [75, 185], [90, 157], [105,137], [120, 119], [135, 110],
 [150, 89], [165, 74], [180, 61], [195, 66], [210, 68],

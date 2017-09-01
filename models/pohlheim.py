@@ -12,32 +12,26 @@ __doc__ = _doc = """
 This is part of Pohlheim's "GEATbx" test suite in [1], with function
 definitions drawn from [1], [2], [3], [4], [5], [6], and [7].
 
-References::
-    [1] Pohlheim, H. "GEATbx: Genetic and Evolutionary Algorithm Toolbox
-    for use with MATLAB", Version 3.80, 2006. http://www.geatbx.com/docu
-
-    [2] Schwefel, H.-P. "Numerical Optimization of Computer Models",
-    John Wiley and Sons, Chichester UK, 1981.
-
-    [3] Ackley, D.H. "A Connectionist Machine for Genetic Hillclimbing",
-    Kluwer Academic Publishers, Boston MA, 1987.
-
-    [4] Michalewicz, Z. "Genetic Algorithms + Data Structures = Evolution
-    Programs", Springer-Verlag, Berlin, Heidelberg, New York, 1992.
-
-    [5] Branin, F.K. "A Widely Convergent Method for Finding Multiple
-    Solutions of Simultaneous Nonlinear Equations", IBM J. Res. Develop.,
-    504-522, Sept 1972.
-
-    [6] Easom, E.E. "A Survey of Global Optimization Techniques", M. Eng.
-    Thesis, U. Louisville, Louisville KY, 1990.
-
-    [7] Goldstein, A.A. and Price, I.F. "On Descent from Local Minima",
-    Math. Comput., (25) 115, 1971.
+References:
+    1. Pohlheim, H. "GEATbx: Genetic and Evolutionary Algorithm Toolbox
+       for use with MATLAB", Version 3.80, 2006. http://www.geatbx.com/docu
+    2. Schwefel, H.-P. "Numerical Optimization of Computer Models",
+       John Wiley and Sons, Chichester UK, 1981.
+    3. Ackley, D.H. "A Connectionist Machine for Genetic Hillclimbing",
+       Kluwer Academic Publishers, Boston MA, 1987.
+    4. Michalewicz, Z. "Genetic Algorithms + Data Structures = Evolution
+       Programs", Springer-Verlag, Berlin, Heidelberg, New York, 1992.
+    5. Branin, F.K. "A Widely Convergent Method for Finding Multiple
+       Solutions of Simultaneous Nonlinear Equations", IBM J. Res. Develop.,
+       504-522, Sept 1972.
+    6. Easom, E.E. "A Survey of Global Optimization Techniques", M. Eng.
+       Thesis, U. Louisville, Louisville KY, 1990.
+    7. Goldstein, A.A. and Price, I.F. "On Descent from Local Minima",
+       Math. Comput., (25) 115, 1971.
 """
-#   [8] Dixon, L.C.W. and Szego, G.P. "The Optimization Problem: An
-#   Introduction", in "Toward Global Optimization II", North Holland,
-#   New York, 1978.
+#   8. Dixon, L.C.W. and Szego, G.P. "The Optimization Problem: An
+#      Introduction", in "Toward Global Optimization II", North Holland,
+#      New York, 1978.
 from .abstract_model import AbstractFunction
 
 from math import sin, cos, sqrt, pi, exp

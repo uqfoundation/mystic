@@ -12,9 +12,9 @@ __doc__ = _doc = """
 This is drawn from examples in Applied Optimization with MATLAB programming,
 with the function definition found in [1].
 
-References::
-    [1] Venkataraman, P. "Applied Optimization with MATLAB Programming",
-    John Wiley and Sons, Hoboken NJ, 2nd Edition, 2009.
+References:
+    1. Venkataraman, P. "Applied Optimization with MATLAB Programming",
+       John Wiley and Sons, Hoboken NJ, 2nd Edition, 2009.
 """
 from .abstract_model import AbstractFunction
 

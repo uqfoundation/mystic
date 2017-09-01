@@ -12,9 +12,9 @@ __doc__ = _doc = """
 This is drawn from examples in the NAG Library, with the 'peaks' function
 definition found in [1].
 
-References::
-    [1] Numerical Algorithms Group, "NAG Library", Oxford UK, Mark 24,
-    2013. http://www.nag.co.uk/numeric/CL/nagdoc_cl24/pdf/E05/e05jbc.pdf
+References:
+    1. Numerical Algorithms Group, "NAG Library", Oxford UK, Mark 24,
+       2013. http://www.nag.co.uk/numeric/CL/nagdoc_cl24/pdf/E05/e05jbc.pdf
 """
 from .abstract_model import AbstractFunction
 

@@ -512,7 +512,7 @@ Inputs:
     zsum -- use counterbalance when mass = 0.0
     zmass -- member scaling when mass = 0.0
 
-Note: if mass='l1', will use L1-norm; if mass='l2' will use L2-norm; etc.
+Notes: if mass='l1', will use L1-norm; if mass='l2' will use L2-norm; etc.
 """
   try:
     mass = int(mass.lstrip('l'))
@@ -886,7 +886,7 @@ For example:
     >>> impose_support([4],[1,2,3,4,5],[.2,.2,.2,.2,.2])
     ([-1.0, 0.0, 1.0, 2.0, 3.0], [0.0, 0.0, 0.0, 0.0, 1.0])
 
-Note: is 'mean-preserving' for samples and 'norm-preserving' for weights
+Notes: is 'mean-preserving' for samples and 'norm-preserving' for weights
 """
     if index is None: index = range(len(weights))
     # allow negative indexing
@@ -914,7 +914,7 @@ For example:
     >>> impose_unweighted([3,4],[1,2,3,4,5],[.2,.2,.2,.2,.2])
     ([2.0, 3.0, 4.0, 5.0, 6.0], [0.33333333333333331, 0.33333333333333331, 0.33333333333333331, 0.0, 0.0])
 
-Note: is 'mean-preserving' for samples and 'norm-preserving' for weights
+Notes: is 'mean-preserving' for samples and 'norm-preserving' for weights
 """
     if index is None: index = ()
     # allow negative indexing
@@ -945,7 +945,7 @@ For example:
     >>> impose_collapse({(0,1),(3,4)},[1,2,3,4,5],[.2,.2,.2,.2,.2])
     ([1.3999999999999999, 1.3999999999999999, 3.3999999999999999, 4.4000000000000004, 4.4000000000000004], [0.4, 0.0, 0.2, 0.4, 0.0])
 
-Note: is 'mean-preserving' for samples and 'norm-preserving' for weights
+Notes: is 'mean-preserving' for samples and 'norm-preserving' for weights
 """
     samples, weights = list(samples), list(weights) # don't edit inputs
     m = mean(samples, weights)

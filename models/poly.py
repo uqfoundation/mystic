@@ -9,17 +9,15 @@
 """
 1d model representation for polynomials
 
-References::
-    [1] Storn, R. and Price, K. "Differential Evolution - A Simple and
-    Efficient Heuristic for Global Optimization over Continuous Spaces"
-    Journal of Global Optimization 11: 341-359, 1997.
-
-    [2] Storn, R. and Price, K. "Differential Evolution - A Simple and
-    Efficient Heuristic for Global Optimization over Continuous Spaces"
-    TR-95-012, ICSI, 1995. http://www.icsi.berkeley.edu/~storn/TR-95-012.pdf
-
-    [3] Storn, R. "Constrained Optimization" Dr. Dobb's Journal, May,
-    119-123, 1995.
+References:
+    1. Storn, R. and Price, K. "Differential Evolution - A Simple and
+       Efficient Heuristic for Global Optimization over Continuous Spaces"
+       Journal of Global Optimization 11: 341-359, 1997.
+    2. Storn, R. and Price, K. "Differential Evolution - A Simple and
+       Efficient Heuristic for Global Optimization over Continuous Spaces"
+       TR-95-012, ICSI, 1995. http://www.icsi.berkeley.edu/~storn/TR-95-012.pdf
+    3. Storn, R. "Constrained Optimization" Dr. Dobb's Journal, May,
+       119-123, 1995.
 """
 from __future__ import absolute_import
 

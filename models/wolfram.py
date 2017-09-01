@@ -12,13 +12,12 @@ __doc__ = _doc = """
 This is drawn from Mathematica's example suites, with the 'fOsc3D'
 function definition found in [1], and the 'XXX' function found in [2].
 
-References::
-    [1] Trott, M. "The Mathematica GuideBook for Numerics", Springer-Verlag,
-    New York, 2006.
-
-    [2] Champion, B. and Strzebonski, A. "Wolfram Mathematica Tutorial
-    Collection on Constrained Optimization", Wolfram Research, USA, 2008.
-    http://reference.wolfram.com/language/guide/Optimization.html
+References:
+    1. Trott, M. "The Mathematica GuideBook for Numerics", Springer-Verlag,
+       New York, 2006.
+    2. Champion, B. and Strzebonski, A. "Wolfram Mathematica Tutorial
+       Collection on Constrained Optimization", Wolfram Research, USA, 2008.
+       http://reference.wolfram.com/language/guide/Optimization.html
 """
 from .abstract_model import AbstractFunction
 

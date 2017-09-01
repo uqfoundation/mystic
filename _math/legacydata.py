@@ -18,7 +18,7 @@ def _fails(filter, data=None):
     filter -- a list of booleans (same size as data)
     data -- a list of data points
 
-  Note:
+  Notes:
     if data=None, return the pairs of indices where data fails
   """
   from numpy import where, asarray
@@ -468,7 +468,7 @@ Notes:
   def has_id(self, query): #FIXME: assume is iterable & appropriate
     """return True where dataset ids are in query
 
-Note:
+Notes:
     query must be iterable
 """
     return [i in query for i in self.ids]
@@ -476,7 +476,7 @@ Note:
   def has_position(self, query): #FIXME: assume is iterable & appropriate
     """return True where dataset coords are in query
 
-Note:
+Notes:
     query must be iterable
 """
     #XXX: allow query to contain lists, and not only tuples?
@@ -485,7 +485,7 @@ Note:
   def has_point(self, query): #FIXME: assume is iterable & appropriate
     """return True where dataset points are in query
 
-Note:
+Notes:
     query must be iterable
 """
     return [i in query for i in self.raw]
@@ -493,7 +493,7 @@ Note:
   def has_datapoint(self, query): #FIXME: assume is iterable & appropriate
     """return True where dataset entries are in query
 
-Note:
+Notes:
     query must be iterable
 """
     return [i in query for i in self]

@@ -194,7 +194,7 @@ Args:
 Returns:
     tuple sequence of equations, where the bounds have been merged
 
-Note:
+Notes:
     if bounds are invalid, returns ``None``
 
 Examples:
@@ -1159,7 +1159,7 @@ Args:
 Returns:
     a ``mystic.penalty`` function built from the given constraints
 
-Note:
+Notes:
     If ``join=None``, then apply the given penalty constraints iteratively.
     Otherwise, couple the penalty constraints with the selected coupler.
 
@@ -1237,7 +1237,7 @@ Args:
 Returns:
     a ``mystic.constaints`` function built from the given constraints
 
-Note:
+Notes:
     If ``join=None``, then apply the given constraints iteratively. Otherwise,
     couple the constraints with the selected coupler.
 

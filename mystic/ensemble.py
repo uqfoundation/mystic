@@ -150,7 +150,7 @@ Args:
 Returns:
     ``(xopt, {fopt, iter, funcalls, warnflag, allfuncalls}, {allvecs})``
 
-Note:
+Notes:
     - xopt (*ndarray*): the minimizer of the cost function
     - fopt (*float*): value of cost function at minimum: ``fopt = cost(xopt)``
     - iter (*int*): number of iterations
@@ -269,7 +269,7 @@ Args:
 Returns:
     ``(xopt, {fopt, iter, funcalls, warnflag, allfuncalls}, {allvecs})``
 
-Note:
+Notes:
     - xopt (*ndarray*): the minimizer of the cost function
     - fopt (*float*): value of cost function at minimum: ``fopt = cost(xopt)``
     - iter (*int*): number of iterations
