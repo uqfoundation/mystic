@@ -460,14 +460,16 @@ Logs ChiSq and parameters to a file every 'interval', print every 'yinterval'
     pass
 
 def CustomMonitor(*args,**kwds):
-    """
-generate a custom Monitor
+    """generate a custom Monitor
 
-takes *args & **kwds, where args will be required inputs for the Monitor::
-    - args: property name strings (i.e. 'x')
-    - kwds: must be in the form: property="doc" (i.e. x='Params')
+Args:
+    args (tuple(str)): tuple of the required Monitor inputs (e.g. ``x``).
+    kwds (dict(str)): dict of ``{"input":"doc"}`` (e.g. ``x='Params'``).
 
-example usage...
+Returns:
+    a customized monitor instance
+
+Examples:
     >>> sow = CustomMonitor('x','y',x="Params",y="Costs",e="Error",d="Deriv")
     >>> sow(1,1)
     >>> sow(2,4,e=0)

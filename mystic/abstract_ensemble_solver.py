@@ -296,27 +296,20 @@ Inputs:
     def Solve(self, cost, termination=None, ExtraArgs=(), **kwds):
         """Minimize a 'cost' function with given termination conditions.
 
-Description:
+Uses an ensemble of optimizers to find the minimum of a function of one or
+more variables.
 
-    Uses an ensemble of optimizers to find the minimum of
-    a function of one or more variables.
+Args:
+    cost (func, default=None): the function to be minimized: ``y = cost(x)``.
+    termination (termination, default=None): termination conditions.
+    ExtraArgs (tuple, default=None): extra arguments for cost.
+    sigint_callback (func, default=None): callback function for signal handler.
+    callback (func, default=None): function to call after each iteration. The
+        interface is ``callback(xk)``, with xk the current parameter vector.
+    disp (bool, default=False): if True, print convergence messages.
 
-Inputs:
-
-    cost -- the Python function or method to be minimized.
-
-Additional Inputs:
-
-    termination -- callable object providing termination conditions.
-    ExtraArgs -- extra arguments for cost.
-
-Further Inputs:
-
-    sigint_callback -- callback function for signal handler.
-    callback -- an optional user-supplied function to call after each
-        iteration.  It is called as callback(xk), where xk is the
-        current parameter vector.                           [default = None]
-    disp -- non-zero to print convergence messages.         [default = 0]
+Returns:
+    None
         """
         # process and activate input settings
         if 'sigint_callback' in kwds:

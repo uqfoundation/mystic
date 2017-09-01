@@ -36,7 +36,7 @@ NL = '\n'
 
 # XXX: another function for the inverse... symbolic to matrix? (good for scipy)
 def linear_symbolic(A=None, b=None, G=None, h=None):
-    """Convert linear equality and inequality constraints from matrices to a 
+    """convert linear equality and inequality constraints from matrices to a 
 symbolic string of the form required by mystic's constraint parser.
 
 Inputs:
@@ -185,21 +185,24 @@ Additional Inputs:
 
 
 def merge(*equations, **kwds):
-    """merge bounds in a sequence of equations (e.g. [A<0, A>0] --> [A!=0])
+    """merge bounds in a sequence of equations (e.g. ``[A<0, A>0] --> [A!=0]``)
 
-Inputs:
-    equations -- a sequence of equations
+Args:
+    equations (tuple(str)): a sequence of equations
+    inclusive (bool, default=True): if False, bounds are exclusive
 
-    For example,
+Returns:
+    tuple sequence of equations, where the bounds have been merged
+
+Note:
+    if bounds are invalid, returns ``None``
+
+Examples:
     >>> merge(*['A > 0', 'A > 0', 'B >= 0', 'B <= 0'], inclusive=False)
     ('A > 0', 'B = 0')
+
     >>> merge(*['A > 0', 'A > 0', 'B >= 0', 'B <= 0'], inclusive=True)
     ('A > 0',)
-
-Additional Inputs:
-    inclusive -- if True (default), bounds are inclusive; else exclusive bounds
-
-NOTE: if bounds are invalid, returns None
 """
     inclusive = kwds['inclusive'] if 'inclusive' in kwds else True
     if inclusive:
@@ -587,7 +590,7 @@ exec(def_simplify)
 del def_simplify, doc_simplify, exec_locals_, exec_locals
 
 def replace_variables(constraints, variables=None, markers='$'):
-    """Replace variables in constraints string with a marker.
+    """replace variables in constraints string with a marker.
 Returns a modified constraints string.
 
 Inputs:
@@ -1142,29 +1145,34 @@ del def_generate_solvers, doc_generate_solvers, exec_globals, exec_results
 
 
 def generate_penalty(conditions, ptype=None, join=None, **kwds):
-    """Converts a penalty constraint function to a mystic.penalty function.
+    """converts a penalty constraint function to a ``mystic.penalty`` function.
 
-Inputs:
-    conditions -- a penalty constraint function, or list of constraint functions
-    ptype -- a mystic.penalty type, or a list of mystic.penalty types
-        of the same length as the given conditions
-    join -- either (and_, or_) from mystic.coupler, or None. The default is
-        to iteratively apply the penalties.
+Args:
+    conditions (object): a penalty contraint function, or list of penalty
+        constraint functions.
+    ptype (object, default=None): a ``mystic.penalty`` type, or a list of
+        ``mystic.penalty`` types of the same length as *conditions*.
+    join (object, default=None): ``and_`` or ``or_`` from ``mystic.coupler``.
+    k (int, default=None): penalty multiplier.
+    h (int, default=None): iterative multiplier.
 
-    For example:
-        >>> constraints = '''
-        ...     x2 = x0/2.
-        ...     x0 >= 0.'''
-        >>> ineqf,eqf = generate_conditions(constraints, nvars=3)
-        >>> penalty = generate_penalty((ineqf,eqf))
-        >>> penalty([1.,2.,0.])
-        25.0
-        >>> penalty([1.,2.,0.5])
-        0.0
+Returns:
+    a ``mystic.penalty`` function built from the given constraints
 
-Additional Inputs:
-    k -- penalty multiplier
-    h -- iterative multiplier
+Note:
+    If ``join=None``, then apply the given penalty constraints iteratively.
+    Otherwise, couple the penalty constraints with the selected coupler.
+
+Examples:
+    >>> constraints = '''
+    ...     x2 = x0/2.
+    ...     x0 >= 0.'''
+    >>> ineqf,eqf = generate_conditions(constraints, nvars=3)
+    >>> penalty = generate_penalty((ineqf,eqf))
+    >>> penalty([1.,2.,0.])
+    25.0
+    >>> penalty([1.,2.,0.5])
+    0.0
 """
     # allow for single condition, list of conditions, or nested list
     if not list_or_tuple_or_ndarray(conditions):
@@ -1218,50 +1226,55 @@ Additional Inputs:
 
 
 def generate_constraint(conditions, ctype=None, join=None, **kwds):
-    """Converts a constraint solver to a mystic.constraints function.
+    """converts a constraint solver to a ``mystic.constraints`` function.
 
-Inputs:
-    conditions -- a constraint solver, or list of constraint solvers
-    ctype -- a mystic.coupler type, or a list of mystic.coupler types
-        of the same length as the given conditions
-    join -- either (and_, or_) from mystic.constraints, or None. The default
-        is to iteratively apply the constraints.
+Args:
+    conditions (object): a constraint solver, or list of constraint solvers.
+    ctype (object, default=None): a ``mystic.coupler`` type, or a list of
+        ``mystic.coupler`` types of the same length as *conditions*.
+    join (object, default=None): ``and_`` or ``or_`` from ``mystic.constraints``.
 
-NOTES:
-    This simple constraint generator doesn't check for conflicts in conditions,
-    but simply applies conditions in the given order. This constraint generator
+Returns:
+    a ``mystic.constaints`` function built from the given constraints
+
+Note:
+    If ``join=None``, then apply the given constraints iteratively. Otherwise,
+    couple the constraints with the selected coupler.
+
+Warning:
+    This constraint generator doesn't check for conflicts in conditions, but
+    simply applies conditions in the given order. This constraint generator
     assumes that a single variable has been isolated on the left-hand side
     of each constraints equation, thus all constraints are of the form
-    "x_i = f(x)". This solver picks speed over robustness, and thus relies on
+    "x_i = f(x)". This solver picks speed over robustness, and relies on
     the user to formulate the constraints so that they do not conflict.
 
-    For example:
-        >>> constraints = '''
-        ...     x0 = cos(x1) + 2.
-        ...     x1 = x2*2.'''
-        >>> solv = generate_solvers(constraints)
-        >>> constraint = generate_constraint(solv)
-        >>> constraint([1.0, 0.0, 1.0])
-        [1.5838531634528576, 2.0, 1.0]
+Examples:
+    >>> constraints = '''
+    ...     x0 = cos(x1) + 2.
+    ...     x1 = x2*2.'''
+    >>> solv = generate_solvers(constraints)
+    >>> constraint = generate_constraint(solv)
+    >>> constraint([1.0, 0.0, 1.0])
+    [1.5838531634528576, 2.0, 1.0]
 
-    Standard python math conventions are used. For example, if an 'int'
+    Standard python math conventions are used. For example, if an ``int``
     is used in a constraint equation, one or more variable may be evaluate
-    to an 'int' -- this can affect solved values for the variables.
+    to an ``int`` -- this can affect solved values for the variables.
 
-    For example:
-        >>> constraints = '''
-        ...     x2 = x0/2.
-        ...     x0 >= 0.'''
-        >>> solv = generate_solvers(constraints, nvars=3)
-        >>> print(solv[0].__doc__)
-        'x[2] = x[0]/2.'
-        >>> print(solv[1].__doc__)
-        'x[0] = max(0., x[0])'
-        >>> constraint = generate_constraint(solv)
-        >>> constraint([1,2,3])
-        [1, 2, 0.5]
-        >>> constraint([-1,2,-3])
-        [0.0, 2, 0.0]
+    >>> constraints = '''
+    ...     x2 = x0/2.
+    ...     x0 >= 0.'''
+    >>> solv = generate_solvers(constraints, nvars=3)
+    >>> print(solv[0].__doc__)
+    'x[2] = x[0]/2.'
+    >>> print(solv[1].__doc__)
+    'x[0] = max(0., x[0])'
+    >>> constraint = generate_constraint(solv)
+    >>> constraint([1,2,3])
+    [1, 2, 0.5]
+    >>> constraint([-1,2,-3])
+    [0.0, 2, 0.0]
 """
     # allow for single condition, list of conditions, or nested list
     if not list_or_tuple_or_ndarray(conditions):

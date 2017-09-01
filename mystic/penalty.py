@@ -7,16 +7,14 @@
 # License: 3-clause BSD.  The full license text is available at:
 #  - https://github.com/uqfoundation/mystic/blob/master/LICENSE
 """
-Penalty Methods
+penalty methods: methods used to convert a function into a penalty function
 
-These methods can be used to convert a function into a penalty function.
-
-Suppose a given condition f(x) is satisfied when f(x) == 0.0
-for equality constraints, and f(x) <= 0.0 for inequality constraints.
-This condition f(x) can be used as the basis for a mystic.penalty
+Suppose a given condition ``f(x)`` is satisfied when ``f(x) == 0.0``
+for equality constraints, and ``f(x) <= 0.0`` for inequality constraints.
+This condition ``f(x)`` can be used as the basis for a ``mystic.penalty``
 function.
 
-    For example:
+Examples:
     >>> def penalty_mean(x, target):
     ...   return mean(x) - target
     ... 
@@ -29,15 +27,14 @@ function.
     >>> penalty([3,4,5,6,7])
     7.8886090522101181e-29
 
-
 References:
-   [1] http://en.wikipedia.org/wiki/Penalty_method
-   [2] Applied Optimization with MATLAB Programming, by Venkataraman.
+    1. http://en.wikipedia.org/wiki/Penalty_method
+    2. Applied Optimization with MATLAB Programming, by Venkataraman.
        Wiley, 2nd edition, 2009.
-   [3] http://www.srl.gatech.edu/education/ME6103/Penalty-Barrier.ppt
-   [4] "An Augmented Lagrange Multiplier Based Method for Mixed Integer
-       Discrete Continuous Optimization and Its Applications to Mechanical
-       Design", by Kannan and Kramer. 1994.
+    3. http://www.srl.gatech.edu/education/ME6103/Penalty-Barrier.ppt
+    4. "An Augmented Lagrange Multiplier Based Method for Mixed Integer
+       Discrete Continuous Optimization and Its Applications to
+       Mechanical Design", by Kannan and Kramer. 1994.
 """
 
 from numpy import inf, log

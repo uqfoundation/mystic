@@ -327,33 +327,25 @@ input::
     def Solve(self, cost=None, termination=None, ExtraArgs=None, **kwds):
         """Minimize a function using differential evolution.
 
-Description:
+Uses a differential evolution algorithm to find the minimum of a function of
+one or more variables.
 
-    Uses a differential evolution algorithm to find the minimum of
-    a function of one or more variables.
+Args:
+    cost (func, default=None): the function to be minimized: ``y = cost(x)``.
+    termination (termination, default=None): termination conditions.
+    ExtraArgs (tuple, default=None): extra arguments for cost.
+    strategy (strategy, default=Best1Bin): the mutation strategy for generating        new trial solutions.
+    CrossProbability (float, default=0.9): the probability of cross-parameter
+        mutations.
+    ScalingFactor (float, default=0.8): multiplier for mutations on the trial
+        solution.
+    sigint_callback (func, default=None): callback function for signal handler.
+    callback (func, default=None): function to call after each iteration. The
+        interface is ``callback(xk)``, with xk the current parameter vector.
+    disp (bool, default=False): if True, print convergence messages.
 
-Inputs:
-
-    cost -- the Python function or method to be minimized.
-
-Additional Inputs:
-
-    termination -- callable object providing termination conditions.
-    ExtraArgs -- extra arguments for cost.
-
-Further Inputs:
-
-    strategy -- the mutation strategy for generating new trial
-        solutions [default = Best1Bin]
-    CrossProbability -- the probability of cross-parameter mutations
-        [default = 0.9]
-    ScalingFactor -- multiplier for the impact of mutations on the
-        trial solution [default = 0.8]
-    sigint_callback -- callback function for signal handler.
-    callback -- an optional user-supplied function to call after each
-        iteration.  It is called as callback(xk), where xk is
-        the current parameter vector.  [default = None]
-    disp -- non-zero to print convergence messages.
+Returns:
+    None
         """
         super(DifferentialEvolutionSolver, self).Solve(cost, termination,\
                                                        ExtraArgs, **kwds)
@@ -533,34 +525,26 @@ input::
     def Solve(self, cost=None, termination=None, ExtraArgs=None, **kwds):
         """Minimize a function using differential evolution.
 
-Description:
+Uses a differential evolution algorithm to find the minimum of a function of
+one or more variables. This implementation holds the current generation
+invariant until the end of each iteration.
 
-    Uses a differential evolution algorithm to find the minimum of
-    a function of one or more variables. This implementation holds
-    the current generation invariant until the end of each iteration.
+Args:
+    cost (func, default=None): the function to be minimized: ``y = cost(x)``.
+    termination (termination, default=None): termination conditions.
+    ExtraArgs (tuple, default=None): extra arguments for cost.
+    strategy (strategy, default=Best1Bin): the mutation strategy for generating        new trial solutions.
+    CrossProbability (float, default=0.9): the probability of cross-parameter
+        mutations.
+    ScalingFactor (float, default=0.8): multiplier for mutations on the trial
+        solution.
+    sigint_callback (func, default=None): callback function for signal handler.
+    callback (func, default=None): function to call after each iteration. The
+        interface is ``callback(xk)``, with xk the current parameter vector.
+    disp (bool, default=False): if True, print convergence messages.
 
-Inputs:
-
-    cost -- the Python function or method to be minimized.
-
-Additional Inputs:
-
-    termination -- callable object providing termination conditions.
-    ExtraArgs -- extra arguments for cost.
-
-Further Inputs:
-
-    strategy -- the mutation strategy for generating new trial
-        solutions [default = Best1Bin]
-    CrossProbability -- the probability of cross-parameter mutations
-        [default = 0.9]
-    ScalingFactor -- multiplier for the impact of mutations on the
-        trial solution [default = 0.8]
-    sigint_callback -- callback function for signal handler.
-    callback -- an optional user-supplied function to call after each
-        iteration.  It is called as callback(xk), where xk is
-        the current parameter vector.  [default = None]
-    disp -- non-zero to print convergence messages.
+Returns:
+    None
         """
         super(DifferentialEvolutionSolver2, self).Solve(cost, termination,\
                                                         ExtraArgs, **kwds)
@@ -572,60 +556,54 @@ def diffev2(cost,x0,npop=4,args=(),bounds=None,ftol=5e-3,gtol=None,
             full_output=0,disp=1,retall=0,callback=None,**kwds):
     """Minimize a function using Storn & Price's differential evolution.
 
-Description:
+Uses Storn & Prices's differential evolution algorithm to find the minimum of a
+function of one or more variables. Mimics a ``scipy.optimize`` style interface.
 
-    Uses Storn & Prices's differential evolution algorithm to find the minimum
-    of a function of one or more variables. Mimics a scipy.optimize style
-    interface.
+Args:
+    cost (func): the function or method to be minimized: ``y = cost(x)``.
+    x0 (ndarray): the initial guess parameter vector ``x`` if desired start
+        is a single point, otherwise takes a list of (min,max) bounds that
+        define a region from which random initial points are drawn.
+    npop (int, default=4): size of the trial solution population.
+    args (tuple, default=()): extra arguments for cost.
+    bounds (list(tuple), default=None): list of pairs of bounds (min,max),
+        one for each parameter.
+    ftol (float, default=5e-3): acceptable relative error in ``cost(xopt)``
+        for convergence.
+    gtol (float, default=None): maximum iterations to run without improvement.
+    maxiter (int, default=None): the maximum number of iterations to perform.
+    maxfun (int, default=None): the maximum number of function evaluations.
+    cross (float, default=0.9): the probability of cross-parameter mutations.
+    scale (float, default=0.8): multiplier for mutations on the trial solution.
+    full_output (bool, default=False): True if fval and warnflag are desired.
+    disp (bool, default=True): if True, print convergence messages.
+    retall (bool, default=False): if True, return list of solutions at each
+        iteration.
+    callback (func, default=None): function to call after each iteration. The
+        interface is ``callback(xk)``, with xk the current parameter vector.
+    handler (bool, default=False): if True, enable handling interrupt signals.
+    strategy (strategy, default=None): override the default mutation strategy.
+    itermon (monitor, default=None): override the default GenerationMonitor.
+    evalmon (monitor, default=None): override the default EvaluationMonitor.
+    constraints (func, default=None): a function ``xk' = constraints(xk)``,
+        where xk is the current parameter vector, and xk' is a parameter
+        vector that satisfies the encoded constraints.
+    penalty (func, default=None): a function ``y = penalty(xk)``, where xk is
+        the current parameter vector, and ``y' == 0`` when the encoded
+        constraints are satisfied (and ``y' > 0`` otherwise).
 
-Inputs:
+Returns:
+    ``(xopt, {fopt, iter, funcalls, warnflag}, {allvecs})``
 
-    cost -- the Python function or method to be minimized.
-    x0 -- the initial guess (ndarray), if desired to start from a
-        set point; otherwise takes an array of (min,max) bounds,
-        for when random initial points are desired
-    npop -- size of the trial solution population.
-
-Additional Inputs:
-
-    args -- extra arguments for cost.
-    bounds -- list - n pairs of bounds (min,max), one pair for each parameter.
-    ftol -- number - acceptable relative error in cost(xopt) for convergence.
-    gtol -- number - maximum number of iterations to run without improvement.
-    maxiter -- number - the maximum number of iterations to perform.
-    maxfun -- number - the maximum number of function evaluations.
-    cross -- number - the probability of cross-parameter mutations
-    scale -- number - multiplier for impact of mutations on trial solution.
-    full_output -- number - non-zero if fval and warnflag outputs are desired.
-    disp -- number - non-zero to print convergence messages.
-    retall -- number - non-zero to return list of solutions at each iteration.
-    callback -- an optional user-supplied function to call after each
-        iteration.  It is called as callback(xk), where xk is the
-        current parameter vector.
-    handler -- boolean - enable/disable handling of interrupt signal.
-    strategy -- strategy - override the default mutation strategy.
-    itermon -- monitor - override the default GenerationMonitor.
-    evalmon -- monitor - override the default EvaluationMonitor.
-    constraints -- an optional user-supplied function.  It is called as
-        constraints(xk), where xk is the current parameter vector.
-        This function must return xk', a parameter vector that satisfies
-        the encoded constraints.
-    penalty -- an optional user-supplied function.  It is called as
-        penalty(xk), where xk is the current parameter vector.
-        This function should return y', with y' == 0 when the encoded
-        constraints are satisfied, and y' > 0 otherwise.
-
-Returns: (xopt, {fopt, iter, funcalls, warnflag}, {allvecs})
-
-    xopt -- ndarray - minimizer of function
-    fopt -- number - value of function at minimum: fopt = cost(xopt)
-    iter -- number - number of iterations
-    funcalls -- number - number of function calls
-    warnflag -- number - Integer warning flag:
-        1 : 'Maximum number of function evaluations.'
-        2 : 'Maximum number of iterations.'
-    allvecs -- list - a list of solutions at each iteration
-
+Note:
+    - xopt (*ndarray*): the minimizer of the cost function
+    - fopt (*float*): value of cost function at minimum: ``fopt = cost(xopt)``
+    - iter (*int*): number of iterations
+    - funcalls (*int*): number of function calls
+    - warnflag (*int*): warning flag:
+        - ``1 : Maximum number of function evaluations``
+        - ``2 : Maximum number of iterations``
+    - allvecs (*list*): a list of solutions at each iteration
     """
     invariant_current = kwds['invariant_current'] if 'invariant_current' in kwds else True
     kwds['invariant_current'] = invariant_current
@@ -640,60 +618,54 @@ def diffev(cost,x0,npop=4,args=(),bounds=None,ftol=5e-3,gtol=None,
            full_output=0,disp=1,retall=0,callback=None,**kwds):
     """Minimize a function using differential evolution.
 
-Description:
+Uses a differential evolution algorithm to find the minimum of a function of
+one or more variables. Mimics a ``scipy.optimize`` style interface.
 
-    Uses a differential evolution algorithm to find the minimum of
-    a function of one or more variables. Mimics a scipy.optimize style
-    interface.
+Args:
+    cost (func): the function or method to be minimized: ``y = cost(x)``.
+    x0 (ndarray): the initial guess parameter vector ``x`` if desired start
+        is a single point, otherwise takes a list of (min,max) bounds that
+        define a region from which random initial points are drawn.
+    npop (int, default=4): size of the trial solution population.
+    args (tuple, default=()): extra arguments for cost.
+    bounds (list(tuple), default=None): list of pairs of bounds (min,max),
+        one for each parameter.
+    ftol (float, default=5e-3): acceptable relative error in ``cost(xopt)``
+        for convergence.
+    gtol (float, default=None): maximum iterations to run without improvement.
+    maxiter (int, default=None): the maximum number of iterations to perform.
+    maxfun (int, default=None): the maximum number of function evaluations.
+    cross (float, default=0.9): the probability of cross-parameter mutations.
+    scale (float, default=0.8): multiplier for mutations on the trial solution.
+    full_output (bool, default=False): True if fval and warnflag are desired.
+    disp (bool, default=True): if True, print convergence messages.
+    retall (bool, default=False): if True, return list of solutions at each
+        iteration.
+    callback (func, default=None): function to call after each iteration. The
+        interface is ``callback(xk)``, with xk the current parameter vector.
+    handler (bool, default=False): if True, enable handling interrupt signals.
+    strategy (strategy, default=None): override the default mutation strategy.
+    itermon (monitor, default=None): override the default GenerationMonitor.
+    evalmon (monitor, default=None): override the default EvaluationMonitor.
+    constraints (func, default=None): a function ``xk' = constraints(xk)``,
+        where xk is the current parameter vector, and xk' is a parameter
+        vector that satisfies the encoded constraints.
+    penalty (func, default=None): a function ``y = penalty(xk)``, where xk is
+        the current parameter vector, and ``y' == 0`` when the encoded
+        constraints are satisfied (and ``y' > 0`` otherwise).
 
-Inputs:
+Returns:
+    ``(xopt, {fopt, iter, funcalls, warnflag}, {allvecs})``
 
-    cost -- the Python function or method to be minimized.
-    x0 -- the initial guess (ndarray), if desired to start from a
-        set point; otherwise takes an array of (min,max) bounds,
-        for when random initial points are desired
-    npop -- size of the trial solution population.
-
-Additional Inputs:
-
-    args -- extra arguments for cost.
-    bounds -- list - n pairs of bounds (min,max), one pair for each parameter.
-    ftol -- number - acceptable relative error in cost(xopt) for convergence.
-    gtol -- number - maximum number of iterations to run without improvement.
-    maxiter -- number - the maximum number of iterations to perform.
-    maxfun -- number - the maximum number of function evaluations.
-    cross -- number - the probability of cross-parameter mutations
-    scale -- number - multiplier for impact of mutations on trial solution.
-    full_output -- number - non-zero if fval and warnflag outputs are desired.
-    disp -- number - non-zero to print convergence messages.
-    retall -- number - non-zero to return list of solutions at each iteration.
-    callback -- an optional user-supplied function to call after each
-        iteration.  It is called as callback(xk), where xk is the
-        current parameter vector.
-    handler -- boolean - enable/disable handling of interrupt signal.
-    strategy -- strategy - override the default mutation strategy.
-    itermon -- monitor - override the default GenerationMonitor.
-    evalmon -- monitor - override the default EvaluationMonitor.
-    constraints -- an optional user-supplied function.  It is called as
-        constraints(xk), where xk is the current parameter vector.
-        This function must return xk', a parameter vector that satisfies
-        the encoded constraints.
-    penalty -- an optional user-supplied function.  It is called as
-        penalty(xk), where xk is the current parameter vector.
-        This function should return y', with y' == 0 when the encoded
-        constraints are satisfied, and y' > 0 otherwise.
-
-Returns: (xopt, {fopt, iter, funcalls, warnflag}, {allvecs})
-
-    xopt -- ndarray - minimizer of function
-    fopt -- number - value of function at minimum: fopt = cost(xopt)
-    iter -- number - number of iterations
-    funcalls -- number - number of function calls
-    warnflag -- number - Integer warning flag:
-        1 : 'Maximum number of function evaluations.'
-        2 : 'Maximum number of iterations.'
-    allvecs -- list - a list of solutions at each iteration
-
+Note:
+    - xopt (*ndarray*): the minimizer of the cost function
+    - fopt (*float*): value of cost function at minimum: ``fopt = cost(xopt)``
+    - iter (*int*): number of iterations
+    - funcalls (*int*): number of function calls
+    - warnflag (*int*): warning flag:
+        - ``1 : Maximum number of function evaluations``
+        - ``2 : Maximum number of iterations``
+    - allvecs (*list*): a list of solutions at each iteration
     """
     invariant_current = kwds['invariant_current'] if 'invariant_current' in kwds else False
     handler = kwds['handler'] if 'handler' in kwds else False

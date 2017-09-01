@@ -29,7 +29,14 @@ NL2 = '\n\n'
 #FIXME: remove this head-standing to workaround python2.6 exec bug
 
 def best_dimensions(n):
-  "get the 'best' dimensions (n x m) for arranging plots"
+  """get the 'best' dimensions ``(i x j)`` for arranging plots
+
+Args:
+  n (int): number of plots
+
+Returns:
+  tuple ``(i,j)`` of ``i`` rows ``j`` columns, where ``i*j`` is roughly ``n``
+  """
   from mystic.tools import factor
   allfactors = list(factor(n))
   from numpy import product
@@ -45,7 +52,7 @@ def best_dimensions(n):
 
 #### building the cone primitive ####
 def _cone_builder(slope, bounds, strict=True):
-  """ factory to create a cone primitive
+  """factory to create a cone primitive
 
   slope -- slope multiplier for cone on the X,Y,Z axes (for mesh construction)
   bounds -- list of tuples of bounds for the plot; (lower,upper) for each axis
@@ -53,7 +60,7 @@ def _cone_builder(slope, bounds, strict=True):
   from mystic.math import almostEqual
   import numpy as np
   def cone_mesh(length):
-    """ construct a conical mesh for a given length of cone """
+    """construct a conical mesh for a given length of cone"""
     L1,L2,L3 = slope
     radius = length / L3 #XXX: * 0.5
     r0 = ZERO
@@ -271,10 +278,14 @@ def _get_coords(data, replace=None, mask=None):
 
 
 def swap(alist, index=None):
-  """ swap the selected list element with the last element in alist
+  """swap the selected list element with the last element in alist
 
-  alist -- a list of objects
-  index -- the selected element
+Args:
+  alist (list): a list of objects
+  index (int, default=None): the selected element
+
+Returns:
+  list with the elements swapped as indicated
   """
   if index not in range(len(alist)):  # don't swap an element
     return alist 

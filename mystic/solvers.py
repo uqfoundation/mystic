@@ -14,15 +14,16 @@ Standard Interface
 
 All of mystic's optimizers derive from the solver API, which provides
 each optimizer with a standard, but highly-customizable interface.
-A description of the solver API is found in `mystic.models.abstract_model`,
+A description of the solver API is found in ``mystic.models.abstract_model``,
 and in each derived optimizer.  Mystic's optimizers are::
-    == Global Optimizers ==
+
+    ** Global Optimizers **
     DifferentialEvolutionSolver  -- Differential Evolution algorithm
     DifferentialEvolutionSolver2 -- Price & Storn's Differential Evolution
-    == Pseudo-Global Optimizers ==
+    ** Pseudo-Global Optimizers **
     BuckshotSolver               -- Uniform Random Distribution of N Solvers
     LatticeSolver                -- Distribution of N Solvers on a Regular Grid
-    == Local-Search Optimizers ==
+    ** Local-Search Optimizers **
     NelderMeadSimplexSolver      -- Nelder-Mead Simplex algorithm
     PowellDirectionalSolver      -- Powell's (modified) Level Set algorithm
 
@@ -35,13 +36,14 @@ interface. The collection of arguments is often unique to the optimizer,
 and if the underlying solver derives from a third-party package, the
 original interface is reproduced. Minimal interfaces to these optimizers
 are provided::
-    == Global Optimizers ==
+
+    ** Global Optimizers **
     diffev      -- DifferentialEvolutionSolver
     diffev2     -- DifferentialEvolutionSolver2
-    == Pseudo-Global Optimizers ==
+    ** Pseudo-Global Optimizers **
     buckshot    -- BuckshotSolver
     lattice     -- LatticeSolver
-    == Local-Search Optimizers ==
+    ** Local-Search Optimizers **
     fmin        -- NelderMeadSimplexSolver
     fmin_powell -- PowellDirectionalSolver
 
@@ -49,17 +51,15 @@ are provided::
 More Information
 ================
 
-For more information, please see the solver documentation found here::
-    - mystic.mystic.differential_evolution   [differential evolution solvers]
-    - mystic.mystic.scipy_optimize           [scipy local-search solvers]
-    - mystic.mystic.ensemble                 [pseudo-global solvers]
+For more information, please see the solver documentation found here:
+    - ``mystic.differential_evolution``   [differential evolution solvers]
+    - ``mystic.scipy_optimize``           [scipy local-search solvers]
+    - ``mystic.ensemble``                 [pseudo-global solvers]
 
-or the API documentation found here::
-    - mystic.mystic.abstract_solver          [the solver API definition]
-    - mystic.mystic.abstract_map_solver      [the parallel solver API]
-    - mystic.mystic.abstract_ensemble_solver [the ensemble solver API]
-
-
+or the API documentation found here:
+    - ``mystic.abstract_solver``          [the solver API definition]
+    - ``mystic.abstract_map_solver``      [the parallel solver API]
+    - ``mystic.abstract_ensemble_solver`` [the ensemble solver API]
 """
 # global optimizers
 from mystic.differential_evolution import DifferentialEvolutionSolver

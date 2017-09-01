@@ -111,60 +111,55 @@ def lattice(cost,ndim,nbins=8,args=(),bounds=None,ftol=1e-4,maxiter=None, \
             maxfun=None,full_output=0,disp=1,retall=0,callback=None,**kwds):
     """Minimize a function using the lattice ensemble solver.
     
-Description:
+Uses a lattice ensemble algorithm to find the minimum of a function of one or
+more variables. Mimics the ``scipy.optimize.fmin`` interface.  Starts N solver
+instances at regular intervals in parameter space, determined by *nbins*
+``(N = numpy.prod(nbins); len(nbins) == ndim)``.
 
-    Uses a lattice ensemble algorithm to find the minimum of
-    a function of one or more variables. Mimics the scipy.optimize.fmin
-    interface. Starts N solver instances at regular intervals in parameter
-    space, determined by 'nbins' (N = numpy.prod(nbins); len(nbins) == ndim). 
+Args:
+    cost (func): the function or method to be minimized: ``y = cost(x)``.
+    ndim (int): dimensionality of the problem.
+    nbins (tuple(int), default=8): total bins, or # of bins in each dimension.
+    args (tuple, default=()): extra arguments for cost.
+    bounds (list(tuple), default=None): list of pairs of bounds (min,max),
+        one for each parameter.
+    ftol (float, default=1e-4): acceptable relative error in ``cost(xopt)``
+        for convergence.
+    gtol (float, default=10): maximum iterations to run without improvement.
+    maxiter (int, default=None): the maximum number of iterations to perform.
+    maxfun (int, default=None): the maximum number of function evaluations.
+    full_output (bool, default=False): True if fval and warnflag are desired.
+    disp (bool, default=True): if True, print convergence messages.
+    retall (bool, default=False): if True, return list of solutions at each
+        iteration.
+    callback (func, default=None): function to call after each iteration. The
+        interface is ``callback(xk)``, with xk the current parameter vector.
+    solver (solver, default=None): override the default nested Solver instance.
+    handler (bool, default=False): if True, enable handling interrupt signals.
+    itermon (monitor, default=None): override the default GenerationMonitor.
+    evalmon (monitor, default=None): override the default EvaluationMonitor.
+    constraints (func, default=None): a function ``xk' = constraints(xk)``,
+        where xk is the current parameter vector, and xk' is a parameter
+        vector that satisfies the encoded constraints.
+    penalty (func, default=None): a function ``y = penalty(xk)``, where xk is
+        the current parameter vector, and ``y' == 0`` when the encoded
+        constraints are satisfied (and ``y' > 0`` otherwise).
+    dist (mystic.math.Distribution, default=None): generate randomness in
+        ensemble starting position using the given distribution.
 
-Inputs:
+Returns:
+    ``(xopt, {fopt, iter, funcalls, warnflag, allfuncalls}, {allvecs})``
 
-    cost -- the Python function or method to be minimized.
-    ndim -- dimensionality of the problem.
-    nbins -- tuple of number of bins in each dimension. [default = 8 bins total]
-
-Additional Inputs:
-
-    args -- extra arguments for cost.
-    bounds -- list - n pairs of bounds (min,max), one pair for each parameter.
-    ftol -- number - acceptable relative error in cost(xopt) for convergence.
-    gtol -- number - maximum number of iterations to run without improvement.
-    maxiter -- number - the maximum number of iterations to perform.
-    maxfun -- number - the maximum number of function evaluations.
-    full_output -- number - non-zero if fval and warnflag outputs are desired.
-    disp -- number - non-zero to print convergence messages.
-    retall -- number - non-zero to return list of solutions at each iteration.
-    callback -- an optional user-supplied function to call after each
-        iteration.  It is called as callback(xk), where xk is the
-        current parameter vector.
-    solver -- solver - override the default nested Solver instance.
-    handler -- boolean - enable/disable handling of interrupt signal.
-    itermon -- monitor - override the default GenerationMonitor.
-    evalmon -- monitor - override the default EvaluationMonitor.
-    constraints -- an optional user-supplied function.  It is called as
-        constraints(xk), where xk is the current parameter vector.
-        This function must return xk', a parameter vector that satisfies
-        the encoded constraints.
-    penalty -- an optional user-supplied function.  It is called as
-        penalty(xk), where xk is the current parameter vector.
-        This function should return y', with y' == 0 when the encoded
-        constraints are satisfied, and y' > 0 otherwise.
-    dist -- an optional mystic.math.Distribution instance.  If provided,
-        this distribution generates randomness in ensemble starting position.
-
-Returns: (xopt, {fopt, iter, funcalls, warnflag, allfuncalls}, {allvecs})
-
-    xopt -- ndarray - minimizer of function
-    fopt -- number - value of function at minimum: fopt = cost(xopt)
-    iter -- number - number of iterations
-    funcalls -- number - number of function calls
-    warnflag -- number - Integer warning flag:
-        1 : 'Maximum number of function evaluations.'
-        2 : 'Maximum number of iterations.'
-    allfuncalls -- number - total function calls (for all solver instances)
-    allvecs -- list - a list of solutions at each iteration
-
+Note:
+    - xopt (*ndarray*): the minimizer of the cost function
+    - fopt (*float*): value of cost function at minimum: ``fopt = cost(xopt)``
+    - iter (*int*): number of iterations
+    - funcalls (*int*): number of function calls
+    - warnflag (*int*): warning flag:
+        - ``1 : Maximum number of function evaluations``
+        - ``2 : Maximum number of iterations``
+    - allfuncalls (*int*): total function calls (for all solver instances)
+    - allvecs (*list*): a list of solutions at each iteration
     """
     handler = kwds['handler'] if 'handler' in kwds else False
     from mystic.solvers import NelderMeadSimplexSolver as _solver
@@ -236,60 +231,54 @@ def buckshot(cost,ndim,npts=8,args=(),bounds=None,ftol=1e-4,maxiter=None, \
              maxfun=None,full_output=0,disp=1,retall=0,callback=None,**kwds):
     """Minimize a function using the buckshot ensemble solver.
     
-Description:
+Uses a buckshot ensemble algorithm to find the minimum of a function of one or
+more variables. Mimics the ``scipy.optimize.fmin`` interface. Starts *npts*
+solver instances at random points in parameter space. 
 
-    Uses a buckshot ensemble algorithm to find the minimum of
-    a function of one or more variables. Mimics the scipy.optimize.fmin
-    interface. Starts 'npts' solver instances at random points in parameter
-    space. 
+Args:
+    cost (func): the function or method to be minimized: ``y = cost(x)``.
+    ndim (int): dimensionality of the problem.
+    npts (int, default=8): number of solver instances.
+    args (tuple, default=()): extra arguments for cost.
+    bounds (list(tuple), default=None): list of pairs of bounds (min,max),
+        one for each parameter.
+    ftol (float, default=1e-4): acceptable relative error in ``cost(xopt)``
+        for convergence.
+    gtol (float, default=10): maximum iterations to run without improvement.
+    maxiter (int, default=None): the maximum number of iterations to perform.
+    maxfun (int, default=None): the maximum number of function evaluations.
+    full_output (bool, default=False): True if fval and warnflag are desired.
+    disp (bool, default=True): if True, print convergence messages.
+    retall (bool, default=False): if True, return list of solutions at each
+        iteration.
+    callback (func, default=None): function to call after each iteration. The
+        interface is ``callback(xk)``, with xk the current parameter vector.
+    solver (solver, default=None): override the default nested Solver instance.
+    handler (bool, default=False): if True, enable handling interrupt signals.
+    itermon (monitor, default=None): override the default GenerationMonitor.
+    evalmon (monitor, default=None): override the default EvaluationMonitor.
+    constraints (func, default=None): a function ``xk' = constraints(xk)``,
+        where xk is the current parameter vector, and xk' is a parameter
+        vector that satisfies the encoded constraints.
+    penalty (func, default=None): a function ``y = penalty(xk)``, where xk is
+        the current parameter vector, and ``y' == 0`` when the encoded
+        constraints are satisfied (and ``y' > 0`` otherwise).
+    dist (mystic.math.Distribution, default=None): generate randomness in
+        ensemble starting position using the given distribution.
 
-Inputs:
+Returns:
+    ``(xopt, {fopt, iter, funcalls, warnflag, allfuncalls}, {allvecs})``
 
-    cost -- the Python function or method to be minimized.
-    ndim -- dimensionality of the problem.
-    npts -- number of solver instances.
-
-Additional Inputs:
-
-    args -- extra arguments for cost.
-    bounds -- list - n pairs of bounds (min,max), one pair for each parameter.
-    ftol -- number - acceptable relative error in cost(xopt) for convergence.
-    gtol -- number - maximum number of iterations to run without improvement.
-    maxiter -- number - the maximum number of iterations to perform.
-    maxfun -- number - the maximum number of function evaluations.
-    full_output -- number - non-zero if fval and warnflag outputs are desired.
-    disp -- number - non-zero to print convergence messages.
-    retall -- number - non-zero to return list of solutions at each iteration.
-    callback -- an optional user-supplied function to call after each
-        iteration.  It is called as callback(xk), where xk is the
-        current parameter vector.
-    solver -- solver - override the default nested Solver instance.
-    handler -- boolean - enable/disable handling of interrupt signal.
-    itermon -- monitor - override the default GenerationMonitor.
-    evalmon -- monitor - override the default EvaluationMonitor.
-    constraints -- an optional user-supplied function.  It is called as
-        constraints(xk), where xk is the current parameter vector.
-        This function must return xk', a parameter vector that satisfies
-        the encoded constraints.
-    penalty -- an optional user-supplied function.  It is called as
-        penalty(xk), where xk is the current parameter vector.
-        This function should return y', with y' == 0 when the encoded
-        constraints are satisfied, and y' > 0 otherwise.
-    dist -- an optional mystic.math.Distribution instance.  If provided,
-        this distribution generates randomness in ensemble starting position.
-
-Returns: (xopt, {fopt, iter, funcalls, warnflag, allfuncalls}, {allvecs})
-
-    xopt -- ndarray - minimizer of function
-    fopt -- number - value of function at minimum: fopt = cost(xopt)
-    iter -- number - number of iterations
-    funcalls -- number - number of function calls
-    warnflag -- number - Integer warning flag:
-        1 : 'Maximum number of function evaluations.'
-        2 : 'Maximum number of iterations.'
-    allfuncalls -- number - total function calls (for all solver instances)
-    allvecs -- list - a list of solutions at each iteration
-
+Note:
+    - xopt (*ndarray*): the minimizer of the cost function
+    - fopt (*float*): value of cost function at minimum: ``fopt = cost(xopt)``
+    - iter (*int*): number of iterations
+    - funcalls (*int*): number of function calls
+    - warnflag (*int*): warning flag:
+        - ``1 : Maximum number of function evaluations``
+        - ``2 : Maximum number of iterations``
+    - allfuncalls (*int*): total function calls (for all solver instances)
+    - allvecs (*list*): a list of solutions at each iteration
     """
     handler = kwds['handler'] if 'handler' in kwds else False
     from mystic.solvers import NelderMeadSimplexSolver as _solver

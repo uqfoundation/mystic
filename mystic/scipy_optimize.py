@@ -307,28 +307,21 @@ The size of the simplex is dim+1.
     def Solve(self, cost=None, termination=None, ExtraArgs=None, **kwds):
         """Minimize a function using the downhill simplex algorithm.
 
-Description:
+Uses a Nelder-Mead simplex algorithm to find the minimum of a function of one
+or more variables.
 
-    Uses a Nelder-Mead simplex algorithm to find the minimum of
-    a function of one or more variables.
+Args:
+    cost (func, default=None): the function to be minimized: ``y = cost(x)``.
+    termination (termination, default=None): termination conditions.
+    ExtraArgs (tuple, default=None): extra arguments for cost.
+    sigint_callback (func, default=None): callback function for signal handler.
+    callback (func, default=None): function to call after each iteration. The
+        interface is ``callback(xk)``, with xk the current parameter vector.
+    disp (bool, default=False): if True, print convergence messages.
+    radius (float, default=0.05): percentage change for initial simplex values.
 
-Inputs:
-
-    cost -- the Python function or method to be minimized.
-
-Additional Inputs:
-
-    termination -- callable object providing termination conditions.
-    ExtraArgs -- extra arguments for cost.
-
-Further Inputs:
-
-    sigint_callback -- callback function for signal handler.
-    callback -- an optional user-supplied function to call after each
-        iteration.  It is called as callback(xk), where xk is the
-        current parameter vector.                           [default = None]
-    disp -- non-zero to print convergence messages.         [default = 0]
-    radius -- percentage change for initial simplex values. [default = 0.05]
+Returns:
+    None
 """
         super(NelderMeadSimplexSolver, self).Solve(cost, termination,\
                                                    ExtraArgs, **kwds)
@@ -340,57 +333,50 @@ def fmin(cost, x0, args=(), bounds=None, xtol=1e-4, ftol=1e-4,
          callback=None, **kwds):
     """Minimize a function using the downhill simplex algorithm.
     
-Description:
+Uses a Nelder-Mead simplex algorithm to find the minimum of a function of one
+or more variables. Mimics the ``scipy.optimize.fmin`` interface.
 
-    Uses a Nelder-Mead simplex algorithm to find the minimum of
-    a function of one or more variables. Mimics the scipy.optimize.fmin
-    interface.
-
-Inputs:
-
-    cost -- the Python function or method to be minimized.
-    x0 -- ndarray - the initial guess.
-
-Additional Inputs:
-
-    args -- extra arguments for cost.
-    bounds -- list - n pairs of bounds (min,max), one pair for each parameter.
-    xtol -- number - acceptable relative error in xopt for convergence.
-    ftol -- number - acceptable relative error in cost(xopt) for
+Args:
+    cost (func): the function or method to be minimized: ``y = cost(x)``.
+    x0 (ndarray): the initial guess parameter vector ``x``.
+    args (tuple, default=()): extra arguments for cost.
+    bounds (list(tuple), default=None): list of pairs of bounds (min,max),
+        one for each parameter.
+    xtol (float, default=1e-4): acceptable relative error in ``xopt`` for
         convergence.
-    maxiter -- number - the maximum number of iterations to perform.
-    maxfun -- number - the maximum number of function evaluations.
-    full_output -- number - non-zero if fval and warnflag outputs are
-        desired.
-    disp -- number - non-zero to print convergence messages.
-    retall -- number - non-zero to return list of solutions at each
+    ftol (float, default=1e-4): acceptable relative error in ``cost(xopt)``
+        for convergence.
+    maxiter (int, default=None): the maximum number of iterations to perform.
+    maxfun (int, default=None): the maximum number of function evaluations.
+    full_output (bool, default=False): True if fval and warnflag are desired.
+    disp (bool, default=True): if True, print convergence messages.
+    retall (bool, default=False): if True, return list of solutions at each
         iteration.
-    callback -- an optional user-supplied function to call after each
-        iteration.  It is called as callback(xk), where xk is the
-        current parameter vector.
-    handler -- boolean - enable/disable handling of interrupt signal.
-    itermon -- monitor - override the default GenerationMonitor.
-    evalmon -- monitor - override the default EvaluationMonitor.
-    constraints -- an optional user-supplied function.  It is called as
-        constraints(xk), where xk is the current parameter vector.
-        This function must return xk', a parameter vector that satisfies
-        the encoded constraints.
-    penalty -- an optional user-supplied function.  It is called as
-        penalty(xk), where xk is the current parameter vector.
-        This function should return y', with y' == 0 when the encoded
-        constraints are satisfied, and y' > 0 otherwise.
+    callback (func, default=None): function to call after each iteration. The
+        interface is ``callback(xk)``, with xk the current parameter vector.
+    direc (tuple, default=None): the initial direction set.
+    handler (bool, default=False): if True, enable handling interrupt signals.
+    itermon (monitor, default=None): override the default GenerationMonitor.
+    evalmon (monitor, default=None): override the default EvaluationMonitor.
+    constraints (func, default=None): a function ``xk' = constraints(xk)``,
+        where xk is the current parameter vector, and xk' is a parameter
+        vector that satisfies the encoded constraints.
+    penalty (func, default=None): a function ``y = penalty(xk)``, where xk is
+        the current parameter vector, and ``y' == 0`` when the encoded
+        constraints are satisfied (and ``y' > 0`` otherwise).
 
-Returns: (xopt, {fopt, iter, funcalls, warnflag}, {allvecs})
+Returns:
+    ``(xopt, {fopt, iter, funcalls, warnflag}, {allvecs})``
 
-    xopt -- ndarray - minimizer of function
-    fopt -- number - value of function at minimum: fopt = cost(xopt)
-    iter -- number - number of iterations
-    funcalls -- number - number of function calls
-    warnflag -- number - Integer warning flag:
-        1 : 'Maximum number of function evaluations.'
-        2 : 'Maximum number of iterations.'
-    allvecs -- list - a list of solutions at each iteration
-
+Note:
+    - xopt (*ndarray*): the minimizer of the cost function
+    - fopt (*float*): value of cost function at minimum: ``fopt = cost(xopt)``
+    - iter (*int*): number of iterations
+    - funcalls (*int*): number of function calls
+    - warnflag (*int*): warning flag:
+        - ``1 : Maximum number of function evaluations``
+        - ``2 : Maximum number of iterations``
+    - allvecs (*list*): a list of solutions at each iteration
     """
     handler = kwds['handler'] if 'handler' in kwds else False
 
@@ -635,29 +621,22 @@ Takes one initial input:
     def Solve(self, cost=None, termination=None, ExtraArgs=None, **kwds):
         """Minimize a function using modified Powell's method.
 
-Description:
+Uses a modified Powell Directional Search algorithm to find the minimum of a
+function of one or more variables.
 
-    Uses a modified Powell Directional Search algorithm to find
-    the minimum of function of one or more variables.
+Args:
+    cost (func, default=None): the function to be minimized: ``y = cost(x)``.
+    termination (termination, default=None): termination conditions.
+    ExtraArgs (tuple, default=None): extra arguments for cost.
+    sigint_callback (func, default=None): callback function for signal handler.
+    callback (func, default=None): function to call after each iteration. The
+        interface is ``callback(xk)``, with xk the current parameter vector.
+    direc (tuple, default=None): the initial direction set.
+    xtol (float, default=1e-4): line-search error tolerance.
+    disp (bool, default=False): if True, print convergence messages.
 
-Inputs:
-
-    cost -- the Python function or method to be minimized.
-
-Additional Inputs:
-
-    termination -- callable object providing termination conditions.
-    ExtraArgs -- extra arguments for cost.
-
-Further Inputs:
-
-    sigint_callback -- callback function for signal handler.
-    callback -- an optional user-supplied function to call after each
-        iteration.  It is called as callback(xk), where xk is the
-        current parameter vector
-    direc -- initial direction set
-    xtol -- line-search error tolerance.
-    disp -- non-zero to print convergence messages.
+Returns:
+    None
 """
         super(PowellDirectionalSolver, self).Solve(cost, termination,\
                                                    ExtraArgs, **kwds)
@@ -673,61 +652,53 @@ def fmin_powell(cost, x0, args=(), bounds=None, xtol=1e-4, ftol=1e-4,
                 callback=None, direc=None, **kwds):
     """Minimize a function using modified Powell's method.
     
-Description:
+Uses a modified Powell Directional Search algorithm to find the minimum of a
+function of one or more variables. Mimics the ``scipy.optimize.fmin_powell``
+interface.
 
-    Uses a modified Powell Directional Search algorithm to find
-    the minimum of function of one or more variables.  Mimics the
-    scipy.optimize.fmin_powell interface.
-
-Inputs:
-
-    cost -- the Python function or method to be minimized.
-    x0 -- ndarray - the initial guess.
-
-Additional Inputs:
-
-    args -- extra arguments for cost.
-    bounds -- list - n pairs of bounds (min,max), one pair for each parameter.
-    xtol -- number - acceptable relative error in xopt for
+Args:
+    cost (func): the function or method to be minimized: ``y = cost(x)``.
+    x0 (ndarray): the initial guess parameter vector ``x``.
+    args (tuple, default=()): extra arguments for cost.
+    bounds (list(tuple), default=None): list of pairs of bounds (min,max),
+        one for each parameter.
+    xtol (float, default=1e-4): acceptable relative error in ``xopt`` for
         convergence.
-    ftol -- number - acceptable relative error in cost(xopt) for
-        convergence.
-    gtol -- number - maximum number of iterations to run without improvement.
-    maxiter -- number - the maximum number of iterations to perform.
-    maxfun -- number - the maximum number of function evaluations.
-    full_output -- number - non-zero if fval and warnflag outputs
-        are desired.
-    disp -- number - non-zero to print convergence messages.
-    retall -- number - non-zero to return list of solutions at each
+    ftol (float, default=1e-4): acceptable relative error in ``cost(xopt)``
+        for convergence.
+    gtol (float, default=2): maximum iterations to run without improvement.
+    maxiter (int, default=None): the maximum number of iterations to perform.
+    maxfun (int, default=None): the maximum number of function evaluations.
+    full_output (bool, default=False): True if fval and warnflag are desired.
+    disp (bool, default=True): if True, print convergence messages.
+    retall (bool, default=False): if True, return list of solutions at each
         iteration.
-    callback -- an optional user-supplied function to call after each
-        iteration.  It is called as callback(xk), where xk is the
-        current parameter vector.
-    direc -- initial direction set.
-    handler -- boolean - enable/disable handling of interrupt signal.
-    itermon -- monitor - override the default GenerationMonitor.
-    evalmon -- monitor - override the default EvaluationMonitor.
-    constraints -- an optional user-supplied function.  It is called as
-        constraints(xk), where xk is the current parameter vector.
-        This function must return xk', a parameter vector that satisfies
-        the encoded constraints.
-    penalty -- an optional user-supplied function.  It is called as
-        penalty(xk), where xk is the current parameter vector.
-        This function should return y', with y' == 0 when the encoded
-        constraints are satisfied, and y' > 0 otherwise.
+    callback (func, default=None): function to call after each iteration. The
+        interface is ``callback(xk)``, with xk the current parameter vector.
+    direc (tuple, default=None): the initial direction set.
+    handler (bool, default=False): if True, enable handling interrupt signals.
+    itermon (monitor, default=None): override the default GenerationMonitor.
+    evalmon (monitor, default=None): override the default EvaluationMonitor.
+    constraints (func, default=None): a function ``xk' = constraints(xk)``,
+        where xk is the current parameter vector, and xk' is a parameter
+        vector that satisfies the encoded constraints.
+    penalty (func, default=None): a function ``y = penalty(xk)``, where xk is
+        the current parameter vector, and ``y' == 0`` when the encoded
+        constraints are satisfied (and ``y' > 0`` otherwise).
 
-Returns: (xopt, {fopt, iter, funcalls, warnflag, direc}, {allvecs})
+Returns:
+    ``(xopt, {fopt, iter, funcalls, warnflag, direc}, {allvecs})``
 
-    xopt -- ndarray - minimizer of function
-    fopt -- number - value of function at minimum: fopt = cost(xopt)
-    iter -- number - number of iterations
-    funcalls -- number - number of function calls
-    warnflag -- number - Integer warning flag:
-        1 : 'Maximum number of function evaluations.'
-        2 : 'Maximum number of iterations.'
-    direc -- current direction set
-    allvecs -- list - a list of solutions at each iteration
-
+Note:
+    - xopt (*ndarray*): the minimizer of the cost function
+    - fopt (*float*): value of cost function at minimum: ``fopt = cost(xopt)``
+    - iter (*int*): number of iterations
+    - funcalls (*int*): number of function calls
+    - warnflag (*int*): warning flag:
+        - ``1 : Maximum number of function evaluations``
+        - ``2 : Maximum number of iterations``
+    - direc (*tuple*): the current direction set
+    - allvecs (*list*): a list of solutions at each iteration
     """
     #FIXME: need to resolve "direc"
     #        - should just pass 'direc', and then hands-off ?  How return it ?

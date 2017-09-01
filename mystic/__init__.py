@@ -24,9 +24,9 @@ __doc__ = """
 __license__ = """
 """ + __license__
 
-__all__ = ['solvers', 'termination', 'strategy', 'munge', 'tools', \
-           'constraints', 'penalty', 'coupler', 'symbolic', 'monitors', \
-           'support', 'model_plotter', 'log_reader', 'collapse_plotter']
+__all__ = ['solvers','termination','strategy','munge','tools','support', \
+           'constraints','penalty','coupler','symbolic','monitors','license', \
+           'citation','model_plotter','log_reader','collapse_plotter']
 
 # solvers
 import mystic.solvers as solvers

@@ -400,10 +400,15 @@ def wrap_bounds(target_function, min=None, max=None):
     return function_wrapper
 
 def wrap_reducer(reducer_function):
-    """convert a reducer function to an arraylike interface
+    """convert a reducer function to have an arraylike interface
 
-This is useful for converting a function that used python's 'y = reduce(f, x)'
-interface to an arraylike interface 'y = f(x)'.  Example usage...
+Args:
+    reducer_function (func): a function ``f`` of the form ``y = reduce(f, x)``.
+
+Returns:
+    a function ``f`` of the form ``y = f(x)``, where ``x`` is array-like.
+
+Examples:
     >>> acum = wrap_reducer(numpy.add)
     >>> acum([1,2,3,4])
     10

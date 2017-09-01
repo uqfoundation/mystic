@@ -169,7 +169,8 @@ Additional Inputs:
 def VTR(tolerance=0.005, target=0.0):
     """cost of last iteration is < tolerance from target:
 
-abs(cost[-1] - target) <= tolerance"""
+``abs(cost[-1] - target) <= tolerance``
+"""
     doc = "VTR with %s" % {'tolerance':tolerance, 'target':target}
     def _VTR(inst, info=False):
         if info: info = lambda x:x
@@ -185,7 +186,8 @@ abs(cost[-1] - target) <= tolerance"""
 def ChangeOverGeneration(tolerance=1e-6, generations=30):
     """change in cost is < tolerance over a number of generations:
 
-cost[-g] - cost[-1] <= tolerance, where g=generations"""
+``cost[-g] - cost[-1] <= tolerance``, with ``g=generations``
+"""
     doc = "ChangeOverGeneration with %s" % {'tolerance':tolerance,
                                             'generations':generations}
     def _ChangeOverGeneration(inst, info=False):
@@ -202,7 +204,8 @@ cost[-g] - cost[-1] <= tolerance, where g=generations"""
 def NormalizedChangeOverGeneration(tolerance=1e-4, generations=10):
     """normalized change in cost is < tolerance over number of generations:
 
-(cost[-g] - cost[-1]) /  0.5*(abs(cost[-g]) + abs(cost[-1])) <= tolerance"""
+``(cost[-g] - cost[-1]) / 0.5*(abs(cost[-g]) + abs(cost[-1])) <= tolerance``
+"""
     eta = 1e-20
     doc = "NormalizedChangeOverGeneration with %s" % {'tolerance':tolerance,
                                                       'generations':generations}
@@ -221,7 +224,8 @@ def NormalizedChangeOverGeneration(tolerance=1e-4, generations=10):
 def CandidateRelativeTolerance(xtol=1e-4, ftol=1e-4):
     """absolute difference in candidates is < tolerance:
 
-abs(xi-x0) <= xtol & abs(fi-f0) <= ftol, where x=params & f=cost"""
+``abs(xi-x0) <= xtol`` & ``abs(fi-f0) <= ftol``, with ``x=params`` & ``f=cost``
+"""
     #NOTE: this termination expects nPop > 1
     doc = "CandidateRelativeTolerance with %s" % {'xtol':xtol, 'ftol':ftol}
     def _CandidateRelativeTolerance(inst, info=False):
@@ -247,7 +251,8 @@ abs(xi-x0) <= xtol & abs(fi-f0) <= ftol, where x=params & f=cost"""
 def SolutionImprovement(tolerance=1e-5):  
     """sum of change in each parameter is < tolerance:
 
-sum(abs(last_params - current_params)) <= tolerance"""
+``sum(abs(last_params - current_params)) <= tolerance``
+"""
     doc = "SolutionImprovement with %s" % {'tolerance':tolerance}
     def _SolutionImprovement(inst, info=False):
         if info: info = lambda x:x
@@ -268,7 +273,8 @@ def NormalizedCostTarget(fval=None, tolerance=1e-6, generations=30):
     """normalized absolute difference from given cost value is < tolerance:
 (if fval is not provided, then terminate when no improvement over g iterations)
 
-abs(cost[-1] - fval)/fval <= tolerance *or* (cost[-1] - cost[-g]) = 0 """
+``abs(cost[-1] - fval)/fval <= tolerance`` or ``(cost[-1] - cost[-g]) = 0``
+"""
     #NOTE: modified from original behavior
     #  original --> if generations: then return cost[-g] - cost[-1] < 0
     #           --> else: return fval != 0 and abs((best - fval)/fval) < tol
@@ -294,7 +300,8 @@ def VTRChangeOverGeneration(ftol=0.005, gtol=1e-6, generations=30, target=0.0):
     """change in cost is < gtol over a number of generations,
 or cost of last iteration is < ftol from target:
 
-cost[-g] - cost[-1] <= gtol *or* abs(cost[-1] - target) <= ftol."""
+``cost[-g] - cost[-1] <= gtol`` or ``abs(cost[-1] - target) <= ftol``
+"""
     doc = "VTRChangeOverGeneration with %s" % {'ftol':ftol, 'gtol':gtol,
                                                'generations':generations,
                                                'target':target}
@@ -313,7 +320,8 @@ cost[-g] - cost[-1] <= gtol *or* abs(cost[-1] - target) <= ftol."""
 def PopulationSpread(tolerance=1e-6):
     """normalized absolute deviation from best candidate is < tolerance:
 
-abs(params - params[0]) <= tolerance"""
+``abs(params - params[0]) <= tolerance``
+"""
     doc = "PopulationSpread with %s" % {'tolerance':tolerance}
     def _PopulationSpread(inst, info=False):
         if info: info = lambda x:x
@@ -331,7 +339,8 @@ abs(params - params[0]) <= tolerance"""
 def GradientNormTolerance(tolerance=1e-5, norm=Inf): 
     """gradient norm is < tolerance, given user-supplied norm:
 
-sum( abs(gradient)**norm )**(1.0/norm) <= tolerance"""
+``sum( abs(gradient)**norm )**(1.0/norm) <= tolerance``
+"""
     doc = "GradientNormTolerance with %s" % {'tolerance':tolerance, 'norm':norm}
     def _GradientNormTolerance(inst, info=False):
         try:
@@ -359,7 +368,8 @@ def EvaluationLimits(generations=None, evaluations=None):
     """number of iterations is > generations,
 or number of function calls is > evaluations:
 
-iterations >= generations *or* fcalls >= evaluations"""
+``iterations >= generations`` or ``fcalls >= evaluations``
+"""
     #NOTE: default settings use solver defaults (_maxfun and _maxiter)
     doc = "EvaluationLimits with %s" % {'generations':generations, \
                                         'evaluations':evaluations}
@@ -381,7 +391,8 @@ iterations >= generations *or* fcalls >= evaluations"""
 def SolverInterrupt(): #XXX: enable = True ?
     """handler is enabled and interrupt is given:
 
-_EARLYEXIT == True"""
+``_EARLYEXIT == True``
+"""
     doc = "SolverInterrupt with %s" % {}
     def _SolverInterrupt(inst, info=False):
         if info: info = lambda x:x
@@ -396,7 +407,8 @@ def CollapseWeight(tolerance=0.005, generations=50, mask=None, **kwds):
     """value of weights are < tolerance over a number of generations,
 where mask is (row,column) indices of the selected weights:
 
-bool(collapse_weight(monitor, **kwds))."""
+``bool(collapse_weight(monitor, **kwds))``
+"""
     _kwds = {'tolerance':tolerance, 'generations':generations, 'mask':mask}
     kwds.update(_kwds)
     doc = "CollapseWeight with %s" % kwds #XXX: better kwds or _kwds?
@@ -419,7 +431,8 @@ def CollapsePosition(tolerance=0.005, generations=50, mask=None, **kwds):
     """max(pairwise(positions)) < tolerance over a number of generations,
 where (measures,indices) are (row,column) indices of selected positions:
 
-bool(collapse_position(monitor, **kwds))."""
+``bool(collapse_position(monitor, **kwds))``
+"""
     _kwds = {'tolerance':tolerance, 'generations':generations, 'mask':mask}
     kwds.update(_kwds)
     doc = "CollapsePosition with %s" % kwds #XXX: better kwds or _kwds
@@ -444,7 +457,8 @@ where target can be a single value or a list of values of x length,
 change(x[i]) = max(x[i]) - min(x[i]) if target=None else abs(x[i] - target),
 and mask is column indices of selected params:
 
-bool(collapse_at(monitor, **kwds))."""
+``bool(collapse_at(monitor, **kwds))``
+"""
     kwds = {'tolerance':tolerance, 'generations':generations,
             'target':target, 'mask':mask}
     doc = "CollapseAt with %s" % kwds
@@ -467,7 +481,8 @@ def CollapseAs(offset=False, tolerance=1e-4, generations=50, mask=None):
     """max(pairwise(x)) is < tolerance over a number of generations,
 and mask is column indices of selected params:
 
-bool(collapse_as(monitor, **kwds))."""
+``bool(collapse_as(monitor, **kwds))``
+"""
     kwds = {'tolerance':tolerance, 'generations':generations,
             'offset':offset, 'mask':mask}
     doc = "CollapseAs with %s" % kwds

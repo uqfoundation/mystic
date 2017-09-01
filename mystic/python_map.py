@@ -6,12 +6,12 @@
 # License: 3-clause BSD.  The full license text is available at:
 #  - https://github.com/uqfoundation/mystic/blob/master/LICENSE
 """
-Defaults for mapper and launcher. These should be
-available as a minimal (dependency-free) pure-python
-install from pathos::
-    - serial_launcher:   syntax for standard python execution
-    - python_map:        wrapper around the standard python map
-    - worker_pool:       the worker_pool map strategy
+Defaults for mapper and launcher. These should be available as a minimal
+(dependency-free) pure-python install from ``pathos``::
+
+    serial_launcher -- syntax for standard python execution
+    python_map      -- wrapper around the standard python map
+    worker_pool     -- the worker_pool map strategy
 """
 
 import os
@@ -38,8 +38,9 @@ def serial_launcher(kdict={}):
 prepare launch for standard execution
 syntax:  (python) (program) (progargs)
 
-NOTES:
-    run non-python commands with: {'python':'', ...} 
+Note:
+    run non-python shell commands by setting ``python`` to a null string: 
+    ``kdict = {'python':'', ...}``
     """
     mydict = defaults.copy()
     mydict.update(kdict)
@@ -47,19 +48,19 @@ NOTES:
     return str
 
 def python_map(func, *arglist, **kwds):
-    """...
+    """maps function *func* across arguments *arglist*.
 
-maps function 'func' across arguments 'arglist'.  Provides the
-standard python map function, however also accepts **kwds in order
-to conform with the (deprecated) pathos.pyina.ez_map interface.
+Provides the standard python map function, however also accepts *kwds* in
+order to conform with the (deprecated) ``pyina.ez_map`` interface.
 
-Further Input: [***disabled***]
-    nodes -- the number of parallel nodes
-    launcher -- the launcher object
-    scheduler -- the scheduler object
-    mapper -- the mapper object
-    timelimit -- string representation of maximum run time (e.g. '00:02')
-    queue -- string name of selected queue (e.g. 'normal')
+Note:
+    The following *kwds* used in ``ez_map`` are accepted, but disabled:
+        * nodes -- the number of parallel nodes
+        * launcher -- the launcher object
+        * scheduler -- the scheduler object
+        * mapper -- the mapper object
+        * timelimit -- string representation of maximum run time (e.g. '00:02')
+        * queue -- string name of selected queue (e.g. 'normal')
 """
    #print("ignoring: %s" % kwds)  #XXX: should allow use of **kwds
     result = list(map(func, *arglist)) #     see pathos.pyina.ez_map
@@ -67,7 +68,8 @@ Further Input: [***disabled***]
 
 def worker_pool():
     """use the 'worker pool' strategy; hence one job is allocated to each
-worker, and the next new work item is provided when a node completes its work"""
+worker, and the next new work item is provided when a node completes its work
+"""
     #from mpi_pool import parallel_map as map
     #return map
     return "mpi_pool"

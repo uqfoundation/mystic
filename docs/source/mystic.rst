@@ -293,7 +293,7 @@ python_map module
     :special-members:
     :show-inheritance:
     :imported-members:
-..  :exclude-members:
+    :exclude-members: carddealer_mapper
 
 scemtools module
 ----------------
@@ -319,10 +319,10 @@ scipy_optimize module
     :imported-members:
 ..  :exclude-members:
 
-scripts module
---------------
+.. scripts module
+   --------------
 
-.. automodule:: mystic.scripts
+..  automodule:: mystic.scripts
     :members:
     :undoc-members:
     :private-members:
@@ -437,5 +437,5 @@ tools module
     :special-members:
     :show-inheritance:
     :imported-members:
-..  :exclude-members:
+    :exclude-members: parse_from_history, src, Sow, VerboseSow, LoggingSow, CustomSow, Null, reduce
 
