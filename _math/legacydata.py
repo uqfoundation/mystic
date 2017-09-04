@@ -303,27 +303,25 @@ class dataset(list):  #FIXME: should just accept datapoints
                                      all=False, raw=False, **kwds):
     """check for shortness with respect to given data (or self)
 
-Inputs:
-    data -- a collection of data points (if None, use the dataset itself)
-    L -- the lipschitz constant, if different from that of the dataset itself 
-    blamelist -- if True, report which points are infeasible
-    pairs -- if True, report indices of infeasible points
-    all -- if True, report results for each point (opposed to all points)
-    raw -- if True, report numerical results (opposed to boolean results)
-
-Additional Inputs:
-    tol -- maximum acceptable deviation from shortness
-    cutoff -- zero out distances less than cutoff; typically: tol, 0.0, or None
+Args:
+    data (list, default=None): a list of data points, or the dataset itself.
+    L (float, default=None): the lipschitz constant, or the dataset's constant.
+    blamelist (bool, default=False): if True, indicate the infeasible points.
+    pairs (bool, default=True): if True, indicate indices of infeasible points.
+    all (bool, default=False): if True, get results for each individual point.
+    raw (bool, default=False): if False, get boolean results (i.e. non-float).
+    tol (float, default=0.0): maximum acceptable deviation from shortness.
+    cutoff (float, default=tol): zero out distances less than cutoff.
 
 Notes:
     Each point x,y can be thought to have an associated double-cone with slope
     equal to the lipschitz constant. Shortness with respect to another point is
     defined by the first point not being inside the cone of the second. We can
-    allow for some error in shortness, a short tolerance 'tol', for which the
+    allow for some error in shortness, a short tolerance *tol*, for which the
     point x,y is some acceptable y-distance inside the cone. While very tightly
-    related, cutoff and tol play distinct roles; tol is subtracted from
-    calculation of the lipschitz_distance, while cutoff zeros out the value
-    of any element less than the cutoff.
+    related, *cutoff* and *tol* play distinct roles; *tol* is subtracted from
+    calculation of the lipschitz_distance, while *cutoff* zeros out the value
+    of any element less than the *cutoff*.
 """
     tol = kwds['tol'] if 'tol' in kwds else 0.0 # get tolerance in y
     # default is to zero out distances less than tolerance
@@ -350,30 +348,38 @@ Notes:
                          all=False, raw=False, **kwds):
     """check for validity with respect to given model
 
-Inputs:
-    model -- the model function, y' = F(x')
-    blamelist -- if True, report which points are infeasible
-    pairs -- if True, report indices of infeasible points
-    all -- if True, report results for each point (opposed to all points)
-    raw -- if True, report numerical results (opposed to boolean results)
-
-Additional Inputs:
-    ytol -- maximum acceptable difference |y - F(x')|; a single value
-    xtol -- maximum acceptable difference |x - x'|; an iterable or single value
-    cutoff -- zero out distances less than cutoff; typically: ytol, 0.0, or None
-    hausdorff -- norm; where if given, ytol = |y - F(x')| + |x - x'|/norm
+Args:
+    model (func): the model function, ``y' = F(x')``.
+    blamelist (bool, default=False): if True, indicate the infeasible points.
+    pairs (bool, default=True): if True, indicate indices of infeasible points.
+    all (bool, default=False): if True, get results for each individual point.
+    raw (bool, default=False): if False, get boolean results (i.e. non-float).
+    ytol (float, default=0.0): maximum acceptable difference ``|y - F(x')|``.
+    xtol (float, default=0.0): maximum acceptable difference ``|x - x'|``.
+    cutoff (float, default=ytol): zero out distances less than cutoff.
+    hausdorff (bool, default=False): hausdorff ``norm``, where if given,
+        then ``ytol = |y - F(x')| + |x - x'|/norm``
 
 Notes:
-    xtol defines the n-dimensional base of a pilar of height ytol, centered at
-    each point. The region inside the pilar defines the space where a "valid"
-    model must intersect. If xtol is not specified, then the base of the pilar
-    will be a dirac at x' = x. This function performs an optimization for each
-    x to find an appropriate x'. While cutoff and ytol are very tightly related,
-    they play a distinct role; ytol is used to set the optimization termination
-    for an acceptable |y - F(x')|, while cutoff is applied post-optimization.
-    If we are using the hausdorff norm, then ytol will set the optimization
-    termination for an acceptable |y - F(x')| + |x - x'|/norm, where the x
-    values are normalized by norm = hausdorff.
+    *ytol* is a single value, while *xtol* is a single value or an iterable.
+    *cutoff* takes a float or a boolean, where ``cutoff=True`` will set the
+    value of *cutoff* to the default. Typically, the value of *cutoff* is
+    *ytol*, 0.0, or None. *hausdorff* can be False (e.g. ``norm = 1.0``),
+    True (e.g. ``norm = spread(x)``), or a list of points of ``len(x)``.
+
+    *xtol* defines the n-dimensional base of a pilar of height *ytol*,
+    centered at each point. The region inside the pilar defines the space
+    where a "valid" model must intersect. If *xtol* is not specified, then
+    the base of the pilar will be a dirac at ``x' = x``. This function
+    performs an optimization for each ``x`` to find an appropriate ``x'``.
+
+    While *cutoff* and *ytol* are very tightly related, they play a distinct
+    role; *ytol* is used to set the optimization termination for an acceptable
+    ``|y - F(x')|``, while *cutoff* is applied post-optimization.
+
+    If we are using the *hausdorff* norm, then *ytol* will set the optimization
+    termination for an acceptable ``|y - F(x')| + |x - x'|/norm``, where the x
+    values are normalized by ``norm = hausdorff``.
 """
     ytol = kwds['ytol'] if 'ytol' in kwds else 0.0 # get tolerance in y
     # default is to zero out distances less than tolerance

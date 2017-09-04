@@ -9,24 +9,20 @@
 # Abstract Solver Class
 """
 This module contains the base class for mystic solvers that utilize
-a parallel "map" function to enable parallel computing.  This module
-describes the map solver interface.  As with the AbstractSolver, the
-"Solve" method must be overwritten with the derived solver's optimization
-algorithm. Additionally, for the AbstractMapSolver, a call to self.map
-is required.  In many cases, a minimal function call interface for a
-derived solver is provided along with the derived class.  See the
-following for an example.
+a parallel ``map`` function to enable parallel computing.  This module
+describes the map solver interface. As with the ``AbstractSolver``, the
+``_Step`` method must be overwritten with the derived solver's optimization
+algorithm. Additionally, for the ``AbstractMapSolver``, a call to ``map`` is
+required. In addition to the class interface, a simple function interface for
+a derived solver class is often provided. For an example, see the following.
 
-The default map API settings are provided within mystic, while
-distributed and high-performance computing mappers and launchers
-can be obtained within the "pathos" package, found here::
-    - http://dev.danse.us/trac/pathos
+The default map API settings are provided within mystic, while distributed
+and parallel computing maps can be obtained from the ``pathos`` package 
+(http://dev.danse.us/trac/pathos).
 
+Examples:
 
-Usage
-=====
-
-A typical call to a 'map' solver will roughly follow this example:
+    A typical call to a 'map' solver will roughly follow this example:
 
     >>> # the function to be minimized and the initial values
     >>> from mystic.models import rosen
@@ -58,19 +54,22 @@ A typical call to a 'map' solver will roughly follow this example:
 Handler
 =======
 
-All solvers packaged with mystic include a signal handler that
-provides the following options::
+All solvers packaged with mystic include a signal handler that provides
+the following options::
+
     sol: Print current best solution.
     cont: Continue calculation.
     call: Executes sigint_callback, if provided.
     exit: Exits with current best solution.
 
-Handlers are enabled with the 'enable_signal_handler' method,
-and are configured through the solver's 'Solve' method.  Handlers
-trigger when a signal interrupt (usually, Ctrl-C) is given while
-the solver is running.  ***NOTE: The handler currently is disabled
-when the solver has been launched in parallel.*** 
+Handlers are enabled with the ``enable_signal_handler`` method,
+and are configured through the solver's ``Solve`` method.  Handlers
+trigger when a signal interrupt (usually, ``Ctrl-C``) is given while
+the solver is running.
 
+Notes:
+
+    The handler is currently disabled when the solver is run in parallel.
 """
 __all__ = ['AbstractMapSolver']
 
@@ -86,13 +85,16 @@ AbstractMapSolver base class for mystic optimizers that utilize parallel map.
 
     def __init__(self, dim, **kwds):
         """
-Takes one initial input:
+Takes one initial input::
+
     dim      -- dimensionality of the problem.
 
-Additional inputs:
+Additional inputs::
+
     npop     -- size of the trial solution population.       [default = 1]
 
-Important class members:
+Important class members::
+
     nDim, nPop       = dim, npop
     generations      - an iteration counter.
     evaluations      - an evaluation counter.

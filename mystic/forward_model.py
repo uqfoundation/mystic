@@ -261,20 +261,20 @@ Example:
         return _
 
     def getCostFunctionSlow(self, evalpts, observations):
-        """
-Get a cost function that allows simultaneous evaluation of all forward models
-for the same set of evaluation points and observation points.
+        """Get a cost function that allows simultaneous evaluation of all
+forward models for the same set of evaluation points and observation points.
 
-Inputs:
-    evalpts -- a list of evaluation points
-    observations -- a list of data points
+Args:
+    evalpts (list(float)): a list of evaluation points (i.e. input).
+    observations (list(float)): a list of data points (i.e. output).
 
-The cost metric is hard-wired to be the sum of the real part of |x|^2,
-where x is the VectorCostFunction for a given set of parameters.
+Notes:
+    The cost metric is hard-wired to be the sum of the real part of ``|x|^2``,
+    where x is the VectorCostFunction for a given set of parameters.
 
-NOTE: Input parameters do NOT go through filters registered as inputCheckers.
+    Input parameters do NOT go through filters registered as inputCheckers.
 
-Example:
+Examples:
     >>> import numpy as np
     >>> C = CostFactory()
     >>> C.addModel(np.poly, inputs=3)

@@ -10,17 +10,15 @@
 # derived from Patrick Hung's original DifferentialEvolutionSolver
 """
 This module contains the base class for mystic solvers, and describes
-the mystic solver interface.  The "Solve" method must be overwritten
-with the derived solver's optimization algorithm.  In many cases, a
-minimal function call interface for a derived solver is provided
-along with the derived class.  See `mystic.scipy_optimize`, and the
-following for an example.
+the mystic solver interface.  The ``_Step`` method must be overwritten
+with the derived solver's optimization algorithm.  In addition to the
+class interface, a simple function interface for a derived solver class
+is often provided. For an example, see ``mystic.scipy_optimize``, and
+the following.
 
+Examples:
 
-Usage
-=====
-
-A typical call to a mystic solver will roughly follow this example:
+    A typical call to a solver will roughly follow this example:
 
     >>> # the function to be minimized and the initial values
     >>> from mystic.models import rosen
@@ -45,8 +43,7 @@ A typical call to a mystic solver will roughly follow this example:
     >>> # obtain the solution
     >>> solution = solver.Solution()
 
-
-An equivalent, yet less flexible, call using the minimal interface is:
+    An equivalent, but less flexible, call using the function interface is:
 
     >>> # the function to be minimized and the initial values
     >>> from mystic.models import rosen
@@ -60,18 +57,17 @@ An equivalent, yet less flexible, call using the minimal interface is:
 Handler
 =======
 
-All solvers packaged with mystic include a signal handler that
-provides the following options::
+All solvers packaged with mystic include a signal handler that provides
+the following options::
+
     sol: Print current best solution.
     cont: Continue calculation.
     call: Executes sigint_callback, if provided.
     exit: Exits with current best solution.
 
-Handlers are enabled with the 'enable_signal_handler' method,
-and are configured through the solver's 'Solve' method.  Handlers
-trigger when a signal interrupt (usually, Ctrl-C) is given while
-the solver is running.
-
+Handlers are enabled with the ``enable_signal_handler`` method, and are
+configured through the solver's ``Solve`` method.  Handlers trigger when a
+signal interrupt (usually, ``Ctrl-C``) is given while the solver is running.
 """
 __all__ = ['AbstractSolver']
 
@@ -88,19 +84,21 @@ abs = absolute
 null = lambda x: None
 
 class AbstractSolver(object):
-    """
-AbstractSolver base class for mystic optimizers.
+    """AbstractSolver base class for mystic optimizers.
     """
 
     def __init__(self, dim, **kwds):
         """
-Takes one initial input:
+Takes one initial input::
+
     dim      -- dimensionality of the problem.
 
-Additional inputs:
+Additional inputs::
+
     npop     -- size of the trial solution population.       [default = 1]
 
-Important class members:
+Important class members::
+
     nDim, nPop       = dim, npop
     generations      - an iteration counter.
     evaluations      - an evaluation counter.
@@ -774,37 +772,30 @@ Input::
         return settings
 
     def Step(self, cost=None, termination=None, ExtraArgs=None, **kwds):
-        """Take a single optimiztion step using the given 'cost' function.
+        """Take a single optimization step using the given 'cost' function.
 
-Description:
+Uses an optimization algorithm to take one 'step' toward the minimum of a
+function of one or more variables.
 
-    Uses an optimization algorithm to take one 'step' toward
-    the minimum of a function of one or more variables.
+Args:
+    cost (func, default=None): the function to be minimized: ``y = cost(x)``.
+    termination (termination, default=None): termination conditions.
+    ExtraArgs (tuple, default=None): extra arguments for cost.
+    callback (func, default=None): function to call after each iteration. The
+        interface is ``callback(xk)``, with xk the current parameter vector.
+    disp (bool, default=False): if True, print convergence messages.
 
-Inputs:
-
-    cost -- the Python function or method to be minimized.
-
-Additional Inputs:
-
-    termination -- callable object providing termination conditions.
-    ExtraArgs -- extra arguments for cost.
-
-Further Inputs:
-
-    callback -- an optional user-supplied function to call after each
-        iteration.  It is called as callback(xk), where xk is
-        the current parameter vector.  [default = None]
-    disp -- non-zero to print convergence messages.
+Returns:
+    None
 
 Notes:
-    If the algorithm does not meet the given termination conditions after
-    the call to "Step", the solver may be left in an "out-of-sync" state.
-    When abandoning an non-terminated solver, one should call "Finalize"
-    to make sure the solver is fully returned to a "synchronized" state.
+    To run the solver until termination, call ``Solve()``. Alternately, use
+    ``Terminated()`` as the stop condition in a while loop over ``Step``.
 
-    To run the solver until termination, call "Solve()".  Alternately, use
-    Terminated()" as the condition in a while loop over "Step".
+    If the algorithm does not meet the given termination conditions after
+    the call to ``Step``, the solver may be left in an "out-of-sync" state.
+    When abandoning an non-terminated solver, one should call ``Finalize()``
+    to make sure the solver is fully returned to a "synchronized" state.
         """
         if 'disp' in kwds:
             disp = kwds['disp']; del kwds['disp']
