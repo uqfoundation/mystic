@@ -24,6 +24,7 @@ discrete module
     :members:
     :undoc-members:
     :show-inheritance:
+..  :exclude-members: point, dirac_measure
 
 distance module
 ---------------
@@ -64,6 +65,7 @@ measures module
     :members:
     :undoc-members:
     :show-inheritance:
+..  :exclude-members: _flat_split
 
 poly module
 -----------

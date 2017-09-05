@@ -53,13 +53,13 @@ cache module
 ------------
 
 .. automodule:: mystic.cache
-    :members:
+..  :members:
     :undoc-members:
     :private-members:
     :special-members:
     :show-inheritance:
     :imported-members:
-..  :exclude-members:
+..  :exclude-members: lru_cache, lfu_cache, mru_cache, rr_cache, inf_cache, no_cache
 
 .. toctree::
     :maxdepth: 2
@@ -197,7 +197,7 @@ math module
     :special-members:
     :show-inheritance:
     :imported-members:
-..  :exclude-members:
+..  :exclude-members: approx_equal, dirac_measure, paramtrans
 
 .. toctree::
     :maxdepth: 2
@@ -437,5 +437,5 @@ tools module
     :special-members:
     :show-inheritance:
     :imported-members:
-    :exclude-members: parse_from_history, src, Sow, VerboseSow, LoggingSow, CustomSow, Null, reduce
+    :exclude-members: parse_from_history, src, Sow, VerboseSow, LoggingSow, CustomSow, Null, collections, reduce
 

@@ -45,6 +45,8 @@ from .approx import approx_equal
 from . import discrete as dirac_measure
 from . import distance as paramtrans
 
+__all__ = ['Distribution','polyeval','poly1d','gridpts','samplepts', \
+           'almostEqual','tolerance']
 
 # distribution object
 class Distribution(object):

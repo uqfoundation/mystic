@@ -18,6 +18,12 @@ from mystic.math.measures import impose_mean, impose_expectation
 from mystic.math.measures import impose_spread, impose_variance
 from mystic.math.measures import impose_weight_norm
 
+__all__ = ['point_mass','measure','product_measure','scenario',\
+           '_mimic','_uniform_weights','_list_of_measures','compose',\
+           'decompose','unflatten','flatten','bounded_mean',\
+           'norm_wts_constraintsFactory','mean_y_norm_wts_constraintsFactory',\
+           'impose_feasible','impose_valid']
+
 class point_mass(object):
   """ a point_mass object with weight and position
 

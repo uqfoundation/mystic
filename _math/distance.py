@@ -133,20 +133,21 @@ def _get_xy(points):
 def chebyshev(x,xp=None, up=True, dmin=0, axis=None):
   """infinity norm distance between points in euclidean space
 
-  d(inf) =  max( |x[0] - x[0]'|, |x[1] - x[1]'|, ..., |x[n] - x[n]'| ) 
+``d(inf) =  max(|x[0] - x[0]'|, |x[1] - x[1]'|, ..., |x[n] - x[n]'|)``
 
-Input:
-  x    = array of points, x
-  xp   = array pf points, x'
+Args:
+    x (array): an array of points, ``x``
+    xp (array, default=None): a second array of points, ``x'``
+    up (bool, default=True): True, if upconvert ``x`` as ``x[:,newaxis]``
+    dmin (int, default=0): upconvert ``x,x'`` to ``dimension >= dmin``
+    axis (int, default=None): if not None, reduce across the given axis
 
-Additional Input:
-  up   = True if upconvert x with x[:,newaxis]
-  dmin = upconvert to x,x' to dimension >= dmin
-  axis = if not None, reduce across the selected axis
+Returns:
+    an array of absolute distances between points
 
 Notes:
-  for standard array behavior, use up=False
-  for element-wise across all elements, use up=True
+    - for pairwise distance (numpy ndarray behavior), use ``up=False``
+    - for distance between an element and all elements, use ``up=True``
 """
   d = euclidean_distance(x,xp,up=up,dmin=dmin)
   return d.max(axis=axis).astype(float)
@@ -155,20 +156,21 @@ Notes:
 def hamming(x,xp=None, up=True, dmin=0, axis=None):
   """zero 'norm' distance between points in euclidean space
 
-  d(0) =  sum( x[0] != x[0]', x[1] != x[1]', ..., x[n] != x[n]' ) 
+``d(0) =  sum(x[0] != x[0]', x[1] != x[1]', ..., x[n] != x[n]')``
 
-Input:
-  x    = array of points, x
-  xp   = array pf points, x'
+Args:
+    x (array): an array of points, ``x``
+    xp (array, default=None): a second array of points, ``x'``
+    up (bool, default=True): True, if upconvert ``x`` as ``x[:,newaxis]``
+    dmin (int, default=0): upconvert ``x,x'`` to ``dimension >= dmin``
+    axis (int, default=None): if not None, reduce across the given axis
 
-Additional Input:
-  up   = True if upconvert x with x[:,newaxis]
-  dmin = upconvert to x,x' to dimension >= dmin
-  axis = if not None, reduce across the selected axis
+Returns:
+    an array of absolute distances between points
 
 Notes:
-  for standard array behavior, use up=False
-  for element-wise across all elements, use up=True
+    - for pairwise distance (numpy ndarray behavior), use ``up=False``
+    - for distance between an element and all elements, use ``up=True``
 """
   d = euclidean_distance(x,xp,up=up,dmin=dmin)
   return d.astype(bool).sum(axis=axis).astype(float)
@@ -177,21 +179,22 @@ Notes:
 def minkowski(x,xp=None, up=True, dmin=0, p=3, axis=None):
   """p-norm distance between points in euclidean space
 
-  d(p) = sum( |x[0] - x[0]'|^p, |x[1] - x[1]'|^p, ..., |x[n] - x[n]'|^p )^(1/p)
+``d(p) = sum(|x[0] - x[0]'|^p, |x[1] - x[1]'|^p, ..., |x[n] - x[n]'|^p)^(1/p)``
 
-Input:
-  x    = array of points, x
-  xp   = array pf points, x'
+Args:
+    x (array): an array of points, ``x``
+    xp (array, default=None): a second array of points, ``x'``
+    up (bool, default=True): True, if upconvert ``x`` as ``x[:,newaxis]``
+    dmin (int, default=0): upconvert ``x,x'`` to ``dimension >= dmin``
+    p (int, default=3): value of p for the p-norm
+    axis (int, default=None): if not None, reduce across the given axis
 
-Additional Input:
-  up   = True if upconvert x with x[:,newaxis]
-  dmin = upconvert to x,x' to dimension >= dmin
-  axis = if not None, reduce across the selected axis
-  p    = value of p for the p-norm (default = 3)
+Returns:
+    an array of absolute distances between points
 
 Notes:
-  for standard array behavior, use up=False
-  for element-wise across all elements, use up=True
+    - for pairwise distance (numpy ndarray behavior), use ``up=False``
+    - for distance between an element and all elements, use ``up=True``
 """
   from numpy import seterr, inf
   if p == inf: return chebyshev(x,xp,up=up,dmin=dmin,axis=axis)
@@ -208,20 +211,21 @@ Notes:
 def euclidean(x,xp=None, up=True, dmin=0, axis=None):
   """L-2 norm distance between points in euclidean space
 
-  d(2) = sqrt(sum( |x[0] - x[0]'|^2, |x[1] - x[1]'|^2, ..., |x[n] - x[n]'|^2 ))
+``d(2) = sqrt(sum(|x[0] - x[0]'|^2, |x[1] - x[1]'|^2, ..., |x[n] - x[n]'|^2))``
 
-Input:
-  x    = array of points, x
-  xp   = array pf points, x'
+Args:
+    x (array): an array of points, ``x``
+    xp (array, default=None): a second array of points, ``x'``
+    up (bool, default=True): True, if upconvert ``x`` as ``x[:,newaxis]``
+    dmin (int, default=0): upconvert ``x,x'`` to ``dimension >= dmin``
+    axis (int, default=None): if not None, reduce across the given axis
 
-Additional Input:
-  up   = True if upconvert x with x[:,newaxis]
-  dmin = upconvert to x,x' to dimension >= dmin
-  axis = if not None, reduce across the selected axis
+Returns:
+    an array of absolute distances between points
 
 Notes:
-  for standard array behavior, use up=False
-  for element-wise across all elements, use up=True
+    - for pairwise distance (numpy ndarray behavior), use ``up=False``
+    - for distance between an element and all elements, use ``up=True``
 """
   return minkowski(x,xp,up=up,dmin=dmin,p=2,axis=axis)
 
@@ -229,20 +233,21 @@ Notes:
 def manhattan(x,xp=None, up=True, dmin=0, axis=None):
   """L-1 norm distance between points in euclidean space
 
-  d(1) = sum( |x[0] - x[0]'|, |x[1] - x[1]'|, ..., |x[n] - x[n]'| )
+``d(1) = sum(|x[0] - x[0]'|, |x[1] - x[1]'|, ..., |x[n] - x[n]'|)``
 
-Input:
-  x    = array of points, x
-  xp   = array pf points, x'
+Args:
+    x (array): an array of points, ``x``
+    xp (array, default=None): a second array of points, ``x'``
+    up (bool, default=True): True, if upconvert ``x`` as ``x[:,newaxis]``
+    dmin (int, default=0): upconvert ``x,x'`` to ``dimension >= dmin``
+    axis (int, default=None): if not None, reduce across the given axis
 
-Additional Input:
-  up   = True if upconvert x with x[:,newaxis]
-  dmin = upconvert to x,x' to dimension >= dmin
-  axis = if not None, reduce across the selected axis
+Returns:
+    an array of absolute distances between points
 
 Notes:
-  for standard array behavior, use up=False
-  for element-wise across all elements, use up=True
+    - for pairwise distance (numpy ndarray behavior), use ``up=False``
+    - for distance between an element and all elements, use ``up=True``
 """
   return minkowski(x,xp,up=up,dmin=dmin,p=1,axis=axis)
 

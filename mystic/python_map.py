@@ -77,6 +77,8 @@ worker, and the next new work item is provided when a node completes its work
 # backward compatibility
 carddealer_mapper = worker_pool
 
+del os
+
 
 if __name__=='__main__':
     f = lambda x:x**2

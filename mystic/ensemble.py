@@ -29,7 +29,7 @@ or an example of using LatticeSolver.
 All solvers included in this module provide the standard signal handling.
 For more information, see `mystic.mystic.abstract_solver`.
 """
-__all__ = ['LatticeSolver','BuckshotSolver']
+__all__ = ['LatticeSolver','BuckshotSolver','lattice','buckshot']
 
 from mystic.tools import unpair
 

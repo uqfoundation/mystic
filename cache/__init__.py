@@ -5,6 +5,11 @@
 # Copyright (c) 2016-2017 The Uncertainty Quantification Foundation.
 # License: 3-clause BSD.  The full license text is available at:
 #  - https://github.com/uqfoundation/mystic/blob/master/LICENSE
+'''decorators for caching function outputs, with function inputs as the keys
+
+Notes:
+    This module has been deprecated in favor of the ``klepto`` package.
+'''
 
 # backward compatability
 from klepto import lru_cache, lfu_cache, mru_cache
