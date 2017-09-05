@@ -19,6 +19,7 @@ from mystic.math.discrete import product_measure as collection
 from mystic.math.samples import random_samples
 from mystic.math.grid import samplepts
 
+from mystic.math import almostEqual
 from mystic.math.measures import *
 from mystic.math.measures import _pack, _unpack
 
