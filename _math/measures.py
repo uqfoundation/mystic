@@ -33,10 +33,13 @@ __all__ = ['weighted_select','spread','norm','maximum','ess_maximum',\
 def weighted_select(samples, weights, mass=1.0):
   """randomly select a sample from weighted set of samples
 
-Inputs:
-    samples -- a list of sample points
-    weights -- a list of sample weights
-    mass -- sum of normalized weights
+Args:
+    samples (list): a list of sample points
+    weights (list): a list of sample weights
+    mass (float, default=1.0): sum of normalized weights
+
+Returns:
+    a randomly selected sample point
 """
   from numpy import sum, array
   from mystic.tools import random_state
@@ -54,27 +57,42 @@ Inputs:
 
 ##### calculate methods #####
 def spread(samples):
-  """calculate the range of a list of points   [range(x) = min(x) - min(x)]
+  """calculate the range for a list of points 
 
-Inputs:
-    samples -- a list of sample points
+``spread(x) = max(x) - min(x)``
+
+Args:
+    samples (list): a list of sample points
+
+Returns:
+    the range of the samples
 """
   return max(samples) - min(samples)
 
 def norm(weights):
-  """calculate the norm of a list of points   [norm(x) = mean(x)]
+  """calculate the norm of a list of points
 
-Inputs:
-    weights -- a list of sample weights
+``norm(x) = mean(x)``
+
+Args:
+    weights (list): a list of sample weights
+
+Returns:
+    the mean of the weights
 """
   return mean(weights)
 
 def maximum(f, samples):
   """calculate the max of function for the given list of points
 
-Inputs: 
-    f -- a function that takes a list and returns a number
-    samples -- a list of sample points
+``maximum(f,x) = max(f(x))``
+
+Args:
+    f (func): a function that takes a list and returns a number
+    samples (list): a list of sample points
+
+Returns:
+    the maximum output value for a function at the given inputs
 """
   y = [f(x) for x in samples]
   return max(y)
@@ -82,11 +100,16 @@ Inputs:
 def ess_maximum(f, samples, weights=None, tol=0.):
   """calculate the max of function for support on the given list of points
 
-Inputs: 
-    f -- a function that takes a list and returns a number
-    samples -- a list of sample points
-    weights -- a list of sample weights
-    tol -- weight tolerance, where any weight <= tol is considered zero
+``ess_maximum(f,x,w) = max(f(support(x,w)))``
+
+Args:
+    f (func): a function that takes a list and returns a number
+    samples (list): a list of sample points
+    weights (list, default=None): a list of sample weights
+    tol (float, default=0.0): a tolerance, where any ``weight <= tol`` is zero
+
+Returns:
+    the maximum output value for a function at the given support points
 """
   if weights is None:
     return maximum(f, samples)
@@ -95,9 +118,14 @@ Inputs:
 def minimum(f, samples):
   """calculate the min of function for the given list of points
 
-Inputs: 
-    f -- a function that takes a list and returns a number
-    samples -- a list of sample points
+``minimum(f,x) = min(f(x))``
+
+Args:
+    f (func): a function that takes a list and returns a number
+    samples (list): a list of sample points
+
+Returns:
+    the minimum output value for a function at the given inputs
 """
   y = [f(x) for x in samples]
   return min(y)
@@ -105,11 +133,16 @@ Inputs:
 def ess_minimum(f, samples, weights=None, tol=0.):
   """calculate the min of function for support on the given list of points
 
-Inputs: 
-    f -- a function that takes a list and returns a number
-    samples -- a list of sample points
-    weights -- a list of sample weights
-    tol -- weight tolerance, where any weight <= tol is considered zero
+``ess_minimum(f,x,w) = min(f(support(x,w)))``
+
+Args:
+    f (func): a function that takes a list and returns a number
+    samples (list): a list of sample points
+    weights (list, default=None): a list of sample weights
+    tol (float, default=0.0): a tolerance, where any ``weight <= tol`` is zero
+
+Returns:
+    the minimum output value for a function at the given support points
 """
   if weights is None:
     return minimum(f, samples)
@@ -118,11 +151,14 @@ Inputs:
 def expectation(f, samples, weights=None, tol=0.0):
   """calculate the (weighted) expectation of a function for a list of points
 
-Inputs:
-    f -- a function that takes a list and returns a number
-    samples -- a list of sample points
-    weights -- a list of sample weights
-    tol -- weight tolerance, where any weight <= tol is ignored
+Args:
+    f (func): a function that takes a list and returns a number
+    samples (list): a list of sample points
+    weights (list, default=None): a list of sample weights
+    tol (float, default=0.0): a tolerance, where any ``weight <= tol`` is zero
+
+Returns:
+    the weighted expectation for a list of sample points
 """
   if weights is None:
     y = [f(x) for x in samples]
@@ -146,10 +182,13 @@ Inputs:
 def mean(samples, weights=None, tol=0):
   """calculate the (weighted) mean for a list of points
 
-Inputs:
-    samples -- a list of sample points
-    weights -- a list of sample weights
-    tol -- mean tolerance, where a mean <= tol is considered zero
+Args:
+    samples (list): a list of sample points
+    weights (list, default=None): a list of sample weights
+    tol (float, default=0.0): a tolerance, where any ``mean <= tol`` is zero
+
+Returns:
+    the weighted mean for a list of sample points
 """
   if weights is None:
     weights = [1.0/float(len(samples))] * len(samples)
@@ -166,30 +205,39 @@ Inputs:
 def support_index(weights, tol=0): #XXX: no relative tolerance near zero
   """get the indices of the positions which have non-zero weight
 
-Inputs:
-    weights -- a list of sample weights
-    tol -- weight tolerance, where any weight <= tol is considered zero
+Args:
+    weights (list): a list of sample weights
+    tol (float, default=0.0): a tolerance, where any ``weight <= tol`` is zero
+
+Returns:
+    a list of indices of positions with non-zero weight
 """
   return [i for (i,w) in enumerate(weights) if w > tol]
 
 def support(samples, weights, tol=0): #XXX: no relative tolerance near zero
   """get the positions which have non-zero weight
 
-Inputs:
-    samples -- a list of sample points
-    weights -- a list of sample weights
-    tol -- weight tolerance, where any weight <= tol is considered zero
+Args:
+    samples (list): a list of sample points
+    weights (list): a list of sample weights
+    tol (float, default=0.0): a tolerance, where any ``weight <= tol`` is zero
+
+Returns:
+    a list of positions with non-zero weight
 """
   return [samples[i] for (i,w) in enumerate(weights) if w > tol]
 
 def moment(samples, weights=None, order=1, tol=0): #, _mean=None):
   """calculate the (weighted) nth-order moment for a list of points
 
-Inputs:
-    samples -- a list of sample points
-    weights -- a list of sample weights
-    order -- a positive integer degree
-    tol -- mean tolerance, where a mean <= tol is considered zero
+Args:
+    samples (list): a list of sample points
+    weights (list, default=None): a list of sample weights
+    order (int, default=1): the degree, a positive integer
+    tol (float, default=0.0): a tolerance, where any ``mean <= tol`` is zero
+
+Returns:
+    the weighted nth-order moment for a list of sample points
 """
   if order is 0: return 1.0 #XXX: error if order < 0
   if order is 1: return 0.0
@@ -203,11 +251,16 @@ Inputs:
 def standard_moment(samples, weights=None, order=1, tol=0):
   """calculate the (weighted) nth-order standard moment for a list of points
 
-Inputs:
-    samples -- a list of sample points
-    weights -- a list of sample weights
-    order -- a positive integer degree
-    tol -- mean tolerance, where a mean <= tol is considered zero
+``standard_moment(x,w,order) = moment(x,w,order)/std(x,w)^order``
+
+Args:
+    samples (list): a list of sample points
+    weights (list, default=None): a list of sample weights
+    order (int, default=1): the degree, a positive integer
+    tol (float, default=0.0): a tolerance, where any ``mean <= tol`` is zero
+
+Returns:
+    the weighted nth-order standard moment for a list of sample points
 """
   if order is 2: return 1.0 #XXX: error if order < 0
   return moment(samples, weights, order, tol)/std(samples, weights)**order
@@ -215,18 +268,24 @@ Inputs:
 def variance(samples, weights=None): #,tol=0, _mean=None):
   """calculate the (weighted) variance for a list of points
 
-Inputs:
-    samples -- a list of sample points
-    weights -- a list of sample weights
+Args:
+    samples (list): a list of sample points
+    weights (list, default=None): a list of sample weights
+
+Returns:
+    the weighted variance for a list of sample points
 """
   return moment(samples, weights, order=2)
 
 def std(samples, weights=None): #,tol=0, _mean=None):
   """calculate the (weighted) standard deviation for a list of points
 
-Inputs:
-    samples -- a list of sample points
-    weights -- a list of sample weights
+Args:
+    samples (list): a list of sample points
+    weights (list, default=None): a list of sample weights
+
+Returns:
+    the weighted standard deviation for a list of sample points
 """
   from numpy import sqrt
   return sqrt(variance(samples, weights)) # _mean)
@@ -234,18 +293,24 @@ Inputs:
 def skewness(samples, weights=None): #,tol=0, _mean=None):
   """calculate the (weighted) skewness for a list of points
 
-Inputs:
-    samples -- a list of sample points
-    weights -- a list of sample weights
+Args:
+    samples (list): a list of sample points
+    weights (list, default=None): a list of sample weights
+
+Returns:
+    the weighted skewness for a list of sample points
 """
   return standard_moment(samples, weights, order=3) # _mean)
 
 def kurtosis(samples, weights=None): #,tol=0, _mean=None):
   """calculate the (weighted) kurtosis for a list of points
 
-Inputs:
-    samples -- a list of sample points
-    weights -- a list of sample weights
+Args:
+    samples (list): a list of sample points
+    weights (list, default=None): a list of sample weights
+
+Returns:
+    the weighted kurtosis for a list of sample points
 """
   return standard_moment(samples, weights, order=4) # _mean)
 
@@ -254,12 +319,17 @@ Inputs:
 from numpy import asarray
 def impose_mean(m, samples, weights=None): #,tol=0):
   """impose a mean on a list of (weighted) points
-  (this function is 'range-preserving' and 'variance-preserving')
 
-Inputs:
-    m -- the target mean
-    samples -- a list of sample points
-    weights -- a list of sample weights
+Args:
+    m (float): the target mean
+    samples (list): a list of sample points
+    weights (list, default=None): a list of sample weights
+
+Returns:
+    a list of sample points with the desired weighted mean
+
+Notes:
+    this function does not alter the weighted range or the weighted variance
 """
  #XXX: this is as expected... mean(impose_mean(2.0, samples, weights), weights)
  #XXX: this is unexpected?... mean(impose_mean(2.0, samples, weights))
@@ -271,12 +341,17 @@ Inputs:
 
 def impose_variance(v, samples, weights=None): #,tol=0):
   """impose a variance on a list of (weighted) points
-  (this function is 'mean-preserving')
 
-Inputs:
-    v -- the target variance
-    samples -- a list of sample points
-    weights -- a list of sample weights
+Args:
+    v (float): the target variance
+    samples (list): a list of sample points
+    weights (list, default=None): a list of sample weights
+
+Returns:
+    a list of sample points with the desired weighted variance
+
+Notes:
+    this function does not alter the weighted mean
 """
   m = mean(samples, weights)
   samples = asarray(list(samples)) #XXX: faster to use x = array(x, copy=True) ?
@@ -297,27 +372,39 @@ Inputs:
 
 def impose_std(s, samples, weights=None):
   """impose a standard deviation on a list of (weighted) points
-  (this function is 'mean-preserving')
 
-Inputs:
-    s -- the target standard deviation
-    samples -- a list of sample points
-    weights -- a list of sample weights
+Args:
+    s (float): the target standard deviation
+    samples (list): a list of sample points
+    weights (list, default=None): a list of sample weights
+
+Returns:
+    a list of sample points with the desired weighted standard deviation
+
+Notes:
+    this function does not alter the weighted mean
 """
   return impose_variance(s**2, samples, weights)
 
 
 def impose_moment(m, samples, weights=None, order=1, tol=0, skew=None):
   """impose the selected moment on a list of (weighted) points
-  (this function is 'mean-preserving')
 
-Inputs:
-    m -- the target moment
-    samples -- a list of sample points
-    weights -- a list of sample weights
-    order -- a positive integer degree
-    tol -- mean tolerance, where a mean <= tol is considered zero
-    skew -- boolean to allow the introduction of skew to the samples
+Args:
+    m (float): the target moment
+    samples (list): a list of sample points
+    weights (list, default=None): a list of sample weights
+    order (int, default=1): the degree, a positive integer
+    tol (float, default=0.0): a tolerance, where any ``mean <= tol`` is zero
+    skew (bool, default=None): if True, allow skew in the samples
+
+Returns:
+    a list of sample points with the desired weighted moment
+
+Notes:
+    this function does not alter the weighted mean
+
+    if *skew* is None, then allow *skew* when *order* is odd
 """
   v = m #NOTE: change of variables, so code is consistent witn impose_variance
   if order is 0:
@@ -364,12 +451,17 @@ Inputs:
 
 def impose_spread(r, samples, weights=None): #FIXME: fails if len(samples) = 1
   """impose a range on a list of (weighted) points
-  (this function is 'mean-preserving')
 
-Inputs:
-    r -- the target range
-    samples -- a list of sample points
-    weights -- a list of sample weights
+Args:
+    r (float): the target range
+    samples (list): a list of sample points
+    weights (list, default=None): a list of sample weights
+
+Returns:
+    a list of sample points with the desired weighted range
+
+Notes:
+    this function does not alter the weighted mean
 """
   m = mean(samples, weights)
   samples = asarray(list(samples)) #XXX: faster to use x = array(x, copy=True) ?
@@ -383,28 +475,37 @@ Inputs:
 
 
 def impose_expectation(param, f, npts, bounds=None, weights=None, **kwds):
-  """impose a given expextation value (m +/- D) on a given function f.
-Optimization on f over the given bounds seeks a mean 'm' with deviation 'D'.
-  (this function is not 'mean-, range-, or variance-preserving')
+  """impose a given expectation value ``E`` on a given function *f*,
+where ``E = m +/- D`` and ``E = mean(f(x))`` for ``x`` in *bounds*
 
-Inputs:
-    param -- a tuple of target parameters: param = (mean, deviation)
-    f -- a function that takes a list and returns a number
-    npts -- a tuple of dimensions of the target product measure
-    bounds -- a tuple of sample bounds:   bounds = (lower_bounds, upper_bounds)
-    weights -- a list of sample weights
+Args:
+    param (tuple(float)): target parameters, ``param = (mean, deviation)``
+    f (func): a function that takes a list and returns a number
+    npts (tuple(int)): a tuple of dimensions of the target product measure
+    bounds (tuple, default=None): tuple is ``(lower_bounds, upper_bounds)``
+    weights (list, default=None):  a list of sample weights
+    constraints (func, default=None): a function that takes a nested list of
+        ``N x 1D`` discrete measure positions and weights, with the intended
+        purpose of kernel-transforming ``x,w`` as ``x' = constraints(x, w)``
+    npop (int, default=200): size of the trial solution population
+    maxiter (int, default=1000): the maximum number of iterations to perform
+    maxfun (int, default=1e+6): the maximum number of function evaluations
 
-Additional Inputs:
-    constraints -- a function that takes a nested list of N x 1D discrete
-        measure positions and weights   x' = constraints(x, w)
-    npop -- size of the trial solution population
-    maxiter -- number - the maximum number of iterations to perform
-    maxfun -- number - the maximum number of function evaluations
+Returns:
+    a list of sample positions, with expectation ``E``
 
-Outputs:
-    samples -- a list of sample positions
+Notes:
+    Expectation value ``E`` is calculated by minimizing ``mean(f(x)) - m``,
+    over the given *bounds*, and will terminate when ``E`` is found within
+    deviation ``D`` of the target mean ``m``.
 
-For example:
+    this function does not preserve the mean, variance, or range, as there
+    is no initial list of samples to draw the mean, variance, and etc from
+
+    *bounds* is tuple with ``length(bounds) == 2``, composed of all the lower
+    bounds, then all the upper bounds, for each parameter
+
+Examples:
     >>> # provide the dimensions and bounds
     >>> nx = 3;  ny = 2;  nz = 1
     >>> x_lb = [10.0];  y_lb = [0.0];  z_lb = [10.0]

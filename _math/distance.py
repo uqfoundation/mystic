@@ -7,19 +7,19 @@
 #  - https://github.com/uqfoundation/mystic/blob/master/LICENSE
 """
 distances and norms for the legacy data module
-
-lipschitz_distance: ...
-
-graphical_distance: for a given dataset (x,y) and a given model (F),
-  find the radius(x') that minimizes the graph between reality, y = G(x),
-  and an approximating function, y' = F(x')
 """
 debug = False 
 
 def Lnorm(weights, p=1):
-  "calculate L-p norm of weights"
-  # weights is a numpy array
-  # p is an int
+  """calculate L-p norm of weights
+
+Args:
+    weights (array(float)): an array of weights
+    p (int, default=1): the power of the p-norm, where ``p in [0,inf]``
+
+Returns:
+    a float distance norm for the weights
+"""
   from numpy import asarray, seterr, inf
   weights = asarray(weights).flatten()
   if not p:
@@ -36,7 +36,23 @@ def Lnorm(weights, p=1):
   return w
 
 def absolute_distance(x, xp=None, up=False, dmin=0):
-  """distance = |x - x'|;  (see euclidean_distance for notes)"""
+  """1-D absolute distance between points
+
+``distance = |x - x'|``
+
+Args:
+    x (array): an array of points, ``x``
+    xp (array, default=None): a second array of points, ``x'``
+    up (bool, default=False): if True, upconvert ``x`` as ``x[:,newaxis]``
+    dmin (int, default=0): upconvert ``x,x'`` to ``dimension >= dmin``
+
+Returns:
+    an array of absolute distances between points
+
+Notes:
+    - for pairwise distance (numpy ndarray behavior), use ``up=False``
+    - for distance between an element and all elements, use ``up=True``
+"""
   from numpy import abs, asarray, newaxis as nwxs, zeros_like
   #from builtins import max
   # cast as arrays of the same dimension
@@ -52,26 +68,39 @@ def absolute_distance(x, xp=None, up=False, dmin=0):
 def euclidean_distance(x, xp=None, up=True, dmin=0):
   """1-D euclidean distance between points
 
-  d[i] = | x[i] - x'[i] |
+``d[i] = | x[i] - x'[i] |``
 
-Input:
-  up   = True if upconvert x with x[:,newaxis]
-  dmin = upconvert to x,x' to dimension >= dmin
+Args:
+    x (array): an array of points, ``x``
+    xp (array, default=None): a second array of points, ``x'``
+    up (bool, default=True): if True, upconvert ``x`` as ``x[:,newaxis]``
+    dmin (int, default=0): upconvert ``x,x'`` to ``dimension >= dmin``
+
+Returns:
+    an array of absolute distances between points
 
 Notes:
-  for standard array behavior, use up=False
-  for element-wise across all elements, use up=True
+    - for pairwise distance (numpy ndarray behavior), use ``up=False``
+    - for distance between an element and all elements, use ``up=True``
 """
   return absolute_distance(x,xp,up=up,dmin=dmin).swapaxes(0,1).T
 
 def manhattan_distance(x, xp=None, **kwds):
   """1-D manhattan distance between points
 
-  d[ij] = | x[i] - x'[j] |
+``d[ij] = | x[i] - x'[j] |``
+
+Args:
+    x (array): an array of points, ``x``
+    xp (array, default=None): a second array of points, ``x'``
+    dmin (int, default=0): upconvert ``x,x'`` to ``dimension >= dmin``
+
+Returns:
+    an array of absolute distances between points
 
 Notes:
-  manhattan matrix where x'==x will be symmetric with zeros on the diagonal 
-  use dmin=2 for forced upconversion of 1-D arrays
+    - manhattan matrix with ``x'==x`` is symmetric with zeros on the diagonal 
+    - use ``dmin=2`` for the forced upconversion of 1-D arrays
 """
   # dmin: force upconvert to x,x' to dimension >= dmin
   dmin = kwds['dmin'] if 'dmin' in kwds else 0 # default dimension
@@ -100,7 +129,15 @@ Notes:
 def lipschitz_metric(L, x, xp=None):
   """sum of lipschitz-weighted distance between points
 
-  d = sum( L[i] * |x[i] - x'[i]| )
+``d = sum(L[i] * |x[i] - x'[i]|)``
+
+Args:
+    L (array): an array of Lipschitz constants, ``L``
+    x (array): an array of points, ``x``
+    xp (array, default=None): a second array of points, ``x'``
+
+Returns:
+    an array of absolute distances between points
 """
   #FIXME: merge with lipschitz cone (distance/contains)
   from numpy import sum, asarray
@@ -138,7 +175,7 @@ def chebyshev(x,xp=None, up=True, dmin=0, axis=None):
 Args:
     x (array): an array of points, ``x``
     xp (array, default=None): a second array of points, ``x'``
-    up (bool, default=True): True, if upconvert ``x`` as ``x[:,newaxis]``
+    up (bool, default=True): if True, upconvert ``x`` as ``x[:,newaxis]``
     dmin (int, default=0): upconvert ``x,x'`` to ``dimension >= dmin``
     axis (int, default=None): if not None, reduce across the given axis
 
@@ -161,7 +198,7 @@ def hamming(x,xp=None, up=True, dmin=0, axis=None):
 Args:
     x (array): an array of points, ``x``
     xp (array, default=None): a second array of points, ``x'``
-    up (bool, default=True): True, if upconvert ``x`` as ``x[:,newaxis]``
+    up (bool, default=True): if True, upconvert ``x`` as ``x[:,newaxis]``
     dmin (int, default=0): upconvert ``x,x'`` to ``dimension >= dmin``
     axis (int, default=None): if not None, reduce across the given axis
 
@@ -184,7 +221,7 @@ def minkowski(x,xp=None, up=True, dmin=0, p=3, axis=None):
 Args:
     x (array): an array of points, ``x``
     xp (array, default=None): a second array of points, ``x'``
-    up (bool, default=True): True, if upconvert ``x`` as ``x[:,newaxis]``
+    up (bool, default=True): if True, upconvert ``x`` as ``x[:,newaxis]``
     dmin (int, default=0): upconvert ``x,x'`` to ``dimension >= dmin``
     p (int, default=3): value of p for the p-norm
     axis (int, default=None): if not None, reduce across the given axis
@@ -216,7 +253,7 @@ def euclidean(x,xp=None, up=True, dmin=0, axis=None):
 Args:
     x (array): an array of points, ``x``
     xp (array, default=None): a second array of points, ``x'``
-    up (bool, default=True): True, if upconvert ``x`` as ``x[:,newaxis]``
+    up (bool, default=True): if True, upconvert ``x`` as ``x[:,newaxis]``
     dmin (int, default=0): upconvert ``x,x'`` to ``dimension >= dmin``
     axis (int, default=None): if not None, reduce across the given axis
 
@@ -238,7 +275,7 @@ def manhattan(x,xp=None, up=True, dmin=0, axis=None):
 Args:
     x (array): an array of points, ``x``
     xp (array, default=None): a second array of points, ``x'``
-    up (bool, default=True): True, if upconvert ``x`` as ``x[:,newaxis]``
+    up (bool, default=True): if True, upconvert ``x`` as ``x[:,newaxis]``
     dmin (int, default=0): upconvert ``x,x'`` to ``dimension >= dmin``
     axis (int, default=None): if not None, reduce across the given axis
 
@@ -256,12 +293,12 @@ Notes:
 def is_feasible(distance, cutoff=0.0):
   """determine if the distance exceeds the given cutoff distance
 
-Input:
-  distance = measure of feasibility for each point
-  cutoff = maximum acceptable distance
+Args:
+    distance (array): the measure of feasibility for each point
+    cutoff (float, default=0.0): maximum acceptable distance
 
 Returns:
-  True where the distance is less than cutoff
+    bool array, with True where the distance is less than cutoff
 """
   from numpy import asarray
   d = infeasibility(distance, cutoff) > 0.0
@@ -273,12 +310,12 @@ Returns:
 def infeasibility(distance, cutoff=0.0): 
   """amount by which the distance exceeds the given cutoff distance
 
-Input:
-  distance = measure of feasibility for each point
-  cutoff = maximum acceptable distance
+Args:
+    distance (array): the measure of feasibility for each point
+    cutoff (float, default=0.0): maximum acceptable distance
 
 Returns:
-  array of distances by which each point is infeasbile
+    an array of distances by which each point is infeasbile
 """
   from numpy import array
   distance = array(distance)
@@ -293,27 +330,32 @@ Returns:
 def lipschitz_distance(L, points1, points2, **kwds):
   """calculate the lipschitz distance between two sets of datapoints
 
-Inputs:
- L = list of lipschitz constants
- points1 = dataset or list of 'datapoint' or 'cone.vertex' objects
- points2 = dataset or list of 'datapoint' or 'cone.vertex' objects
-
-Additional Inputs:
- tol = maximum acceptable deviation from shortness
- cutoff = zero out distances less than cutoff; typically: tol, 0.0, or None
+Args:
+    L (list): a list of lipschitz constants
+    points1 (mystic.math.legacydata.dataset): a dataset
+    points2 (mystic.math.legacydata.dataset): a second dataset
+    tol (float, default=0.0): maximum acceptable deviation from shortness
+    cutoff (float, default=tol): zero out distances less than cutoff
 
 Returns:
- list of lipschitz distances
+    a list of lipschitz distances
 
 Notes:
- Each point x,y can be thought to have an associated double-cone with slope
- equal to the lipschitz constant. Shortness with respect to another point is
- defined by the first point not being inside the cone of the second. We can
- allow for some error in shortness, a short tolerance 'tol', for which the
- point x,y is some acceptable y-distance inside the cone. While very tightly
- related, cutoff and tol play distinct roles; tol is subtracted from
- calculation of the lipschitz_distance, while cutoff zeros out the value
- of any element less than the cutoff.
+    Both *points1* and *points2* can be a ``mystic.math.legacydata.dataset``,
+    or a list of ``mystic.math.legacydata.datapoint`` objects, or a list of
+    ``lipschitzcone.vertex`` objects (from ``mystic.math.legacydata``).
+    *cutoff* takes a float or a boolean, where ``cutoff=True`` will set the
+    value of *cutoff* to the default. Typically, the value of *cutoff* is
+    *tol*, 0.0, or None.
+
+    Each point x,y can be thought to have an associated double-cone with slope
+    equal to the lipschitz constant. Shortness with respect to another point is
+    defined by the first point not being inside the cone of the second. We can
+    allow for some error in shortness, a short tolerance *tol*, for which the
+    point x,y is some acceptable y-distance inside the cone. While very tightly
+    related, *cutoff* and *tol* play distinct roles; *tol* is subtracted from
+    calculation of the lipschitz_distance, while *cutoff* zeros out the value
+    of any element less than the *cutoff*.
 """
   #FIXME: merge with lipschitz cone (distance/contains)
   x,y   = _get_xy(points1)
@@ -335,33 +377,44 @@ Notes:
 
 
 def graphical_distance(model, points, **kwds):
-  """find the radius(x') that minimizes the graph between reality, y = G(x),
-and an approximating function, y' = F(x')
+  """find the ``radius(x')`` that minimizes the graph between reality (data),
+``y = G(x)``, and an approximating function, ``y' = F(x')``
 
-Inputs:
-  model = the model function, y' = F(x'), that approximates reality, y = G(x)
-  points = object of type 'datapoint' to validate against; defines y = G(x)
-
-Additional Inputs:
-  ytol = maximum acceptable difference |y - F(x')|; a single value
-  xtol = maximum acceptable difference |x - x'|; an iterable or single value
-  cutoff = zero out distances less than cutoff; typically: ytol, 0.0, or None
-  hausdorff = norm; where if given, ytol = |y - F(x')| + |x - x'|/norm
+Args:
+    model (func): a model ``y' = F(x')`` that approximates reality ``y = G(x)``
+    points (mystic.math.legacydata.dataset): a dataset, defines ``y = G(x)``
+    ytol (float, default=0.0): maximum acceptable difference ``|y - F(x')|``.
+    xtol (float, default=0.0): maximum acceptable difference ``|x - x'|``.
+    cutoff (float, default=ytol): zero out distances less than cutoff.
+    hausdorff (bool, default=False): hausdorff ``norm``, where if given,
+        then ``ytol = |y - F(x')| + |x - x'|/norm``
 
 Returns:
-  radius = minimum distance from x,G(x) to x',F(x') for each x
+    the radius (the minimum distance ``x,G(x)`` to ``x',F(x')`` for each ``x``)
 
 Notes:
-  xtol defines the n-dimensional base of a pilar of height ytol, centered at
-  each point. The region inside the pilar defines the space where a "valid"
-  model must intersect. If xtol is not specified, then the base of the pilar
-  will be a dirac at x' = x. This function performs an optimization for each
-  x to find an appropriate x'. While cutoff and ytol are very tightly related,
-  they play a distinct role; ytol is used to set the optimization termination
-  for an acceptable |y - F(x')|, while cutoff is applied post-optimization.
-  If we are using the hausdorff norm, then ytol will set the optimization
-  termination for an acceptable |y - F(x')| + |x - x'|/norm, where the x
-  values are normalized by norm = hausdorff.
+    *points* can be a ``mystic.math.legacydata.dataset`` or a list of
+    ``mystic.math.legacydata.datapoint`` objects.
+
+    *xtol* defines the n-dimensional base of a pilar of height *ytol*,
+    centered at each point. The region inside the pilar defines the space
+    where a "valid" model must intersect. If *xtol* is not specified, then
+    the base of the pilar will be a dirac at ``x' = x``. This function
+    performs an optimization for each ``x`` to find an appropriate ``x'``.
+
+    *ytol* is a single value, while *xtol* is a single value or an iterable.
+    *cutoff* takes a float or a boolean, where ``cutoff=True`` will set the
+    value of *cutoff* to the default. Typically, the value of *cutoff* is
+    *ytol*, 0.0, or None. *hausdorff* can be False (e.g. ``norm = 1.0``),
+    True (e.g. ``norm = spread(x)``), or a list of points of ``len(x)``.
+
+    While *cutoff* and *ytol* are very tightly related, they play a distinct
+    role; *ytol* is used to set the optimization termination for an acceptable
+    ``|y - F(x')|``, while *cutoff* is applied post-optimization.
+
+    If we are using the hausdorff norm, then *ytol* will set the optimization
+    termination for an acceptable ``|y - F(x')| + |x - x'|/norm``, where the
+    ``x`` values are normalized by ``norm = hausdorff``.
 """ #FIXME: update docs to show normalization in y
  #NotImplemented:
  #L = list of lipschitz constants, for use when lipschitz metric is desired

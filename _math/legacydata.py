@@ -6,7 +6,7 @@
 # License: 3-clause BSD.  The full license text is available at:
 #  - https://github.com/uqfoundation/mystic/blob/master/LICENSE
 """
-...data structures for legacy data observations of lipschitz functions
+data structures for legacy data observations of lipschitz functions
 """
 from numpy import inf, asarray
 NULLSLOPE = inf
@@ -361,25 +361,25 @@ Args:
         then ``ytol = |y - F(x')| + |x - x'|/norm``
 
 Notes:
-    *ytol* is a single value, while *xtol* is a single value or an iterable.
-    *cutoff* takes a float or a boolean, where ``cutoff=True`` will set the
-    value of *cutoff* to the default. Typically, the value of *cutoff* is
-    *ytol*, 0.0, or None. *hausdorff* can be False (e.g. ``norm = 1.0``),
-    True (e.g. ``norm = spread(x)``), or a list of points of ``len(x)``.
-
     *xtol* defines the n-dimensional base of a pilar of height *ytol*,
     centered at each point. The region inside the pilar defines the space
     where a "valid" model must intersect. If *xtol* is not specified, then
     the base of the pilar will be a dirac at ``x' = x``. This function
     performs an optimization for each ``x`` to find an appropriate ``x'``.
 
+    *ytol* is a single value, while *xtol* is a single value or an iterable.
+    *cutoff* takes a float or a boolean, where ``cutoff=True`` will set the
+    value of *cutoff* to the default. Typically, the value of *cutoff* is
+    *ytol*, 0.0, or None. *hausdorff* can be False (e.g. ``norm = 1.0``),
+    True (e.g. ``norm = spread(x)``), or a list of points of ``len(x)``.
+
     While *cutoff* and *ytol* are very tightly related, they play a distinct
     role; *ytol* is used to set the optimization termination for an acceptable
     ``|y - F(x')|``, while *cutoff* is applied post-optimization.
 
     If we are using the *hausdorff* norm, then *ytol* will set the optimization
-    termination for an acceptable ``|y - F(x')| + |x - x'|/norm``, where the x
-    values are normalized by ``norm = hausdorff``.
+    termination for an acceptable ``|y - F(x')| + |x - x'|/norm``, where the
+    ``x`` values are normalized by ``norm = hausdorff``.
 """
     ytol = kwds['ytol'] if 'ytol' in kwds else 0.0 # get tolerance in y
     # default is to zero out distances less than tolerance
