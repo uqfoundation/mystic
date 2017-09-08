@@ -25,16 +25,15 @@ __all__ = ['point_mass','measure','product_measure','scenario',\
            'impose_feasible','impose_valid']
 
 class point_mass(object):
-  """ a point_mass object with weight and position
+  """a point mass object with weight and position
 
- queries:
-  p.weight   --  returns weight
-  p.position  --  returns position
-  p.rms  --  returns the square root of sum of squared position
+Args:
+    position (tuple(float)): position of the point mass
+    weight (float, default=1.0): weight of the point mass
 
- settings:
-  p.weight = w1  --  set the weight
-  p.position = x1  --  set the position
+Attributes:
+    position (tuple(float)): position of the point mass
+    weight (float): weight of the point mass
 """
 
   def __init__(self, position, weight=1.0):
@@ -50,61 +49,42 @@ class point_mass(object):
     return sqrt(sum([i**2 for i in self.position]))
 
   # interface
-  rms = property(__rms)
+  rms = property(__rms, doc='readonly: square root of the sum of squared position')
 
   pass
 
 class measure(list):  #FIXME: meant to only accept point_masses...
-  """ a 1-d collection of point_masses forming a 'discrete_measure'
-  s = measure([point_mass1, point_mass2, ..., point_massN])  
-    where a point_mass has weight and position
+  """a 1-d collection of point masses forming a 'discrete measure'
 
- queries:
-  s.weights   --  returns list of weights
-  s.positions  --  returns list of positions
-  s.npts  --  returns the number of point_masses
-  s.mass  --  calculates sum of weights
-  s.center_mass  --  calculates sum of weights*positions
-  s.range  --  calculates |max - min| for positions
-  s.var  --  calculates mean( |positions - mean(positions)|**2 )
+Args:
+    iterable (list): a list of ``mystic.math.discrete.point_mass`` objects
 
- settings:
-  s.weights = [w1, w2, ..., wn]  --  set the weights
-  s.positions = [x1, x2, ..., xn]  --  set the positions
-  s.normalize()  --  normalize the weights to 1.0
-  s.center_mass(R)  --  set the center of mass
-  s.range(R)  --  set the range
-  s.var(R)  --  set the variance
-
- methods:
-  s.support()  -- get the positions that have corresponding non-zero weights
-  s.support_index()  --  get the indices of positions that have support
-  s.maximum(f)  --  calculate the maximum for a given function
-  s.minimum(f)  --  calculate the minimum for a given function
-  s.ess_maximum(f)  --  calculate the maximum for support of a given function
-  s.ess_minimum(f)  --  calculate the minimum for support of a given function
-  s.expect(f)  --  calculate the expectation
-  s.set_expect((center,delta), f)  --  impose expectation by adjusting positions
-
- notes:
-  - constraints should impose that sum(weights) should be 1.0
-  - assumes that s.n = len(s.positions) == len(s.weights)
+Notes:
+    - assumes only contains ``mystic.math.discrete.point_mass`` objects
+    - assumes ``measure.n = len(measure.positions) == len(measure.weights)``
+    - relies on constraints to impose notions such as ``sum(weights) == 1.0``
 """
 
   def support_index(self, tol=0):
-    """get the indices of the positions which have non-zero weight
+    """get the indices where there is support (i.e. non-zero weight)
 
-Inputs:
-    tol -- weight tolerance, where any weight <= tol is considered zero
+Args:
+    tol (float, default=0.0): tolerance, where any ``weight <= tol`` is zero
+
+Returns:
+    the list of indices where there is support
 """
     from .measures import support_index
     return support_index(self.weights, tol)
 
   def support(self, tol=0):
-    """get the positions which have non-zero weight
+    """get the positions with non-zero weight (i.e. support)
 
-Inputs:
-    tol -- weight tolerance, where any weight <= tol is considered zero
+Args:
+    tol (float, default=0.0): tolerance, where any ``weight <= tol`` is zero
+
+Returns:
+    the list of positions with support
 """
     from .measures import support
     return support(self.positions, self.weights, tol)
@@ -146,7 +126,14 @@ Inputs:
     return
 
   def normalize(self):
-    """normalize the weights"""
+    """normalize the weights to 1.0
+
+Args:
+    None
+
+Returns:
+    None
+"""
     self.positions, self.weights = impose_weight_norm(self.positions, self.weights)
     return
 
@@ -165,8 +152,11 @@ Inputs:
   def maximum(self, f):
     """calculate the maximum for a given function
 
-Inputs:
-    f -- a function that takes a list and returns a number
+Args:
+    f (func): a function that takes a list and returns a number
+
+Returns:
+    the maximum value of ``f`` over all measure positions
 """
     from .measures import maximum
     return maximum(f, self.positions)
@@ -174,9 +164,12 @@ Inputs:
   def ess_maximum(self, f, tol=0.):
     """calculate the maximum for the support of a given function
 
-Inputs:
-    f -- a function that takes a list and returns a number
-    tol -- weight tolerance, where any weight <= tol is considered zero
+Args:
+    f (func): a function that takes a list and returns a number
+    tol (float, default=0.0): tolerance, where any ``weight <= tol`` is zero
+
+Returns:
+    the maximum value of ``f`` over all measure positions with support
 """
     from .measures import ess_maximum
     return ess_maximum(f, self.positions, self.weights, tol)
@@ -184,8 +177,11 @@ Inputs:
   def minimum(self, f):
     """calculate the minimum for a given function
 
-Inputs:
-    f -- a function that takes a list and returns a number
+Args:
+    f (func): a function that takes a list and returns a number
+
+Returns:
+    the minimum value of ``f`` over all measure positions
 """
     from .measures import minimum
     return minimum(f, self.positions)
@@ -193,9 +189,12 @@ Inputs:
   def ess_minimum(self, f, tol=0.):
     """calculate the minimum for the support of a given function
 
-Inputs:
-    f -- a function that takes a list and returns a number
-    tol -- weight tolerance, where any weight <= tol is considered zero
+Args:
+    f (func): a function that takes a list and returns a number
+    tol (float, default=0.0): tolerance, where any ``weight <= tol`` is zero
+
+Returns:
+    the minimum value of ``f`` over all measure positions with support
 """
     from .measures import ess_minimum
     return ess_minimum(f, self.positions, self.weights, tol)
@@ -203,21 +202,29 @@ Inputs:
   def expect(self, f):
     """calculate the expectation for a given function
 
-Inputs:
-    f -- a function that takes a list and returns a number
+Args:
+    f (func): a function that takes a list and returns a number
+
+Returns:
+    the expectation of ``f`` over all measure positions
 """ #XXX: maybe more natural if f takes a positional value x, not a list x ?
     from mystic.math.measures import expectation
     positions = [(i,) for i in self.positions]
     return expectation(f, positions, self.weights)
 
   def set_expect(self, expected, f, bounds=None, constraints=None, **kwds):
-    """impose a expectation on a dirac measure
+    """impose an expectation on the measure by adjusting the positions
 
-Inputs:
-    expected -- tuple of expectation m and acceptable deviation D
-    f -- a function that takes a list and returns a number
-    bounds -- tuple of lists of bounds  (lower_bounds, upper_bounds)
-    constraints -- a function that takes a product_measure  c' = constraints(c)
+Args:
+    expected (tuple(float)): ``(desired expectation, acceptable deviation)``
+    f (func): a function that takes a list and returns a number
+    bounds (tuple, default=None): ``(all lower bounds, all upper bounds)``
+    constraints (func, default=None): a function ``c' = constraints(c)``,
+        where ``c`` is a product measure, and ``c'`` is a product measure
+        where the encoded constaints are satisfied.
+
+Returns:
+    None
 """ #XXX: maybe more natural if f takes a positional value x, not a list x ?
     #XXX: maybe also natural c' = constraints(c) where c is a measure ?
     #FIXME: undocumented npop, maxiter, maxfun
@@ -237,14 +244,14 @@ Inputs:
     return
 
   # interface
-  weights = property(__weights, __set_weights)
-  positions = property(__positions, __set_positions)
+  weights = property(__weights, __set_weights, doc='a list of weights for all point masses in the measure')
+  positions = property(__positions, __set_positions, doc='a list of positions for all point masses in the measure')
   ###XXX: why not use 'points' also/instead?
-  npts = property(__n )
-  mass = property(__mass )
-  range = property(__range, __set_range)
-  center_mass = property(__mean, __set_mean)
-  var = property(__variance, __set_variance)
+  npts = property(__n, doc='readonly: the number of point masses in the measure')
+  mass = property(__mass, doc='readonly: the sum of the weights')
+  range = property(__range, __set_range, doc='``|max - min|`` for the positions')
+  center_mass = property(__mean, __set_mean, doc='sum of ``weights * positions``')
+  var = property(__variance, __set_variance, doc='``mean(|positions - mean(positions)|**2)``')
 
   # backward compatibility
   coords = positions
@@ -253,36 +260,20 @@ Inputs:
   pass
 
 class product_measure(list):  #FIXME: meant to only accept sets...
-  """ a N-d measure-theoretic product of discrete measures
-  c = product_measure([measure1, measure2, ..., measureN])  
-    where all measures are orthogonal
+  """a N-d measure-theoretic product of discrete measures
 
- queries:
-  c.npts  --  returns total number of point_masses
-  c.weights   --  returns list of weights
-  c.positions  --  returns list of position tuples
-  c.mass  --  returns list of weight norms
-  c.pts  --  returns number of point_masses for each discrete measure
-  c.wts  --  returns list of weights for each discrete measure
-  c.pos  --  returns list of positions for each discrete measure
+Args:
+    iterable (list): a list of ``mystic.math.discrete.measure`` objects
 
- settings:
-  c.positions = [(x1,y1,z1),...]  --  set positions (tuples in product measure)
-
- methods:
-  c.pof(f)  --  calculate the probability of failure
-  c.sampled_pof(f, npts) -- calculate the pof using sampled point_masses
-  c.expect(f)  --  calculate the expectation
-  c.set_expect((center,delta), f)  --  impose expectation by adjusting positions
-  c.flatten()  --  convert measure to a flat list of parameters
-  c.load(params, pts)  --  'fill' the measure from a flat list of parameters
-  c.update(params) -- 'update' the measure from a flat list of parameters
-
- notes:
-  - constraints impose expect (center - delta) <= E <= (center + delta)
-  - constraints impose sum(weights) == 1.0 for each set
-  - assumes that c.npts = len(c.positions) == len(c.weights)
-  - weight wxi should be same for each (yj,zk) at xi; similarly for wyi & wzi
+Notes:
+    - all measures are treated as if they are orthogonal
+    - assumes only contains ``mystic.math.discrete.measure`` objects
+    - assumes ``len(product_measure.positions) == len(product_measure.weights)``
+    - relies on constraints to impose notions such as ``sum(weights) == 1.0``
+    - relies on constraints to impose expectation (within acceptable deviation)
+    - positions are ``(xi,yi,zi)`` with weights ``(wxi,wyi,wzi)``, where weight
+      ``wxi`` at ``xi`` should be the same for each ``(yj,zk)``.  Similarly
+      for each ``wyi`` and ``wzi``.
 """
   def __val(self):
     raise NotImplementedError("'value' is undefined in a measure")
@@ -310,10 +301,26 @@ class product_measure(list):  #FIXME: meant to only accept sets...
     return product(self.pts)
 
   def support_index(self, tol=0):
+    """get the indices where there is support (i.e. non-zero weight)
+
+Args:
+    tol (float, default=0.0): tolerance, where any ``weight <= tol`` is zero
+
+Returns:
+    the list of indices where there is support
+"""
     from .measures import support_index
     return support_index(self.weights, tol)
 
   def support(self, tol=0): #XXX: better if generated positions only when needed
+    """get the positions with non-zero weight (i.e. support)
+
+Args:
+    tol (float, default=0.0): tolerance, where any ``weight <= tol`` is zero
+
+Returns:
+    the list of positions with support
+"""
     from .measures import support
     return support(self.positions, self.weights, tol)
 
@@ -347,34 +354,76 @@ class product_measure(list):  #FIXME: meant to only accept sets...
     return [self[i].mass for i in range(len(self))]
 
   def maximum(self, f): #XXX: return max of all or return all max?
+    """calculate the maximum for a given function
+
+Args:
+    f (func): a function that takes a list and returns a number
+
+Returns:
+    the maximum value of ``f`` over all measure positions
+"""
     return max([i.maximum(f) for i in self])
 
   def minimum(self, f): #XXX: return min of all or return all min?
+    """calculate the minimum for a given function
+
+Args:
+    f (func): a function that takes a list and returns a number
+
+Returns:
+    the minimum value of ``f`` over all measure positions
+"""
     return min([i.minimum(f) for i in self])
 
   def ess_maximum(self, f, tol=0.): #XXX: return max of all or return all max?
+    """calculate the maximum for the support of a given function
+
+Args:
+    f (func): a function that takes a list and returns a number
+    tol (float, default=0.0): tolerance, where any ``weight <= tol`` is zero
+
+Returns:
+    the maximum value of ``f`` over all measure positions with support
+"""
     return max([i.ess_maximum(f, tol) for i in self])
 
   def ess_minimum(self, f, tol=0.): #XXX: return min of all or return all min?
+    """calculate the minimum for the support of a given function
+
+Args:
+    f (func): a function that takes a list and returns a number
+    tol (float, default=0.0): tolerance, where any ``weight <= tol`` is zero
+
+Returns:
+    the minimum value of ``f`` over all measure positions with support
+"""
     return min([i.ess_minimum(f, tol) for i in self])
 
   def expect(self, f):
     """calculate the expectation for a given function
 
-Inputs:
-    f -- a function that takes a list and returns a number
+Args:
+    f (func): a function that takes a list and returns a number
+
+Returns:
+    the expectation of ``f`` over all measure positions
 """
     from mystic.math.measures import expectation
     return expectation(f, self.positions, self.weights)
 
   def set_expect(self, expected, f, bounds=None, constraints=None, **kwds):
-    """impose a expectation on a product measure
+    """impose an expectation on a product measure by adjusting the positions
 
-Inputs:
-    expected -- tuple of expectation m and acceptable deviation D
-    f -- a function that takes a list and returns a number
-    bounds -- tuple of lists of bounds  (lower_bounds, upper_bounds)
-    constraints -- a function that takes a product_measure  c' = constraints(c)
+Args:
+    expected (tuple(float)): ``(desired expectation, acceptable deviation)``
+    f (func): a function that takes a list and returns a number
+    bounds (tuple, default=None): ``(all lower bounds, all upper bounds)``
+    constraints (func, default=None): a function ``c' = constraints(c)``,
+        where ``c`` is a product measure, and ``c'`` is a product measure
+        where the encoded constaints are satisfied.
+
+Returns:
+    None
 """
     #FIXME: undocumented npop, maxiter, maxfun
     #self.__center = m
@@ -391,16 +440,22 @@ Inputs:
     return
 
   def pof(self, f):
-    """calculate probability of failure over a given function, f,
-where f takes a list of (product_measure) positions and returns a single value
+    """calculate probability of failure for a given function
 
-Inputs:
-    f -- a function that returns True for 'success' and False for 'failure'
+Args:
+    f (func): a function returning True for 'success' and False for 'failure'
+
+Returns:
+    the probabilty of failure, a float in ``[0.0,1.0]``
+
+Notes:
+    - the function ``f`` should take a list of ``product_measure.positions``
+      and return a single value (e.g. 0.0 or False)
 """
     u = 0.0
     set = zip(self.positions, self.weights)
     for x in set:
-      if f(x[0]) <= 0.0:
+      if f(x[0]) <= 0.0: #XXX: should f return a bool or a float?
         u += x[1]
     return u
   # for i in range(self.npts):
@@ -410,8 +465,9 @@ Inputs:
   # return u  #XXX: does this need to be normalized?
 
   def sampled_pof(self, f, npts=10000):
-    """calculate probability of failure over a given function, f,
-where f takes a list of (product_measure) positions and returns a single value
+    """use sampled point masses to calculate probability of failure over the
+given function, f, where f takes a list of (product_measure) positions and
+returns a single value
 
 Inputs:
     f -- a function that returns True for 'success' and False for 'failure'
@@ -456,7 +512,7 @@ The dimensions of the product measure will not change"""
     return
 
   def load(self, params, pts):
-    """load a list of parameters corresponding to N x 1D discrete measures
+    """fill the measure from parameters corresponding to N 1D discrete measures
 
 Inputs:
     params -- a list of parameters (see 'notes')
@@ -482,7 +538,7 @@ Notes:
     return
 
   def flatten(self):
-    """flatten the product_measure into a list of parameters
+    """convert a measure to a single list of parameters
 
 Returns:
     params -- a list of parameters (see 'notes')
@@ -537,17 +593,17 @@ string differs by exactly one index
  #__delta = None
 
   # interface
-  npts = property(__n )
-  weights = property(__weights )
-  positions = property(__positions, __set_positions )
-  center_mass = property(__mean, __set_mean)
+  npts = property(__n, doc='readonly: the total number of point masses in the product measure')
+  weights = property(__weights, doc='a list of weights for all point masses in the product measure')
+  positions = property(__positions, __set_positions, doc='a list of positions for all point masses in the product measure')
+  center_mass = property(__mean, __set_mean, doc='sum of ``weights * positions``')
  #center = property(__get_center ) #FIXME: remove c.center and c.delta... or
  #delta = property(__get_delta )   #       replace with c._params (e.g. (m,D))
  #expect = property(__expect, __set_expect )
-  mass = property(__mass )
-  pts = property(__pts )
-  wts = property(__wts )
-  pos = property(__pos )
+  mass = property(__mass, doc='readonly: a list of weight norms')
+  pts = property(__pts, doc='readonly: the number of point masses for each discrete mesure')
+  wts = property(__wts, doc='readonly: a list of weights for each discrete mesure')
+  pos = property(__pos, doc='readonly: a list of positions for each discrete mesure')
 
   # backward compatibility
   coords = positions

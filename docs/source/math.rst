@@ -24,7 +24,25 @@ discrete module
     :members:
     :undoc-members:
     :show-inheritance:
-..  :exclude-members: point, dirac_measure
+    :exclude-members: point_mass, measure, product_measure, scenario
+.. autoclass:: point_mass
+    :members:
+    :undoc-members:
+    :show-inheritance:
+.. autoclass:: measure
+    :members:
+    :undoc-members:
+    :show-inheritance:
+    :exclude-members: coords, get_expect, mean
+.. autoclass:: product_measure
+    :members:
+    :undoc-members:
+    :show-inheritance:
+    :exclude-members: coords, get_expect
+.. autoclass:: scenario
+    :members:
+    :undoc-members:
+    :show-inheritance:
 
 distance module
 ---------------
