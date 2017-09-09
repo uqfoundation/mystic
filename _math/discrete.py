@@ -465,13 +465,19 @@ Notes:
   # return u  #XXX: does this need to be normalized?
 
   def sampled_pof(self, f, npts=10000):
-    """use sampled point masses to calculate probability of failure over the
-given function, f, where f takes a list of (product_measure) positions and
-returns a single value
+    """use sampling to calculate probability of failure for a given function
 
-Inputs:
-    f -- a function that returns True for 'success' and False for 'failure'
-    npts -- number of point_masses sampled from the underlying discrete measures
+Args:
+    f (func): a function returning True for 'success' and False for 'failure'
+    npts (int, default=10000): the number of point masses sampled from the
+        underlying discrete measures
+
+Returns:
+    the probabilty of failure, a float in ``[0.0,1.0]``
+
+Notes:
+    - the function ``f`` should take a list of ``product_measure.positions``
+      and return a single value (e.g. 0.0 or False)
 """
     from mystic.math.samples import _pof_given_samples
     pts = self.sampled_support(npts)
@@ -480,11 +486,11 @@ Inputs:
   def sampled_support(self, npts=10000): ##XXX: was 'def support'
     """randomly select support points from the underlying discrete measures
 
-Inputs:
-    npts -- number of points sampled from the underlying discrete measures
+Args:
+    npts (int, default=10000): the number of sampled points
 
 Returns:
-    pts -- a nested list of len(prod_measure) lists, each of len(npts)
+    a list of ``len(product_measure)`` lists, each of length ``len(npts)``
 """
     from mystic.math.measures import weighted_select as _select
     pts = []
@@ -499,7 +505,25 @@ Returns:
   def update(self, params):
     """update the product measure from a list of parameters
 
-The dimensions of the product measure will not change"""
+Args:
+    params (list(float)): parameters corresponding to N 1D discrete measures
+
+Returns:
+    None
+
+Notes:
+    The dimensions of the product measure will not change upon update, and
+    it is assumed *params* either corresponds to the correct number of
+    weights and positions for the existing ``product_measure``, or *params*
+    has additional values (typically output values) which will be ignored.
+    It is assumed that ``len(params) >= 2 * sum(product_measure.pts)``.
+
+    If ``product_measure.pts = (M, N, ...)``, then it is assumed that
+    ``params = [wx1, ..., wxM, x1, ..., xM, wy1, ..., wyN, y1, ..., yN, ...]``.
+    Thus, *params* should have ``M`` weights and ``M`` corresponding positions,
+    followed by ``N`` weights and ``N`` corresponding positions, with this
+    pattern followed for each new dimension of the product measure.
+"""
     pts = self.pts
     _len = 2 * sum(pts)
 
@@ -512,23 +536,27 @@ The dimensions of the product measure will not change"""
     return
 
   def load(self, params, pts):
-    """fill the measure from parameters corresponding to N 1D discrete measures
+    """load the product measure from a list of parameters
 
-Inputs:
-    params -- a list of parameters (see 'notes')
-    pts -- number of point_masses in each of the underlying discrete measures
+Args:
+    params (list(float)): parameters corresponding to N 1D discrete measures
+    pts (tuple(int)): number of point masses in each of the discrete measures
+
+Returns:
+    None
 
 Notes:
-    To append len(pts) new discrete measures to product measure c, where
-    pts = (M, N, ...)
-    params = [wt_x1, ..., wt_xM, \
-                 x1, ..., xM,    \
-              wt_y1, ..., wt_yN, \
-                 y1, ..., yN,    \
-                     ...]
-    Thus, the provided list is M weights and the corresponding M positions,
-    followed by N weights and the corresponding N positions, with this
-    pattern followed for each new dimension desired for the product measure.
+    To append ``len(pts)`` new discrete measures to product measure,
+    it is assumed *params* either corresponds to the correct number of
+    weights and positions specified by *pts*, or *params* has additional
+    values (typically output values) which will be ignored. It is assumed
+    that ``len(params) >= 2 * sum(pts)``.
+
+    Given the value of ``pts = (M, N, ...)``, it is assumed that
+    ``params = [wx1, ..., wxM, x1, ..., xM, wy1, ..., wyN, y1, ..., yN, ...]``.
+    Thus, *params* should have ``M`` weights and ``M`` corresponding positions,
+    followed by ``N`` weights and ``N`` corresponding positions, with this
+    pattern followed for each new dimension of the product measure.
 """
     _len = 2 * sum(pts)
     if len(params)  >  _len:  # if Y-values are appended to params
@@ -538,50 +566,63 @@ Notes:
     return
 
   def flatten(self):
-    """convert a measure to a single list of parameters
+    """convert a product measure to a single list of parameters
+
+Args:
+    None
 
 Returns:
-    params -- a list of parameters (see 'notes')
+    a list of parameters
 
 Notes:
-    For a product measure c where c.pts = (M, N, ...), then
-    params = [wt_x1, ..., wt_xM, \
-                 x1, ..., xM,    \
-              wt_y1, ..., wt_yN, \
-                 y1, ..., yN,    \
-                     ...]
-    Thus, the returned list is M weights and the corresponding M positions,
-    followed by N weights and the corresponding N positions, with this
-    pattern followed for each dimension of the product measure.
+    Given ``product_measure.pts = (M, N, ...)``, then the returned list is
+    ``params = [wx1, ..., wxM, x1, ..., xM, wy1, ..., wyN, y1, ..., yN, ...]``.
+    Thus, *params* will have ``M`` weights and ``M`` corresponding positions,
+    followed by ``N`` weights and ``N`` corresponding positions, with this
+    pattern followed for each new dimension of the product measure.
 """
     params = flatten(self)
     return params
 
   #XXX: name stinks... better as "non_redundant"? ...is really a helper
   def differs_by_one(self, ith, all=True, index=True):
-    """get the product measure coordinates where the associated binary
-string differs by exactly one index
+    """get the coordinates where the associated binary string differs
+by exactly one index
 
-  Inputs:
-    ith   = the target index
-    all   = if False, return only the results for indices < i
-    index = if True, return the index of the results (not results themselves)
+Args:
+    ith (int): the target index
+    all (bool, default=True): if False, only return results for indices < ``i``
+    index (bool, default=True): if True, return the indices of the results
+        instead of the results themselves
+
+Returns:
+    the coordinates where the associated binary string differs by one, or
+    if *index* is True, return the corresponding indices
 """
     from mystic.math.compressed import index2binary, differs_by_one
     b = index2binary(list(range(self.npts)), self.npts)
     return differs_by_one(ith, b, all, index) 
 
   def select(self, *index, **kwds):
-    """generator for product measure positions due to selected position indices
- (NOTE: only works for product measures of dimension 2^K)
+    """generate product measure positions for the selected position indices
 
-  >>> r
-  [[9, 8], [1, 3], [4, 2]]
-  >>> r.select(*range(r.npts))
-  [(9, 1, 4), (8, 1, 4), (9, 3, 4), (8, 3, 4), (9, 1, 2), (8, 1, 2), (9, 3, 2), (8, 3, 2)]
-  >>>
-  >>> _pack(r)
-  [(9, 1, 4), (8, 1, 4), (9, 3, 4), (8, 3, 4), (9, 1, 2), (8, 1, 2), (9, 3, 2), (8, 3, 2)]
+Args:
+    index (tuple(int)): tuple of position indicies
+
+Returns:
+    a list of product measure positions for the selected indices
+
+Examples:
+    >>> r
+    [[9, 8], [1, 3], [4, 2]]
+    >>> r.select(*range(r.npts))
+    [(9, 1, 4), (8, 1, 4), (9, 3, 4), (8, 3, 4), (9, 1, 2), (8, 1, 2), (9, 3, 2), (8, 3, 2)]
+    >>>
+    >>> _pack(r)
+    [(9, 1, 4), (8, 1, 4), (9, 3, 4), (8, 3, 4), (9, 1, 2), (8, 1, 2), (9, 3, 2), (8, 3, 2)]
+
+Notes:
+    This only works for product measures of dimension ``2^K``
 """
     from mystic.math.compressed import index2binary, binary2coords
     v = index2binary(list(index), self.npts)
@@ -1095,25 +1136,35 @@ def mean_y_norm_wts_constraintsFactory(target, pts):
   return constrain
 
 def impose_feasible(cutoff, data, guess=None, **kwds):
-  """impose shortness on a given list of parameters w,x,y.
+  """impose shortness on a given scenario
 
-Optimization on w,x,y over the given bounds seeks sum(infeasibility) = 0.
-  (this function is not ???-preserving)
+This function attempts to minimize the infeasibility between observed *data*
+and a scenario of synthetic data by perforing an optimization on ``w,x,y``
+over the given *bounds*.
 
-Inputs:
-    cutoff -- maximum acceptable deviation from shortness
-    data -- a dataset of observed points (these points are 'static')
-    guess -- the scenario providing an initial guess at feasibility,
-        or a tuple of dimensions of the target scenario
+Args:
+    cutoff (float): maximum acceptable deviation from shortness
+    data (mystic.math.discrete.scenario): a dataset of observed points
+    guess (mystic.math.discrete.scenario, default=None): the synthetic points
+    tol (float, default=0.0): maximum acceptable optimizer termination
+        for ``sum(infeasibility)``.
+    bounds (tuple, default=None): ``(all lower bounds, all upper bounds)``
+    constraints (func, default=None): a function ``x' = constraints(x)``,
+        where ``x`` is a scenario that has been converted into a list of
+        parameters (e.g. with ``scenario.flatten``), and ``x'`` is the list
+        of parameters after the encoded constaints have been satisfied.
 
-Additional Inputs:
-    tol -- acceptable optimizer termination before sum(infeasibility) = 0.
-    bounds -- a tuple of sample bounds:   bounds = (lower_bounds, upper_bounds)
-    constraints -- a function that takes a flat list parameters
-        x' = constraints(x)
+Returns:
+    a scenario with desired shortness
 
-Outputs:
-    pm -- a scenario with desired shortness
+Notes:
+    Here, *tol* is used to set the optimization termination for minimizing the
+    ``sum(infeasibility)``, while *cutoff* is used in defining the deviation
+    from shortness for observed ``x,y`` and synthetic ``x',y'``.
+
+    *guess* can be either a scenario providing initial guess at feasibility,
+    or a tuple of the dimensions of the desired scenario, where initial
+    values will be chosen at random.
 """
   from numpy import sum, asarray
   from mystic.math.legacydata import dataset
@@ -1221,37 +1272,46 @@ Outputs:
 
 
 def impose_valid(cutoff, model, guess=None, **kwds):
-  """impose model validity on a given list of parameters w,x,y
+  """impose model validity on a given scenario
 
-Optimization on w,x,y over the given bounds seeks sum(infeasibility) = 0.
-  (this function is not ???-preserving)
+This function attempts to minimize the graph distance between reality (data),
+``y = G(x)``, and an approximating function, ``y' = F(x')``, by perforing an
+optimization on ``w,x,y`` over the given *bounds*.
 
-Inputs:
-    cutoff -- maximum acceptable model invalidity |y - F(x')|; a single value
-    model -- the model function, y' = F(x'), that approximates reality, y = G(x)
-    guess -- the scenario providing an initial guess at validity,
-        or a tuple of dimensions of the target scenario
+Args:
+    cutoff (float): maximum acceptable model invalidity ``|y - F(x')|``.
+    model (finc): the model function, ``y' = F(x')``.
+    guess (scenario, default=None): a scenario, defines ``y = G(x)``.
+    hausdorff (bool, default=False): hausdorff ``norm``, where if given,
+        then ``ytol = |y - F(x')| + |x - x'|/norm``
+    xtol (float, default=0.0): maximum acceptable pointwise graphical distance
+        between model and reality.
+    tol (float, default=0.0): maximum acceptable optimizer termination
+        for ``sum(graphical distances)``.
+    bounds (tuple, default=None): ``(all lower bounds, all upper bounds)``
+    constraints (func, default=None): a function ``x' = constraints(x)``,
+        where ``x`` is a scenario that has been converted into a list of
+        parameters (e.g. with ``scenario.flatten``), and ``x'`` is the list
+        of parameters after the encoded constaints have been satisfied.
 
-Additional Inputs:
-    hausdorff -- norm; where if given, ytol = |y - F(x')| + |x - x'|/norm
-    xtol -- acceptable pointwise graphical distance of model from reality
-    tol -- acceptable optimizer termination before sum(infeasibility) = 0.
-    bounds -- a tuple of sample bounds:   bounds = (lower_bounds, upper_bounds)
-    constraints -- a function that takes a flat list parameters
-        x' = constraints(x)
-
-Outputs:
-    pm -- a scenario with desired model validity
+Returns:
+    a scenario with the desired model validity
 
 Notes:
-    xtol defines the n-dimensional base of a pilar of height cutoff, centered at
-    each point. The region inside the pilar defines the space where a "valid"
-    model must intersect. If xtol is not specified, then the base of the pilar
-    will be a dirac at x' = x. This function performs an optimization to find
-    a set of points where the model is valid. Here, tol is used to set the
-    optimization termination for the sum(graphical_distances), while cutoff is
-    used in defining the graphical_distance between x,y and x',F(x').
+    *xtol* defines the n-dimensional base of a pilar of height *cutoff*,
+    centered at each point. The region inside the pilar defines the space
+    where a "valid" model must intersect. If *xtol* is not specified, then
+    the base of the pilar will be a dirac at ``x' = x``. This function
+    performs an optimization to find a set of points where the model is valid.
+    Here, *tol* is used to set the optimization termination for minimizing the
+    ``sum(graphical_distances)``, while *cutoff* is used in defining the
+    graphical distance between ``x,y`` and ``x',F(x')``.
+
+    *guess* can be either a scenario providing initial guess at validity,
+    or a tuple of the dimensions of the desired scenario, where initial
+    values will be chosen at random.
 """
+  #FIXME: there are a lot of undocumented kwds (see below)
   from numpy import sum as _sum, asarray
   from mystic.math.distance import graphical_distance, infeasibility, _npts
   if guess is None:
