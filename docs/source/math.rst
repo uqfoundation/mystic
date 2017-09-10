@@ -43,6 +43,7 @@ discrete module
     :members:
     :undoc-members:
     :show-inheritance:
+    :exclude-members: coords, get_mean_value
 
 distance module
 ---------------

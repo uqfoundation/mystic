@@ -358,7 +358,7 @@ Args:
     xtol (float, default=0.0): maximum acceptable difference ``|x - x'|``.
     cutoff (float, default=ytol): zero out distances less than cutoff.
     hausdorff (bool, default=False): hausdorff ``norm``, where if given,
-        then ``ytol = |y - F(x')| + |x - x'|/norm``
+        then ``ytol = |y - F(x')| + |x - x'|/norm``.
 
 Notes:
     *xtol* defines the n-dimensional base of a pilar of height *ytol*,

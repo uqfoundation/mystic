@@ -378,7 +378,7 @@ Notes:
 
 def graphical_distance(model, points, **kwds):
   """find the ``radius(x')`` that minimizes the graph between reality (data),
-``y = G(x)``, and an approximating function, ``y' = F(x')``
+``y = G(x)``, and an approximating function, ``y' = F(x')``.
 
 Args:
     model (func): a model ``y' = F(x')`` that approximates reality ``y = G(x)``
@@ -387,7 +387,7 @@ Args:
     xtol (float, default=0.0): maximum acceptable difference ``|x - x'|``.
     cutoff (float, default=ytol): zero out distances less than cutoff.
     hausdorff (bool, default=False): hausdorff ``norm``, where if given,
-        then ``ytol = |y - F(x')| + |x - x'|/norm``
+        then ``ytol = |y - F(x')| + |x - x'|/norm``.
 
 Returns:
     the radius (the minimum distance ``x,G(x)`` to ``x',F(x')`` for each ``x``)

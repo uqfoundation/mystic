@@ -412,7 +412,7 @@ Returns:
     return expectation(f, self.positions, self.weights)
 
   def set_expect(self, expected, f, bounds=None, constraints=None, **kwds):
-    """impose an expectation on a product measure by adjusting the positions
+    """impose an expectation on the measure by adjusting the positions
 
 Args:
     expected (tuple(float)): ``(desired expectation, acceptable deviation)``
@@ -449,8 +449,9 @@ Returns:
     the probabilty of failure, a float in ``[0.0,1.0]``
 
 Notes:
-    - the function ``f`` should take a list of ``product_measure.positions``
-      and return a single value (e.g. 0.0 or False)
+    - the function ``f`` should take a list of ``positions`` (for example,
+      ``scenario.positions`` or ``product_measure.positions``) and return a
+      single value (e.g. 0.0 or False)
 """
     u = 0.0
     set = zip(self.positions, self.weights)
@@ -476,8 +477,9 @@ Returns:
     the probabilty of failure, a float in ``[0.0,1.0]``
 
 Notes:
-    - the function ``f`` should take a list of ``product_measure.positions``
-      and return a single value (e.g. 0.0 or False)
+    - the function ``f`` should take a list of ``positions`` (for example,
+      ``scenario.positions`` or ``product_measure.positions``) and return a
+      single value (e.g. 0.0 or False)
 """
     from mystic.math.samples import _pof_given_samples
     pts = self.sampled_support(npts)
@@ -490,7 +492,7 @@ Args:
     npts (int, default=10000): the number of sampled points
 
 Returns:
-    a list of ``len(product_measure)`` lists, each of length ``len(npts)``
+    a list of ``len(product measure)`` lists, each of length ``len(npts)``
 """
     from mystic.math.measures import weighted_select as _select
     pts = []
@@ -522,7 +524,7 @@ Notes:
     ``params = [wx1, ..., wxM, x1, ..., xM, wy1, ..., wyN, y1, ..., yN, ...]``.
     Thus, *params* should have ``M`` weights and ``M`` corresponding positions,
     followed by ``N`` weights and ``N`` corresponding positions, with this
-    pattern followed for each new dimension of the product measure.
+    pattern followed for each new dimension of the desired product measure.
 """
     pts = self.pts
     _len = 2 * sum(pts)
@@ -546,17 +548,17 @@ Returns:
     None
 
 Notes:
-    To append ``len(pts)`` new discrete measures to product measure,
+    To append ``len(pts)`` new discrete measures to the product measure,
     it is assumed *params* either corresponds to the correct number of
     weights and positions specified by *pts*, or *params* has additional
     values (typically output values) which will be ignored. It is assumed
-    that ``len(params) >= 2 * sum(pts)``.
+    that ``len(params) >= 2 * sum(product_measure.pts)``.
 
     Given the value of ``pts = (M, N, ...)``, it is assumed that
     ``params = [wx1, ..., wxM, x1, ..., xM, wy1, ..., wyN, y1, ..., yN, ...]``.
     Thus, *params* should have ``M`` weights and ``M`` corresponding positions,
     followed by ``N`` weights and ``N`` corresponding positions, with this
-    pattern followed for each new dimension of the product measure.
+    pattern followed for each new dimension of the desired product measure.
 """
     _len = 2 * sum(pts)
     if len(params)  >  _len:  # if Y-values are appended to params
@@ -579,7 +581,7 @@ Notes:
     ``params = [wx1, ..., wxM, x1, ..., xM, wy1, ..., wyN, y1, ..., yN, ...]``.
     Thus, *params* will have ``M`` weights and ``M`` corresponding positions,
     followed by ``N`` weights and ``N`` corresponding positions, with this
-    pattern followed for each new dimension of the product measure.
+    pattern followed for each new dimension of the desired product measure.
 """
     params = flatten(self)
     return params
@@ -653,47 +655,26 @@ Notes:
 
 
 class scenario(product_measure):  #FIXME: meant to only accept sets...
-  """ a N-d product measure (collection of dirac measures) with values
-  s = scenario(product_measure, [value1, value2, ..., valueN])  
-    where each point_mass in the product measure is paried with a value
-    (essentially, a dataset in product_measure representation)
+  """a N-d product measure with associated data values
 
- queries:
-  s.npts  --  returns total number of point_masse
-  s.weights   --  returns list of weights
-  s.positions  --  returns list of position tuples
-  s.values  --  returns list of values
-  s.mass  --  returns list of weight norms
-  s.pts  --  returns number of point_masses for each discrete measure
-  s.wts  --  returns list of weights for each discrete measure
-  s.pos  --  returns list of positions for each discrete measure
+A scenario is a measure-theoretic product of discrete measures that also
+includes a list of associated values, with the values corresponding to
+measured or synthetic data for each measure position.  Each point mass
+in the product measure is paired with a value, and thus, essentially, a
+scenario is equivalent to a ``mystic.math.legacydata.dataset`` stored in 
+a ``product_measure`` representation.
 
- settings:
-  s.positions = [(x1,y1,z1),...]  --  set positions (tuples in product measure)
-  s.values = [v1,v2,v3,...]  --  set the values (correspond to position tuples)
+Args:
+    pm (mystic.math.discrete.product_measure, default=None): a product measure
+    values (list(float), default=None): values associated with each position
 
- methods:
-  s.pof(f)  --  calculate the probability of failure
-  s.pof_value(f)  --  calculate the probability of failure using the values
-  s.sampled_pof(f, npts) -- calculate the pof using sampled points
-  s.expect(f)  --  calculate the expectation
-  s.set_expect((center,delta), f)  --  impose expectation by adjusting positions
-  s.mean_value()  --  calculate the mean values for a scenario
-  s.set_mean_value(m)  --  impose mean value by adjusting values
-  s.set_feasible(data)  --  impose shortness by adjusting positions and values
-  s.short_wrt_data(data) -- check for shortness with respect to data
-  s.short_wrt_self(L) -- check for shortness with respect to self
-  s.set_valid(model) -- impose validity by adjusting positions and values
-  s.valid_wrt_model(model) -- check for validity with respect to the model
-  s.flatten()  --  convert measure to a flat list of parameters
-  s.load(params, pts)  --  'fill' the measure from a flat list of parameters
-  s.update(params) -- 'update' the measure from a flat list of parameters
-
- notes:
-  - constraints impose expect (center - delta) <= E <= (center + delta)
-  - constraints impose sum(weights) == 1.0 for each set
-  - assumes that s.npts = len(s.positions) == len(s.weights)
-  - weight wxi should be same for each (yj,zk) at xi; similarly for wyi & wzi
+Notes:
+    - all measures are treated as if they are orthogonal
+    - relies on constraints to impose notions such as ``sum(weights) == 1.0``
+    - relies on constraints to impose expectation (within acceptable deviation)
+    - positions are ``(xi,yi,zi)`` with weights ``(wxi,wyi,wzi)``, where weight
+      ``wxi`` at ``xi`` should be the same for each ``(yj,zk)``.  Similarly
+      for each ``wyi`` and ``wzi``.
 """
   def __init__(self, pm=None, values=None):
     super(product_measure,self).__init__()
@@ -712,12 +693,26 @@ class scenario(product_measure):  #FIXME: meant to only accept sets...
     return
 
   def mean_value(self):  # get mean of y's
-    """calculate the mean of the associated values for a scenario"""
+    """calculate the mean of the associated values for a scenario
+
+Args:
+    None
+
+Returns:
+    the weighted mean of the scenario values
+"""
     from mystic.math.measures import mean
     return mean(self.values, self.weights)
 
   def set_mean_value(self, m):  # set mean of y's
-    """set the mean for the associated values of a scenario"""
+    """set the mean for the associated values of a scenario
+
+Args:
+    m (float): the target weighted mean of the scenario values
+
+Returns:
+    None
+"""
     from mystic.math.measures import impose_mean
     self.values = impose_mean(m, self.values, self.weights)
     return
@@ -726,30 +721,38 @@ class scenario(product_measure):  #FIXME: meant to only accept sets...
                                    all=False, raw=False, **kwds):
     """check for scenario validity with respect to the model
 
-Inputs:
-    model -- the model function, y' = F(x')
-    blamelist -- if True, report which points are infeasible
-    pairs -- if True, report indices of infeasible points
-    all -- if True, report results for each point (opposed to all points)
-    raw -- if True, report numerical results (opposed to boolean results)
-
-Additional Inputs:
-    ytol -- maximum acceptable difference |y - F(x')|; a single value
-    xtol -- maximum acceptable difference |x - x'|; an iterable or single value
-    cutoff -- zero out distances less than cutoff; typically: ytol, 0.0, or None
-    hausdorff -- norm; where if given, ytol = |y - F(x')| + |x - x'|/norm
+Args:
+    model (func): the model function, ``y' = F(x')``.
+    blamelist (bool, default=False): if True, indicate the infeasible points.
+    pairs (bool, default=True): if True, indicate indices of infeasible points.
+    all (bool, default=False): if True, get results for each individual point.
+    raw (bool, default=False): if False, get boolean results (i.e. non-float).
+    ytol (float, default=0.0): maximum acceptable difference ``|y - F(x')|``.
+    xtol (float, default=0.0): maximum acceptable difference ``|x - x'|``.
+    cutoff (float, default=ytol): zero out distances less than cutoff.
+    hausdorff (bool, default=False): hausdorff ``norm``, where if given,
+        then ``ytol = |y - F(x')| + |x - x'|/norm``.
 
 Notes:
-    xtol defines the n-dimensional base of a pilar of height ytol, centered at
-    each point. The region inside the pilar defines the space where a "valid"
-    model must intersect. If xtol is not specified, then the base of the pilar
-    will be a dirac at x' = x. This function performs an optimization for each
-    x to find an appropriate x'. While cutoff and ytol are very tightly related,
-    they play a distinct role; ytol is used to set the optimization termination
-    for an acceptable |y - F(x')|, while cutoff is applied post-optimization.
-    If we are using the hausdorff norm, then ytol will set the optimization
-    termination for an acceptable |y - F(x')| + |x - x'|/norm, where the x
-    values are normalized by norm = hausdorff.
+    *xtol* defines the n-dimensional base of a pilar of height *ytol*,
+    centered at each point. The region inside the pilar defines the space
+    where a "valid" model must intersect. If *xtol* is not specified, then
+    the base of the pilar will be a dirac at ``x' = x``. This function
+    performs an optimization for each ``x`` to find an appropriate ``x'``.
+
+    *ytol* is a single value, while *xtol* is a single value or an iterable.
+    *cutoff* takes a float or a boolean, where ``cutoff=True`` will set the
+    value of *cutoff* to the default. Typically, the value of *cutoff* is
+    *ytol*, 0.0, or None. *hausdorff* can be False (e.g. ``norm = 1.0``),
+    True (e.g. ``norm = spread(x)``), or a list of points of ``len(x)``.
+
+    While *cutoff* and *ytol* are very tightly related, they play a distinct
+    role; *ytol* is used to set the optimization termination for an acceptable
+    ``|y - F(x')|``, while *cutoff* is applied post-optimization.
+
+    If we are using the *hausdorff* norm, then *ytol* will set the optimization
+    termination for an acceptable ``|y - F(x')| + |x - x'|/norm``, where the
+    ``x`` values are normalized by ``norm = hausdorff``.
 """
     from mystic.math.legacydata import dataset 
     data = dataset() 
@@ -764,26 +767,24 @@ Notes:
                               all=False, raw=False, **kwds):
     """check for shortness with respect to the scenario itself
 
-Inputs:
-    L -- the lipschitz constant
-    blamelist -- if True, report which points are infeasible
-    pairs -- if True, report indices of infeasible points
-    all -- if True, report results for each point (opposed to all points)
-    raw -- if True, report numerical results (opposed to boolean results)
-
-Additional Inputs:
-    tol -- maximum acceptable deviation from shortness
-    cutoff -- zero out distances less than cutoff; typically: tol, 0.0, or None
+Args:
+    L (float): the lipschitz constant.
+    blamelist (bool, default=False): if True, indicate the infeasible points.
+    pairs (bool, default=True): if True, indicate indices of infeasible points.
+    all (bool, default=False): if True, get results for each individual point.
+    raw (bool, default=False): if False, get boolean results (i.e. non-float).
+    tol (float, default=0.0): maximum acceptable deviation from shortness.
+    cutoff (float, default=tol): zero out distances less than cutoff.
 
 Notes:
     Each point x,y can be thought to have an associated double-cone with slope
     equal to the lipschitz constant. Shortness with respect to another point is
     defined by the first point not being inside the cone of the second. We can
-    allow for some error in shortness, a short tolerance 'tol', for which the
+    allow for some error in shortness, a short tolerance *tol*, for which the
     point x,y is some acceptable y-distance inside the cone. While very tightly
-    related, cutoff and tol play distinct roles; tol is subtracted from
-    calculation of the lipschitz_distance, while cutoff zeros out the value
-    of any element less than the cutoff.
+    related, *cutoff* and *tol* play distinct roles; *tol* is subtracted from
+    calculation of the lipschitz_distance, while *cutoff* zeros out the value
+    of any element less than the *cutoff*.
 """
     from mystic.math.legacydata import dataset 
     data = dataset() 
@@ -798,27 +799,25 @@ Notes:
                                          all=False, raw=False, **kwds):
     """check for shortness with respect to the given data
 
-Inputs:
-    data -- a collection of data points
-    L -- the lipschitz constant, if different from that provided with data
-    blamelist -- if True, report which points are infeasible
-    pairs -- if True, report indices of infeasible points
-    all -- if True, report results for each point (opposed to all points)
-    raw -- if True, report numerical results (opposed to boolean results)
-
-Additional Inputs:
-    tol -- maximum acceptable deviation from shortness
-    cutoff -- zero out distances less than cutoff; typically cutoff = tol or 0.0
+Args:
+    data (list): a list of data points or dataset to compare against.
+    L (float, default=None): the lipschitz constant, if different than in data.
+    blamelist (bool, default=False): if True, indicate the infeasible points.
+    pairs (bool, default=True): if True, indicate indices of infeasible points.
+    all (bool, default=False): if True, get results for each individual point.
+    raw (bool, default=False): if False, get boolean results (i.e. non-float).
+    tol (float, default=0.0): maximum acceptable deviation from shortness.
+    cutoff (float, default=tol): zero out distances less than cutoff.
 
 Notes:
     Each point x,y can be thought to have an associated double-cone with slope
     equal to the lipschitz constant. Shortness with respect to another point is
     defined by the first point not being inside the cone of the second. We can
-    allow for some error in shortness, a short tolerance 'tol', for which the
+    allow for some error in shortness, a short tolerance *tol*, for which the
     point x,y is some acceptable y-distance inside the cone. While very tightly
-    related, cutoff and tol play distinct roles; tol is subtracted from
-    calculation of the lipschitz_distance, while cutoff zeros out the value
-    of any element less than the cutoff.
+    related, *cutoff* and *tol* play distinct roles; *tol* is subtracted from
+    calculation of the lipschitz_distance, while *cutoff* zeros out the value
+    of any element less than the *cutoff*.
 """
     from mystic.math.legacydata import dataset 
     _self = dataset() 
@@ -831,18 +830,31 @@ Notes:
 
   def set_feasible(self, data, cutoff=0.0, bounds=None, constraints=None, \
                                                   with_self=True, **kwds):
-    """impose shortness on a scenario with respect to given data points
+    """impose shortness with respect to the given data points
 
-Inputs:
-    data -- a collection of data points
-    cutoff -- acceptable deviation from shortness
+This function attempts to minimize the infeasibility between observed *data*
+and the scenario of synthetic data by perforing an optimization on ``w,x,y``
+over the given *bounds*.
 
-Additional Inputs:
-    with_self -- if True, shortness will also be imposed with respect to self
-    tol -- acceptable optimizer termination before sum(infeasibility) = 0.
-    bounds -- a tuple of sample bounds:   bounds = (lower_bounds, upper_bounds)
-    constraints -- a function that takes a flat list parameters
-        x' = constraints(x)
+Args:
+    data (mystic.math.discrete.scenario): a dataset of observed points
+    cutoff (float, default=0.0): maximum acceptable deviation from shortness
+    bounds (tuple, default=None): ``(all lower bounds, all upper bounds)``
+    constraints (func, default=None): a function ``x' = constraints(x)``,
+        where ``x`` is a scenario that has been converted into a list of
+        parameters (e.g. with ``scenario.flatten``), and ``x'`` is the list
+        of parameters after the encoded constaints have been satisfied.
+    with_self (bool, default=True): if True, shortness is also self-consistent
+    tol (float, default=0.0): maximum acceptable optimizer termination
+        for ``sum(infeasibility)``.
+
+Returns:
+    None
+
+Notes:
+    - both ``scenario.positions`` and ``scenario.values`` may be adjusted.
+    - if *with_self* is True, shortness will be measured not only from the
+      scenario to the given *data*, but also between scenario datapoints.
 """
     # imposes: is_short(x, x'), is_short(x, z )
     # use additional 'constraints' kwds to impose: y >= m, norm(wi) = 1.0
@@ -852,28 +864,39 @@ Additional Inputs:
     return
 
   def set_valid(self, model, cutoff=0.0, bounds=None, constraints=None, **kwds):
-    """impose validity on a scenario with respect to given data points
+    """impose model validity on a scenario by adjusting positions and values
 
-Inputs:
-    model -- the model function, y' = F(x'), that approximates reality, y = G(x)
-    cutoff -- acceptable model invalidity |y - F(x')|
+This function attempts to minimize the graph distance between reality (data),
+``y = G(x)``, and an approximating function, ``y' = F(x')``, by perforing an
+optimization on ``w,x,y`` over the given *bounds*.
 
-Additional Inputs:
-    hausdorff -- norm; where if given, ytol = |y - F(x')| + |x - x'|/norm
-    xtol -- acceptable pointwise graphical distance of model from reality
-    tol -- acceptable optimizer termination before sum(infeasibility) = 0.
-    bounds -- a tuple of sample bounds:   bounds = (lower_bounds, upper_bounds)
-    constraints -- a function that takes a flat list parameters
-        x' = constraints(x)
+Args:
+    model (func): a model ``y' = F(x')`` that approximates reality ``y = G(x)``
+    cutoff (float, default=0.0): acceptable model invalidity ``|y - F(x')|``
+    bounds (tuple, default=None): ``(all lower bounds, all upper bounds)``
+    constraints (func, default=None): a function ``x' = constraints(x)``,
+        where ``x`` is a scenario that has been converted into a list of
+        parameters (e.g. with ``scenario.flatten``), and ``x'`` is the list
+        of parameters after the encoded constaints have been satisfied.
+    hausdorff (bool, default=False): hausdorff ``norm``, where if given,
+        then ``ytol = |y - F(x')| + |x - x'|/norm``
+    xtol (float, default=0.0): maximum acceptable pointwise graphical distance
+        between model and reality.
+    tol (float, default=0.0): maximum acceptable optimizer termination
+        for ``sum(graphical distances)``.
+
+Returns:
+    None
 
 Notes:
-    xtol defines the n-dimensional base of a pilar of height cutoff, centered at
-    each point. The region inside the pilar defines the space where a "valid"
-    model must intersect. If xtol is not specified, then the base of the pilar
-    will be a dirac at x' = x. This function performs an optimization to find
-    a set of points where the model is valid. Here, tol is used to set the
-    optimization termination for the sum(graphical_distances), while cutoff is
-    used in defining the graphical_distance between x,y and x',F(x').
+    *xtol* defines the n-dimensional base of a pilar of height *cutoff*,
+    centered at each point. The region inside the pilar defines the space
+    where a "valid" model must intersect. If *xtol* is not specified, then
+    the base of the pilar will be a dirac at ``x' = x``. This function
+    performs an optimization to find a set of points where the model is valid.
+    Here, *tol* is used to set the optimization termination for minimizing the
+    ``sum(graphical_distances)``, while *cutoff* is used in defining the
+    graphical distance between ``x,y`` and ``x',F(x')``.
 """
     # imposes is_feasible(R, Cv), where R = graphical_distance(model, pts)
     # use additional 'constraints' kwds to impose: y >= m, norm(wi) = 1.0
@@ -883,11 +906,17 @@ Notes:
     return
  
   def pof_value(self, f):
-    """calculate probability of failure over a given function, f,
-where f takes a list of (scenario) values and returns a single value
+    """calculate probability of failure for a given function
 
-Inputs:
-    f -- a function that returns True for 'success' and False for 'failure'
+Args:
+    f (func): a function returning True for 'success' and False for 'failure'
+
+Returns:
+    the probabilty of failure, a float in ``[0.0,1.0]``
+
+Notes:
+    - the function ``f`` should take a list of ``values`` (for example,
+      ``scenario.values``) and return a single value (e.g. 0.0 or False)
 """
     u = 0.0
     set = zip(self.values, self.weights)
@@ -899,7 +928,25 @@ Inputs:
   def update(self, params): #XXX: overwritten.  create standalone instead ?
     """update the scenario from a list of parameters
 
-The dimensions of the scenario will not change"""
+Args:
+    params (list(float)): parameters corresponding to N 1D discrete measures
+
+Returns:
+    None
+
+Notes:
+    The dimensions of the scenario will not change upon update, and
+    it is assumed *params* either corresponds to the correct number of
+    weights and positions for the existing ``scenario``, or *params*
+    has additional values which will be saved as the ``scenario.values``.
+    It is assumed that ``len(params) >= 2 * sum(scenario.pts)``.
+
+    If ``scenario.pts = (M, N, ...)``, then it is assumed that
+    ``params = [wx1, ..., wxM, x1, ..., xM, wy1, ..., wyN, y1, ..., yN, ...]``.
+    Thus, *params* should have ``M`` weights and ``M`` corresponding positions,
+    followed by ``N`` weights and ``N`` corresponding positions, with this
+    pattern followed for each new dimension of the desired scenario.
+"""
     pts = self.pts
     _len = 2 * sum(pts)
 
@@ -913,23 +960,28 @@ The dimensions of the scenario will not change"""
     return
 
   def load(self, params, pts): #XXX: overwritten.  create standalone instead ?
-    """load a list of parameters corresponding to N x 1D discrete measures
+    """load the scenario from a list of parameters
 
-Inputs:
-    params -- a list of parameters (see 'notes')
-    pts -- number of points in each of the underlying discrete measures
+Args:
+    params (list(float)): parameters corresponding to N 1D discrete measures
+    pts (tuple(int)): number of point masses in each of the discrete measures
+
+Returns:
+    None
 
 Notes:
-    To append len(pts) new discrete measures to scenario c, where
-    pts = (M, N, ...)
-    params = [wt_x1, ..., wt_xM, \
-                 x1, ..., xM,    \
-              wt_y1, ..., wt_yN, \
-                 y1, ..., yN,    \
-                     ...]
-    Thus, the provided list is M weights and the corresponding M positions,
-    followed by N weights and the corresponding N positions, with this
-    pattern followed for each new dimension desired for the scenario.
+    To append ``len(pts)`` new discrete measures to the scenario,
+    it is assumed *params* either corresponds to the correct number of
+    weights and positions specified by *pts*, or *params* has additional
+    values which will be saved as the ``scenario.values``. It is assumed
+    that ``len(params) >= 2 * sum(scenario.pts)``.
+
+    Given the value of ``pts = (M, N, ...)``, it is assumed that
+    ``params = [wx1, ..., wxM, x1, ..., xM, wy1, ..., wyN, y1, ..., yN, ...]``.
+    Thus, *params* should have ``M`` weights and ``M`` corresponding positions,
+    followed by ``N`` weights and ``N`` corresponding positions, with this
+    pattern followed for each new dimension of the desired scenario. Any
+    remaining parameters will be treated as ``scenario.values``.
 """
     _len = 2 * sum(pts)
     if len(params)  >  _len:  # if Y-values are appended to params
@@ -939,28 +991,28 @@ Notes:
     return
 
   def flatten(self, all=True): #XXX: overwritten.  create standalone instead ?
-    """flatten the scenario into a list of parameters
+    """convert a scenario to a single list of parameters
+
+Args:
+    all (bool, default=True): if True, append the scenario values
 
 Returns:
-    params -- a list of parameters (see 'notes')
+    a list of parameters
 
 Notes:
-    For a scenario c where c.pts = (M, N, ...), then
-    params = [wt_x1, ..., wt_xM, \
-                 x1, ..., xM,    \
-              wt_y1, ..., wt_yN, \
-                 y1, ..., yN,    \
-                     ...]
-    Thus, the returned list is M weights and the corresponding M positions,
-    followed by N weights and the corresponding N positions, with this
-    pattern followed for each dimension of the scenario.
+    Given ``scenario.pts = (M, N, ...)``, then the returned list is
+    ``params = [wx1, ..., wxM, x1, ..., xM, wy1, ..., wyN, y1, ..., yN, ...]``.
+    Thus, *params* will have ``M`` weights and ``M`` corresponding positions,
+    followed by ``N`` weights and ``N`` corresponding positions, with this
+    pattern followed for each new dimension of the scenario. If *all* is True,
+    then the ``scenario.values`` will be appended to the list of parameters.
 """
     params = flatten(self)
     if all: params.extend(self.values) # if Y-values, return those as well
     return params
 
   # interface
-  values = property(__values, __set_values )
+  values = property(__values, __set_values, doc='a list of values corresponding to output data for all point masses in the underlying product measure')
   get_mean_value = mean_value
   pass
 
@@ -1280,7 +1332,7 @@ optimization on ``w,x,y`` over the given *bounds*.
 
 Args:
     cutoff (float): maximum acceptable model invalidity ``|y - F(x')|``.
-    model (finc): the model function, ``y' = F(x')``.
+    model (func): the model function, ``y' = F(x')``.
     guess (scenario, default=None): a scenario, defines ``y = G(x)``.
     hausdorff (bool, default=False): hausdorff ``norm``, where if given,
         then ``ytol = |y - F(x')| + |x - x'|/norm``
