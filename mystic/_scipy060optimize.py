@@ -1731,13 +1731,13 @@ def bracket(func, xa=0.0, xb=1.0, args=(), grow_limit=110.0, maxiter=1000):
 
 
 
-def _linesearch_powell(func, p, xi, tol=1e-3):
+def _linesearch_powell(func, p, xi, tol=1e-3, maxiter=500):
     # line-search algorithm using fminbound
     #  find the minimium of the function
     #  func(x0+ alpha*direc)
     def myfunc(alpha):
         return func(p + alpha * xi)
-    alpha_min, fret, iter, num = brent(myfunc, full_output=1, tol=tol)
+    alpha_min, fret, iter, num = brent(myfunc, full_output=1, tol=tol, maxiter=maxiter)
     xi = alpha_min*xi
     return squeeze(fret), p+xi, xi
 

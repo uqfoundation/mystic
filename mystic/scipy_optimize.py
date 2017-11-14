@@ -435,14 +435,14 @@ Notes:
 
 ############################################################################
 
-def _linesearch_powell(func, p, xi, tol=1e-3):
+def _linesearch_powell(func, p, xi, tol=1e-3, maxiter=500):
     # line-search algorithm using fminbound
     #  find the minimium of the function
     #  func(x0+ alpha*direc)
     def myfunc(alpha):
         return func(p + alpha * xi)
     settings = numpy.seterr(all='ignore')
-    alpha_min, fret, iter, num = brent(myfunc, full_output=1, tol=tol)
+    alpha_min, fret, iter, num = brent(myfunc, full_output=1, tol=tol, maxiter=maxiter)
     numpy.seterr(**settings)
     xi = alpha_min*xi
     return squeeze(fret), p+xi, xi
@@ -465,6 +465,7 @@ Takes one initial input:
         fx = self.popEnergy[0]
         #                  [x1, fx, bigind, delta]
         self.__internals = [x1, fx,      0,   0.0]
+        self.imax  = 500   #line-search maximum iterations
         self.xtol  = 1e-4  #line-search error tolerance
         ftol, gtol = 1e-4, 2
         from mystic.termination import NormalizedChangeOverGeneration as NCOG
@@ -487,6 +488,7 @@ Takes one initial input:
         callback = settings['callback'] if 'callback' in settings else None
         disp = settings['disp'] if 'disp' in settings else False
         xtol = settings['xtol'] if 'xtol' in settings else self.xtol
+        imax = settings['imax'] if 'imax' in settings else self.imax
 
         # HACK to enable not explicitly calling _decorate_objective
         cost = self._bootstrap_objective(cost, ExtraArgs)
@@ -526,7 +528,7 @@ Takes one initial input:
             for i in ilist:
                 direc1 = self._direc[i]
                 fx2 = fval
-                fval, x, direc1 = _linesearch_powell(cost, x, direc1, tol=xtol*100)
+                fval, x, direc1 = _linesearch_powell(cost, x, direc1, tol=xtol*100, maxiter=imax)
                 if (fx2 - fval) > delta:
                     delta = fx2 - fval
                     bigind = i
@@ -550,7 +552,7 @@ Takes one initial input:
                 temp = fx-fx2
                 t -= delta*temp*temp
                 if t < 0.0:
-                    fval, x, direc1 = _linesearch_powell(cost, x, direc1, tol=xtol*100)
+                    fval, x, direc1 = _linesearch_powell(cost, x, direc1, tol=xtol*100, maxiter=imax)
                     direc[bigind] = direc[-1]
                     direc[-1] = direc1
 
@@ -571,7 +573,7 @@ Takes one initial input:
             for i in ilist:
                 direc1 = direc[i]
                 fx2 = fval
-                fval, x, direc1 = _linesearch_powell(cost, x, direc1, tol=xtol*100)
+                fval, x, direc1 = _linesearch_powell(cost, x, direc1, tol=xtol*100, maxiter=imax)
                 if (fx2 - fval) > delta:
                     delta = fx2 - fval
                     bigind = i
@@ -608,14 +610,16 @@ Takes one initial input:
         #allow for inputs that don't conform to AbstractSolver interface
         #NOTE: not sticky: callback, disp
         #NOTE: sticky: EvaluationMonitor, StepMonitor, penalty, constraints
-        #NOTE: sticky: xtol, direc
+        #NOTE: sticky: imax, xtol, direc
         settings = super(PowellDirectionalSolver, self)._process_inputs(kwds)
         settings.update({\
-        'xtol':self.xtol})   #line-search error tolerance
+        'xtol':self.xtol,    #line-search error tolerance
+        'imax':self.imax})   #line-search maximum iterations
         direc=self._direc    #initial direction set
         [settings.update({i:j}) for (i,j) in getattr(kwds, 'iteritems', kwds.items)() if i in settings]
         self._direc = kwds['direc'] if 'direc' in kwds else direc
         self.xtol = settings['xtol']
+        self.imax = settings['imax']
         return settings
 
     def Solve(self, cost=None, termination=None, ExtraArgs=None, **kwds):
@@ -633,6 +637,7 @@ Args:
         interface is ``callback(xk)``, with xk the current parameter vector.
     direc (tuple, default=None): the initial direction set.
     xtol (float, default=1e-4): line-search error tolerance.
+    imax (float, default=500): line-search maximum iterations.
     disp (bool, default=False): if True, print convergence messages.
 
 Returns:
@@ -702,6 +707,7 @@ Notes:
     """
     #FIXME: need to resolve "direc"
     #        - should just pass 'direc', and then hands-off ?  How return it ?
+    #XXX: enable use of imax?
 
     handler = kwds['handler'] if 'handler' in kwds else False
 
