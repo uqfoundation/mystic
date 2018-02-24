@@ -587,6 +587,7 @@ Args:
     penalty (func, default=None): a function ``y = penalty(xk)``, where xk is
         the current parameter vector, and ``y' == 0`` when the encoded
         constraints are satisfied (and ``y' > 0`` otherwise).
+    map (func, default=None): a (parallel) map function ``y = map(f, x)``.
 
 Returns:
     ``(xopt, {fopt, iter, funcalls, warnflag}, {allvecs})``
@@ -649,6 +650,7 @@ Args:
     penalty (func, default=None): a function ``y = penalty(xk)``, where xk is
         the current parameter vector, and ``y' == 0`` when the encoded
         constraints are satisfied (and ``y' > 0`` otherwise).
+    map (func, default=None): a (parallel) map function ``y = map(f, x)``.
 
 Returns:
     ``(xopt, {fopt, iter, funcalls, warnflag}, {allvecs})``
@@ -700,6 +702,9 @@ Notes:
         solver.SetRandomInitialPoints(minb,maxb)
     except: #x0 passed as 1D array of initial parameter values
         solver.SetInitialPoints(x0)
+
+    _map = kwds['map'] if 'map' in kwds else None
+    if _map: solver.SetMapper(_map)
 
     if handler: solver.enable_signal_handler()
     #TODO: allow sigint_callbacks for all minimal interfaces ?

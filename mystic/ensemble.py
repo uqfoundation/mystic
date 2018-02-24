@@ -144,6 +144,7 @@ Args:
     penalty (func, default=None): a function ``y = penalty(xk)``, where xk is
         the current parameter vector, and ``y' == 0`` when the encoded
         constraints are satisfied (and ``y' > 0`` otherwise).
+    map (func, default=None): a (parallel) map function ``y = map(f, x)``.
     dist (mystic.math.Distribution, default=None): generate randomness in
         ensemble starting position using the given distribution.
 
@@ -192,6 +193,9 @@ Notes:
     if bounds is not None:
         minb,maxb = unpair(bounds)
         solver.SetStrictRanges(minb,maxb)
+
+    _map = kwds['map'] if 'map' in kwds else None
+    if _map: solver.SetMapper(_map)
 
     if handler: solver.enable_signal_handler()
     solver.Solve(cost,termination=termination,disp=disp, \
@@ -263,6 +267,7 @@ Args:
     penalty (func, default=None): a function ``y = penalty(xk)``, where xk is
         the current parameter vector, and ``y' == 0`` when the encoded
         constraints are satisfied (and ``y' > 0`` otherwise).
+    map (func, default=None): a (parallel) map function ``y = map(f, x)``.
     dist (mystic.math.Distribution, default=None): generate randomness in
         ensemble starting position using the given distribution.
 
@@ -311,6 +316,9 @@ Notes:
     if bounds is not None:
         minb,maxb = unpair(bounds)
         solver.SetStrictRanges(minb,maxb)
+
+    _map = kwds['map'] if 'map' in kwds else None
+    if _map: solver.SetMapper(_map)
 
     if handler: solver.enable_signal_handler()
     solver.Solve(cost,termination=termination,disp=disp, \
