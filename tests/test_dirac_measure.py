@@ -113,7 +113,7 @@ def test_calculate_methods(npts=2):
   sv = variance(DD, weights)
   if disp: print("var: %s" % sv)
   assert not almostEqual(sv, R)
-  assert almostEqual(sv, 0.0, tol=.2)
+  assert almostEqual(sv, 0.0, tol=.3)
 
   # -------------------------------------
   # modify variance, maintaining mean
