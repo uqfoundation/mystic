@@ -19,7 +19,7 @@ import unittest
 from math import *
 from mystic.math import almostEqual
 
-verbosity = 1 # Verbosity setting for unittests (default is 1).
+verbosity = 0 # Verbosity setting for unittests (default is 1).
 
 def trap_stdout(): #XXX: better with contextmanager?
     "temporarily trap stdout; return original sys.stdout"

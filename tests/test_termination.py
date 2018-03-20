@@ -21,28 +21,70 @@ GradientNormTolerance(tolerance=1e-5, norm=Inf)
 from mystic.termination import *
 from numpy import inf
 
-def test_terminators(test, func=lambda x:x[0], info=False, verbose=False):
-  print(test(lambda x,y:"", func, info, verbose)) #XXX: just print settings
-  print("VTR():%s" % test(VTR(), func, info))
-  print("VTR(inf):%s" % test(VTR(inf), func, info))
-  print("COG():%s" % test(ChangeOverGeneration(), func, info))
-  print("COG(gen=5):%s" % test(ChangeOverGeneration(generations=5), func, info))
-  print("NCOG():%s" % test(NormalizedChangeOverGeneration(), func, info))
-  print("NCOG(gen=5):%s" % test(NormalizedChangeOverGeneration(generations=5), func, info))
-  print("CTR():%s" % test(CandidateRelativeTolerance(), func, info))
-  print("CTR(ftol=inf):%s" % test(CandidateRelativeTolerance(ftol=inf), func, info))
-  print("CTR(inf):%s" % test(CandidateRelativeTolerance(inf), func, info))
-  print("SI():%s" % test(SolutionImprovement(), func, info))
-  print("SI(inf):%s" % test(SolutionImprovement(inf), func, info))
-  print("NCT():%s" % test(NormalizedCostTarget(), func, info))
-  print("NCT(gen=5):%s" % test(NormalizedCostTarget(generations=5), func, info))
-  print("NCT(gen=None):%s" % test(NormalizedCostTarget(generations=None), func, info))
-  print("NCT(inf,inf):%s" % test(NormalizedCostTarget(inf,inf), func, info))
-  print("VCOG():%s" % test(VTRChangeOverGeneration(), func, info))
-  print("VCOG(gen=5):%s" % test(VTRChangeOverGeneration(generations=5), func, info))
-  print("VCOG(inf):%s" % test(VTRChangeOverGeneration(inf), func, info))
-  print("PS():%s" % test(PopulationSpread(), func, info))
-  print("PS(inf):%s" % test(PopulationSpread(inf), func, info))
+def test_terminators(test, func=lambda x:x[0], info=False, verbose=False, disp=False):
+  res = test(lambda x,y:"", func, info, verbose)  #XXX: just check settings
+  if disp: print(res) 
+  else: assert bool(res) in (True, False)
+  res = test(VTR(), func, info)
+  if disp: print("VTR():%s" % res)
+  else: assert bool(res) in (True, False)
+  res = test(VTR(inf), func, info)
+  if disp: print("VTR(inf):%s" % res)
+  else: assert bool(res) in (True, False)
+  res = test(ChangeOverGeneration(), func, info)
+  if disp: print("COG():%s" %  res)
+  else: assert bool(res) in (True, False)
+  res = test(ChangeOverGeneration(generations=5), func, info)
+  if disp: print("COG(gen=5):%s" % res)
+  else: assert bool(res) in (True, False)
+  res = test(NormalizedChangeOverGeneration(), func, info)
+  if disp: print("NCOG():%s" % res)
+  else: assert bool(res) in (True, False)
+  res = test(NormalizedChangeOverGeneration(generations=5), func, info)
+  if disp: print("NCOG(gen=5):%s" % res)
+  else: assert bool(res) in (True, False)
+  res = test(CandidateRelativeTolerance(), func, info)
+  if disp: print("CTR():%s" % res)
+  else: assert bool(res) in (True, False)
+  res = test(CandidateRelativeTolerance(ftol=inf), func, info)
+  if disp: print("CTR(ftol=inf):%s" % res)
+  else: assert bool(res) in (True, False)
+  res = test(CandidateRelativeTolerance(inf), func, info)
+  if disp: print("CTR(inf):%s" % res)
+  else: assert bool(res) in (True, False)
+  res = test(SolutionImprovement(), func, info)
+  if disp: print("SI():%s" % res)
+  else: assert bool(res) in (True, False)
+  res = test(SolutionImprovement(inf), func, info)
+  if disp: print("SI(inf):%s" % res)
+  else: assert bool(res) in (True, False)
+  res = test(NormalizedCostTarget(), func, info)
+  if disp: print("NCT():%s" % res)
+  else: assert bool(res) in (True, False)
+  res = test(NormalizedCostTarget(generations=5), func, info)
+  if disp: print("NCT(gen=5):%s" % res)
+  else: assert bool(res) in (True, False)
+  res = test(NormalizedCostTarget(generations=None), func, info)
+  if disp: print("NCT(gen=None):%s" % res)
+  else: assert bool(res) in (True, False)
+  res = test(NormalizedCostTarget(inf,inf), func, info)
+  if disp: print("NCT(inf,inf):%s" % res)
+  else: assert bool(res) in (True, False)
+  res = test(VTRChangeOverGeneration(), func, info)
+  if disp: print("VCOG():%s" % res)
+  else: assert bool(res) in (True, False)
+  res = test(VTRChangeOverGeneration(generations=5), func, info)
+  if disp: print("VCOG(gen=5):%s" % res)
+  else: assert bool(res) in (True, False)
+  res = test(VTRChangeOverGeneration(inf), func, info)
+  if disp: print("VCOG(inf):%s" % res)
+  else: assert bool(res) in (True, False)
+  res = test(PopulationSpread(), func, info)
+  if disp: print("PS():%s" % res)
+  else: assert bool(res) in (True, False)
+  res = test(PopulationSpread(inf), func, info)
+  if disp: print("PS(inf):%s" % res)
+  else: assert bool(res) in (True, False)
  #print("GNT():%s" % test(GradientNormTolerance(), func, info))
   return
 
@@ -131,7 +173,8 @@ def test08(terminate, func=lambda x:x[0], info=False, debug=False):
 
 
 if __name__ == "__main__":
-  verbose = True
+  disp = False
+  verbose = False
   info = False
   """NOTES: For x:x[0], test01-test04 returns either lists or floats;
 while test05-test06 returns a ndarray for population, popEnergy, bestSolution;
@@ -157,13 +200,13 @@ ISSUES:
  #function = lambda x:-10.0
  #function = lambda x:-inf
 
- #test_terminators(test01,function,info,verbose)
- #test_terminators(test02,function,info,verbose)
- #test_terminators(test03,function,info,verbose)
- #test_terminators(test04,function,info,verbose)
- #test_terminators(test05,function,info,verbose)
- #test_terminators(test06,function,info,verbose)
-  test_terminators(test07,function,info,verbose)
- #test_terminators(test08,function,info,verbose)
+ #test_terminators(test01,function,info,verbose,disp)
+ #test_terminators(test02,function,info,verbose,disp)
+ #test_terminators(test03,function,info,verbose,disp)
+ #test_terminators(test04,function,info,verbose,disp)
+ #test_terminators(test05,function,info,verbose,disp)
+ #test_terminators(test06,function,info,verbose,disp)
+  test_terminators(test07,function,info,verbose,disp)
+ #test_terminators(test08,function,info,verbose,disp)
 
 # EOF

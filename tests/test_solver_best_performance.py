@@ -15,7 +15,10 @@ from mystic.tools import random_seed
 random_seed(123)
 import time
 
-def test_rosenbrock():
+verbose = False
+
+
+def test_rosenbrock(verbose=False):
     """Test the 2-dimensional Rosenbrock function.
 
 Testing 2-D Rosenbrock:
@@ -50,8 +53,9 @@ Function evaluations:  859
 Time elapsed:  0.113857030869  seconds
 """
 
-    print("Testing 2-D Rosenbrock:")
-    print("Expected: x=[1., 1.] and f=0")
+    if verbose:
+        print("Testing 2-D Rosenbrock:")
+        print("Expected: x=[1., 1.] and f=0")
     from mystic.models import rosen as costfunc
     ndim = 2
     lb = [-5.]*ndim
@@ -60,7 +64,7 @@ Time elapsed:  0.113857030869  seconds
     maxiter = 10000
     
     # DifferentialEvolutionSolver
-    print("\nUsing DifferentialEvolutionSolver:")
+    if verbose: print("\nUsing DifferentialEvolutionSolver:")
     npop = 40
     from mystic.solvers import DifferentialEvolutionSolver
     from mystic.termination import ChangeOverGeneration as COG
@@ -79,15 +83,16 @@ Time elapsed:  0.113857030869  seconds
     sol = solver.Solution()
     time_elapsed = time.time() - time1
     fx = solver.bestEnergy
-    print("Solution: %s" % sol)
-    print("f value: %s" % fx)
-    print("Iterations: %s" % solver.generations)
-    print("Function evaluations: %s" % len(esow.x))
-    print("Time elapsed: %s seconds" % time_elapsed)
+    if verbose:
+        print("Solution: %s" % sol)
+        print("f value: %s" % fx)
+        print("Iterations: %s" % solver.generations)
+        print("Function evaluations: %s" % len(esow.x))
+        print("Time elapsed: %s seconds" % time_elapsed)
     assert almostEqual(fx, 2.29478683682e-13, tol=3e-3)
 
     # DifferentialEvolutionSolver2
-    print("\nUsing DifferentialEvolutionSolver2:")
+    if verbose: print("\nUsing DifferentialEvolutionSolver2:")
     npop = 40
     from mystic.solvers import DifferentialEvolutionSolver2
     from mystic.termination import ChangeOverGeneration as COG
@@ -106,15 +111,16 @@ Time elapsed:  0.113857030869  seconds
     sol = solver.Solution()
     time_elapsed = time.time() - time1
     fx = solver.bestEnergy
-    print("Solution: %s" % sol)
-    print("f value: %s" % fx)
-    print("Iterations: %s" % solver.generations)
-    print("Function evaluations: %s" % len(esow.x))
-    print("Time elapsed: %s seconds" % time_elapsed)
+    if verbose:
+        print("Solution: %s" % sol)
+        print("f value: %s" % fx)
+        print("Iterations: %s" % solver.generations)
+        print("Function evaluations: %s" % len(esow.x))
+        print("Time elapsed: %s seconds" % time_elapsed)
     assert almostEqual(fx, 3.84824937598e-15, tol=3e-3)
 
     # NelderMeadSimplexSolver
-    print("\nUsing NelderMeadSimplexSolver:")
+    if verbose: print("\nUsing NelderMeadSimplexSolver:")
     from mystic.solvers import NelderMeadSimplexSolver
     from mystic.termination import CandidateRelativeTolerance as CRT
     esow = Monitor()
@@ -131,15 +137,16 @@ Time elapsed:  0.113857030869  seconds
     sol = solver.Solution()
     time_elapsed = time.time() - time1
     fx = solver.bestEnergy
-    print("Solution: %s" % sol)
-    print("f value: %s" % fx)
-    print("Iterations: %s" % solver.generations)
-    print("Function evaluations: %s" % len(esow.x))
-    print("Time elapsed: %s seconds" % time_elapsed)
+    if verbose:
+        print("Solution: %s" % sol)
+        print("f value: %s" % fx)
+        print("Iterations: %s" % solver.generations)
+        print("Function evaluations: %s" % len(esow.x))
+        print("Time elapsed: %s seconds" % time_elapsed)
     assert almostEqual(fx, 1.08732211477e-09, tol=3e-3)
 
     # PowellDirectionalSolver
-    print("\nUsing PowellDirectionalSolver:")
+    if verbose: print("\nUsing PowellDirectionalSolver:")
     from mystic.solvers import PowellDirectionalSolver
     from mystic.termination import NormalizedChangeOverGeneration as NCOG
     esow = Monitor()
@@ -156,14 +163,15 @@ Time elapsed:  0.113857030869  seconds
     sol = solver.Solution()
     time_elapsed = time.time() - time1
     fx = solver.bestEnergy
-    print("Solution: %s" % sol)
-    print("f value: %s" % fx)
-    print("Iterations: %s" % solver.generations)
-    print("Function evaluations: %s" % len(esow.x))
-    print("Time elapsed: %s seconds" % time_elapsed)
+    if verbose:
+        print("Solution: %s" % sol)
+        print("f value: %s" % fx)
+        print("Iterations: %s" % solver.generations)
+        print("Function evaluations: %s" % len(esow.x))
+        print("Time elapsed: %s seconds" % time_elapsed)
     assert almostEqual(fx, 0.0, tol=3e-3)
 
-def test_griewangk():
+def test_griewangk(verbose=False):
     """Test Griewangk's function, which has many local minima.
 
 Testing Griewangk:
@@ -188,8 +196,9 @@ Function evaluations:  200215
 Time elapsed:  32.8412370682  seconds
 """
 
-    print("Testing Griewangk:")
-    print("Expected: x=[0.]*10 and f=0")
+    if verbose:
+        print("Testing Griewangk:")
+        print("Expected: x=[0.]*10 and f=0")
     from mystic.models import griewangk as costfunc
     ndim = 10
     lb = [-400.]*ndim
@@ -198,7 +207,7 @@ Time elapsed:  32.8412370682  seconds
     seed = 123 # Re-seed for each solver to have them all start at same x0
     
     # DifferentialEvolutionSolver
-    print("\nUsing DifferentialEvolutionSolver:")
+    if verbose: print("\nUsing DifferentialEvolutionSolver:")
     npop = 50
     random_seed(seed)
     from mystic.solvers import DifferentialEvolutionSolver
@@ -224,15 +233,16 @@ Time elapsed:  32.8412370682  seconds
     sol = solver.Solution()
     time_elapsed = time.time() - time1
     fx = solver.bestEnergy
-    print("Solution: %s" % sol)
-    print("f value: %s" % fx)
-    print("Iterations: %s" % solver.generations)
-    print("Function evaluations: %s" % len(esow.x))
-    print("Time elapsed: %s seconds" % time_elapsed)
+    if verbose:
+        print("Solution: %s" % sol)
+        print("f value: %s" % fx)
+        print("Iterations: %s" % solver.generations)
+        print("Function evaluations: %s" % len(esow.x))
+        print("Time elapsed: %s seconds" % time_elapsed)
     assert almostEqual(fx, 0.0, tol=3e-3)
 
     # DifferentialEvolutionSolver2
-    print("\nUsing DifferentialEvolutionSolver2:")
+    if verbose: print("\nUsing DifferentialEvolutionSolver2:")
     npop = 50
     random_seed(seed)
     from mystic.solvers import DifferentialEvolutionSolver2
@@ -257,13 +267,14 @@ Time elapsed:  32.8412370682  seconds
     sol = solver.Solution()
     time_elapsed = time.time() - time1
     fx = solver.bestEnergy
-    print("Solution: %s" % sol)
-    print("f value: %s" % fx)
-    print("Iterations: %s" % solver.generations)
-    print("Function evaluations: %s" % len(esow.x))
-    print("Time elapsed: %s seconds" % time_elapsed)
+    if verbose:
+        print("Solution: %s" % sol)
+        print("f value: %s" % fx)
+        print("Iterations: %s" % solver.generations)
+        print("Function evaluations: %s" % len(esow.x))
+        print("Time elapsed: %s seconds" % time_elapsed)
     assert almostEqual(fx, 0.0, tol=3e-3)
 
 if __name__ == '__main__':
-    test_rosenbrock()
-   #test_griewangk()
+    test_rosenbrock(verbose)
+   #test_griewangk(verbose)

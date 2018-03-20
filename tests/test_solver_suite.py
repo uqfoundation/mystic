@@ -25,7 +25,7 @@ from mystic.math import almostEqual
 
 disp = False  # Flag for whether to display number of iterations 
               #  and function evaluations.
-verbosity = 2 # Verbosity setting for unittests (default is 1).
+verbosity = 0 # Verbosity setting for unittests (default is 1).
 
 def trap_stdout(): #XXX: better with contextmanager?
     "temporarily trap stdout; return original sys.stdout"
