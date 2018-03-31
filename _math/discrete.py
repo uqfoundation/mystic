@@ -511,7 +511,7 @@ Args:
     params (list(float)): parameters corresponding to N 1D discrete measures
 
 Returns:
-    None
+    self (measure): the product measure itself
 
 Notes:
     The dimensions of the product measure will not change upon update, and
@@ -535,7 +535,7 @@ Notes:
     pm = unflatten(params, pts)
     zo = pm.count([])
     self[:] = pm[:len(self) - zo] + self[len(pm) - zo:]
-    return
+    return self
 
   def load(self, params, pts):
     """load the product measure from a list of parameters
@@ -545,7 +545,7 @@ Args:
     pts (tuple(int)): number of point masses in each of the discrete measures
 
 Returns:
-    None
+    self (measure): the product measure itself
 
 Notes:
     To append ``len(pts)`` new discrete measures to the product measure,
@@ -565,7 +565,7 @@ Notes:
       params, values  =  params[:_len], params[_len:]
 
     self.extend( unflatten(params, pts) )
-    return
+    return self
 
   def flatten(self):
     """convert a product measure to a single list of parameters
@@ -932,7 +932,7 @@ Args:
     params (list(float)): parameters corresponding to N 1D discrete measures
 
 Returns:
-    None
+    self (scenario): the scenario itself
 
 Notes:
     The dimensions of the scenario will not change upon update, and
@@ -957,7 +957,7 @@ Notes:
     pm = unflatten(params, pts)
     zo = pm.count([])
     self[:] = pm[:len(self) - zo] + self[len(pm) - zo:]
-    return
+    return self
 
   def load(self, params, pts): #XXX: overwritten.  create standalone instead ?
     """load the scenario from a list of parameters
@@ -967,7 +967,7 @@ Args:
     pts (tuple(int)): number of point masses in each of the discrete measures
 
 Returns:
-    None
+    self (scenario): the scenario itself
 
 Notes:
     To append ``len(pts)`` new discrete measures to the scenario,
@@ -988,7 +988,7 @@ Notes:
       params, self.values  =  params[:_len], params[_len:]
 
     self.extend( unflatten(params, pts) )
-    return
+    return self
 
   def flatten(self, all=True): #XXX: overwritten.  create standalone instead ?
     """convert a scenario to a single list of parameters

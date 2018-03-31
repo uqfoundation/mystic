@@ -103,8 +103,7 @@ def maximize(params,npts,bounds):
   from mystic import suppressed
   @suppressed(1e-2)
   def constraints(rv):
-    c = product_measure()
-    c.load(rv, npts)
+    c = product_measure().load(rv, npts)
     # NOTE: bounds wi in [0,1] enforced by filtering
     # impose norm on each discrete measure
     for measure in c:
@@ -123,8 +122,7 @@ def maximize(params,npts,bounds):
 
   # generate maximizing function
   def cost(rv):
-    c = product_measure()
-    c.load(rv, npts)
+    c = product_measure().load(rv, npts)
     E = float(c.expect(model))
     if E > (target[0] + error[0]) or E < (target[0] - error[0]):
       if debug: print("skipping expect: %s" % E)
@@ -210,8 +208,7 @@ if __name__ == '__main__':
 
   from numpy import array
   from mystic.math.discrete import product_measure
-  c = product_measure()
-  c.load(solved,npts)
+  c = product_measure().load(solved,npts)
   print("solved: [wx,x]\n%s" % array(list(zip(c[0].weights,c[0].positions))))
   print("solved: [wy,y]\n%s" % array(list(zip(c[1].weights,c[1].positions))))
   print("solved: [wz,z]\n%s" % array(list(zip(c[2].weights,c[2].positions))))

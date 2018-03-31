@@ -323,8 +323,7 @@ def test_flatten_unflatten():
   assert c.positions == d.positions
 
   # flatten() and load(...)
-  e = collection()
-  e.load(c.flatten(), c.pts)
+  e = collection().load(c.flatten(), c.pts)
 
   # check if the same
   assert c.npts == e.npts

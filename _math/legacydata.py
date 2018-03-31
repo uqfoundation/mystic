@@ -403,6 +403,9 @@ Notes:
   def update(self, positions, values):#ids=None):# positions,values are iterable
     """ update the positions and values in the dataset 
 
+Returns:
+    self (dataset): the dataset itself
+
 Notes:
     positions and values provided must be iterable
 """
@@ -412,10 +415,13 @@ Notes:
     z = list(zip(positions, values, ids))
     self[:len(z)] = [datapoint(i,j,id=k) for (i,j,k) in z]
     self.lipschitz = lip
-    return
+    return self
 
   def load(self, positions, values, ids=[]): # positions,values are iterable
     """load a list of positions and a list of values to the dataset 
+
+Returns:
+    self (dataset): the dataset itself
 
 Notes:
     positions and values provided must be iterable
@@ -425,7 +431,7 @@ Notes:
     if ids: #XXX: must be at least as long as 'z'
       for i in range(len(z)):
         self[-len(z)+i].id = ids[i]
-    return
+    return self
 
 # def generate(self, model, positions, ids=[]):
 #   """use a function to generate a dataset from the given list of positions"""
