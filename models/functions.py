@@ -9,8 +9,6 @@
 """
 convert bound instances into functions
 """
-from __future__ import absolute_import
-
 # from dejong import sphere, rosen, step, quartic, shekel
 def sphere(x):
     from mystic.models.dejong import sphere; return sphere(x)

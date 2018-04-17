@@ -9,8 +9,6 @@
 Classes for discrete measure data objects.
 Includes point_mass, measure, product_measure, and scenario classes.
 """
-from __future__ import absolute_import
-
 # Adapted from seesaw2d.py in branches/UQ/math/examples2/ 
 # For usage example, see seesaw2d_inf_example.py .
 

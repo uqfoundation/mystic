@@ -12,8 +12,6 @@ Lorentzian peak model
 References:
     None
 """
-from __future__ import absolute_import
-
 from .abstract_model import AbstractModel
 
 from numpy import sum as numpysum

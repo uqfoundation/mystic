@@ -66,8 +66,6 @@ order Chebyshev polynomials::
 
     chebyshev2, chebyshev4, chebyshev6, chebyshev8, chebyshev16
 """
-from __future__ import absolute_import
-
 # base classes
 from .abstract_model import AbstractModel, AbstractFunction
 

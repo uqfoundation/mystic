@@ -6,8 +6,6 @@
 # Copyright (c) 2016-2018 The Uncertainty Quantification Foundation.
 # License: 3-clause BSD.  The full license text is available at:
 #  - https://github.com/uqfoundation/mystic/blob/master/LICENSE
-from __future__ import absolute_import
-
 __doc__ = _doc = """
 This is part of Storn's "Differential Evolution" test suite, as defined
 in [2], with 'De Jong' function definitions drawn from [3].

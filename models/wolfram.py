@@ -6,8 +6,6 @@
 # Copyright (c) 2016-2018 The Uncertainty Quantification Foundation.
 # License: 3-clause BSD.  The full license text is available at:
 #  - https://github.com/uqfoundation/mystic/blob/master/LICENSE
-from __future__ import absolute_import
-
 __doc__ = _doc = """
 This is drawn from Mathematica's example suites, with the 'fOsc3D'
 function definition found in [1], and the 'XXX' function found in [2].

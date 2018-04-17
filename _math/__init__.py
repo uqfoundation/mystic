@@ -32,8 +32,6 @@ These mathematical tools are provided::
     almostEqual  -- test if equal within some absolute or relative tolerance
     Distribution -- generate a sampling distribution instance
 """
-from __future__ import absolute_import
-
 # functions and tools
 from .poly import polyeval, poly1d
 from .grid import gridpts, samplepts

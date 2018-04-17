@@ -12,8 +12,6 @@
 References:
     None
 """
-from __future__ import absolute_import
-
 #FIXME: cost function seems to apply penalty when r=R0... it should not
 from .abstract_model import AbstractModel
 

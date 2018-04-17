@@ -19,8 +19,6 @@ References:
     3. Storn, R. "Constrained Optimization" Dr. Dobb's Journal, May,
        119-123, 1995.
 """
-from __future__ import absolute_import
-
 from .abstract_model import AbstractModel
 
 from numpy import sum as numpysum
