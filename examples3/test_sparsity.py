@@ -21,8 +21,8 @@ dist = None # Distribution(norm,0,2)
 
 
 if __name__ == '__main__':
-    from mystic.math import filledpts
-    pts = filledpts(lb, ub, npts, data, rtol, dist)
+    from mystic.math import fillpts
+    pts = fillpts(lb, ub, npts, data, rtol, dist)
 
     import numpy as np
     print(np.array(pts).reshape(-1,ndim))

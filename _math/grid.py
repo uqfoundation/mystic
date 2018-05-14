@@ -50,7 +50,7 @@ Inputs:
    #return [list(i) for i in q]
 
 
-def filledpts(lb,ub,npts,data=None,rtol=None,dist=None):
+def fillpts(lb,ub,npts,data=None,rtol=None,dist=None):
     """
 takes lower and upper bounds (e.g. lb = [0,3], ub = [2,4])
 finds npts that are at least rtol away from legacy data
@@ -66,13 +66,22 @@ Inputs:
 
 Notes: if rtol is None, use max rtol; if rtol < 0, use quick-n-dirty method
     """
-    from mystic.solvers import diffev as solver #XXX: use faster solver?
+    bounds = list(zip(lb,ub))
     from mystic.math.distance import euclidean as metric
     #XXX: expose solver settings to user? #XXX: better npop,ftol? faster?
-    kwds = dict(npop=20, ftol=1e-4, gtol=None, disp=False, full_output=False)
+    ###if rtol is None or type(rtol) in (int, float):
+    from mystic.solvers import diffev as solver
+    kwds = dict(npop=20, ftol=1e-4, gtol=None, disp=0, full_output=0)
+    ###initial = lambda : bounds
+    ###else: # assume it's a string
+    #   from mystic.solvers import fmin_powell as solver
+    #   kwds = dict(xtol=1e-8, ftol=1e-8, gtol=2, disp=0, full_output=0)
+    #   if rtol == 'None': rtol = None
+    #   else: rtol = float(rtol)
+    #   import random as rd
+    #   initial = lambda : [rd.randrange(l,u)+rd.random() for (l,u) in bounds]
     #from numpy import round
     #kwds['constraints'] = lambda x: round(x, 3)
-    bounds = list(zip(lb,ub))
     # copy the legacy data points (e.g. monitor.x) #XXX: more efficient method?
     pts = [] if data is None else list(data)
     # 'min', 'np.sum()', 'np.min()' are also a choice of distance metric
@@ -179,7 +188,7 @@ if __name__ == '__main__':
   upper = [6.0, 6.0, 6.0]
 
   # generate a set of space-filling points
-  initial_values = filledpts(lower,upper,npts,[[3,3,3]])
+  initial_values = fillpts(lower,upper,npts,[[3,3,3]])
   print("filled: %s" % initial_values)
 
 

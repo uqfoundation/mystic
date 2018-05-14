@@ -138,9 +138,9 @@ All important class members are inherited from AbstractEnsembleSolver.
             lower = list(self._defaultMin)
 
         # build a grid of starting points
-        from mystic.math import filledpts
+        from mystic.math import fillpts
         data = self._evalmon._x + self._stepmon._x #XXX: could block solution?
-        return filledpts(lower,upper,npts, data, self._rtol, self._dist)
+        return fillpts(lower,upper,npts, data, self._rtol, self._dist)
 
 
 def lattice(cost,ndim,nbins=8,args=(),bounds=None,ftol=1e-4,maxiter=None, \
