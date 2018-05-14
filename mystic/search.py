@@ -50,7 +50,7 @@ class Searcher(object):
 
         #XXX: better not to use klepto as default? just dict and false cache?
         from klepto.archives import dict_archive as _archive
-        from mystic.solvers import BuckshotSolver
+        from mystic.solvers import BuckshotSolver #XXX: or SparsitySolver?
         from mystic.solvers import PowellDirectionalSolver
         from mystic.pools import SerialPool as Pool
         import sys

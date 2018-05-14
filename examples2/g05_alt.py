@@ -52,10 +52,11 @@ solver = as_constraint(penalty)
 
 if __name__ == '__main__':
 
-    from mystic.solvers import buckshot
+    from mystic.solvers import buckshot, sparsity
     from mystic.math import almostEqual
 
     result = buckshot(objective, len(xs), npts=100, bounds=bounds, penalty=penalty, disp=False, full_output=True)
+    #result = sparsity(objective, len(xs), npts=100, rtol=-10, bounds=bounds, penalty=penalty, disp=False, full_output=True)
 
     assert almostEqual(result[0], xs, rel=1e-1)
     assert almostEqual(result[1], ys, rel=1e-1)

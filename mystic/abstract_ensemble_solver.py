@@ -102,6 +102,7 @@ Additional inputs::
     npop     -- size of the trial solution population.      [default = 1]
     nbins    -- tuple of number of bins in each dimension.  [default = [1]*dim]
     npts     -- number of solver instances.                 [default = 1]
+    rtol     -- size of radial tolerance for sparsity.      [default = None]
 
 Important class members::
 
@@ -130,6 +131,8 @@ Important class members::
         self._nbins           = nbins
         npts = kwds['npts'] if 'npts' in kwds else 1
         self._npts            = npts
+        rtol = kwds['rtol'] if 'rtol' in kwds else None
+        self._rtol            = rtol
         from mystic.solvers import NelderMeadSimplexSolver
         self._solver          = NelderMeadSimplexSolver
         self._bestSolver      = None # 'best' solver (after Solve)

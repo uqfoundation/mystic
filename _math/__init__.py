@@ -28,13 +28,14 @@ These mathematical tools are provided::
     poly1d       -- generate a 1d polynomial instance
     gridpts      -- generate a set of regularly spaced points
     samplepts    -- generate a set of randomly sampled points 
+    filledpts    -- generate a set of space-filling points
     tolerance    -- absolute difference plus relative difference
     almostEqual  -- test if equal within some absolute or relative tolerance
     Distribution -- generate a sampling distribution instance
 """
 # functions and tools
 from .poly import polyeval, poly1d
-from .grid import gridpts, samplepts
+from .grid import gridpts, samplepts, filledpts
 from .approx import almostEqual, tolerance
 
 
@@ -44,7 +45,7 @@ from . import discrete as dirac_measure
 from . import distance as paramtrans
 
 __all__ = ['Distribution','polyeval','poly1d','gridpts','samplepts', \
-           'almostEqual','tolerance']
+           'filledpts','almostEqual','tolerance']
 
 # distribution object
 class Distribution(object):

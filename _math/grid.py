@@ -40,7 +40,7 @@ Inputs:
     lb  --  a list of the lower bounds
     ub  --  a list of the upper bounds
     npts  --  number of sample points
-    dist -- a mystic.math.Distribution instance
+    dist  --  a mystic.math.Distribution instance
     """
     from mystic.math.samples import random_samples
     q = random_samples(lb,ub,npts,dist)
@@ -48,6 +48,56 @@ Inputs:
    #q = [list(i) for i in q]
    #q = zip(*q)
    #return [list(i) for i in q]
+
+
+def filledpts(lb,ub,npts,data=None,rtol=None,dist=None):
+    """
+takes lower and upper bounds (e.g. lb = [0,3], ub = [2,4])
+finds npts that are at least rtol away from legacy data
+produces a list of sample points s = [[1,3],[1,4],[2,3],[2,4]]
+
+Inputs:
+    lb  --  a list of the lower bounds
+    ub  --  a list of the upper bounds
+    npts  --  number of sample points
+    data  --  a list of legacy sample points
+    rtol  --  target radial distance from each point
+    dist  --  a mystic.math.Distribution instance
+
+Notes: if rtol is None, use max rtol; if rtol < 0, use quick-n-dirty method
+    """
+    from mystic.solvers import diffev as solver #XXX: use faster solver?
+    from mystic.math.distance import euclidean as metric
+    #XXX: expose solver settings to user? #XXX: better npop,ftol? faster?
+    kwds = dict(npop=20, ftol=1e-4, gtol=None, disp=False, full_output=False)
+    #from numpy import round
+    #kwds['constraints'] = lambda x: round(x, 3)
+    bounds = list(zip(lb,ub))
+    # copy the legacy data points (e.g. monitor.x) #XXX: more efficient method?
+    pts = [] if data is None else list(data)
+    # 'min', 'np.sum()', 'np.min()' are also a choice of distance metric
+    if rtol and rtol < 0: # neg radius uses quick-n-dirty method
+        def holes(x):
+            return (metric(pts,x,axis=0).min(axis=0) < -rtol).sum()
+    elif rtol is None: # no radius finds max distance away
+        def holes(x):
+            res =  metric(pts,x,axis=0).min()
+            return -res
+    else: # all points should be at least rtol away
+        def holes(x):
+            res =  metric(pts,x,axis=0).min()
+            return -res if res < rtol else 0.0
+    # iteratively find a point away from all other points
+    for pt in range(npts):
+        res = solver(holes, x0=bounds, bounds=bounds, **kwds)
+        #res,cost = res[0],res[1]
+        pts.append(res.ravel().tolist())
+    pts = pts[-npts:]
+    # inject some randomness #XXX: what are alternatives? some sampling?
+    if dist is None: return pts
+    if not len(pts): return pts
+    pts += dist((len(pts),len(pts[0])))
+    return pts.tolist()
 
 
 def randomly_bin(N, ndim=None, ones=True, exact=True):
@@ -123,6 +173,14 @@ if __name__ == '__main__':
   # generate a set of random starting points
   initial_values = samplepts(lower,upper,npts)
   print("scatter: %s" % initial_values)
+
+  npts = 8
+  lower = [0.0, 0.0, 0.0] 
+  upper = [6.0, 6.0, 6.0]
+
+  # generate a set of space-filling points
+  initial_values = filledpts(lower,upper,npts,[[3,3,3]])
+  print("filled: %s" % initial_values)
 
 
 # EOF
