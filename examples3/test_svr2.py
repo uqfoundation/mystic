@@ -41,6 +41,7 @@ Beq = array([0.])
 # set the bounds
 lb = zeros(N)
 ub = zeros(N) + 0.5
+_b = zeros(N) + 0.1
 
 # build the constraints operator
 from mystic.symbolic import linear_symbolic, solve, \
@@ -57,14 +58,23 @@ from mystic.monitors import VerboseMonitor
 mon = VerboseMonitor(10)
 
 # solve for alpha
-from mystic.solvers import diffev
-alpha = diffev(objective, list(zip(lb,.1*ub)), args=(Q,b), npop=N*3, gtol=400, \
-               itermon=mon, \
-               ftol=1e-5, bounds=list(zip(lb,ub)), constraints=conserve, disp=1)
+from mystic.solvers import DifferentialEvolutionSolver as DESolver
+from mystic.termination import Or, ChangeOverGeneration, CollapseAt
+ndim = len(lb)
+npop = 3*N
+stop = Or(ChangeOverGeneration(1e-8,200),CollapseAt(0.0))
+solver = DESolver(ndim,npop)
+solver.SetRandomInitialPoints(min=lb,max=_b)
+solver.SetStrictRanges(min=lb,max=ub)
+solver.SetGenerationMonitor(mon)
+solver.SetConstraints(conserve)
+solver.SetTermination(stop)
+solver.Solve(objective, ExtraArgs=(Q,b), disp=1)
+alpha = solver.bestSolution
 
 print('solved x: %s' % alpha)
 print("constraint A*x == 0: %s" % inner(Aeq, alpha))
-print("minimum 0.5*x'Qx + b'*x: %s" % objective(alpha, Q, b))
+print("minimum 0.5*x'Qx + b'*x: %s" % solver.bestEnergy)
 
 # calculate support vectors and regression function
 sv1 = SupportVectors(alpha[:nx])

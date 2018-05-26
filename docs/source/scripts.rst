@@ -4,42 +4,42 @@ mystic scripts documentation
 mystic_collapse_plotter script
 ------------------------------
 
-.. automodule:: mystic_collapse_plotter
+.. automodule:: _mystic_collapse_plotter
     :members:
 
 mystic_log_reader script
 ------------------------
 
-.. automodule:: mystic_log_reader
+.. automodule:: _mystic_log_reader
     :members:
 
 mystic_model_plotter script
 ---------------------------
 
-.. automodule:: mystic_model_plotter
+.. automodule:: _mystic_model_plotter
     :members:
 
 support_convergence script
 --------------------------
 
-.. automodule:: support_convergence
+.. automodule:: _support_convergence
     :members:
 
 support_hypercube script
 ------------------------
 
-.. automodule:: support_hypercube
+.. automodule:: _support_hypercube
     :members:
 
 support_hypercube_measures script
 ---------------------------------
 
-.. automodule:: support_hypercube_measures
+.. automodule:: _support_hypercube_measures
     :members:
 
 support_hypercube_scenario script
 ---------------------------------
 
-.. automodule:: support_hypercube_scenario
+.. automodule:: _support_hypercube_scenario
     :members:
 

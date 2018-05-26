@@ -1139,7 +1139,7 @@ Notes:
     except SyntaxError:
         from mystic.munge import read_raw_file
         read_raw_file(filename)
-        msg = "incompatible file format, try 'support_convergence.py'"
+        msg = "incompatible file format, try 'support_convergence %s'" % filename
         raise SyntaxError(msg)
 
     # ignore everything after 'stop'

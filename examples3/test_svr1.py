@@ -7,7 +7,7 @@
 # License: 3-clause BSD.  The full license text is available at:
 #  - https://github.com/uqfoundation/mystic/blob/master/LICENSE
 """
-Support Vector Regression. Example 2
+Support Vector Regression. Example 1
 """
 
 from numpy import *
@@ -19,19 +19,20 @@ from mystic.svr import *
 def objective(x, Q, b):
     return 0.5 * dot(dot(x,Q),x) + dot(b,x)
 
-# define the data points (quadratic data with uniform scatter)
+# define the data points (linear data with uniform scatter)
 x = arange(-5, 5.001); nx = x.size
-y = x*x + 8*random.rand(nx)
+y = x + 7*random.rand(nx)
 N = 2*nx
 
-# build the Kernel Matrix (with custom k)
+# build the Kernel Matrix (with linear kernel)
 # get the QP quadratic term
 X = concatenate([x,-x])
-pk = lambda a1,a2: PolynomialKernel(a1,a2,2)
-Q = KernelMatrix(X, pk)
+lk = LinearKernel
+##lk = PolynomialKernel
+Q = KernelMatrix(X, lk)
 # get the QP linear term
 Y = concatenate([y,-y])
-svr_epsilon = 4
+svr_epsilon = 3
 b = Y + svr_epsilon * ones(Y.size)
 
 # build the constraints (y.T * x = 0.0)
@@ -41,6 +42,7 @@ Beq = array([0.])
 # set the bounds
 lb = zeros(N)
 ub = zeros(N) + 0.5
+_b = zeros(N) + 0.1
 
 # build the constraints operator
 from mystic.symbolic import linear_symbolic, solve, \
@@ -57,19 +59,28 @@ from mystic.monitors import VerboseMonitor
 mon = VerboseMonitor(10)
 
 # solve for alpha
-from mystic.solvers import diffev
-alpha = diffev(objective, list(zip(lb,.1*ub)), args=(Q,b), npop=N*3, gtol=400, \
-               itermon=mon, \
-               ftol=1e-5, bounds=list(zip(lb,ub)), constraints=conserve, disp=1)
+from mystic.solvers import DifferentialEvolutionSolver as DESolver
+from mystic.termination import Or, ChangeOverGeneration, CollapseAt
+ndim = len(lb)
+npop = 3*N
+stop = Or(ChangeOverGeneration(1e-8,200),CollapseAt(0.0))
+solver = DESolver(ndim,npop)
+solver.SetRandomInitialPoints(min=lb,max=_b)
+solver.SetStrictRanges(min=lb,max=ub)
+solver.SetGenerationMonitor(mon)
+solver.SetConstraints(conserve)
+solver.SetTermination(stop)
+solver.Solve(objective, ExtraArgs=(Q,b), disp=1)
+alpha = solver.bestSolution
 
 print('solved x: %s' % alpha)
 print("constraint A*x == 0: %s" % inner(Aeq, alpha))
-print("minimum 0.5*x'Qx + b'*x: %s" % objective(alpha, Q, b))
+print("minimum 0.5*x'Qx + b'*x: %s" % solver.bestEnergy)
 
 # calculate support vectors and regression function
 sv1 = SupportVectors(alpha[:nx])
 sv2 = SupportVectors(alpha[nx:])
-R = RegressionFunction(x, y, alpha, svr_epsilon, pk)
+R = RegressionFunction(x, y, alpha, svr_epsilon, lk)
 
 print('support vectors: %s %s' % (sv1, sv2))
 
@@ -77,10 +88,9 @@ print('support vectors: %s %s' % (sv1, sv2))
 pylab.plot(x, y, 'k+', markersize=10)
 
 # plot regression function and support
-xx = arange(min(x),max(x),0.1)
-pylab.plot(xx,R(xx))
-pylab.plot(xx,R(xx)-svr_epsilon, 'r--')
-pylab.plot(xx,R(xx)+svr_epsilon, 'g--')
+pylab.plot(x,R(x), 'k-')
+pylab.plot(x,R(x)-svr_epsilon, 'r--')
+pylab.plot(x,R(x)+svr_epsilon, 'g--')
 pylab.plot(x[sv1],y[sv1],'ro')
 pylab.plot(x[sv2],y[sv2],'go')
 pylab.show()

@@ -17,8 +17,8 @@ import pylab
 from mystic.svc import *
 import os.path
 
-# define the objective function as the dual for SVC
-# (see: http://scikit-learn.org/stable/modules/svm.html#svc)
+# define the objective function to match standard QP solver
+# (see: http://www.mathworks.com/help/optim/ug/quadprog.html)
 # the objective funciton is very similar to the dual for SVC
 # (see: http://scikit-learn.org/stable/modules/svm.html#svc)
 def objective(x, Q, b):

@@ -19,7 +19,18 @@
 import os
 from datetime import datetime
 import sys
-sys.path.insert(0, os.path.abspath('../../scripts'))
+scripts = os.path.abspath('../../scripts')
+sys.path.insert(0, scripts)
+try:
+    os.symlink(scripts+os.sep+'mystic_collapse_plotter', scripts+os.sep+'_mystic_collapse_plotter.py')
+    os.symlink(scripts+os.sep+'mystic_log_reader', scripts+os.sep+'_mystic_log_reader.py')
+    os.symlink(scripts+os.sep+'mystic_model_plotter', scripts+os.sep+'_mystic_model_plotter.py')
+    os.symlink(scripts+os.sep+'support_convergence', scripts+os.sep+'_support_convergence.py')
+    os.symlink(scripts+os.sep+'support_hypercube', scripts+os.sep+'_support_hypercube.py')
+    os.symlink(scripts+os.sep+'support_hypercube_measures', scripts+os.sep+'_support_hypercube_measures.py')
+    os.symlink(scripts+os.sep+'support_hypercube_scenario', scripts+os.sep+'_support_hypercube_scenario.py')
+except:
+    pass
 
 # Import the project
 import mystic

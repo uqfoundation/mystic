@@ -27,7 +27,8 @@ N = 2*nx
 # build the Kernel Matrix (with linear kernel)
 # get the QP quadratic term
 X = concatenate([x,-x])
-Q = KernelMatrix(X, LinearKernel)
+lk = LinearKernel
+Q = KernelMatrix(X, lk)
 # get the QP linear term
 Y = concatenate([y,-y])
 svr_epsilon = 3
@@ -68,7 +69,7 @@ print("minimum 0.5*x'Qx + b'*x: %s" % objective(alpha, Q, b))
 # calculate support vectors and regression function
 sv1 = SupportVectors(alpha[:nx])
 sv2 = SupportVectors(alpha[nx:])
-R = RegressionFunction(x, y, alpha, svr_epsilon, LinearKernel)
+R = RegressionFunction(x, y, alpha, svr_epsilon, lk)
 
 print('support vectors: %s %s' % (sv1, sv2))
 

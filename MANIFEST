@@ -18,6 +18,7 @@ _math/samples.py
 _math/stats.py
 cache/__init__.py
 models/__init__.py
+models/__main__.py
 models/_model_helper.py
 models/abstract_model.py
 models/br8.py
@@ -35,6 +36,7 @@ models/venkataraman.py
 models/wavy.py
 models/wolfram.py
 mystic/__init__.py
+mystic/__main__.py
 mystic/_genSow.py
 mystic/_scipy060optimize.py
 mystic/_scipyoptimize.py
@@ -80,13 +82,13 @@ mystic.egg-info/not-zip-safe
 mystic.egg-info/requires.txt
 mystic.egg-info/top_level.txt
 scripts/__init__.py
-scripts/mystic_collapse_plotter.py
-scripts/mystic_log_reader.py
-scripts/mystic_model_plotter.py 
-scripts/support_convergence.py
-scripts/support_hypercube.py
-scripts/support_hypercube_measures.py
-scripts/support_hypercube_scenario.py
+scripts/mystic_collapse_plotter
+scripts/mystic_log_reader
+scripts/mystic_model_plotter
+scripts/support_convergence
+scripts/support_hypercube
+scripts/support_hypercube_measures
+scripts/support_hypercube_scenario
 examples/DATA/g1.pts
 examples/DATA/g2.pts
 examples/NOTES
@@ -229,6 +231,8 @@ examples3/test_surface.py
 examples3/test_surface_ct.py
 examples3/test_svc1.py
 examples3/test_svc2.py
+examples3/test_svr1.py
+examples3/test_svr2.py
 examples4/README
 examples4/MM2_surrogate_diam_batchgrid.py
 examples4/MM_surrogate_diam.py

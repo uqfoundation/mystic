@@ -110,12 +110,13 @@ To get up and running quickly, ``mystic`` also provides infrastructure to:
 
     - easily generate a model (several standard test models are included)
     - configure and auto-generate a cost function from a model
+    - configure an ensemble of solvers to perform a specific task
 
 
 Current Release
 ===============
 
-This version is ``mystic-%(relver)s``.
+This documentation is for version ``mystic-%(thisver)s``.
 
 The latest released version of ``mystic`` is available from:
 
@@ -144,8 +145,8 @@ Installation
 download the tarball, unzip, and run the installer::
 
     [download]
-    $ tar -xvzf mystic-%(thisver)s.tar.gz
-    $ cd mystic-%(thisver)s
+    $ tar -xvzf mystic-%(relver)s.tar.gz
+    $ cd mystic-%(relver)s
     $ python setup py build
     $ python setup py install
 
@@ -186,15 +187,30 @@ Optional requirements:
 More Information
 ================
 
-Probably the best way to get started is to look at the tests and
-examples provided within ``mystic``. See ``mystic.examples`` and ``mystic.tests``
-for a set of scripts that demonstrate the configuration and launching of 
-optimization jobs for one of the sample models in ``mystic.models``.
-Many of the included examples are standard optimization test problems.
-The source code is also generally well documented, so further questions
-may be resolved by inspecting the code itself.  Please also feel free to
-submit a ticket on github, or ask a question on stackoverflow (**@Mike McKerns**).
-If you would like to share how you use ``mystic`` in your work, please send an email (to **mmckerns at uqfoundation dot org**).
+Probably the best way to get started is to look at the documentation at
+http://mystic.rtfd.io. Also see ``mystic.tests`` for a set of scripts that
+demonstrate several of the many features of the ``mystic`` framework.
+You can run the test suite with ``python -m mystic.tests``. There are
+several plotting scripts that are installed with ``mystic``, primary of which
+are `mystic_log_reader`` (also available with ``python -m mystic``) and the
+``mystic_model_plotter`` (also available with ``python -m mystic.models``).
+There are several other plotting scripts that come with ``mystic``, and they
+are detailed elsewhere in the documentation.  See ``mystic.examples`` for
+examples that demonstrate the basic use cases for configuration and launching
+of optimization jobs using one of the sample models provided in
+``mystic.models``. Many of the included examples are standard optimization
+test problems. The use of constraints and penalties are detailed in
+``mystic.examples2``, while more advanced features leveraging ensemble solvers
+and dimensional collapse are found in ``mystic.examples3``. The scripts in
+``mystic.examples4`` demonstrate leveraging ``pathos`` for parallel computing,
+as well as demonstrate some auto-partitioning schemes. ``mystic`` has the
+ability to work in product measure space, and the scripts in
+``mystic.examples5`` show to work with product measures.  The source code is
+generally well documented, so further questions may be resolved by inspecting
+the code itself.  Please feel free to submit a ticket on github, or ask a
+question on stackoverflow (**@Mike McKerns**).
+If you would like to share how you use ``mystic`` in your work, please send an
+email (to **mmckerns at uqfoundation dot org**).
 
 Instructions on building a new model are in ``mystic.models.abstract_model``.
 ``mystic`` provides base classes for two types of models:
@@ -273,13 +289,13 @@ Solver and model API definitions are found here:
 models, convergence, and support on the hypercube. These scripts are installed
 to a directory on the user's ``$PATH``, and thus can be run from anywhere:
 
-   - ``mystic_log_reader.py``            [parameter and cost convergence]
-   - ``mystic_collapse_plotter.py``      [convergence and dimensional collapse]
-   - ``mystic_model_plotter.py``         [model surfaces and solver trajectories]
-   - ``support_convergence.py``          [convergence plots for measures]
-   - ``support_hypercube.py``            [parameter support on the hypercube]
-   - ``support_hypercube_measures.py``   [measure support on the hypercube]
-   - ``support_hypercube_scenario.py``   [scenario support on the hypercube]
+   - ``mystic_log_reader``               [parameter and cost convergence]
+   - ``mystic_collapse_plotter``         [convergence and dimensional collapse]
+   - ``mystic_model_plotter``            [model surfaces and solver trajectory]
+   - ``support_convergence``             [convergence plots for measures]
+   - ``support_hypercube``               [parameter support on the hypercube]
+   - ``support_hypercube_measures``      [measure support on the hypercube]
+   - ``support_hypercube_scenario``      [scenario support on the hypercube]
 
 Typing ``--help`` as an argument to any of the above scripts will print out an
 instructive help message.
@@ -348,9 +364,11 @@ setup(name='mystic',
                      'Topic :: Scientific/Engineering',
                      'Topic :: Software Development'),
 
-      packages = ['mystic','mystic.models','mystic.math','mystic.cache'],
+      packages = ['mystic','mystic.models','mystic.math','mystic.cache',
+                  'mystic.tests'],
       package_dir = {'mystic':'mystic','mystic.models':'models',
-                     'mystic.math':'_math','mystic.cache':'cache'},
+                     'mystic.math':'_math','mystic.cache':'cache',
+                     'mystic.tests':'tests'},
 """ % (target_version, long_description, stable_version, stable_version)
 
 # add dependencies
@@ -376,13 +394,13 @@ if has_setuptools:
 
 # add the scripts, and close 'setup' call
 setup_code += """
-    scripts=['scripts/mystic_log_reader.py',
-             'scripts/mystic_model_plotter.py',
-             'scripts/mystic_collapse_plotter.py',
-             'scripts/support_convergence.py',
-             'scripts/support_hypercube.py',
-             'scripts/support_hypercube_measures.py',
-             'scripts/support_hypercube_scenario.py'])
+    scripts=['scripts/mystic_log_reader',
+             'scripts/mystic_model_plotter',
+             'scripts/mystic_collapse_plotter',
+             'scripts/support_convergence',
+             'scripts/support_hypercube',
+             'scripts/support_hypercube_measures',
+             'scripts/support_hypercube_scenario'])
 """
 
 # exec the 'setup' code

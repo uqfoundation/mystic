@@ -55,8 +55,8 @@ from mystic import suppressed
 def conserve(x):
     return constrain(x)
 
-#from mystic.monitors import VerboseMonitor
-#mon = VerboseMonitor(1)
+from mystic.monitors import VerboseMonitor
+mon = VerboseMonitor(1)
 
 # solve the dual for alpha
 from mystic.solvers import DifferentialEvolutionSolver as DESolver
@@ -67,7 +67,7 @@ stop = Or(ChangeOverGeneration(1e-8,200),CollapseAt(0.0))
 solver = DESolver(ndim,npop)
 solver.SetRandomInitialPoints(min=lb,max=ub)
 solver.SetStrictRanges(min=lb,max=ub)
-#solver.SetGenerationMonitor(mon)
+solver.SetGenerationMonitor(mon)
 solver.SetConstraints(conserve)
 solver.SetTermination(stop)
 solver.Solve(objective, ExtraArgs=(Q,b), disp=1)

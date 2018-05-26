@@ -10,16 +10,30 @@
 Simple utility functions for SV-Regressions
 """
 
-from numpy import multiply, ndarray, vectorize, array, asarray
+from numpy import multiply, ndarray, vectorize, array, asarray, exp, abs
 
-__all__ = ['InnerProduct','LinearKernel','KernelMatrix','SupportVectors', \
-           'Bias','RegressionFunction']
+__all__ = ['InnerProduct','LinearKernel','PolynomialKernel','GaussianKernel', \
+           'KernelMatrix','SupportVectors','Bias','RegressionFunction']
 
 def InnerProduct(i1, i2): # numpy.multiply(x,x)
     return i1 * i2
 
 def LinearKernel(i1, i2):
     return 1. + i1 * i2
+
+def PolynomialKernel(i1, i2, degree=3):
+    if type(degree) is int and degree > 0:
+        return (1. + i1 * i2)**degree
+    raise ValueError('degree = %s is not an int > 0' % degree)
+
+def GaussianKernel(i1, i2, gamma=None):
+    if gamma is None:
+        gamma = asarray(i1).shape
+        gamma = 1./gamma[-1] if gamma else 1.
+    elif gamma <= 0:
+        raise ValueError('gamma = %s is not > 0' % gamma)
+    return exp(-abs(i1 - i2)**2 / (2.*gamma**2))
+
 
 def KernelMatrix(X, k=multiply):
     "outer product of X with self, using k as elementwise product function"
