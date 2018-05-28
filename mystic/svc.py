@@ -12,7 +12,7 @@ Simple utility functions for SV-classifications
 
 from numpy import multiply, asarray, dot, transpose, sum
 
-def KernelMatrix(X, k=dot):
+def KernelMatrix(X, k=dot): #XXX: more general than dot/inner product?
     "inner product of X with self, using k as elementwise product function"
     # the following is tensordot(X,X,axes=(-1,-1)), with dot --> k
     # 3-clause BSD (see: v1.7.2 http://docs.scipy.org/doc/numpy/license.html)
