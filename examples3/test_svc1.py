@@ -56,7 +56,7 @@ def conserve(x):
     return constrain(x)
 
 from mystic.monitors import VerboseMonitor
-mon = VerboseMonitor(1)
+mon = VerboseMonitor(10)
 
 # solve the dual for alpha
 from mystic.solvers import DifferentialEvolutionSolver as DESolver
