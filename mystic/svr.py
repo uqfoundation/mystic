@@ -10,6 +10,7 @@
 Simple utility functions for SV-Regressions
 """
 #FIXME: fix/improve this module and mystic.math.distance
+#       (0) see: sklearn/metrics/pairwise.py
 #       (1) better with in-place operations
 #       (2) correct and reuse distance metrics/definitions
 
@@ -92,23 +93,24 @@ def GaussianKernel(i1, i2=None, gamma=None): #XXX: arg names?
     i1i2 *= -gamma
     return np.exp(i1i2)
 
-def KernelMatrix(X, k=np.dot): #XXX: ravel? svc.KernelMatrix? np.outer?
-    "product of X with self, using k as elementwise product function"
-    X = _ensure_arrays(X)[0].ravel()
-    return k(X[:,None], X[None,:].T)
+def KernelMatrix(X, Y=None, kernel=LinearKernel): #XXX: ravel? svc.KernelMatrix?
+    "outer product, using kernel as elementwise product function"
+    X,Y = _ensure_arrays(X,Y)
+    return kernel(X.ravel()[:,None], Y.ravel()[None,:].T)
 
 
 def SupportVectors(alpha, epsilon=0):
     """indices of nonzero alphas (at tolerance epsilon)"""
     return (np.abs(alpha)>epsilon).nonzero()[0]
 
-def Bias(x, y, alpha, epsilon, kernel=LinearKernel): #FIXME: kernel ignored!
+def Bias(x, y, alpha, epsilon, kernel=LinearKernel):
     """ Compute regression bias for epsilon insensitive loss regression """
     N = len(alpha)//2
     ap, am = alpha[:N], alpha[N:]
     sv = SupportVectors(alpha)[0]
-    # functionally: b = epsilon + y[sv] + sum( (ap-am) * map(lambda xx: kernel(xx, x[sv]), x) )
-    b = epsilon + y[sv] + sum( (ap-am) * np.multiply.outer(x, x[sv]) )
+    b = epsilon + y[sv] + sum((ap-am) * map(lambda xx: kernel(xx,x[sv]),x))
+    #b = epsilon + y[sv] + sum((ap-am) * KernelMatrix(x,x[sv],kernel))
+    #b = epsilon + y[sv] + sum((ap-am) * np.multiply.outer(x,x[sv])) #FIXME
     return b
 
 def RegressionFunction(x, y, alpha, epsilon, kernel=LinearKernel):
