@@ -10,7 +10,6 @@
 Simple utility functions for SV-Regressions
 """
 #FIXME: fix/improve this module and mystic.math.distance
-#       (0) see: sklearn/metrics/pairwise.py
 #       (1) better with in-place operations
 #       (2) correct and reuse distance metrics/definitions
 
@@ -110,7 +109,6 @@ def Bias(x, y, alpha, epsilon, kernel=LinearKernel):
     sv = SupportVectors(alpha)[0]
     b = epsilon + y[sv] + sum((ap-am) * map(lambda xx: kernel(xx,x[sv]),x))
     #b = epsilon + y[sv] + sum((ap-am) * KernelMatrix(x,x[sv],kernel))
-    #b = epsilon + y[sv] + sum((ap-am) * np.multiply.outer(x,x[sv])) #FIXME
     return b
 
 def RegressionFunction(x, y, alpha, epsilon, kernel=LinearKernel):
