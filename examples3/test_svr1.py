@@ -27,9 +27,9 @@ N = 2*nx
 # build the Kernel Matrix (with linear kernel)
 # get the QP quadratic term
 X = concatenate([x,-x])
-##lk = LinearKernel
+lk = LinearKernel
 ##lk = PolynomialKernel
-lk = GaussianKernel
+##lk = GaussianKernel
 Q = KernelMatrix(X, kernel=lk)
 # get the QP linear term
 Y = concatenate([y,-y])
@@ -42,8 +42,9 @@ Aeq = concatenate([ones(nx), -ones(nx)]).reshape(1,N)
 Beq = array([0.])
 # set the bounds
 lb = zeros(N)
-ub = zeros(N) + 0.5
-_b = zeros(N) + 0.1
+ub = zeros(N) + 2.0
+_b = zeros(N)
+b_ = zeros(N) + 0.1
 
 # build the constraints operator
 from mystic.symbolic import linear_symbolic, solve, \
@@ -66,7 +67,7 @@ ndim = len(lb)
 npop = 3*N
 stop = Or(ChangeOverGeneration(1e-8,200),CollapseAt(0.0))
 solver = DESolver(ndim,npop)
-solver.SetRandomInitialPoints(min=lb,max=_b)
+solver.SetRandomInitialPoints(min=_b,max=b_)
 solver.SetStrictRanges(min=lb,max=ub)
 solver.SetGenerationMonitor(mon)
 solver.SetConstraints(conserve)
