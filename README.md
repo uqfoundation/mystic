@@ -84,7 +84,7 @@ http://mystic.rtfd.io. Also see ``mystic.tests`` for a set of scripts that
 demonstrate several of the many features of the ``mystic`` framework.
 You can run the test suite with ``python -m mystic.tests``. There are
 several plotting scripts that are installed with ``mystic``, primary of which
-are `mystic_log_reader`` (also available with ``python -m mystic``) and the
+are ``mystic_log_reader`` (also available with ``python -m mystic``) and the
 ``mystic_model_plotter`` (also available with ``python -m mystic.models``).
 There are several other plotting scripts that come with ``mystic``, and they
 are detailed elsewhere in the documentation.  See ``mystic.examples`` for

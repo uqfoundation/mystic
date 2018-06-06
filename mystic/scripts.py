@@ -365,7 +365,7 @@ Returns:
 Notes:
     - The option *out* takes a string of the filepath for the generated plot.
     - The option *bounds* takes an indicator string, where bounds are given as
-      comma-separated slices. For example, using ``bounds = "-1:10, ^0:20"``
+      comma-separated slices. For example, using ``bounds = "-1:10, 0:20"``
       will set lower and upper bounds for x to be (-1,10) and y to be (0,20).
       The "step" can also be given, to control the number of lines plotted in
       the grid. Thus ``"-1:10:.1, 0:20"`` sets the bounds as above, but uses
