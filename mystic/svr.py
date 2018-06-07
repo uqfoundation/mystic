@@ -10,12 +10,13 @@
 Simple utility functions for SV-Regressions
 """
 #FIXME: fix/improve this module and mystic.math.distance
+#       (0) standardize with other metrics/distances definitions
 #       (1) better with in-place operations
-#       (2) correct and reuse distance metrics/definitions
+#       (2) reuse distance metrics/definitions across mystic
 
 import numpy as np
 
-__all__ = ['LinearKernel','PolynomialKernel','GaussianKernel', \
+__all__ = ['LinearKernel','PolynomialKernel','GaussianKernel','SigmoidKernel', \
            'KernelMatrix','SupportVectors','Bias','RegressionFunction']
 
 def _ensure_arrays(i1,i2=None):
@@ -39,7 +40,7 @@ def _row_norm(i1, squared=False):
     i1i1 = np.sum(i1*i1, axis=-1) #NOTE: i1 = np.einsum('ij,ij->i',i1,i1)
     return i1i1 if squared else np.sqrt(i1i1)
 
-def _pairwise_distance(i1, i2=None, squared=False):
+def _euclidean_distance(i1, i2=None, squared=False):
     i1,i2 = _ensure_arrays(i1,i2)
     # pairwise (or euclidean distance)
     # ||x-y||^2 = ||x||^2 + ||y||^2 - 2*np.dot(x,y.T)
@@ -79,16 +80,31 @@ def PolynomialKernel(i1, i2=None, degree=3, gamma=None, coeff=1):
     i1i2 **= degree
     return i1i2
 
+def SigmoidKernel(i1, i2=None, gamma=None, coeff=1):
+    '''sigmoid kernel for i1 and i2
+
+    tanh(coeff + gamma * dot(i1,i2.T)), where i2=i1 if i2 is not provided
+
+    coeff is a float, default of 1.
+    gamma is a float, default of 1./i1.shape(1)
+    '''
+    i1,i2 = _ensure_arrays(i1,i2)
+    gamma = _ensure_gamma(i1,gamma)
+    i1i2 = LinearKernel(i1,i2)
+    i1i2 *= gamma
+    i1i2 += coeff
+    return np.tanh(i1i2)
+
 def GaussianKernel(i1, i2=None, gamma=None): #XXX: arg names?
     '''gaussian kernel for i1 and i2
 
-    exp(-gamma * pairwise_distance(i1,i2)), where i2=i1 if i2 is not provided
+    exp(-gamma * euclidean_distance(i1,i2)**2), where i2=i1 if i2 is not provided
 
     gamma is a float, default of 1./i1.shape(1)
     '''
     i1,i2 = _ensure_arrays(i1,i2)
     gamma = _ensure_gamma(i1,gamma)
-    i1i2 = _pairwise_distance(i1,i2)
+    i1i2 = _euclidean_distance(i1,i2,squared=True)
     i1i2 *= -gamma
     return np.exp(i1i2)
 
