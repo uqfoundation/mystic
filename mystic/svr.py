@@ -15,8 +15,10 @@ Simple utility functions for SV-Regressions
 #       (2) reuse distance metrics/definitions across mystic
 
 import numpy as np
+import mystic.math.distance as _distance
 
 __all__ = ['LinearKernel','PolynomialKernel','GaussianKernel','SigmoidKernel', \
+           'LaplacianKernel', \
            'KernelMatrix','SupportVectors','Bias','RegressionFunction']
 
 def _ensure_arrays(i1,i2=None):
@@ -40,9 +42,26 @@ def _row_norm(i1, squared=False):
     i1i1 = np.sum(i1*i1, axis=-1) #NOTE: i1 = np.einsum('ij,ij->i',i1,i1)
     return i1i1 if squared else np.sqrt(i1i1)
 
+def _manhattan_distance(i1, i2=None, pairwise=True):
+    i1,i2 = _ensure_arrays(i1, i2)
+    s1,s2 = i1.shape,i2.shape
+    if pairwise:
+        axis = 0 if s1 or s2 else None
+        return _distance.manhattan(np.atleast_1d(i1), i2, up=True, axis=axis)
+    axis = 1 if s1 or s2 else None
+    return _distance.manhattan(np.atleast_1d(i1), i2, up=True, axis=axis).T
+
 def _euclidean_distance(i1, i2=None, squared=False):
     i1,i2 = _ensure_arrays(i1,i2)
-    # pairwise (or euclidean distance)
+    s1,s2 = i1.shape,i2.shape
+    axis = 0 if s1 or s2 else None
+    i1i2 = _distance.euclidean(np.atleast_1d(i1), i2, up=True, axis=axis)
+    return i1i2*i1i2 if squared else i1i2
+
+# alternate: assumes 2D
+def __euclidean_distance(i1, i2=None, squared=False):
+    i1,i2 = _ensure_arrays(i1,i2)
+    # pairwise (or euclidean distance or L2)
     # ||x-y||^2 = ||x||^2 + ||y||^2 - 2*np.dot(x,y.T)
     i1i2 = LinearKernel(i1,i2)
     i1i2 *= -2
@@ -53,7 +72,6 @@ def _euclidean_distance(i1, i2=None, squared=False):
     if i1 is i2:
         i1i2.flat[::i1i2.shape[0] + 1] = 0.0
     return i1i2 if squared else np.sqrt(i1i2)
-
 
 def LinearKernel(i1, i2=None):
     '''linear kernel for i1 and i2
@@ -105,6 +123,19 @@ def GaussianKernel(i1, i2=None, gamma=None): #XXX: arg names?
     i1,i2 = _ensure_arrays(i1,i2)
     gamma = _ensure_gamma(i1,gamma)
     i1i2 = _euclidean_distance(i1,i2,squared=True)
+    i1i2 *= -gamma
+    return np.exp(i1i2)
+
+def LaplacianKernel(i1, i2=None, gamma=None): #XXX: arg names?
+    '''laplacian kernel for i1 and i2
+
+    exp(-gamma * manhattan_distance(i1,i2)), where i2=i1 if i2 is not provided
+
+    gamma is a float, default of 1./i1.shape(1)
+    '''
+    i1,i2 = _ensure_arrays(i1,i2)
+    gamma = _ensure_gamma(i1,gamma)
+    i1i2 = _manhattan_distance(i1,i2)
     i1i2 *= -gamma
     return np.exp(i1i2)
 

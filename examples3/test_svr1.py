@@ -29,7 +29,7 @@ N = 2*nx
 X = concatenate([x,-x])
 lk = LinearKernel
 ##lk = PolynomialKernel
-##lk = GaussianKernel
+##lk = SigmoidKernel
 Q = KernelMatrix(X, kernel=lk)
 # get the QP linear term
 Y = concatenate([y,-y])
