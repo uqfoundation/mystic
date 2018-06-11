@@ -17,8 +17,8 @@ Simple utility functions for SV-Regressions
 import numpy as np
 import mystic.math.distance as _distance
 
-__all__ = ['LinearKernel','PolynomialKernel','GaussianKernel','SigmoidKernel', \
-           'LaplacianKernel', \
+__all__ = ['LinearKernel','PolynomialKernel','SigmoidKernel', \
+           'LaplacianKernel','GaussianKernel','CosineKernel', \
            'KernelMatrix','SupportVectors','Bias','RegressionFunction']
 
 def _ensure_arrays(i1,i2=None):
@@ -37,6 +37,13 @@ def _ensure_gamma(i1, gamma=None):
     elif gamma <= 0:
         raise ValueError('gamma = %s is not > 0' % gamma)
     return gamma
+
+def _ensure_scale(i1):
+    if np.isscalar(i1):
+        return 1. if i1 == .0 else i1
+    elif isinstance(i1, np.ndarray):
+        i1[i1 == 0.0] = 1.0
+        return i1
 
 def _row_norm(i1, squared=False):
     i1i1 = np.sum(i1*i1, axis=-1) #NOTE: i1 = np.einsum('ij,ij->i',i1,i1)
@@ -80,6 +87,17 @@ def LinearKernel(i1, i2=None):
     '''
     i1,i2 = _ensure_arrays(i1,i2)
     return np.dot(i1,i2.T)
+
+def CosineKernel(i1, i2=None):
+    '''cosine kernel for i1 and i2
+
+    dot(i1,i2.T)/(||i1||*||i2||), where i2=i1 if i2 is not provided,
+    and ||i|| is defined as L2-normalized i
+    '''
+    i1,i2 = _ensure_arrays(i1,i2)
+    i1n = i1/_ensure_scale(_distance.Lnorm(i1,2,axis=-1)) #XXX: def normalize
+    i2n = i1n if i1 is i2 else i2/_ensure_scale(_distance.Lnorm(i2,2,axis=-1))
+    return np.dot(i1n,i2n.T)
 
 def PolynomialKernel(i1, i2=None, degree=3, gamma=None, coeff=1):
     '''polynomial kernel for i1 and i2

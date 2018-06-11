@@ -10,30 +10,31 @@ distances and norms for the legacy data module
 """
 debug = False 
 
-def Lnorm(weights, p=1):
+def Lnorm(weights, p=1, axis=None):
   """calculate L-p norm of weights
 
 Args:
     weights (array(float)): an array of weights
     p (int, default=1): the power of the p-norm, where ``p in [0,inf]``
+    axis (int, default=None): axis used to take the norm along
 
 Returns:
     a float distance norm for the weights
 """
-  from numpy import asarray, seterr, inf
-  weights = asarray(weights).flatten()
+  from numpy import asarray, seterr, inf, abs, max, sum, expand_dims
+  weights = asarray(weights, dtype=float)
   if not p:
-    w = float(len(weights[weights != 0.0])) # total number of nonzero elements
+    w = sum(weights != 0.0, dtype=float, axis=axis) # number of nonzero elements
   elif p == inf:
-    w = float(max(abs(weights)))
+    w = max(abs(weights), axis=axis)
   else:
     orig = seterr(over='raise', invalid='raise')
     try:
-      w = float(sum(abs(weights**p)))**(1./p)
+      w = sum(abs(weights**p), axis=axis)**(1./p)
     except FloatingPointError: # use the infinity norm
-      w = float(max(abs(weights)))
+      w = max(abs(weights), axis=axis)
     seterr(**orig)
-  return w
+  return w if (axis is None or not w.shape) else expand_dims(w, axis=axis)
 
 def absolute_distance(x, xp=None, up=False, dmin=0):
   """1-D absolute distance between points
