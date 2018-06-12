@@ -157,11 +157,11 @@ def LaplacianKernel(i1, i2=None, gamma=None): #XXX: arg names?
     i1i2 *= -gamma
     return np.exp(i1i2)
 
-def KernelMatrix(X, Y=None, kernel=LinearKernel): #XXX: ravel? svc.KernelMatrix?
+def KernelMatrix(X, Y=None, kernel=LinearKernel): #XXX: svc.KernelMatrix?
     "outer product, using kernel as elementwise product function"
     X,Y = _ensure_arrays(X,Y)
     return kernel(X.ravel()[:,None], Y.ravel()[None,:].T)
-
+    #FIXME: if X,Y is 2D, return is correct; if 1D, then return XXX.ravel()
 
 def SupportVectors(alpha, epsilon=0):
     """indices of nonzero alphas (at tolerance epsilon)"""
@@ -172,8 +172,7 @@ def Bias(x, y, alpha, epsilon, kernel=LinearKernel):
     N = len(alpha)//2
     ap, am = alpha[:N], alpha[N:]
     sv = SupportVectors(alpha)[0]
-    b = epsilon + y[sv] + sum((ap-am) * map(lambda xx: kernel(xx,x[sv]),x))
-    #b = epsilon + y[sv] + sum((ap-am) * KernelMatrix(x,x[sv],kernel))
+    b = epsilon + y[sv] + sum((ap-am) * KernelMatrix(x,x[sv],kernel).ravel())
     return b
 
 def RegressionFunction(x, y, alpha, epsilon, kernel=LinearKernel):
@@ -183,11 +182,11 @@ def RegressionFunction(x, y, alpha, epsilon, kernel=LinearKernel):
     ap, am = alpha[:N], alpha[N:]
     ad = ap-am
     def _(x_in):
-        a = np.array([kernel(xx, x_in) for xx in x]) #XXX: inefficient
-        return bias - sum(ad * a)
+        return bias - sum(ad * KernelMatrix(x, x_in, kernel).ravel())
+        #return bias - sum(ad * np.array([kernel(xx, x_in) for xx in x]))
     def f(x_in):
         if type(x_in) == np.ndarray:
-            return np.vectorize(_)(x_in)
+            return np.vectorize(_)(x_in) #XXX: need vectorize w/ KernelMatrix?
         return _(x_in)
     return f
 
