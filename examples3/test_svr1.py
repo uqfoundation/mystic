@@ -9,7 +9,7 @@
 """
 Support Vector Regression. Example 1
 """
-
+#FIXME: works if x is a 1D array, should allow x as a 2D array
 from numpy import *
 import pylab
 from mystic.svr import *
@@ -34,7 +34,7 @@ Q = KernelMatrix(X, kernel=lk)
 # get the QP linear term
 Y = concatenate([y,-y])
 svr_epsilon = 3
-b = Y + svr_epsilon * ones(Y.size)
+b = Y + svr_epsilon * ones(Y.shape)
 
 # build the constraints (y.T * x = 0.0)
 # 1.0*x0 + 1.0*x1 + ... - 1.0*xN = 0.0

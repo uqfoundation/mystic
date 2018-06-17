@@ -9,11 +9,6 @@
 """
 Simple utility functions for SV-Regressions
 """
-#FIXME: fix/improve this module and mystic.math.distance
-#       (0) standardize with other metrics/distances definitions
-#       (1) better with in-place operations
-#       (2) reuse distance metrics/definitions across mystic
-
 import numpy as np
 import mystic.math.distance as _distance
 
@@ -49,20 +44,17 @@ def _row_norm(i1, squared=False):
     i1i1 = np.sum(i1*i1, axis=-1) #NOTE: i1 = np.einsum('ij,ij->i',i1,i1)
     return i1i1 if squared else np.sqrt(i1i1)
 
-def _manhattan_distance(i1, i2=None, pairwise=True):
+def _manhattan_distance(i1, i2=None, pair=False):
     i1,i2 = _ensure_arrays(i1, i2)
     s1,s2 = i1.shape,i2.shape
-    if pairwise:
-        axis = 0 if s1 or s2 else None
-        return _distance.manhattan(np.atleast_1d(i1), i2, up=True, axis=axis)
-    axis = 1 if s1 or s2 else None
-    return _distance.manhattan(np.atleast_1d(i1), i2, up=True, axis=axis).T
+    axis = int(pair) if s1 or s2 else None
+    return _distance.manhattan(np.atleast_1d(i1), i2, pair=pair, axis=axis)
 
-def _euclidean_distance(i1, i2=None, squared=False):
+def _euclidean_distance(i1, i2=None, pair=False, squared=False):
     i1,i2 = _ensure_arrays(i1,i2)
     s1,s2 = i1.shape,i2.shape
-    axis = 0 if s1 or s2 else None
-    i1i2 = _distance.euclidean(np.atleast_1d(i1), i2, up=True, axis=axis)
+    axis = int(pair) if s1 or s2 else None
+    i1i2 = _distance.euclidean(np.atleast_1d(i1), i2, pair=paie, axis=axis)
     return i1i2*i1i2 if squared else i1i2
 
 # alternate: assumes 2D
@@ -153,7 +145,7 @@ def LaplacianKernel(i1, i2=None, gamma=None): #XXX: arg names?
     '''
     i1,i2 = _ensure_arrays(i1,i2)
     gamma = _ensure_gamma(i1,gamma)
-    i1i2 = _manhattan_distance(i1,i2)
+    i1i2 = _manhattan_distance(i1,i2,pair=False)
     i1i2 *= -gamma
     return np.exp(i1i2)
 

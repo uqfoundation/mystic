@@ -36,96 +36,38 @@ Returns:
     seterr(**orig)
   return w if (axis is None or not w.shape) else expand_dims(w, axis=axis)
 
-def absolute_distance(x, xp=None, up=False, dmin=0):
-  """1-D absolute distance between points
+def absolute_distance(x, xp=None, pair=False, dmin=0):
+  """pointwise (or pairwise) absolute distance
 
-``distance = |x - x'|``
+``pointwise = |x.T[:,newaxis] - x'.T|  or  pairwise = |x.T - x'.T|.T``
 
 Args:
     x (array): an array of points, ``x``
     xp (array, default=None): a second array of points, ``x'``
-    up (bool, default=False): if True, upconvert ``x`` as ``x[:,newaxis]``
+    pair (bool, default=False): if True, return the pairwise distances
     dmin (int, default=0): upconvert ``x,x'`` to ``dimension >= dmin``
 
 Returns:
     an array of absolute distances between points
 
 Notes:
-    - for pairwise distance (numpy ndarray behavior), use ``up=False``
-    - for distance between an element and all elements, use ``up=True``
-"""
-  from numpy import abs, asarray, newaxis as nwxs, zeros_like
-  #from builtins import max
-  # cast as arrays of the same dimension
-  x = asarray(x)
-  xp = zeros_like(x) if xp is None else asarray(xp)
-  xsize = max(len(x.shape), len(xp.shape), dmin)
-  while len(x.shape) < xsize: x = x[nwxs]
-  while len(xp.shape) < xsize: xp = xp[nwxs]
-  # 'upconvert' with a newaxis  #XXX: only works correctly for dim=0,1,2 ?
-  if up: x = x[:,nwxs] if xsize > 0 else x[nwxs]
-  return abs(x - xp)
-
-def euclidean_distance(x, xp=None, up=True, dmin=0):
-  """1-D euclidean distance between points
-
-``d[i] = | x[i] - x'[i] |``
-
-Args:
-    x (array): an array of points, ``x``
-    xp (array, default=None): a second array of points, ``x'``
-    up (bool, default=True): if True, upconvert ``x`` as ``x[:,newaxis]``
-    dmin (int, default=0): upconvert ``x,x'`` to ``dimension >= dmin``
-
-Returns:
-    an array of absolute distances between points
-
-Notes:
-    - for pairwise distance (numpy ndarray behavior), use ``up=False``
-    - for distance between an element and all elements, use ``up=True``
-"""
-  return absolute_distance(x,xp,up=up,dmin=dmin).swapaxes(0,1).T
-
-def manhattan_distance(x, xp=None, **kwds):
-  """1-D manhattan distance between points
-
-``d[ij] = | x[i] - x'[j] |``
-
-Args:
-    x (array): an array of points, ``x``
-    xp (array, default=None): a second array of points, ``x'``
-    dmin (int, default=0): upconvert ``x,x'`` to ``dimension >= dmin``
-
-Returns:
-    an array of absolute distances between points
-
-Notes:
-    - manhattan matrix with ``x'==x`` is symmetric with zeros on the diagonal 
+    - ``x'==x`` is symmetric with zeros on the diagonal 
     - use ``dmin=2`` for the forced upconversion of 1-D arrays
 """
-  # dmin: force upconvert to x,x' to dimension >= dmin
-  dmin = kwds['dmin'] if 'dmin' in kwds else 0 # default dimension
   from numpy import abs, asarray, newaxis as nwxs, zeros_like
-  #from builtins import max
   # cast as arrays of the same dimension
   x = asarray(x)
-  xp = zeros_like(x) if xp is None else asarray(xp)
+  xp = x if xp is None else asarray(xp)
   xsize = max(len(x.shape), len(xp.shape), dmin)
   while len(x.shape) < xsize: x = x[nwxs]
   while len(xp.shape) < xsize: xp = xp[nwxs]
   # prep for build manhattan matrix in single operation
-  if xsize >= 2:
-    x = x.T[:,:,nwxs]; xp = xp.T[:,nwxs]
-  elif xsize == 1:
-    x = x[:,nwxs]#     x.T[:,nwxs];  xp = xp.T
-  else:#xsize == 0:
-    x = x[nwxs]
-  return abs(x - xp)#.T
+  if pair:
+    return abs(x.T - xp.T).T
+  xsl = (slice(None),)*xsize + (None,)           #NOTE: [:,:,nwxs] for 2-D
+  xpsl = (slice(None),)*max(0,xsize-1) + (None,) #NOTE: [:,nwxs] for 2-D
+  return abs(x.T[xsl] - xp.T[xpsl])
 
-###############################################################################
-# Note: manhattan and euclidean are now essentially 'the same'...
-#       (is sum done correctly? is orientation correct? ...)
-###############################################################################
 
 def lipschitz_metric(L, x, xp=None):
   """sum of lipschitz-weighted distance between points
@@ -142,7 +84,7 @@ Returns:
 """
   #FIXME: merge with lipschitz cone (distance/contains)
   from numpy import sum, asarray
-  d = manhattan_distance(x,xp) #XXX: ,dmin=2)
+  d = absolute_distance(x,xp) #XXX: ,dmin=2)
   return sum(L * d.T, axis=-1).T
 
 def _npts(*x):
@@ -165,10 +107,10 @@ def _get_xy(points):
   return x,y
 
 ###########################################################################
-# distance metrics  #NOTE: euclidean_distance and the like need renaming!!!
+# distance metrics
 ###########################################################################
 
-def chebyshev(x,xp=None, up=True, dmin=0, axis=None):
+def chebyshev(x,xp=None, pair=False, dmin=0, axis=None):
   """infinity norm distance between points in euclidean space
 
 ``d(inf) =  max(|x[0] - x[0]'|, |x[1] - x[1]'|, ..., |x[n] - x[n]'|)``
@@ -176,7 +118,7 @@ def chebyshev(x,xp=None, up=True, dmin=0, axis=None):
 Args:
     x (array): an array of points, ``x``
     xp (array, default=None): a second array of points, ``x'``
-    up (bool, default=True): if True, upconvert ``x`` as ``x[:,newaxis]``
+    pair (bool, default=False): if True, return the pairwise distances
     dmin (int, default=0): upconvert ``x,x'`` to ``dimension >= dmin``
     axis (int, default=None): if not None, reduce across the given axis
 
@@ -184,14 +126,14 @@ Returns:
     an array of absolute distances between points
 
 Notes:
-    - for pairwise distance (numpy ndarray behavior), use ``up=False``
-    - for distance between an element and all elements, use ``up=True``
+    most common usage has ``pair=False`` and ``axis=0``, or
+    pairwise distance with ``pair=True`` and ``axis=1``
 """
-  d = euclidean_distance(x,xp,up=up,dmin=dmin)
+  d = absolute_distance(x,xp,pair=pair,dmin=dmin)
   return d.max(axis=axis).astype(float)
 
 
-def hamming(x,xp=None, up=True, dmin=0, axis=None):
+def hamming(x,xp=None, pair=False, dmin=0, axis=None):
   """zero 'norm' distance between points in euclidean space
 
 ``d(0) =  sum(x[0] != x[0]', x[1] != x[1]', ..., x[n] != x[n]')``
@@ -199,7 +141,7 @@ def hamming(x,xp=None, up=True, dmin=0, axis=None):
 Args:
     x (array): an array of points, ``x``
     xp (array, default=None): a second array of points, ``x'``
-    up (bool, default=True): if True, upconvert ``x`` as ``x[:,newaxis]``
+    pair (bool, default=False): if True, return the pairwise distances
     dmin (int, default=0): upconvert ``x,x'`` to ``dimension >= dmin``
     axis (int, default=None): if not None, reduce across the given axis
 
@@ -207,14 +149,14 @@ Returns:
     an array of absolute distances between points
 
 Notes:
-    - for pairwise distance (numpy ndarray behavior), use ``up=False``
-    - for distance between an element and all elements, use ``up=True``
+    most common usage has ``pair=False`` and ``axis=0``, or
+    pairwise distance with ``pair=True`` and ``axis=1``
 """
-  d = euclidean_distance(x,xp,up=up,dmin=dmin)
+  d = absolute_distance(x,xp,pair=pair,dmin=dmin)
   return d.astype(bool).sum(axis=axis).astype(float)
 
 
-def minkowski(x,xp=None, up=True, dmin=0, p=3, axis=None):
+def minkowski(x,xp=None, pair=False, dmin=0, p=3, axis=None):
   """p-norm distance between points in euclidean space
 
 ``d(p) = sum(|x[0] - x[0]'|^p, |x[1] - x[1]'|^p, ..., |x[n] - x[n]'|^p)^(1/p)``
@@ -222,7 +164,7 @@ def minkowski(x,xp=None, up=True, dmin=0, p=3, axis=None):
 Args:
     x (array): an array of points, ``x``
     xp (array, default=None): a second array of points, ``x'``
-    up (bool, default=True): if True, upconvert ``x`` as ``x[:,newaxis]``
+    pair (bool, default=False): if True, return the pairwise distances
     dmin (int, default=0): upconvert ``x,x'`` to ``dimension >= dmin``
     p (int, default=3): value of p for the p-norm
     axis (int, default=None): if not None, reduce across the given axis
@@ -231,12 +173,12 @@ Returns:
     an array of absolute distances between points
 
 Notes:
-    - for pairwise distance (numpy ndarray behavior), use ``up=False``
-    - for distance between an element and all elements, use ``up=True``
+    most common usage has ``pair=False`` and ``axis=0``, or
+    pairwise distance with ``pair=True`` and ``axis=1``
 """
   from numpy import seterr, inf
-  if p == inf: return chebyshev(x,xp,up=up,dmin=dmin,axis=axis)
-  d = euclidean_distance(x,xp,up=up,dmin=dmin)
+  if p == inf: return chebyshev(x,xp,pair=pair,dmin=dmin,axis=axis)
+  d = absolute_distance(x,xp,pair=pair,dmin=dmin)
   orig = seterr(over='raise', invalid='raise')
   try:
       d = (d**p).sum(axis=axis)**(1./p)
@@ -246,7 +188,7 @@ Notes:
   return d
 
 
-def euclidean(x,xp=None, up=True, dmin=0, axis=None):
+def euclidean(x,xp=None, pair=False, dmin=0, axis=None):
   """L-2 norm distance between points in euclidean space
 
 ``d(2) = sqrt(sum(|x[0] - x[0]'|^2, |x[1] - x[1]'|^2, ..., |x[n] - x[n]'|^2))``
@@ -254,7 +196,7 @@ def euclidean(x,xp=None, up=True, dmin=0, axis=None):
 Args:
     x (array): an array of points, ``x``
     xp (array, default=None): a second array of points, ``x'``
-    up (bool, default=True): if True, upconvert ``x`` as ``x[:,newaxis]``
+    pair (bool, default=False): if True, return the pairwise distances
     dmin (int, default=0): upconvert ``x,x'`` to ``dimension >= dmin``
     axis (int, default=None): if not None, reduce across the given axis
 
@@ -262,13 +204,13 @@ Returns:
     an array of absolute distances between points
 
 Notes:
-    - for pairwise distance (numpy ndarray behavior), use ``up=False``
-    - for distance between an element and all elements, use ``up=True``
+    most common usage has ``pair=False`` and ``axis=0``, or
+    pairwise distance with ``pair=True`` and ``axis=1``
 """
-  return minkowski(x,xp,up=up,dmin=dmin,p=2,axis=axis)
+  return minkowski(x,xp,pair=pair,dmin=dmin,p=2,axis=axis)
 
 
-def manhattan(x,xp=None, up=True, dmin=0, axis=None):
+def manhattan(x,xp=None, pair=False, dmin=0, axis=None):
   """L-1 norm distance between points in euclidean space
 
 ``d(1) = sum(|x[0] - x[0]'|, |x[1] - x[1]'|, ..., |x[n] - x[n]'|)``
@@ -276,7 +218,7 @@ def manhattan(x,xp=None, up=True, dmin=0, axis=None):
 Args:
     x (array): an array of points, ``x``
     xp (array, default=None): a second array of points, ``x'``
-    up (bool, default=True): if True, upconvert ``x`` as ``x[:,newaxis]``
+    pair (bool, default=False): if True, return the pairwise distances
     dmin (int, default=0): upconvert ``x,x'`` to ``dimension >= dmin``
     axis (int, default=None): if not None, reduce across the given axis
 
@@ -284,10 +226,10 @@ Returns:
     an array of absolute distances between points
 
 Notes:
-    - for pairwise distance (numpy ndarray behavior), use ``up=False``
-    - for distance between an element and all elements, use ``up=True``
+    most common usage has ``pair=False`` and ``axis=0``, or
+    pairwise distance with ``pair=True`` and ``axis=1``
 """
-  return minkowski(x,xp,up=up,dmin=dmin,p=1,axis=axis)
+  return minkowski(x,xp,pair=pair,dmin=dmin,p=1,axis=axis)
 
 ###########################################################################
 
@@ -305,7 +247,7 @@ Returns:
   d = infeasibility(distance, cutoff) > 0.0
   if len(asarray(d).shape) is 0:
     return not d
-  return -d
+  return ~d
 
 
 def infeasibility(distance, cutoff=0.0): 
@@ -370,7 +312,7 @@ Notes:
   elif cutoff is False: cutoff = None
 
   # calculate the distance matrix
-  md = manhattan_distance(y,yp) - max(0.0, tol)
+  md = absolute_distance(y,yp) - max(0.0, tol)
   lm = lipschitz_metric(L,x,xp)
   d = md - lm
   # zero-out all distances less than tolerated 
@@ -629,13 +571,13 @@ if __name__ == '__main__':
   print("L = %s" % L)
 
   print("manhattan distance...")
-  print("pm1[0:3],pm2[0:3] =>\n%s\n" % manhattan_distance(pm.coords[0:3],qm.coords[0:3]))
-  print("pm1[0:1],pm2[0:3] =>\n%s\n" % manhattan_distance(pm.coords[0:1],qm.coords[0:3]))
-  print("pm1[0:1],pm2[0:1] =>\n%s\n" % manhattan_distance(pm.coords[0:1],qm.coords[0:1]))
+  print("pm1[0:3],pm2[0:3] =>\n%s\n" % absolute_distance(pm.coords[0:3],qm.coords[0:3]))
+  print("pm1[0:1],pm2[0:3] =>\n%s\n" % absolute_distance(pm.coords[0:1],qm.coords[0:3]))
+  print("pm1[0:1],pm2[0:1] =>\n%s\n" % absolute_distance(pm.coords[0:1],qm.coords[0:1]))
 
-  print("pm1[0:3],pm2[0:3] values =>\n%s\n" % manhattan_distance(pm.values[0:3],qm.values[0:3]))
-  print("pm1[0:1],pm2[0:3] values =>\n%s\n" % manhattan_distance(pm.values[0:1],qm.values[0:3]))
-  print("pm1[0:1],pm2[0:1] values =>\n%s\n" % manhattan_distance(pm.values[0:1],qm.values[0:1]))
+  print("pm1[0:3],pm2[0:3] values =>\n%s\n" % absolute_distance(pm.values[0:3],qm.values[0:3]))
+  print("pm1[0:1],pm2[0:3] values =>\n%s\n" % absolute_distance(pm.values[0:1],qm.values[0:3]))
+  print("pm1[0:1],pm2[0:1] values =>\n%s\n" % absolute_distance(pm.values[0:1],qm.values[0:1]))
    
   print("lipschitz metric...")
   print("pm1[0:3],pm2[0:3] =>\n%s\n" % lipschitz_metric(L, pm.coords[0:3], qm.coords[0:3]))
