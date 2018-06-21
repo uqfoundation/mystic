@@ -172,15 +172,15 @@ Requirements
     - ``python``, **version >= 2.6** or **version >= 3.1**, or ``pypy``
     - ``numpy``, **version >= 1.0**
     - ``sympy``, **version >= 0.6.7**
-    - ``dill``, **version >= 0.2.7.1**
-    - ``klepto``, **version >= 0.1.4**
+    - ``dill``, **version >= 0.2.8.1**
+    - ``klepto``, **version >= 0.1.5.1**
 
 Optional requirements:
 
     - ``setuptools``, **version >= 0.6**
     - ``matplotlib``, **version >= 0.91**
     - ``scipy``, **version >= 0.6.0**
-    - ``pathos``, **version >= 0.2.1**
+    - ``pathos``, **version >= 0.2.2**
     - ``pyina``, **version >= 0.2.0.dev0**
 
 
@@ -382,8 +382,8 @@ elif sysversion == (2,6) or (sysversion >= (3,2) and sysversion <= (3,3)):
 else:
     numpy_version = '>=1.0'
     sympy_version = '>=0.6.7'#, <0.7.4'
-dill_version = '>=0.2.7.1'
-klepto_version = '>=0.1.4'
+dill_version = '>=0.2.8.1'
+klepto_version = '>=0.1.5.1'
 scipy_version = '>=0.6.0'
 matplotlib_version = '>=0.91'
 if has_setuptools:
