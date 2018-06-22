@@ -172,7 +172,7 @@ Requirements
     - ``python``, **version >= 2.6** or **version >= 3.1**, or ``pypy``
     - ``numpy``, **version >= 1.0**
     - ``sympy``, **version >= 0.6.7**
-    - ``dill``, **version >= 0.2.8.1**
+    - ``dill``, **version >= 0.2.8.2**
     - ``klepto``, **version >= 0.1.5.1**
 
 Optional requirements:
@@ -382,7 +382,7 @@ elif sysversion == (2,6) or (sysversion >= (3,2) and sysversion <= (3,3)):
 else:
     numpy_version = '>=1.0'
     sympy_version = '>=0.6.7'#, <0.7.4'
-dill_version = '>=0.2.8.1'
+dill_version = '>=0.2.8.2'
 klepto_version = '>=0.1.5.1'
 scipy_version = '>=0.6.0'
 matplotlib_version = '>=0.91'
