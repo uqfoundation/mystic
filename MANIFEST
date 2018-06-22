@@ -262,6 +262,7 @@ examples5/TEST4d_OUQ_surrogate_diam.py
 examples5/TEST_OUQ_surrogate_diam.py
 examples5/surrogate.py
 tests/__init__.py
+tests/__main__.py
 tests/_log.py
 tests/solver_test_best_performance.py
 tests/solver_test_suite.py
