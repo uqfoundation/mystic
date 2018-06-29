@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 #
 ## Nelder Mead Simplex Solver Class
+## Powell Direction Search optimization,
 # (derives from optimize.py module by Travis E. Oliphant)
 #
 # adapted scipy.optimize.fmin (from scipy version 0.4.8)
@@ -9,6 +10,9 @@
 # adapted from function to class (& added bounds)
 # adapted scipy.optimize.fmin_powell
 # updated solvers to scipy version 0.9.0
+# by Mike McKerns
+#
+# updated solvers to scipy version 1.1.0
 # by Mike McKerns
 #
 # Author: Patrick Hung (patrickh @caltech)
@@ -30,8 +34,8 @@ reasonable defaults.
 Minimal function interface to optimization routines::
    fmin        -- Nelder-Mead Simplex algorithm
                     (uses only function calls)
-   fmin_powell -- Powell's (modified) level set method (uses only
-                    function calls)
+   fmin_powell -- Powell's (modified) level set method
+                    (uses only function calls)
 
 The corresponding solvers built on mystic's AbstractSolver are::
    NelderMeadSimplexSolver -- Nelder-Mead Simplex algorithm
@@ -58,6 +62,23 @@ or an example of using PowellDirectionalSolver.
 All solvers included in this module provide the standard signal handling.
 For more information, see `mystic.mystic.abstract_solver`.
 
+
+References:
+    1. Nelder, J.A. and Mead, R. (1965), "A simplex method for function
+       minimization", The Computer Journal, 7, pp. 308-313.
+    2. Wright, M.H. (1996), "Direct Search Methods: Once Scorned, Now
+       Respectable", in Numerical Analysis 1995, Proceedings of the
+       1995 Dundee Biennial Conference in Numerical Analysis, D.F.
+       Griffiths and G.A. Watson (Eds.), Addison Wesley Longman,
+       Harlow, UK, pp. 191-208.
+    3. Gao, F. and Han, L. (2012), "Implementing the Nelder-Mead simplex
+       algorithm with adaptive parameters", Computational Optimization and
+       Applications. 51:1, pp. 259-277.
+    4. Powell M.J.D. (1964) An efficient method for finding the minimum of a
+       function of several variables without calculating derivatives,
+       Computer Journal, 7 (2):155-162.
+    5. Press W., Teukolsky S.A., Vetterling W.T., and Flannery B.P.:
+       Numerical Recipes (any edition), Cambridge University Press
 """
 __all__ = ['NelderMeadSimplexSolver','PowellDirectionalSolver',
            'fmin','fmin_powell']
@@ -93,7 +114,8 @@ The size of the simplex is dim+1.
         AbstractSolver.__init__(self,dim) #,npop=simplex)
         self.popEnergy.append(self._init_popEnergy)
         self.population.append([0.0 for i in range(dim)])
-        self.radius= 0.05 #percentage change for initial simplex values
+        self.radius = 0.05 #percentage change for initial simplex values
+        self.adaptive = False #use adaptive algorithm parameters
         xtol, ftol = 1e-4, 1e-4
         from mystic.termination import CandidateRelativeTolerance as CRT
         self._termination = CRT(xtol,ftol)
@@ -177,11 +199,16 @@ The size of the simplex is dim+1.
         callback = settings['callback'] if 'callback' in settings else None
         disp = settings['disp'] if 'disp' in settings else False
         radius = settings['radius'] if 'radius' in settings else self.radius
+        adaptive = settings['adaptive'] if 'adaptive' in settings else self.adaptive
 
         # HACK to enable not explicitly calling _decorate_objective
         cost = self._bootstrap_objective(cost, ExtraArgs)
 
-        rho = 1; chi = 2; psi = 0.5; sigma = 0.5;
+        if adaptive:
+            dim = float(len(self.population[0])) # dimensionality of x0
+            rho = 1; chi = 1+2/dim; psi = 0.75-1/(2*dim); sigma = 1-1/dim;
+        else:
+            rho = 1; chi = 2; psi = 0.5; sigma = 0.5;
         init = False  # flag to do 0th iteration 'post-initialization'
 
         if not len(self._stepmon): # do generation = 0
@@ -296,12 +323,14 @@ The size of the simplex is dim+1.
         #allow for inputs that don't conform to AbstractSolver interface
         #NOTE: not sticky: callback, disp
         #NOTE: sticky: EvaluationMonitor, StepMonitor, penalty, constraints
-        #NOTE: sticky: radius
+        #NOTE: sticky: radius, adaptive
         settings = super(NelderMeadSimplexSolver, self)._process_inputs(kwds)
-        settings.update({\
-        'radius':self.radius}) #percentage change for initial simplex values
+        settings.update({
+        'radius':self.radius, #percentage change for initial simplex values
+        'adaptive':self.adaptive}) #use adaptive algorithm parameters
         [settings.update({i:j}) for (i,j) in getattr(kwds, 'iteritems', kwds.items)() if i in settings]
         self.radius = settings['radius']
+        self.adaptive = settings['adaptive']
         return settings
 
     def Solve(self, cost=None, termination=None, ExtraArgs=None, **kwds):
@@ -319,6 +348,8 @@ Args:
         interface is ``callback(xk)``, with xk the current parameter vector.
     disp (bool, default=False): if True, print convergence messages.
     radius (float, default=0.05): percentage change for initial simplex values.
+    adaptive (bool, default=False): adapt algorithm parameters to the
+        dimensionality of the initial parameter vector ``x``.
 
 Returns:
     None
@@ -334,7 +365,15 @@ def fmin(cost, x0, args=(), bounds=None, xtol=1e-4, ftol=1e-4,
     """Minimize a function using the downhill simplex algorithm.
     
 Uses a Nelder-Mead simplex algorithm to find the minimum of a function of one
-or more variables. Mimics the ``scipy.optimize.fmin`` interface.
+or more variables. This algorithm only uses function values, not derivatives or second derivatives. Mimics the ``scipy.optimize.fmin`` interface.
+
+This algorithm has a long history of successful use in applications. It will
+usually be slower than an algorithm that uses first or second derivative
+information. In practice it can have poor performance in high-dimensional
+problems and is not robust to minimizing complicated functions. Additionally,
+there currently is no complete theory describing when the algorithm will
+successfully converge to the minimum, or how fast it will if it does. Both the
+ftol and xtol criteria must be met for convergence.
 
 Args:
     cost (func): the function or method to be minimized: ``y = cost(x)``.
@@ -354,7 +393,6 @@ Args:
         iteration.
     callback (func, default=None): function to call after each iteration. The
         interface is ``callback(xk)``, with xk the current parameter vector.
-    direc (tuple, default=None): the initial direction set.
     handler (bool, default=False): if True, enable handling interrupt signals.
     itermon (monitor, default=None): override the default GenerationMonitor.
     evalmon (monitor, default=None): override the default EvaluationMonitor.

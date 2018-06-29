@@ -10,6 +10,16 @@
 #  - https://github.com/uqfoundation/mystic/blob/master/LICENSE
 '''
 Attempt to solve equations with no solution, using penaltys.
+
+The equations are:
+    (x-x1)^2 + (y-y1)^2 - r1^2 = 0
+    (x-x2)^2 + (y-y2)^2 - r2^2 = 0
+    (x-x3)^2 + (y-y3)^2 - r3^2 = 0
+
+with the given points (x,y) and a radii (r):
+    x1, y1, r1 = (0, 0, 0.88)
+    x2, y2, r2 = (2, 0, 1)
+    x3, y3, r3 = (0, 2, 0.75)
 '''
 def objective(x):
     return 0.0
