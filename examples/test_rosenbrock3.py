@@ -36,7 +36,7 @@ if __name__=='__main__':
     from mystic.monitors import Monitor, VerboseMonitor
     stepmon = VerboseMonitor(1,1)
    #stepmon = Monitor() #VerboseMonitor(10)
-    from mystic.termination import NormalizedChangeOverGeneration as NCOG
+    from mystic.termination import GradientNormTolerance as GNT
 
    #from mystic._scipyoptimize import fmin_powell
     from mystic.solvers import fmin_powell, PowellDirectionalSolver
@@ -48,7 +48,7 @@ if __name__=='__main__':
     solver.SetGenerationMonitor(stepmon)
     solver.SetConstraints(constrain)
     solver.enable_signal_handler()
-    solver.Solve(rosen, NCOG(tolerance=1e-4), disp=1)
+    solver.Solve(rosen, GNT(tolerance=1e-5), disp=1)
     print(solver.bestSolution)
    #print("Current function value: %s" % solver.bestEnergy)
    #print("Iterations: %s" % solver.generations)

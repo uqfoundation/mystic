@@ -233,14 +233,65 @@ def line_search_BFGS(f, xk, pk, gfk, old_fval, args=(), c1=1e-4, alpha0=1,\
         if self._EARLYEXIT:
             return alpha2, fc, 0, phi_a2
 
-def approx_fprime(xk,f,epsilon,*args):
+def approx_fprime(xk,f,epsilon,*args,**kwds):
+    """Finite-difference approximation of the gradient of a scalar function.
+
+    Parameters
+    ----------
+    xk : array_like
+        The coordinate vector at which to determine the gradient of `f`.
+    f : callable
+        The function of which to determine the gradient (partial derivatives).
+        Should take `xk` as first argument, other arguments to `f` can be
+        supplied in ``*args``.  Should return a scalar, the value of the
+        function at `xk`.
+    epsilon : array_like
+        Increment to `xk` to use for determining the function gradient.
+        If a scalar, uses the same finite difference delta for all partial
+        derivatives.  If an array, should contain one value per element of
+        `xk`.
+    f0 : float, optional
+        Initial function value.
+    \\*args : args, optional
+        Any other arguments that are to be passed to `f`.
+
+    Returns
+    -------
+    grad : ndarray
+        The partial derivatives of `f` to `xk`.
+
+    Notes
+    -----
+    The function gradient is determined by the forward finite difference
+    formula::
+
+                 f(xk[i] + epsilon[i]) - f(xk[i])
+        f'[i] = ---------------------------------
+                            epsilon[i]
+
+    The main use of `approx_fprime` is in scalar function optimizers like
+    `fmin_bfgs`, to determine numerically the Jacobian of a function.
+
+    Examples
+    --------
+    >>> def func(x, c0, c1):
+    ...     "Coordinate vector `x` should be an array of size two."
+    ...     return c0 * x[0]**2 + c1*x[1]**2
+
+    >>> x = np.ones(2)
+    >>> c0, c1 = (1, 200)
+    >>> eps = np.sqrt(np.finfo(float).eps)
+    >>> approx_fprime(x, func, [eps, np.sqrt(200) * eps], c0, c1)
+    array([   2.        ,  400.00004198])
+    """
     xk = xk.copy()  #XXX: this line has been added for scipy_ncg
-    f0 = f(*((xk,)+args))
+    f0 = kwds['f0'] if 'f0' in kwds else f(*((xk,)+args))
     grad = numpy.zeros((len(xk),), float)
     ei = numpy.zeros((len(xk),), float)
     for k in range(len(xk)):
-        ei[k] = epsilon
-        grad[k] = (f(*((xk+ei,)+args)) - f0)/epsilon
+        ei[k] = 1.0
+        d = epsilon * ei
+        grad[k] = (f(*((xk+d,)+args)) - f0) / d[k]
         ei[k] = 0.0
     return grad
 

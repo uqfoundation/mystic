@@ -27,6 +27,8 @@ Returns:
     w = sum(weights != 0.0, dtype=float, axis=axis) # number of nonzero elements
   elif p == inf:
     w = max(abs(weights), axis=axis)
+  elif p == -inf: #XXX: special case, as p in [0,inf]
+    w = min(abs(weights), axis=axis)
   else:
     orig = seterr(over='raise', invalid='raise')
     try:

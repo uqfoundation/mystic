@@ -381,9 +381,9 @@ Args:
     args (tuple, default=()): extra arguments for cost.
     bounds (list(tuple), default=None): list of pairs of bounds (min,max),
         one for each parameter.
-    xtol (float, default=1e-4): acceptable relative error in ``xopt`` for
+    xtol (float, default=1e-4): acceptable absolute error in ``xopt`` for
         convergence.
-    ftol (float, default=1e-4): acceptable relative error in ``cost(xopt)``
+    ftol (float, default=1e-4): acceptable absolute error in ``cost(xopt)``
         for convergence.
     maxiter (int, default=None): the maximum number of iterations to perform.
     maxfun (int, default=None): the maximum number of function evaluations.
@@ -696,8 +696,19 @@ def fmin_powell(cost, x0, args=(), bounds=None, xtol=1e-4, ftol=1e-4,
     """Minimize a function using modified Powell's method.
     
 Uses a modified Powell Directional Search algorithm to find the minimum of a
-function of one or more variables. Mimics the ``scipy.optimize.fmin_powell``
-interface.
+function of one or more variables. This method only uses function values,
+not derivatives. Mimics the ``scipy.optimize.fmin_powell`` interface.
+
+Powell's method is a conjugate direction method that has two loops. The outer
+loop simply iterates over the inner loop, while the inner loop minimizes over
+each current direction in the direction set. At the end of the inner loop,
+if certain conditions are met, the direction that gave the largest decrease
+is dropped and replaced with the difference between the current estimated x
+and the estimated x from the beginning of the inner-loop. The conditions for
+replacing the direction of largest increase is that: (a) no further gain can
+be made along the direction of greatest increase in the iteration, and (b) the
+direction of greatest increase accounted for a large sufficient fraction of
+the decrease in the function value from the current iteration of the inner loop.
 
 Args:
     cost (func): the function or method to be minimized: ``y = cost(x)``.

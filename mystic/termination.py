@@ -13,10 +13,12 @@ Factories that provide termination conditions for a mystic.solver
 
 import numpy
 abs = numpy.absolute
-Inf = numpy.Inf
+inf = Inf = numpy.Inf
 null = ""
 _type = type #NOTE: save builtin type
 import mystic.collapse as ct #XXX: avoid if move Collapse* to collapse
+from mystic.math.distance import Lnorm #XXX: avoid this and following?
+from mystic._scipy060optimize import approx_fprime, _epsilon
 
 # a module level singleton
 EARLYEXIT = 0
@@ -343,22 +345,17 @@ def GradientNormTolerance(tolerance=1e-5, norm=Inf):
 """
     doc = "GradientNormTolerance with %s" % {'tolerance':tolerance, 'norm':norm}
     def _GradientNormTolerance(inst, info=False):
-        try:
-            gfk = inst.gfk #XXX: need to ensure that gfk is an array ?
-        except:
-            warn = "Warning: Invalid termination condition (no gradient)"
-            print(warn)
-            return warn
+        grad = getattr(inst, 'gradient', [None])[-1]
+        if grad is None:
+            soln = inst.bestSolution
+            cost = inst._cost[1]
+            grad = approx_fprime(soln, cost, _epsilon)
+           #warn = "Warning: using approximate gradient"
+           #print(warn)
+           #return warn
         if info: info = lambda x:x
         else: info = bool
-        if norm == Inf:
-            gnorm = numpy.amax(abs(gfk))
-        elif norm == -Inf:
-            gnorm = numpy.amin(abs(gfk))
-        else: #XXX: throws error when norm = 0.0
-           #XXX: as norm > large, gnorm approaches amax(abs(gfk)) --> then inf
-           #XXX: as norm < -large, gnorm approaches amin(abs(gfk)) --> then -inf
-            gnorm = numpy.sum(abs(gfk)**norm,axis=0)**(1.0/norm)
+        gnorm = Lnorm(grad, p=norm, axis=0)
         if gnorm <= tolerance: return info(doc)
         return info(null)
     _GradientNormTolerance.__doc__ = doc
