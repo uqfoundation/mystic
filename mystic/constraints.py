@@ -326,7 +326,7 @@ NOTE: The default solver is 'diffev', with npop=min(40, ndim*5). The default
 
     def cost(x): return 1.
 
-    #XXX: don't allow solver string as a short-cut? #FIXME: add ensemble solvers
+    #XXX: don't allow solver string as a short-cut?
     ensemble = False
     if solver is None or solver == 'diffev':
         from mystic.solvers import DifferentialEvolutionSolver as TheSolver
@@ -346,6 +346,10 @@ NOTE: The default solver is 'diffev', with npop=min(40, ndim*5). The default
         ensemble = True
     elif solver == 'lattice':
         from mystic.solvers import LatticeSolver as TheSolver
+        solver = TheSolver(ndim, max(8, npts)) #XXX: needs better default?
+        ensemble = True
+    elif solver == 'sparsity':
+        from mystic.solvers import SparsitySolver as TheSolver
         solver = TheSolver(ndim, max(8, npts)) #XXX: needs better default?
         ensemble = True
     
