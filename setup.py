@@ -180,7 +180,7 @@ Optional requirements:
     - ``setuptools``, **version >= 0.6**
     - ``matplotlib``, **version >= 0.91**
     - ``scipy``, **version >= 0.6.0**
-    - ``pathos``, **version >= 0.2.2**
+    - ``pathos``, **version >= 0.2.2.1**
     - ``pyina``, **version >= 0.2.0**
 
 
