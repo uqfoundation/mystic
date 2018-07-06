@@ -12,9 +12,9 @@
 __all__ = ['with_penalty','with_constraint','as_penalty','as_constraint',
            'with_mean','with_variance','with_std','with_spread','normalized',
            'issolution','solve','discrete','integers','near_integers',
-           'unique','has_unique','impose_unique','impose_as','impose_at',
-           'impose_measure','impose_position','impose_weight','and_','or_',
-           'not_']
+           'unique','has_unique','impose_unique','bounded','impose_bounds',
+           'impose_as','impose_at','impose_measure','impose_position',
+           'impose_weight','and_','or_','not_']
 
 from mystic.math.measures import *
 from mystic.math import almostEqual
@@ -830,6 +830,102 @@ def impose_unique(seq=None):
     def dec(f):
         def func(x,*args,**kwds):
             return f(unique(x, seq),*args,**kwds)
+        return func
+    return dec
+
+from numpy import array, intersect1d, inf, where
+from numpy import min as _min, max as _max, abs as _abs, clip as _clip
+from numpy.random import uniform
+def bounded(seq, min=None, max=None, index=None, clip=True):
+    """bound a sequence by [min,max]
+
+    For example:
+    >>> sequence = [0.123, 1.244, -4.755, 10.731, 6.207]
+    >>> 
+    >>> bounded(sequence, min=0, max=5)
+    array([0.123, 1.244, 0.   , 5.   , 5.   ])
+    >>> 
+    >>> bounded(sequence, min=0, max=5, index=(0,2,4))
+    array([ 0.123,  1.244,  0.   , 10.731,  5.   ])
+    >>> 
+    >>> bounded(sequence, min=0, max=5, index=(0,2,4), clip=False)
+    array([ 0.123     ,  1.244     ,  0.74097356, 10.731     ,  1.37004957])
+    >>> 
+"""
+    seq = array(seq) #XXX: asarray?
+    if min is max is None: return seq
+    if isinstance(index, int): index = (index,)
+    if clip:
+        index = [index]
+        seq[index] = _clip(seq, min, max)[index]
+        return seq
+    min = -inf if min is None else min
+    max = inf if max is None else max
+    at = where((min > seq)|(seq > max))[-1] #XXX: > or >= ?
+    at = at if index is None else intersect1d(at,index)
+    if not len(at): return seq
+    min,max = _max((min, -1e300)),_min((max, 1e300)) #XXX: better defaults?
+    #if _abs((min,max)).max() <= 1e100: #XXX: unnecessary case?
+    #  seq[at] = uniform(min,max, size=at.shape)
+    #else:
+    seq[at] = uniform(0,1, size=at.shape) * (max - min) + min
+    return seq
+
+def impose_bounds(min=None, max=None, index=None, clip=True):
+    """generate a function where bounds [min,max] on a sequence are imposed
+
+    For example:
+    >>> sequence = [0.123, 1.244, -4.755, 10.731, 6.207]
+    >>> 
+    >>> @impose_bounds(min=0, max=5)       
+    ... def simple(x):  
+    ...   return x
+    ... 
+    >>> simple(sequence)
+    [0.123, 1.244, 0.0, 5.0, 5.0]
+    >>> 
+    >>> @impose_bounds(min=0, max=5, index=(0,2,4))
+    ... def double(x):
+    ...   return [i*2 for i in x]
+    ... 
+    >>> double(sequence)
+    [0.246, 2.488, 0.0, 21.462, 10.0]
+    >>> 
+    >>> @impose_bounds(min=0, max=5, index=(0,2,4), clip=False)
+    ... def square(x):
+    ...   return [i*i for i in x]
+    ... 
+    >>> square(sequence)
+    [0.015129, 1.547536, 14.675791119810688, 115.154361, 1.399551896073788]
+    >>> 
+    """
+    index = [index]
+    clip = [clip]
+    min = [min]
+    max = [max]
+
+    def _index(alist=None):
+        index[0] = alist
+
+    def _clip(clipped=None):
+        clip[0] = clipped
+
+    def _min(amin=None):
+        min[0] = amin
+
+    def _max(amax=None):
+        max[0] = amax
+
+    def dec(f):
+        def func(x,*args,**kwds):
+            if isinstance(x, ndarray): xtype = asarray
+            else: xtype = type(x)
+            xp = bounded(x, min[0], max[0], index[0], clip[0])
+            return f(xtype(xp), *args, **kwds)
+        func.index = _index
+        func.clip = _clip
+        func.min = _min
+        func.max = _max
         return func
     return dec
 
