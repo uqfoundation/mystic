@@ -833,99 +833,117 @@ def impose_unique(seq=None):
         return func
     return dec
 
-from numpy import array, intersect1d, inf, where
-from numpy import min as _min, max as _max, abs as _abs, clip as _clip
-from numpy.random import uniform
-def bounded(seq, min=None, max=None, index=None, clip=True):
-    """bound a sequence by [min,max]
+from numpy import array, intersect1d, inf, where, choose, clip as _clip
+from numpy.random import uniform, choice
+def bounded(seq, bounds, index=None, clip=True, nearest=True):
+    """bound a sequence by bounds = [min,max]
 
     For example:
     >>> sequence = [0.123, 1.244, -4.755, 10.731, 6.207]
     >>> 
-    >>> bounded(sequence, min=0, max=5)
+    >>> bounded(sequence, (0,5))
     array([0.123, 1.244, 0.   , 5.   , 5.   ])
     >>> 
-    >>> bounded(sequence, min=0, max=5, index=(0,2,4))
+    >>> bounded(sequence, (0,5), index=(0,2,4))
     array([ 0.123,  1.244,  0.   , 10.731,  5.   ])
     >>> 
-    >>> bounded(sequence, min=0, max=5, index=(0,2,4), clip=False)
-    array([ 0.123     ,  1.244     ,  0.74097356, 10.731     ,  1.37004957])
+    >>> bounded(sequence, (0,5), clip=False)
+    array([0.123     , 1.244     , 3.46621839, 1.44469038, 4.88937466])
+    >>> 
+    >>> bounds = [(0,5),(7,10)]
+    >>> my.constraints.bounded(sequence, bounds)
+    array([ 0.123,  1.244,  0.   , 10.   ,  7.   ])
+    >>> my.constraints.bounded(sequence, bounds, nearest=False)
+    array([ 0.123,  1.244,  7.   , 10.   ,  5.   ])
+    >>> my.constraints.bounded(sequence, bounds, nearest=False, clip=False) 
+    array([0.123     , 1.244     , 0.37617154, 8.79013111, 7.40864242])
+    >>> my.constraints.bounded(sequence, bounds, clip=False)
+    array([0.123     , 1.244     , 2.38186577, 7.41374049, 9.14662911])
     >>> 
 """
     seq = array(seq) #XXX: asarray?
-    if min is max is None: return seq
+    if bounds is None or not bounds: return seq
     if isinstance(index, int): index = (index,)
-    if clip:
-        index = [index]
-        seq[index] = _clip(seq, min, max)[index]
-        return seq
-    min = -inf if min is None else min
-    max = inf if max is None else max
-    at = where((min > seq)|(seq > max))[-1] #XXX: > or >= ?
-    at = at if index is None else intersect1d(at,index)
+    if not hasattr(bounds[0], '__len__'): bounds = (bounds,)
+    bounds = asfarray(bounds).T  # is [(min,min,...),(max,max,...)]
+    # convert None to -inf or inf
+    bounds[0][bounds[0] == None] = -inf
+    bounds[1][bounds[1] == None] = inf
+    # find indicies of the elements that are out of bounds
+    at = where(sum((lo <= seq)&(seq <= hi) for (lo,hi) in bounds.T).astype(bool) == False)[-1]
+    # find the intersection of out-of-bound and selected indicies
+    at = at if index is None else intersect1d(at, index)
     if not len(at): return seq
-    min,max = _max((min, -1e300)),_min((max, 1e300)) #XXX: better defaults?
-    #if _abs((min,max)).max() <= 1e100: #XXX: unnecessary case?
-    #  seq[at] = uniform(min,max, size=at.shape)
-    #else:
-    seq[at] = uniform(0,1, size=at.shape) * (max - min) + min
+    if clip:
+        if nearest: # clip at closest bounds
+            seq_at = seq[at]
+            seq[at] = _clip(seq_at, *(b[abs(seq_at.reshape(-1,1)-b).argmin(axis=1)] for b in bounds))
+        else: # clip in randomly selected interval
+            picks = choice(len(bounds.T), size=at.shape)
+            seq[at] = _clip(seq[at], bounds[0][picks], bounds[1][picks])
+        return seq
+    # limit to +/- 1e300 #XXX: better defaults?
+    bounds[0][bounds[0] < -1e300] = -1e300
+    bounds[1][bounds[1] > 1e300] = 1e300
+    if nearest:
+        seq_at = seq[at]
+        seq[at] = choose(array([abs(seq_at.reshape(-1,1) - b).min(axis=1) for b in bounds.T]).argmin(axis=0), [uniform(0,1, size=at.shape) * (hi - lo) + lo for (lo,hi) in bounds.T])
+    else: # randomly choose a value in one of the intervals
+        seq[at] = choose(choice(len(bounds.T), size=at.shape), [uniform(0,1, size=at.shape) * (hi - lo) + lo for (lo,hi) in bounds.T])
     return seq
 
-def impose_bounds(min=None, max=None, index=None, clip=True):
-    """generate a function where bounds [min,max] on a sequence are imposed
+def impose_bounds(bounds, index=None, clip=True, nearest=True):
+    """generate a function where bounds=[min,max] on a sequence are imposed
 
     For example:
     >>> sequence = [0.123, 1.244, -4.755, 10.731, 6.207]
     >>> 
-    >>> @impose_bounds(min=0, max=5)       
+    >>> @impose_bounds((0,5))       
     ... def simple(x):  
     ...   return x
     ... 
     >>> simple(sequence)
     [0.123, 1.244, 0.0, 5.0, 5.0]
     >>> 
-    >>> @impose_bounds(min=0, max=5, index=(0,2,4))
+    >>> @impose_bounds((0,5), index=(0,2,4))
     ... def double(x):
     ...   return [i*2 for i in x]
     ... 
     >>> double(sequence)
     [0.246, 2.488, 0.0, 21.462, 10.0]
     >>> 
-    >>> @impose_bounds(min=0, max=5, index=(0,2,4), clip=False)
+    >>> @impose_bounds((0,5), index=(0,2,4), clip=False)
     ... def square(x):
     ...   return [i*i for i in x]
     ... 
     >>> square(sequence)
     [0.015129, 1.547536, 14.675791119810688, 115.154361, 1.399551896073788]
     >>> 
+
+    NOTE: see mystic.constraints.bounded for further detailed examples
     """
     index = [index]
     clip = [clip]
-    min = [min]
-    max = [max]
+    nearest = [nearest]
 
     def _index(alist=None):
         index[0] = alist
 
-    def _clip(clipped=None):
+    def _clip(clipped=True):
         clip[0] = clipped
 
-    def _min(amin=None):
-        min[0] = amin
-
-    def _max(amax=None):
-        max[0] = amax
+    def _near(nearer=True):
+        nearest[0] = nearer
 
     def dec(f):
         def func(x,*args,**kwds):
             if isinstance(x, ndarray): xtype = asarray
             else: xtype = type(x)
-            xp = bounded(x, min[0], max[0], index[0], clip[0])
+            xp = bounded(x, bounds, index[0], clip[0], nearest[0])
             return f(xtype(xp), *args, **kwds)
         func.index = _index
         func.clip = _clip
-        func.min = _min
-        func.max = _max
+        func.nearest = _near
         return func
     return dec
 
