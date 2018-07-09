@@ -919,8 +919,21 @@ def impose_bounds(bounds, index=None, clip=True, nearest=True):
     >>> square(sequence)
     [0.015129, 1.547536, 14.675791119810688, 115.154361, 1.399551896073788]
     >>> 
-
-    NOTE: see mystic.constraints.bounded for further detailed examples
+    >>> @impose_bounds([(0,5),(7,10)])
+    ... def simple(x):
+    ...   return x
+    ... 
+    >>> simple(sequence)
+    [0.123, 1.244, 0.0, 10.0, 7.0]
+    >>> 
+    >>> @impose_bounds([(0,5),(7,10)], nearest=False)
+    ... def simple(x):
+    ...   return x
+    ... 
+    >>> simple(sequence)
+    [0.123, 1.244, 0.0, 5.0, 5.0]
+    >>> simple(sequence)
+    [0.123, 1.244, 7.0, 10.0, 5.0]
     """
     index = [index]
     clip = [clip]
@@ -941,6 +954,7 @@ def impose_bounds(bounds, index=None, clip=True, nearest=True):
             else: xtype = type(x)
             xp = bounded(x, bounds, index[0], clip[0], nearest[0])
             return f(xtype(xp), *args, **kwds)
+        func.__doc__ = "%s" % dict(bounds=bounds,index=index[0],clip=clip[0],nearest=nearest[0])
         func.index = _index
         func.clip = _clip
         func.nearest = _near
