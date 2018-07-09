@@ -954,10 +954,12 @@ def impose_bounds(bounds, index=None, clip=True, nearest=True):
             else: xtype = type(x)
             xp = bounded(x, bounds, index[0], clip[0], nearest[0])
             return f(xtype(xp), *args, **kwds)
-        func.__doc__ = "%s" % dict(bounds=bounds,index=index[0],clip=clip[0],nearest=nearest[0])
         func.index = _index
         func.clip = _clip
         func.nearest = _near
+        func.__bounds__ = bounds
+        func.__wrapped__ = f
+        func.__doc__ = f.__doc__
         return func
     return dec
 
