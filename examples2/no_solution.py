@@ -9,7 +9,7 @@
 # License: 3-clause BSD.  The full license text is available at:
 #  - https://github.com/uqfoundation/mystic/blob/master/LICENSE
 '''
-Attempt to solve equations with no solution, only using bounds constraints.
+Attempt to solve equations with no solution, using unconstrained optimization.
 
 The equations are:
     (x-x1)^2 + (y-y1)^2 - r1^2 = 0
