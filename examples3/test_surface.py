@@ -70,7 +70,7 @@ if __name__ == '__main__':
     bounds = ndim * [(-9.5,9.5)] # griewangk
 
     # the ensemble solvers
-    from mystic.solvers import BuckshotSolver, LatticeSolver
+    from mystic.solvers import BuckshotSolver, LatticeSolver, SparsitySolver
     # the local solvers
     from mystic.solvers import PowellDirectionalSolver
 

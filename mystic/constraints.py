@@ -899,7 +899,7 @@ def impose_bounds(bounds, index=None, clip=True, nearest=True):
     >>> sequence = [0.123, 1.244, -4.755, 10.731, 6.207]
     >>> 
     >>> @impose_bounds((0,5))       
-    ... def simple(x):  
+    ... def simple(x):
     ...   return x
     ... 
     >>> simple(sequence)
@@ -934,13 +934,51 @@ def impose_bounds(bounds, index=None, clip=True, nearest=True):
     [0.123, 1.244, 0.0, 5.0, 5.0]
     >>> simple(sequence)
     [0.123, 1.244, 7.0, 10.0, 5.0]
+    >>> 
+    >>> @impose_bounds({0:(0,5), 2:(0,5), 4:[(0,5),(7,10)]})
+    ... def simple(x):
+    ...   return x
+    ... 
+    >>> simple(sequence)
+    [0.123, 1.244, 0.0, 10.731, 7.0]
+    >>>
+    >>> @impose_bounds({0:(0,5), 2:(0,5), 4:[(0,5),(7,10)]}, index=(0,2)) 
+    ... def simple(x):
+    ...   return x
+    ... 
+    >>> simple(sequence)
+    [0.123, 1.244, 0.0, 10.731, 6.207]
     """
-    index = [index]
+    ### bounds is a dict, index filters the dict
+    ### keys of bounds are the index, if index=None apply to all
+    ### *but* if bounds is given as list (of tuples), apply to seleted index
+    if isinstance(index, int): index = (index,)
+    # bounds are list, index is tuple => {i:bounds} for each i in index
+    if type(bounds) is not dict:
+        if index is not None:
+            bounds = dict((i,bounds) for i in index)
+            index = None
+        # bounds are list, index is None => {None:bounds} apply to all index
+        else: bounds = {None:bounds}
+    # bounds are dict, index is None => do nothing -- is the preferred input
+    # bounds are dict, index is tuple => filter bounds, then as above
+    else:
+        if None in bounds and len(bounds) > 1: # has either entries or None
+            msg = "bounds got multiple entries for '%d'" % set(bounds).difference((None,)).pop()
+            raise TypeError(msg)
+        if index is not None:
+            if None in index and len(index) > 1: # has either entries or None
+                msg = "index got multiple entries for '%d'" % set(index).difference((None,)).pop()
+                raise TypeError(msg)
+            if None in bounds:
+                bounds = dict((i,bounds[None]) for i in index)
+            else:
+                index = set(index).intersection(bounds)
+                bounds = dict((i,bounds[i]) for i in index)
+            index = None
+
     clip = [clip]
     nearest = [nearest]
-
-    def _index(alist=None):
-        index[0] = alist
 
     def _clip(clipped=True):
         clip[0] = clipped
@@ -952,9 +990,10 @@ def impose_bounds(bounds, index=None, clip=True, nearest=True):
         def func(x,*args,**kwds):
             if isinstance(x, ndarray): xtype = asarray
             else: xtype = type(x)
-            xp = bounded(x, bounds, index[0], clip[0], nearest[0])
+            xp = x
+            for i in bounds:
+                xp = bounded(xp, bounds[i], i, clip[0], nearest[0])
             return f(xtype(xp), *args, **kwds)
-        func.index = _index
         func.clip = _clip
         func.nearest = _near
         func.__bounds__ = bounds

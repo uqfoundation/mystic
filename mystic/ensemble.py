@@ -139,7 +139,8 @@ All important class members are inherited from AbstractEnsembleSolver.
 
         # build a grid of starting points
         from mystic.math import fillpts
-        data = self._evalmon._x + self._stepmon._x #XXX: could block solution?
+        data = self._evalmon._x if self._evalmon else []
+        data += self._stepmon._x if self._stepmon else []
         return fillpts(lower,upper,npts, data, self._rtol, self._dist)
 
 
