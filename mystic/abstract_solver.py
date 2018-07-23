@@ -615,8 +615,16 @@ Input::
         return collapses if info else bool(collapses) 
 
     def Collapse(self, disp=False):
-        """if solver has terminated by collapse, apply the collapse"""
+        """if solver has terminated by collapse, apply the collapse
+        (unless both collapse and "stop" are simultaneously satisfied)
+        """
+       #XXX: return True for "collapse and continue" and False otherwise?
         collapses = self.Collapsed(disp=disp, info=True)
+        if collapses: # stop if any Termination is not from Collapse
+            stop = getattr(self, '__stop__', self.Terminated(info=True))
+            stop = not all(k.startswith("Collapse") for k in stop.split("; "))
+            if stop: return {} #XXX: self._collapse = False ?
+        else: stop = True
         if collapses: # then stomach a bunch of module imports (yuck)
             import mystic.tools as to
             import mystic.termination as mt
@@ -627,7 +635,8 @@ Input::
             npts = getattr(self._stepmon, '_npts', None)  #XXX: default?
            #conditions = [cn.impose_at(*to.select_params(self,collapses[k])) if state[k].get('target') is None else cn.impose_at(collapses[k],state[k].get('target')) for k in collapses if k.startswith('CollapseAt')]
            #conditions += [cn.impose_as(collapses[k],state[k].get('offset')) for k in collapses if k.startswith('CollapseAs')]
-            conditions = []; _conditions = []
+            #randomize = False
+            conditions = []; _conditions = []; conditions_ = []
             for k in collapses:
                 if k.startswith('CollapseAt'):
                     t = state[k]
@@ -641,8 +650,14 @@ Input::
                     t = state[k]
                     t = t['offset'] if 'offset' in t else None
                     _conditions.append(cn.impose_as(collapses[k],t))
+                elif k.startswith('CollapseCost'):
+                    t = state[k]
+                    t = t['clip'] if 'clip' in t else True
+                    conditions_.append(cn.impose_bounds(collapses[k],clip=t))
+                    #randomize = True
             conditions.extend(_conditions)
-            del _conditions
+            conditions.extend(conditions_)
+            del _conditions; del conditions_
             # get measure collapse conditions
             if npts: #XXX: faster/better if comes first or last?
                 conditions += [cn.impose_measure( npts, [collapses[k] for k in collapses if k.startswith('CollapsePosition')], [collapses[k] for k in collapses if k.startswith('CollapseWeight')] )]
@@ -652,7 +667,9 @@ Input::
             termination = ma.update_mask(self._termination, collapses)
             self.SetConstraints(constraints)
             self.SetTermination(termination)
+            #if randomize: self.SetInitialPoints(self.population[0])
             #print(mt.state(self._termination).keys())
+       #return bool(collapses) and not stop
         return collapses
 
     def _update_objective(self):

@@ -62,9 +62,12 @@ def _extend_mask(condition, mask):
     elif type(_mask) is set: # assumes mask is set
         kwds['mask'].update(mask)
     elif type(_mask) is dict: # assumes mask is dict
-        for k,v in getattr(mask, 'iteritems', mask.items)():
-            _mask.setdefault(k,v).update(v)
-        kwds['mask'] = _mask
+        try: #XXX: better way to distinguish bounds collapse from not?
+            for k,v in getattr(mask, 'iteritems', mask.items)():
+                _mask.setdefault(k,v).update(v)
+            kwds['mask'] = _mask
+        except AttributeError: # are list/tuple not set/dict, _mask is included
+            kwds['mask'] = mask
     else: # assumes mask is tuple (or list)
         kwds['mask'] = type(_mask)(_mask[i]+mask[i] for i in range(2))
     return _term.type(condition)(**kwds)
