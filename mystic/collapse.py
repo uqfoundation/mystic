@@ -8,8 +8,9 @@
 #  - https://github.com/uqfoundation/mystic/blob/master/LICENSE
 
 import mystic.monitors as _m
+inf = _m.numpy.inf
 
-##### collapse detectors #####
+##### parameter collapse detectors #####
 def collapse_at(stepmon, target=None, tolerance=0.005, \
                          generations=50, mask=None):
     '''return a set of indices where the parameters exhibit a dimensional
@@ -236,6 +237,10 @@ def collapse_position(stepmon, tolerance=0.005, generations=50, mask=None):
         mask = dict(distances)
     # apply mask
     return select(mask)
+
+
+##### bounds collapse detectors #####
+
 
 
 ##### selectors #####

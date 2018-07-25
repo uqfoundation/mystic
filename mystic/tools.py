@@ -44,6 +44,8 @@ Main functions exported are::
     - pairwise: convert an array of positions to an array of pairwise distances
     - measure_indices: get the indices corresponding to weights and to positions
     - select_params: get params for the given indices as a tuple of index,values
+    - solver_bounds: return a dict of tightest bounds defined for the solver
+    - interval_overlap: find the intersection of intervals in the given bounds
     - src: extract source code from a python code object
 
 Other tools of interest are in::
@@ -863,6 +865,47 @@ def select_params(params, index):
     import itertools
     # returns (tuple(index), tuple(params[index]))
     return tuple(getattr(itertools, 'izip', zip)(*((i,params[i]) for i in index)))
+
+
+def solver_bounds(solver):
+    """return a dict {index:bounds} of tightest bounds defined for the solver"""
+    return dict(enumerate(zip((solver._strictMin or solver._defaultMin),(solver._strictMax or solver._defaultMax))))
+
+
+#XXX: generalize to *bounds?
+#FIXME: what about keys of None?
+def interval_overlap(bounds1, bounds2):
+    """find the intersection of intervals in the given bounds
+
+    bounds1 and bounds2 are a dict of {index:bounds},
+    where bounds is a list of tuples [(lo,hi),...]
+    """
+    # ensure we have a list of tuples
+    for (k,v) in getattr(bounds1, 'iteritems', bounds1.items)():
+      if not hasattr(v[0], '__len__'):
+        bounds1[k] = [v]
+    # ensure we have a list of tuples
+    for (k,v) in getattr(bounds2, 'iteritems', bounds2.items)():
+      if not hasattr(v[0], '__len__'):
+        bounds2[k] = [v]
+    results = {}
+    # get all entries in bounds1
+    for k,v in getattr(bounds1, 'iteritems', bounds1.items)():
+        m = bounds2.get(k, None) 
+        if m is None:
+            results[k] = v
+            continue
+        # find intersection of all tuples of bounds
+        results[k] = []
+        for lb,ub in m: #XXX: is there a better way?
+            for lo,hi in v:
+                r = l,h = max(lb,lo),min(ub,hi)
+                if l < h: #XXX: what about when l == h?
+                    results[k].append(r)
+    # get all entries in bounds2 not in bounds1
+    for k in set(bounds2).difference(bounds1):
+        results[k] = bounds2[k]
+    return results
 
 
 # backward compatibility
