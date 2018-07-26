@@ -399,7 +399,7 @@ def SolverInterrupt(): #XXX: enable = True ?
     _SolverInterrupt.__doc__ = doc
     return _SolverInterrupt
 
-##### collapse conditions #####
+##### parameter collapse conditions #####
 def CollapseWeight(tolerance=0.005, generations=50, mask=None, **kwds):
     """value of weights are < tolerance over a number of generations,
 where mask is (row,column) indices of the selected weights:
@@ -497,5 +497,33 @@ and mask is column indices of selected params:
         return info(null) 
     _CollapseAs.__doc__ = doc
     return _CollapseAs
+
+##### bounds collapse conditions #####
+def CollapseCost(clip=False, limit=1.0, samples=50, mask=None):
+    """cost(x) - min(cost) is >= limit for all samples within an interval,
+where if clip is True, then clip beyond the space sampled the optimizer,
+and mask is a dict of {index:bounds} where bounds are provided as an
+interval (min,max), or a list of intervals:
+
+``bool(collapse_cost(monitor, **kwds))``
+"""
+    kwds = {'limit':limit, 'samples':samples,
+            'clip':clip, 'mask':mask}
+    doc = "CollapseCost with %s" % kwds
+    def _CollapseCost(inst, info=False):
+        if info: info = lambda x:x
+        else: info = bool
+        hist = inst.energy_history
+        lg = len(hist)
+        if lg <= samples: return info(null)
+        #XXX: mask = interval_overlap(mask, solver_bounds(inst))?
+        #XXX: might want to log/utilize *where* collapse happens...
+#       if collapse_cost(inst._stepmon, **kwds): return info(doc)
+        collapsed = ct.collapse_cost(inst._stepmon, **kwds)
+        if collapsed: return info(doc + ' at %s' % str(collapsed))
+        # otherwise bail out
+        return info(null)
+    _CollapseCost.__doc__ = doc
+    return _CollapseCost
 
 # end of file

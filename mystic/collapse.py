@@ -240,7 +240,97 @@ def collapse_position(stepmon, tolerance=0.005, generations=50, mask=None):
 
 
 ##### bounds collapse detectors #####
+def collapse_cost(stepmon, clip=False, limit=1.0, samples=50, mask=None):
+    '''return a dict of {index:bounds} where the parameters exhibit a
+    collapse in bounds for regions of parameter space with a comparably
+    high cost value. Bounds are provided by an interval (min,max), or a
+    list of intervals. Bounds collapse will occur when:
+    cost(param) - min(cost) >= limit, for all N samples within an interval.
 
+    if clip is True, then clip beyond the space sampled by stepmon
+
+    if mask is provided, the intersection of bounds and mask is returned.
+    mask is a dict of {index:bounds}, formatted same as the return value.
+    '''
+    # collapse if cost of npts is more than limit from current min
+    np = _m.numpy
+    # reject bad masks
+    if mask is None: pass
+    elif type(mask) is dict:
+        for (i,j) in getattr(mask, 'iteritems', mask.items)():
+            if i is None and len(mask) != 1: # {None:..., 0:...}
+                msg = "%s is not a valid mask" % str(mask)
+                raise ValueError(msg)
+            elif (type(i) is not int and i is not None) or not hasattr(j, '__len__') or not len(j): # not({None:...} or {0:..., 1:...}) and not ([] or ())
+                msg = "bad entry '%s:%s' in mask" % (str(i),str(j))
+                raise ValueError(msg)
+            # j has length: [(1,2),...] or (1,2)
+            for k in j:
+                if hasattr(k, '__len__'):
+                    if len(k) != 2:
+                        msg = "bad entry '%s:%s' in mask" % (str(i),str(j))
+                        raise ValueError(msg)
+                    for l in k:
+                        if type(l) not in (int, float): #XXX: numpy int/float?
+                            msg = "bad entry '%s:%s' in mask" % (str(i),str(j))
+                            raise ValueError(msg)
+                else:
+                    if type(k) not in (int, float): #XXX: numpy int/float?
+                        msg = "bad entry '%s:%s' in mask" % (str(i),str(j))
+                        raise ValueError(msg)
+    #XXX: does not accept list or tuple, only accepts a dict
+    else:
+        msg = "%s is not a valid mask" % str(mask)
+        raise TypeError(msg)
+    # get the bounds and other information from the monitor
+    npts = len(stepmon)
+    size = len(stepmon._x[0]) if npts else 0 #XXX: or return {}?
+    _bound = [-np.inf]*size #XXX: (solver._strictMin or solver._defaultMin)?
+    bound_ = [np.inf]*size  #XXX: (solver._strictMax or solver._defaultMax)?
+    # is the cost more than limit above the target for all samples?
+    param = np.array(stepmon._x)
+    costs = np.array(stepmon._y)
+    hits = npts if samples is None else samples #XXX: npts if None?
+    #if target is None:
+    target = costs.min()
+    _param = param.argsort(axis=0)
+    more = costs[_param] - target <= limit
+    # get the indices where more is True
+    w, more = np.pad(more, 1, 'maximum')[:,1:-1].T, more[[0,-1]]
+    w = np.dstack([np.where(i)[0] for i in w]).reshape(-1,size)
+    # get the distance between Trues (i.e. the consecutive number of Falses)
+    d = np.diff(w, axis=0) - 1
+    # loop through each parameter, and save the results
+    results = {}
+    for p in range(size):
+        par = param[_param[:,p], p]
+        x = np.where(d[:,p] >= hits)[0]
+        # determine whether to clip edge regions (if clip and ends False)
+        lo = (len(x) and more[0,p]) if clip else bool(len(x))
+        hi = (len(x) and more[-1,p]) if clip else bool(len(x))
+        # handle lower bound to edge of first "good" region
+        _bounds = [(_bound[p], par[w[x[0],p]])] if lo else []
+        # handle edge of last "good" region to upper bound
+        if not hi:
+            bounds_ = []
+        else:
+            bounds_ = par[w[x[-1],p]] + d[x[-1],p]
+            bounds_ = [(bounds_, bound_[p])]
+        # get the indices of the "good" bounds
+        bounds = list(zip(*(par[w[x[:-1],p]+d[x[:-1],p]],par[w[x[1:],p]])))
+        bounds = _bounds + bounds + bounds_
+        if bounds: results[p] = bounds
+    # apply mask
+    if mask is None: return results
+    from mystic.tools import interval_overlap
+    results = interval_overlap(results, mask)
+    # if any index has [], replace with mask? #XXX: or drop index?
+    _results = results.copy()
+    for (i,j) in getattr(_results, 'iteritems', _results.items)():
+        if not(j):
+            results[i] = mask[i] if i in mask else []
+    return {} if results == mask else results
+    #XXX: randomize the population a bit when bounds collapse?
 
 
 ##### selectors #####
