@@ -48,8 +48,8 @@ if __name__=='__main__':
     sk = flatten_array(Sk,1)
     #print("length of sk: %s" % len(sk))
     
-    import pylab
-    pylab.plot(sk[:,0],sk[:,1],'r.')
-    pylab.show()
+    import matplotlib.pyplot as plt
+    plt.plot(sk[:,0],sk[:,1],'r.')
+    plt.show()
 
 # end of file

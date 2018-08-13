@@ -76,11 +76,11 @@ if __name__=='__main__':
     #dill.dump(sk, open('tg3.pkl','w'))
     
     try:
-        import pylab
+        import matplotlib.pyplot as plt
     except:
         print("Install matplotlib for visualization")
     else:
-        pylab.plot(sk[:,0],sk[:,1],'r.')
-        pylab.show()
+        plt.plot(sk[:,0],sk[:,1],'r.')
+        plt.show()
 
 # end of file

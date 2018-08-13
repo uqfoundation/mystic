@@ -11,7 +11,7 @@ Support Vector Regression. Example 1
 """
 
 from numpy import *
-import pylab
+import matplotlib.pyplot as plt
 from mystic.svr import *
 
 # define the objective function to match standard QP solver
@@ -74,14 +74,14 @@ R = RegressionFunction(x, y, alpha, svr_epsilon, lk)
 print('support vectors: %s %s' % (sv1, sv2))
 
 # plot data
-pylab.plot(x, y, 'k+', markersize=10)
+plt.plot(x, y, 'k+', markersize=10)
 
 # plot regression function and support
-pylab.plot(x,R(x), 'k-')
-pylab.plot(x,R(x)-svr_epsilon, 'r--')
-pylab.plot(x,R(x)+svr_epsilon, 'g--')
-pylab.plot(x[sv1],y[sv1],'ro')
-pylab.plot(x[sv2],y[sv2],'go')
-pylab.show()
+plt.plot(x,R(x), 'k-')
+plt.plot(x,R(x)-svr_epsilon, 'r--')
+plt.plot(x,R(x)+svr_epsilon, 'g--')
+plt.plot(x[sv1],y[sv1],'ro')
+plt.plot(x[sv2],y[sv2],'go')
+plt.show()
 
 # end of file

@@ -13,16 +13,16 @@ Given a set of points in the plane, find the smallest circle
 that contains them.
 
 Requires:
-  -- numpy, pylab
+  -- numpy, matplotlib
 
-The pylab output will draw 
+The matplotlib output will draw 
   -- a set of points inside a circle defined by x0,y0,R0 
   -- the circle (x0,y0) with rad R0
   -- the optimized circle with minimum R enclosing the points
 """
 
 from numpy import *
-import pylab
+import matplotlib.pyplot as plt
 from test_circle import sparse_circle, circle, sv, x0, y0, R0
 
 # a common objective function for solving a QP problem
@@ -32,18 +32,18 @@ def objective(x, H, f):
 
 # plot the data and results
 def plot(xy, sv, x0, y0, R0, center, R):
-    import pylab
-    pylab.plot(xy[:,0],xy[:,1],'k+')
-    pylab.plot(xy[sv,0],xy[sv,1],'bx',mfc="None")
-    pylab.plot([x0],[y0],'ro')
-    pylab.plot([center[0]],[center[1]],'bo')
-    pylab.plot([xy[sv[0],0], center[0]],[xy[sv[0],1], center[1]],'b--')
+    import matplotlib.pyplot as plt
+    plt.plot(xy[:,0],xy[:,1],'k+')
+    plt.plot(xy[sv,0],xy[sv,1],'bx',mfc="None")
+    plt.plot([x0],[y0],'ro')
+    plt.plot([center[0]],[center[1]],'bo')
+    plt.plot([xy[sv[0],0], center[0]],[xy[sv[0],1], center[1]],'b--')
     c = circle(x0,y0,R0)
-    pylab.plot(c[:,0], c[:,1], 'r-', linewidth=2)
+    plt.plot(c[:,0], c[:,1], 'r-', linewidth=2)
     c = circle(center[0],center[1],R)
-    pylab.plot(c[:,0], c[:,1], 'b-', linewidth=2)
-    pylab.axis('equal')
-    pylab.show()
+    plt.plot(c[:,0], c[:,1], 'b-', linewidth=2)
+    plt.axis('equal')
+    plt.show()
 
 
 if __name__ == '__main__':

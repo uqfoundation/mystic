@@ -13,7 +13,7 @@ Script is pretty crude right now.
 
 Requirement: 
    numpy  --- for data-structures and "vectorized" ops on them, like sqrt, pow
-   pylab for plotting
+   matplotlib for plotting
 
 Computes surface displacements Ux, Uy, Uz in meters from a point spherical
 pressure source in an elastic half space [1].
@@ -25,7 +25,7 @@ volcanoes and the deformations of the ground surfaces around them,
 Bull. Earthquake. Res. Inst., 36, 99-134, 1958.
 """
 
-import pylab
+import matplotlib.pyplot as plt
 from mystic.solvers import DifferentialEvolutionSolver
 from mystic.termination import ChangeOverGeneration, VTR
 from mystic.monitors import Monitor, VerboseMonitor
@@ -57,8 +57,8 @@ data_z = -data[2,:] + noise[2,:]
 # the stations are still at : stations
 
 def plot_noisy_data():
-    import pylab
-    pylab.plot(stations[0,:],data_z,'k.')
+    import matplotlib.pyplot as plt
+    plt.plot(stations[0,:],data_z,'k.')
 
 # we need a filter for the forward model
 def filter_for_zdisp(input):
@@ -112,7 +112,7 @@ def plot_sol(params, linestyle = 'b-'):
     yy = 0*xx + actual_params[1]
     ss  = array((xx, yy))
     dd = forward_solution(ss)
-    pylab.plot(ss[0,:],-dd[2,:],'%s'%linestyle,linewidth=2.0)
+    plt.plot(ss[0,:],-dd[2,:],'%s'%linestyle,linewidth=2.0)
 
 if __name__ == '__main__':
 
@@ -161,7 +161,7 @@ if __name__ == '__main__':
     if leastsq:
         plot_sol(sollsq,'g-.')
         legend += ['Levenberg Marquardt']
-    pylab.legend(legend) 
-    pylab.show()
+    plt.legend(legend) 
+    plt.show()
 
 # end of file

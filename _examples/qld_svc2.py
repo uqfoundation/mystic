@@ -13,14 +13,14 @@ meristem data.
 from numpy import *
 from scipy.io import read_array
 import qld, quapro
-import pylab
+import matplotlib.pyplot as plt
 from mystic.svc import *
 import os.path, time
 
 def myshow():
     import Image, tempfile
     name = tempfile.mktemp()
-    pylab.savefig(name,dpi=150)
+    plt.savefig(name,dpi=150)
     im = Image.open('%s.png' % name)
     im.show()
 
@@ -74,16 +74,16 @@ print(bias)
 # Eqn of hyperplane:
 # wv[0] x + wv[1] y + bias = 0
 
-pylab.plot(c1[:,0], c1[:,1], 'ko',markersize=2)
-pylab.plot(c2[:,0], c2[:,1], 'ro',markersize=2)
-xmin,xmax,ymin,ymax = pylab.axis()
+plt.plot(c1[:,0], c1[:,1], 'ko',markersize=2)
+plt.plot(c2[:,0], c2[:,1], 'ro',markersize=2)
+xmin,xmax,ymin,ymax = plt.axis()
 hx = array([xmin, xmax])
 hy = -wv[0]/wv[1] * hx - bias/wv[1]
-pylab.plot(hx, hy, 'k-')
-pylab.axis([xmin,xmax,ymin,ymax])
-pylab.plot(XX[sv1,0], XX[sv1,1], 'ko',markersize=5)
-pylab.plot(-XX[sv2,0], -XX[sv2,1], 'ro',markersize=5)
-pylab.axis('equal')
+plt.plot(hx, hy, 'k-')
+plt.axis([xmin,xmax,ymin,ymax])
+plt.plot(XX[sv1,0], XX[sv1,1], 'ko',markersize=5)
+plt.plot(-XX[sv2,0], -XX[sv2,1], 'ro',markersize=5)
+plt.axis('equal')
 myshow()
 
 # $Id$

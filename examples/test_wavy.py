@@ -26,22 +26,22 @@ from mystic.models import wavy1, wavy2
 wavy = wavy1
 
 def show():
-    import pylab, Image
-    pylab.savefig('test_wavy_out',dpi=100)
+    import matplotlib.pyplot as plt, Image
+    plt.savefig('test_wavy_out',dpi=100)
     im = Image.open('test_wavy_out.png')
     im.show()
     return
 
 def plot_solution(sol=None):
     try:
-        import pylab
+        import matplotlib.pyplot as plt
         x = arange(-40,40,0.01)
         y = wavy(x)
-        pylab.plot(x,y)
+        plt.plot(x,y)
         if sol is not None:
-            pylab.plot(sol, wavy(sol), 'r+')
+            plt.plot(sol, wavy(sol), 'r+')
         try: show()
-        except ImportError: pylab.show()
+        except ImportError: plt.show()
     except ImportError:
         print("Install matplotlib for visualization")
         pass
@@ -81,18 +81,18 @@ if __name__ == '__main__':
     print("fmin: %s %s" % (scipysol, wavy(scipysol)))
     print("dife: %s %s" % (desol, wavy(desol)))
     try:
-        import pylab
+        import matplotlib.pyplot as plt
         x = arange(-40,40,0.01)
-        pylab.plot(x,wavy(x))
-        pylab.plot(scipysol, wavy(scipysol), 'r+',markersize=8)
-        pylab.plot(desol, wavy(desol), 'bo',markersize=8)
-        pylab.legend(('|x + 3 sin(x+pi)|','fmin','dife'))
+        plt.plot(x,wavy(x))
+        plt.plot(scipysol, wavy(scipysol), 'r+',markersize=8)
+        plt.plot(desol, wavy(desol), 'bo',markersize=8)
+        plt.legend(('|x + 3 sin(x+pi)|','fmin','dife'))
         if hasattr(solver, 'genealogy'):
             xx = solver.genealogy
-            pylab.plot(xx[4], wavy(xx[4]), 'g-',markersize=3)
-            pylab.plot(xx[10], wavy(xx[10]), 'y-',markersize=3)
+            plt.plot(xx[4], wavy(xx[4]), 'g-',markersize=3)
+            plt.plot(xx[10], wavy(xx[10]), 'y-',markersize=3)
         try: show()
-        except ImportError: pylab.show()
+        except ImportError: plt.show()
     except ImportError:
         print("Install matplotlib for visualization")
 

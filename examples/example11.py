@@ -32,39 +32,42 @@ from mystic.termination import CandidateRelativeTolerance as CRT
 from mystic.monitors import VerboseMonitor, Monitor
 from mystic.tools import getch
 from mystic.math import poly1d
-import pylab
-pylab.ion()
+import matplotlib.pyplot as plt
+plt.ion()
 
 # draw the plot
 def plot_frame(label=None):
-    pylab.close()
-    pylab.title("8th-order Chebyshev coefficient convergence")
-    pylab.xlabel("Nelder-Mead Simplex Solver %s" % label)
-    pylab.ylabel("Chi-Squared")
-    pylab.draw()
+    plt.close()
+    plt.title("8th-order Chebyshev coefficient convergence")
+    plt.xlabel("Nelder-Mead Simplex Solver %s" % label)
+    plt.ylabel("Chi-Squared")
+    plt.draw()
+    plt.pause(0.001)
     return
  
 # plot the polynomial trajectories
 def plot_params(monitor):
     x = list(range(len(monitor)))
     y = monitor.y
-    pylab.plot(x,y,'b-')
-    pylab.axis([1,0.5*x[-1],0,y[1]],'k-')
-    pylab.draw()
+    plt.plot(x,y,'b-')
+    plt.axis([1,0.5*x[-1],0,y[1]],'k-')
+    plt.draw()
+    plt.pause(0.001)
     return
 
 # draw the plot
 def plot_exact():
-    pylab.title("fitting 8th-order Chebyshev polynomial coefficients")
-    pylab.xlabel("x")
-    pylab.ylabel("f(x)")
+    plt.title("fitting 8th-order Chebyshev polynomial coefficients")
+    plt.xlabel("x")
+    plt.ylabel("f(x)")
     import numpy
     x = numpy.arange(-1.2, 1.2001, 0.01)
     exact = chebyshev8(x)
-    pylab.plot(x,exact,'b-')
-    pylab.legend(["Exact"])
-    pylab.axis([-1.4,1.4,-2,8],'k-')
-    pylab.draw()
+    plt.plot(x,exact,'b-')
+    plt.legend(["Exact"])
+    plt.axis([-1.4,1.4,-2,8],'k-')
+    plt.draw()
+    plt.pause(0.001)
     return
  
 # plot the polynomial
@@ -73,10 +76,11 @@ def plot_solution(params,style='y-'):
     x = numpy.arange(-1.2, 1.2001, 0.01)
     f = poly1d(params)
     y = f(x)
-    pylab.plot(x,y,style)
-    pylab.legend(["Exact","Fitted"])
-    pylab.axis([-1.4,1.4,-2,8],'k-')
-    pylab.draw()
+    plt.plot(x,y,style)
+    plt.legend(["Exact","Fitted"])
+    plt.axis([-1.4,1.4,-2,8],'k-')
+    plt.draw()
+    plt.pause(0.001)
     return
 
 if __name__ == '__main__':

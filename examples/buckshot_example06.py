@@ -37,21 +37,22 @@ from mystic.termination import NormalizedChangeOverGeneration as NCOG
 from mystic.math import poly1d
 from mystic.monitors import VerboseLoggingMonitor
 from mystic.tools import getch
-import pylab
-pylab.ion()
+import matplotlib.pyplot as plt
+plt.ion()
 
 # draw the plot
 def plot_exact():
-    pylab.title("fitting 8th-order Chebyshev polynomial coefficients")
-    pylab.xlabel("x")
-    pylab.ylabel("f(x)")
+    plt.title("fitting 8th-order Chebyshev polynomial coefficients")
+    plt.xlabel("x")
+    plt.ylabel("f(x)")
     import numpy
     x = numpy.arange(-1.2, 1.2001, 0.01)
     exact = chebyshev8(x)
-    pylab.plot(x,exact,'b-')
-    pylab.legend(["Exact"])
-    pylab.axis([-1.4,1.4,-2,8],'k-')
-    pylab.draw()
+    plt.plot(x,exact,'b-')
+    plt.legend(["Exact"])
+    plt.axis([-1.4,1.4,-2,8],'k-')
+    plt.draw()
+    plt.pause(0.001)
     return
  
 # plot the polynomial
@@ -60,10 +61,11 @@ def plot_solution(params,style='y-'):
     x = numpy.arange(-1.2, 1.2001, 0.01)
     f = poly1d(params)
     y = f(x)
-    pylab.plot(x,y,style)
-    pylab.legend(["Exact","Fitted"])
-    pylab.axis([-1.4,1.4,-2,8],'k-')
-    pylab.draw()
+    plt.plot(x,y,style)
+    plt.legend(["Exact","Fitted"])
+    plt.axis([-1.4,1.4,-2,8],'k-')
+    plt.draw()
+    plt.pause(0.001)
     return
 
 

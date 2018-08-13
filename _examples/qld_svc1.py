@@ -11,21 +11,21 @@ Support Vector Classification. Example 1
 
 from numpy import *
 import qld, quapro
-import pylab
+import matplotlib.pyplot as plt
 from mystic.svc import *
 
 def myshow():
     import Image, tempfile
     name = tempfile.mktemp()
-    pylab.savefig(name,dpi=72)
+    plt.savefig(name,dpi=72)
     im = Image.open('%s.png' % name)
     im.show()
 
 c1 = array([[0., 0.],[1., 0.],[ 0.2, 0.2],[0.,1.]])
 c2 = array([[0, 1.1], [1.1, 0.],[0, 1.5],[0.5,1.2],[0.8, 1.7]])
 
-pylab.plot(c1[:,0], c1[:,1], 'ko')
-pylab.plot(c2[:,0], c2[:,1], 'ro')
+plt.plot(c1[:,0], c1[:,1], 'ko')
+plt.plot(c2[:,0], c2[:,1], 'ro')
 
 # the Kernel Matrix (with the linear kernel)
 # Q = multiply.outer(X,X) <--- unfortunately only works when X is a list of scalars...
@@ -76,7 +76,7 @@ print(bias2)
 hx = array([0, 1.2])
 hy = -wv[0]/wv[1] * hx - bias/wv[1]
 
-pylab.plot(hx, hy, 'k-')
+plt.plot(hx, hy, 'k-')
 myshow()
 
 # $Id$

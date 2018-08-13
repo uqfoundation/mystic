@@ -25,31 +25,31 @@ from mystic.models.br8 import data
 # evalpts = data[:,0], observations = data[:,1]
 
 def myshow():
-    import pylab
+    import matplotlib.pyplot as plt
     try:
         import Image
-        pylab.savefig('test_br8_out',dpi=72)
+        plt.savefig('test_br8_out',dpi=72)
         im = Image.open('test_br8_out.png')
         im.show()
     except ImportError:
         pass
-    pylab.show()
+    plt.show()
     
 def plot_sol(solver=None, linestyle='k-'):
-    import pylab
+    import matplotlib.pyplot as plt
     def _(params):
         import mystic._signal as signal
         print("plotting params: %s" % params)
         # because of the log ordinate axis, will draw errorbars the dumb way
-        pylab.semilogy(data[:,0],data[:,1],'k.')
+        plt.semilogy(data[:,0],data[:,1],'k.')
         for i, j in data:
-            pylab.semilogy([i, i], [j-sqrt(j), j+sqrt(j)],'k-')
-        pylab.grid()
-        pylab.xlabel('Time (s)')
-        pylab.ylabel('Number of counts')
+            plt.semilogy([i, i], [j-sqrt(j), j+sqrt(j)],'k-')
+        plt.grid()
+        plt.xlabel('Time (s)')
+        plt.ylabel('Number of counts')
         x = arange(15, 900, 5)
         f = F(params)
-        pylab.plot(x, f(x), linestyle)
+        plt.plot(x, f(x), linestyle)
         if solver is not None:
             signal.signal(signal.SIGINT, signal.Hander(solver))
     return _
@@ -114,9 +114,9 @@ if __name__ == '__main__':
     ## for a in a5x:
     ##    sol2, steps2 = de_solve(myCF, a5=a)
     ##    a5y.append(steps2.y[-1])
-    ## import pylab
-    ## pylab.clf()
-    ## pylab.plot(a5x, a5y, 'r+')
+    ## import matplotlib.pyplot as plt
+    ## plt.clf()
+    ## plt.plot(a5x, a5y, 'r+')
     ## # fitting a parabola
     ## x1,x2,x3=a5x
     ## y1,y2,y3=a5y
@@ -126,21 +126,21 @@ if __name__ == '__main__':
     ## print("%s %s %s" % (a1, a2, a3))
     ## x = arange(150,270)
     ## from mystic.math import polyeval
-    ## pylab.plot(x, polyeval([a1,a2,a3],x),'k-')
+    ## plt.plot(x, polyeval([a1,a2,a3],x),'k-')
     ## myshow()
 
     # 2D (a fine mesh solution can be computed by test_br8_mpi.py)
     try:
-        import pylab
+        import matplotlib.pyplot as plt
         X = loadtxt('test_br8_mpi.out.X')
         Y = loadtxt('test_br8_mpi.out.Y')
         V = loadtxt('test_br8_mpi.out.V')
-        pylab.clf()
-        pylab.plot([[a4]],[[a5]],'k+')
-        pylab.xlabel('a4')
-        pylab.ylabel('a5')
-        pylab.grid()
-        pylab.contour(X,Y,V, minChiSq + array([1,2,3]),colors='black')
+        plt.clf()
+        plt.plot([[a4]],[[a5]],'k+')
+        plt.xlabel('a4')
+        plt.ylabel('a5')
+        plt.grid()
+        plt.contour(X,Y,V, minChiSq + array([1,2,3]),colors='black')
         myshow()
     except IOError:
         print("Run test_br8_mpi to create dataset.")

@@ -22,7 +22,7 @@ random_seed(123)
 from mystic.models import fosc3d as fOsc3D
 
 def draw_contour():
-    import pylab, numpy
+    import matplotlib.pyplot as plt, numpy
     x, y = numpy.mgrid[-1:2:0.02,-0.5:2:0.02]
     c = 0*x
     s,t = x.shape
@@ -30,7 +30,7 @@ def draw_contour():
        for j in range(t):
           xx,yy = x[i,j], y[i,j]
           c[i,j] = fOsc3D([xx,yy])
-    pylab.contourf(x,y,c,100)
+    plt.contourf(x,y,c,100)
 
 ND = 2
 NP = ND*10
@@ -52,42 +52,42 @@ def main():
 
 
 if __name__ == '__main__':
-    import pylab
+    import matplotlib.pyplot as plt
     from mystic.solvers import fmin
    #from mystic._scipyoptimize import fmin
     draw_contour()
     solution = main()
     print("solution: %s" % solution)
-    pylab.plot([solution[0]],[solution[1]],'wo',markersize=10)
+    plt.plot([solution[0]],[solution[1]],'wo',markersize=10)
     print("Differential Evolution: Min: %s, sol = %s" % (fOsc3D(solution), solution))
 
     print("\nTrying scipy.optimize.fmin (Nelder-Mead Simplex)...")
 
     m = fmin(fOsc3D, [0.1, 0.1])
-    pylab.plot([m[0]],[m[1]],'ro',markersize=5)
+    plt.plot([m[0]],[m[1]],'ro',markersize=5)
     print("solution w/ initial conditions (0.1,0.1): %s\n" % m)
 
     m = fmin(fOsc3D, [1, 1])
-    pylab.plot([m[0]],[m[1]],'ro',markersize=5)
+    plt.plot([m[0]],[m[1]],'ro',markersize=5)
     print("solution w/ initial conditions (1,1): %s\n" % m)
 
     m = fmin(fOsc3D, [-1, 1])
     print("solution w/ initial conditions (-1,1): %s\n" % m)
-    pylab.plot([m[0]],[m[1]],'ro',markersize=5)
+    plt.plot([m[0]],[m[1]],'ro',markersize=5)
 
 #   m = fmin(fOsc3D, [0, 2])
 #   print("solution w/ initial conditions (0,2): %s\n" % m)
-#   pylab.plot([m[0]],[m[1]],'ro',markersize=5)
+#   plt.plot([m[0]],[m[1]],'ro',markersize=5)
 
-    pylab.title('White dot: DE, Red dots: Nelder-Mead')
+    plt.title('White dot: DE, Red dots: Nelder-Mead')
 
     try:
         import Image
-        pylab.savefig('test_fosc3d_out',dpi=72)
+        plt.savefig('test_fosc3d_out',dpi=72)
         im = Image.open('test_fosc3d_out.png')
         im.show()
     except ImportError:
-        pylab.show()
+        plt.show()
 
 
 # end of file

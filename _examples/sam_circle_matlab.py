@@ -10,7 +10,7 @@ Solve the dual form of test_circle.py with matlab's quadprog (via sam)
 """
 
 from numpy import *
-import pylab
+import matplotlib.pyplot as plt
 from test_circle import sv, xy, x0, y0, R0
 import sam
 
@@ -52,16 +52,16 @@ sv0 = sv[0]
 R = linalg.norm(xy[sv0,:]-center)
 
 def plot():
-    import pylab
-    pylab.plot(xy[:,0],xy[:,1],'k+')
-    pylab.plot(xy[sv,0],xy[sv,1],'ro')
+    import matplotlib.pyplot as plt
+    plt.plot(xy[:,0],xy[:,1],'k+')
+    plt.plot(xy[sv,0],xy[sv,1],'ro')
     theta = arange(0, 2*pi, 0.02)
-    pylab.plot([center[0]],[center[1]],'bo')
-    pylab.plot([xy[sv0,0], center[0]],[xy[sv0,1], center[1]],'r--')
-    pylab.plot(R0 * cos(theta)+x0, R0*sin(theta)+y0, 'r-',linewidth=2)
-    pylab.plot(R * cos(theta)+center[0], R*sin(theta)+center[1], 'b-',linewidth=2)
-    pylab.axis('equal')
-    pylab.show()
+    plt.plot([center[0]],[center[1]],'bo')
+    plt.plot([xy[sv0,0], center[0]],[xy[sv0,1], center[1]],'r--')
+    plt.plot(R0 * cos(theta)+x0, R0*sin(theta)+y0, 'r-',linewidth=2)
+    plt.plot(R * cos(theta)+center[0], R*sin(theta)+center[1], 'b-',linewidth=2)
+    plt.axis('equal')
+    plt.show()
 
 
 if __name__ == '__main__':

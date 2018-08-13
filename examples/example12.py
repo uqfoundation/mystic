@@ -24,8 +24,8 @@ from mystic.forward_model import CostFactory
 # tools
 from mystic.tools import getch, random_seed
 random_seed(123)
-import pylab
-pylab.ion()
+import matplotlib.pyplot as plt
+plt.ion()
 
 # build the forward model
 def ForwardPolyFactory(coeff):
@@ -59,25 +59,28 @@ def noisy_data(params):
 
 # draw the plot
 def plot_frame(label=None):
-    pylab.close()
-    pylab.title("fitting noisy 5th-order polynomial coefficients")
-    pylab.xlabel("x")
-    pylab.ylabel("f(x)")
-    pylab.draw()
+    plt.close()
+    plt.title("fitting noisy 5th-order polynomial coefficients")
+    plt.xlabel("x")
+    plt.ylabel("f(x)")
+    plt.draw()
+    plt.pause(0.001)
     return
  
 # plot the polynomial
 def plot_data(evalpts,datapts,style='k.'):
-    pylab.plot(evalpts,datapts,'%s' % style)
-    pylab.axis([0,5,0,50],'k-')
-    pylab.draw()
+    plt.plot(evalpts,datapts,'%s' % style)
+    plt.axis([0,5,0,50],'k-')
+    plt.draw()
+    plt.pause(0.001)
     return
     
 def plot_solution(params,style='b-'):
     x,y = data(params)
     plot_data(x,y,style)
-    pylab.legend(["Data","Fitted"])
-    pylab.draw()
+    plt.legend(["Data","Fitted"])
+    plt.draw()
+    plt.pause(0.001)
     return
 
 

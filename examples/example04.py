@@ -25,15 +25,16 @@ from mystic.models import rosen
 
 # tools
 from mystic.tools import getch
-import pylab
-pylab.ion()
+import matplotlib.pyplot as plt
+plt.ion()
 
 # draw the plot
 def plot_frame():
-    pylab.title("Rosenbrock parameter convergence")
-    pylab.xlabel("Nelder-Mead solver iterations")
-    pylab.ylabel("parameter value")
-    pylab.draw()
+    plt.title("Rosenbrock parameter convergence")
+    plt.xlabel("Nelder-Mead solver iterations")
+    plt.ylabel("parameter value")
+    plt.draw()
+    plt.pause(0.001)
     return
  
 iter = 0
@@ -45,11 +46,12 @@ def plot_params(params):
     xval.append(params[0])
     yval.append(params[1])
     zval.append(params[2])
-    pylab.plot(step,xval,'b-')
-    pylab.plot(step,yval,'g-')
-    pylab.plot(step,zval,'r-')
-    pylab.legend(["x", "y", "z"])
-    pylab.draw()
+    plt.plot(step,xval,'b-')
+    plt.plot(step,yval,'g-')
+    plt.plot(step,zval,'r-')
+    plt.legend(["x", "y", "z"])
+    plt.draw()
+    plt.pause(0.001)
     iter += 1
     return
 

@@ -45,20 +45,22 @@ def cost_function(params):
     return 100000. * numpy.sum(real((conjugate(x)*x)))
 
 def plot_noisy_data():
-    import pylab
-    pylab.plot(stations[0,:],-data[2,:]+noise[2,:],'k.')
-    pylab.draw()
+    import matplotlib.pyplot as plt
+    plt.plot(stations[0,:],-data[2,:]+noise[2,:],'k.')
+    plt.draw()
+    plt.pause(0.001)
 
 def plot_sol(params,linestyle='b-'):
-    import pylab
+    import matplotlib.pyplot as plt
     s0 = ForwardMogiFactory(params[0:4])
     s1 = ForwardMogiFactory(params[4:])
     xx = arange(-500,500,1)+1250.
     yy = 0*xx - 200.
     ss  = array((xx, yy))
     dd = s0(ss) + s1(ss)
-    pylab.plot(ss[0,:],-dd[2,:],'%s'%linestyle,linewidth=2.0)
-    pylab.draw()
+    plt.plot(ss[0,:],-dd[2,:],'%s'%linestyle,linewidth=2.0)
+    plt.draw()
+    plt.pause(0.001)
 
 ND = 8
 NP = 80
@@ -87,7 +89,7 @@ def de_solve():
 
 if __name__ == '__main__':
 
-    pylab.ion()
+    plt.ion()
     plot_noisy_data()
     desol, dstepmon = de_solve()
     print("desol: %s" % desol)

@@ -10,7 +10,7 @@
 Alternate fitting of a lorentzian peak (see test_lorentzian2.py)
 """
 
-import pylab, matplotlib
+import matplotlib.pyplot as plt, matplotlib
 from numpy import *
 
 from mystic.models import lorentzian
@@ -32,7 +32,7 @@ def F(alpha):
 
 def show():
     import Image
-    pylab.savefig('test_lorentzian_out',dpi=72)
+    plt.savefig('test_lorentzian_out',dpi=72)
     im = Image.open('test_lorentzian_out.png')
     im.show()
     return
@@ -41,14 +41,14 @@ def plot_sol(solver=None):
     def _(params):
         import mystic._signal as signal
         print("plotting params: %s" % params)
-        pylab.errorbar(binsc, histo, sqrt(histo), fmt='b+')
+        plt.errorbar(binsc, histo, sqrt(histo), fmt='b+')
         x = arange(xmin, xmax, (0.1* binwidth))
-        pylab.plot(x, pdf(x)*N,'b:')
-        pylab.plot(x, F(params)(x)*N,'r-')
-        pylab.xlabel('E (GeV)')
-        pylab.ylabel('Counts')
+        plt.plot(x, pdf(x)*N,'b:')
+        plt.plot(x, F(params)(x)*N,'r-')
+        plt.xlabel('E (GeV)')
+        plt.ylabel('Counts')
         try: show()
-        except ImportError: pylab.show()
+        except ImportError: plt.show()
         if solver is not None:
             signal.signal(signal.SIGINT, signal.Handler(solver))
     return _
@@ -87,10 +87,10 @@ if __name__ == '__main__':
     print("pdf(1): %s" % pdf(1))
 
     data = gendata(target, xmin, xmax, npts)  # data is 'unnormalized'
-    #pylab.plot(data[1:N],0*data[1:N],'k.')
-    #pylab.title('Samples drawn from density to be estimated.')
+    #plt.plot(data[1:N],0*data[1:N],'k.')
+    #plt.title('Samples drawn from density to be estimated.')
     #show()
-    #pylab.clf()
+    #plt.clf()
 
     binsc, histo = histogram(data, binwidth, xmin,xmax)
     print("binsc:  %s" % binsc)

@@ -23,7 +23,7 @@ from mystic.solvers import fmin
 from mystic.models import rosen
 
 # tools
-import pylab
+import matplotlib.pyplot as plt
 
 
 if __name__ == '__main__':
@@ -36,15 +36,15 @@ if __name__ == '__main__':
     allvecs = solution[-1]
 
     # plot the parameter trajectories
-    pylab.plot([i[0] for i in allvecs])
-    pylab.plot([i[1] for i in allvecs])
-    pylab.plot([i[2] for i in allvecs])
+    plt.plot([i[0] for i in allvecs])
+    plt.plot([i[1] for i in allvecs])
+    plt.plot([i[2] for i in allvecs])
 
     # draw the plot
-    pylab.title("Rosenbrock parameter convergence")
-    pylab.xlabel("Nelder-Mead solver iterations")
-    pylab.ylabel("parameter value")
-    pylab.legend(["x", "y", "z"])
-    pylab.show()
+    plt.title("Rosenbrock parameter convergence")
+    plt.xlabel("Nelder-Mead solver iterations")
+    plt.ylabel("parameter value")
+    plt.legend(["x", "y", "z"])
+    plt.show()
  
 # end of file

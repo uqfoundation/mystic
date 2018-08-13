@@ -11,16 +11,16 @@ Given a set of points in the plane, find the smallest circle
 that contains them. (using DE and scipy.fmin)
 
 Requires:
-  -- numpy, pylab
+  -- numpy, matplotlib
 
-The pylab output will draw 
+The matplotlib output will draw 
   -- a set of points inside a circle defined by x0,y0,R0 
   -- the circle (x0,y0) with rad R0
   -- the optimized circle with minimum R enclosing the points
 """
 
 from mystic.models import circle, sparse_circle
-import pylab
+import matplotlib.pyplot as plt
 
 # generate training set & define cost function
 # CostFactory2 allows costfunction to reuse datapoints from training set
@@ -65,11 +65,11 @@ if __name__ == '__main__':
     guess = [10,15,5] # good initial guess
 
     # plot training set & training set boundary
-    pylab.plot(xy[:,0],xy[:,1],'k+',markersize=6)
+    plt.plot(xy[:,0],xy[:,1],'k+',markersize=6)
     c = circle(x0, y0, R0)
-    pylab.plot(c[:,0],c[:,1],'r-',linewidth=2)
+    plt.plot(c[:,0],c[:,1],'r-',linewidth=2)
     legend = ['random points','generating circle : %f' % R0]
-    pylab.axis('equal')
+    plt.axis('equal')
 
     # solve with mystic's differential evolution solver
     solution = solver.Solution()
@@ -78,7 +78,7 @@ if __name__ == '__main__':
 
     # plot DEsolver solution
     c = circle(sx, sy, sr)
-    pylab.plot(c[:,0],c[:,1],'b-',linewidth=2)
+    plt.plot(c[:,0],c[:,1],'b-',linewidth=2)
     legend.append('DE optimal : %f' % sr)
 
     # solve with scipy.fmin
@@ -89,7 +89,7 @@ if __name__ == '__main__':
 
     # plot scipy.fmin solution
     c = circle(ax, ay, ar)
-    pylab.plot(c[:,0],c[:,1],'g-',linewidth=2)
+    plt.plot(c[:,0],c[:,1],'g-',linewidth=2)
     legend.append('Nelder-Mead : %f' % ar)
 
     # solve with scipy.brute
@@ -101,21 +101,21 @@ if __name__ == '__main__':
 
     # plot scipy.brute solution
    #c = circle(bx, by, br)
-   #pylab.plot(c[:,0],c[:,1],'y-',linewidth=2)
+   #plt.plot(c[:,0],c[:,1],'y-',linewidth=2)
    #legend.append('Brute : %f' % br)
 
     # find & draw the support vectors from DE
     svl = sv(xy, sx,sy,sr)
     print("DE support vectors: %s" % svl)
-    pylab.plot(xy[svl,0],xy[svl,1],'bx',markersize=6)
+    plt.plot(xy[svl,0],xy[svl,1],'bx',markersize=6)
 
     # find & draw the support vectors from scipy.brute
    #svl = sv(xy, bx,by,br)
    #print("Brute support vectors: %s" % svl)
-   #pylab.plot(xy[svl,0],xy[svl,1],'yx',markersize=6)
+   #plt.plot(xy[svl,0],xy[svl,1],'yx',markersize=6)
 
-    pylab.legend(legend)
-    pylab.show()
+    plt.legend(legend)
+    plt.show()
 
 # $Id$
 # 

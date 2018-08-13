@@ -40,24 +40,24 @@ def print_solution(func):
 
 def plot_solution(func, benchmark=Chebyshev8):
     try:
-        import pylab, numpy
+        import matplotlib.pyplot as plt, numpy
         x = numpy.arange(-1.2, 1.2001, 0.01)
         x2 = numpy.array([-1.0, 1.0])
         p = poly1d(func)
         chebyshev = poly1d(benchmark)
         y = p(x)
         exact = chebyshev(x)
-        pylab.plot(x,y,'b-',linewidth=2)
-        pylab.plot(x,exact,'r-',linewidth=2)
-        pylab.plot(x,0*x-1,'k-')
-        pylab.plot(x2, 0*x2+1,'k-')
-        pylab.plot([-1.2, -1.2],[-1, 10],'k-')
-        pylab.plot([1.2, 1.2],[-1, 10],'k-')
-        pylab.plot([-1.0, -1.0],[1, 10],'k-')
-        pylab.plot([1.0, 1.0],[1, 10],'k-')
-        pylab.axis([-1.4, 1.4, -2, 8],'k-')
-        pylab.legend(('Fitted','Chebyshev'))
-        pylab.show()
+        plt.plot(x,y,'b-',linewidth=2)
+        plt.plot(x,exact,'r-',linewidth=2)
+        plt.plot(x,0*x-1,'k-')
+        plt.plot(x2, 0*x2+1,'k-')
+        plt.plot([-1.2, -1.2],[-1, 10],'k-')
+        plt.plot([1.2, 1.2],[-1, 10],'k-')
+        plt.plot([-1.0, -1.0],[1, 10],'k-')
+        plt.plot([1.0, 1.0],[1, 10],'k-')
+        plt.axis([-1.4, 1.4, -2, 8],'k-')
+        plt.legend(('Fitted','Chebyshev'))
+        plt.show()
     except ImportError:
         print("Install matplotlib for visualization")
         pass

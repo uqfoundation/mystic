@@ -92,9 +92,9 @@ if __name__=='__main__':
     #dill.dump(x, open('twisted1.pkl','w'))
     #dill.dump(Sk, open('twisted1.pkl','w'))
 
-    import pylab
-    pylab.plot(Sk[:,0],Sk[:,1],'r.')
-    pylab.plot(x[:,0] + 30,x[:,1],'b.')
-    pylab.show()
+    import matplotlib.pyplot as plt
+    plt.plot(Sk[:,0],Sk[:,1],'r.')
+    plt.plot(x[:,0] + 30,x[:,1],'b.')
+    plt.show()
 
 # end of file

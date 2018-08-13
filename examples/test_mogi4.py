@@ -63,7 +63,7 @@ if __name__ == '__main__':
         print("C3: %s" % C3(rp))
 
     test()
-    import pylab
+    import matplotlib.pyplot as plt
     plot_noisy_data()
     desol, dstepmon = de_solve(C2)
     print("desol: %s" % desol)

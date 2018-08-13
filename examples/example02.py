@@ -22,7 +22,7 @@ from mystic.solvers import fmin
 from mystic.models import rosen
 
 # tools
-import pylab
+import matplotlib.pyplot as plt
 
 
 if __name__ == '__main__':
@@ -39,18 +39,18 @@ if __name__ == '__main__':
  
     # plot the Rosenbrock function (one plot per axis)
     x = [0.01*i for i in range(200)]
-    pylab.plot(x,[rosen([i,1.,1.]) for i in x])
-    pylab.plot(x,[rosen([1.,i,1.]) for i in x])
-    pylab.plot(x,[rosen([1.,1.,i]) for i in x])
+    plt.plot(x,[rosen([i,1.,1.]) for i in x])
+    plt.plot(x,[rosen([1.,i,1.]) for i in x])
+    plt.plot(x,[rosen([1.,1.,i]) for i in x])
 
     # plot the solved minimum (for x)
-    pylab.plot([solution[0]],[rosen(solution)],'bo')
+    plt.plot([solution[0]],[rosen(solution)],'bo')
 
     # draw the plot
-    pylab.title("minimium of Rosenbrock's function")
-    pylab.xlabel("x, y, z")
-    pylab.ylabel("f(i) = Rosenbrock's function")
-    pylab.legend(["f(x,1,1)","f(1,y,1)","f(1,1,z)"])
-    pylab.show()
+    plt.title("minimium of Rosenbrock's function")
+    plt.xlabel("x, y, z")
+    plt.ylabel("f(i) = Rosenbrock's function")
+    plt.legend(["f(x,1,1)","f(1,y,1)","f(1,1,z)"])
+    plt.show()
 
 # end of file

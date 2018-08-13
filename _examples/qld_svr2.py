@@ -11,7 +11,7 @@ Support Vector Regression. Example 1
 
 from numpy import *
 import qld
-import pylab
+import matplotlib.pyplot as plt
 from mystic.svr import *
 
 x = arange(-5, 5.001)
@@ -21,7 +21,7 @@ y = x*x + random.rand(x.size)*8
 l = x.size
 N = 2*l
 
-pylab.plot(x, y, 'k+')
+plt.plot(x, y, 'k+')
 
 # the Kernel Matrix 
 X = concatenate([x,-x])
@@ -50,15 +50,15 @@ sv2 = SupportVectors(alpha[l:])
 R = RegressionFunction(x, y, alpha, svr_epsilon, pk)
 
 xx = arange(min(x),max(x),0.1)
-pylab.plot(xx,R(xx))
-pylab.plot(xx,R(xx)+svr_epsilon, 'k--')
-pylab.plot(xx,R(xx)-svr_epsilon, 'k--')
-pylab.plot(x[sv1],y[sv1],'ro')
-pylab.plot(x[sv2],y[sv2],'go')
+plt.plot(xx,R(xx))
+plt.plot(xx,R(xx)+svr_epsilon, 'k--')
+plt.plot(xx,R(xx)-svr_epsilon, 'k--')
+plt.plot(x[sv1],y[sv1],'ro')
+plt.plot(x[sv2],y[sv2],'go')
 
 print(alpha)
 
-pylab.show()
+plt.show()
 
 # $Id$
 # 

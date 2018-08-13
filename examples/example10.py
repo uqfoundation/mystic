@@ -33,25 +33,27 @@ from mystic.strategy import Best1Exp
 from mystic.monitors import VerboseMonitor, Monitor
 from mystic.tools import getch, random_seed
 from mystic.math import poly1d
-import pylab
-pylab.ion()
+import matplotlib.pyplot as plt
+plt.ion()
 
 # draw the plot
 def plot_frame(label=None):
-    pylab.close()
-    pylab.title("8th-order Chebyshev coefficient convergence")
-    pylab.xlabel("Differential Evolution %s" % label)
-    pylab.ylabel("Chi-Squared")
-    pylab.draw()
+    plt.close()
+    plt.title("8th-order Chebyshev coefficient convergence")
+    plt.xlabel("Differential Evolution %s" % label)
+    plt.ylabel("Chi-Squared")
+    plt.draw()
+    plt.pause(0.001)
     return
  
 # plot the polynomial trajectories
 def plot_params(monitor):
     x = list(range(len(monitor)))
     y = monitor.y
-    pylab.plot(x,y,'b-')
-    pylab.axis([1,0.5*x[-1],0,y[1]],'k-')
-    pylab.draw()
+    plt.plot(x,y,'b-')
+    plt.axis([1,0.5*x[-1],0,y[1]],'k-')
+    plt.draw()
+    plt.pause(0.001)
     return
 
 

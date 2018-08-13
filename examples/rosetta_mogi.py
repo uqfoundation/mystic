@@ -66,18 +66,18 @@ def vec_cost_function2(params):
 
 
 # --- Plotting stuff ---
-import pylab
+import matplotlib.pyplot as plt
 def plot_sol(params,linestyle='b-'):
     forward_solution = ForwardMogiFactory(params)
     xx = arange(-30,30,0.1)+actual_params[0]
     yy = 0*xx + actual_params[1]
     ss  = array((xx, yy))
     dd = forward_solution(ss)
-    pylab.plot(ss[0,:],-dd[2,:],'%s'%linestyle,linewidth=2.0)
+    plt.plot(ss[0,:],-dd[2,:],'%s'%linestyle,linewidth=2.0)
 
 def plot_noisy_data():
-    import pylab
-    pylab.plot(stations[0,:],-data[2,:]+noise[2,:],'k.')
+    import matplotlib.pyplot as plt
+    plt.plot(stations[0,:],-data[2,:]+noise[2,:],'k.')
 # --- Plotting end ---
 
 
@@ -242,7 +242,7 @@ if __name__ == '__main__':
 
     # plot the solution
     plot_sol(solution,'r-')
-    pylab.show()
+    plt.show()
 
 
 # End of file

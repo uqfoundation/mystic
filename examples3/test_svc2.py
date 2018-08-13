@@ -13,7 +13,7 @@ using meristem data from data files
 """
 
 from numpy import *
-import pylab
+import matplotlib.pyplot as plt
 from mystic.svc import *
 import os.path
 
@@ -113,20 +113,20 @@ print('bias (from points): %s' % bias)
 print('bias (with vectors): %s' % bias2)
 
 # plot data
-pylab.plot(c1[:,0], c1[:,1], 'bo', markersize=5)
-pylab.plot(c2[:,0], c2[:,1], 'yo', markersize=5)
+plt.plot(c1[:,0], c1[:,1], 'bo', markersize=5)
+plt.plot(c2[:,0], c2[:,1], 'yo', markersize=5)
 
 # plot hyperplane: wv[0] x + wv[1] y + bias = 0
-xmin,xmax,ymin,ymax = pylab.axis()
+xmin,xmax,ymin,ymax = plt.axis()
 hx = array([floor(xmin-.1), ceil(xmax+.1)])
 hy = -wv[0]/wv[1] * hx - bias/wv[1]
-pylab.plot(hx, hy, 'k-')
-#pylab.axis([xmin,xmax,ymin,ymax])
+plt.plot(hx, hy, 'k-')
+#plt.axis([xmin,xmax,ymin,ymax])
 
 # plot the support points
-pylab.plot(XX[sv1,0], XX[sv1,1], 'bo', markersize=8)
-pylab.plot(-XX[sv2,0], -XX[sv2,1], 'yo', markersize=8)
-#pylab.axis('equal')
-pylab.show()
+plt.plot(XX[sv1,0], XX[sv1,1], 'bo', markersize=8)
+plt.plot(-XX[sv2,0], -XX[sv2,1], 'yo', markersize=8)
+#plt.axis('equal')
+plt.show()
 
 # end of file

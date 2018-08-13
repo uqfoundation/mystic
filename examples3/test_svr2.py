@@ -11,7 +11,7 @@ Support Vector Regression. Example 2
 """
 #FIXME: works if x is a 1D array, should allow x as a 2D array
 from numpy import *
-import pylab
+import matplotlib.pyplot as plt
 from mystic.svr import *
 
 # define the objective function to match standard QP solver
@@ -84,15 +84,15 @@ R = RegressionFunction(x, y, alpha, svr_epsilon, pk)
 print('support vectors: %s %s' % (sv1, sv2))
 
 # plot data
-pylab.plot(x, y, 'k+', markersize=10)
+plt.plot(x, y, 'k+', markersize=10)
 
 # plot regression function and support
 xx = arange(min(x),max(x),0.1)
-pylab.plot(xx,R(xx))
-pylab.plot(xx,R(xx)-svr_epsilon, 'r--')
-pylab.plot(xx,R(xx)+svr_epsilon, 'g--')
-pylab.plot(x[sv1],y[sv1],'ro')
-pylab.plot(x[sv2],y[sv2],'go')
-pylab.show()
+plt.plot(xx,R(xx))
+plt.plot(xx,R(xx)-svr_epsilon, 'r--')
+plt.plot(xx,R(xx)+svr_epsilon, 'g--')
+plt.plot(x[sv1],y[sv1],'ro')
+plt.plot(x[sv2],y[sv2],'go')
+plt.show()
 
 # end of file

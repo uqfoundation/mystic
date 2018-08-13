@@ -13,7 +13,7 @@ SMO prototype.
 """
 
 from numpy import *
-import pylab
+import matplotlib.pyplot as plt
 from mystic.svc import *
 
 # a common objective function for solving a QP problem

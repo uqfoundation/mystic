@@ -54,11 +54,11 @@ def cost_function(params):
 
 
 # --- Plotting stuff ---
-import pylab
+import matplotlib.pyplot as plt
 def plot_sol(params,linestyle='b-'):
     d = data(params)
-    pylab.plot(d[0],d[1],'%s'%linestyle,linewidth=2.0)
-    pylab.axis(plotview)
+    plt.plot(d[0],d[1],'%s'%linestyle,linewidth=2.0)
+    plt.axis(plotview)
     return
 # --- Plotting end ---
 
@@ -163,9 +163,10 @@ if __name__ == '__main__':
 
     # Here is the "observed data"
     x,datapts = data(target)
-    pylab.ion()
+    plt.ion()
     plot_sol(target,'r-')
-    pylab.draw()
+    plt.draw()
+    plt.pause(0.001)
 
     # initial values
     point = [100,-100,0]
@@ -185,7 +186,8 @@ if __name__ == '__main__':
 
     # plot the solution
     plot_sol(solution,'g-')
-    pylab.draw()
+    plt.draw()
+    plt.pause(0.001)
 
     getch()
 

@@ -15,7 +15,7 @@ but trying to use scipy's levenberg marquardt.
 
 from test_mogi import *
 from scipy.optimize import anneal
-import pylab
+import matplotlib.pyplot as plt
 
 if __name__ == '__main__':
 
@@ -25,6 +25,6 @@ if __name__ == '__main__':
     print("scipy solution: %s" % sol[0])
     plot_noisy_data()
     plot_sol(sol[0],'r-')
-    pylab.show()
+    plt.show()
 
 # end of file

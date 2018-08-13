@@ -36,9 +36,9 @@ if __name__=='__main__':
     t2 = time.time()
     print('Metropolis took %0.3f ms' % ((t2-t1)*1000 ))
 
-    import pylab
-    pylab.hist(x,20)
-    pylab.show()
+    import matplotlib.pyplot as plt
+    plt.hist(x,20)
+    plt.show()
 
 
 # end of file

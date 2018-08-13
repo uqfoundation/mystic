@@ -13,7 +13,7 @@ This one uses Scipy's CG (Polak-Ribiere) plus viz via matplotlib
 cg works well on this problem.
 """
 
-import pylab
+import matplotlib.pyplot as plt
 from test_rosenbrock import *
 from numpy import log
 from mystic._scipyoptimize import fmin_cg
@@ -21,8 +21,8 @@ import numpy
 from mystic.tools import getch
 
 def show():
-    import pylab, Image
-    pylab.savefig('cg_rosenbrock_out',dpi=72)
+    import matplotlib.pyplot as plt, Image
+    plt.savefig('cg_rosenbrock_out',dpi=72)
     im = Image.open('cg_rosenbrock_out.png')
     im.show()
     return
@@ -39,14 +39,14 @@ def draw_contour():
             xx,yy = x[i,j], y[i,j]
             c[i,j] = rosen([xx,yy])
 
-    pylab.contourf(x,y,log(c*20+1)+2,60)
+    plt.contourf(x,y,log(c*20+1)+2,60)
 
 
 def run_once(x0,x1,color='w'):
     sol = fmin_cg(rosen, [x0, x1], retall = True, full_output=1)
     xy = numpy.asarray(sol[-1])
-    pylab.plot(xy[:,0],xy[:,1],color+'-',linewidth=2)
-    pylab.plot(xy[:,0],xy[:,1],color+'o',markersize=6)
+    plt.plot(xy[:,0],xy[:,1],color+'-',linewidth=2)
+    plt.plot(xy[:,0],xy[:,1],color+'o',markersize=6)
     return sol
 
     
@@ -58,7 +58,7 @@ if __name__ == '__main__':
     try:
         show()
     except ImportError:
-        pylab.show()
+        plt.show()
 
 
 # end of file

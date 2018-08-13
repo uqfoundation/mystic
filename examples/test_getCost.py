@@ -53,9 +53,10 @@ def de_solve(CF):
 
 def plot_sol(params,linestyle='b-'):
     d = data(params)
-    pylab.plot(d[0],d[1],'%s'%linestyle,linewidth=2.0)
-    pylab.axis(plotview)
-    pylab.draw()
+    plt.plot(d[0],d[1],'%s'%linestyle,linewidth=2.0)
+    plt.axis(plotview)
+    plt.draw()
+    plt.pause(0.001)
     return
 
 from numpy import sum as numpysum
@@ -75,8 +76,8 @@ if __name__ == '__main__':
     F.addModel(ForwardPolyFactory,len(target),'poly')
     myCost = F.getCostFunction(evalpts=x, observations=datapts)    
 
-    import pylab
-    pylab.ion()
+    import matplotlib.pyplot as plt
+    plt.ion()
 
     print("target: %s" % target)
     plot_sol(target,'r-')
