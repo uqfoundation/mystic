@@ -284,7 +284,7 @@ def test_collection_behavior():
   _mean = 85.0
   _range = 0.25
 
-  c.set_expect((_mean,_range), f, npop=40, maxiter=200)
+  c.set_expect(_mean, f, npop=40, maxiter=200, tol=_range)
   _exp = c.expect(f)
   if disp:
     print("mean: %s" % _mean)

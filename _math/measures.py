@@ -18,10 +18,13 @@ from mystic.math import almostEqual
 from mystic.math.distance import Lnorm
 
 __all__ = ['weighted_select','spread','norm','maximum','ess_maximum',\
-          'minimum','ess_minimum','expectation','mean','support_index',\
+          'minimum','ess_minimum','expectation','expected_variance',\
+          'expected_std','_expected_moment','mean','support_index',\
           'support','moment','standard_moment','variance','std','skewness',\
           'kurtosis','impose_mean','impose_variance','impose_std',\
           'impose_moment','impose_spread','impose_expectation',\
+          '_impose_expected_moment','impose_expected_variance',\
+          'impose_expected_std','impose_expected_mean_and_variance',\
           'impose_weight_norm','normalize','impose_reweighted_mean',\
           'impose_reweighted_variance','impose_reweighted_std','_sort',\
           'median','mad','impose_median','impose_mad','_k','tmean',\
@@ -94,7 +97,7 @@ Args:
 Returns:
     the maximum output value for a function at the given inputs
 """
-  y = [f(x) for x in samples]
+  y = [f(x) for x in samples] #XXX: parallel map?
   return max(y)
 
 def ess_maximum(f, samples, weights=None, tol=0.):
@@ -127,7 +130,7 @@ Args:
 Returns:
     the minimum output value for a function at the given inputs
 """
-  y = [f(x) for x in samples]
+  y = [f(x) for x in samples] #XXX: parallel map?
   return min(y)
 
 def ess_minimum(f, samples, weights=None, tol=0.):
@@ -161,7 +164,7 @@ Returns:
     the weighted expectation for a list of sample points
 """
   if weights is None:
-    y = [f(x) for x in samples]
+    y = [f(x) for x in samples] #XXX: parallel map?
     return mean(y, weights)
   # contributed by TJS #
   # to prevent function evaluation if weight is "too small":
@@ -170,7 +173,7 @@ Returns:
   #weights = normalize(weights, mass=1.0) #FIXME: below is atol, should be rtol?
   if not sum(abs(w) > tol for w in weights):
       yw = ((0.0,0.0),)
-  else:
+  else: #XXX: parallel map?
       yw = [(f(x),w) for (x,w) in zip(samples, weights) if abs(w) > tol]
   return mean(*zip(*yw))
   ##XXX: at around len(samples) == 150, the following is faster
@@ -178,6 +181,63 @@ Returns:
   #ax = asarray(samples)
   #w = aw > tol
   #return mean(ax[w], aw[w])
+
+def _expected_moment(f, samples, weights=None, order=1, tol=0.0):
+  """calculate the (weighted) nth-order expected moment of a function
+
+Args:
+    f (func): a function that takes a list and returns a number
+    samples (list): a list of sample points
+    weights (list, default=None): a list of sample weights
+    order (int, default=1): the degree, a positive integer
+    tol (float, default=0.0): a tolerance, where any ``weight <= tol`` is zero
+
+Returns:
+    the weighted nth-order expected moment of f on a list of sample points
+"""
+  if order < 0:
+    raise NotImplementedError
+  if weights is None:
+    y = [f(x) for x in samples] #XXX: parallel map?
+    return moment(y, weights, order) #XXX: tol?
+  # skip evaluation of f(x) if the corresponding weight <= tol
+  if not sum(abs(w) > tol for w in weights):
+      yw = ((0.0,0.0),)
+  else: #XXX: parallel map?
+      yw = [(f(x),w) for (x,w) in zip(samples, weights) if abs(w) > tol]
+  return moment(*zip(*yw), order=order)
+
+
+def expected_variance(f, samples, weights=None, tol=0.0):
+  """calculate the (weighted) expected variance of a function
+
+Args:
+    f (func): a function that takes a list and returns a number
+    samples (list): a list of sample points
+    weights (list, default=None): a list of sample weights
+    tol (float, default=0.0): a tolerance, where any ``weight <= tol`` is zero
+
+Returns:
+    the weighted expected variance of f on a list of sample points
+"""
+  return _expected_moment(f, samples, weights, order=2, tol=tol)
+
+
+def expected_std(f, samples, weights=None, tol=0.0):
+  """calculate the (weighted) expected standard deviation of a function
+
+Args:
+    f (func): a function that takes a list and returns a number
+    samples (list): a list of sample points
+    weights (list, default=None): a list of sample weights
+    tol (float, default=0.0): a tolerance, where any ``weight <= tol`` is zero
+
+Returns:
+    the weighted expected standard deviation of f on a list of sample points
+"""
+  from numpy import sqrt
+  return sqrt(expected_variance(f, samples, weights, tol=tol))
+
 
 def mean(samples, weights=None, tol=0):
   """calculate the (weighted) mean for a list of points
@@ -406,7 +466,7 @@ Notes:
 
     if *skew* is None, then allow *skew* when *order* is odd
 """
-  v = m #NOTE: change of variables, so code is consistent witn impose_variance
+  v = m #NOTE: change of variables, so code is consistent with impose_variance
   if order is 0:
     if v == 1: return [float(i) for i in samples]
     else:
@@ -474,16 +534,18 @@ Notes:
   return impose_mean(m, samples, weights) #NOTE: not variance preserving
 
 
-def impose_expectation(param, f, npts, bounds=None, weights=None, **kwds):
+#NOTE: backward incompatible 08/26/18: (param=(m,D),...) --> (m,...,tol=D) 
+def impose_expectation(m, f, npts, bounds=None, weights=None, **kwds):
   """impose a given expectation value ``E`` on a given function *f*,
-where ``E = m +/- D`` and ``E = mean(f(x))`` for ``x`` in *bounds*
+where ``E = m +/- tol`` and ``E = mean(f(x))`` for ``x`` in *bounds*
 
 Args:
-    param (tuple(float)): target parameters, ``param = (mean, deviation)``
+    m (float): target expected mean
     f (func): a function that takes a list and returns a number
     npts (tuple(int)): a tuple of dimensions of the target product measure
     bounds (tuple, default=None): tuple is ``(lower_bounds, upper_bounds)``
-    weights (list, default=None):  a list of sample weights
+    weights (list, default=None): a list of sample weights
+    tol (float, default=None): maximum allowable deviation from ``m``
     constraints (func, default=None): a function that takes a nested list of
         ``N x 1D`` discrete measure positions and weights, with the intended
         purpose of kernel-transforming ``x,w`` as ``x' = constraints(x, w)``
@@ -497,9 +559,10 @@ Returns:
 Notes:
     Expectation value ``E`` is calculated by minimizing ``mean(f(x)) - m``,
     over the given *bounds*, and will terminate when ``E`` is found within
-    deviation ``D`` of the target mean ``m``.
+    deviation ``tol`` of the target mean ``m``.  If ``tol`` is not provided,
+    then a relative deviation of 1% of ``m`` will be used.
 
-    this function does not preserve the mean, variance, or range, as there
+    This function does not preserve the mean, variance, or range, as there
     is no initial list of samples to draw the mean, variance, and etc from
 
     *bounds* is tuple with ``length(bounds) == 2``, composed of all the lower
@@ -517,14 +580,16 @@ Examples:
     >>>
     >>> # generate a list of samples with mean +/- dev imposed
     >>> mean = 2.0;  dev = 0.01
-    >>> samples = impose_expectation((mean,dev), f, (nx,ny,nz), (lb,ub))
+    >>> samples = impose_expectation(mean, f, (nx,ny,nz), (lb,ub), tol=dev)
     >>>
     >>> # test the results by calculating the expectation value for the samples
     >>> expectation(f, samples)
-    >>> 2.00001001012246015
+    >>> 2.000010010122465
 """
   # param[0] is the target mean
   # param[1] is the acceptable deviation from the target mean
+  tol = kwds['tol'] if 'tol' in kwds else None
+  param = (m,tol or 0.01*m)
 
   # FIXME: the following is a HACK to recover from lost 'weights' information
   #        we 'mimic' discrete measures using the product measure weights
@@ -586,7 +651,7 @@ Examples:
     solver.SetGenerationMonitor(stepmon)
     solver.Solve(cost,termination=VTR(tolerance),strategy=Best1Exp, \
                  CrossProbability=crossover,ScalingFactor=percent_change, \
-                 constraints = _constraints)
+                 constraints = _constraints) #XXX: parallel map?
 
     solved = solver.Solution()
     diameter_squared = solver.bestEnergy
@@ -595,6 +660,588 @@ Examples:
 
   # use optimization to get expectation value
   tolerance = (param[1])**2
+  results = optimize(cost, (lower_bounds, upper_bounds), tolerance, constraints)
+
+  # repack the results
+  samples = _pack( _nested(results[0],npts) )
+  return samples
+ 
+
+def _impose_expected_moment(m, f, npts, bounds=None, weights=None, **kwds):
+  """impose a given expected moment ``E`` on a given function *f*,
+where ``E = m +/- tol`` and ``E = moment(f(x))`` for ``x`` in *bounds*
+
+Args:
+    m (float): target expected moment
+    f (func): a function that takes a list and returns a number
+    npts (tuple(int)): a tuple of dimensions of the target product measure
+    bounds (tuple, default=None): tuple is ``(lower_bounds, upper_bounds)``
+    weights (list, default=None):  a list of sample weights
+    order (int, default=1): the degree, a positive integer
+    tol (float, default=None): maximum allowable deviation from ``m``
+    constraints (func, default=None): a function that takes a nested list of
+        ``N x 1D`` discrete measure positions and weights, with the intended
+        purpose of kernel-transforming ``x,w`` as ``x' = constraints(x, w)``
+    npop (int, default=200): size of the trial solution population
+    maxiter (int, default=1000): the maximum number of iterations to perform
+    maxfun (int, default=1e+6): the maximum number of function evaluations
+
+Returns:
+    a list of sample positions, with expected moment ``E``
+
+Notes:
+    Expected moment ``E`` is calculated by minimizing ``moment(f(x)) - m``,
+    over the given *bounds*, and will terminate when ``E`` is found within
+    deviation ``tol`` of the target moment ``m``. If ``tol`` is not provided,
+    then a relative deviation of 1% of ``m`` will be used.
+
+    This function does not preserve the mean, variance, or range, as there
+    is no initial list of samples to draw the mean, variance, and etc from
+
+    *bounds* is tuple with ``length(bounds) == 2``, composed of all the lower
+    bounds, then all the upper bounds, for each parameter
+
+Examples:
+    >>> # provide the dimensions and bounds
+    >>> nx = 3;  ny = 2;  nz = 1
+    >>> x_lb = [10.0];  y_lb = [0.0];  z_lb = [10.0]
+    >>> x_ub = [50.0];  y_ub = [9.0];  z_ub = [90.0]
+    >>> 
+    >>> # prepare the bounds
+    >>> lb = (nx * x_lb) + (ny * y_lb) + (nz * z_lb)
+    >>> ub = (nx * x_ub) + (ny * y_ub) + (nz * z_ub)
+    >>>
+    >>> # generate a list of samples with moment +/- dev imposed
+    >>> mom = 2.0;  dev = 0.01
+    >>> samples = _impose_expected_moment(mom, f, (nx,ny,nz), (lb,ub), \
+    ...                                            order=2, tol=dev)
+    >>>
+    >>> # test the results by calculating the expected moment for the samples
+    >>> _expected_moment(f, samples, order=2)
+    >>> 2.000010010122465
+"""
+  # param[0] is the target moment (i.e. mean, variance, ...)
+  # param[1] is the acceptable deviation from the target moment
+  # param[2] is the order of the moment (i.e. 2=variance, ...)
+  tol = kwds['tol'] if 'tol' in kwds else None
+  order = kwds['order'] if 'order' in kwds else 1
+  param = (m, tol or 0.01*m, order)
+
+  if param[-1] < 0:
+     msg = 'order must be greater than zero (order = %s)' % param[-1]
+     raise ValueError(msg)
+  if param[-1] == 1 and not (param[1] >= -param[0] >= -param[1]):
+     msg = 'if order == 1, then moment == 0 (moment = %s +/- %s)' % param[:-1]
+     raise ValueError(msg)
+  if param[-1] == 0 and not (param[1] >= 1-param[0] >= -param[1]):
+     msg = 'if order == 0, then moment == 1 (moment %s +/- %s)' % param[:-1]
+     raise ValueError(msg)
+
+  # FIXME: the following is a HACK to recover from lost 'weights' information
+  #        we 'mimic' discrete measures using the product measure weights
+  # plug in the 'constraints' function:  samples' = constrain(samples, weights)
+  constrain = None   # default is no constraints
+  if 'constraints' in kwds: constrain = kwds['constraints']
+  if not constrain:  # if None (default), there are no constraints
+    constraints = lambda x: x
+  else: #XXX: better to use a standard "xk' = constrain(xk)" interface ?
+    def constraints(rv):
+      coords = _pack( _nested(rv,npts) )
+      coords = list(zip(*coords))              # 'mimic' a nested list
+      coords = constrain(coords, [weights for i in range(len(coords))])
+      coords = list(zip(*coords))              # revert back to a packed list
+      return _flat( _unpack(coords,npts) )
+
+  # construct cost function to reduce deviation from expected moment
+  def cost(rv):
+    """compute cost from a 1-d array of model parameters,
+    where:  cost = | E_moment[model] - m |**2 """
+    # from mystic.math.measures import _pack, _nested, _expected_moment
+    samples = _pack( _nested(rv,npts) )
+    Ex = _expected_moment(f, samples, weights, param[-1])
+    return (Ex - param[0])**2
+
+  # if bounds are not set, use the default optimizer bounds
+  if not bounds:
+    lower_bounds = []; upper_bounds = []
+    for n in npts:
+      lower_bounds += [None]*n
+      upper_bounds += [None]*n
+  else:
+    lower_bounds, upper_bounds = bounds
+
+  if len(lower_bounds) == 1 and param[-1] > 1 \
+     and not (param[1] >= -param[0] >= -param[1]):
+     msg = 'if size == 1, then moment == 0 (moment %s +/- %s)' % param[:-1]
+     raise ValueError(msg)
+
+  # construct and configure optimizer
+  debug = kwds['debug'] if 'debug' in kwds else False
+  npop = kwds.pop('npop', 200)
+  maxiter = 1 if param[-1] <= 1 else 1000
+  maxiter = kwds.pop('maxiter', maxiter)
+  maxfun = kwds.pop('maxfun', 1e+6)
+  crossover = 0.9; percent_change = 0.9
+
+  def optimize(cost, bounds, tolerance, _constraints):
+    (lb,ub) = bounds
+    from mystic.solvers import DifferentialEvolutionSolver2
+    from mystic.termination import VTR
+    from mystic.strategy import Best1Exp
+    from mystic.monitors import VerboseMonitor, Monitor
+    from mystic.tools import random_seed
+    if debug: random_seed(123)
+    evalmon = Monitor();  stepmon = Monitor()
+    if debug: stepmon = VerboseMonitor(10)
+
+    ndim = len(lb)
+    solver = DifferentialEvolutionSolver2(ndim,npop)
+    solver.SetRandomInitialPoints(min=lb,max=ub)
+    solver.SetStrictRanges(min=lb,max=ub)
+    solver.SetEvaluationLimits(maxiter,maxfun)
+    solver.SetEvaluationMonitor(evalmon)
+    solver.SetGenerationMonitor(stepmon)
+    solver.Solve(cost,termination=VTR(tolerance),strategy=Best1Exp, \
+                 CrossProbability=crossover,ScalingFactor=percent_change, \
+                 constraints = _constraints) #XXX: parallel map?
+
+    solved = solver.Solution()
+    diameter_squared = solver.bestEnergy
+    func_evals = len(evalmon)
+    return solved, diameter_squared, func_evals
+
+  # use optimization to get expected moment
+  tolerance = (param[1])**2
+  results = optimize(cost, (lower_bounds, upper_bounds), tolerance, constraints)
+
+  # repack the results
+  samples = _pack( _nested(results[0],npts) )
+  return samples
+
+
+def impose_expected_variance(v, f, npts, bounds=None, weights=None, **kwds):
+  """impose a given expected variance ``E`` on a given function *f*,
+where ``E = v +/- tol`` and ``E = variance(f(x))`` for ``x`` in *bounds*
+
+Args:
+    v (float): target expected variance
+    f (func): a function that takes a list and returns a number
+    npts (tuple(int)): a tuple of dimensions of the target product measure
+    bounds (tuple, default=None): tuple is ``(lower_bounds, upper_bounds)``
+    weights (list, default=None):  a list of sample weights
+    tol (float, default=None): maximum allowable deviation from ``v``
+    constraints (func, default=None): a function that takes a nested list of
+        ``N x 1D`` discrete measure positions and weights, with the intended
+        purpose of kernel-transforming ``x,w`` as ``x' = constraints(x, w)``
+    npop (int, default=200): size of the trial solution population
+    maxiter (int, default=1000): the maximum number of iterations to perform
+    maxfun (int, default=1e+6): the maximum number of function evaluations
+
+Returns:
+    a list of sample positions, with expected variance ``E``
+
+Notes:
+    Expected variance ``E`` is calculated by minimizing ``variance(f(x)) - v``,
+    over the given *bounds*, and will terminate when ``E`` is found within
+    deviation ``tol`` of the target variance ``v``. If ``tol`` is not provided,
+    then a relative deviation of 1% of ``v`` will be used.
+
+    This function does not preserve the mean, variance, or range, as there
+    is no initial list of samples to draw the mean, variance, and etc from
+
+    *bounds* is tuple with ``length(bounds) == 2``, composed of all the lower
+    bounds, then all the upper bounds, for each parameter
+
+Examples:
+    >>> # provide the dimensions and bounds
+    >>> nx = 3;  ny = 2;  nz = 1
+    >>> x_lb = [10.0];  y_lb = [0.0];  z_lb = [10.0]
+    >>> x_ub = [50.0];  y_ub = [9.0];  z_ub = [90.0]
+    >>> 
+    >>> # prepare the bounds
+    >>> lb = (nx * x_lb) + (ny * y_lb) + (nz * z_lb)
+    >>> ub = (nx * x_ub) + (ny * y_ub) + (nz * z_ub)
+    >>>
+    >>> # generate a list of samples with variance +/- dev imposed
+    >>> var = 2.0;  dev = 0.01
+    >>> samples = impose_expected_variance(var, f, (nx,ny,nz), (lb,ub), tol=dev)
+    >>>
+    >>> # test the results by calculating the expected variance for the samples
+    >>> expected_variance(f, samples)
+    >>> 2.000010010122465
+"""
+  # param[0] is the target variance
+  # param[1] is the acceptable deviation from the target variance
+  tol = kwds['tol'] if 'tol' in kwds else None
+  param = (v, tol or 0.01*v)
+
+  # FIXME: the following is a HACK to recover from lost 'weights' information
+  #        we 'mimic' discrete measures using the product measure weights
+  # plug in the 'constraints' function:  samples' = constrain(samples, weights)
+  constrain = None   # default is no constraints
+  if 'constraints' in kwds: constrain = kwds['constraints']
+  if not constrain:  # if None (default), there are no constraints
+    constraints = lambda x: x
+  else: #XXX: better to use a standard "xk' = constrain(xk)" interface ?
+    def constraints(rv):
+      coords = _pack( _nested(rv,npts) )
+      coords = list(zip(*coords))              # 'mimic' a nested list
+      coords = constrain(coords, [weights for i in range(len(coords))])
+      coords = list(zip(*coords))              # revert back to a packed list
+      return _flat( _unpack(coords,npts) )
+
+  # construct cost function to reduce deviation from expected variance
+  def cost(rv):
+    """compute cost from a 1-d array of model parameters,
+    where:  cost = | E_var[model] - m |**2 """
+    # from mystic.math.measures import _pack, _nested, expected_variance
+    samples = _pack( _nested(rv,npts) )
+    Ex = expected_variance(f, samples, weights)
+    return (Ex - param[0])**2
+
+  # if bounds are not set, use the default optimizer bounds
+  if not bounds:
+    lower_bounds = []; upper_bounds = []
+    for n in npts:
+      lower_bounds += [None]*n
+      upper_bounds += [None]*n
+  else:
+    lower_bounds, upper_bounds = bounds
+
+  if len(lower_bounds) == 1 and not (param[1] >= -param[0] >= -param[1]):
+     msg = 'if size == 1, then variance == 0 (variance %s +/- %s)' % param
+     raise ValueError(msg)
+
+  # construct and configure optimizer
+  debug = kwds['debug'] if 'debug' in kwds else False
+  npop = kwds.pop('npop', 200)
+  maxiter = kwds.pop('maxiter', 1000)
+  maxfun = kwds.pop('maxfun', 1e+6)
+  crossover = 0.9; percent_change = 0.9
+
+  def optimize(cost, bounds, tolerance, _constraints):
+    (lb,ub) = bounds
+    from mystic.solvers import DifferentialEvolutionSolver2
+    from mystic.termination import VTR
+    from mystic.strategy import Best1Exp
+    from mystic.monitors import VerboseMonitor, Monitor
+    from mystic.tools import random_seed
+    if debug: random_seed(123)
+    evalmon = Monitor();  stepmon = Monitor()
+    if debug: stepmon = VerboseMonitor(10)
+
+    ndim = len(lb)
+    solver = DifferentialEvolutionSolver2(ndim,npop)
+    solver.SetRandomInitialPoints(min=lb,max=ub)
+    solver.SetStrictRanges(min=lb,max=ub)
+    solver.SetEvaluationLimits(maxiter,maxfun)
+    solver.SetEvaluationMonitor(evalmon)
+    solver.SetGenerationMonitor(stepmon)
+    solver.Solve(cost,termination=VTR(tolerance),strategy=Best1Exp, \
+                 CrossProbability=crossover,ScalingFactor=percent_change, \
+                 constraints = _constraints) #XXX: parallel map?
+
+    solved = solver.Solution()
+    diameter_squared = solver.bestEnergy
+    func_evals = len(evalmon)
+    return solved, diameter_squared, func_evals
+
+  # use optimization to get expected_variance
+  tolerance = (param[1])**2
+  results = optimize(cost, (lower_bounds, upper_bounds), tolerance, constraints)
+
+  # repack the results
+  samples = _pack( _nested(results[0],npts) )
+  return samples
+
+
+def impose_expected_std(s, f, npts, bounds=None, weights=None, **kwds):
+  """impose a given expected std ``E`` on a given function *f*,
+where ``E = s +/- tol`` and ``E = std(f(x))`` for ``x`` in *bounds*
+
+Args:
+    s (float): target expected standard deviation
+    f (func): a function that takes a list and returns a number
+    npts (tuple(int)): a tuple of dimensions of the target product measure
+    bounds (tuple, default=None): tuple is ``(lower_bounds, upper_bounds)``
+    weights (list, default=None):  a list of sample weights
+    tol (float, default=None): maximum allowable deviation from ``s``
+    constraints (func, default=None): a function that takes a nested list of
+        ``N x 1D`` discrete measure positions and weights, with the intended
+        purpose of kernel-transforming ``x,w`` as ``x' = constraints(x, w)``
+    npop (int, default=200): size of the trial solution population
+    maxiter (int, default=1000): the maximum number of iterations to perform
+    maxfun (int, default=1e+6): the maximum number of function evaluations
+
+Returns:
+    a list of sample positions, with expected standard deviation ``E``
+
+Notes:
+    Expected std ``E`` is calculated by minimizing ``std(f(x)) - s``,
+    over the given *bounds*, and will terminate when ``E`` is found within
+    deviation ``tol`` of the target std ``s``. If ``tol`` is not provided,
+    then a relative deviation of 1% of ``s`` will be used.
+
+    This function does not preserve the mean, variance, or range, as there
+    is no initial list of samples to draw the mean, variance, and etc from
+
+    *bounds* is tuple with ``length(bounds) == 2``, composed of all the lower
+    bounds, then all the upper bounds, for each parameter
+
+Examples:
+    >>> # provide the dimensions and bounds
+    >>> nx = 3;  ny = 2;  nz = 1
+    >>> x_lb = [10.0];  y_lb = [0.0];  z_lb = [10.0]
+    >>> x_ub = [50.0];  y_ub = [9.0];  z_ub = [90.0]
+    >>> 
+    >>> # prepare the bounds
+    >>> lb = (nx * x_lb) + (ny * y_lb) + (nz * z_lb)
+    >>> ub = (nx * x_ub) + (ny * y_ub) + (nz * z_ub)
+    >>>
+    >>> # generate a list of samples with std +/- dev imposed
+    >>> std = 2.0;  dev = 0.01
+    >>> samples = impose_expected_std(std, f, (nx,ny,nz), (lb,ub), tol=dev)
+    >>>
+    >>> # test the results by calculating the expected std for the samples
+    >>> expected_std(f, samples)
+    >>> 2.000010010122465
+"""
+  # param[0] is the target standard deviation
+  # param[1] is the acceptable deviation from the target standard deviation
+  tol = kwds['tol'] if 'tol' in kwds else None
+  param = (s, tol or 0.01*s)
+
+  # FIXME: the following is a HACK to recover from lost 'weights' information
+  #        we 'mimic' discrete measures using the product measure weights
+  # plug in the 'constraints' function:  samples' = constrain(samples, weights)
+  constrain = None   # default is no constraints
+  if 'constraints' in kwds: constrain = kwds['constraints']
+  if not constrain:  # if None (default), there are no constraints
+    constraints = lambda x: x
+  else: #XXX: better to use a standard "xk' = constrain(xk)" interface ?
+    def constraints(rv):
+      coords = _pack( _nested(rv,npts) )
+      coords = list(zip(*coords))              # 'mimic' a nested list
+      coords = constrain(coords, [weights for i in range(len(coords))])
+      coords = list(zip(*coords))              # revert back to a packed list
+      return _flat( _unpack(coords,npts) )
+
+  # construct cost function to reduce deviation from expected std
+  def cost(rv):
+    """compute cost from a 1-d array of model parameters,
+    where:  cost = | E_std[model] - m |**2 """
+    # from mystic.math.measures import _pack, _nested, expected_std
+    samples = _pack( _nested(rv,npts) )
+    Ex = expected_std(f, samples, weights)
+    return (Ex - param[0])**2
+
+  # if bounds are not set, use the default optimizer bounds
+  if not bounds:
+    lower_bounds = []; upper_bounds = []
+    for n in npts:
+      lower_bounds += [None]*n
+      upper_bounds += [None]*n
+  else:
+    lower_bounds, upper_bounds = bounds
+
+  if len(lower_bounds) == 1 and not (param[1] >= -param[0] >= -param[1]):
+     msg = 'if size == 1, then std == 0 (std %s +/- %s)' % param
+     raise ValueError(msg)
+
+  # construct and configure optimizer
+  debug = kwds['debug'] if 'debug' in kwds else False
+  npop = kwds.pop('npop', 200)
+  maxiter = kwds.pop('maxiter', 1000)
+  maxfun = kwds.pop('maxfun', 1e+6)
+  crossover = 0.9; percent_change = 0.9
+
+  def optimize(cost, bounds, tolerance, _constraints):
+    (lb,ub) = bounds
+    from mystic.solvers import DifferentialEvolutionSolver2
+    from mystic.termination import VTR
+    from mystic.strategy import Best1Exp
+    from mystic.monitors import VerboseMonitor, Monitor
+    from mystic.tools import random_seed
+    if debug: random_seed(123)
+    evalmon = Monitor();  stepmon = Monitor()
+    if debug: stepmon = VerboseMonitor(10)
+
+    ndim = len(lb)
+    solver = DifferentialEvolutionSolver2(ndim,npop)
+    from mystic.termination import VTR
+    from mystic.strategy import Best1Exp
+    from mystic.monitors import VerboseMonitor, Monitor
+    from mystic.tools import random_seed
+    if debug: random_seed(123)
+    evalmon = Monitor();  stepmon = Monitor()
+    if debug: stepmon = VerboseMonitor(10)
+
+    ndim = len(lb)
+    solver = DifferentialEvolutionSolver2(ndim,npop)
+    solver.SetRandomInitialPoints(min=lb,max=ub)
+    solver.SetStrictRanges(min=lb,max=ub)
+    solver.SetEvaluationLimits(maxiter,maxfun)
+    solver.SetEvaluationMonitor(evalmon)
+    solver.SetGenerationMonitor(stepmon)
+    solver.Solve(cost,termination=VTR(tolerance),strategy=Best1Exp, \
+                 CrossProbability=crossover,ScalingFactor=percent_change, \
+                 constraints = _constraints) #XXX: parallel map?
+
+    solved = solver.Solution()
+    diameter_squared = solver.bestEnergy
+    func_evals = len(evalmon)
+    return solved, diameter_squared, func_evals
+
+  # use optimization to get expected std
+  tolerance = (param[1])**2
+  results = optimize(cost, (lower_bounds, upper_bounds), tolerance, constraints)
+
+  # repack the results
+  samples = _pack( _nested(results[0],npts) )
+  return samples
+
+
+#XXX: better ...variance(param, f, ...) or ...variance(m,v, f, ...) ?
+def impose_expected_mean_and_variance(param, f, npts, bounds=None, weights=None, **kwds):
+  """impose a given expected mean ``E`` on a given function *f*,
+where ``E = m +/- tol`` and ``E = mean(f(x))`` for ``x`` in *bounds*.
+Additionally, impose a given expected variance ``R`` on *f*,
+where ``R = v +/- tol`` and ``R = variance(f(x))`` for ``x`` in *bounds*.
+
+Args:
+    param (tuple(float)): target parameters, ``(mean, variance)``
+    f (func): a function that takes a list and returns a number
+    npts (tuple(int)): a tuple of dimensions of the target product measure
+    bounds (tuple, default=None): tuple is ``(lower_bounds, upper_bounds)``
+    weights (list, default=None):  a list of sample weights
+    tol (float, default=None): maximum allowable deviation from ``m`` and ``v``
+    constraints (func, default=None): a function that takes a nested list of
+        ``N x 1D`` discrete measure positions and weights, with the intended
+        purpose of kernel-transforming ``x,w`` as ``x' = constraints(x, w)``
+    npop (int, default=200): size of the trial solution population
+    maxiter (int, default=1000): the maximum number of iterations to perform
+    maxfun (int, default=1e+6): the maximum number of function evaluations
+
+Returns:
+    a list of sample positions, with expected mean ``E`` and variance ``R``
+
+Notes:
+    Expected mean ``E`` and expected variance ``R`` are calculated by
+    minimizing the sum of the absolute values of ``mean(f(x)) - m`` and
+    ``variance(f(x)) - v`` over the given *bounds*, and will terminate when
+    ``E`` and ``R`` are found within tolerance ``tol`` of the target mean ``m``
+    and variance ``v``, respectively. If ``tol`` is not provided, then a
+    relative deviation of 1% of ``max(m,v)`` will be used.
+
+    This function does not preserve the mean, variance, or range, as there
+    is no initial list of samples to draw the mean, variance, and etc from
+
+    *bounds* is tuple with ``length(bounds) == 2``, composed of all the lower
+    bounds, then all the upper bounds, for each parameter
+
+Examples:
+    >>> # provide the dimensions and bounds
+    >>> nx = 3;  ny = 2;  nz = 1
+    >>> x_lb = [10.0];  y_lb = [0.0];  z_lb = [10.0]
+    >>> x_ub = [50.0];  y_ub = [9.0];  z_ub = [90.0]
+    >>> 
+    >>> # prepare the bounds
+    >>> lb = (nx * x_lb) + (ny * y_lb) + (nz * z_lb)
+    >>> ub = (nx * x_ub) + (ny * y_ub) + (nz * z_ub)
+    >>>
+    >>> # generate a list of samples with mean and variance imposed
+    >>> mean = 5.0;  var = 2.0;  tol = 0.01
+    >>> samples = impose_expected_mean_and_variance((mean,var), f, (nx,ny,nz), \
+    ...                                             (lb,ub), tol=tol)
+    >>>
+    >>> # test the results by calculating the expected mean for the samples
+    >>> expected_mean(f, samples)
+    >>> 
+    >>> # test the results by calculating the expected variance for the samples
+    >>> expected_variance(f, samples)
+    >>> 2.000010010122465
+"""
+  # param[0] is the target mean
+  # param[1] is the target variance
+  # param[2] is the acceptable deviation from the target mean and variance
+  tol = kwds['tol'] if 'tol' in kwds else None
+  param = tuple(param) + (tol or 0.01*max(param),)
+
+  # FIXME: the following is a HACK to recover from lost 'weights' information
+  #        we 'mimic' discrete measures using the product measure weights
+  # plug in the 'constraints' function:  samples' = constrain(samples, weights)
+  constrain = None   # default is no constraints
+  if 'constraints' in kwds: constrain = kwds['constraints']
+  if not constrain:  # if None (default), there are no constraints
+    constraints = lambda x: x
+  else: #XXX: better to use a standard "xk' = constrain(xk)" interface ?
+    def constraints(rv):
+      coords = _pack( _nested(rv,npts) )
+      coords = list(zip(*coords))              # 'mimic' a nested list
+      coords = constrain(coords, [weights for i in range(len(coords))])
+      coords = list(zip(*coords))              # revert back to a packed list
+      return _flat( _unpack(coords,npts) )
+
+  # construct cost function to reduce deviation from expected mean and variance
+  def cost(rv):
+    """compute cost from a 1-d array of model parameters,
+    where:  cost = | E[model] - m |**2 + | E_var[model] - n |**2 """
+    # from mystic.math.measures import _pack, _nested
+    # from mystic.math.measures import expectation, expected_variance
+    samples = _pack( _nested(rv,npts) )
+    Em = expectation(f, samples, weights)
+    Ev = expected_variance(f, samples, weights)
+    return (Em - param[0])**2 + (Ev - param[1])**2
+
+  # if bounds are not set, use the default optimizer bounds
+  if not bounds:
+    lower_bounds = []; upper_bounds = []
+    for n in npts:
+      lower_bounds += [None]*n
+      upper_bounds += [None]*n
+  else:
+    lower_bounds, upper_bounds = bounds
+
+  if len(lower_bounds) == 1 and not (param[2] >= -param[1] >= -param[2]):
+     msg = 'if size == 1, then variance == 0 (variance %s +/- %s)' % param[1:]
+     raise ValueError(msg)
+
+  # construct and configure optimizer
+  debug = kwds['debug'] if 'debug' in kwds else False
+  npop = kwds.pop('npop', 200)
+  maxiter = kwds.pop('maxiter', 1000)
+  maxfun = kwds.pop('maxfun', 1e+6)
+  crossover = 0.9; percent_change = 0.9
+
+  def optimize(cost, bounds, tolerance, _constraints):
+    (lb,ub) = bounds
+    from mystic.solvers import DifferentialEvolutionSolver2
+    from mystic.termination import VTR
+    from mystic.strategy import Best1Exp
+    from mystic.monitors import VerboseMonitor, Monitor
+    from mystic.tools import random_seed
+    if debug: random_seed(123)
+    evalmon = Monitor();  stepmon = Monitor()
+    if debug: stepmon = VerboseMonitor(10)
+
+    ndim = len(lb)
+    solver = DifferentialEvolutionSolver2(ndim,npop)
+    solver.SetRandomInitialPoints(min=lb,max=ub)
+    solver.SetStrictRanges(min=lb,max=ub)
+    solver.SetEvaluationLimits(maxiter,maxfun)
+    solver.SetEvaluationMonitor(evalmon)
+    solver.SetGenerationMonitor(stepmon)
+    solver.Solve(cost,termination=VTR(tolerance),strategy=Best1Exp, \
+                 CrossProbability=crossover,ScalingFactor=percent_change, \
+                 constraints = _constraints) #XXX: parallel map?
+
+    solved = solver.Solution()
+    diameter_squared = solver.bestEnergy
+    func_evals = len(evalmon)
+    return solved, diameter_squared, func_evals
+
+  # use optimization to get expected mean and variance
+  tolerance = (param[-1])**2 #XXX: correct? or (?*D)**2
   results = optimize(cost, (lower_bounds, upper_bounds), tolerance, constraints)
 
   # repack the results

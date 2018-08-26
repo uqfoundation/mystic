@@ -130,8 +130,8 @@ def test_expect(constrain=False):
       return decompose(c)[0]
 
   from mystic.math.measures import mean, expectation, impose_expectation
-  samples = impose_expectation((_mean,_range), G, (nx,ny,nz), bounds, \
-                                      weights, constraints=constraints)
+  samples = impose_expectation(_mean, G, (nx,ny,nz), bounds, weights, \
+                               tol=_range, constraints=constraints)
 
   smp = _unpack(samples,(nx,ny,nz))
   if debug:

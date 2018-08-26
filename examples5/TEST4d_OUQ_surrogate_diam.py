@@ -121,7 +121,7 @@ def maximize(params,npts,bounds):
     E = float(c.expect(model))
     if not (E <= float(target[0] + error[0])) \
     or not (float(target[0] - error[0]) <= E):
-      c.set_expect((target[0],error[0]), model, (x_lb,x_ub), more_constraints)
+      c.set_expect(target[0],model,(x_lb,x_ub), more_constraints, tol=error[0])
 
     # c = more_constraints(c) #XXX: impose constraints again (necessary ?)
     ###################### end function-specific ######################

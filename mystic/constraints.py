@@ -80,7 +80,7 @@ expectation(f, samples, weights=None, tol=0.0)
 # impose_mean(m, samples, weights=None)
 # impose_variance(v, samples, weights=None)
 # impose_spread(r, samples, weights=None)
-impose_expectation(param, f, npts, bounds=None, weights=None, **kwds)
+impose_expectation(m, f, npts, bounds=None, weights=None, tol=None, **kwds)
 impose_weight_norm(samples, weights, mass=1.0)
 # normalize(weights, mass=1.0, zsum=False, zmass=1.0)
 '''

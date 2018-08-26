@@ -115,7 +115,7 @@ def maximize(params,npts,bounds):
     if not (E <= float(target[0] + error[0])) \
     or not (float(target[0] - error[0]) <= E):
 #     if debug: print(c)
-      c.set_expect((target[0],error[0]), model, (x_lb,x_ub))
+      c.set_expect(target[0], model, (x_lb,x_ub), tol=error[0])
     ###################### end function-specific ######################
     # extract weights and positions
     return c.flatten()

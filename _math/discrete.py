@@ -12,8 +12,9 @@ Includes point_mass, measure, product_measure, and scenario classes.
 # Adapted from seesaw2d.py in branches/UQ/math/examples2/ 
 # For usage example, see seesaw2d_inf_example.py .
 
-from mystic.math.measures import impose_mean, impose_expectation
-from mystic.math.measures import impose_spread, impose_variance
+from mystic.math.measures import impose_expectation, impose_expected_variance
+from mystic.math.measures import impose_expected_mean_and_variance
+from mystic.math.measures import impose_mean, impose_spread, impose_variance
 from mystic.math.measures import impose_weight_norm
 
 __all__ = ['point_mass','measure','product_measure','scenario',\
@@ -210,31 +211,154 @@ Returns:
     positions = [(i,) for i in self.positions]
     return expectation(f, positions, self.weights)
 
+  def expect_var(self, f):
+    """calculate the expected variance for a given function
+
+Args:
+    f (func): a function that takes a list and returns a number
+
+Returns:
+    the expected variance of ``f`` over all measure positions
+""" #XXX: maybe more natural if f takes a positional value x, not a list x ?
+    from mystic.math.measures import expected_variance
+    positions = [(i,) for i in self.positions]
+    return expected_variance(f, positions, self.weights)
+
+  #NOTE: backward incompatible 08/26/18: (expected=(m,D),...) --> (m,...,tol=D)
   def set_expect(self, expected, f, bounds=None, constraints=None, **kwds):
     """impose an expectation on the measure by adjusting the positions
 
 Args:
-    expected (tuple(float)): ``(desired expectation, acceptable deviation)``
+    expected (float): target expected mean
     f (func): a function that takes a list and returns a number
     bounds (tuple, default=None): ``(all lower bounds, all upper bounds)``
     constraints (func, default=None): a function ``c' = constraints(c)``,
         where ``c`` is a product measure, and ``c'`` is a product measure
         where the encoded constaints are satisfied.
+    tol (float, default=None): maximum allowable deviation from ``expected``
+    npop (int, default=200): size of the trial solution population
+    maxiter (int, default=1000): the maximum number of iterations to perform
+    maxfun (int, default=1e+6): the maximum number of function evaluations
 
 Returns:
     None
+
+Notes:
+    Expectation ``E`` is calculated by minimizing ``mean(f(x)) - expected``,
+    over the given *bounds*, and will terminate when ``E`` is found within
+    deviation ``tol`` of the target mean ``expected``. If ``tol`` is not
+    provided, then a relative deviation of 1% of ``expected`` will be used.
+
+    This function does not preserve the mean, variance, or range, as there
+    is no initial list of samples to draw the mean, variance, and etc from.
+
+    *bounds* is tuple with ``length(bounds) == 2``, composed of all the lower
+    bounds, then all the upper bounds, for each parameter.
 """ #XXX: maybe more natural if f takes a positional value x, not a list x ?
     #XXX: maybe also natural c' = constraints(c) where c is a measure ?
-    #FIXME: undocumented npop, maxiter, maxfun
-    m,D = expected
-    if constraints:  # then need to adjust interface for 'impose_expectation'
+    m = expected
+    if constraints:  # then adjust interface for 'impose_expectation'
       def cnstr(x, w):
         c = compose(x,w)
         c = constraints(c)
         return decompose(c)[0]
     else: cnstr = constraints  # 'should' be None
-    positions = impose_expectation((m,D), f, [self.npts], bounds, \
-                                   self.weights, constraints=cnstr, **kwds)
+    positions = impose_expectation(m, f, [self.npts], bounds, self.weights, \
+                                   constraints=cnstr, **kwds)
+    from numpy import array
+    self.positions = list(array(positions)[:,0])
+   #from numpy import squeeze
+   #self.positions = list(squeeze(positions))
+    return
+
+  def set_expect_var(self, expected, f, bounds=None, constraints=None, **kwds):
+    """impose an expected variance on the measure by adjusting the positions
+
+Args:
+    expected (float): target expected variance
+    f (func): a function that takes a list and returns a number
+    bounds (tuple, default=None): ``(all lower bounds, all upper bounds)``
+    constraints (func, default=None): a function ``c' = constraints(c)``,
+        where ``c`` is a product measure, and ``c'`` is a product measure
+        where the encoded constaints are satisfied.
+    tol (float, default=None): maximum allowable deviation from ``expected``
+    npop (int, default=200): size of the trial solution population
+    maxiter (int, default=1000): the maximum number of iterations to perform
+    maxfun (int, default=1e+6): the maximum number of function evaluations
+
+Returns:
+    None
+
+Notes:
+    Expected var ``E`` is calculated by minimizing ``var(f(x)) - expected``,
+    over the given *bounds*, and will terminate when ``E`` is found within
+    deviation ``tol`` of the target variance ``expected``. If ``tol`` is not
+    provided, then a relative deviation of 1% of ``expected`` will be used.
+
+    This function does not preserve the mean, variance, or range, as there
+    is no initial list of samples to draw the mean, variance, and etc from.
+
+    *bounds* is tuple with ``length(bounds) == 2``, composed of all the lower
+    bounds, then all the upper bounds, for each parameter.
+""" #XXX: maybe more natural if f takes a positional value x, not a list x ?
+    #XXX: maybe also natural c' = constraints(c) where c is a measure ?
+    m = expected
+    if constraints:  # then adjust interface for 'impose_expected_variance'
+      def cnstr(x, w):
+        c = compose(x,w)
+        c = constraints(c)
+        return decompose(c)[0]
+    else: cnstr = constraints  # 'should' be None
+    positions = impose_expected_variance(m, f, [self.npts], bounds, \
+                                self.weights, constraints=cnstr, **kwds)
+    from numpy import array
+    self.positions = list(array(positions)[:,0])
+   #from numpy import squeeze
+   #self.positions = list(squeeze(positions))
+    return
+
+  def set_expect_mean_and_var(self, expected, f, bounds=None, constraints=None, **kwds):
+    """impose expected mean and var on the measure by adjusting the positions
+
+Args:
+    expected (tuple(float)): ``(expected mean, expected var)``
+    f (func): a function that takes a list and returns a number
+    bounds (tuple, default=None): ``(all lower bounds, all upper bounds)``
+    constraints (func, default=None): a function ``c' = constraints(c)``,
+        where ``c`` is a product measure, and ``c'`` is a product measure
+        where the encoded constaints are satisfied.
+    tol (float, default=None): maximum allowable deviation from ``expected``
+    npop (int, default=200): size of the trial solution population
+    maxiter (int, default=1000): the maximum number of iterations to perform
+    maxfun (int, default=1e+6): the maximum number of function evaluations
+
+Returns:
+    None
+
+Notes:
+    Expected mean ``E`` and expected variance ``R`` are calculated by
+    minimizing the sum of the absolute values of ``mean(f(x)) - m`` and
+    ``variance(f(x)) - v`` over the given *bounds*, and will terminate when
+    ``E`` and ``R`` are found within tolerance ``tol`` of the target mean ``m``
+    and variance ``v``, respectively. If ``tol`` is not provided, then a
+    relative deviation of 1% of ``max(m,v)`` will be used.
+
+    This function does not preserve the mean, variance, or range, as there
+    is no initial list of samples to draw the mean, variance, and etc from
+
+    *bounds* is tuple with ``length(bounds) == 2``, composed of all the lower
+    bounds, then all the upper bounds, for each parameter
+""" #XXX: maybe more natural if f takes a positional value x, not a list x ?
+    #XXX: maybe also natural c' = constraints(c) where c is a measure ?
+    m,v = expected
+    if constraints:  # then adjust interface for 'impose_expected_mean_and_var'
+      def cnstr(x, w):
+        c = compose(x,w)
+        c = constraints(c)
+        return decompose(c)[0]
+    else: cnstr = constraints  # 'should' be None
+    positions = impose_expected_mean_and_variance((m,v), f, [self.npts], \
+                       bounds, self.weights, constraints=cnstr, **kwds)
     from numpy import array
     self.positions = list(array(positions)[:,0])
    #from numpy import squeeze
@@ -409,33 +533,151 @@ Returns:
     from mystic.math.measures import expectation
     return expectation(f, self.positions, self.weights)
 
+  def expect_var(self, f):
+    """calculate the expected variance for a given function
+
+Args:
+    f (func): a function that takes a list and returns a number
+
+Returns:
+    the expected variance of ``f`` over all measure positions
+"""
+    from mystic.math.measures import expected_variance
+    return expected_variance(f, self.positions, self.weights)
+
+  #NOTE: backward incompatible 08/26/18: (expected=(m,D),...) --> (m,...,tol=D)
   def set_expect(self, expected, f, bounds=None, constraints=None, **kwds):
     """impose an expectation on the measure by adjusting the positions
 
 Args:
-    expected (tuple(float)): ``(desired expectation, acceptable deviation)``
+    expected (float): target expected mean
     f (func): a function that takes a list and returns a number
     bounds (tuple, default=None): ``(all lower bounds, all upper bounds)``
     constraints (func, default=None): a function ``c' = constraints(c)``,
         where ``c`` is a product measure, and ``c'`` is a product measure
         where the encoded constaints are satisfied.
+    tol (float, default=None): maximum allowable deviation from ``expected``
+    npop (int, default=200): size of the trial solution population
+    maxiter (int, default=1000): the maximum number of iterations to perform
+    maxfun (int, default=1e+6): the maximum number of function evaluations
 
 Returns:
     None
+
+Notes:
+    Expectation ``E`` is calculated by minimizing ``mean(f(x)) - expected``,
+    over the given *bounds*, and will terminate when ``E`` is found within
+    deviation ``tol`` of the target mean ``expected``. If ``tol`` is not
+    provided, then a relative deviation of 1% of ``expected`` will be used.
+
+    This function does not preserve the mean, variance, or range, as there
+    is no initial list of samples to draw the mean, variance, and etc from.
+
+    *bounds* is tuple with ``length(bounds) == 2``, composed of all the lower
+    bounds, then all the upper bounds, for each parameter.
 """
-    #FIXME: undocumented npop, maxiter, maxfun
     #self.__center = m
     #self.__delta = D
-    m,D = expected
-    if constraints:  # then need to adjust interface for 'impose_expectation'
+    m = expected
+    if constraints:  # then adjust interface for 'impose_expectation'
       def cnstr(x, w):
         c = compose(x,w)
         c = constraints(c)
         return decompose(c)[0]
     else: cnstr = constraints  # 'should' be None
-    self.positions = impose_expectation((m,D), f, self.pts, bounds, \
-                                        self.weights, constraints=cnstr, **kwds)
+    self.positions = impose_expectation(m, f, self.pts, bounds, self.weights, \
+                                        constraints=cnstr, **kwds)
     return
+
+  def set_expect_var(self, expected, f, bounds=None, constraints=None, **kwds):
+    """impose an expected variance on the measure by adjusting the positions
+
+Args:
+    expected (float): target expected variance
+    f (func): a function that takes a list and returns a number
+    bounds (tuple, default=None): ``(all lower bounds, all upper bounds)``
+    constraints (func, default=None): a function ``c' = constraints(c)``,
+        where ``c`` is a product measure, and ``c'`` is a product measure
+        where the encoded constaints are satisfied.
+    tol (float, default=None): maximum allowable deviation from ``expected``
+    npop (int, default=200): size of the trial solution population
+    maxiter (int, default=1000): the maximum number of iterations to perform
+    maxfun (int, default=1e+6): the maximum number of function evaluations
+
+Returns:
+    None
+
+Notes:
+    Expected var ``E`` is calculated by minimizing ``var(f(x)) - expected``,
+    over the given *bounds*, and will terminate when ``E`` is found within
+    deviation ``tol`` of the target variance ``expected``. If ``tol`` is not
+    provided, then a relative deviation of 1% of ``expected`` will be used.
+
+    This function does not preserve the mean, variance, or range, as there
+    is no initial list of samples to draw the mean, variance, and etc from.
+
+    *bounds* is tuple with ``length(bounds) == 2``, composed of all the lower
+    bounds, then all the upper bounds, for each parameter.
+"""
+    #self.__center = m
+    #self.__delta = D
+    m = expected
+    if constraints:  # then adjust interface for 'impose_expected_variance'
+      def cnstr(x, w):
+        c = compose(x,w)
+        c = constraints(c)
+        return decompose(c)[0]
+    else: cnstr = constraints  # 'should' be None
+    self.positions = impose_expected_variance(m, f, self.pts, bounds, \
+                             self.weights, constraints=cnstr, **kwds)
+    return
+
+
+  def set_expect_mean_and_var(self, expected, f, bounds=None, constraints=None, **kwds):
+    """impose expected mean and var on the measure by adjusting the positions
+
+Args:
+    expected (tuple(float)): ``(expected mean, expected var)``
+    f (func): a function that takes a list and returns a number
+    bounds (tuple, default=None): ``(all lower bounds, all upper bounds)``
+    constraints (func, default=None): a function ``c' = constraints(c)``,
+        where ``c`` is a product measure, and ``c'`` is a product measure
+        where the encoded constaints are satisfied.
+    tol (float, default=None): maximum allowable deviation from ``expected``
+    npop (int, default=200): size of the trial solution population
+    maxiter (int, default=1000): the maximum number of iterations to perform
+    maxfun (int, default=1e+6): the maximum number of function evaluations
+
+Returns:
+    None
+
+Notes:
+    Expected mean ``E`` and expected variance ``R`` are calculated by
+    minimizing the sum of the absolute values of ``mean(f(x)) - m`` and
+    ``variance(f(x)) - v`` over the given *bounds*, and will terminate when
+    ``E`` and ``R`` are found within tolerance ``tol`` of the target mean ``m``
+    and variance ``v``, respectively. If ``tol`` is not provided, then a
+    relative deviation of 1% of ``max(m,v)`` will be used.
+
+    This function does not preserve the mean, variance, or range, as there
+    is no initial list of samples to draw the mean, variance, and etc from
+
+    *bounds* is tuple with ``length(bounds) == 2``, composed of all the lower
+    bounds, then all the upper bounds, for each parameter
+"""
+    #self.__center = m
+    #self.__delta = D
+    m,v = expected
+    if constraints:  # then adjust interface for 'impose_expected_mean_and_var'
+      def cnstr(x, w):
+        c = compose(x,w)
+        c = constraints(c)
+        return decompose(c)[0]
+    else: cnstr = constraints  # 'should' be None
+    self.positions = impose_expected_mean_and_variance((m,v), f, self.pts, \
+                          bounds, self.weights, constraints=cnstr, **kwds)
+    return
+
 
   def pof(self, f):
     """calculate probability of failure for a given function
