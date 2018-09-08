@@ -8,23 +8,19 @@
 #  - https://github.com/uqfoundation/mystic/blob/master/LICENSE
 """
 Similar to test_mogi.py
-
-but trying to use scipy's levenberg marquardt.
-
+but using scipy's basinhopping algorithm
 """
 
 from test_mogi import *
-from scipy.optimize import anneal
+from scipy.optimize import basinhopping
 import matplotlib.pyplot as plt
 
 if __name__ == '__main__':
 
-    lower = array([1000,-1000,0,0])
-    upper = array([5000,-0,20,0.5])
-    sol = anneal(cost_function, [1000., -500., -10., 0.1], lower=lower, upper=upper, feps=1e-10, dwell=100,T0=10)
-    print("scipy solution: %s" % sol[0])
+    sol = basinhopping(cost_function, [1000., -500., -10., 0.1], niter=100,T=10)
+    print("scipy solution: %s" % sol.x)
     plot_noisy_data()
-    plot_sol(sol[0],'r-')
+    plot_sol(sol.x,'r-')
     plt.show()
 
 # end of file
