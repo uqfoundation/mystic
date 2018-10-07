@@ -17,7 +17,7 @@ from mystic.coupler import inner
 from mystic.symbolic import *
 from mystic.tools import random_seed
 from mystic.math import almostEqual
-random_seed(123)
+random_seed(24)
 
 
 def test_sumt1():
