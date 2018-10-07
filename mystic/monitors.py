@@ -146,6 +146,13 @@ example usage...
        #if not self._all and list_or_tuple_or_ndarray(y):
        #    self._y[-1] = self._y[-1][best]
 
+    def __add__(self, monitor):
+        """add the contents of self and the given monitor"""
+        m = self.__class__()
+        m.extend(self)
+        m.extend(monitor)
+        return m
+
     def extend(self, monitor):
         """append the contents of the given monitor"""
         if isinstance(monitor, Monitor): # is Monitor()
