@@ -128,7 +128,7 @@ def test_matrix_interface():
     cn = as_constraint(pf)
 
     x0 = [1., 1., 1.]
-    assert almostEqual(pf(cn(x0)), 0.0, tol=1.5e-2)
+    assert almostEqual(pf(cn(x0)), 0.0, tol=2e-2)
     #XXX: implement: wrap_constraint( as_constraint(pf), sum, ctype='inner') ?
 
 def test_varnamelist():
