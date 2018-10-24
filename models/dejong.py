@@ -24,7 +24,7 @@ References:
 from .abstract_model import AbstractFunction
 
 from numpy import sum as numpysum
-from numpy import asarray, transpose, inf
+from numpy import asarray, transpose, inf, ones_like
 from numpy import zeros_like, diag, zeros, atleast_1d
 from math import floor
 import random
@@ -78,7 +78,8 @@ occurs along the rim of the inverted basin.
 The generated function f(x) is a modified version of equation (18)
 of [2], where len(x) >= 0.
     """ + _doc
-    def __init__(self, ndim=2): # is n-dimensional (n=2 in ref)
+    def __init__(self, ndim=2, axis=None): # is n-dimensional (n=2 in ref)
+        self.axis = axis
         AbstractFunction.__init__(self, ndim=ndim)
         return
 
@@ -91,19 +92,18 @@ Inspect with mystic_model_plotter using::
     mystic.models.rosen -b "-3:3:.1, -1:5:.1, 1" -d -x 1
 
 The minimum is f(x)=0.0 at x_i=1.0 for all i"""
-        x = [1]*2 # ensure that there are 2 coefficients
+        coeffs = asarray(coeffs) #XXX: must be a numpy.array
+        x = ones_like(coeffs) #XXX: ensure > 1 coeffs ?
         x[:len(coeffs)]=coeffs
-        x = asarray(x) #XXX: must be a numpy.array
-        return numpysum(100.0*(x[1:]-x[:-1]**2.0)**2.0 + (1-x[:-1])**2.0)#,axis=0)
+        return numpysum(100.0*(x[1:]-x[:-1]**2.0)**2.0 + (1-x[:-1])**2.0, axis=self.axis).tolist()
 
-    def derivative(self,coeffs):
+    def derivative(self,coeffs): #XXX: axis?
         """evaluates an N-dimensional Rosenbrock derivative for a list of coeffs
 
 The minimum is f'(x)=[0.0]*n at x=[1.0]*n, where len(x) >= 2."""
-        l = len(coeffs)
-        x = [0]*l #XXX: ensure that there are 2 coefficients ?
-        x[:l]=coeffs
-        x = asarray(x) #XXX: must be a numpy.array
+        coeffs = asarray(coeffs) #XXX: must be a numpy.array
+        x = zeros_like(coeffs) #XXX: ensure > 1 coeffs ?
+        x[:len(coeffs)]=coeffs
         xm = x[1:-1]
         xm_m1 = x[:-2]
         xm_p1 = x[2:]
@@ -111,9 +111,9 @@ The minimum is f'(x)=[0.0]*n at x=[1.0]*n, where len(x) >= 2."""
         der[1:-1] = 200*(xm-xm_m1**2) - 400*(xm_p1 - xm**2)*xm - 2*(1-xm)
         der[0] = -400*x[0]*(x[1]-x[0]**2) - 2*(1-x[0])
         der[-1] = 200*(x[-1]-x[-2]**2)
-        return list(der)
+        return der.tolist()
 
-    def hessian(self, coeffs):
+    def hessian(self, coeffs): #XXX: axis?
         """evaluates an N-dimensional Rosenbrock hessian for the given coeffs
 
 The function f''(x) requires len(x) >= 2."""
@@ -124,7 +124,7 @@ The function f''(x) requires len(x) >= 2."""
         diagonal[-1] = 200
         diagonal[1:-1] = 202 + 1200*x[1:-1]**2 - 400*x[2:]
         H = H + diag(diagonal)
-        return H
+        return H.tolist()
 
     def hessian_product(self, coeffs, p):
         """evaluates an N-dimensional Rosenbrock hessian product
@@ -139,7 +139,7 @@ The hessian product requires both p and coeffs to have len >= 2."""
         Hp[1:-1] = -400*x[:-2]*p[:-2]+(202+1200*x[1:-1]**2-400*x[2:])*p[1:-1] \
                    -400*x[1:-1]*p[2:]
         Hp[-1] = -400*x[-2]*p[-2] + 200*p[-1]
-        return Hp
+        return Hp.tolist()
 
     minimizers = [1.] #NOTE: minima in lower dimensions occur along the ridge
     pass
@@ -286,5 +286,7 @@ rosen = Rosenbrock().function
 step = Step().function
 quartic = Quartic().function
 shekel = Shekel().function
+rosen0der = Rosenbrock(axis=0).function
+rosen1der = Rosenbrock(axis=0).derivative
 
 # End of file

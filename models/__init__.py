@@ -18,7 +18,7 @@ the function API found in ``mystic.models.abstract_model``. These standard
 functions are provided::
 
     sphere     -- De Jong's spherical function
-    rosen      -- Rosenbrock's function
+    rosen      -- Sum of Rosenbrock's function
     step       -- De Jong's step function
     quartic    -- De Jong's quartic function
     shekel     -- Shekel's function
@@ -65,6 +65,11 @@ Further, ``poly`` provides additional models for 2nd, 4th, 6th, 8th, and 16th
 order Chebyshev polynomials::
 
     chebyshev2, chebyshev4, chebyshev6, chebyshev8, chebyshev16
+
+Also, ``rosen`` has been modified to provide models for the 0th and 1st
+derivative of the Rosenbrock function::
+
+    rosen0der, and rosen1der
 """
 # base classes
 from .abstract_model import AbstractModel, AbstractFunction

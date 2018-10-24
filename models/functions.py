@@ -20,6 +20,16 @@ def rosen(x):
 from .dejong import rosen as model
 rosen.__doc__ = model.__doc__
 
+def rosen0der(x):
+    from mystic.models.dejong import rosen0der; return rosen0der(x)
+from .dejong import rosen0der as model
+rosen0der.__doc__ = model.__doc__
+
+def rosen1der(x):
+    from mystic.models.dejong import rosen1der; return rosen1der(x)
+from .dejong import rosen1der as model
+rosen1der.__doc__ = model.__doc__
+
 def step(x):
     from mystic.models.dejong import step; return step(x)
 from .dejong import step as model

@@ -94,10 +94,13 @@ Null objects always and reliably "do nothing." """
     def __delattr__(self, name): return self
     def __len__(self): return
     def __getnewargs__(self): return ()
-# comply with monitor interface
+# comply with monitor interface (are these the best responses?)
 Null.info = Null()
 Null.k = None
-#XXX: should also have Null.x, Null.y ?
+Null.x = Null._x = ()
+Null.y = Null._y = ()
+Null._id = ()
+Null._npts = None
 
 
 class Monitor(object):
