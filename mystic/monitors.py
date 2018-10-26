@@ -101,8 +101,11 @@ Null.x = Null._x = ()
 Null.y = Null._y = ()
 Null._id = ()
 Null._npts = None
+Null.label = None
 
 
+#XXX: use mon._g (for gradient) if provided, else None/np.nan?
+#XXX: enable pointer linking mon2._x to mon._x? or index mon._x in mon2._x?
 class Monitor(object):
     """
 Instances of objects that can be passed as monitors.
@@ -132,6 +135,9 @@ example usage...
         if 'npts' in kwds:
             self._npts = kwds['npts']; del kwds['npts']
         else: self._npts = None
+        if 'label' in kwds:
+            self.label = kwds['label']; del kwds['label']
+        else: self.label = 'ChiSquare'
 
     def __len__(self):
         return len(self.x)
@@ -285,8 +291,8 @@ example usage...
 class VerboseMonitor(Monitor):
     """A verbose version of the basic Monitor.
 
-Prints ChiSq every 'interval', and optionally prints
-current parameters every 'xinterval'.
+Prints output 'y' every 'interval', and optionally prints
+input parameters 'x' every 'xinterval'.
     """
     def __init__(self, interval=10, xinterval=numpy.inf, all=True, **kwds):
         super(VerboseMonitor,self).__init__(**kwds)
@@ -313,7 +319,7 @@ current parameters every 'xinterval'.
             else:
                 who = ' best'
                 y = " %f" % self._ik(self._y[-1][best], k)
-            msg = "Generation %d has%s Chi-Squared:%s" % (self._step-1,who,y)
+            msg = "Generation %d has%s %s:%s" % (self._step-1,who,self.label,y)
             if id is not None: msg = "[id: %d] " % (id) + msg
             print(msg)
         if self._xinterval is not numpy.inf and \
@@ -336,7 +342,7 @@ current parameters every 'xinterval'.
 class LoggingMonitor(Monitor):
     """A basic Monitor that writes to a file at specified intervals.
 
-Logs ChiSq and parameters to a file every 'interval'
+Logs output 'y' and input parameters 'x' to a file every 'interval'.
     """
     def __init__(self, interval=1, filename='log.txt', new=False, all=True, info=None, **kwds):
         import datetime
@@ -350,7 +356,7 @@ Logs ChiSq and parameters to a file every 'interval'
         self._file = open(self._filename,ind)
         self._file.write("# %s\n" % datetime.datetime.now().ctime() )
         if info: self._file.write("# %s\n" % str(info))
-        self._file.write("# ___#___  __ChiSq__  __params__\n")
+        self._file.write("# ___#___  __%s__  __params__\n" % self.label)
         self._file.close()
         self._all = all
         return
@@ -398,7 +404,7 @@ Logs ChiSq and parameters to a file every 'interval'
         info = None
         args = (interval, filename, new, all, info)
         k = self.k
-        state = dict(_x=self._x,_y=self._y,_id=self._id,_info=self._info,k=k)
+        state = dict(_x=self._x,_y=self._y,_id=self._id,_info=self._info,k=k,label=self.label)
         return (self.__class__, args, state)
     def __setstate__(self, state):
         self.__dict__.update(state)
@@ -408,7 +414,8 @@ Logs ChiSq and parameters to a file every 'interval'
 class VerboseLoggingMonitor(LoggingMonitor):
     """A Monitor that writes to a file and the screen at specified intervals.
 
-Logs ChiSq and parameters to a file every 'interval', print every 'yinterval'
+Logs output 'y' and input parameters 'x' to a file every 'interval', also
+print every 'yinterval'.
     """
     def __init__(self, interval=1, yinterval=10, xinterval=numpy.inf, filename='log.txt', new=False, all=True, info=None, **kwds):
         super(VerboseLoggingMonitor,self).__init__(interval,filename,new,all,info,**kwds)
@@ -434,7 +441,7 @@ Logs ChiSq and parameters to a file every 'interval', print every 'yinterval'
             else:
                 who = ' best'
                 y = " %f" % self._ik(self._y[-1][best], k)
-            msg = "Generation %d has%s Chi-Squared:%s" % (self._step-1,who,y)
+            msg = "Generation %d has%s %s:%s" % (self._step-1,who,self.label,y)
             if id is not None: msg = "[id: %d] " % (id) + msg
             print(msg)
         if self._vxinterval is not numpy.inf and \
@@ -462,7 +469,7 @@ Logs ChiSq and parameters to a file every 'interval', print every 'yinterval'
         info = None
         args = (interval, yint, xint, filename, new, all, info)
         k = self.k
-        state = dict(_x=self._x,_y=self._y,_id=self._id,_info=self._info,k=k)
+        state = dict(_x=self._x,_y=self._y,_id=self._id,_info=self._info,k=k,label=self.label)
         return (self.__class__, args, state)
     def __setstate__(self, state):
         self.__dict__.update(state)
