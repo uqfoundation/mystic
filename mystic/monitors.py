@@ -162,6 +162,15 @@ example usage...
         m.extend(monitor)
         return m
 
+    def __getitem__(self, y):
+        """x.__getitem__(y) <==> x[y]"""
+        if type(y) is int:
+            return self._x[y],self._y[y]
+        m = self.__class__()
+        m._x = self._x[y]
+        m._y = self._y[y]
+        return m
+
     def extend(self, monitor):
         """append the contents of the given monitor"""
         if isinstance(monitor, Monitor): # is Monitor()
