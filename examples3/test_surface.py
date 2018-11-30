@@ -7,9 +7,9 @@
 #  - https://github.com/uqfoundation/mystic/blob/master/LICENSE
 """
 an example of using an interpolator within a surface object
-"""
+""" #XXX: use interpolator, plotter, and sampler (instead of Surface)?
 
-from surface import Surface_Rbf as Surface
+from surface import Surface
 import time
 
 
@@ -111,8 +111,8 @@ if __name__ == '__main__':
     scale = 0
     step = 200
     args = {
-    'smooth': 0,
-    'function': 'thin_plate',
+   #'smooth': 0,
+    'method': 'thin_plate',
     }
     #surface.doit(bounds, stop, step=step)
    #'multiquadric','inverse','gaussian','linear','cubic','quintic','thin_plate'

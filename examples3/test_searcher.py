@@ -95,7 +95,7 @@ if __name__ == '__main__':
 #   print("TOOK: %s" % (time.time() - start))
 
     ########## interpolate ##########
-    from scipy.interpolate import Rbf
+    from rbf import Rbf
 
     #############
     shift = 0
