@@ -63,6 +63,11 @@ def read_history(source):
 
 
 # logfile reader
+#XXX: if have grad ([i,j,k]) not cost, 'cost' is list of lists [[i,j,k],...]
+#XXX: if have grad and cost, 'cost' is mixed list [n,[i,j,k],m,[a,b,c],...]
+#TODO: (mixed) create a function that splits/filters list/float in 'cost'
+#TODO: (mixed) split/filter values in 'step','param' using indices from 'cost'
+#TODO: behavior is identical for 'raw_to_support'... apply changes there also
 
 def logfile_reader(filename):
   from numpy import inf, nan
@@ -178,6 +183,7 @@ def read_raw_file(file_in):
   steps, energy = read_import(file_in, "params", "cost")
   return steps, energy  # was 'from file_in import params as steps', etc
 
+#TODO: check impact of having gradient ([i,j,k]) and/not cost
 def_read_import = '''
 def read_import(file, *targets):
   "import the targets; targets are name strings"

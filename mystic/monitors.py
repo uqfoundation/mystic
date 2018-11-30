@@ -167,8 +167,16 @@ example usage...
         if type(y) is int:
             return self._x[y],self._y[y]
         m = self.__class__()
-        m._x = self._x[y]
-        m._y = self._y[y]
+        if type(y) in (list,numpy.ndarray):
+            m._x = numpy.array(self._x)[y].tolist()
+            m._y = numpy.array(self._y)[y].tolist()
+        elif type(y) is tuple: #XXX: good idea? Needs more testing...
+            nn,nx,ny = len(y),numpy.ndim(self._x),numpy.ndim(self._y)
+            m._x = numpy.array(self._x)[y if nn is nx else y[0]].tolist()
+            m._y = numpy.array(self._y)[y if nn is ny else y[0]].tolist()
+        else:
+            m._x = self._x[y]
+            m._y = self._y[y]
         return m
 
     def extend(self, monitor):

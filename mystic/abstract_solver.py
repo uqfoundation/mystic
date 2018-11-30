@@ -638,6 +638,7 @@ Input::
             #randomize = False
             conditions = []; _conditions = []; conditions_ = []
             for k in collapses:
+                #FIXME: these should be encapsulted in termination instance
                 if k.startswith('CollapseAt'):
                     t = state[k]
                     t = t['target'] if 'target' in t else None
@@ -650,7 +651,7 @@ Input::
                     t = state[k]
                     t = t['offset'] if 'offset' in t else None
                     _conditions.append(cn.impose_as(collapses[k],t))
-                elif k.startswith('CollapseCost'):
+                elif k.startswith(('CollapseCost','CollapseGrad')):
                     t = state[k]
                     t = t['clip'] if 'clip' in t else True
                     conditions_.append(cn.impose_bounds(collapses[k],clip=t))
