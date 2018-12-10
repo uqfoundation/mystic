@@ -14,7 +14,7 @@ plotter for data (x,z) and response surface function(*x)
 
 class Plotter(object):
 
-    def __init__(self, x, z, function=None, **kwds):
+    def __init__(self, x, z=None, function=None, **kwds):
         """scatter plotter for data (x,z) and response surface function(*x)
 
         Input:
@@ -23,7 +23,13 @@ class Plotter(object):
           function: function f, where z=f(*x.T), or str (interpolation method)
 
         Additional Inputs:
-          maxpts: int, maximum number of points to use from (x,z)
+          step: int, plot every 'step' points on the grid [default: 200]
+          scale: float, scaling factor for the z-axis [default: False]
+          shift: float, additive shift for the z-axis [default: False]
+          density: int, density of wireframe for the plot surface [default: 9]
+          axes: tuple, indicies of the axes to plot [default: ()]
+          vals: list of values (one per axis) for unplotted axes [default: ()]
+          maxpts: int, maximum number of (x,z) points to use [default: None]
 
         NOTE:
           if scipy is not installed, will use np.interp for 1D (non-rbf),
@@ -31,18 +37,20 @@ class Plotter(object):
           1D and 'linear' otherwise. method can be one of ('rbf','linear',
           'nearest','cubic','inverse','gaussian','quintic','thin_plate').
         """
-        self.maxpts = kwds.pop('maxpts', None)
-        self.x = x
-        self.z = z
+        self.x = getattr(x, '_x', x)  # params (x)
+        self.z = x._y if z is None else z # cost (f(x))
         if function is None:
             function='linear'
         if type(function) is str:
-            from interp import interpf
-            function = interpf(x,z, method=function) #XXX: kwds?
+            from mystic.math.interpolate import interpf
+            function = interpf(self.x,self.z, method=function) #XXX: kwds?
         self.function = function
        #self.dim = kwds.pop('dim', None) #XXX: or len(x)?
-       #self.args = {}
-       #self.args.update(kwds)
+        # interpolator configuration
+        self.args = dict(step=200, scale=False, shift=False, \
+            density=9, axes=(), vals=(), maxpts=None)
+        self.args.update(kwds)
+        self.maxpts = self.args.pop('maxpts')
         return
 
     def _downsample(self, maxpts=None, x=None, z=None):
@@ -86,19 +94,26 @@ class Plotter(object):
         mz = np.argmin(self.z)
         return self.x[mz], self.z[mz]
 
-    def Plot(self, step=200, scale=False, shift=False, \
-             density=9, axes=(), vals=(), maxpts=None):
+    def Plot(self, **kwds):
         """produce a scatterplot of (x,z) and the surface z = function(*x.T)
 
         Input:
-          step: int, plot every 'step' points on the grid
-          scale: float, scaling factor for the z-axis 
-          shift: float, additive shift for the z-axis
-          density: int, density of the wireframe for the plot surface
-          axes: tuple, indicies of the axes to plot
-          vals: list of values (one for each axis) for the non-plotted axes
-          maxpts: int, maximum number of points to use from (x,z)
+          step: int, plot every 'step' points on the grid [default: 200]
+          scale: float, scaling factor for the z-axis [default: False]
+          shift: float, additive shift for the z-axis [default: False]
+          density: int, density of wireframe for the plot surface [default: 9]
+          axes: tuple, indicies of the axes to plot [default: ()]
+          vals: list of values (one per axis) for unplotted axes [default: ()]
+          maxpts: int, maximum number of (x,z) points to use [default: None]
         """
+        step = kwds['step'] if 'step' in kwds else self.args['step']
+        scale = kwds['scale'] if 'scale' in kwds else self.args['scale']
+        shift = kwds['shift'] if 'shift' in kwds else self.args['shift']
+        axes = kwds['axes'] if 'axes' in kwds else self.args['axes']
+        vals = kwds['vals'] if 'vals' in kwds else self.args['vals']
+        maxpts = kwds['maxpts'] if 'maxpts' in kwds else self.maxpts
+        density = kwds['density'] if 'density' in kwds else self.args['density']
+
         # plot response surface
         from mpl_toolkits.mplot3d import axes3d
         import matplotlib.pyplot as plt
@@ -110,8 +125,8 @@ class Plotter(object):
         ax = figure.gca(**kwds)
         ax.autoscale(tight=True)
 
-        if maxpts is None: maxpts = self.maxpts
         x, z = self._downsample(maxpts)
+        x = np.asarray(x)
 
         # get two axes to plot, and indices of the remaining axes
         axes = axes[:2]  #XXX: error if wrong size?
@@ -165,6 +180,33 @@ class Plotter(object):
         y_ = x.T[axes[-1]]
         ax.plot(x_, y_, z_, 'ko', linewidth=2, markersize=4)
         plt.show()  #XXX: show or don't show?... or return?
+
+
+def plot(monitor, function=None, **kwds):
+    '''generic interface to Plotter, returning an Plotter instance
+
+    Input:
+      monitor: a mystic.monitor instance
+      function: function f, where z=f(*x.T), or str (interpolation method)
+
+    Additional Inputs:
+      step: int, plot every 'step' points on the grid [default: 200]
+      scale: float, scaling factor for the z-axis [default: False]
+      shift: float, additive shift for the z-axis [default: False]
+      density: int, density of wireframe for the plot surface [default: 9]
+      axes: tuple, indicies of the axes to plot [default: ()]
+      vals: list of values (one per axis) for unplotted axes [default: ()]
+      maxpts: int, maximum number of (x,z) points to use [default: None]
+
+    NOTE:
+      if scipy is not installed, will use np.interp for 1D (non-rbf),
+      or mystic's rbf otherwise. default method is 'nearest' for
+      1D and 'linear' otherwise. method can be one of ('rbf','linear',
+      'nearest','cubic','inverse','gaussian','quintic','thin_plate').
+    '''
+    p = Plotter(monitor, function=function, **kwds)
+    p.Plot()
+    return p  #XXX: return nothing?
 
 
 # EOF

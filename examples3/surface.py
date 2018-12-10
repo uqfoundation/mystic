@@ -136,7 +136,7 @@ class Surface(object): #FIXME: should be subclass of Interpolator (?)
         print("min: {}; min@f: {}".format(*f(*surface._min())))
         print("max: {}; max@f: {}".format(*f(*urfacef._max())))
         # plot surface
-        self.Plot(step, scale, shift, density, axes, vals, maxpts)
+        self.Plot(step=step, scale=scale, shift=shift, density=density, axes=axes, vals=vals, maxpts=maxpts)
         return
     """
 
@@ -237,32 +237,31 @@ class Surface(object): #FIXME: should be subclass of Interpolator (?)
         return self.x[mz], self.z[mz]
 
 
-    def Plot(self, step=200, scale=False, shift=False, \
-             density=9, axes=(), vals=(), maxpts=None):
+    def Plot(self, **kwds):
         """produce a scatterplot of (x,z) and the surface z = function(*x.T)
 
         Input:
-          step: int, plot every 'step' points on the grid
-          scale: float, scaling factor for the z-axis 
-          shift: float, additive shift for the z-axis
-          density: int, density of the wireframe for the plot surface
-          axes: tuple, indicies of the axes to plot
-          vals: list of values (one for each axis) for the non-plotted axes
-          maxpts: int, maximum number of points to use from (x,z)
+          step: int, plot every 'step' points on the grid [default: 200]
+          scale: float, scaling factor for the z-axis [default: False]
+          shift: float, additive shift for the z-axis [default: False]
+          density: int, density of wireframe for the plot surface [default: 9]
+          axes: tuple, indicies of the axes to plot [default: ()]
+          vals: list of values (one per axis) for unplotted axes [default: ()]
+          maxpts: int, maximum number of (x,z) points to use [default: None]
         """
         # get interpolted function
         fx = self.surrogate
         # plot interpolated surface
         from plotter import Plotter
-        p = Plotter(self.x, self.z, fx, maxpts=maxpts)
-        p.Plot(step, scale, shift, density, axes, vals, maxpts)
+        p = Plotter(self.x, self.z, fx, **kwds)
+        p.Plot()
         # if plotter interpolated the function, get the function
         self.surrogate = fx or p.function
 
 
     def __set_function(self, function): #XXX: deal w/ selector (2D)? ExtraArgs?
         # convert to 'model' format (i.e. takes a parameter vector)
-        from interp import _to_objective
+        from mystic.math.interpolate import _to_objective
         _objective = _to_objective(function)
         def objective(x, *args, **kwds):
             return _objective(x, *args, **kwds).tolist()
@@ -272,7 +271,7 @@ class Surface(object): #FIXME: should be subclass of Interpolator (?)
 
     def __function(self): #XXX: deal w/ selector (2D)? ExtraArgs? _to_function
         # convert model to 'args' format (i.e. takes positional args)
-        from interp import _to_function
+        from mystic.math.interpolate import _to_function
         function = _to_function(self.objective, ndim=self.dim)
         function.__doc__ = self.objective.__doc__
         return function
@@ -280,7 +279,7 @@ class Surface(object): #FIXME: should be subclass of Interpolator (?)
     def __model(self): #XXX: deal w/ selector (2D)? ExtraArgs? _to_objective
         # convert to 'model' format (i.e. takes a parameter vector)
         if self.surrogate is None: return None
-        from interp import _to_objective
+        from mystic.math.interpolate import _to_objective
         _objective = _to_objective(self.surrogate)
         def objective(x, *args, **kwds):
             return _objective(x, *args, **kwds).tolist()

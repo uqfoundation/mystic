@@ -11,6 +11,9 @@
 #XXX: make interpolation more accurate, at least on the given data points?
 #XXX: utilize numdifftools/theano? scipy.misc.derivative?
 
+from mystic.math import _rbf
+Rbf = _rbf.Rbf
+
 
 def _sort(x, y=None, param=0):
     '''sort x (and y, if provided) by the given parameter
@@ -101,7 +104,7 @@ def _to_function(objective, ndim=None):
     return function
 
 
-def unique(x, z=None, sort=False, index=False):
+def _unique(x, z=None, sort=False, index=False): #XXX: move to tools?
     '''return the unique values of x, and corresponding z (if provided)
 
     Input:
@@ -209,7 +212,7 @@ def grid(*axes):
     return tuple(np.meshgrid(*axes, indexing='ij'))
 
 
-def noisy(x, scale=1e-8):
+def _noisy(x, scale=1e-8): #XXX: move to tools?
     '''add random gaussian noise of the given scale, or None if scale=None
 
     Input:
@@ -240,7 +243,7 @@ def interpolate(x, z, xgrid, method=None):
       1D and 'linear' otherwise. method can be one of ('rbf','linear',
       'nearest','cubic','inverse','gaussian','quintic','thin_plate').
     '''
-    x,z = unique(x,z,sort=True)
+    x,z = _unique(x,z,sort=True)
     # avoid nan as first value #XXX: better choice than 'nearest'?
     if method is None: method = 'nearest' if x.ndim is 1 else 'linear'
     methods = dict(rbf=0, linear=1, nearest=2, cubic=3)
@@ -257,7 +260,7 @@ def interpolate(x, z, xgrid, method=None):
                 import numpy as np
                 return np.interp(*xgrid, xp=x, fp=z)
             kind = 0 # otherwise, utilize mystic's rbf
-        import rbf as si
+        si = _rbf
     if kind is 0: # 'rbf' -> Rbf
         import numpy as np
         rbf = si.Rbf(*np.vstack((x.T, z)), function=function, smooth=0)
@@ -285,7 +288,7 @@ def interpf(x, z, method=None): #XXX: return f(*x) or f(x)?
       1D and 'linear' otherwise. method can be one of ('rbf','linear',
       'nearest','cubic','inverse','gaussian','quintic','thin_plate').
     '''
-    x,z = unique(x,z,sort=True)
+    x,z = _unique(x,z,sort=True)
     # avoid nan as first value #XXX: better choice than 'nearest'?
     if method is None: method = 'nearest' if x.ndim is 1 else 'linear'
     methods = dict(rbf=0, linear=1, nearest=2, cubic=3)
@@ -302,7 +305,7 @@ def interpf(x, z, method=None): #XXX: return f(*x) or f(x)?
                 import numpy as np
                 return lambda xn: np.interp(xn, xp=x, fp=z)
             kind = 0 # otherwise, utilize mystic's rbf
-        import rbf as si
+        si = _rbf
     if kind is 0: # 'rbf'
         import numpy as np
         return si.Rbf(*np.vstack((x.T, z)), function=function, smooth=0)
@@ -353,7 +356,7 @@ def _fprime(x, fx, method=None):
       which uses a local gradient approximation; other choices are
       'symbolic', which uses mpmath.diff if installed.
     '''
-    x,i = unique(x, index=True)
+    x,i = _unique(x, index=True)
     if method is None or method == 'approx':
         import numpy as np
         from mystic._scipyoptimize import approx_fprime, _epsilon
@@ -410,7 +413,7 @@ def gradient(x, fx, method=None, approx=True): #XXX: take f(*x) or f(x)?
             return _fprime(x.reshape(x.shape+(1,)), fx).reshape(x.shape)
         return _fprime(x, fx)
     q = True #XXX: is q=True better for memory, worse for accuracy?
-    if q is True: x,i = unique(x, index=True)
+    if q is True: x,i = _unique(x, index=True)
     else: i = slice(None)
     gfx = _gradient(x, fx(*grid(*_axes(x)))) #XXX: diagonal w/o full grid?
     if type(gfx) is not list:
@@ -507,7 +510,7 @@ def hessian(x, fx, method=None, approx=True): #XXX: take f(*x) or f(x)?
             hess[:,:,i] = _fprime(x, gf)
         return hess
     q = True #XXX: is q=True better for memory, worse for accuracy?
-    if q is True: x,i = unique(x, index=True)
+    if q is True: x,i = _unique(x, index=True)
     else: i = slice(None)
     hess = _hessian(x, fx(*grid(*_axes(x))))
     if hess.size is hess.shape[-1]:

@@ -10,7 +10,7 @@
 """
 from __future__ import division, print_function, absolute_import
 #
-# original documentation/license
+# original documentation/license (below)
 """
 Written by John Travers <jtravs@gmail.com>, February 2007
 Based closely on Matlab code by Alex Chirokov
@@ -19,8 +19,7 @@ Some additional alterations by Travis Oliphant
 Further additions and adjustments by Mike McKerns @uqfoundation.org
 
 Permission to use, modify, and distribute this software is given under the
-terms of the SciPy (BSD style) license.  See LICENSE.txt that came with
-this distribution for specifics.
+terms of the SciPy (BSD style) license.
 
 NO WARRANTY IS EXPRESSED OR IMPLIED.  USE AT YOUR OWN RISK.
 

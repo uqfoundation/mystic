@@ -95,7 +95,7 @@ if __name__ == '__main__':
 #   print("TOOK: %s" % (time.time() - start))
 
     ########## interpolate ##########
-    from rbf import Rbf
+    from mystic.math.interpolate import Rbf
 
     #############
     shift = 0

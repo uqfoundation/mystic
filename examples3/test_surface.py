@@ -37,7 +37,7 @@ if __name__ == '__main__':
     print("min: {}; min@f: {}".format(*f(*self._min())))
     print("max: {}; max@f: {}".format(*f(*self._max())))
     # plot surface
-    self.Plot(step, scale, shift, density)
+    self.Plot(step=step, scale=scale, shift=shift, density=density)
     """
 
     # parallel configuration
@@ -134,7 +134,7 @@ if __name__ == '__main__':
     # plot surface
     axes = (0,1)
     vals = () # use remaining minima as the fixed values
-    surface.Plot(step, scale, shift, density, axes, vals)
+    surface.Plot(step=step, scale=scale, shift=shift, density=density, axes=axes, vals=vals)
 
 
     """

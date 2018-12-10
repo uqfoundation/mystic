@@ -5,12 +5,14 @@ README.md
 setup.cfg
 setup.py
 _math/__init__.py
+_math/_rbf.py
 _math/approx.py
 _math/compressed.py
 _math/discrete.py
 _math/distance.py
 _math/grid.py
 _math/integrate.py
+_math/interpolate.py
 _math/legacydata.py
 _math/measures.py
 _math/poly.py

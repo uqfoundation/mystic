@@ -128,7 +128,7 @@ class Interpolator(object):
           1D and 'linear' otherwise. method can be one of ('rbf','linear',
           'nearest','cubic','inverse','gaussian','quintic','thin_plate').
         """
-        from interp import interpf
+        from mystic.math.interpolate import interpf
         return interpf(x, z, **kwds)
 
 
@@ -163,25 +163,24 @@ class Interpolator(object):
         return self.function
 
 
-    def Plot(self, step=200, scale=False, shift=False, \
-             density=9, axes=(), vals=(), maxpts=None):
+    def Plot(self, **kwds):
         """produce a scatterplot of (x,z) and the surface z = function(*x.T)
 
         Input:
-          step: int, plot every 'step' points on the grid
-          scale: float, scaling factor for the z-axis 
-          shift: float, additive shift for the z-axis
-          density: int, density of the wireframe for the plot surface
-          axes: tuple, indicies of the axes to plot
-          vals: list of values (one for each axis) for the non-plotted axes
-          maxpts: int, maximum number of points to use from (x,z)
+          step: int, plot every 'step' points on the grid [default: 200]
+          scale: float, scaling factor for the z-axis [default: False]
+          shift: float, additive shift for the z-axis [default: False]
+          density: int, density of wireframe for the plot surface [default: 9]
+          axes: tuple, indicies of the axes to plot [default: ()]
+          vals: list of values (one per axis) for unplotted axes [default: ()]
+          maxpts: int, maximum number of (x,z) points to use [default: None]
         """
         # get interpolted function
         fx = self.function
         # plot interpolated surface
         from plotter import Plotter
-        p = Plotter(self.x, self.z, fx, maxpts=maxpts)
-        p.Plot(step, scale, shift, density, axes, vals, maxpts)
+        p = Plotter(self.x, self.z, fx, **kwds)
+        p.Plot()
         # if plotter interpolated the function, get the function
         self.function = fx or p.function
 
@@ -189,7 +188,7 @@ class Interpolator(object):
     def __model(self): #XXX: deal w/ selector (2D)? ExtraArgs?
         # convert to 'model' format (i.e. takes a parameter vector)
         if self.function is None: return None
-        from interp import _to_objective
+        from mystic.math.interpolate import _to_objective
         _objective = _to_objective(self.function)
         def objective(x, *args, **kwds):
             return _objective(x, *args, **kwds).tolist()

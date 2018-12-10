@@ -16,7 +16,7 @@ def cost(x):
 
 y = cost(x.T)
 
-import interp as ip
+import mystic.math.interpolate as ip
 fx = ip._to_function(cost)
 assert (fx(*x.T) - cost(x.T) ).sum() < 0.0001
 
