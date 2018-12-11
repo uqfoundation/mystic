@@ -31,7 +31,7 @@ from mystic.symbolic import generate_penalty, generate_conditions
 equations = """
 -x0 + 0.0193*x2 <= 0.0
 -x1 + 0.00954*x2 <= 0.0
--pi*x2**2*x3 - (4/3.)*pi*x2**3 + 1296000.0 <= 0.0
+-pi*x2**2*x3 - 4*pi*x2**3/3. + 1296000.0 <= 0.0
 x3 - 240.0 <= 0.0
 """
 cf = generate_constraint(generate_solvers(simplify(equations)))
