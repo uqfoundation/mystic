@@ -250,27 +250,30 @@ def _denominator(equation, variables=None):
     # check if variables x are found in eqn
     has = lambda eqn,x: (get_variables(eqn,x) if x else True)
     # check if parentheses are unbalanced
-    unbalanced = lambda eqn: (eqn.find(')') < eqn.find('('))
+    unbalanced = lambda eqn: (eqn.find(')') < eqn.find('(')) #XXX: correct? (-1)
     res = []
-    var, expr = equation.count('/'), equation.count('\(')
+    var, expr = equation.count('/'), len(re.findall('/\w*\(',equation)) #XXX: \(
+    # discount divisions in parenthesis without the variables
+    var -= len(re.findall('\(\d+\.?\d*/\d+\.?\d*\)', equation)) #XXX: 1/(2+1) ?
     ### find ['x1', 'tan(x1-x2)']
-    if var > expr:
+    if var > expr: #XXX: hmm... what's the intent of this block?
+        # get everything from the '/' to a '\s'
         _res = [i.strip('/') for i in re.findall('/\S+', equation) if not i.startswith('/(')]
-        res.extend([i.split(')')[0] if unbalanced(i) else i for i in _res if has(i,variables)])
+        res.extend([i.split(')')[0] if unbalanced(i) else i for i in _res if has(i,variables)]) #XXX: ???
         if len(res) != len(_res): var -= len(_res)
         del _res
         #XXX: recurse/etc on f(x)?
     if var is len(res): return lhs+res
-    ### find ['1/(x1 - x2)']
+    ### find ['1/(x1 - x2)' and '1/tan(x1 - x2)'] #FIXME: misses 1/A**B
     l = len(res)
-    _res = [i.strip('/') for i in re.findall('/\([^\(]*\)', equation)]
+    _res = [i.strip('/') for i in re.findall('/\w*\([^\(\)]*\)', equation)]
     res.extend([i for i in _res if has(i,variables)])
     if len(res) - l != len(_res): var -= len(_res)
     del _res
     if var is len(res): return lhs+res
-    ### find ['1/(x1 - (x2*x1))', etc]
+    ### find ['1/(x1 - (x2*x1))', etc] #FIXME: misses 1/A**B
     l = len(res)
-    _res = [i.strip('/') for i in re.findall('/\(.*\)', equation)]
+    _res = [i.strip('/') for i in re.findall('/\w*\(.*\)', equation)]
     res.extend([i for i in _res if has(i,variables)])
     if len(res) - l != len(_res): var -= len(_res)
     del _res

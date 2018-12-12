@@ -5,7 +5,7 @@ random_seed(123) #FIXME: should be commented out
 
 var = list('BC')
 eqn = 'A = (B + 1/C)/(B*C/tan(B))'
-assert _denominator(eqn, var) == ['C', '(B*C/tan(B))', 'tan(B)']
+assert _denominator(eqn, var) == ['C', 'tan(B)', '(B*C/tan(B))']
 eqn = 'A = 1/B + 1/(C + B*(B - 2))'
 assert _denominator(eqn , var) == ['B', '(C + B*(B - 2))']
 eqn = 'A = 1/B + 1/tan(B*C)'
