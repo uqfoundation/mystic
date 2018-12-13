@@ -11,7 +11,7 @@ assert _denominator(eqn , var) == ['B', '(C + B*(B - 2))']
 eqn = 'A = 1/B + 1/tan(B*C)'
 assert _denominator(eqn , var) == ['B', 'tan(B*C)']
 eqn = 'A = B - 3/(B-2)**2 - 1/(B+C)'
-assert _denominator(eqn , var) == ['(B-2)', '(B+C)']
+assert _denominator(eqn , var) == ['(B-2)**2', '(B+C)']
 eqn = 'A = (B + 2)/C'
 assert _denominator(eqn , var) == ['C']
 eqn = 'A = B/(C - 2)'

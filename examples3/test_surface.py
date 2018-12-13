@@ -150,7 +150,7 @@ if __name__ == '__main__':
     import numpy as np
     actual = np.asarray(surface.z)           # downsample?
     interp = surface.surrogate(*surface.x.T) # downsample?
-    print("sum diff squares")
+    print("sum diff squares") #NOTE: is *worse* than with test_searcher.py
     print("actual and interp: %s" % np.sum((actual - interp)**2))
 
 

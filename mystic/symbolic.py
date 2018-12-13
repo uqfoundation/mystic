@@ -233,7 +233,6 @@ Examples:
     return None if None in equations else tuple(equations)
 
 
-#XXX: finds (X-1) not (X-1)**2, however tan(X-1) not (X-1)
 def _denominator(equation, variables=None):
     """find denominators containing the given variables in an equation"""
     import re
@@ -250,7 +249,7 @@ def _denominator(equation, variables=None):
     # check if variables x are found in eqn
     has = lambda eqn,x: (get_variables(eqn,x) if x else True)
     # check if parentheses are unbalanced
-    unbalanced = lambda eqn: (eqn.find(')') < eqn.find('(')) #XXX: correct? (-1)
+    unbalanced = lambda eqn: ((eqn.find(')') < eqn.find('(')) or (eqn.count('(') != eqn.count(')')))
     res = []
     var, expr = equation.count('/'), len(re.findall('/\w*\(',equation)) #XXX: \(
     # discount divisions in parenthesis without the variables
@@ -264,15 +263,17 @@ def _denominator(equation, variables=None):
         del _res
         #XXX: recurse/etc on f(x)?
     if var is len(res): return lhs+res
-    ### find ['1/(x1 - x2)' and '1/tan(x1 - x2)'] #FIXME: misses 1/A**B
-    l = len(res)
-    _res = [i.strip('/') for i in re.findall('/\w*\([^\(\)]*\)', equation)]
+    ### find ['1/(x1 - x2)' and '1/tan(x1 - x2)'] #FIXME: misses 1/A**(B/C)?
+    l = len(res) # 1/tan(x1 - 1)**cos(x2-1) or 1/tan(x1-1)**x2/2 or 1/tan(x1-1)
+    pattern = '/\w*\([^\(\)]*\)\*\*\w*\([^\(\)]*\)|/\w*\([^\(\)]*\)\*\*\w*\S+|/\w*\([^\(\)]*\)'
+    _res = [i.strip('/') for i in re.findall(pattern, equation)]
     res.extend([i for i in _res if has(i,variables)])
     if len(res) - l != len(_res): var -= len(_res)
     del _res
     if var is len(res): return lhs+res
-    ### find ['1/(x1 - (x2*x1))', etc] #FIXME: misses 1/A**B
-    l = len(res)
+    ### find ['1/(x1 - (x2*x1))', etc] #FIXME: incorrect for 1/(A-1)*tan(B)
+    l = len(res) # 1/tan(...)**cos(x2-1) or 1/tan(...)**x2/2 or 1/tan(...)
+    pattern = '/\w*\(.*\)\*\*\w*\(.*\)|/\w*\(.*\)\*\*\w*\S+|/\w*\(.*\)'
     _res = [i.strip('/') for i in re.findall('/\w*\(.*\)', equation)]
     res.extend([i for i in _res if has(i,variables)])
     if len(res) - l != len(_res): var -= len(_res)
