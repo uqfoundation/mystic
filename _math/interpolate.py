@@ -14,6 +14,79 @@
 from mystic.math import _rbf
 Rbf = _rbf.Rbf
 
+def boundbox(x, z, fx=None, mins=None, maxs=None, **kwds):
+    '''produce bounding-box to facilitate interpolation at the given points
+
+    Input:
+      x: an array of shape (npts, dim) or (npts,)
+      z: an array of shape (npts,)
+      fx: a function of the form f(x); if None, use f(x) = nan
+      mins: a list of floats defining minima of the bounding box, or None
+      maxs: a list of floats defining maxima of the bounding box, or None
+      all: if True, return add monitor points to the bounding box
+
+    Output:
+      a tuple of (x,z) containing the requested boundbox points
+
+    NOTE:
+      if mins is None, then use the minima found in the monitor instance.
+      Similarly for maxs.
+    '''
+    from mystic.monitors import Monitor
+    mon = Monitor()
+    mon._x = x; mon._y = z
+    mon = _boundbox(mon, fx=fx, mins=mins, maxs=maxs, **kwds)
+    return mon._x,mon._y
+
+
+def _boundbox(monitor, fx=None, mins=None, maxs=None, **kwds):
+    '''produce bounding-box to facilitate interpolation at the given points
+
+    Input:
+      monitor: a mystic monitor instance
+      fx: a function of the form f(x); if None, use f(x) = nan
+      mins: a list of floats defining minima of the bounding box, or None
+      maxs: a list of floats defining maxima of the bounding box, or None
+      all: if True, return add monitor points to the bounding box
+
+    Output:
+      a mystic monitor instance containing the requested boundbox points
+
+    NOTE:
+      if mins is None, then use the minima found in the monitor instance.
+      Similarly for maxs.
+    '''
+    all = kwds['all'] if 'all' in kwds else False
+
+    import numpy as np
+    f = (lambda x: np.nan) if fx is None else fx
+
+    from mystic.monitors import Monitor                #XXX: copy or not?
+    mon = Monitor() if monitor is None else monitor[:] #XXX: what if empty?
+    _mon = Monitor()
+
+    x = np.array(mon._x)
+    # get 'mins'&'maxs' to use for 'axes' to define bounding box
+    if len(x):
+        mins = x.T.min(axis=-1) if mins is None else mins
+    else:
+        mins = None
+    if len(x):
+        maxs = x.T.max(axis=-1) if maxs is None else maxs
+    else:
+        maxs = None
+
+    # add points at corners of boundbox (don't include existing points)
+    if (mins is None) or (maxs is None) or not len(mins) or not len(maxs):
+        # skip bounding box if 'min'&'max' points are already in monitors
+        pass
+    else:
+        r = np.stack(np.meshgrid(*zip(mins,maxs)),-1).reshape(-1,len(x.T))
+        n = [_mon(i,f(i)) for i in r if not _isin(i,x)]
+        del r, n
+    del mins, maxs, x
+    return mon + _mon if all else _mon #XXX: or mon.extend(_mon)?
+
 
 def _sort(x, y=None, param=0):
     '''sort x (and y, if provided) by the given parameter
@@ -225,7 +298,38 @@ def _noisy(x, scale=1e-8): #XXX: move to tools?
     return x if not scale else x + np.random.normal(scale=scale, size=x.shape)
 
 
-def interpolate(x, z, xgrid, method=None):
+def _extrapolate(x, z, extrap=None):
+    '''augment x,z with bounding box points
+
+    Input:
+      x: an array of shape (npts, dim) or (npts,)
+      z: an array of shape (npts,)
+      extrap: a cost function z=f(x), used to extrapolate new points
+
+    Output:
+      x: an array of shape (npts+N, dim) or (npts+N,)
+      z: an array of shape (npts+N,)
+
+    NOTE:
+      if a function is not provided, extrap can also take a boolean.
+      If extrap is True (or None), interpolate a cost function using interpf
+      with method='thin_plate' (or 'rbf' if scipy is not found).  If extrap
+      is False, abort, and just return the original (x,z)
+    '''
+    if extrap is not False:
+        if extrap is None or extrap is True:
+            extrap = 'thin_plate'
+        if not hasattr(extrap, '__call__'):
+            extrap = _to_objective(interpf(x, z, method=extrap))
+        # else: extrap = solver._cost[1]
+        xx,zz = boundbox(x, z, extrap) #XXX: take/return x,y or mon?
+        x += xx
+        z += zz
+        del xx, zz
+    return x, z
+
+
+def interpolate(x, z, xgrid, method=None, extrap=False):
     '''interpolate to find z = f(x) sampled at points defined by xgrid
 
     Input:
@@ -233,6 +337,7 @@ def interpolate(x, z, xgrid, method=None):
       z: an array of shape (npts,)
       xgrid: (irregular) coordinate grid on which to sample z = f(x)
       method: string for kind of interpolator
+      extrap: if True, extrapolate a bounding box (can reduce # of nans)
 
     Output:
       interpolated points on a grid, where z = f(x) has been sampled on xgrid
@@ -242,7 +347,13 @@ def interpolate(x, z, xgrid, method=None):
       or mystic's rbf otherwise. default method is 'nearest' for
       1D and 'linear' otherwise. method can be one of ('rbf','linear',
       'nearest','cubic','inverse','gaussian','quintic','thin_plate').
+
+    NOTE:
+      if extrap is True (or None), extrapolate using interpf with
+      method='thin_plate' (or 'rbf' if scipy is not found). If extrap is
+      a cost function z = f(x), then directly use it in the extrapolation.
     '''
+    x,z = _extrapolate(x,z,extrap=extrap)
     x,z = _unique(x,z,sort=True)
     # avoid nan as first value #XXX: better choice than 'nearest'?
     if method is None: method = 'nearest' if x.ndim is 1 else 'linear'
@@ -271,13 +382,14 @@ def interpolate(x, z, xgrid, method=None):
     return si.griddata(x, z, xgrid, method=method)#, rescale=False)
 
 
-def interpf(x, z, method=None): #XXX: return f(*x) or f(x)?
+def interpf(x, z, method=None, extrap=False): #XXX: return f(*x) or f(x)?
     '''interpolate to find f, where z = f(*x)
 
     Input:
       x: an array of shape (npts, dim) or (npts,)
       z: an array of shape (npts,)
       method: string for kind of interpolator
+      extrap: if True, extrapolate a bounding box (can reduce # of nans)
 
     Output:
       interpolated function f, where z = f(*x)
@@ -287,7 +399,13 @@ def interpf(x, z, method=None): #XXX: return f(*x) or f(x)?
       or mystic's rbf otherwise. default method is 'nearest' for
       1D and 'linear' otherwise. method can be one of ('rbf','linear',
       'nearest','cubic','inverse','gaussian','quintic','thin_plate').
+
+    NOTE:
+      if extrap is True (or None), extrapolate using interpf with
+      method='thin_plate' (or 'rbf' if scipy is not found). If extrap is
+      a cost function z = f(x), then directly use it in the extrapolation.
     '''
+    x,z = _extrapolate(x,z,extrap=extrap)
     x,z = _unique(x,z,sort=True)
     # avoid nan as first value #XXX: better choice than 'nearest'?
     if method is None: method = 'nearest' if x.ndim is 1 else 'linear'
@@ -498,7 +616,7 @@ def hessian(x, fx, method=None, approx=True): #XXX: take f(*x) or f(x)?
         fx = interpf(x, fx, method=method[0])
     if approx is True:
         fx = _to_objective(fx) # conform to gradient interface
-        #XXX: alternate: find grid w/_gradient, use _fprime to find hessian
+        #XXX: alternate: use grid w/_gradient, then use _fprime to find hessian
         if x.ndim is 1:
             gfx = _fprime(x.reshape(x.shape+(1,)), fx).reshape(x.shape)
             gfx = interpf(x, gfx, method=method[-1])
