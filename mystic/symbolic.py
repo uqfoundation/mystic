@@ -3,7 +3,7 @@
 # Author: Alta Fang (altafang @caltech and alta @princeton)
 # Author: Mike McKerns (mmckerns @caltech and @uqfoundation)
 # Copyright (c) 2010-2016 California Institute of Technology.
-# Copyright (c) 2016-2018 The Uncertainty Quantification Foundation.
+# Copyright (c) 2016-2019 The Uncertainty Quantification Foundation.
 # License: 3-clause BSD.  The full license text is available at:
 #  - https://github.com/uqfoundation/mystic/blob/master/LICENSE
 #
@@ -280,7 +280,7 @@ def _denominator(equation, variables=None):
     del _res
     if var is len(res): return lhs+res
     ### still missing some... check recursively
-    _res = [_denominator(nopar(i),variables) for i in res]
+    _res = [_denominator(nopar(i),variables) for i in res if has(i, variables)]
     for i in _res:
         res.extend(i)
     del _res
