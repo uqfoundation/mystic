@@ -11,10 +11,10 @@
 # refactored by Mike McKerns, 2012
 """Tools for working with symbolic constraints.
 """
-__all__ = ['linear_symbolic','replace_variables','get_variables','merge',
-           'solve','simplify','comparator','flip','_flip','condense','equals',
-           'penalty_parser','constraints_parser','generate_conditions',
-           'generate_solvers','generate_penalty','generate_constraint']
+__all__ = ['linear_symbolic','replace_variables','get_variables','denominator',
+           'simplify','comparator','flip','_flip','condense','flat','equals',
+           'penalty_parser','constraints_parser','generate_conditions','solve',
+           'generate_solvers','generate_penalty','generate_constraint','merge']
 
 from numpy import ndarray, asarray
 from mystic._symbolic import solve
@@ -233,68 +233,98 @@ Examples:
     return None if None in equations else tuple(equations)
 
 
-def _denominator(equation, variables=None):
-    """find denominators containing the given variables in an equation"""
+def _enclosed(equation):
     import re
+    "split equation at the close of all enclosing parentheses"
+    res = []
+    # split equation at the close of the first enclosing parenthesis
+    ir = iter(re.findall('[^\)]*\)', equation)) #FIXME: misses **2
+    n,r = 0,''
+    for i in ir:
+        r += i; n += i.count('(')-1
+        if n <= 0:
+            break
+    if r:
+        res.append(r)
+    # repeat if necessary
+    i = ''.join(ir)
+    if i:
+        res.extend(_enclosed(i))
+    return res
+
+
+def _noparen(variable):
+    "remove enclosing parenthesis for a single-variable expression"
+    if variable.startswith('(') and variable.endswith(')'):
+        return variable[1:-1]
+    return variable
+
+
+def flat(equation, subs=None):
+    """flatten equation by replacing expressions in parenthesis with a marker
+
+Inputs:
+    equation -- a symbolic equation string, with no more than one line, and
+        following standard python syntax.
+    subs -- a dict of {marker: sub-string} of replacements made, where marker
+        will be of the form '$0$', '$1$', etc.
+    """
+    eqn = _enclosed(equation)
+    for i,e in enumerate(eqn):
+        marker = '$%s$' % i
+        # find the enclosed expression
+        _e = e[e.find('(')+1:-1]
+        if not subs is None:
+            subs[marker] = _e
+        # make the substitution in the original
+        equation = equation.replace(e, e.replace('(%s)' % _e, '(%s)' % marker))
+    return equation
+
+
+def _denominator(equation):
+    """find valid denominators for placeholder-simplified equations"""
+    # placeholder-simplified: parenthesis-enclosed text is replaced by markers
+    import re
+    return [''.join(i).strip('/') for i in re.findall('(/\s*[\(\$\w\)]+)(\*\*[\(\$\w\)]+)?', equation)]
+
+
+def denominator(equation, variables=None):
+    """find denominators containing the given variables in an equation
+
+Inputs:
+    equation -- a symbolic equation string, with no more than one line.
+        Equation can be an equality or inequality, and must follow standard
+        python syntax (with the math and numpy modules already imported).
+    variables -- a variable base string (e.g. 'x' = 'x0','x1',...), or
+        a list of variable name strings (e.g. ['x','y','z0']). Default is 'x'.
+    """
+    if variables is None: variables = 'x'
     # deal with the lhs and rhs separately
     cmp = comparator(equation)
     if cmp:
-        lhs,equation = equation.split(cmp,1)
-        lhs = _denominator(lhs, variables)
-    else: lhs = []
-    # remove the enclosing parenthesis
-    par = lambda eqn: eqn.startswith('(') and eqn.endswith(')') and eqn.count(')')+eqn.count('(') is 2
-    nopar = lambda eqn: eqn[1:-1] if (par(eqn) or (re.findall('^\([^\)]*\(', eqn) and re.findall('\)[^\(]*\)$', eqn))) else eqn
-    equation = nopar(equation.strip())
-    # check if variables x are found in eqn
-    has = lambda eqn,x: (get_variables(eqn,x) if x else True)
-    # check if parentheses are unbalanced
-    unbalanced = lambda eqn: ((eqn.find(')') < eqn.find('(')) or (eqn.count('(') != eqn.count(')')))
-    res = []
-    var, expr = equation.count('/'), len(re.findall('/\w*\(',equation)) #XXX: \(
-    # discount divisions in parenthesis without the variables
-    var -= len(re.findall('\(\d+\.?\d*/\d+\.?\d*\)', equation)) #XXX: 1/(2+1) ?
-    ### find ['x1', 'tan(x1-x2)']
-    if var > expr: #XXX: hmm... what's the intent of this block?
-        # get everything from the '/' to a '\s'
-        _res = [i.strip('/') for i in re.findall('/\S+', equation) if not i.startswith('/(')]
-        res.extend([i.split(')')[0] if unbalanced(i) else i for i in _res if has(i,variables)]) #XXX: ???
-        if len(res) != len(_res): var -= len(_res)
-        del _res
-        #XXX: recurse/etc on f(x)?
-    if var is len(res): return lhs+res
-    ### find ['1/(x1 - x2)' and '1/tan(x1 - x2)'] #FIXME: misses 1/A**(B/C)?
-    l = len(res) # 1/tan(x1 - 1)**cos(x2-1) or 1/tan(x1-1)**x2/2 or 1/tan(x1-1)
-    pattern = '/\w*\([^\(\)]*\)\*\*\w*\([^\(\)]*\)|/\w*\([^\(\)]*\)\*\*\w*\S+|/\w*\([^\(\)]*\)'
-    _res = [i.strip('/') for i in re.findall(pattern, equation)]
-    res.extend([i for i in _res if has(i,variables)])
-    if len(res) - l != len(_res): var -= len(_res)
-    del _res
-    if var is len(res): return lhs+res
-    ### find ['1/(x1 - (x2*x1))', etc] #FIXME: incorrect for 1/(A-1)*tan(B)
-    l = len(res) # 1/tan(...)**cos(x2-1) or 1/tan(...)**x2/2 or 1/tan(...)
-    pattern = '/\w*\(.*\)\*\*\w*\(.*\)|/\w*\(.*\)\*\*\w*\S+|/\w*\(.*\)'
-    _res = [i.strip('/') for i in re.findall('/\w*\(.*\)', equation)]
-    res.extend([i for i in _res if has(i,variables)])
-    if len(res) - l != len(_res): var -= len(_res)
-    del _res
-    if var is len(res): return lhs+res
-    ### still missing some... check recursively
-    _res = [_denominator(nopar(i),variables) for i in res if has(i, variables)]
-    for i in _res:
-        res.extend(i)
-    del _res
-    if var > len(res):
-        msg = '%s of %s denominators were not found' % (var-len(res), var)
-        raise ValueError(msg)
-    return lhs+res
+        res,equation = equation.split(cmp,1)
+        res = set(denominator(res, variables))
+    else: res = set()
+    # flatten and find all statements enclosed in parenthesis
+    subs = {}
+    equation = flat(equation, subs)
+    # find denominators in flattened equation
+    denom = set(_denominator(equation))
+    res.update(_noparen(e) for e in denom if get_variables(e, variables))
+    # find denominators within the enclosed parentheses
+    for k,v in subs.items():
+        # replace tmp-names in denominators as necessary
+        res.update(e.replace(k,v) for e in denom if k in e)
+        # recurse into new statements
+        res.update(denominator(v, variables))
+    return list(res)
 
 
 #XXX: add target=None to kwds?
 def _solve_zeros(equation, variables=None, implicit=True):
     '''symbolic solve the equation for when produces a ZeroDivisionError'''
     # if implicit = True, can solve to functions of a variable (i.e. sin(A)=1)
-    res = _denominator(equation, variables)#XXX: w/o this, is a general solve
+    res = denominator(equation, variables)#XXX: w/o this, is a general solve
     x = variables or 'x'
     _res = []
     for i,eqn in enumerate(res):

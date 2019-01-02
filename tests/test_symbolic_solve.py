@@ -1,40 +1,40 @@
-from mystic.symbolic import _denominator, _solve_zeros, equals, simplify, flip
+from mystic.symbolic import denominator, _solve_zeros, equals, simplify, flip
 
 from mystic import random_seed
 random_seed(123) #FIXME: should be commented out
 
 var = list('BC')
 eqn = 'A = (B + 1/C)/(B*C/tan(B))'
-assert _denominator(eqn, var) == ['C', 'tan(B)', '(B*C/tan(B))']
+assert set(denominator(eqn, var)) == set(['C', 'tan(B)', '(B*C/tan(B))'])
 eqn = 'A = 1/B + 1/(C + B*(B - 2))'
-assert _denominator(eqn , var) == ['B', '(C + B*(B - 2))']
+assert set(denominator(eqn , var)) == set(['B', '(C + B*(B - 2))'])
 eqn = 'A = 1/B + 1/tan(B*C)'
-assert _denominator(eqn , var) == ['B', 'tan(B*C)']
+assert set(denominator(eqn , var)) == set(['B', 'tan(B*C)'])
 eqn = 'A = B - 3/(B-2)**2 - 1/(B+C)'
-assert _denominator(eqn , var) == ['(B-2)**2', '(B+C)']
+assert set(denominator(eqn , var)) == set(['(B-2)**2', '(B+C)'])
 eqn = 'A = (B + 2)/C'
-assert _denominator(eqn , var) == ['C']
+assert denominator(eqn , var) == ['C']
 eqn = 'A = B/(C - 2)'
-assert _denominator(eqn , var) == ['(C - 2)']
+assert denominator(eqn , var) == ['(C - 2)']
 eqn = 'A = (B*C/tan(B))'
-assert _denominator(eqn , var) == ['tan(B)']
+assert denominator(eqn , var) == ['tan(B)']
 eqn = 'A = (1 + 1/C)'
-assert _denominator(eqn , var) == ['C']
+assert denominator(eqn , var) == ['C']
 eqn = 'A = 4/(C*B)'
-assert _denominator(eqn , var) == ['(C*B)']
+assert denominator(eqn , var) == ['(C*B)']
 eqn = 'A = C*B'
-assert _denominator(eqn , var) == []
+assert denominator(eqn , var) == []
 
 eqn = 'A = (B - 1/C)/(1 - (B*C))'
-assert _solve_zeros(eqn, var) == ['C = 0', 'B = 1/C']
+assert set(_solve_zeros(eqn, var)) == set(['C = 0', 'B = 1/C'])
 eqn = 'A = (B - 1/C)/(1 - sin(B*C))'
-assert _solve_zeros(eqn, var) == ['C = 0', '(1 - sin(B*C)) = 0']
+assert set(_solve_zeros(eqn, var)) == set(['C = 0', '(1 - sin(B*C)) = 0'])
 eqn = 'A = (B - 1/C)/(1 - (B*C)**2)'
-assert _solve_zeros(eqn, var) == ['C = 0', 'B = 1/C']
+assert set(_solve_zeros(eqn, var)) == set(['C = 0', 'B = 1/C'])
 eqn = 'A = (B - 1/C)/(4 - (B*C)**2)'
-assert _solve_zeros(eqn, var) == ['C = 0', 'B = 2/C']
+assert set(_solve_zeros(eqn, var)) == set(['C = 0', 'B = 2/C'])
 eqn = 'A = (B - 1/C)/(B - 1)**2'
-assert _solve_zeros(eqn, var) == ['C = 0', 'B = 1']
+assert set(_solve_zeros(eqn, var)) == set(['C = 0', 'B = 1'])
 eqn = 'A = B + 1'
 assert _solve_zeros(eqn, var) == []
 
