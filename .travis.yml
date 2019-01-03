@@ -59,4 +59,4 @@ install:
     - python setup.py build && python setup.py install
 
 script:
-    - for test in tests/*.py; do echo $test ; python $test > /dev/null ; done
+    - for test in tests/test_*.py; do echo $test ; python $test > /dev/null ; done
