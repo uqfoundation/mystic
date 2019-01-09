@@ -180,6 +180,7 @@ Optional requirements:
     - ``setuptools``, **version >= 0.6**
     - ``matplotlib``, **version >= 0.91**
     - ``scipy``, **version >= 0.6.0**
+    - ``mpmath``, **version >= 1.0.0**
     - ``pathos``, **version >= 0.2.2.1**
     - ``pyina``, **version >= 0.2.0**
 
@@ -389,11 +390,15 @@ dill_version = '>=0.2.8.2'
 klepto_version = '>=0.1.5.2'
 scipy_version = '>=0.6.0'
 matplotlib_version = '>=0.91'
+mpmath_version = '>=1.0.0'
+pathos_version = '>=0.2.2.1'
+pyina_version = '>=0.2.0'
 if has_setuptools:
     setup_code += """
       zip_safe=False,
       install_requires = ('numpy%s', 'sympy%s', 'klepto%s', 'dill%s'),
-""" % (numpy_version, sympy_version, klepto_version, dill_version)
+      extras_require = {'math': ['scipy%s','mpmath%s'], 'parallel': ['pathos%s','pyina%s'], 'plotting': ['matplotlib%s']},
+""" % (numpy_version, sympy_version, klepto_version, dill_version, scipy_version, mpmath_version, pathos_version, pyina_version, matplotlib_version)
 
 # add the scripts, and close 'setup' call
 setup_code += """
