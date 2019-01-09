@@ -573,8 +573,7 @@ Args:
     scale (float, default=0.8): multiplier for mutations on the trial solution.
     full_output (bool, default=False): True if fval and warnflag are desired.
     disp (bool, default=True): if True, print convergence messages.
-    retall (bool, default=False): if True, return list of solutions at each
-        iteration.
+    retall (bool, default=False): True if allvecs is desired.
     callback (func, default=None): function to call after each iteration. The
         interface is ``callback(xk)``, with xk the current parameter vector.
     handler (bool, default=False): if True, enable handling interrupt signals.
@@ -636,8 +635,7 @@ Args:
     scale (float, default=0.8): multiplier for mutations on the trial solution.
     full_output (bool, default=False): True if fval and warnflag are desired.
     disp (bool, default=True): if True, print convergence messages.
-    retall (bool, default=False): if True, return list of solutions at each
-        iteration.
+    retall (bool, default=False): True if allvecs is desired.
     callback (func, default=None): function to call after each iteration. The
         interface is ``callback(xk)``, with xk the current parameter vector.
     handler (bool, default=False): if True, enable handling interrupt signals.

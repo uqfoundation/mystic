@@ -20,10 +20,10 @@ def boundbox(x, z, fx=None, mins=None, maxs=None, **kwds):
     Input:
       x: an array of shape (npts, dim) or (npts,)
       z: an array of shape (npts,)
-      fx: a function of the form f(x); if None, use f(x) = nan
+      fx: a function f(x) to evaluate at new points; if None, use f(x) = nan
       mins: a list of floats defining minima of the bounding box, or None
       maxs: a list of floats defining maxima of the bounding box, or None
-      all: if True, return add monitor points to the bounding box
+      all: if True, include the initial (x,z) points in the return
 
     Output:
       a tuple of (x,z) containing the requested boundbox points
@@ -44,10 +44,10 @@ def _boundbox(monitor, fx=None, mins=None, maxs=None, **kwds):
 
     Input:
       monitor: a mystic monitor instance
-      fx: a function of the form f(x); if None, use f(x) = nan
+      fx: a function f(x) to evaluate at new points; if None, use f(x) = nan
       mins: a list of floats defining minima of the bounding box, or None
       maxs: a list of floats defining maxima of the bounding box, or None
-      all: if True, return add monitor points to the bounding box
+      all: if True, include the initial monitor points in the return
 
     Output:
       a mystic monitor instance containing the requested boundbox points
@@ -298,34 +298,46 @@ def _noisy(x, scale=1e-8): #XXX: move to tools?
     return x if not scale else x + np.random.normal(scale=scale, size=x.shape)
 
 
-def _extrapolate(x, z, extrap=None):
+def _extrapolate(x, z, method=None):
     '''augment x,z with bounding box points
 
     Input:
       x: an array of shape (npts, dim) or (npts,)
       z: an array of shape (npts,)
-      extrap: a cost function z=f(x), used to extrapolate new points
+      method: a cost function z=f(x), used to extrapolate new points
 
     Output:
       x: an array of shape (npts+N, dim) or (npts+N,)
       z: an array of shape (npts+N,)
 
     NOTE:
-      if a function is not provided, extrap can also take a boolean.
-      If extrap is True (or None), interpolate a cost function using interpf
-      with method='thin_plate' (or 'rbf' if scipy is not found).  If extrap
-      is False, abort, and just return the original (x,z)
+      if a function is not provided, method can also take a boolean or a
+      string. If method is True (or None), interpolate a cost function
+      using interpf with method='thin_plate' (or 'rbf' if scipy is not
+      found). If method is False, abort, and just return the original (x,z).
+      Alternately, method can be any one of ('rbf','linear','cubic',
+      'nearest','inverse','gaussian','multiquadric','quintic','thin_plate').
     '''
-    if extrap is not False:
-        if extrap is None or extrap is True:
-            extrap = 'thin_plate'
-        if not hasattr(extrap, '__call__'):
-            extrap = _to_objective(interpf(x, z, method=extrap))
-        # else: extrap = solver._cost[1]
-        xx,zz = boundbox(x, z, extrap) #XXX: take/return x,y or mon?
-        x += xx
-        z += zz
-        del xx, zz
+    import numpy as np
+    xtype = getattr(x, 'dtype', None)
+    ztype = getattr(z, 'dtype', None)
+    if xtype: x = x.tolist()
+    if ztype: z = z.tolist()
+    if method is not False:
+        if method is None or method is True:
+            method = 'thin_plate'
+        if not hasattr(method, '__call__'):
+            method = _to_objective(interpf(x, z, method=method))
+        # else: method = solver._cost[1]
+        xx,zz = boundbox(x, z, method) #XXX: take/return x,y or mon?
+        zz = np.asarray(zz).tolist() #NOTE: scrub 0d arrays from interpf
+    else:
+        xx,zz = [],[]
+    # create a new iterable
+    x = x + xx
+    z = z + zz
+    if xtype: x = np.array(x, dtype=xtype)
+    if ztype: z = np.array(z, dtype=ztype)
     return x, z
 
 
@@ -345,15 +357,17 @@ def interpolate(x, z, xgrid, method=None, extrap=False):
     NOTE:
       if scipy is not installed, will use np.interp for 1D (non-rbf),
       or mystic's rbf otherwise. default method is 'nearest' for
-      1D and 'linear' otherwise. method can be one of ('rbf','linear',
-      'nearest','cubic','inverse','gaussian','quintic','thin_plate').
+      1D and 'linear' otherwise. method can be one of ('rbf','linear','cubic',
+      'nearest','inverse','gaussian','multiquadric','quintic','thin_plate').
 
     NOTE:
       if extrap is True (or None), extrapolate using interpf with
-      method='thin_plate' (or 'rbf' if scipy is not found). If extrap is
-      a cost function z = f(x), then directly use it in the extrapolation.
+      method='thin_plate' (or 'rbf' if scipy is not found). Alternately,
+      any one of ('rbf','linear','cubic','nearest','inverse','gaussian',
+      'multiquadric','quintic','thin_plate') can be used. If extrap is a
+      cost function z = f(x), then directly use it in the extrapolation.
     '''
-    x,z = _extrapolate(x,z,extrap=extrap)
+    x,z = _extrapolate(x,z,method=extrap)
     x,z = _unique(x,z,sort=True)
     # avoid nan as first value #XXX: better choice than 'nearest'?
     if method is None: method = 'nearest' if x.ndim is 1 else 'linear'
@@ -382,6 +396,7 @@ def interpolate(x, z, xgrid, method=None, extrap=False):
     return si.griddata(x, z, xgrid, method=method)#, rescale=False)
 
 
+#FIXME: return value is an array... even in 0d (i.e. array(1.234))
 def interpf(x, z, method=None, extrap=False): #XXX: return f(*x) or f(x)?
     '''interpolate to find f, where z = f(*x)
 
@@ -397,15 +412,17 @@ def interpf(x, z, method=None, extrap=False): #XXX: return f(*x) or f(x)?
     NOTE:
       if scipy is not installed, will use np.interp for 1D (non-rbf),
       or mystic's rbf otherwise. default method is 'nearest' for
-      1D and 'linear' otherwise. method can be one of ('rbf','linear',
-      'nearest','cubic','inverse','gaussian','quintic','thin_plate').
+      1D and 'linear' otherwise. method can be one of ('rbf','linear','cubic',
+      'nearest','inverse','gaussian','multiquadric','quintic','thin_plate').
 
     NOTE:
       if extrap is True (or None), extrapolate using interpf with
-      method='thin_plate' (or 'rbf' if scipy is not found). If extrap is
-      a cost function z = f(x), then directly use it in the extrapolation.
+      method='thin_plate' (or 'rbf' if scipy is not found). Alternately,
+      any one of ('rbf','linear','cubic','nearest','inverse','gaussian',
+      'multiquadric','quintic','thin_plate') can be used. If extrap is a
+      cost function z = f(x), then directly use it in the extrapolation.
     '''
-    x,z = _extrapolate(x,z,extrap=extrap)
+    x,z = _extrapolate(x,z,method=extrap)
     x,z = _unique(x,z,sort=True)
     # avoid nan as first value #XXX: better choice than 'nearest'?
     if method is None: method = 'nearest' if x.ndim is 1 else 'linear'
@@ -517,8 +534,8 @@ def gradient(x, fx, method=None, approx=True): #XXX: take f(*x) or f(x)?
     NOTE:
       if scipy is not installed, will use np.interp for 1D (non-rbf),
       or mystic's rbf otherwise. default method is 'nearest' for
-      1D and 'linear' otherwise. method can be one of ('rbf','linear',
-      'nearest','cubic','inverse','gaussian','quintic','thin_plate').
+      1D and 'linear' otherwise. method can be one of ('rbf','linear','cubic',
+      'nearest','inverse','gaussian','multiquadric','quintic','thin_plate').
     ''' #NOTE: uses 'unique' in all cases
     #XXX: nice to have a test for smoothness, worth exploring?
     import numpy as np
@@ -597,8 +614,8 @@ def hessian(x, fx, method=None, approx=True): #XXX: take f(*x) or f(x)?
     NOTE:
       if scipy is not installed, will use np.interp for 1D (non-rbf),
       or mystic's rbf otherwise. default method is 'nearest' for
-      1D and 'linear' otherwise. method can be one of ('rbf','linear',
-      'nearest','cubic','inverse','gaussian','quintic','thin_plate').
+      1D and 'linear' otherwise. method can be one of ('rbf','linear','cubic',
+      'nearest','inverse','gaussian','multiquadric','quintic','thin_plate').
 
     NOTE:
       method string can provide either one or two methods (i.e. 'rbf
@@ -659,8 +676,8 @@ def hessian_diagonal(x, fx, method=None, approx=True):
     NOTE:
       if scipy is not installed, will use np.interp for 1D (non-rbf),
       or mystic's rbf otherwise. default method is 'nearest' for
-      1D and 'linear' otherwise. method can be one of ('rbf','linear',
-      'nearest','cubic','inverse','gaussian','quintic','thin_plate').
+      1D and 'linear' otherwise. method can be one of ('rbf','linear','cubic',
+      'nearest','inverse','gaussian','multiquadric','quintic','thin_plate').
     '''
     hess = hessian(x, fx, method)
     if hess.ndim is not 3: # (i.e. is 1 or 2)

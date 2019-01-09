@@ -167,8 +167,7 @@ Args:
     maxfun (int, default=None): the maximum number of function evaluations.
     full_output (bool, default=False): True if fval and warnflag are desired.
     disp (bool, default=True): if True, print convergence messages.
-    retall (bool, default=False): if True, return list of solutions at each
-        iteration.
+    retall (bool, default=False): True if allvecs is desired.
     callback (func, default=None): function to call after each iteration. The
         interface is ``callback(xk)``, with xk the current parameter vector.
     solver (solver, default=None): override the default nested Solver instance.
@@ -290,8 +289,7 @@ Args:
     maxfun (int, default=None): the maximum number of function evaluations.
     full_output (bool, default=False): True if fval and warnflag are desired.
     disp (bool, default=True): if True, print convergence messages.
-    retall (bool, default=False): if True, return list of solutions at each
-        iteration.
+    retall (bool, default=False): True if allvecs is desired.
     callback (func, default=None): function to call after each iteration. The
         interface is ``callback(xk)``, with xk the current parameter vector.
     solver (solver, default=None): override the default nested Solver instance.
@@ -414,8 +412,7 @@ Args:
     maxfun (int, default=None): the maximum number of function evaluations.
     full_output (bool, default=False): True if fval and warnflag are desired.
     disp (bool, default=True): if True, print convergence messages.
-    retall (bool, default=False): if True, return list of solutions at each
-        iteration.
+    retall (bool, default=False): True if allvecs is desired.
     callback (func, default=None): function to call after each iteration. The
         interface is ``callback(xk)``, with xk the current parameter vector.
     solver (solver, default=None): override the default nested Solver instance.
