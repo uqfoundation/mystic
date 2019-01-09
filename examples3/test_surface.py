@@ -113,6 +113,8 @@ if __name__ == '__main__':
     args = {
    #'smooth': 0,
     'method': 'thin_plate',
+    'arrays': True,
+    'extrap': False,
     }
     #surface.doit(bounds, stop, step=step)
    #'multiquadric','inverse','gaussian','linear','cubic','quintic','thin_plate'

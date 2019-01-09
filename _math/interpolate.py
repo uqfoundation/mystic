@@ -177,6 +177,33 @@ def _to_function(objective, ndim=None):
     return function
 
 
+def _array(x): #XXX: remove?
+    '''convert lists or values to numpy arrays''' 
+    import numpy as np
+    return np.asarray(x)
+
+
+def _nonarray(x): #XXX: move to tools?
+    '''convert arrays (or lists of arrays) to values or (lists of values)''' 
+    return x.tolist() if hasattr(x, 'dtype') else ([i.tolist() for i in x] if hasattr(x, '__len__') else x)
+
+
+def _to_nonarray(f): #XXX: move to tools?
+    '''return a function where the return does not contain numpy arrays'''
+    def func(*args, **kwds):
+        return _nonarray(f(*args, **kwds))
+    #func.__name__ = f.__name__ #XXX: do name-mangling?
+    #func.__doc__ = f.__doc__ #XXX: append that no arrays are returned?
+    return func
+
+
+def _to_array(f): #XXX: move to tools?
+    '''return a function where the return is a numpy array'''
+    def func(*args, **kwds):
+        return _array(f(*args, **kwds))
+    return func
+
+
 def _unique(x, z=None, sort=False, index=False): #XXX: move to tools?
     '''return the unique values of x, and corresponding z (if provided)
 
@@ -341,7 +368,7 @@ def _extrapolate(x, z, method=None):
     return x, z
 
 
-def interpolate(x, z, xgrid, method=None, extrap=False):
+def interpolate(x, z, xgrid, method=None, extrap=False, arrays=True):
     '''interpolate to find z = f(x) sampled at points defined by xgrid
 
     Input:
@@ -350,6 +377,7 @@ def interpolate(x, z, xgrid, method=None, extrap=False):
       xgrid: (irregular) coordinate grid on which to sample z = f(x)
       method: string for kind of interpolator
       extrap: if True, extrapolate a bounding box (can reduce # of nans)
+      arrays: if True, z = f(x) is a numpy array; otherwise don't return arrays
 
     Output:
       interpolated points on a grid, where z = f(x) has been sampled on xgrid
@@ -367,6 +395,10 @@ def interpolate(x, z, xgrid, method=None, extrap=False):
       'multiquadric','quintic','thin_plate') can be used. If extrap is a
       cost function z = f(x), then directly use it in the extrapolation.
     '''
+    if arrays:
+        _f, _fx = _to_array, _array
+    else:
+        _f, _fx = _to_nonarray, _nonarray
     x,z = _extrapolate(x,z,method=extrap)
     x,z = _unique(x,z,sort=True)
     # avoid nan as first value #XXX: better choice than 'nearest'?
@@ -383,21 +415,20 @@ def interpolate(x, z, xgrid, method=None, extrap=False):
         if not kind is 0: # non-rbf
             if x.ndim is 1: # is 1D, so use np.interp
                 import numpy as np
-                return np.interp(*xgrid, xp=x, fp=z)
+                return _fx(np.interp(*xgrid, xp=x, fp=z))
             kind = 0 # otherwise, utilize mystic's rbf
         si = _rbf
     if kind is 0: # 'rbf' -> Rbf
         import numpy as np
         rbf = si.Rbf(*np.vstack((x.T, z)), function=function, smooth=0)
-        return rbf(*xgrid)
+        return _fx(rbf(*xgrid))
     # method = 'linear' -> LinearNDInterpolator
     # method = 'nearest' -> NearestNDInterpolator
     # method = 'cubic' -> (1D: spline; 2D: CloughTocher2DInterpolator)
-    return si.griddata(x, z, xgrid, method=method)#, rescale=False)
+    return _fx(si.griddata(x, z, xgrid, method=method))#, rescale=False)
 
 
-#FIXME: return value is an array... even in 0d (i.e. array(1.234))
-def interpf(x, z, method=None, extrap=False): #XXX: return f(*x) or f(x)?
+def interpf(x, z, method=None, extrap=False, arrays=False):
     '''interpolate to find f, where z = f(*x)
 
     Input:
@@ -405,6 +436,7 @@ def interpf(x, z, method=None, extrap=False): #XXX: return f(*x) or f(x)?
       z: an array of shape (npts,)
       method: string for kind of interpolator
       extrap: if True, extrapolate a bounding box (can reduce # of nans)
+      arrays: if True, z = f(*x) is a numpy array; otherwise don't use arrays
 
     Output:
       interpolated function f, where z = f(*x)
@@ -421,7 +453,11 @@ def interpf(x, z, method=None, extrap=False): #XXX: return f(*x) or f(x)?
       any one of ('rbf','linear','cubic','nearest','inverse','gaussian',
       'multiquadric','quintic','thin_plate') can be used. If extrap is a
       cost function z = f(x), then directly use it in the extrapolation.
-    '''
+    ''' #XXX: return f(*x) or f(x)?
+    if arrays:
+        _f, _fx = _to_array, _array
+    else:
+        _f, _fx = _to_nonarray, _nonarray
     x,z = _extrapolate(x,z,method=extrap)
     x,z = _unique(x,z,sort=True)
     # avoid nan as first value #XXX: better choice than 'nearest'?
@@ -438,21 +474,21 @@ def interpf(x, z, method=None, extrap=False): #XXX: return f(*x) or f(x)?
         if not kind is 0: # non-rbf
             if x.ndim is 1: # is 1D, so use np.interp
                 import numpy as np
-                return lambda xn: np.interp(xn, xp=x, fp=z)
+                return lambda xn: _fx(np.interp(xn, xp=x, fp=z))
             kind = 0 # otherwise, utilize mystic's rbf
         si = _rbf
     if kind is 0: # 'rbf'
         import numpy as np
-        return si.Rbf(*np.vstack((x.T, z)), function=function, smooth=0)
+        return _f(si.Rbf(*np.vstack((x.T, z)), function=function, smooth=0))
     elif x.ndim is 1: 
-        return si.interp1d(x, z, fill_value='extrapolate', bounds_error=False, kind=method)
+        return _f(si.interp1d(x, z, fill_value='extrapolate', bounds_error=False, kind=method))
     elif kind is 1: # 'linear'
-        return si.LinearNDInterpolator(x, z, rescale=False)
+        return _f(si.LinearNDInterpolator(x, z, rescale=False))
     elif kind is 2: # 'nearest'
-        return si.NearestNDInterpolator(x, z, rescale=False)
+        return _f(si.NearestNDInterpolator(x, z, rescale=False))
     #elif x.ndim is 1: # 'cubic'
-    #    return lambda xn: si.spline(x, z, xn)
-    return si.CloughTocher2DInterpolator(x, z, rescale=False)
+    #    return lambda xn: _fx(si.spline(x, z, xn))
+    return _f(si.CloughTocher2DInterpolator(x, z, rescale=False))
 
 
 def _gradient(x, grid):

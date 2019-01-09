@@ -390,7 +390,7 @@ dill_version = '>=0.2.8.2'
 klepto_version = '>=0.1.5.2'
 scipy_version = '>=0.6.0'
 matplotlib_version = '>=0.91'
-mpmath_version = '>=1.0.0'
+mpmath_version = '>=0.19'
 pathos_version = '>=0.2.2.1'
 pyina_version = '>=0.2.0'
 if has_setuptools:

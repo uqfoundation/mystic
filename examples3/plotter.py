@@ -43,7 +43,7 @@ class Plotter(object):
             function='linear'
         if type(function) is str:
             from mystic.math.interpolate import interpf
-            function = interpf(self.x,self.z, method=function) #XXX: kwds?
+            function = interpf(self.x,self.z, method=function, arrays=True) #XXX: kwds?
         self.function = function
        #self.dim = kwds.pop('dim', None) #XXX: or len(x)?
         # interpolator configuration

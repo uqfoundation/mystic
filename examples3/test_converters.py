@@ -20,7 +20,7 @@ import mystic.math.interpolate as ip
 fx = ip._to_function(cost)
 assert (fx(*x.T) - cost(x.T) ).sum() < 0.0001
 
-f = ip.interpf(x, y, method='linear')
+f = ip.interpf(x, y, method='linear', arrays=True)
 cf = ip._to_objective(f)
 assert (f(*x.T) - cf(x.T) ).sum() < 0.0001
 

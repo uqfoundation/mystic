@@ -41,6 +41,8 @@ class Interpolator(object):
           maxpts: int, maximum number of points to use from (x,z)
           noise: float, amplitude of gaussian noise to remove duplicate x
           method: string for kind of interpolator
+          extrap: if True, extrapolate a bounding box (can reduce # of nans)
+          arrays: if True, return a numpy array; otherwise don't return arrays
 
         NOTE:
           if scipy is not installed, will use np.interp for 1D (non-rbf),
@@ -118,6 +120,8 @@ class Interpolator(object):
 
         Additional Inputs:
           method: string for kind of interpolator
+          extrap: if True, extrapolate a bounding box (can reduce # of nans)
+          arrays: if True, return a numpy array; otherwise don't return arrays
 
         Output:
           interpolated response function, where z=f(*x.T)
@@ -141,6 +145,8 @@ class Interpolator(object):
 
         Additional Input:
           method: string for kind of interpolator
+          extrap: if True, extrapolate a bounding box (can reduce # of nans)
+          arrays: if True, return a numpy array; otherwise don't return arrays
 
         Output:
           interpolated response function, where z=f(*x.T)
@@ -210,6 +216,8 @@ def interpolate(monitor, method=None, **kwds):
     Additional Inputs:
       maxpts: int, maximum number of points (x,z) to use from the monitor
       noise: float, amplitude of gaussian noise to remove duplicate x
+      extrap: if True, extrapolate a bounding box (can reduce # of nans)
+      arrays: if True, return a numpy array; otherwise don't return arrays
 
     NOTE:
       if scipy is not installed, will use np.interp for 1D (non-rbf),

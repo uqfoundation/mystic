@@ -201,6 +201,8 @@ class Surface(object): #FIXME: should be subclass of Interpolator (?)
           maxpts: int, maximum number of points to use from (x,z)
           noise: float, amplitude of gaussian noise to remove duplicate x
           method: string for kind of interpolator
+          extrap: if True, extrapolate a bounding box (can reduce # of nans)
+          arrays: if True, return a numpy array; otherwise don't return arrays
 
         Output:
           interpolated response function, where z=f(*x.T)
