@@ -153,12 +153,12 @@ class Plotter(object):
         del xy
 
         # evaluate the function on the sub-surface
-        z_ = self.function(*grid)
+        z_ = np.asarray(self.function(*grid))
         # scaling used by function plotter
         if scale:
             if shift:
-                z_ = np.asarray(z_)+shift
-            z_ = np.log(4*np.asarray(z_)*scale+1)+2
+                z_ = z_+shift
+            z_ = np.log(4*z_*scale+1)+2
 
         # plot surface
         d = max(11 - density, 1)
@@ -168,12 +168,12 @@ class Plotter(object):
         #ax.plot_surface(x_, y_, z_, rstride=d, cstride=d, cmap=cm.jet, linewidth=0, antialiased=False)
 
         # use the sampled values
-        z_ = z
+        z_ = np.asarray(z)
         # scaling used by function plotter
         if scale:
             if shift:
-                z_ = np.asarray(z_)+shift
-            z_ = np.log(4*np.asarray(z_)*scale+1)+2
+                z_ = z_+shift
+            z_ = np.log(4*z_*scale+1)+2
 
         # plot data points
         x_ = x.T[axes[0]]
