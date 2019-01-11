@@ -656,7 +656,7 @@ def _hessian(x, grid):
 
 
 #XXX: take f(*x) or f(x)?
-def hessian(x, fx, method=None, approx=True):
+def hessian(x, fx, method=None, approx=True, extrap=False):
     '''find hessian of fx at x, where fx is a function z=fx(*x) or an array z
 
     Input:
@@ -664,6 +664,7 @@ def hessian(x, fx, method=None, approx=True):
       fx: an array of shape (npts,) **or** a function, z = fx(*x)
       method: string for kind of interpolator
       approx: if True, use local approximation method
+      extrap: if True, extrapolate a bounding box (can reduce # of nans)
 
     Output:
       array of shape indicated in NOTE, hessian of the points at (x,fx)
@@ -690,15 +691,25 @@ def hessian(x, fx, method=None, approx=True):
       or 'rbf, cubic'), where if two methods are provided, the first
       will be used to interpolate f(x) and the second will be used to
       interpolate the gradient of f(x).
+
+    NOTE:
+      if extrap is True, extrapolate using interpf with method='thin_plate'
+      (or 'rbf' if scipy is not found). Alternately, any one of ('rbf',
+      'linear','cubic','nearest','inverse','gaussian','multiquadric',
+      'quintic','thin_plate') can be used. If extrap is a cost function
+      z = f(x), then directly use it in the extrapolation.
     ''' #NOTE: uses 'unique' in all cases
     import numpy as np
-    x = np.asarray(x)
     if method is None:
         method = (None,)
     else: #NOTE: accepts either 'one', 'one, two' or 'one; two'
         method = [s.strip() for s in method.replace(';',',').split(',')]
     if not hasattr(fx, '__call__'):
+        x, fx = _extrapolate(x, fx, method=extrap)
         fx = interpf(x, fx, method=method[0])
+    elif extrap:
+        x = boundbox(x, all=True)
+    x = np.asarray(x)
     if approx is True:
         fx = _to_objective(fx) # conform to gradient interface
         #XXX: alternate: use grid w/_gradient, then use _fprime to find hessian
@@ -723,7 +734,7 @@ def hessian(x, fx, method=None, approx=True):
     return np.array([[k[idx] for k in j] for j in hess]).T[i]#XXX: right shape?
 
 
-def hessian_diagonal(x, fx, method=None, approx=True):
+def hessian_diagonal(x, fx, method=None, approx=True, extrap=False):
     '''find hessian diagonal of fx at x, with fx a function z=fx(*x) or array z
 
     Input:
@@ -731,6 +742,7 @@ def hessian_diagonal(x, fx, method=None, approx=True):
       fx: an array of shape (npts,) **or** a function, z = fx(*x)
       method: string for kind of interpolator
       approx: if True, use local approximation method
+      extrap: if True, extrapolate a bounding box (can reduce # of nans)
 
     Output:
       array of dimensions x.shape, hessian diagonal of the points at (x,fx)
@@ -746,8 +758,15 @@ def hessian_diagonal(x, fx, method=None, approx=True):
       or mystic's rbf otherwise. default method is 'nearest' for
       1D and 'linear' otherwise. method can be one of ('rbf','linear','cubic',
       'nearest','inverse','gaussian','multiquadric','quintic','thin_plate').
+
+    NOTE:
+      if extrap is True, extrapolate using interpf with method='thin_plate'
+      (or 'rbf' if scipy is not found). Alternately, any one of ('rbf',
+      'linear','cubic','nearest','inverse','gaussian','multiquadric',
+      'quintic','thin_plate') can be used. If extrap is a cost function
+      z = f(x), then directly use it in the extrapolation.
     '''
-    hess = hessian(x, fx, method)
+    hess = hessian(x, fx, method, extrap=extrap)
     if hess.ndim is not 3: # (i.e. is 1 or 2)
         return hess
     import numpy as np
