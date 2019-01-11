@@ -14,7 +14,7 @@
 from mystic.math import _rbf
 Rbf = _rbf.Rbf
 
-def boundbox(x, z, fx=None, mins=None, maxs=None, **kwds):
+def boundbox(x, z=None, fx=None, mins=None, maxs=None, **kwds):
     '''produce bounding-box to facilitate interpolation at the given points
 
     Input:
@@ -29,14 +29,23 @@ def boundbox(x, z, fx=None, mins=None, maxs=None, **kwds):
       a tuple of (x,z) containing the requested boundbox points
 
     NOTE:
+      if z is None, return a tuple (x,) with the requested boundbox points.
+
+    NOTE:
       if mins is None, then use the minima found in the monitor instance.
       Similarly for maxs.
     '''
+    output = True
+    if z is None:
+        import numpy as np
+        z = np.nan * np.ones(len(x))
+        output = False
+        fx = None # ignore fx
     from mystic.monitors import Monitor
     mon = Monitor()
     mon._x = x; mon._y = z
     mon = _boundbox(mon, fx=fx, mins=mins, maxs=maxs, **kwds)
-    return mon._x,mon._y
+    return (mon._x,mon._y) if output else mon._x
 
 
 def _boundbox(monitor, fx=None, mins=None, maxs=None, **kwds):
@@ -325,7 +334,7 @@ def _noisy(x, scale=1e-8): #XXX: move to tools?
     return x if not scale else x + np.random.normal(scale=scale, size=x.shape)
 
 
-def _extrapolate(x, z, method=None):
+def _extrapolate(x, z, method=True):
     '''augment x,z with bounding box points
 
     Input:
@@ -339,25 +348,24 @@ def _extrapolate(x, z, method=None):
 
     NOTE:
       if a function is not provided, method can also take a boolean or a
-      string. If method is True (or None), interpolate a cost function
-      using interpf with method='thin_plate' (or 'rbf' if scipy is not
-      found). If method is False, abort, and just return the original (x,z).
-      Alternately, method can be any one of ('rbf','linear','cubic',
-      'nearest','inverse','gaussian','multiquadric','quintic','thin_plate').
+      string. If method is True, interpolate a cost function using interpf
+      with method='thin_plate' (or 'rbf' if scipy is not found). If method
+      is False, abort, and just return the original (x,z). Alternately,
+      method can be any one of ('rbf','linear','cubic','nearest','inverse',
+      'gaussian','multiquadric','quintic','thin_plate').
     '''
     import numpy as np
     xtype = getattr(x, 'dtype', None)
     ztype = getattr(z, 'dtype', None)
     if xtype: x = x.tolist()
     if ztype: z = z.tolist()
-    if method is not False:
-        if method is None or method is True:
+    if method:
+        if method is True:
             method = 'thin_plate'
         if not hasattr(method, '__call__'):
             method = _to_objective(interpf(x, z, method=method))
         # else: method = solver._cost[1]
         xx,zz = boundbox(x, z, method) #XXX: take/return x,y or mon?
-        zz = np.asarray(zz).tolist() #NOTE: scrub 0d arrays from interpf
     else:
         xx,zz = [],[]
     # create a new iterable
@@ -389,11 +397,11 @@ def interpolate(x, z, xgrid, method=None, extrap=False, arrays=True):
       'nearest','inverse','gaussian','multiquadric','quintic','thin_plate').
 
     NOTE:
-      if extrap is True (or None), extrapolate using interpf with
-      method='thin_plate' (or 'rbf' if scipy is not found). Alternately,
-      any one of ('rbf','linear','cubic','nearest','inverse','gaussian',
-      'multiquadric','quintic','thin_plate') can be used. If extrap is a
-      cost function z = f(x), then directly use it in the extrapolation.
+      if extrap is True, extrapolate using interpf with method='thin_plate'
+      (or 'rbf' if scipy is not found). Alternately, any one of ('rbf',
+      'linear','cubic','nearest','inverse','gaussian','multiquadric',
+      'quintic','thin_plate') can be used. If extrap is a cost function
+      z = f(x), then directly use it in the extrapolation.
     '''
     if arrays:
         _f, _fx = _to_array, _array
@@ -426,6 +434,7 @@ def interpolate(x, z, xgrid, method=None, extrap=False, arrays=True):
     # method = 'nearest' -> NearestNDInterpolator
     # method = 'cubic' -> (1D: spline; 2D: CloughTocher2DInterpolator)
     return _fx(si.griddata(x, z, xgrid, method=method))#, rescale=False)
+    #XXX: should the extrapolated points be removed?
 
 
 def interpf(x, z, method=None, extrap=False, arrays=False):
@@ -448,11 +457,11 @@ def interpf(x, z, method=None, extrap=False, arrays=False):
       'nearest','inverse','gaussian','multiquadric','quintic','thin_plate').
 
     NOTE:
-      if extrap is True (or None), extrapolate using interpf with
-      method='thin_plate' (or 'rbf' if scipy is not found). Alternately,
-      any one of ('rbf','linear','cubic','nearest','inverse','gaussian',
-      'multiquadric','quintic','thin_plate') can be used. If extrap is a
-      cost function z = f(x), then directly use it in the extrapolation.
+      if extrap is True, extrapolate using interpf with method='thin_plate'
+      (or 'rbf' if scipy is not found). Alternately, any one of ('rbf',
+      'linear','cubic','nearest','inverse','gaussian','multiquadric',
+      'quintic','thin_plate') can be used. If extrap is a cost function
+      z = f(x), then directly use it in the extrapolation.
     ''' #XXX: return f(*x) or f(x)?
     if arrays:
         _f, _fx = _to_array, _array
@@ -511,13 +520,14 @@ def _gradient(x, grid):
     return z #XXX: for (N,1) & (N,), should return a tuple?
 
 
-def _fprime(x, fx, method=None):
+def _fprime(x, fx, method=None, extrap=False):
     '''find gradient of fx at x, where fx is a function z=fx(x)
 
     Input:
       x: an array of shape (npts, dim) or (npts,)
       fx: a function, z = fx(x)
       method: string for kind of gradient method
+      extrap: if True, extrapolate a bounding box (can reduce # of nans)
 
     Output:
       array of dimensions x.shape, gradient of the points at (x,fx)
@@ -526,10 +536,18 @@ def _fprime(x, fx, method=None):
       if method is 'approx' (the default) use mystic's approx_fprime,
       which uses a local gradient approximation; other choices are
       'symbolic', which uses mpmath.diff if installed.
+
+    NOTE:
+      if extrap is True, extrapolate using interpf with method='thin_plate'
+      (or 'rbf' if scipy is not found). Alternately, any one of ('rbf',
+      'linear','cubic','nearest','inverse','gaussian','multiquadric',
+      'quintic','thin_plate') can be used. If extrap is a cost function
+      z = f(x), then directly use it in the extrapolation.
     '''
+    import numpy as np
+    if extrap: x = boundbox(x, all=True)
     x,i = _unique(x, index=True)
     if method is None or method == 'approx':
-        import numpy as np
         from mystic._scipyoptimize import approx_fprime, _epsilon
         err = np.seterr(all='ignore') # silence warnings (division by nan)
         #fx = _to_objective(fx) # conform to gradient interface
@@ -541,16 +559,17 @@ def _fprime(x, fx, method=None):
         from mpmath import diff
     except ImportError:
         return _fprime(x, fx, method=None)[i]
-    import numpy as np
     err = np.seterr(all='ignore') # silence warnings (division by nan)
     #fx = _to_objective(fx) # conform to gradient interface
     k = range(s[-1])
     z = np.array([[diff(lambda *x: fx(_swapvals(x,j)), xk[_swapvals(k,j)], (1,)) for j in k] for xk in x], dtype=x.dtype).reshape(*s)
     np.seterr(**err)
     return z[i]
+    #XXX: should the extrapolated points be removed?
 
 
-def gradient(x, fx, method=None, approx=True): #XXX: take f(*x) or f(x)?
+#XXX: take f(*x) or f(x)?
+def gradient(x, fx, method=None, approx=True, extrap=False):
     '''find gradient of fx at x, where fx is a function z=fx(*x) or an array z
 
     Input:
@@ -558,6 +577,7 @@ def gradient(x, fx, method=None, approx=True): #XXX: take f(*x) or f(x)?
       fx: an array of shape (npts,) **or** a function, z = fx(*x)
       method: string for kind of interpolator
       approx: if True, use local approximation method
+      extrap: if True, extrapolate a bounding box (can reduce # of nans)
 
     Output:
       array of dimensions x.shape, gradient of the points at (x,fx)
@@ -572,12 +592,22 @@ def gradient(x, fx, method=None, approx=True): #XXX: take f(*x) or f(x)?
       or mystic's rbf otherwise. default method is 'nearest' for
       1D and 'linear' otherwise. method can be one of ('rbf','linear','cubic',
       'nearest','inverse','gaussian','multiquadric','quintic','thin_plate').
+
+    NOTE:
+      if extrap is True, extrapolate using interpf with method='thin_plate'
+      (or 'rbf' if scipy is not found). Alternately, any one of ('rbf',
+      'linear','cubic','nearest','inverse','gaussian','multiquadric',
+      'quintic','thin_plate') can be used. If extrap is a cost function
+      z = f(x), then directly use it in the extrapolation.
     ''' #NOTE: uses 'unique' in all cases
     #XXX: nice to have a test for smoothness, worth exploring?
     import numpy as np
-    x = np.asarray(x)
     if not hasattr(fx, '__call__'):
+        x, fx = _extrapolate(x, fx, method=extrap)
         fx = interpf(x, fx, method=method)
+    elif extrap:
+        x = boundbox(x, all=True)
+    x = np.asarray(x)
     if approx is True:
         fx = _to_objective(fx) # conform to gradient interface
         if x.ndim is 1:
@@ -592,6 +622,7 @@ def gradient(x, fx, method=None, approx=True): #XXX: take f(*x) or f(x)?
         return gfx[i]
     idx = np.diag_indices(*x.shape)
     return np.array([j[idx] for j in gfx]).T[i]
+    #XXX: should the extrapolated points be removed?
 
 
 # SEE: https://stackoverflow.com/questions/31206443
@@ -624,7 +655,8 @@ def _hessian(x, grid):
     return hess
 
 
-def hessian(x, fx, method=None, approx=True): #XXX: take f(*x) or f(x)?
+#XXX: take f(*x) or f(x)?
+def hessian(x, fx, method=None, approx=True):
     '''find hessian of fx at x, where fx is a function z=fx(*x) or an array z
 
     Input:
