@@ -520,7 +520,7 @@ def _gradient(x, grid):
     return z #XXX: for (N,1) & (N,), should return a tuple?
 
 
-def _fprime(x, fx, method=None, extrap=False):
+def _fprime(x, fx, method=None, extrap=False, **kwds):
     '''find gradient of fx at x, where fx is a function z=fx(x)
 
     Input:
@@ -528,6 +528,7 @@ def _fprime(x, fx, method=None, extrap=False):
       fx: a function, z = fx(x)
       method: string for kind of gradient method
       extrap: if True, extrapolate a bounding box (can reduce # of nans)
+      all: if True, include the extrapolated points in the output
 
     Output:
       array of dimensions x.shape, gradient of the points at (x,fx)
@@ -544,8 +545,10 @@ def _fprime(x, fx, method=None, extrap=False):
       'quintic','thin_plate') can be used. If extrap is a cost function
       z = f(x), then directly use it in the extrapolation.
     '''
+    slc = slice(None,None) if kwds.get('all', False) else slice(None,len(x))
     import numpy as np
-    if extrap: x = boundbox(x, all=True)
+    if extrap:
+        x = boundbox(x, all=True)
     x,i = _unique(x, index=True)
     if method is None or method == 'approx':
         from mystic._scipyoptimize import approx_fprime, _epsilon
@@ -554,22 +557,22 @@ def _fprime(x, fx, method=None, extrap=False):
         x,s = np.atleast_2d(x),x.shape
         z = np.array([approx_fprime(xi, fx, _epsilon) for xi in x]).reshape(*s)
         np.seterr(**err)
-        return z[i]
+        return z[i][slc]
     try: #XXX: mpmath.diff is more error prone -- don't use it?
         from mpmath import diff
     except ImportError:
-        return _fprime(x, fx, method=None)[i]
+        return _fprime(x, fx, method=None)[i][slc]
     err = np.seterr(all='ignore') # silence warnings (division by nan)
     #fx = _to_objective(fx) # conform to gradient interface
     k = range(s[-1])
     z = np.array([[diff(lambda *x: fx(_swapvals(x,j)), xk[_swapvals(k,j)], (1,)) for j in k] for xk in x], dtype=x.dtype).reshape(*s)
     np.seterr(**err)
-    return z[i]
+    return z[i][slc]
     #XXX: should the extrapolated points be removed?
 
 
 #XXX: take f(*x) or f(x)?
-def gradient(x, fx, method=None, approx=True, extrap=False):
+def gradient(x, fx, method=None, approx=True, extrap=False, **kwds):
     '''find gradient of fx at x, where fx is a function z=fx(*x) or an array z
 
     Input:
@@ -578,6 +581,7 @@ def gradient(x, fx, method=None, approx=True, extrap=False):
       method: string for kind of interpolator
       approx: if True, use local approximation method
       extrap: if True, extrapolate a bounding box (can reduce # of nans)
+      all: if True, include the extrapolated points in the output
 
     Output:
       array of dimensions x.shape, gradient of the points at (x,fx)
@@ -601,6 +605,7 @@ def gradient(x, fx, method=None, approx=True, extrap=False):
       z = f(x), then directly use it in the extrapolation.
     ''' #NOTE: uses 'unique' in all cases
     #XXX: nice to have a test for smoothness, worth exploring?
+    slc = slice(None,None) if kwds.get('all', False) else slice(None,len(x))
     import numpy as np
     if not hasattr(fx, '__call__'):
         x, fx = _extrapolate(x, fx, method=extrap)
@@ -611,17 +616,17 @@ def gradient(x, fx, method=None, approx=True, extrap=False):
     if approx is True:
         fx = _to_objective(fx) # conform to gradient interface
         if x.ndim is 1:
-            return _fprime(x.reshape(x.shape+(1,)), fx).reshape(x.shape)
-        return _fprime(x, fx)
+            return _fprime(x.reshape(x.shape+(1,)), fx).reshape(x.shape)[slc]
+        return _fprime(x, fx)[slc]
     q = True #XXX: is q=True better for memory, worse for accuracy?
     if q is True: x,i = _unique(x, index=True)
     else: i = slice(None)
     gfx = _gradient(x, fx(*grid(*_axes(x)))) #XXX: diagonal w/o full grid?
     if type(gfx) is not list:
         gfx.shape = x.shape
-        return gfx[i]
+        return gfx[i][slc]
     idx = np.diag_indices(*x.shape)
-    return np.array([j[idx] for j in gfx]).T[i]
+    return np.array([j[idx] for j in gfx]).T[i][slc]
     #XXX: should the extrapolated points be removed?
 
 
@@ -656,7 +661,7 @@ def _hessian(x, grid):
 
 
 #XXX: take f(*x) or f(x)?
-def hessian(x, fx, method=None, approx=True, extrap=False):
+def hessian(x, fx, method=None, approx=True, extrap=False, **kwds):
     '''find hessian of fx at x, where fx is a function z=fx(*x) or an array z
 
     Input:
@@ -665,6 +670,7 @@ def hessian(x, fx, method=None, approx=True, extrap=False):
       method: string for kind of interpolator
       approx: if True, use local approximation method
       extrap: if True, extrapolate a bounding box (can reduce # of nans)
+      all: if True, include the extrapolated points in the output
 
     Output:
       array of shape indicated in NOTE, hessian of the points at (x,fx)
@@ -699,6 +705,7 @@ def hessian(x, fx, method=None, approx=True, extrap=False):
       'quintic','thin_plate') can be used. If extrap is a cost function
       z = f(x), then directly use it in the extrapolation.
     ''' #NOTE: uses 'unique' in all cases
+    slc = slice(None,None) if kwds.get('all', False) else slice(None,len(x))
     import numpy as np
     if method is None:
         method = (None,)
@@ -716,25 +723,25 @@ def hessian(x, fx, method=None, approx=True, extrap=False):
         if x.ndim is 1:
             gfx = _fprime(x.reshape(x.shape+(1,)), fx).reshape(x.shape)
             gfx = interpf(x, gfx, method=method[-1])
-            return _fprime(x.reshape(x.shape+(1,)), gfx).reshape(x.shape)
+            return _fprime(x.reshape(x.shape+(1,)), gfx).reshape(x.shape)[slc]
         gfx = _fprime(x, fx).T
         gfx = [_to_objective(interpf(x, i, method=method[-1])) for i in gfx]
         hess = np.empty(x.shape + x.shape[-1:], dtype=x.dtype)
         for i, gf in enumerate(gfx):
             hess[:,:,i] = _fprime(x, gf)
-        return hess
+        return hess[slc]
     q = True #XXX: is q=True better for memory, worse for accuracy?
     if q is True: x,i = _unique(x, index=True)
     else: i = slice(None)
     hess = _hessian(x, fx(*grid(*_axes(x))))
     if hess.size is hess.shape[-1]:
         hess.shape = x.shape #XXX: if (N,1), is (N,1,1) or (N,1) right shape?
-        return hess[i]
+        return hess[i][slc]
     idx = np.diag_indices(*x.shape)
-    return np.array([[k[idx] for k in j] for j in hess]).T[i]#XXX: right shape?
+    return np.array([[k[idx] for k in j] for j in hess]).T[i][slc] #XXX: shape?
 
 
-def hessian_diagonal(x, fx, method=None, approx=True, extrap=False):
+def hessian_diagonal(x, fx, method=None, approx=True, extrap=False, **kwds):
     '''find hessian diagonal of fx at x, with fx a function z=fx(*x) or array z
 
     Input:
@@ -743,6 +750,7 @@ def hessian_diagonal(x, fx, method=None, approx=True, extrap=False):
       method: string for kind of interpolator
       approx: if True, use local approximation method
       extrap: if True, extrapolate a bounding box (can reduce # of nans)
+      all: if True, include the extrapolated points in the output
 
     Output:
       array of dimensions x.shape, hessian diagonal of the points at (x,fx)
@@ -766,7 +774,7 @@ def hessian_diagonal(x, fx, method=None, approx=True, extrap=False):
       'quintic','thin_plate') can be used. If extrap is a cost function
       z = f(x), then directly use it in the extrapolation.
     '''
-    hess = hessian(x, fx, method, extrap=extrap)
+    hess = hessian(x, fx, method, extrap=extrap, **kwds)
     if hess.ndim is not 3: # (i.e. is 1 or 2)
         return hess
     import numpy as np
