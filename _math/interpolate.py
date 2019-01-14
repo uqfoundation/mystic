@@ -14,13 +14,13 @@
 from mystic.math import _rbf
 Rbf = _rbf.Rbf
 
-def boundbox(x, z=None, fx=None, mins=None, maxs=None, **kwds):
-    '''produce bounding-box to facilitate interpolation at the given points
+def extrapolate(x, z=None, method=None, mins=None, maxs=None, **kwds):
+    '''extrapolate a bounding-box for the given points
 
     Input:
       x: an array of shape (npts, dim) or (npts,)
       z: an array of shape (npts,)
-      fx: a function f(x) to evaluate at new points; if None, use f(x) = nan
+      method: a function f(x) to generate new points; if None, use f(x) = nan
       mins: a list of floats defining minima of the bounding box, or None
       maxs: a list of floats defining maxima of the bounding box, or None
       all: if True, include the initial (x,z) points in the return
@@ -32,24 +32,43 @@ def boundbox(x, z=None, fx=None, mins=None, maxs=None, **kwds):
       if z is None, return a tuple (x,) with the requested boundbox points.
 
     NOTE:
-      if mins is None, then use the minima found in the monitor instance.
-      Similarly for maxs.
+      if mins is None, then use the minima found in x. Similarly for maxs.
+
+    NOTE:
+      method can take a function, None, a boolean, or a string. If method is
+      True, interpolate a cost function using interpf with method='thin_plate'
+      (or 'rbf' if scipy is not found). If method is False, return the original
+      input. Alternately, method can be any one of ('rbf','linear','cubic',
+      'nearest','inverse','gaussian','multiquadric','quintic','thin_plate').
     '''
+    kwds.setdefault('all', True)
+    import numpy as np
     output = True
     if z is None:
-        import numpy as np
         z = np.nan * np.ones(len(x))
         output = False
-        fx = None # ignore fx
+        method = None # ignore method
+    xtype = getattr(x, 'dtype', None)
+    ztype = getattr(z, 'dtype', None)
+    if xtype: x = x.tolist()
+    if ztype: z = z.tolist()
+    if method:
+        if method is True:
+            method = 'thin_plate'
+        if not hasattr(method, '__call__'):
+            method = _to_objective(interpf(x, z, method=method))
     from mystic.monitors import Monitor
     mon = Monitor()
     mon._x = x; mon._y = z
-    mon = _boundbox(mon, fx=fx, mins=mins, maxs=maxs, **kwds)
-    return (mon._x,mon._y) if output else mon._x
+    if (method is None) or method:
+        mon = _boundbox(mon, fx=method, mins=mins, maxs=maxs, **kwds)
+    x = np.array(mon._x, dtype=xtype) if xtype else mon._x
+    z = np.array(mon._y, dtype=ztype) if ztype else mon._y
+    return (x,z) if output else x
 
 
 def _boundbox(monitor, fx=None, mins=None, maxs=None, **kwds):
-    '''produce bounding-box to facilitate interpolation at the given points
+    '''produce a bounding-box to facilitate interpolation at the given points
 
     Input:
       monitor: a mystic monitor instance
@@ -334,48 +353,6 @@ def _noisy(x, scale=1e-8): #XXX: move to tools?
     return x if not scale else x + np.random.normal(scale=scale, size=x.shape)
 
 
-def _extrapolate(x, z, method=True):
-    '''augment x,z with bounding box points
-
-    Input:
-      x: an array of shape (npts, dim) or (npts,)
-      z: an array of shape (npts,)
-      method: a cost function z=f(x), used to extrapolate new points
-
-    Output:
-      x: an array of shape (npts+N, dim) or (npts+N,)
-      z: an array of shape (npts+N,)
-
-    NOTE:
-      if a function is not provided, method can also take a boolean or a
-      string. If method is True, interpolate a cost function using interpf
-      with method='thin_plate' (or 'rbf' if scipy is not found). If method
-      is False, abort, and just return the original (x,z). Alternately,
-      method can be any one of ('rbf','linear','cubic','nearest','inverse',
-      'gaussian','multiquadric','quintic','thin_plate').
-    '''
-    import numpy as np
-    xtype = getattr(x, 'dtype', None)
-    ztype = getattr(z, 'dtype', None)
-    if xtype: x = x.tolist()
-    if ztype: z = z.tolist()
-    if method:
-        if method is True:
-            method = 'thin_plate'
-        if not hasattr(method, '__call__'):
-            method = _to_objective(interpf(x, z, method=method))
-        # else: method = solver._cost[1]
-        xx,zz = boundbox(x, z, method) #XXX: take/return x,y or mon?
-    else:
-        xx,zz = [],[]
-    # create a new iterable
-    x = x + xx
-    z = z + zz
-    if xtype: x = np.array(x, dtype=xtype)
-    if ztype: z = np.array(z, dtype=ztype)
-    return x, z
-
-
 def interpolate(x, z, xgrid, method=None, extrap=False, arrays=True):
     '''interpolate to find z = f(x) sampled at points defined by xgrid
 
@@ -407,7 +384,7 @@ def interpolate(x, z, xgrid, method=None, extrap=False, arrays=True):
         _f, _fx = _to_array, _array
     else:
         _f, _fx = _to_nonarray, _nonarray
-    x,z = _extrapolate(x,z,method=extrap)
+    x,z = extrapolate(x,z,method=extrap)
     x,z = _unique(x,z,sort=True)
     # avoid nan as first value #XXX: better choice than 'nearest'?
     if method is None: method = 'nearest' if x.ndim is 1 else 'linear'
@@ -467,7 +444,7 @@ def interpf(x, z, method=None, extrap=False, arrays=False):
         _f, _fx = _to_array, _array
     else:
         _f, _fx = _to_nonarray, _nonarray
-    x,z = _extrapolate(x,z,method=extrap)
+    x,z = extrapolate(x,z,method=extrap)
     x,z = _unique(x,z,sort=True)
     # avoid nan as first value #XXX: better choice than 'nearest'?
     if method is None: method = 'nearest' if x.ndim is 1 else 'linear'
@@ -528,7 +505,7 @@ def _fprime(x, fx, method=None, extrap=False, **kwds):
       fx: a function, z = fx(x)
       method: string for kind of gradient method
       extrap: if True, extrapolate a bounding box (can reduce # of nans)
-      all: if True, include the extrapolated points in the output
+      new: if True, include the extrapolated points in the output
 
     Output:
       array of dimensions x.shape, gradient of the points at (x,fx)
@@ -545,10 +522,10 @@ def _fprime(x, fx, method=None, extrap=False, **kwds):
       'quintic','thin_plate') can be used. If extrap is a cost function
       z = f(x), then directly use it in the extrapolation.
     '''
-    slc = slice(None,None) if kwds.get('all', False) else slice(None,len(x))
+    slc = slice(None,None) if kwds.get('new', False) else slice(None,len(x))
     import numpy as np
     if extrap:
-        x = boundbox(x, all=True)
+        x = extrapolate(x)
     x,i = _unique(x, index=True)
     if method is None or method == 'approx':
         from mystic._scipyoptimize import approx_fprime, _epsilon
@@ -581,7 +558,7 @@ def gradient(x, fx, method=None, approx=True, extrap=False, **kwds):
       method: string for kind of interpolator
       approx: if True, use local approximation method
       extrap: if True, extrapolate a bounding box (can reduce # of nans)
-      all: if True, include the extrapolated points in the output
+      new: if True, include the extrapolated points in the output
 
     Output:
       array of dimensions x.shape, gradient of the points at (x,fx)
@@ -605,13 +582,13 @@ def gradient(x, fx, method=None, approx=True, extrap=False, **kwds):
       z = f(x), then directly use it in the extrapolation.
     ''' #NOTE: uses 'unique' in all cases
     #XXX: nice to have a test for smoothness, worth exploring?
-    slc = slice(None,None) if kwds.get('all', False) else slice(None,len(x))
+    slc = slice(None,None) if kwds.get('new', False) else slice(None,len(x))
     import numpy as np
     if not hasattr(fx, '__call__'):
-        x, fx = _extrapolate(x, fx, method=extrap)
+        x, fx = extrapolate(x, fx, method=extrap)
         fx = interpf(x, fx, method=method)
     elif extrap:
-        x = boundbox(x, all=True)
+        x = extrapolate(x)
     x = np.asarray(x)
     if approx is True:
         fx = _to_objective(fx) # conform to gradient interface
@@ -670,7 +647,7 @@ def hessian(x, fx, method=None, approx=True, extrap=False, **kwds):
       method: string for kind of interpolator
       approx: if True, use local approximation method
       extrap: if True, extrapolate a bounding box (can reduce # of nans)
-      all: if True, include the extrapolated points in the output
+      new: if True, include the extrapolated points in the output
 
     Output:
       array of shape indicated in NOTE, hessian of the points at (x,fx)
@@ -705,17 +682,17 @@ def hessian(x, fx, method=None, approx=True, extrap=False, **kwds):
       'quintic','thin_plate') can be used. If extrap is a cost function
       z = f(x), then directly use it in the extrapolation.
     ''' #NOTE: uses 'unique' in all cases
-    slc = slice(None,None) if kwds.get('all', False) else slice(None,len(x))
+    slc = slice(None,None) if kwds.get('new', False) else slice(None,len(x))
     import numpy as np
     if method is None:
         method = (None,)
     else: #NOTE: accepts either 'one', 'one, two' or 'one; two'
         method = [s.strip() for s in method.replace(';',',').split(',')]
     if not hasattr(fx, '__call__'):
-        x, fx = _extrapolate(x, fx, method=extrap)
+        x, fx = extrapolate(x, fx, method=extrap)
         fx = interpf(x, fx, method=method[0])
     elif extrap:
-        x = boundbox(x, all=True)
+        x = extrapolate(x)
     x = np.asarray(x)
     if approx is True:
         fx = _to_objective(fx) # conform to gradient interface
@@ -750,7 +727,7 @@ def hessian_diagonal(x, fx, method=None, approx=True, extrap=False, **kwds):
       method: string for kind of interpolator
       approx: if True, use local approximation method
       extrap: if True, extrapolate a bounding box (can reduce # of nans)
-      all: if True, include the extrapolated points in the output
+      new: if True, include the extrapolated points in the output
 
     Output:
       array of dimensions x.shape, hessian diagonal of the points at (x,fx)
