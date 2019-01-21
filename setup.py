@@ -173,7 +173,7 @@ Requirements
     - ``numpy``, **version >= 1.0**
     - ``sympy``, **version >= 0.6.7**
     - ``dill``, **version >= 0.2.9**
-    - ``klepto``, **version >= 0.1.5.2**
+    - ``klepto``, **version >= 0.1.6**
 
 Optional requirements:
 
@@ -387,7 +387,7 @@ else:
     numpy_version = '>=1.0, <1.16.0' #FIXME: pypy bug in numpy
     sympy_version = '>=0.6.7'#, <0.7.4'
 dill_version = '>=0.2.9'
-klepto_version = '>=0.1.5.2'
+klepto_version = '>=0.1.6'
 scipy_version = '>=0.6.0'
 matplotlib_version = '>=0.91'
 mpmath_version = '>=0.19'
