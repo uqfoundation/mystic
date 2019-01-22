@@ -181,7 +181,7 @@ Optional requirements:
     - ``matplotlib``, **version >= 0.91**
     - ``scipy``, **version >= 0.6.0**
     - ``mpmath``, **version >= 1.0.0**
-    - ``pathos``, **version >= 0.2.2.1**
+    - ``pathos``, **version >= 0.2.3**
     - ``pyina``, **version >= 0.2.0**
 
 
@@ -391,7 +391,7 @@ klepto_version = '>=0.1.6'
 scipy_version = '>=0.6.0'
 matplotlib_version = '>=0.91'
 mpmath_version = '>=0.19'
-pathos_version = '>=0.2.2.1'
+pathos_version = '>=0.2.3'
 pyina_version = '>=0.2.0'
 if has_setuptools:
     setup_code += """
