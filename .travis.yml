@@ -46,6 +46,7 @@ matrix:
         - python: '3.2'
         - python: '3.3'
         - python: 'nightly'
+        - python: 'pypy'
         - python: 'pypy3'
     fast_finish: true
 

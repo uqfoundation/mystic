@@ -381,10 +381,10 @@ elif sysversion == (2,6) or (sysversion >= (3,2) and sysversion <= (3,3)):
     numpy_version = '>=1.0, <1.12.0'
     sympy_version = '>=0.6.7, <1.1'
 elif sysversion == (sysversion >= (3,4) and sysversion < (3,5)):
-    numpy_version = '>=1.0, <1.16.0'
+    numpy_version = '>=1.0'
     sympy_version = '>=0.6.7, <1.1'
 else:
-    numpy_version = '>=1.0, <1.16.0' #FIXME: pypy bug in numpy
+    numpy_version = '>=1.0'
     sympy_version = '>=0.6.7'#, <0.7.4'
 dill_version = '>=0.2.9'
 klepto_version = '>=0.1.6'
