@@ -841,6 +841,36 @@ Notes:
                 self.__save_state(force=True)
         return msg
 
+    def _Solve(self, cost, **settings):
+        """Run the optimizer to termination, using the given settings.
+
+Args:
+    cost (func): the function to be minimized: ``y = cost(x)``.
+    settings (dict): optimizer settings (produced by _process_inputs)
+
+Returns:
+    None
+        """
+        disp = settings['disp'] if 'disp' in settings else False
+
+        # the main optimization loop
+        stop = False
+        while not stop: 
+            stop = self.Step(**settings) #XXX: remove need to pass settings?
+            continue
+
+        # if collapse, then activate any relevant collapses and continue
+        self.__stop__ = stop  #HACK: avoid re-evaluation of Termination
+        while self._collapse and self.Collapse(disp=disp):
+            del self.__stop__ #HACK
+            stop = False
+            while not stop:
+                stop = self.Step(**settings) #XXX: move Collapse inside of Step?
+                continue
+            self.__stop__ = stop  #HACK
+        del self.__stop__ #HACK
+        return
+
     def Solve(self, cost=None, termination=None, ExtraArgs=None, **kwds):
         """Minimize a 'cost' function with given termination conditions.
 
@@ -865,9 +895,8 @@ Returns:
             del kwds['sigint_callback']
         else: self.sigint_callback = None
         settings = self._process_inputs(kwds)
-        disp = settings['disp'] if 'disp' in settings else False
 
-        # set up signal handler
+        # set up signal handler #FIXME: sigint doesn't behave well in parallel
         self._EARLYEXIT = False  #XXX: why not use EARLYEXIT singleton?
 
         # activate signal handler
@@ -883,22 +912,8 @@ Returns:
         if termination is not None: self.SetTermination(termination)
         #XXX: self.Step(cost, termination, ExtraArgs, **settings) ?
 
-        # the main optimization loop
-        stop = False
-        while not stop: 
-            stop = self.Step(**settings) #XXX: remove need to pass settings?
-            continue
-
-        # if collapse, then activate any relevant collapses and continue
-        self.__stop__ = stop  #HACK: avoid re-evaluation of Termination
-        while self._collapse and self.Collapse(disp=disp):
-            del self.__stop__ #HACK
-            stop = False
-            while not stop:
-                stop = self.Step(**settings) #XXX: move Collapse inside of Step?
-                continue
-            self.__stop__ = stop  #HACK
-        del self.__stop__ #HACK
+        # run the optimizer to termination
+        self._Solve(cost, **settings)
 
         # restore default handler for signal interrupts
         if self._handle_sigint:

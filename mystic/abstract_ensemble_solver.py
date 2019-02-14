@@ -318,38 +318,21 @@ Inputs:
 *** this method must be overwritten ***"""
         raise NotImplementedError("a sampling algorithm was not provided")
 
-    #FIXME: should utilize Step
-    def Solve(self, cost=None, termination=None, ExtraArgs=None, **kwds):
-        """Minimize a 'cost' function with given termination conditions.
-
-Uses an ensemble of optimizers to find the minimum of a function of one or
-more variables.
+    #XXX: doesn't use Step (or _Step); still add _Step even if independent
+    def _Solve(self, cost, **settings):
+        """Run the optimizer to termination, using the given settings.
 
 Args:
-    cost (func, default=None): the function to be minimized: ``y = cost(x)``.
-    termination (termination, default=None): termination conditions.
-    ExtraArgs (tuple, default=None): extra arguments for cost.
-    sigint_callback (func, default=None): callback function for signal handler.
-    callback (func, default=None): function to call after each iteration. The
-        interface is ``callback(xk)``, with xk the current parameter vector.
-    disp (bool, default=False): if True, print convergence messages.
+    cost (func): the function to be minimized: ``y = cost(x)``.
+    settings (dict): optimizer settings (produced by _process_inputs)
 
 Returns:
     None
         """
-        # process and activate input settings
-        if 'sigint_callback' in kwds:
-            self.sigint_callback = kwds['sigint_callback']
-            del kwds['sigint_callback']
-        else: self.sigint_callback = None
-        settings = self._process_inputs(kwds)
         disp = settings['disp'] if 'disp' in settings else False
         echo = settings['callback'] if 'callback' in settings else None
-#       for key in settings:
-#           exec "%s = settings['%s']" % (key,key)
         if disp in ['verbose', 'all']: verbose = True
         else: verbose = False
-        #-------------------------------------------------------------
 
         from mystic.python_map import python_map
         if self._map != python_map:
@@ -358,24 +341,8 @@ Returns:
             evalmon = Null()
         else: evalmon = self._evalmon
 
-        # set up signal handler
-       #self._EARLYEXIT = False
-
-        # activate signal_handler
-       #import threading as thread
-       #mainthread = isinstance(thread.current_thread(), thread._MainThread)
-       #if mainthread: #XXX: if not mainthread, signal will raise ValueError
-        import mystic._signal as signal
-        if self._handle_sigint:
-            signal.signal(signal.SIGINT, signal.Handler(self))
-
-        # register termination function
-        cost = self._bootstrap_objective(cost, ExtraArgs)
-        if termination is not None: self.SetTermination(termination)
-
         # get the nested solver instance
         solver = self._AbstractEnsembleSolver__get_solver_instance()
-        #-------------------------------------------------------------
 
         # generate starting points
         initial_values = self._InitialPoints()
@@ -467,18 +434,13 @@ Returns:
        #else:
        #    for i in range(len(besteval.y)):
        #        self._evalmon(besteval.x[i], besteval.y[i])
-        #-------------------------------------------------------------
-
-        # restore default handler for signal interrupts
-        if self._handle_sigint:
-            signal.signal(signal.SIGINT, signal.default_int_handler)
 
         # log any termination messages
         msg = self.Terminated(disp=disp, info=True)
         if msg: self._stepmon.info('STOP("%s")' % msg)
         # save final state
         self._AbstractSolver__save_state(force=True)
-        return 
+        return
 
     # extensions to the solver interface
     _total_evals = property(__total_evals )
