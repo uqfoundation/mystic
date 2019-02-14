@@ -136,10 +136,25 @@ Important class members::
         from mystic.solvers import NelderMeadSimplexSolver
         self._solver          = NelderMeadSimplexSolver
         self._bestSolver      = None # 'best' solver (after Solve)
-        self._total_evals     = 0 # total function calls (after Solve)
         NP = reduce(lambda x,y:x*y, nbins) if 'nbins' in kwds else npts
         self._allSolvers      = [None for j in range(NP)]
         return
+
+    def __all_evals(self):
+        """count of all function calls"""
+        return [getattr(i, 'evaluations', 0) for i in self._allSolvers]
+
+    def __all_iters(self):
+        """cound of all iterations"""
+        return [getattr(i, 'generations', 0) for i in self._allSolvers]
+
+    def __total_evals(self):
+        """total number of function calls"""
+        return sum(self._all_evals)
+
+    def __total_iters(self):
+        """total number of iterations"""
+        return sum(self._all_iters)
 
     def SetNestedSolver(self, solver):
         """set the nested solver
@@ -170,14 +185,16 @@ input::
         solver.SetRandomInitialPoints() #FIXME: set population; will override
         if self._useStrictRange: #XXX: always, settable, or sync'd ?
             solver.SetStrictRanges(min=self._strictMin, max=self._strictMax)
-        solver.SetEvaluationLimits(self._maxiter, self._maxfun)
-        solver.SetEvaluationMonitor(self._evalmon) #XXX: or copy or set?
-        solver.SetGenerationMonitor(self._stepmon) #XXX: or copy or set?
+        solver.SetEvaluationLimits(self._maxiter, self._maxfun) #XXX: new?
+        solver.SetEvaluationMonitor(self._evalmon) #XXX: copy or set? new?
+        solver.SetGenerationMonitor(self._stepmon) #XXX: copy or set? new?
         solver.SetTermination(self._termination)
         solver.SetConstraints(self._constraints)
         solver.SetPenalty(self._penalty)
         if self._reducer: #XXX: always, settable, or sync'd ?
             solver.SetReducer(self._reducer, arraylike=True)
+        solver.SetObjective(self._cost[1], self._cost[2])
+        solver.SetSaveFrequency(self._saveiter, self._state)
         return solver
 
     def SetInitialPoints(self, x0, radius=0.05):
@@ -223,18 +240,21 @@ input::
 *** this method must be overwritten ***"""
         raise NotImplementedError("must be overwritten...")
 
-    def Terminated(self, disp=False, info=False, termination=None):
+    def Terminated(self, disp=False, info=False, termination=None, all=False):
         """check if the solver meets the given termination conditions
 
 Input::
     - disp = if True, print termination statistics and/or warnings
     - info = if True, return termination message (instead of boolean)
     - termination = termination conditions to check against
+    - all = if True, give results for all solvers
 
 Notes::
     If no termination conditions are given, the solver's stored
     termination conditions will be used.
         """
+        if all is True:
+            return [False if s is None else s.Terminated(disp, info, termination) for s in self._allSolvers]
         if self._bestSolver:
             solver = self._bestSolver
         else:
@@ -298,8 +318,8 @@ Inputs:
 *** this method must be overwritten ***"""
         raise NotImplementedError("a sampling algorithm was not provided")
 
-    #FIXME: should take cost=None, ExtraArgs=None... and utilize Step
-    def Solve(self, cost, termination=None, ExtraArgs=(), **kwds):
+    #FIXME: should utilize Step
+    def Solve(self, cost=None, termination=None, ExtraArgs=None, **kwds):
         """Minimize a 'cost' function with given termination conditions.
 
 Uses an ensemble of optimizers to find the minimum of a function of one or
@@ -337,7 +357,6 @@ Returns:
             from mystic.monitors import Null
             evalmon = Null()
         else: evalmon = self._evalmon
-        fcalls, cost = wrap_function(cost, ExtraArgs, evalmon)
 
         # set up signal handler
        #self._EARLYEXIT = False
@@ -351,6 +370,7 @@ Returns:
             signal.signal(signal.SIGINT, signal.Handler(self))
 
         # register termination function
+        cost = self._bootstrap_objective(cost, ExtraArgs)
         if termination is not None: self.SetTermination(termination)
 
         # get the nested solver instance
@@ -414,9 +434,7 @@ Returns:
         self._bestSolver = self._allSolvers[0]
         bestpath = self._bestSolver._stepmon
         besteval = self._bestSolver._evalmon
-        self._total_evals = self._bestSolver.evaluations
         for solver in self._allSolvers[1:]:
-            self._total_evals += solver.evaluations # add func evals
             if solver.bestEnergy < self._bestSolver.bestEnergy:
                 self._bestSolver = solver
                 bestpath = solver._stepmon
@@ -461,6 +479,13 @@ Returns:
         # save final state
         self._AbstractSolver__save_state(force=True)
         return 
+
+    # extensions to the solver interface
+    _total_evals = property(__total_evals )
+    _total_iters = property(__total_iters )
+    _all_evals = property(__all_evals )
+    _all_iters = property(__all_iters )
+    pass
 
 
 if __name__=='__main__':
