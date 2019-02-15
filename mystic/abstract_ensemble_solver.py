@@ -318,12 +318,13 @@ Inputs:
 *** this method must be overwritten ***"""
         raise NotImplementedError("a sampling algorithm was not provided")
 
-    #XXX: doesn't use Step (or _Step); still add _Step even if independent
-    def _Solve(self, cost, **settings):
+    #XXX: doesn't use Step (or _Step)
+    def _Solve(self, cost, ExtraArgs, **settings):
         """Run the optimizer to termination, using the given settings.
 
 Args:
     cost (func): the function to be minimized: ``y = cost(x)``.
+    ExtraArgs (tuple): tuple of extra arguments for ``cost``.
     settings (dict): optimizer settings (produced by _process_inputs)
 
 Returns:
@@ -365,7 +366,7 @@ Returns:
             if solver._useStrictRange: #XXX: always, settable, or sync'd ?
                 solver.SetStrictRanges(min=solver._strictMin, \
                                        max=solver._strictMax) # or lower,upper ?
-            solver.Solve(cost, disp=disp, callback=callback)
+            solver.Solve(cost,ExtraArgs=ExtraArgs,disp=disp,callback=callback)
             sm = solver._stepmon
             em = solver._evalmon
             if isNull(sm): sm = ([],[],[],[])

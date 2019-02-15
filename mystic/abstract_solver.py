@@ -841,11 +841,12 @@ Notes:
                 self.__save_state(force=True)
         return msg
 
-    def _Solve(self, cost, **settings):
+    def _Solve(self, cost, ExtraArgs, **settings):
         """Run the optimizer to termination, using the given settings.
 
 Args:
     cost (func): the function to be minimized: ``y = cost(x)``.
+    ExtraArgs (tuple): tuple of extra arguments for ``cost``.
     settings (dict): optimizer settings (produced by _process_inputs)
 
 Returns:
@@ -913,7 +914,7 @@ Returns:
         #XXX: self.Step(cost, termination, ExtraArgs, **settings) ?
 
         # run the optimizer to termination
-        self._Solve(cost, **settings)
+        self._Solve(cost, ExtraArgs, **settings)
 
         # restore default handler for signal interrupts
         if self._handle_sigint:
