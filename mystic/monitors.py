@@ -92,8 +92,10 @@ Null objects always and reliably "do nothing." """
     def __getattr__(self, name): return self
     def __setattr__(self, name, value): return self
     def __delattr__(self, name): return self
-    def __len__(self): return
+    def __len__(self): return 0
     def __getnewargs__(self): return ()
+    def __getitem__(self, y): return self
+    def __setitem__(self, i, y): return
 # comply with monitor interface (are these the best responses?)
 Null.info = Null()
 Null.k = None
@@ -178,6 +180,41 @@ example usage...
             m._x = self._x[y]
             m._y = self._y[y]
         return m
+
+    def __setitem__(self, i, y):
+        """x.__setitem__(i, y) <==> x[i]=y"""
+        if isinstance(y, Monitor): # is Monitor()
+            pass
+        elif (y == Null) or isinstance(y, Null): # Null or Null()
+            y = Monitor()
+        elif hasattr(y, '__module__') and \
+            y.__module__ in ['mystic._genSow']: # CustomMonitor()
+                pass #XXX: CustomMonitor may fail...
+        else:
+            raise TypeError("'%s' is not a monitor instance" % y)
+        if type(i) is int:
+            self._x[i:i+1] = y._x
+            self._y[i:i+1] = y._y
+            return
+        if type(i) in (list,numpy.ndarray):
+            x = numpy.array(self._x)
+            x[i] = y._x
+            self._x[:] = x.tolist()
+            x = numpy.array(self._y)
+            x[i] = y._y
+            self._y[:] = x.tolist()
+       #elif type(i) is tuple: #XXX: good idea? Needs more testing...
+       #    nn,nx,ny = len(i),numpy.ndim(self._x),numpy.ndim(self._y)
+       #    x = numpy.array(self._x)
+       #    x[i if nn is nx else i[0]] = y._x
+       #    self._x[:] = x.tolist()
+       #    x = numpy.array(self._y)
+       #    x[i if nn is ny else i[0]] = y._y
+       #    self._y[:] = x.tolist()
+        else:
+            self._x[i] = y._x
+            self._y[i] = y._y
+        return
 
     def extend(self, monitor):
         """append the contents of the given monitor"""

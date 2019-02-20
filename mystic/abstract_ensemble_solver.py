@@ -145,8 +145,16 @@ Important class members::
         return [getattr(i, 'evaluations', 0) for i in self._allSolvers]
 
     def __all_iters(self):
-        """cound of all iterations"""
+        """count of all iterations"""
         return [getattr(i, 'generations', 0) for i in self._allSolvers]
+
+    def __all_bestEnergy(self): #XXX: default = None?
+        """get bestEnergy from all solvers"""
+        return [getattr(i, 'bestEnergy', None) for i in self._allSolvers]
+
+    def __all_bestSolution(self): #XXX: default = None?
+        """get bestSolution from all solvers"""
+        return [getattr(i, 'bestSolution', None) for i in self._allSolvers]
 
     def __total_evals(self):
         """total number of function calls"""
@@ -240,29 +248,38 @@ input::
 *** this method must be overwritten ***"""
         raise NotImplementedError("must be overwritten...")
 
-    def Terminated(self, disp=False, info=False, termination=None, all=False):
+    def Terminated(self, disp=False, info=False, termination=None, all=None):
         """check if the solver meets the given termination conditions
 
 Input::
     - disp = if True, print termination statistics and/or warnings
     - info = if True, return termination message (instead of boolean)
     - termination = termination conditions to check against
-    - all = if True, give results for all solvers
+    - all = if True, get results for all solvers; if False, only check 'best'
 
 Notes::
     If no termination conditions are given, the solver's stored
     termination conditions will be used.
         """
+        no = '' if info else False
         if all is True:
-            return [False if s is None else s.Terminated(disp, info, termination) for s in self._allSolvers]
-        if self._bestSolver:
-            solver = self._bestSolver
-        else:
-            solver = self
+            return [no if s is None else s.Terminated(disp, info, termination) for s in self._allSolvers]
+        elif all is None:
+            end = [no if s is None else s.Terminated(disp, info, termination) for s in self._allSolvers]
+            if info is False:
+                try:
+                    from builtins import all as _all
+                except:
+                    from __builtin__ import all as _all
+                return _all(end)
+            if '' in end: return ''
+            #else: get info from bestSolver
+        self._AbstractEnsembleSolver__update_state()
+        solver = self._bestSolver or self
         if termination is None:
             termination = solver._termination
         # ensure evaluation limits have been imposed
-        self._SetEvaluationLimits()
+        self._SetEvaluationLimits() #XXX: always?
         # check for termination messages
         msg = termination(solver, info=True)
         sig = "SolverInterrupt with %s" % {}
@@ -294,12 +311,6 @@ Notes::
             return msg
         return bool(msg)
 
-    def _update_objective(self):
-        """decorate the cost function with bounds, penalties, monitors, etc"""
-        # rewrap the cost if the solver has been run
-        self.Finalize()
-        return
-
     def SetDistribution(self, dist=None):
         """Set the distribution used for determining solver starting points
 
@@ -318,95 +329,71 @@ Inputs:
 *** this method must be overwritten ***"""
         raise NotImplementedError("a sampling algorithm was not provided")
 
-    #XXX: doesn't use Step (or _Step)
-    def _Solve(self, cost, ExtraArgs, **settings):
-        """Run the optimizer to termination, using the given settings.
+    def _is_new(self):
+        'determine if solver has been run or not'
+        return not any(self._allSolvers)
 
-Args:
-    cost (func): the function to be minimized: ``y = cost(x)``.
-    ExtraArgs (tuple): tuple of extra arguments for ``cost``.
-    settings (dict): optimizer settings (produced by _process_inputs)
+    def _is_best(self):
+        'get the id of the bestSolver'
+        return getattr(self._bestSolver, 'id', None)
 
-Returns:
-    None
-        """
-        disp = settings['disp'] if 'disp' in settings else False
-        echo = settings['callback'] if 'callback' in settings else None
-        if disp in ['verbose', 'all']: verbose = True
-        else: verbose = False
-
-        from mystic.python_map import python_map
-        if self._map != python_map:
-            #FIXME: EvaluationMonitor fails for MPI, throws error for 'pp'
-            from mystic.monitors import Null
-            evalmon = Null()
-        else: evalmon = self._evalmon
-
+    def __init_allSolvers(self):
+        'populate NestedSolver state to allSolvers'
         # get the nested solver instance
         solver = self._AbstractEnsembleSolver__get_solver_instance()
 
-        # generate starting points
-        initial_values = self._InitialPoints()
-
-        # run optimizer for each grid point
+        # configure inputs for each solver
         from copy import deepcopy as _copy
-        op = [_copy(solver) for i in range(len(initial_values))]
-       #cf = [cost for i in range(len(initial_values))]
-        vb = [verbose for i in range(len(initial_values))]
-        cb = [echo for i in range(len(initial_values))] #XXX: remove?
-        at = self.id if self.id else 0  # start at self.id
-        id = range(at,at+len(initial_values))
+        at = self.id if self.id else 0  #XXX start at self.id?
+        #at = max((getattr(i, 'id', self.id) or 0) for i in self._allSolvers)
+        for i,op in enumerate(self._allSolvers, at):
+            if op is None: #XXX: don't reset existing solvers?
+                op = _copy(solver)
+                op.id = i
+                self._allSolvers[i] = op
+        return self._allSolvers
 
-        # generate the local_optimize function
-        def local_optimize(solver, x0, rank=None, disp=False, callback=None):
-            from copy import deepcopy as _copy
-            from mystic.tools import isNull
-            solver.id = rank
-            solver.SetInitialPoints(x0)
-            if solver._useStrictRange: #XXX: always, settable, or sync'd ?
-                solver.SetStrictRanges(min=solver._strictMin, \
-                                       max=solver._strictMax) # or lower,upper ?
-            solver.Solve(cost,ExtraArgs=ExtraArgs,disp=disp,callback=callback)
-            sm = solver._stepmon
-            em = solver._evalmon
-            if isNull(sm): sm = ([],[],[],[])
-            else: sm = (_copy(sm._x),_copy(sm._y),_copy(sm._id),_copy(sm._info))
-            if isNull(em): em = ([],[],[],[])
-            else: em = (_copy(em._x),_copy(em._y),_copy(em._id),_copy(em._info))
-            return solver, sm, em
-
-        # map:: solver = local_optimize(solver, x0, id, verbose)
-        results = list(self._map(local_optimize, op, initial_values, id, \
-                                                 vb, cb, **self._mapconfig))
-
-        # save initial state
-        self._AbstractSolver__save_state()
-        #XXX: HACK TO GET CONTENT OF ALL MONITORS
+    def __update_allSolvers(self, results):
+        'replace allSolvers with solvers found in results'
+        #NOTE: apparently, monitors internal to the solver don't work as well
         # reconnect monitors; save all solvers
         from mystic.monitors import Monitor
         while results: #XXX: option to not save allSolvers? skip this and _copy
             _solver, _stepmon, _evalmon = results.pop()
-            sm = Monitor()
+            sm, em = Monitor(), Monitor()
+            s = self._allSolvers[len(results)]
+            ls, le = len(s._stepmon), len(s._evalmon)
+            # gather old and new results in monitors
+            _solver._stepmon[:] = s._stepmon
             sm._x,sm._y,sm._id,sm._info = _stepmon
-            _solver._stepmon.extend(sm)
+            _solver._stepmon[ls:] = sm[ls:]
             del sm
-            em = Monitor()
+            _solver._evalmon[:] = s._evalmon
             em._x,em._y,em._id,em._info = _evalmon
-            _solver._evalmon.extend(em)
+            _solver._evalmon[le:] = em[le:]
             del em
-            self._allSolvers[len(results)] = _solver
-        del results, _solver, _stepmon, _evalmon
-        #XXX: END HACK
+            self._allSolvers[len(results)] = _solver #XXX: update not replace?
+        return
 
+    def __update_bestSolver(self):
+        'update _bestSolver from _allSolvers'
+        if self._bestSolver is None:
+            self._bestSolver = self._allSolvers[0]
+        bestpath = besteval = None
         # get the results with the lowest energy
-        self._bestSolver = self._allSolvers[0]
-        bestpath = self._bestSolver._stepmon
-        besteval = self._bestSolver._evalmon
-        for solver in self._allSolvers[1:]:
-            if solver.bestEnergy < self._bestSolver.bestEnergy:
+        for solver in self._allSolvers[:]: #XXX: slice needed?
+            if solver is None: continue
+            energy = getattr(self._bestSolver,'bestEnergy',self.bestEnergy)
+            if solver.bestEnergy <= energy:
                 self._bestSolver = solver
                 bestpath = solver._stepmon
                 besteval = solver._evalmon
+        return bestpath, besteval
+
+    def __update_state(self):
+        'update solver state from _bestSolver'
+        bestpath, besteval = self._AbstractEnsembleSolver__update_bestSolver()
+        if bestpath is besteval is None: return
 
         # return results to internals
         self.population = self._bestSolver.population #XXX: pointer? copy?
@@ -423,18 +410,137 @@ Returns:
         self._evalmon = besteval #XXX: pointer? copy?
         self.energy_history = None
         self.solution_history = None
-       #from mystic.tools import isNull
-       #if isNull(bestpath):
-       #    self._stepmon = bestpath
-       #else:
-       #    for i in range(len(bestpath.y)):
-       #        self._stepmon(bestpath.x[i], bestpath.y[i], self.id)
-       #        #XXX: could apply callback here, or in exec'd code
-       #if isNull(besteval):
-       #    self._evalmon = besteval
-       #else:
-       #    for i in range(len(besteval.y)):
-       #        self._evalmon(besteval.x[i], besteval.y[i])
+        return
+
+    def _Step(self, cost=None, ExtraArgs=None, **kwds):
+        """perform a single optimization iteration
+        Note that ExtraArgs should be a *tuple* of extra arguments"""
+        disp = kwds['disp'] if 'disp' in kwds else False
+        echo = kwds['callback'] if 'callback' in kwds else None
+        if disp in ['verbose', 'all']: verbose = True
+        else: verbose = False
+
+        # generate starting points
+        if self._is_new(): iv = self._InitialPoints()
+        else: iv = [None] * len(self._allSolvers)
+        op = self._AbstractEnsembleSolver__init_allSolvers()
+        vb = [verbose] * len(op)
+        cb = [echo] * len(op) #XXX: remove?
+
+        # generate the _step function
+        def _step(solver, x0, disp=False, callback=None):
+            from copy import deepcopy as _copy
+            from mystic.tools import isNull
+            #ns = len(solver._stepmon)
+            #ne = len(solver._evalmon)
+            if x0 is not None:
+                solver.SetInitialPoints(x0)
+                if solver._useStrictRange: #XXX: always, settable, or sync'd ?
+                    solver.SetStrictRanges(solver._strictMin,solver._strictMax)
+            solver.Step(cost,ExtraArgs=ExtraArgs,disp=disp,callback=callback)
+            sm = solver._stepmon
+            em = solver._evalmon
+            if isNull(sm): sm = ([],[],[],[])
+            else:
+                sm = _copy(sm)#[ns:]
+                sm = (sm._x,sm._y,sm._id,sm._info)
+            if isNull(em): em = ([],[],[],[])
+            else:
+                em = _copy(em)#[ne:]
+                em = (em._x,em._y,em._id,em._info)
+            return solver, sm, em
+
+        # map:: solver = _step(solver, x0, id, verbose)
+        results = list(self._map(_step, op, iv, vb, cb, **self._mapconfig))
+        del op, iv, vb, cb
+
+        # save initial state
+        #self._AbstractSolver__save_state()
+
+        # save results to allSolvers
+        self._AbstractEnsembleSolver__update_allSolvers(results)
+        del results
+
+        # update state from bestSolver
+        self._AbstractEnsembleSolver__update_state()
+        return
+
+    def _process_inputs(self, kwds):
+        """process and activate input settings"""
+        #allow for inputs that don't conform to AbstractSolver interface
+        #NOTE: not sticky: callback, disp
+        #NOTE: sticky: EvaluationMonitor, StepMonitor, penalty, constraints
+        #NOTE: not sticky: step
+        settings = super(AbstractEnsembleSolver, self)._process_inputs(kwds)
+        settings.update({
+        'step':False}) #run Solve with (or without) Step
+        [settings.update({i:j}) for (i,j) in getattr(kwds, 'iteritems', kwds.items)() if i in settings]
+        return settings
+
+    def _Solve(self, cost, ExtraArgs, **settings): #XXX: self._cost?
+        """Run the optimizer to termination, using the given settings.
+
+Args:
+    cost (func): the function to be minimized: ``y = cost(x)``.
+    ExtraArgs (tuple): tuple of extra arguments for ``cost``.
+    settings (dict): optimizer settings (produced by _process_inputs)
+
+Returns:
+    None
+        """
+        #FIXME: 'step' is undocumented (in Solve)
+        step = settings['step'] if 'step' in settings else False
+        if step: #FIXME: use abstract_solver _Solve
+            stop = False
+            while not stop:
+                stop = self.Step(**settings)
+                continue
+            return
+
+        disp = settings['disp'] if 'disp' in settings else False
+        echo = settings['callback'] if 'callback' in settings else None
+        if disp in ['verbose', 'all']: verbose = True
+        else: verbose = False
+
+        # generate starting points
+        if self._is_new(): iv = self._InitialPoints()
+        else: iv = [None] * len(self._allSolvers)
+        op = self._AbstractEnsembleSolver__init_allSolvers()
+        vb = [verbose] * len(op)
+        cb = [echo] * len(op) #XXX: remove?
+
+        # generate the _solve function
+        def _solve(solver, x0, disp=False, callback=None):
+            from copy import deepcopy as _copy
+            from mystic.tools import isNull
+            if x0 is not None:
+                solver.SetInitialPoints(x0)
+                if solver._useStrictRange: #XXX: always, settable, or sync'd ?
+                    solver.SetStrictRanges(solver._strictMin,solver._strictMax)
+            solver.Solve(cost,ExtraArgs=ExtraArgs,disp=disp,callback=callback)
+            sm = solver._stepmon
+            em = solver._evalmon
+            if isNull(sm): sm = ([],[],[],[])
+            else:
+                sm = _copy(sm)
+                sm = (sm._x,sm._y,sm._id,sm._info)
+            if isNull(em): em = ([],[],[],[])
+            else:
+                em = _copy(em)
+                em = (em._x,em._y,em._id,em._info)
+            return solver, sm, em
+
+        # map:: solver = _solve(solver, x0, id, verbose)
+        results = list(self._map(_solve, op, iv, vb, cb, **self._mapconfig))
+        del op, iv, vb, cb
+
+        # save initial state
+        self._AbstractSolver__save_state()
+        # save results to allSolvers
+        self._AbstractEnsembleSolver__update_allSolvers(results)
+        del results
+        # update state from bestSolver
+        self._AbstractEnsembleSolver__update_state()
 
         # log any termination messages
         msg = self.Terminated(disp=disp, info=True)
@@ -443,11 +549,21 @@ Returns:
         self._AbstractSolver__save_state(force=True)
         return
 
+    #Collapsed #TODO
+    #Collapse #TODO
+    #
+    #Workflow options:
+    #A) Solvers run to completion. Changes to ensemble change NEW (all)solvers.
+    #B) Ensemble takes Step, returns Solver. Apply ensemble changes. Relaunch.
+    #C) Solvers read/write to eventually consistent database.
+
     # extensions to the solver interface
     _total_evals = property(__total_evals )
     _total_iters = property(__total_iters )
     _all_evals = property(__all_evals )
     _all_iters = property(__all_iters )
+    _all_bestSolution = property(__all_bestSolution )
+    _all_bestEnergy = property(__all_bestEnergy )
     pass
 
 

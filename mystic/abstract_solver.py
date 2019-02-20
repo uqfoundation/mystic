@@ -514,7 +514,7 @@ input::
             self._maxfun = (N * self.nPop * evalscale) + self.evaluations
         return
 
-    def Terminated(self, disp=False, info=False, termination=None):
+    def Terminated(self, disp=False, info=False, termination=None, **kwds):
         """check if the solver meets the given termination conditions
 
 Input::
