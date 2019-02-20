@@ -816,7 +816,7 @@ Notes:
     to make sure the solver is fully returned to a "synchronized" state.
         """
         if 'disp' in kwds:
-            disp = kwds['disp']; del kwds['disp']
+            disp = bool(kwds['disp'])#; del kwds['disp']
         else: disp = False
 
         # register: cost, termination, ExtraArgs

@@ -261,18 +261,15 @@ Notes::
     If no termination conditions are given, the solver's stored
     termination conditions will be used.
         """
+        if disp in ['verbose', 'all']: verbose = True
+        else: verbose = False
         no = '' if info else False
         if all is True:
-            return [no if s is None else s.Terminated(disp, info, termination) for s in self._allSolvers]
+            end = [no if s is None else s.Terminated(verbose, info, termination) for s in self._allSolvers]
+            return end
         elif all is None:
-            end = [no if s is None else s.Terminated(disp, info, termination) for s in self._allSolvers]
-            if info is False:
-                try:
-                    from builtins import all as _all
-                except:
-                    from __builtin__ import all as _all
-                return _all(end)
-            if '' in end: return ''
+            end = [False if s is None else s.Terminated(termination=termination) for s in self._allSolvers]
+            if False in end: return no
             #else: get info from bestSolver
         self._AbstractEnsembleSolver__update_state()
         solver = self._bestSolver or self
@@ -346,7 +343,7 @@ Inputs:
         from copy import deepcopy as _copy
         at = self.id if self.id else 0  #XXX start at self.id?
         #at = max((getattr(i, 'id', self.id) or 0) for i in self._allSolvers)
-        for i,op in enumerate(self._allSolvers, at):
+        for i,op in enumerate(self._allSolvers):
             if op is None: #XXX: don't reset existing solvers?
                 op = _copy(solver)
                 op.id = i
@@ -424,7 +421,7 @@ Inputs:
         if self._is_new(): iv = self._InitialPoints()
         else: iv = [None] * len(self._allSolvers)
         op = self._AbstractEnsembleSolver__init_allSolvers()
-        vb = [verbose] * len(op)
+        vb = [verbose if not s.Terminated() else False for s in self._allSolvers]
         cb = [echo] * len(op) #XXX: remove?
 
         # generate the _step function

@@ -94,7 +94,7 @@ if __name__ == '__main__':
     solver.SetMapper(Pool().map)
     solver.SetGenerationMonitor(stepmon)
     solver.SetStrictRanges(min=[-300]*ndim, max=[300]*ndim)
-    solver.Solve(chebyshev8cost, NCOG(1e-4), disp=1)
+    solver.Solve(chebyshev8cost, NCOG(1e-4), disp='all', step=False)
     solution = solver.Solution()
 
     # use pretty print for polynomials
