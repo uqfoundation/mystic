@@ -354,11 +354,13 @@ Inputs:
         'replace allSolvers with solvers found in results'
         #NOTE: apparently, monitors internal to the solver don't work as well
         # reconnect monitors; save all solvers
+        fcalls = [getattr(s, '_fcalls', [0])[0] for s in self._allSolvers]
         from mystic.monitors import Monitor
         while results: #XXX: option to not save allSolvers? skip this and _copy
             _solver, _stepmon, _evalmon = results.pop()
+            lr = len(results)
             sm, em = Monitor(), Monitor()
-            s = self._allSolvers[len(results)]
+            s = self._allSolvers[lr]
             ls, le = len(s._stepmon), len(s._evalmon)
             # gather old and new results in monitors
             _solver._stepmon[:] = s._stepmon
@@ -369,7 +371,8 @@ Inputs:
             em._x,em._y,em._id,em._info = _evalmon
             _solver._evalmon[le:] = em[le:]
             del em
-            self._allSolvers[len(results)] = _solver #XXX: update not replace?
+            if not _solver._fcalls[0]: _solver._fcalls[0] = fcalls[lr]
+            self._allSolvers[lr] = _solver #XXX: update not replace?
         return
 
     def __update_bestSolver(self):
