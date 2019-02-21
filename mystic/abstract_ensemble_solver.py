@@ -412,6 +412,16 @@ Inputs:
         self.solution_history = None
         return
 
+#   def Collapsed(self, disp=False, info=False): #TODO
+#       """check if the solver meets the given collapse conditions"""
+#       return NotImplemented
+
+    def Collapse(self, disp=False): #TODO
+        """if solver has terminated by collapse, apply the collapse
+        (unless both collapse and "stop" are simultaneously satisfied)
+        """
+        return False
+
     def _Step(self, cost=None, ExtraArgs=None, **kwds):
         """perform a single optimization iteration
         Note that ExtraArgs should be a *tuple* of extra arguments"""
@@ -491,10 +501,7 @@ Returns:
         #FIXME: 'step' is undocumented (in Solve)
         step = settings['step'] if 'step' in settings else False
         if step: #FIXME: use abstract_solver _Solve
-            stop = False
-            while not stop:
-                stop = self.Step(**settings)
-                continue
+            super(AbstractEnsembleSolver, self)._Solve(cost, ExtraArgs, **settings)
             return
 
         disp = settings['disp'] if 'disp' in settings else False
@@ -549,9 +556,6 @@ Returns:
         self._AbstractSolver__save_state(force=True)
         return
 
-    #Collapsed #TODO
-    #Collapse #TODO
-    #
     #Workflow options:
     #A) Solvers run to completion. Changes to ensemble change NEW (all)solvers.
     #B) Ensemble takes Step, returns Solver. Apply ensemble changes. Relaunch.
