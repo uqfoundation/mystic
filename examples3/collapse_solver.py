@@ -8,8 +8,8 @@
 #  - https://github.com/uqfoundation/mystic/blob/master/LICENSE
 
 from mystic.termination import Or, CollapseAt, CollapseAs
-#from mystic.termination import VTRChangeOverGeneration as COG
 from mystic.termination import ChangeOverGeneration as COG
+#from mystic.termination import VTRChangeOverGeneration as COG
 
 # update termination condition with new masks
 ## termination should be Or(*conditions), where

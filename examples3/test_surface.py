@@ -88,9 +88,10 @@ if __name__ == '__main__':
     else:
         stepmon = itermon = None
     if archive: #python2.5
-        ar_name = '__%s_%sD_cache__' % (model.__self__.__class__.__name__,ndim)
+        name = getattr(model,'__name__','model')
+        ar_name = '__%s_%sD_cache__' % (name,ndim)
         archive = dir_archive(ar_name, serialized=True, cached=False)
-        ar_name = '__%s_%sD_invcache__' % (model.__self__.__class__.__name__,ndim)
+        ar_name = '__%s_%sD_invcache__' % (name,ndim)
         ivcache = dir_archive(ar_name, serialized=True, cached=False)
     else:
         archive = ivcache = None
