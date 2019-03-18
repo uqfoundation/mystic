@@ -60,9 +60,10 @@ if __name__ == '__main__':
 
     stop = NCOG(1e-4)
     disp = False # print optimization summary
-    stepmon = False # use LoggingMonitor
+    monitor = True # use LoggingMonitor (uses much less memory)
     archive = False # save an archive
-    traj = not stepmon # save all trajectories internally, if no logs
+    traj = not monitor # save all trajectories internally, if no logs
+    all = True # use EvalMonitor (instead of StepMonitor only)
 
     # cost function
     from mystic.models import griewangk as model
@@ -82,11 +83,11 @@ if __name__ == '__main__':
     mem = 1   # cache rounding precision
 
     #CUTE: 'configure' monitor and archive if they are desired
-    if stepmon:
-        stepmon = LoggingMonitor(1) # montor for all runs
-        itermon = LoggingMonitor(1, filename='inv.txt') #XXX: log.txt?
+    if monitor:
+        monitor = LoggingMonitor(1) # montor for all runs
+        costmon = LoggingMonitor(1, filename='inv.txt') #XXX: log.txt?
     else:
-        stepmon = itermon = None
+        monitor = costmon = None
     if archive: #python2.5
         name = getattr(model,'__name__','model')
         ar_name = '__%s_%sD_cache__' % (name,ndim)
@@ -97,14 +98,14 @@ if __name__ == '__main__':
         archive = ivcache = None
 
     from mystic.search import Searcher #XXX: init w/ archive, then UseArchive?
-    sampler = Searcher(npts, retry, tol, mem, _map, archive, sprayer, seeker)
+    sampler = Searcher(npts, retry, tol, mem, _map, None, archive, sprayer, seeker)
     sampler.Verbose(disp)
     sampler.UseTrajectories(traj)
 
     ### doit ###
     maxpts = 1000. #10000.
     surface = Surface(model, sampler, maxpts=maxpts, dim=ndim)
-    surface.UseMonitor(stepmon, itermon)
+    surface.UseMonitor(monitor, costmon)
     surface.UseArchive(archive, ivcache)
 
     density = 9
@@ -122,7 +123,7 @@ if __name__ == '__main__':
     #############
 
     # get trajectories
-    surface.Sample(bounds, stop)
+    surface.Sample(bounds, stop, all=all)
     print("TOOK: %s" % (time.time() - start))
 #   exit()
     # get interpolated function
@@ -150,11 +151,11 @@ if __name__ == '__main__':
     """
 
     # some testing of interpolated model
-    import numpy as np
-    actual = np.asarray(surface.z)           # downsample?
-    interp = surface.surrogate(*surface.x.T) # downsample?
-    print("sum diff squares") #NOTE: is *worse* than with test_searcher.py
-    print("actual and interp: %s" % np.sum((actual - interp)**2))
+    #import numpy as np
+    #actual = np.asarray(surface.z)           # downsample?
+    #interp = surface.surrogate(*surface.x.T) # downsample? #NOTE: SLOW
+    #print("sum diff squares") #NOTE: is *worse* than with test_searcher.py
+    #print("actual and interp: %s" % np.sum((actual - interp)**2))
 
 
 # EOF

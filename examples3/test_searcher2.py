@@ -6,7 +6,7 @@
 # License: 3-clause BSD.  The full license text is available at:
 #  - https://github.com/uqfoundation/mystic/blob/master/LICENSE
 """
-example of using a global searcher to find all extrema (and rough interpolation)
+example of using a global searcher for interpolation
 """
 
 from mystic.search import Searcher
@@ -31,10 +31,10 @@ if __name__ == '__main__':
 
     stop = NCOG(1e-4)
     disp = False # print optimization summary
-    stepmon = False # use LoggingMonitor
+    evalmon = True # use LoggingMonitor
     archive = False # save an archive
 
-    traj = not stepmon # save all trajectories internally, if no logs
+    traj = not evalmon # save all trajectories internally, if no logs
 
     # cost function
     from mystic.models import griewangk as model
@@ -55,45 +55,45 @@ if __name__ == '__main__':
     mem = 1   # cache rounding precision
 
     #CUTE: 'configure' monitor and archive if they are desired
-    if stepmon: stepmon = LoggingMonitor(1) # montor for all runs
-    else: stepmon = None
+    if evalmon: evalmon = LoggingMonitor(1) # montor for all runs
+    else: evalmon = None
     if archive: #python2.5
         name = getattr(model,'__name__','model')
         ar_name = '__%s_%sD_cache__' % (name,ndim)
         archive = dir_archive(ar_name, serialized=True, cached=False)
     else: archive = None
 
-    searcher = Searcher(npts, retry, tol, mem, _map, None, archive, sprayer, seeker)
+    searcher = Searcher(npts, retry, tol, mem, _map, archive, None, sprayer, seeker)
     searcher.Verbose(disp)
     searcher.UseTrajectories(traj)
 
-    searcher.Reset(archive, inv=False)
-    searcher.Search(model, bounds, stop=stop, monitor=stepmon)
+    searcher.Reset(archive, inv=False) #XXX: archive or None?
+    searcher.Search(model, bounds, stop=stop, evalmon=evalmon)
     searcher._summarize()
 
     ##### extract results #####
-    xyz = searcher.Samples()
+    xyz = searcher.Samples(all=True)
 
     ##### invert the model, and get the maxima #####
     imodel = lambda *args, **kwds: -model(*args, **kwds)
 
     #CUTE: 'configure' monitor and archive if they are desired
-    if stepmon not in (None, False):
-        itermon = LoggingMonitor(1, filename='inv.txt') #XXX: log.txt?
-    else: itermon = None
+    if evalmon not in (None, False):
+        costmon = LoggingMonitor(1, filename='inv.txt') #XXX: log.txt?
+    else: costmon = None
     if archive not in (None, False): #python2.5
         name = getattr(model,'__name__','model')
         ar_name = '__%s_%sD_invcache__' % (name,ndim)
         archive = dir_archive(ar_name, serialized=True, cached=False)
     else: archive = None
 
-    searcher.Reset(archive, inv=True)
-    searcher.Search(imodel, bounds, stop=stop, monitor=itermon)
+    searcher.Reset(archive, inv=True) #XXX: archive or None?
+    searcher.Search(imodel, bounds, stop=stop, evalmon=costmon)
     searcher._summarize()
 
     ##### extract results #####
     import numpy as np
-    xyz = np.hstack((xyz, searcher.Samples()))
+    xyz = np.hstack((xyz, searcher.Samples(all=True)))
 #   print("TOOK: %s" % (time.time() - start))
 
     ########## interpolate ##########
@@ -102,7 +102,7 @@ if __name__ == '__main__':
     #############
     shift = 0
     scale = 0
-    N = 1000.
+    N = 10000.
     M = 200
     args = {
     'smooth': 0,

@@ -140,7 +140,7 @@ class Surface(object): #FIXME: should be subclass of Interpolator (?)
         return
     """
 
-    def Sample(self, bounds, stop, clear=False, verbose=False):
+    def Sample(self, bounds, stop, clear=False, verbose=False, all=False):
         """sample data (x,z) using objective function z=f(x)
 
         Input:
@@ -148,6 +148,7 @@ class Surface(object): #FIXME: should be subclass of Interpolator (?)
           stop: termination condition
           clear: if True, clear the archive of stored points
           verbose: if True, print a summary of search/sampling results
+          all: if True, use solver EvalMonitor, else use StepMonitor
 
         Output:
           x: an array of shape (npts, dim) or (npts,)
@@ -161,15 +162,18 @@ class Surface(object): #FIXME: should be subclass of Interpolator (?)
         self.dim = len(bounds)
 
         ### get mins ###
-        stepmon = self._minmon
+        monitor = self._minmon
         archive = None if clear else self._minarch
         inverse = False
 
         self.sampler.Reset(archive, inv=inverse) # reset the sampler
-        self.sampler.Search(model, bounds, stop=stop, monitor=stepmon)
+        if all:
+            self.sampler.Search(model, bounds, stop=stop, evalmon=monitor)
+        else:
+            self.sampler.Search(model, bounds, stop=stop, monitor=monitor)
         if verbose: self.sampler._summarize()
         # read trajectories from log (or monitor)
-        xyz = self.sampler.Samples()
+        xyz = self.sampler.Samples(all=all)
         if clear: self.sampler.Reset()  # reset the sampler
         ### end mins ###
 
@@ -177,14 +181,17 @@ class Surface(object): #FIXME: should be subclass of Interpolator (?)
         imodel = lambda *args, **kwds: -model(*args, **kwds)
 
         ### get maxs ###
-        stepmon = self._maxmon
+        monitor = self._maxmon
         archive = None if clear else self._maxarch
         inverse = True
 
         self.sampler.Reset(archive, inv=inverse) # reset the sampler
-        self.sampler.Search(imodel, bounds, stop=stop, monitor=stepmon)
+        if all:
+            self.sampler.Search(imodel, bounds, stop=stop, evalmon=monitor)
+        else:
+            self.sampler.Search(imodel, bounds, stop=stop, monitor=monitor)
         if verbose: self.sampler._summarize()
-        xyz = np.hstack((xyz, self.sampler.Samples()))
+        xyz = np.hstack((xyz, self.sampler.Samples(all=all)))
         if clear: self.sampler.Reset()  # reset the sampler
         ### end maxs ###
 

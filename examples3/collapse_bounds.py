@@ -21,7 +21,8 @@ stop = Or(CollapseCost(mask=mask,**options), COG(generations=50))
 
 solver.SetGenerationMonitor(mon)
 solver.SetTermination(stop)
-solver.Solve(rosen)
+solver.SetObjective(rosen)
+solver.Solve()
 
 print(solver.Terminated(info=True))
 print('%s @' % solver.bestEnergy)
