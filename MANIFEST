@@ -239,6 +239,7 @@ examples3/surface.py
 examples3/surrogate.py
 examples3/test_converters.py
 examples3/test_searcher.py
+examples3/test_searcher2.py
 examples3/test_sparsity.py
 examples3/test_surface.py
 examples3/test_svc1.py

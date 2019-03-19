@@ -48,11 +48,12 @@ if __name__ == '__main__':
 
     sprayer = BuckshotSolver
     seeker = PowellDirectionalSolver
-    npts = 25 # number of solvers
+    npts = 25  # number of solvers
     _map = Pool().map
-    retry = 1 # max consectutive iteration retries without a cache 'miss'
-    tol = 8   # rounding precision
-    mem = 1   # cache rounding precision
+    retry = 1  # max consectutive iteration retries without a cache 'miss'
+    repeat = 0 # number of times to repeat the search
+    tol = 8    # rounding precision
+    mem = 1    # cache rounding precision
 
     #CUTE: 'configure' monitor and archive if they are desired
     if evalmon: evalmon = LoggingMonitor(1) # montor for all runs
@@ -63,7 +64,7 @@ if __name__ == '__main__':
         archive = dir_archive(ar_name, serialized=True, cached=False)
     else: archive = None
 
-    searcher = Searcher(npts, retry, tol, mem, _map, archive, None, sprayer, seeker)
+    searcher = Searcher(npts, retry, tol, mem, _map, archive, None, sprayer, seeker, repeat=repeat)
     searcher.Verbose(disp)
     searcher.UseTrajectories(traj)
 

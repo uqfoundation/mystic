@@ -15,6 +15,7 @@ class Searcher(object):
    #    archive - a sampled point archive(s)
    #    cache - a trajectory cache(s)
    #    retry - max consectutive retries w/o an archive 'miss'
+   #    repeat - number of times to repeat the search
    #    tol - minima comparator rounding precision
    #    _allSolvers - collection of sprayers (for all solver trajectories)
    #
@@ -46,7 +47,9 @@ class Searcher(object):
    #    _configure (model, bounds, stop, monitor) - configure sprayer
    #    _solve - spray multiple seekers
 
-    def __init__(self, npts=4, retry=1, tol=8, memtol=1, map=None, archive=None,                 cache=None, sprayer=None, seeker=None, traj=False, disp=False):
+    def __init__(self, npts=4, retry=1, tol=8, memtol=1, map=None,
+                       archive=None, cache=None, sprayer=None, seeker=None,
+                       traj=False, disp=False, repeat=0):
         """searcher, which searches for all minima of a response surface
 
         Input:
@@ -61,6 +64,7 @@ class Searcher(object):
           seeker - the mystic.solvers instance
           traj - if True, save the parameter trajectories
           disp - if True, be verbose
+          repeat - number of times to repeat the search
         """
         #XXX: better not to use klepto as default? just dict and false cache?
         from klepto.archives import dict_archive as _archive
@@ -83,6 +87,7 @@ class Searcher(object):
 
         self.npts = npts # number of solvers
         self.retry = retry   # max consectutive retries w/o a cache 'miss'
+        self.repeat = repeat # number of times to repeat the search
         self.tol = tol       # rounding precision
         self.memtol = memtol # memoization rounding precision
         self._allSolvers = []
@@ -201,16 +206,19 @@ class Searcher(object):
         self.traj = self.traj if traj is None else traj
         self.disp = self.disp if disp is None else disp
         self._configure(model, bounds, stop, monitor, evalmon)
-        count = 0 if self.retry else -1 #XXX: 'rerun' much shorter... unless clear
         sid = 0  # keep track of which solver is which across multiple runs
-        while self.retry > count: # stop after retry consecutive no new results
-            _size = -1
-            size = osize = len(self.cache) #XXX: compare 'size' or 'len(vals)'?
-            while size > _size: # stop if no new results
-                _size = size
-                sid, size = self._search(sid) # uses self.traj and self.disp
-            if size == osize: count = count + 1
-            else: count = 0
+        run = -1
+        while run < self.repeat: # stop after repeat 'runs'
+            count = 0 if self.retry else -1 
+            while self.retry > count: # stop after retry consecutive no new hits
+                _size = -1
+                size = osize = len(self.cache) #XXX: 'size' or 'len(vals)'?
+                while size > _size: # stop if no new hits
+                    _size = size
+                    sid, size = self._search(sid) # uses self.traj and self.disp
+                if size == osize: count = count + 1
+                else: count = 0
+            run = run + 1
 
         #NOTE: traj & disp are sticky
         return

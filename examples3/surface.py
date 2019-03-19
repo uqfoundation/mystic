@@ -273,7 +273,8 @@ class Surface(object): #FIXME: should be subclass of Interpolator (?)
         from mystic.math.interpolate import _to_objective
         _objective = _to_objective(function)
         def objective(x, *args, **kwds):
-            return _objective(x, *args, **kwds).tolist()
+            result = _objective(x, *args, **kwds)
+            return result.tolist() if hasattr(result, 'tolist') else result
         self.objective = objective
         self.objective.__doc__ = function.__doc__
         return
@@ -291,7 +292,8 @@ class Surface(object): #FIXME: should be subclass of Interpolator (?)
         from mystic.math.interpolate import _to_objective
         _objective = _to_objective(self.surrogate)
         def objective(x, *args, **kwds):
-            return _objective(x, *args, **kwds).tolist()
+            result = _objective(x, *args, **kwds)
+            return result.tolist() if hasattr(result, 'tolist') else result
         objective.__doc__ = self.objective.__doc__
         return objective
 

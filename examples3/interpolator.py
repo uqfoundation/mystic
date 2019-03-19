@@ -197,7 +197,8 @@ class Interpolator(object):
         from mystic.math.interpolate import _to_objective
         _objective = _to_objective(self.function)
         def objective(x, *args, **kwds):
-            return _objective(x, *args, **kwds).tolist()
+            result = _objective(x, *args, **kwds)
+            return result.tolist() if hasattr(result, 'tolist') else result
         objective.__doc__ = _objective.__doc__
         return objective
 

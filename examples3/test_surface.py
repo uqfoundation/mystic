@@ -59,7 +59,7 @@ if __name__ == '__main__':
     from klepto.archives import dir_archive
 
     stop = NCOG(1e-4)
-    disp = False # print optimization summary
+    disp = True # print optimization summary
     monitor = True # use LoggingMonitor (uses much less memory)
     archive = False # save an archive
     traj = not monitor # save all trajectories internally, if no logs
@@ -77,10 +77,11 @@ if __name__ == '__main__':
 
     sprayer = BuckshotSolver
     seeker = PowellDirectionalSolver
-    npts = 25 # number of solvers
-    retry = 1 # max consectutive iteration retries without a cache 'miss'
-    tol = 8   # rounding precision
-    mem = 1   # cache rounding precision
+    npts = 25  # number of solvers
+    retry = 1  # max consectutive iteration retries without a cache 'miss'
+    repeat = 0 # number of times to repeat the search
+    tol = 8    # rounding precision
+    mem = 1    # cache rounding precision
 
     #CUTE: 'configure' monitor and archive if they are desired
     if monitor:
@@ -98,7 +99,7 @@ if __name__ == '__main__':
         archive = ivcache = None
 
     from mystic.search import Searcher #XXX: init w/ archive, then UseArchive?
-    sampler = Searcher(npts, retry, tol, mem, _map, None, archive, sprayer, seeker)
+    sampler = Searcher(npts, retry, tol, mem, _map, None, archive, sprayer, seeker, repeat=repeat)
     sampler.Verbose(disp)
     sampler.UseTrajectories(traj)
 
@@ -140,7 +141,6 @@ if __name__ == '__main__':
     vals = () # use remaining minima as the fixed values
     surface.Plot(step=step, scale=scale, shift=shift, density=density, axes=axes, vals=vals)
 
-
     """
     try:
         from klepto.archives import file_archive
@@ -149,13 +149,11 @@ if __name__ == '__main__':
     except Exception:
         print("serialization failed")
     """
-
     # some testing of interpolated model
     #import numpy as np
     #actual = np.asarray(surface.z)           # downsample?
     #interp = surface.surrogate(*surface.x.T) # downsample? #NOTE: SLOW
     #print("sum diff squares") #NOTE: is *worse* than with test_searcher.py
     #print("actual and interp: %s" % np.sum((actual - interp)**2))
-
 
 # EOF
