@@ -63,7 +63,7 @@ if __name__ == '__main__':
     monitor = True # use LoggingMonitor (uses much less memory)
     archive = False # save an archive
     traj = not monitor # save all trajectories internally, if no logs
-    all = True # use EvalMonitor (instead of StepMonitor only)
+    all = False # use EvalMonitor (instead of StepMonitor only)
 
     # cost function
     from mystic.models import griewangk as model
@@ -99,7 +99,8 @@ if __name__ == '__main__':
         archive = ivcache = None
 
     from mystic.search import Searcher #XXX: init w/ archive, then UseArchive?
-    sampler = Searcher(npts, retry, tol, mem, _map, None, archive, sprayer, seeker, repeat=repeat)
+    trajs,evals = (None,archive) if all else (archive, None)
+    sampler = Searcher(npts, retry, tol, mem, _map, trajs, evals, sprayer, seeker, repeat=repeat)
     sampler.Verbose(disp)
     sampler.UseTrajectories(traj)
 
