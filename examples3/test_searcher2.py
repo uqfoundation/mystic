@@ -30,7 +30,7 @@ if __name__ == '__main__':
     from klepto.archives import dir_archive
 
     stop = NCOG(1e-4)
-    disp = False # print optimization summary
+    disp = True # print optimization summary
     evalmon = True # use LoggingMonitor
     archive = False # save an archive
 
@@ -48,12 +48,13 @@ if __name__ == '__main__':
 
     sprayer = BuckshotSolver
     seeker = PowellDirectionalSolver
-    npts = 25  # number of solvers
+    npts = 25    # number of solvers
     _map = Pool().map
-    retry = 1  # max consectutive iteration retries without a cache 'miss'
-    repeat = 0 # number of times to repeat the search
-    tol = 8    # rounding precision
-    mem = 1    # cache rounding precision
+    retry = 1    # max consectutive iteration retries without a cache 'miss'
+    repeat = 0   # number of times to repeat the search
+    tol = 8      # rounding precision
+    mem = 1      # cache rounding precision
+    size = 0     # max in-memory cache size
 
     #CUTE: 'configure' monitor and archive if they are desired
     if evalmon: evalmon = LoggingMonitor(1) # montor for all runs
@@ -64,11 +65,12 @@ if __name__ == '__main__':
         archive = dir_archive(ar_name, serialized=True, cached=False)
     else: archive = None
 
-    searcher = Searcher(npts, retry, tol, mem, _map, archive, None, sprayer, seeker, repeat=repeat)
+    # configure a Searcher to use a "evaluation archive"
+    searcher = Searcher(npts, retry, tol, mem, size, _map, archive, None, sprayer, seeker, repeat=repeat)
     searcher.Verbose(disp)
     searcher.UseTrajectories(traj)
 
-    searcher.Reset(archive, inv=False) #XXX: archive or None?
+    searcher.Reset(None, inv=False) #XXX: careful, can replace searcher.cache
     searcher.Search(model, bounds, stop=stop, evalmon=evalmon)
     searcher._summarize()
 
@@ -88,7 +90,8 @@ if __name__ == '__main__':
         archive = dir_archive(ar_name, serialized=True, cached=False)
     else: archive = None
 
-    searcher.Reset(archive, inv=True) #XXX: archive or None?
+    searcher.archive = archive #FIXME: need to rethink this and Reset
+    searcher.Reset(None, inv=True) #XXX: careful, can replace searcher.cache
     searcher.Search(imodel, bounds, stop=stop, evalmon=costmon)
     searcher._summarize()
 

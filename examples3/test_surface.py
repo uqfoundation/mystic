@@ -62,8 +62,9 @@ if __name__ == '__main__':
     disp = True # print optimization summary
     monitor = True # use LoggingMonitor (uses much less memory)
     archive = False # save an archive
+    all = True # use EvalMonitor (instead of StepMonitor only)
+
     traj = not monitor # save all trajectories internally, if no logs
-    all = False # use EvalMonitor (instead of StepMonitor only)
 
     # cost function
     from mystic.models import griewangk as model
@@ -77,11 +78,12 @@ if __name__ == '__main__':
 
     sprayer = BuckshotSolver
     seeker = PowellDirectionalSolver
-    npts = 25  # number of solvers
-    retry = 1  # max consectutive iteration retries without a cache 'miss'
-    repeat = 0 # number of times to repeat the search
-    tol = 8    # rounding precision
-    mem = 1    # cache rounding precision
+    npts = 25    # number of solvers
+    retry = 1    # max consectutive iteration retries without a cache 'miss'
+    repeat = 0   # number of times to repeat the search
+    tol = 8      # rounding precision
+    mem = 1      # cache rounding precision
+    size = 0     # max in-memory cache size
 
     #CUTE: 'configure' monitor and archive if they are desired
     if monitor:
@@ -99,8 +101,9 @@ if __name__ == '__main__':
         archive = ivcache = None
 
     from mystic.search import Searcher #XXX: init w/ archive, then UseArchive?
-    trajs,evals = (None,archive) if all else (archive, None)
-    sampler = Searcher(npts, retry, tol, mem, _map, trajs, evals, sprayer, seeker, repeat=repeat)
+    expts,evals = (None,archive) if all else (archive, None)
+    #expts,evals = (archive, None) #XXX: don't override the sample archive
+    sampler = Searcher(npts, retry, tol, mem, size, _map, evals, expts, sprayer, seeker, repeat=repeat)
     sampler.Verbose(disp)
     sampler.UseTrajectories(traj)
 

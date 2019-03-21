@@ -166,10 +166,12 @@ class Surface(object): #FIXME: should be subclass of Interpolator (?)
         archive = None if clear else self._minarch
         inverse = False
 
-        self.sampler.Reset(archive, inv=inverse) # reset the sampler
-        if all:
+        if all: #FIXME: better define role/use of Reset/Archive/clear...
+            self.sampler.Reset(None, inv=inverse) # reset the sampler
+            self.sampler.archive = archive
             self.sampler.Search(model, bounds, stop=stop, evalmon=monitor)
         else:
+            self.sampler.Reset(archive, inv=inverse) # reset the sampler
             self.sampler.Search(model, bounds, stop=stop, monitor=monitor)
         if verbose: self.sampler._summarize()
         # read trajectories from log (or monitor)
@@ -185,10 +187,12 @@ class Surface(object): #FIXME: should be subclass of Interpolator (?)
         archive = None if clear else self._maxarch
         inverse = True
 
-        self.sampler.Reset(archive, inv=inverse) # reset the sampler
-        if all:
+        if all: #FIXME: better define role/use of Reset/Archive/clear...
+            self.sampler.Reset(None, inv=inverse) # reset the sampler
+            self.sampler.archive = archive
             self.sampler.Search(imodel, bounds, stop=stop, evalmon=monitor)
         else:
+            self.sampler.Reset(archive, inv=inverse) # reset the sampler
             self.sampler.Search(imodel, bounds, stop=stop, monitor=monitor)
         if verbose: self.sampler._summarize()
         xyz = np.hstack((xyz, self.sampler.Samples(all=all)))

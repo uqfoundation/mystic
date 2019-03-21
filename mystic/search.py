@@ -47,9 +47,9 @@ class Searcher(object):
    #    _configure (model, bounds, stop, monitor) - configure sprayer
    #    _solve - spray multiple seekers
 
-    def __init__(self, npts=4, retry=1, tol=8, memtol=1, map=None,
-                       archive=None, cache=None, sprayer=None, seeker=None,
-                       traj=False, disp=False, repeat=0):
+    def __init__(self, npts=4, retry=1, tol=8, memtol=1, memsize=None,
+                       map=None, archive=None, cache=None, sprayer=None,
+                       seeker=None, traj=False, disp=False, repeat=0):
         """searcher, which searches for all minima of a response surface
 
         Input:
@@ -57,6 +57,7 @@ class Searcher(object):
           retry - max consectutive retries w/o a cache 'miss'
           tol - rounding precision for the minima comparator
           memtol - rounding precision for memoization
+          memsize - maximum size of cache to hold in memory
           map - map used for spawning solvers in the ensemble
           archive - the sampled point archive(s)
           cache - the trajectory cache(s)
@@ -90,6 +91,7 @@ class Searcher(object):
         self.repeat = repeat # number of times to repeat the search
         self.tol = tol       # rounding precision
         self.memtol = memtol # memoization rounding precision
+        self.memsize = memsize # max in-memory cache size
         self._allSolvers = []
         self._inv = False    # self-awareness: am I inverted (maximizing)?
         return
@@ -102,28 +104,29 @@ class Searcher(object):
             bestRes = round(_solver.bestEnergy, tol)
             print("%s %s" % (bestSol, l*bestRes))
 
-    def _memoize(self, solver, tol=1, all=False):
+    def _memoize(self, solver, tol=1, all=False, size=None):
         """apply caching to ensemble solver instance"""
         archive = self.archive if all else self.cache
 
-        from klepto import inf_cache
+        from klepto import lru_cache as _cache #XXX: or lru_? or ?
         from klepto.keymaps import keymap
 
         km = keymap()
-        ca = inf_cache(tol=tol, ignore=('**','out'),
-                       cache=archive, keymap=km)
+        ca = _cache(maxsize=size, ignore=('**','out'),
+                    tol=tol, cache=archive, keymap=km)
 
         @ca
         def memo(*args, **kwds):
             return kwds['out']
 
         l = -1 if self._inv else 1
-        if all: #XXX: better to apply before Solve?
+        if all: #FIXME: applied *after* _solve; should be *during* _solve
+            cache = memo.__cache__()
             for _solver in solver._allSolvers:
                 if _solver._evalmon:
                     param = _solver._evalmon._x
                     cost = _solver._evalmon._y             #FIXME: python2.5
-                    [memo(*param[i], out=1*y) for (i,y) in enumerate(cost)]
+                    cache.update((tuple(x),l*y) for (x,y) in zip(param,cost))
         else:
             for _solver in solver._allSolvers:
                 bestSol = tuple(_solver.bestSolution)
@@ -167,13 +170,16 @@ class Searcher(object):
 #       print("TOOK: %s" % (time.time() - start))
         return solver
 
-    def _search(self, sid): #FIXME: look in archive first? leverage archived?
+    def _search(self, sid): #FIXME: load and leverage archived evaluations
         """run the solver, store the trajectory, and cache to the archive"""
         solver = self._solve(sid, self.disp)
         if self.traj: self._allSolvers.append(solver)
         sid += len(solver._allSolvers)
 #       self._print(solver, tol=self.tol)
-        self._memoize(solver, tol=None, all=True) #XXX: or tol=self.memtol?
+        size = self.memsize
+        # write to evaluation cache
+        memo = self._memoize(solver, tol=None, all=True, size=size).info()
+        # write to trajectory archivea (extrema only)
         info = self._memoize(solver, tol=self.memtol).info()
         if self.disp: print(info)
         size = info.size
@@ -209,11 +215,14 @@ class Searcher(object):
         sid = 0  # keep track of which solver is which across multiple runs
         run = -1
         while run < self.repeat: # stop after repeat 'runs'
+            #print('run: {}'.format(run))
             count = 0 if self.retry else -1 
             while self.retry > count: # stop after retry consecutive no new hits
+                #print('count: {}'.format(count))
                 _size = -1
                 size = osize = len(self.cache) #XXX: 'size' or 'len(vals)'?
                 while size > _size: # stop if no new hits
+                    #print('size: {}, _: {}'.format(size,_size))
                     _size = size
                     sid, size = self._search(sid) # uses self.traj and self.disp
                 if size == osize: count = count + 1
