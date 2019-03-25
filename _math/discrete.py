@@ -158,7 +158,8 @@ Returns:
     the maximum value of ``f`` over all measure positions
 """
     from .measures import maximum
-    return maximum(f, self.positions)
+    positions = [(i,) for i in self.positions]
+    return maximum(f, positions)
 
   def ess_maximum(self, f, tol=0.):
     """calculate the maximum for the support of a given function
@@ -171,7 +172,8 @@ Returns:
     the maximum value of ``f`` over all measure positions with support
 """
     from .measures import ess_maximum
-    return ess_maximum(f, self.positions, self.weights, tol)
+    positions = [(i,) for i in self.positions]
+    return ess_maximum(f, positions, self.weights, tol)
 
   def minimum(self, f):
     """calculate the minimum for a given function
@@ -183,7 +185,8 @@ Returns:
     the minimum value of ``f`` over all measure positions
 """
     from .measures import minimum
-    return minimum(f, self.positions)
+    positions = [(i,) for i in self.positions]
+    return minimum(f, positions)
 
   def ess_minimum(self, f, tol=0.):
     """calculate the minimum for the support of a given function
@@ -196,7 +199,8 @@ Returns:
     the minimum value of ``f`` over all measure positions with support
 """
     from .measures import ess_minimum
-    return ess_minimum(f, self.positions, self.weights, tol)
+    positions = [(i,) for i in self.positions]
+    return ess_minimum(f, positions, self.weights, tol)
 
   def expect(self, f):
     """calculate the expectation for a given function
