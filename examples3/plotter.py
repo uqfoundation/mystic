@@ -30,6 +30,7 @@ class Plotter(object):
           axes: tuple, indicies of the axes to plot [default: ()]
           vals: list of values (one per axis) for unplotted axes [default: ()]
           maxpts: int, maximum number of (x,z) points to use [default: None]
+          kernel: function transforming x to x', where x' = kernel(x)
 
         NOTE:
           if scipy is not installed, will use np.interp for 1D (non-rbf),
@@ -48,7 +49,7 @@ class Plotter(object):
        #self.dim = kwds.pop('dim', None) #XXX: or len(x)?
         # interpolator configuration
         self.args = dict(step=200, scale=False, shift=False, \
-            density=9, axes=(), vals=(), maxpts=None)
+            kernel=None, density=9, axes=(), vals=(), maxpts=None)
         self.args.update(kwds)
         self.maxpts = self.args.pop('maxpts')
         return
@@ -105,6 +106,7 @@ class Plotter(object):
           axes: tuple, indicies of the axes to plot [default: ()]
           vals: list of values (one per axis) for unplotted axes [default: ()]
           maxpts: int, maximum number of (x,z) points to use [default: None]
+          kernel: function transforming x to x', where x' = kernel(x)
         """
         step = kwds['step'] if 'step' in kwds else self.args['step']
         scale = kwds['scale'] if 'scale' in kwds else self.args['scale']
@@ -112,6 +114,7 @@ class Plotter(object):
         axes = kwds['axes'] if 'axes' in kwds else self.args['axes']
         vals = kwds['vals'] if 'vals' in kwds else self.args['vals']
         maxpts = kwds['maxpts'] if 'maxpts' in kwds else self.maxpts
+        kernel = kwds['kernel'] if 'kernel' in kwds else self.args['kernel']
         density = kwds['density'] if 'density' in kwds else self.args['density']
 
         # plot response surface
@@ -160,10 +163,19 @@ class Plotter(object):
                 z_ = z_+shift
             z_ = np.log(4*z_*scale+1)+2
 
+        # apply transform #NOTE: should do this w/o fixing points first
+        if hasattr(kernel, '__call__'):
+            _grid = np.zeros_like(grid[:2])
+            for i in range(step):
+                _grid.T[i] = [kernel(j)[:2] for j in grid.T[i]] #XXX: correct?
+            grid = _grid
+            ax0,ax1 = 0,1
+        else: ax0,ax1 = axes
+
         # plot surface
         d = max(11 - density, 1)
-        x_ = grid[axes[0]]
-        y_ = grid[axes[-1]]
+        x_ = grid[ax0]
+        y_ = grid[ax1]
         ax.plot_wireframe(x_, y_, z_, rstride=d, cstride=d)
         #ax.plot_surface(x_, y_, z_, rstride=d, cstride=d, cmap=cm.jet, linewidth=0, antialiased=False)
 
@@ -175,9 +187,13 @@ class Plotter(object):
                 z_ = z_+shift
             z_ = np.log(4*z_*scale+1)+2
 
+        # apply transform
+        if hasattr(kernel, '__call__'):
+            x = np.array([kernel(j)[:2] for j in x])
+
         # plot data points
-        x_ = x.T[axes[0]]
-        y_ = x.T[axes[-1]]
+        x_ = x.T[ax0]
+        y_ = x.T[ax1]
         ax.plot(x_, y_, z_, 'ko', linewidth=2, markersize=4)
         plt.show()  #XXX: show or don't show?... or return?
 
@@ -197,6 +213,7 @@ def plot(monitor, function=None, **kwds):
       axes: tuple, indicies of the axes to plot [default: ()]
       vals: list of values (one per axis) for unplotted axes [default: ()]
       maxpts: int, maximum number of (x,z) points to use [default: None]
+      kernel: function transforming x to x', where x' = kernel(x)
 
     NOTE:
       if scipy is not installed, will use np.interp for 1D (non-rbf),

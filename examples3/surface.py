@@ -261,6 +261,7 @@ class Surface(object): #FIXME: should be subclass of Interpolator (?)
           axes: tuple, indicies of the axes to plot [default: ()]
           vals: list of values (one per axis) for unplotted axes [default: ()]
           maxpts: int, maximum number of (x,z) points to use [default: None]
+          kernel: function transforming x to x', where x' = kernel(x)
         """
         # get interpolted function
         fx = self.surrogate
