@@ -280,10 +280,21 @@ Further Inputs:
     permute = False # if True, return all permutations
     warn = True  # if True, don't suppress warnings
     verbose = False  # if True, print debug info
+    simplest = False # if True, simplify all but polynomials order >= 3
+    rational = False # if True, recast floats as rationals during solve
+    sequence = False # if True, solve sequentially and not as a matrix
+    implicit = False # if True, solve implicitly (contains sin, ...)
+    check = True # if False, skip minimal testing (divide_by_zero, ...)
+    kwarg = {} # keywords for sympy's symbolic solve
     #-----------------------undocumented-------------------------------
     permute = kwds['permute'] if 'permute' in kwds else permute
     warn = kwds['warn'] if 'warn' in kwds else warn
     verbose = kwds['verbose'] if 'verbose' in kwds else verbose
+    kwarg['simplify'] = kwds['simplest'] if 'simplest' in kwds else simplest
+    kwarg['rational'] = kwds['rational'] if 'rational' in kwds else rational
+    kwarg['manual'] = kwds['sequence'] if 'sequence' in kwds else sequence
+    kwarg['implicit'] = kwds['implicit'] if 'implicit' in kwds else implicit
+    kwarg['check'] = kwds['check'] if 'check' in kwds else check
     #------------------------------------------------------------------
     if target in [None, False]:
         target = []
@@ -341,6 +352,7 @@ Further Inputs:
     code += """from numpy import ptp as spread;"""   # look like mystic.math
     code = compile(code, '<string>', 'exec')
     %(exec_locals_)s
+    _locals.update(dict(symsol_kwds=kwarg))
     _locals.update(locals) #XXX: allow this?
 
     code,left,right,xlist,neqns = _prepare_sympy(constraints, varname, ndim)
@@ -367,14 +379,14 @@ Further Inputs:
     # returns: {x0: f(xn,...), x1: f(xn,...), ..., xn: f(...,x0)}
     if permute or not target: #XXX: the goal is solving *only one* equation
         code += '_xlist = {0}'.format(','.join(targeted)) + NL
-        code += '_elist = [symsol(['+eqlist+'], [i]) for i in _xlist]' + NL
+        code += '_elist = [symsol(['+eqlist+'], [i], **symsol_kwds) for i in _xlist]' + NL
         code += '_elist = [i if isinstance(i, dict) else {j:i[-1][-1]} for j,i in zip(_xlist,_elist) if i]' + NL
         code += 'soln = dict()' + NL
         code += '[soln.update(i) for i in _elist if i]' + NL
     else:
-        code += 'soln = symsol([' + eqlist + '], [' + target[0] + '])' + NL
-       #code += 'soln = symsol([' + eqlist + '], [' + targeted[0] + '])' + NL
-        code += 'soln = soln if isinstance(soln, dict) else {' + target[0] + ': soln[-1][-1]} if soln else ""' + NL
+        code += 'soln = symsol(['+eqlist+'], ['+target[0]+'], **symsol_kwds)' + NL
+       #code += 'soln = symsol(['+eqlist+'], ['+targeted[0]+'], **symsol_kwds)' + NL
+        code += 'soln = soln if isinstance(soln, dict) else {'+target[0]+': soln[-1][-1]} if soln else ""' + NL
     #code += 'print(soln)' + NL
     ########################################################################
 
@@ -456,10 +468,21 @@ def _solve_linear(constraints, variables='x', target=None, **kwds):
     permute = False # if True, return all permutations
     warn = True  # if True, don't suppress warnings
     verbose = False  # if True, print debug info
+    simplest = False # if True, simplify all but polynomials order >= 3
+    rational = False # if True, recast floats as rationals during solve
+    sequence = False # if True, solve sequentially and not as a matrix
+    implicit = False # if True, solve implicitly (contains sin, ...)
+    check = True # if False, skip minimal testing (divide_by_zero, ...)
+    kwarg = {} # keywords for sympy's symbolic solve
     #-----------------------undocumented-------------------------------
     permute = kwds['permute'] if 'permute' in kwds else permute
     warn = kwds['warn'] if 'warn' in kwds else warn
     verbose = kwds['verbose'] if 'verbose' in kwds else verbose
+    kwarg['simplify'] = kwds['simplest'] if 'simplest' in kwds else simplest
+    kwarg['rational'] = kwds['rational'] if 'rational' in kwds else rational
+    kwarg['manual'] = kwds['sequence'] if 'sequence' in kwds else sequence
+    kwarg['implicit'] = kwds['implicit'] if 'implicit' in kwds else implicit
+    kwarg['check'] = kwds['check'] if 'check' in kwds else check
     #------------------------------------------------------------------
     if target in [None, False]:
         target = []
@@ -518,6 +541,7 @@ def _solve_linear(constraints, variables='x', target=None, **kwds):
     code += """from numpy import ptp as spread;"""   # look like mystic.math
     code = compile(code, '<string>', 'exec')
     %(exec_locals_)s
+    _locals.update(dict(symsol_kwds=kwarg))
     _locals.update(locals) #XXX: allow this?
 
     code,left,right,xlist,neqns = _prepare_sympy(_constraints, varname, ndim)
@@ -556,7 +580,7 @@ def _solve_linear(constraints, variables='x', target=None, **kwds):
         xlist = ','.join(perm).rstrip(',') #XXX: if not all, use target ?
         # solve dependent xi: symsol([linear_system], [x0,x1,...,xi,...,xn])
         # returns: {x0: f(xn,...), x1: f(xn,...), ...}
-        _code += 'soln = symsol([' + eqlist + '], [' + xlist + '])'
+        _code += 'soln = symsol(['+eqlist+'], ['+xlist+'], **symsol_kwds)'
         #XXX: need to convert/check soln similarly as in _solve_single ?
         if verbose: print(_code)
         _code = compile(_code, '<string>', 'exec')
@@ -661,6 +685,11 @@ Further Inputs:
    #kwds['permute'] = False # if True, return all permutations
     kwds['warn'] = False  # if True, don't suppress warnings
     kwds['verbose'] = False  # if True, print debug info
+   #kwds['simplest'] = False # if True, simplify all but polynomials order >= 3
+   #kwds['rational'] = False # if True, recast floats as rationals during solve
+   #kwds['sequence'] = False # if True, solve sequentially and not as a matrix
+   #kwds['implicit'] = False # if True, solve implicitly (contains sin, ...)
+   #kwds['check'] = True # if False, skip minimal testing (divide_by_zero, ...)
     #------------------------------------------------------------------
     try:
         if len(constraints.replace('==','=').split('=')) <= 2:
@@ -730,10 +759,21 @@ Further Inputs:
     permute = False # if True, return all permutations
     warn = True  # if True, don't suppress warnings
     verbose = False # if True, print details from _classify_variables
+    simplest = False # if True, simplify all but polynomials order >= 3
+    rational = False # if True, recast floats as rationals during solve
+    sequence = False # if True, solve sequentially and not as a matrix
+    implicit = False # if True, solve implicitly (contains sin, ...)
+    check = True # if False, skip minimal testing (divide_by_zero, ...)
+    kwarg = {} # keywords for sympy's symbolic solve
     #-----------------------undocumented-------------------------------
     permute = kwds['permute'] if 'permute' in kwds else permute
     warn = kwds['warn'] if 'warn' in kwds else warn
     verbose = kwds['verbose'] if 'verbose' in kwds else verbose
+    kwarg['simplest'] = kwds['simplest'] if 'simplest' in kwds else simplest
+    kwarg['rational'] = kwds['rational'] if 'rational' in kwds else rational
+    kwarg['sequence'] = kwds['sequence'] if 'sequence' in kwds else sequence
+    kwarg['implicit'] = kwds['implicit'] if 'implicit' in kwds else implicit
+    kwarg['check'] = kwds['check'] if 'check' in kwds else check
     #------------------------------------------------------------------
     if target in [None, False]:
         target = []
@@ -826,7 +866,7 @@ Further Inputs:
             # looking for one containing xi.
             _target = usedvars[i%len(usedvars)] #XXX: ...to make it len of neqns
             for eqn in actual_eqns[i:]:
-                invertedstring = _solve_single(eqn, variables=varname, target=_target, warn=warn)
+                invertedstring = _solve_single(eqn, variables=varname, target=_target, warn=warn, locals=locals, **kwarg)
                 if invertedstring:
                     warn = False
                     break
@@ -848,7 +888,7 @@ Further Inputs:
         simplified = []
         for eqn in actual_eqns[:len(usedvars)]: #XXX: ...needs to be same len
             _target = usedvars[actual_eqns.index(eqn)]
-            mysoln = _solve_single(eqn, variables=varname, target=_target, warn=warn)
+            mysoln = _solve_single(eqn, variables=varname, target=_target, warn=warn, locals=locals, **kwarg)
             if mysoln: simplified.append(mysoln)
         simplified = restore(variables, '\n'.join(simplified).rstrip())
 
