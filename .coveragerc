@@ -4,6 +4,7 @@ include =
     */mystic/*
     */models/*
     */_math/*
+    */math/*
 omit = 
     */tests/*
     */info.py
@@ -21,18 +22,23 @@ omit =
 # parallel = true # and need to 'combine' data files
 # concurrency = multiprocessing # thread
 data_file = $TRAVIS_BUILD_DIR/.coverage
-debug = trace
+# debug = trace
 
 [paths]
 source =
-    mystic
-    models
-    _math
-    */site-packages/mystic
-    */site-packages/mystic/math
-    */site-packages/mystic/models
+    mystic/*
+    models/*
+    _math/*
+    */site-packages/mystic*/mystic/*
+    */site-packages/mystic*/mystic/math/*
+    */site-packages/mystic*/mystic/models/*
 
 [report]
+include =
+    */mystic/*
+    */models/*
+    */_math/*
+    */math/*
 exclude_lines =
     pragma: no cover
     if __name__ == .__main__.:
