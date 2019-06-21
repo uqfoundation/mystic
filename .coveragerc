@@ -4,7 +4,6 @@ include =
     */mystic/*
     */models/*
     */_math/*
-    */math/*
 omit = 
     */tests/*
     */info.py
@@ -26,12 +25,12 @@ data_file = $TRAVIS_BUILD_DIR/.coverage
 
 [paths]
 source =
-    mystic/*
-    models/*
-    _math/*
-    */site-packages/mystic*/mystic/*
-    */site-packages/mystic*/mystic/math/*
-    */site-packages/mystic*/mystic/models/*
+    mystic
+    models
+    _math
+    */site-packages/mystic*/mystic
+    */site-packages/mystic*/mystic/math
+    */site-packages/mystic*/mystic/models
 
 [report]
 exclude_lines =
