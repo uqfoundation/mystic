@@ -3,22 +3,36 @@
 include =
     */mystic/*
     */models/*
-    */_math/*
-    */math/*
+    */*math/*
 omit = 
     */tests/*
     */info.py
     */_scipyoptimize.py
     */_scipy060optimize.py
-    */_signal.py # can't test the signal handler
-    */scripts.py # can't test? ...unless return mpl object
-    */support.py # can't test? ...unless return mpl object
-    */munge.py # can't test? ...unless create dummy files
+    */_signal.py
+    */scripts.py
+    */support.py
+    */munge.py
+    # _signal: can't test the signal handler
+    # scripts: can't test? ...unless return mpl object
+    # support: can't test? ...unless return mpl object
+    # munge: can't test? ...unless create dummy files
 # timid = true
 # parallel = true # and need to 'combine' data files
 # concurrency = multiprocessing # thread
 data_file = $TRAVIS_BUILD_DIR/.coverage
 
+[paths]
+source =
+    mystic
+    models
+    *math
+    $TRAVIS_BUILD_DIR/*/lib/python*/site-packages/mystic
+    $TRAVIS_BUILD_DIR/*/Lib/site-packages/mystic
+    $TRAVIS_BUILD_DIR/*/lib/python*/site-packages/mystic/*math
+    $TRAVIS_BUILD_DIR/*/Lib/site-packages/mystic/*math
+    $TRAVIS_BUILD_DIR/*/lib/python*/site-packages/mystic/models
+    $TRAVIS_BUILD_DIR/*/Lib/site-packages/mystic/models
 
 [report]
 exclude_lines =
