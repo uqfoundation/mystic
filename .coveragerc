@@ -43,5 +43,5 @@ include =
 exclude_lines =
     pragma: no cover
     if __name__ == .__main__.:
-# show_missing = true
+show_missing = true
 ignore_errors = true
