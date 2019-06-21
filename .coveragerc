@@ -35,6 +35,11 @@ source =
     */site-packages/mystic*/mystic/models
 
 [report]
+include =
+    */mystic/*
+    */models/*
+    */_math/*
+    */math/*
 exclude_lines =
     pragma: no cover
     if __name__ == .__main__.:
