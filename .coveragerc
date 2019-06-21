@@ -3,10 +3,17 @@
 include =
     */mystic/*
     */models/*
-    */*math/*
+    */_math/*
+    */math/*
 omit = 
     */tests/*
     */info.py
+    */_scipyoptimize.py
+    */_scipy060optimize.py
+    */_signal.py # can't test the signal handler
+    */scripts.py # can't test? ...unless return mpl object
+    */support.py # can't test? ...unless return mpl object
+    */munge.py # can't test? ...unless create dummy files
 # timid = true
 # parallel = true # and need to 'combine' data files
 # concurrency = multiprocessing # thread
