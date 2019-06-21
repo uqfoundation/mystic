@@ -21,6 +21,7 @@ omit =
 # parallel = true # and need to 'combine' data files
 # concurrency = multiprocessing # thread
 data_file = $TRAVIS_BUILD_DIR/.coverage
+debug = trace
 
 [paths]
 source =
