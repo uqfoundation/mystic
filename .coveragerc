@@ -4,6 +4,7 @@ include =
     */mystic/*
     */models/*
     */_math/*
+    */math/*
 omit = 
     */tests/*
     */info.py
@@ -28,6 +29,7 @@ source =
     mystic
     models
     _math
+    math
     */site-packages/mystic*/mystic
     */site-packages/mystic*/mystic/math
     */site-packages/mystic*/mystic/models

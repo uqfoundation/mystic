@@ -91,6 +91,7 @@ cache:
 before_install:
     - set -e  # fail on any error
     - if [[ $COVERAGE == "true" ]]; then pip install coverage; fi
+    - if [[ $COVERAGE == "true" ]]; then cp -rf _math math; fi
     - if [[ $MATPLOTLIB == "true" ]]; then pip install matplotlib; fi
     - if [[ $SYMPY == "true" ]]; then pip install sympy; fi
     - if [[ $SCIPY == "true" ]]; then pip install scipy; fi
