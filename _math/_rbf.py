@@ -8,7 +8,7 @@
 #  - https://github.com/uqfoundation/mystic/blob/master/LICENSE
 """rbf - Radial basis functions for interpolation/smoothing scattered Nd data.
 """
-from __future__ import division, print_function, absolute_import
+from __future__ import division
 #
 # original documentation/license (below)
 """
