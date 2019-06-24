@@ -3,8 +3,7 @@
 include =
     */mystic/*
     */models/*
-    */_math/*
-    */math/*
+    */mystic/math/*
 omit = 
     */tests/*
     */info.py
@@ -28,8 +27,7 @@ data_file = $TRAVIS_BUILD_DIR/.coverage
 source =
     mystic
     models
-    _math
-    math
+    mystic/math
     */site-packages/mystic*/mystic
     */site-packages/mystic*/mystic/math
     */site-packages/mystic*/mystic/models
@@ -38,8 +36,7 @@ source =
 include =
     */mystic/*
     */models/*
-    */_math/*
-    */math/*
+    */mystic/math/*
 exclude_lines =
     pragma: no cover
     if __name__ == .__main__.:

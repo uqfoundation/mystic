@@ -96,16 +96,18 @@ def _boundbox(monitor, fx=None, mins=None, maxs=None, **kwds):
     x = np.array(mon._x)
     # get 'mins'&'maxs' to use for 'axes' to define bounding box
     if len(x):
-        mins = x.T.min(axis=-1) if mins is None else mins
+        mins = x.T.min(axis=-1) if mins is None else np.array(mins)
+        #if not hasattr(mins, '__len__'): mins = (mins,)
     else:
         mins = None
     if len(x):
-        maxs = x.T.max(axis=-1) if maxs is None else maxs
+        maxs = x.T.max(axis=-1) if maxs is None else np.array(maxs)
+        #if not hasattr(maxs, '__len__'): maxs = (maxs,)
     else:
         maxs = None
 
     # add points at corners of boundbox (don't include existing points)
-    if (mins is None) or (maxs is None) or not len(mins) or not len(maxs):
+    if (mins is None) or (maxs is None) or not mins.shape or not maxs.shape:
         # skip bounding box if 'min'&'max' points are already in monitors
         pass
     else:

@@ -368,7 +368,7 @@ setup(name='mystic',
       packages = ['mystic','mystic.models','mystic.math','mystic.cache',
                   'mystic.tests'],
       package_dir = {'mystic':'mystic','mystic.models':'models',
-                     'mystic.math':'_math','mystic.cache':'cache',
+                     'mystic.math':'mystic/math','mystic.cache':'cache',
                      'mystic.tests':'tests'},
 """ % (target_version, long_description, stable_version, stable_version)
 
