@@ -9,12 +9,12 @@ from mystic.solvers import DifferentialEvolutionSolver
 from mystic.models import rosen
 from mystic.tools import solver_bounds
 from mystic.termination import ChangeOverGeneration as COG, Or, CollapseCost
-from mystic.monitors import VerboseMonitor
+from mystic.monitors import VerboseLoggingMonitor as Monitor
 
 solver = DifferentialEvolutionSolver(3,40)
 solver.SetRandomInitialPoints([-100]*3, [100]*3)
 
-mon = VerboseMonitor(1)
+mon = Monitor(1)
 options = dict(limit=1.95, samples=50, clip=False)
 mask = {} #solver_bounds(solver)
 stop = Or(CollapseCost(mask=mask,**options), COG(generations=50))

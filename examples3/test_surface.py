@@ -140,7 +140,7 @@ if __name__ == '__main__':
 
 #   print("TOOK: %s" % (time.time() - start))
 
-    # plot surface
+    # plot interpolated surface
     axes = (0,1)
     vals = () # use remaining minima as the fixed values
     surface.Plot(step=step, scale=scale, shift=shift, density=density, axes=axes, vals=vals)

@@ -46,6 +46,10 @@ Main functions exported are::
     - select_params: get params for the given indices as a tuple of index,values
     - solver_bounds: return a dict of tightest bounds defined for the solver
     - interval_overlap: find the intersection of intervals in the given bounds
+    - indicator_overlap: find the intersection of dicts of sets of indices
+    - no_mask: build dict of termination info {with mask: without mask}
+    - unmasked_collapse: apply the embedded mask to the given collapse
+    - masked_collapse: extract the mask, and combine with the given collapse
     - src: extract source code from a python code object
 
 Other tools of interest are in::
@@ -872,9 +876,55 @@ def solver_bounds(solver):
     return dict(enumerate(zip((solver._strictMin or solver._defaultMin),(solver._strictMax or solver._defaultMax))))
 
 
+def _interval_invert(bounds, lb=None, ub=None):
+    """invert the given intervals
+
+    bounds is a list of tuples [(lo,hi),...],
+    where lb and ub, if not given, are the extrema of bounds
+    """
+    if not len(bounds): return bounds
+    import numpy
+    bounds = numpy.asarray(bounds)
+    _a,a_ = bounds.min(),bounds.max()
+    lb = _a if lb is None else lb
+    ub = a_ if ub is None else ub
+    return [tuple(i) for i in numpy.array([lb]+bounds.ravel().tolist()+[ub])[2*(lb == _a):-2*(ub == a_) or None].reshape(-1,2)]
+
+
+def _interval_intersection(bounds1, bounds2):
+    """find the intersection of the intervals in the given bounds
+
+    bounds is a list of tuples [(lo,hi),...]
+    """
+    if not len(bounds2):
+        return bounds1 if len(bounds1) else []
+    if not len(bounds1): return bounds2
+    results = []
+    for lb,ub in bounds1: #XXX: is there a better way?
+        for lo,hi in bounds2:
+            r = l,h = max(lb,lo),min(ub,hi)
+            if l < h: #XXX: what about when l == h?
+                results.append(r)
+    return results
+
+
+def _interval_union(bounds1, bounds2):
+    """find the union of the intervals in the given bounds
+
+    bounds is a list of tuples [(lo,hi),...]
+    """
+    if not len(bounds2) or not len(bounds1): return []
+    import numpy
+    bounds1,bounds2 = numpy.asarray(bounds1),numpy.asarray(bounds2)
+    _a,a_ = bounds1.min(),bounds1.max()
+    _b,b_ = bounds2.min(),bounds2.max()
+    lb,ub = min(_a,_b),max(a_,b_)
+    return _interval_invert(_interval_intersection(_interval_invert(bounds1,lb,ub),_interval_invert(bounds2,lb,ub)),lb,ub)
+
+
 #XXX: generalize to *bounds?
 #FIXME: what about keys of None?
-def interval_overlap(bounds1, bounds2):
+def interval_overlap(bounds1, bounds2, union=False):
     """find the intersection of intervals in the given bounds
 
     bounds1 and bounds2 are a dict of {index:bounds},
@@ -882,30 +932,105 @@ def interval_overlap(bounds1, bounds2):
     """
     # ensure we have a list of tuples
     for (k,v) in getattr(bounds1, 'iteritems', bounds1.items)():
-      if not hasattr(v[0], '__len__'):
-        bounds1[k] = [v]
+        if not hasattr(v[0], '__len__'):
+            bounds1[k] = [v]
     # ensure we have a list of tuples
     for (k,v) in getattr(bounds2, 'iteritems', bounds2.items)():
-      if not hasattr(v[0], '__len__'):
-        bounds2[k] = [v]
+        if not hasattr(v[0], '__len__'):
+            bounds2[k] = [v]
     results = {}
     # get all entries in bounds1
     for k,v in getattr(bounds1, 'iteritems', bounds1.items)():
         m = bounds2.get(k, None) 
         if m is None:
-            results[k] = v
+            if union is False:
+                results[k] = v
             continue
         # find intersection of all tuples of bounds
-        results[k] = []
-        for lb,ub in m: #XXX: is there a better way?
-            for lo,hi in v:
-                r = l,h = max(lb,lo),min(ub,hi)
-                if l < h: #XXX: what about when l == h?
-                    results[k].append(r)
+        if union is True:
+            results[k] = _interval_union(m,v)
+        else:
+            results[k] = _interval_intersection(m,v)
+        if not results[k]:
+            del results[k]
+    if union is True: # get the union of the bounds
+        return results
     # get all entries in bounds2 not in bounds1
     for k in set(bounds2).difference(bounds1):
         results[k] = bounds2[k]
     return results
+
+
+def indicator_overlap(dict1, dict2, union=False):
+    """find the intersection for dicts of sets of indices
+
+    dict1 and dict2 are dicts of {index:set},
+    where set is a set of indices.
+    """
+    if union:
+        return dict((i,dict1.get(i,set()).union(dict2.get(i,set()))) for i in set(dict1.keys()).union(dict2.keys()))
+    return dict((i,dict1.get(i,set()).intersection(dict2.get(i,set()))) for i in set(dict1.keys()).intersection(dict2.keys()))
+
+
+def no_mask(termination):
+    """build dict of termination info {with mask: without mask}
+
+    termination is a termination condition (with collapse)
+    """
+    from mystic.termination import state
+    return dict((k,''.join([k.split('{',1)[0],str(v)])) for (k,v) in state(termination).items() if v.pop('mask',None) or k.startswith('Collapse'))
+
+
+def _no_mask(info):
+    """return termination info without mask
+
+    info is info from a termination condition (with collapse)
+    """
+    if not info: return info
+    from numpy import inf
+    x,r = info.split('{',1)
+    r = eval('{'+r)
+    r.pop('mask')
+    return ''.join((x,str(r)))
+
+
+def unmasked_collapse(collapse, union=False):
+    """apply the embedded mask to the given collapse
+
+    collapse is a dict returned from a solver's Collapsed method
+    """ #XXX: is this useful?
+    def get_mask(k):
+        return (k, eval(k.split(' with ',1)[-1]).get('mask',None))
+    i,j,k = [get_mask(k)+(v,) for k,v in collapse.items()][0]
+    if i.startswith(('CollapseCost','CollapseGrad')):
+        j = interval_overlap(j,k,union)
+    elif i.startswith(('CollapsePosition','CollapseWeight')):
+        j = indicator_overlap(j,k,union)
+    elif i.startswith(('CollapseAt','CollapseAs')):
+        j = j.union(k) if union else j.intersection(k)
+    else:
+        j = {}
+    return {i:j} if j else {} #XXX: pop value if (-inf,inf)?
+
+
+def _masked_collapse(termination):
+    """reformat the termination mask as a collapse dict
+
+    termination is a termination condition
+    """
+    from mystic.termination import state
+    return dict((i,j['mask']) for (i,j) in state(termination).items() if i.startswith('Collapse') and j['mask']) #XXX: pop value if (-inf,inf)?
+
+
+def masked_collapse(termination, collapse=None, union=False):
+    """extract mask from termination, and combine it with the given collapse
+
+    termination is a termination condition, and collapse is a collapse dict
+    """
+    if collapse is None: collapse = {}
+    masked = _masked_collapse(termination)
+    masked = [(j,interval_overlap(collapse.get(j,{}),masked.get(j,{}), union)) for j in set(collapse.keys() + masked.keys())]
+    return dict((j,i) for (j,i) in masked if i) #XXX: pop value if (-inf,inf)?
 
 
 # backward compatibility

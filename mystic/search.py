@@ -179,7 +179,7 @@ class Searcher(object):
         size = self.memsize
         # write to evaluation cache
         memo = self._memoize(solver, tol=None, all=True, size=size).info()
-        # write to trajectory archivea (extrema only)
+        # write to trajectory archive (extrema only)
         info = self._memoize(solver, tol=self.memtol).info()
         if self.disp: print(info)
         size = info.size
