@@ -182,7 +182,7 @@ Optional requirements:
     - ``scipy``, **version >= 0.6.0**
     - ``mpmath``, **version >= 1.0.0**
     - ``pathos``, **version >= 0.2.4**
-    - ``pyina``, **version >= 0.2.1**
+    - ``pyina``, **version >= 0.2.2**
 
 
 More Information
@@ -392,7 +392,7 @@ scipy_version = '>=0.6.0'
 matplotlib_version = '>=0.91'
 mpmath_version = '>=0.19'
 pathos_version = '>=0.2.4'
-pyina_version = '>=0.2.1'
+pyina_version = '>=0.2.2'
 if has_setuptools:
     setup_code += """
       zip_safe=False,
