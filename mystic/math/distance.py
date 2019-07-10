@@ -247,7 +247,7 @@ Returns:
 """
   from numpy import asarray
   d = infeasibility(distance, cutoff) > 0.0
-  if len(asarray(d).shape) is 0:
+  if len(asarray(d).shape) == 0:
     return not d
   return ~d
 
@@ -266,7 +266,7 @@ Returns:
   distance = array(distance)
   # zero-out all distances less than tolerated
   if cutoff is not None:
-    if len(distance.shape) is 0:
+    if len(distance.shape) == 0:
       return 0.0 if distance <= cutoff else distance
     distance[distance <= cutoff] = 0.0
   return distance

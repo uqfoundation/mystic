@@ -361,7 +361,7 @@ input::
         for i!=0 when a simplex-type initial guess in required"""
         x0 = asfarray(x0)
         rank = len(x0.shape)
-        if rank is 0:
+        if rank == 0:
             x0 = asfarray([x0])
             rank = 1
         if not -1 < rank < 2:
@@ -692,7 +692,7 @@ Input::
             indx = list(self.popEnergy).index(self.bestEnergy)
             ngen = self.generations #XXX: no random if generations=0 ?
             for i in range(self.nPop):
-                self.population[i] = self._clipGuessWithinRangeBoundary(self.population[i], (not ngen) or (i is indx))
+                self.population[i] = self._clipGuessWithinRangeBoundary(self.population[i], (not ngen) or (i == indx))
             cost = wrap_bounds(cost, self._strictMin, self._strictMax)
         cost = wrap_penalty(cost, self._penalty)
         cost = wrap_nested(cost, self._constraints)

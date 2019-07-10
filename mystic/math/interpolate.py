@@ -149,7 +149,7 @@ def _isin(i, x):
     '''check if i is in x, where i is an iterable'''
     import numpy as np
     x = np.asarray(x) #XXX: doesn't verify that i is iterable
-    if x.ndim is 1: #FIXME: expects i not nessarily an iterable
+    if x.ndim == 1: #FIXME: expects i not nessarily an iterable
         return np.equal(i,x).any()
     return np.equal(i,x).all(axis=-1).any()
 
@@ -324,7 +324,7 @@ def _axes(x):
     '''
     import numpy as np
     x = np.asarray(x)
-    if x.ndim is 1:
+    if x.ndim == 1:
         return (x,)
     return tuple(x.T)
 
@@ -389,7 +389,7 @@ def interpolate(x, z, xgrid, method=None, extrap=False, arrays=True):
     x,z = extrapolate(x,z,method=extrap)
     x,z = _unique(x,z,sort=True)
     # avoid nan as first value #XXX: better choice than 'nearest'?
-    if method is None: method = 'nearest' if x.ndim is 1 else 'linear'
+    if method is None: method = 'nearest' if x.ndim == 1 else 'linear'
     methods = dict(rbf=0, linear=1, nearest=2, cubic=3)
     functions = {0:'multiquadric', 1:'linear', 2:'nearest', 3:'cubic'}
     # also: ['thin_plate','inverse','gaussian','quintic']
@@ -399,13 +399,13 @@ def interpolate(x, z, xgrid, method=None, extrap=False, arrays=True):
     try:
         import scipy.interpolate as si
     except ImportError:
-        if not kind is 0: # non-rbf
-            if x.ndim is 1: # is 1D, so use np.interp
+        if not kind == 0: # non-rbf
+            if x.ndim == 1: # is 1D, so use np.interp
                 import numpy as np
                 return _fx(np.interp(*xgrid, xp=x, fp=z))
             kind = 0 # otherwise, utilize mystic's rbf
         si = _rbf
-    if kind is 0: # 'rbf' -> Rbf
+    if kind == 0: # 'rbf' -> Rbf
         import numpy as np
         rbf = si.Rbf(*np.vstack((x.T, z)), function=function, smooth=0)
         return _fx(rbf(*xgrid))
@@ -449,7 +449,7 @@ def interpf(x, z, method=None, extrap=False, arrays=False):
     x,z = extrapolate(x,z,method=extrap)
     x,z = _unique(x,z,sort=True)
     # avoid nan as first value #XXX: better choice than 'nearest'?
-    if method is None: method = 'nearest' if x.ndim is 1 else 'linear'
+    if method is None: method = 'nearest' if x.ndim == 1 else 'linear'
     methods = dict(rbf=0, linear=1, nearest=2, cubic=3)
     functions = {0:'multiquadric', 1:'linear', 2:'nearest', 3:'cubic'}
     # also: ['thin_plate','inverse','gaussian','quintic']
@@ -459,22 +459,22 @@ def interpf(x, z, method=None, extrap=False, arrays=False):
     try:
         import scipy.interpolate as si
     except ImportError:
-        if not kind is 0: # non-rbf
-            if x.ndim is 1: # is 1D, so use np.interp
+        if not kind == 0: # non-rbf
+            if x.ndim == 1: # is 1D, so use np.interp
                 import numpy as np
                 return lambda xn: _fx(np.interp(xn, xp=x, fp=z))
             kind = 0 # otherwise, utilize mystic's rbf
         si = _rbf
-    if kind is 0: # 'rbf'
+    if kind == 0: # 'rbf'
         import numpy as np
         return _f(si.Rbf(*np.vstack((x.T, z)), function=function, smooth=0))
-    elif x.ndim is 1: 
+    elif x.ndim == 1: 
         return _f(si.interp1d(x, z, fill_value='extrapolate', bounds_error=False, kind=method))
-    elif kind is 1: # 'linear'
+    elif kind == 1: # 'linear'
         return _f(si.LinearNDInterpolator(x, z, rescale=False))
-    elif kind is 2: # 'nearest'
+    elif kind == 2: # 'nearest'
         return _f(si.NearestNDInterpolator(x, z, rescale=False))
-    #elif x.ndim is 1: # 'cubic'
+    #elif x.ndim == 1: # 'cubic'
     #    return lambda xn: _fx(si.spline(x, z, xn))
     return _f(si.CloughTocher2DInterpolator(x, z, rescale=False))
 
@@ -594,7 +594,7 @@ def gradient(x, fx, method=None, approx=True, extrap=False, **kwds):
     x = np.asarray(x)
     if approx is True:
         fx = _to_objective(fx) # conform to gradient interface
-        if x.ndim is 1:
+        if x.ndim == 1:
             return _fprime(x.reshape(x.shape+(1,)), fx).reshape(x.shape)[slc]
         return _fprime(x, fx)[slc]
     q = True #XXX: is q=True better for memory, worse for accuracy?
@@ -629,9 +629,9 @@ def _hessian(x, grid):
     import numpy as np
     x =  np.asarray(x)
     hess = np.empty((grid.ndim, grid.ndim) + grid.shape, dtype=grid.dtype)
-    if grid.ndim is 1: #XXX: is (1,1,N) really desirable when x is (N,1)?
+    if grid.ndim == 1: #XXX: is (1,1,N) really desirable when x is (N,1)?
         hess[0,0] = _gradient(x, _gradient(x, grid))
-        return hess.ravel() if x.ndim is 1 else hess
+        return hess.ravel() if x.ndim == 1 else hess
     for k, grad_k in enumerate(_gradient(x, grid)):
         # apply gradient to every component of the first derivative
         for l, grad_kl in enumerate(_gradient(x, grad_k)):
@@ -699,7 +699,7 @@ def hessian(x, fx, method=None, approx=True, extrap=False, **kwds):
     if approx is True:
         fx = _to_objective(fx) # conform to gradient interface
         #XXX: alternate: use grid w/_gradient, then use _fprime to find hessian
-        if x.ndim is 1:
+        if x.ndim == 1:
             gfx = _fprime(x.reshape(x.shape+(1,)), fx).reshape(x.shape)
             gfx = interpf(x, gfx, method=method[-1])
             return _fprime(x.reshape(x.shape+(1,)), gfx).reshape(x.shape)[slc]
@@ -754,7 +754,7 @@ def hessian_diagonal(x, fx, method=None, approx=True, extrap=False, **kwds):
       z = f(x), then directly use it in the extrapolation.
     '''
     hess = hessian(x, fx, method, extrap=extrap, **kwds)
-    if hess.ndim is not 3: # (i.e. is 1 or 2)
+    if hess.ndim != 3: # (i.e. is 1 or 2)
         return hess
     import numpy as np
     x = np.asarray(x)

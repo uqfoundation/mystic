@@ -299,8 +299,8 @@ Args:
 Returns:
     the weighted nth-order moment for a list of sample points
 """
-  if order is 0: return 1.0 #XXX: error if order < 0
-  if order is 1: return 0.0
+  if order == 0: return 1.0 #XXX: error if order < 0
+  if order == 1: return 0.0
   if weights is None:
     weights = [1.0/float(len(samples))] * len(samples)
  #if _mean is None:
@@ -322,7 +322,7 @@ Args:
 Returns:
     the weighted nth-order standard moment for a list of sample points
 """
-  if order is 2: return 1.0 #XXX: error if order < 0
+  if order == 2: return 1.0 #XXX: error if order < 0
   return moment(samples, weights, order, tol)/std(samples, weights)**order
 
 def variance(samples, weights=None): #,tol=0, _mean=None):
@@ -467,12 +467,12 @@ Notes:
     if *skew* is None, then allow *skew* when *order* is odd
 """
   v = m #NOTE: change of variables, so code is consistent with impose_variance
-  if order is 0:
+  if order == 0:
     if v == 1: return [float(i) for i in samples]
     else:
       from numpy import nan
       return [nan]*len(samples)
-  if order is 1:
+  if order == 1:
     if not v: return [float(i) for i in samples]
     else:
       from numpy import nan
@@ -484,7 +484,7 @@ Notes:
   if skew is None: skew = order%2 # if odd
   if skew: samples = [i**2 for i in samples]
   sv = moment(samples,weights,order,tol)
-  if not sv: #moment is 0     #NOTE: caution if ~0.0 or -v
+  if not sv: #moment == 0     #NOTE: caution if ~0.0 or -v
     if not order%2: # not odd
       return [m]*len(samples)
     if not v: # moment is to be 0

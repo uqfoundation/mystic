@@ -171,7 +171,7 @@ Additional Inputs:
             if verbose: print("try: {0} {1}".format(u,v))
             left = []
             same = tuple(k for k in u if k in v or left.append(flip(k)))
-            if len(same) is len(u) - 1 and all(k in v for k in left):
+            if len(same) == len(u) - 1 and all(k in v for k in left):
                 if same: result.append(same)
                 skip.add(i); skip.add(j)
                 found = True
@@ -569,7 +569,7 @@ def simplify(constraints, variables='x', target=None, **kwds):
        #results = condense(*results, **kwds) #XXX: remove depends on testvals
         # convert results to a tuple of multiline strings
         results = tuple(NL.join(i).replace('_sqrt(','sqrt(') for i in results)
-        if len(results) is 1: results = results[0]
+        if len(results) == 1: results = results[0]
         return results
 
     #### ...the rest is simplify()... ###
@@ -611,7 +611,7 @@ def simplify(constraints, variables='x', target=None, **kwds):
     eqns = tuple(NL.join(i) for i in _eqns)
     # "merge" the multiple equations to find simplest bounds
     eqns = tuple(merge(*e.split(NL), inclusive=False) for e in eqns)
-    if eqns.count(None) is len(eqns): return None
+    if eqns.count(None) == len(eqns): return None
     #   msg = 'No solution'
     #   raise ValueError(msg) #XXX: return None? throw Error? or ???
     eqns = tuple(NL.join(e) for e in eqns if e != None)

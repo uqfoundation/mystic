@@ -103,7 +103,7 @@ def multiply(x, n, type=list, recurse=False): # list, iter, numpy.array, ...
         -x # x*n might not throw an error
         return x*n
     except TypeError: pass
-    if n is 1: return type(x)
+    if n == 1: return type(x)
     if type.__name__ == 'array': return type(x)*n
     # multiply by n != 1 for iterables (iter and non-iter)
     if recurse:
@@ -117,7 +117,7 @@ def divide(x, n, type=list, recurse=False): # list, iter, numpy.array, ...
     try:   # for scalars and vectors (numpy.arrays)
         return x/n
     except TypeError: pass
-    if n is 1: return type(x)
+    if n == 1: return type(x)
     if type.__name__ == 'array': return type(x)/n
     # divide by n != 1 for iterables (iter and non-iter)
     if recurse:
@@ -132,7 +132,7 @@ def _multiply(x, n):
         -x # x*n might not throw an error
         return x*n
     except TypeError: pass
-    if n is 1: return itertype(x)(x)
+    if n == 1: return itertype(x)(x)
     # multiply by n != 1 for iterables (iter and non-iter)
     xn = (_multiply(i,n) for i in x)
     # return astype used to construct x, if possible
@@ -145,7 +145,7 @@ def _divide(x, n):
     try:   # for scalars and vectors (numpy.arrays)
         return x/n
     except TypeError: pass
-    if n is 1: return itertype(x)(x)
+    if n == 1: return itertype(x)(x)
     # divide by n != 1 for iterables (iter and non-iter)
     xn = (_divide(i,n) for i in x)
     # return astype used to construct x, if possible
@@ -159,7 +159,7 @@ def _imultiply(x, n):
         -x # x*n might not throw an error
         return iter(x*n)
     except TypeError: pass
-    if n is 1: return iter(x)
+    if n == 1: return iter(x)
     # multiply by n != 1 for iterables (iter and non-iter)
     return (_multiply(i,n) for i in x)
 
@@ -170,7 +170,7 @@ def _idivide(x, n):
     try:   # for scalars and vectors (numpy.arrays)
         return iter(x/n)
     except TypeError: pass
-    if n is 1: return iter(x)
+    if n == 1: return iter(x)
     # divide by n != 1 for iterables (iter and non-iter)
     return (_divide(i,n) for i in x)
 
@@ -181,7 +181,7 @@ def _amultiply(x, n):
     # convert to numpy array
     import numpy
     x = numpy.asarray(x)
-    if n is 1: return x
+    if n == 1: return x
     return x*n
 
 def _adivide(x, n):
@@ -191,7 +191,7 @@ def _adivide(x, n):
     # convert to numpy array
     import numpy
     x = numpy.asarray(x)
-    if n is 1: return x
+    if n == 1: return x
     return x/n
 
 def factor(n):

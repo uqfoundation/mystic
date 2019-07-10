@@ -174,8 +174,8 @@ example usage...
             m._y = numpy.array(self._y)[y].tolist()
         elif type(y) is tuple: #XXX: good idea? Needs more testing...
             nn,nx,ny = len(y),numpy.ndim(self._x),numpy.ndim(self._y)
-            m._x = numpy.array(self._x)[y if nn is nx else y[0]].tolist()
-            m._y = numpy.array(self._y)[y if nn is ny else y[0]].tolist()
+            m._x = numpy.array(self._x)[y if nn == nx else y[0]].tolist()
+            m._y = numpy.array(self._y)[y if nn == ny else y[0]].tolist()
         else:
             m._x = self._x[y]
             m._y = self._y[y]
@@ -206,10 +206,10 @@ example usage...
        #elif type(i) is tuple: #XXX: good idea? Needs more testing...
        #    nn,nx,ny = len(i),numpy.ndim(self._x),numpy.ndim(self._y)
        #    x = numpy.array(self._x)
-       #    x[i if nn is nx else i[0]] = y._x
+       #    x[i if nn == nx else i[0]] = y._x
        #    self._x[:] = x.tolist()
        #    x = numpy.array(self._y)
-       #    x[i if nn is ny else i[0]] = y._y
+       #    x[i if nn == ny else i[0]] = y._y
        #    self._y[:] = x.tolist()
         else:
             self._x[i] = y._x
