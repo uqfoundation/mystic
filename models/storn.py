@@ -52,7 +52,7 @@ of [2], where len(x) <= 4.
         return
 
     def function(self,coeffs):
-        """evaluates a 4-D Corana's parabola function for a list of coeffs
+        r"""evaluates a 4-D Corana's parabola function for a list of coeffs
 
 f(x) = \sum_(i=0)^(3) f_0(x)
 
@@ -115,7 +115,7 @@ of [2], where len(x) >= 0.
         return
 
     def function(self,coeffs):
-        """evaluates an N-dimensional Griewangk's function for a list of coeffs
+        r"""evaluates an N-dimensional Griewangk's function for a list of coeffs
 
 f(x) = f_0(x) - f_1(x) + 1
 
@@ -156,7 +156,7 @@ of [2], and requires len(x) == 2.
         return
 
     def function(self,coeffs):
-        """evaluates a Zimmermann function for a list of coeffs
+        r"""evaluates a Zimmermann function for a list of coeffs
 
 f(x) = max(f_0(x), p_i(x)), with i = 0,1,2,3
 

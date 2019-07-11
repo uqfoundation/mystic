@@ -21,7 +21,7 @@ from numpy import sin, pi
 
 class Wavy1(AbstractFunction): #XXX: not a standard test function...?
     __doc__ = \
-    """a wavy1 function generator
+    r"""a wavy1 function generator
 
 A wavy1 function has a vector return value, and oscillates
 similarly to x+\sin(x) in each direction. When a reduction
@@ -38,7 +38,7 @@ reducing function for use in most optimizers.
         return
 
     def function(self,coeffs):
-        """evaluates the wavy1 function for a list of coeffs
+        r"""evaluates the wavy1 function for a list of coeffs
 
 f(x) = \abs(x + 3*\sin(x + \pi) + \pi)
 
@@ -54,7 +54,7 @@ The minimum is f(x)=0.0 at x_i=-pi for all i"""
 
 
 class Wavy2(AbstractFunction): #XXX: not a standard test function...?
-    """a wavy2 function generator
+    r"""a wavy2 function generator
 
 A wavy2 function has a vector return value, and oscillates
 similarly to \sin(x) in each direction. When a reduction
@@ -71,7 +71,7 @@ reducing function for use in most optimizers.
         return
 
     def function(self,coeffs):
-        """evaluates the wavy2 function for a list of coeffs
+        r"""evaluates the wavy2 function for a list of coeffs
 
 f(x) = 4*\sin(x)+\sin(4*x)+\sin(8*x)+\sin(16*x)+\sin(32*x)+\sin(64*x)
 

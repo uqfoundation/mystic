@@ -238,7 +238,7 @@ def _enclosed(equation):
     "split equation at the close of all enclosing parentheses"
     res = []
     # split equation at the close of the first enclosing parenthesis
-    ir = iter(re.findall('[^\)]*\)', equation)) #FIXME: misses **2
+    ir = iter(re.findall(r'[^\)]*\)', equation)) #FIXME: misses **2
     n,r = 0,''
     for i in ir:
         r += i; n += i.count('(')-1
@@ -285,7 +285,7 @@ def _denominator(equation):
     """find valid denominators for placeholder-simplified equations"""
     # placeholder-simplified: parenthesis-enclosed text is replaced by markers
     import re
-    return [''.join(i).strip('/') for i in re.findall('(/\s*[\(\$\w\)]+)(\*\*[\(\$\w\)]+)?', equation)]
+    return [''.join(i).strip('/') for i in re.findall(r'(/\s*[\(\$\w\)]+)(\*\*[\(\$\w\)]+)?', equation)]
 
 
 def denominator(equation, variables=None):

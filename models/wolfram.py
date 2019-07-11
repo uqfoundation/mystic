@@ -40,7 +40,7 @@ of section 1.10 of [1], and requires len(x) == 2.
         return
 
     def function(self,coeffs):
-        """evaluates the fOsc3D function for a list of coeffs
+        r"""evaluates the fOsc3D function for a list of coeffs
 
 f(x) = f_0(x) + p(x)
 
@@ -83,7 +83,7 @@ of the 'NMinimize' section in [2], and requires len(x) == 2.
         return
 
     def function(self,coeffs):
-        """evaluates the NMinimize51 function for a list of coeffs
+        r"""evaluates the NMinimize51 function for a list of coeffs
 
 f(x) = f_0(x) + f_1(x)
 

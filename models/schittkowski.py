@@ -41,7 +41,7 @@ of [1], where len(x) >= 0.
         return
 
     def function(self,coeffs):
-        """evaluates Paviani's function for a list of coeffs
+        r"""evaluates Paviani's function for a list of coeffs
 
 f(x) = f_0(x) - f_1(x)
 

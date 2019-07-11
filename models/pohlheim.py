@@ -53,7 +53,7 @@ of [1], where len(x) >= 0.
         return
 
     def function(self,coeffs):
-        """evaluates Schwefel's function for a list of coeffs
+        r"""evaluates Schwefel's function for a list of coeffs
 
 f(x) = \sum_(i=0)^(N-1) -x_i * \sin(\sqrt(\abs(x_i)))
 
@@ -85,7 +85,7 @@ of [1], where len(x) >= 0.
         return
 
     def function(self,coeffs):
-        """evaluates the rotated hyper-ellipsoid function for a list of coeffs
+        r"""evaluates the rotated hyper-ellipsoid function for a list of coeffs
 
 f(x) = \sum_(i=0)^(N-1) (\sum_(j=0)^(i) x_j)^2
 
@@ -116,7 +116,7 @@ of [1], where len(x) >= 0.
         return
 
     def function(self,coeffs):
-        """evaluates Rastrigin's function for a list of coeffs
+        r"""evaluates Rastrigin's function for a list of coeffs
 
 f(x) = 10 * N + \sum_(i=0)^(N-1) (x_(i)^2 - 10 * \cos(2 * \pi * x_(i)))
 
@@ -146,7 +146,7 @@ of [1], where len(x) >= 0.
         return
 
     def function(self,coeffs):
-        """evaluates the sum of different powers function for a list of coeffs
+        r"""evaluates the sum of different powers function for a list of coeffs
 
 f(x) = \sum_(i=0)^(N-1) \abs(x_(i))^(i+2)
 
@@ -179,7 +179,7 @@ of [1], where len(x) >= 0.
         return
 
     def function(self,coeffs):
-        """evaluates Ackley's function for a list of coeffs
+        r"""evaluates Ackley's function for a list of coeffs
 
 f(x) = f_0(x) + f_1(x)
 
@@ -219,7 +219,7 @@ of [1], where len(x) >= 0.
         return
 
     def function(self,coeffs):
-        """evaluates Michalewicz's function for a list of coeffs
+        r"""evaluates Michalewicz's function for a list of coeffs
 
 f(x) = -\sum_(i=0)^(N-1) \sin(x_i) * (\sin((i+1) * (x_i)^(2) / \pi))^(20)
 
@@ -254,7 +254,7 @@ of [1], where len(x) >= 0.
         return
 
     def function(self,coeffs):
-        """evaluates Branins's function for a list of coeffs
+        r"""evaluates Branins's function for a list of coeffs
 
 f(x) = f_0(x) + f_1(x)
 
@@ -296,7 +296,7 @@ of [1], where len(x) >= 0.
         return
 
     def function(self,coeffs):
-        """evaluates Easom's function for a list of coeffs
+        r"""evaluates Easom's function for a list of coeffs
 
 f(x) = -\cos(x_0) * \cos(x_1) *  \exp(-((x_0-\pi)^2+(x_1-\pi)^2))
 
@@ -329,7 +329,7 @@ of [1], where len(x) >= 0.
         return
 
     def function(self,coeffs):
-        """evaluates Goldstein-Price's function for a list of coeffs
+        r"""evaluates Goldstein-Price's function for a list of coeffs
 
 f(x) = (1 + (x_0 + x_1 + 1)^2 * f_0(x)) * (30 + (2*x_0 - 3*x_1)^2 * f_1(x))
 
@@ -366,7 +366,7 @@ The minimum is f(x)=3.0 at x=(0,-1)"""
 #        return
 #
 #    def function(self,coeffs):
-#        """evaluates Dixon's six-hump camelback function for a list of coeffs
+#        r"""evaluates Dixon's six-hump camelback function for a list of coeffs
 #
 #f(x) = f_0(x) + f_1(x)
 #

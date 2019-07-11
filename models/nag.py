@@ -34,7 +34,7 @@ section 10 of [1], and requires len(x) == 2.
         return
 
     def function(self,coeffs):
-        """evaluates an 2-dimensional peaks function for a list of coeffs
+        r"""evaluates an 2-dimensional peaks function for a list of coeffs
 
 f(x) = f_0(x) - f_1(x) - f_2(x)
 

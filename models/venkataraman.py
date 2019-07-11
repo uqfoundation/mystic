@@ -34,7 +34,7 @@ The generated function f(x) is identical to equation (9.5) of example
         return
 
     def function(self,coeffs):
-        """evaluates Venkataraman's sinc function for a list of coeffs
+        r"""evaluates Venkataraman's sinc function for a list of coeffs
 
 f(x) = -20 * \sin(r(x))/r(x)
 

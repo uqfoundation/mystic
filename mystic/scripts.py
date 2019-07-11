@@ -748,7 +748,7 @@ Notes:
 
 
 def collapse_plotter(filename, **kwds):
-    """
+    r"""
 generate cost convergence rate plots from file written with ``write_support_file``
 
 Available from the command shell as::

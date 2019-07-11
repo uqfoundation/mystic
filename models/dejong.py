@@ -49,7 +49,7 @@ where len(x) >= 0.
         return
 
     def function(self,coeffs):
-        """evaluates an N-dimensional spherical function for a list of coeffs
+        r"""evaluates an N-dimensional spherical function for a list of coeffs
 
 f(x) = \sum_(i=0)^(N-1) x_(i)^2
 
@@ -84,7 +84,7 @@ of [2], where len(x) >= 0.
         return
 
     def function(self,coeffs):
-        """evaluates an N-dimensional Rosenbrock saddle for a list of coeffs
+        r"""evaluates an N-dimensional Rosenbrock saddle for a list of coeffs
 
 f(x) = \sum_(i=0)^(N-2) 100*(x_(i+1) - x_(i)^(2))^(2) + (1 - x_(i))^(2)
 
@@ -162,7 +162,7 @@ of [2], where len(x) >= 0.
         return
 
     def function(self,coeffs):
-        """evaluates an N-dimensional step function for a list of coeffs
+        r"""evaluates an N-dimensional step function for a list of coeffs
 
 f(x) = f_0(x) + p_i(x), with i=0,1
 
@@ -211,7 +211,7 @@ of [2], where len(x) >= 0.
         return
 
     def function(self,coeffs):
-        """evaluates an N-dimensional quartic function for a list of coeffs
+        r"""evaluates an N-dimensional quartic function for a list of coeffs
 
 f(x) = \sum_(i=0)^(N-1) (x_(i)^4 * (i+1) + k_i)
  
@@ -247,7 +247,7 @@ of [2], where len(x) == 2.
         return
 
     def function(self,coeffs):
-        """evaluates a 2-D Shekel's Foxholes function for a list of coeffs
+        r"""evaluates a 2-D Shekel's Foxholes function for a list of coeffs
 
 f(x) = 1 / (0.002 + f_0(x))
 

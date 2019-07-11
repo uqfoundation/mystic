@@ -35,7 +35,7 @@ def read_history(source):
         return read_history(source.name)
     if isinstance(source, basestring):
         import re
-        source = re.sub('\.py*.$', '', source)  # strip off .py* extension
+        source = re.sub(r'\.py*.$', '', source)  # strip off .py* extension
     elif isinstance(source, Monitor):
         monitor = True
     elif isinstance(source, AbstractSolver):
@@ -184,12 +184,12 @@ def read_raw_file(file_in):
   return steps, energy  # was 'from file_in import params as steps', etc
 
 #TODO: check impact of having gradient ([i,j,k]) and/not cost
-def_read_import = '''
+def_read_import = r'''
 def read_import(file, *targets):
   "import the targets; targets are name strings"
   import re, os, sys
   _dir, file = os.path.split(file)
-  file = re.sub('\.py*.$', '', file) #XXX: strip .py* extension
+  file = re.sub(r'\.py*.$', '', file) #XXX: strip .py* extension
   curdir = os.path.abspath(os.curdir)
   sys.path.append('.')
   results = []
