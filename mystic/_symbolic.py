@@ -373,12 +373,13 @@ Further Inputs:
     [_target.append(i) for i in targeted if i not in _target]
     targeted = _target
     targeted = tuple(targeted)
+    com = ',' if targeted else ''
 
     ########################################################################
     # solve each xi: symsol(single_equation, [x0,x1,...,xi,...,xn])
     # returns: {x0: f(xn,...), x1: f(xn,...), ..., xn: f(...,x0)}
     if permute or not target: #XXX: the goal is solving *only one* equation
-        code += '_xlist = {0}'.format(','.join(targeted)) + NL
+        code += '_xlist = ({0}{1})'.format(','.join(targeted), com) + NL
         code += '_elist = [symsol(['+eqlist+'], [i], **symsol_kwds) for i in _xlist]' + NL
         code += '_elist = [i if isinstance(i, dict) else {j:i[-1][-1]} for j,i in zip(_xlist,_elist) if i]' + NL
         code += 'soln = dict()' + NL
