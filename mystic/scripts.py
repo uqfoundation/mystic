@@ -292,7 +292,7 @@ pass the array to 'y' and the fixed value to 'x'
     return fig
 
 
-def _draw_contour(f, x, y=None, surface=False, fill=True, scale=True, shift=False, density=5):
+def _draw_contour(f, x, y=None, surface=False, fill=True, scale=True, shift=False, density=5, kernel=None):
     """draw a contour plot for a given 2D function 'f'
 
 x and y are arrays used to set up a 2D mesh grid
@@ -301,6 +301,8 @@ if surface is True, plot the contours as a 3D projection
 if scale is provided, scale the intensity as 'z = log(4*z*scale+1)+2'
 if shift is provided, shift the intensity as 'z = z+shift' (useful for -z's)
 use density to adjust the number of contour lines
+if kernel is provided, apply kernel to x and y, as [xi',yi'] = kernel([xi,yi])
+Using a kernel is very slow, as it calcuates inverse transform at each point
     """
     import numpy
     from matplotlib import cm
@@ -309,12 +311,33 @@ use density to adjust the number of contour lines
         y = x
     x, y = numpy.meshgrid(x, y)
 
+    if kernel:
+        xy = numpy.array([x,y])
+        xy_ = numpy.zeros_like(xy)
+        for i in range(xy.T.shape[0]):
+            xy_.T[i] = [kernel(j)[:2] for j in xy.T[i]]
+        del xy
+        # x,y = xy_
+        # x,y was meshgrid, but is 'skewed' due to kernel transform
+        # create a new grid from min,max points
+        x = numpy.linspace(xy_[0].min(), xy_[0].max(), xy_.shape[-1])
+        y = numpy.linspace(xy_[1].min(), xy_[1].max(), xy_.shape[-2])
+        x,y = numpy.meshgrid(x,y)
+
+        from mystic.solvers import fmin
+        def inverse(xi): #XXX: too simple for all cases?
+            cost = lambda kx: numpy.abs(numpy.array(kernel(kx)) - xi).sum()
+            return fmin(cost, xi, ftol=1e-2, disp=0, maxiter=20)
+        k = inverse
+    else:
+        k = lambda xi: xi
+
     z = 0*x
     s,t = x.shape
     for i in range(s):
         for j in range(t):
             xx,yy = x[i,j], y[i,j]
-            z[i,j] = f([xx,yy])
+            z[i,j] = f(k([xx,yy])) #FIXME: VERY SLOW: solve x = k(x'), then f(x)
     if shift:
         if shift is True: shift = max(-numpy.min(z), 0.0) + 0.5 # exact minimum
         z = z+shift
@@ -349,7 +372,7 @@ generate model trajectory from logfile (or solver restart file), if provided
 
 Available from the command shell as::
 
-    mystic_model_plotter.py model (logfile) [options]
+    mystic_model_plotter model (logfile) [options]
 
 or as a function call::
 
@@ -397,6 +420,10 @@ Notes:
     - The option *dots* takes a boolean, to show trajectory points in the plot.
     - The option *join* takes a boolean, to connect trajectory points.
     - The option *verb* takes a boolean, to print the model documentation.
+    - The option *kernel* can be given to transform the input of a model from
+      nD to 2D, where ``params' = model(params)`` with ``params'`` being 2D.
+      A kernel is given by the import path (e.g. ``mymodule.kernel``). Using
+      kernel can be slow, as it may calcuate inverse transform at each point.
 """
     #FIXME: should be able to:
     # - apply a constraint as a region of NaN -- apply when 'xx,yy=x[ij],y[ij]'
@@ -423,6 +450,7 @@ Notes:
     _model = None
     _reducer = None
     _solver = None
+    _kernel = None
 
     instance = None
     # handle the special case where list is provided by sys.argv
@@ -447,6 +475,7 @@ Notes:
             dots = kwds.get('dots', False)
             join = kwds.get('join', False)
             verb = kwds.get('verb', False)
+            kernel = kwds.get('kernel', None)
 
             # special case: bounds passed as list of slices
             if not isinstance(bounds, (basestring, type(None))):
@@ -460,6 +489,7 @@ Notes:
                 cmdargs = ''
 
             if isinstance(reduce, collections.Callable): _reducer, reduce = reduce, None
+            if isinstance(kernel, collections.Callable): _kernel, kernel = kernel, None
 
         # special case: model passed as model instance
        #model.__doc__.split('using::')[1].split()[0].strip()
@@ -488,6 +518,7 @@ Notes:
             cmdargs += '' if dots == False else '--dots '
             cmdargs += '' if join == False else '--join '
             cmdargs += '' if verb == False else '--verb '
+            cmdargs += '' if kernel is None else '--kernel={} '.format(kernel)
         else:
             cmdargs = ' ' + cmdargs
         cmdargs = model.split() + shlex.split(cmdargs)
@@ -537,6 +568,9 @@ Notes:
                       default=False,help="connect trajectory points in plot")
     parser.add_option("-v","--verb",action="store_true",dest="verbose",\
                       default=False,help="print model documentation string")
+    parser.add_option("-k","--kernel",action="store",dest="kernel",\
+                      metavar="STR",default="None",
+                      help="import path of kernel transform function")
 
 #   import sys
 #   if 'mystic_model_plotter.py' not in sys.argv:
@@ -601,6 +635,12 @@ Notes:
     except:
       reducer = None
 
+    try: # import path of kernel transform function
+      kernel = parsed_opts.kernel  # e.g. 'mymodule.kernel'
+      if "None" == kernel: kernel = None
+    except:
+      kernel = None
+
     style = '-' # default linestyle
     if parsed_opts.dots:
       mark = 'o' # marker=mark
@@ -647,10 +687,12 @@ Notes:
     # process inputs
     if _model: model = _model
     if _reducer: reducer = _reducer
+    if _kernel: kernel = _kernel
     if _solver: solver = _solver
     select, spec, mask = _parse_input(options)
     x,y = _parse_axes(spec, grid=True) # grid=False for 1D plots
     #FIXME: does grid=False still make sense here...?
+    if kernel: kernel = _kernel or _get_instance(kernel)
     if reducer: reducer = _reducer or _get_instance(reducer)
     if solver and (not source or not model): #XXX: not instance?
         raise RuntimeError('a model and results filename are required')
@@ -692,6 +734,7 @@ Notes:
 
     if model: # for plotting, implicitly constrain by reduction
         model = masked(mask)(model)
+        kernel_ = masked(mask)(kernel) if kernel else None
 
        ## plot the surface in 1D
        #if solver: v=sol[-1]
@@ -699,7 +742,7 @@ Notes:
        #else: v=None
        #fig0 = _draw_slice(model, x=x, y=v, scale=scale, shift=shift)
         # plot the surface in 2D or 3D
-        fig = _draw_contour(model, x, y, surface=surface, fill=fill, scale=scale, shift=shift)
+        fig = _draw_contour(model, x, y, surface=surface, fill=fill, scale=scale, shift=shift, kernel=kernel_)  #XXX: ensure x,y cover bounds of source?
     else:
        #fig0 = None
         fig = None
@@ -710,6 +753,9 @@ Notes:
         # cost is the solution trajectory
         params, cost = _get_history(source, ids)
         if len(cost) > 1: style = style[1:] # 'auto-color' #XXX: or grayscale?
+
+        if not kernel:
+            kernel = lambda p: [p[int(i)] for i in select[:2]]
 
         for p,c in zip(params, cost):
            ## project trajectory on a 1D slice of model surface #XXX: useful?
@@ -722,7 +768,12 @@ Notes:
 
             # plot the trajectory on the model surface (2D or 3D)
             # get two selected params #XXX: what if len(select)<2? or len(p)<2?
-            p = [p[int(i)] for i in select[:2]]
+            import numpy
+            p = numpy.array(p)
+            try: #XXX: needs better testing for all relevant cases
+                p = kernel(p)
+            except: # kernel doesn't work with arrays
+                p = numpy.array([kernel(i) for i in p.T[0]]).reshape(2,-1,1)
             px,py = p # _draw_trajectory requires two parameters
             # ignore everything after 'stop'
             locals = dict(px=px, py=py, c=c)
@@ -753,7 +804,7 @@ generate cost convergence rate plots from file written with ``write_support_file
 
 Available from the command shell as::
 
-    mystic_collapse_plotter.py filename [options]
+    mystic_collapse_plotter filename [options]
 
 or as a function call::
 
@@ -954,7 +1005,7 @@ plot parameter convergence from file written with ``LoggingMonitor``
 
 Available from the command shell as::
 
-    mystic_log_reader.py filename [options]
+    mystic_log_reader filename [options]
 
 or as a function call::
 

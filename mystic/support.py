@@ -299,7 +299,7 @@ generate parameter convergence plots from file written with ``write_support_file
 
 Available from the command shell as::
 
-    support_convergence.py filename [options]
+    support_convergence filename [options]
 
 or as a function call::
 
@@ -565,7 +565,7 @@ generate parameter support plots from file written with ``write_support_file``
 
 Available from the command shell as::
 
-    support_hypercube.py filename [options]
+    support_hypercube filename [options]
 
 or as a function call::
 
@@ -875,7 +875,7 @@ generate measure support plots from file written with ``write_support_file``
 
 Available from the command shell as::
 
-    support_hypercube_measures.py filename [options]
+    support_hypercube_measures filename [options]
 
 or as a function call::
 
@@ -1224,7 +1224,7 @@ and generate legacy data and cones from a dataset file, if provided
 
 Available from the command shell as::
 
-    support_hypercube_scenario.py filename (datafile) [options]
+    support_hypercube_scenario filename (datafile) [options]
 
 or as a function call::
 
