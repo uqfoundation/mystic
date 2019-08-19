@@ -24,6 +24,102 @@ else:
     PY3 = False 
 
 
+def _visual_filter(bounds, x, z=None, rtol=1e-8, ptol=1e-8):
+    """apply a visual filter specified by bounds to the data within the monitor
+
+    bounds: a string specifying bounds (e.g. "0:1:.1, 0:1:.1, .5, .5, .5")
+    x: an array of shape (npts, params) with one param per bound
+    z: an array of shape (npts,) of cost
+    rtol: float (or list[float]) of max distance beyond range defined in bounds
+    ptol: float (or list[float]) of max distance from fixed plane in bounds
+
+    returns (x,z) filtered by ptol and rtol within the defined bounds
+    """
+    # Possible input for (x,y):
+    #   paramlog.py: x,y => (1,xi,N,1),(1,N)
+    #   log.txt: x,y => (N,xi),(N,)
+    #   multilog.txt: x,y => (i,j),(i,); yi is list[float], yi => (Ni,); j => xi
+    #                 xij is list[tuple[float]], xij => (Ni,) of length-1 tuple
+    _x = getattr(x, '_x', x)  # params (x)
+    _y = x._y if z is None else z # cost (f(x))
+    select, spec, mask = _parse_input(bounds)
+    import numpy as np
+    if rtol is not None:
+        minmax = [s.strip().split(':')[:2] for s in spec.split(',')]
+        minmax = np.array([tuple(float(i) for i in mm) for mm in minmax]).T
+    else:
+        minmax = (-np.inf,np.inf)
+
+    # logical_and for distance within tolerance of selected cuts into hypercube
+    _x = np.array(_x)
+    xshape = _x.shape
+    _y = np.array(_y)
+    #yshape = _y.shape
+    iterate = _y.dtype is np.dtype('O')
+    reshape = True if (iterate or len(xshape) > 2) else False
+    if iterate: # 2D ndarray of lists of 1D tuple
+        _x = [np.array([np.array(i) for i in xi]) for xi in _x]
+        _y = [np.array(yi) for yi in _y]
+    elif reshape: # 4D ndarray
+        _x = list(_x)
+        _y = list(_y)
+    else: # 2D ndarray
+        _x = [_x]
+        _y = [_y]
+    # we can now iterate over _x,_y in all cases (iterate,reshape are same)
+    for i,(xi,yi) in enumerate(zip(_x,_y)):
+        ok = True
+        if reshape:
+            xi = xi.squeeze().T
+            yi = yi.squeeze().T
+        if ptol is not None:
+            ok = (abs(xi[:,mask.keys()] - mask.values()) < ptol).all(axis=1)
+        # logical_and for points within tolerance of selected bounds
+        if rtol is not None:
+            ok = (minmax[0] - rtol <= xi[:,select]).all(axis=1) & (xi[:,select] <= minmax[1] + rtol).all(axis=1) & ok
+
+        if ok is not True: # skip filtering when all are valid
+            xi = xi[ok]
+            #ALT: yi[ok] = np.nan
+            # apply same filter to cost
+            yi = yi[ok]
+            #ALT: yi[ok] = np.nan
+
+        # reshape, then save to ith element of _x,_y
+        # new shape is currently (-1,xi), (-1,) where N=-1
+        if reshape:
+            _x[i] = xi[None].T.tolist() # (xi,N,1)
+            _y[i] = yi.T.tolist()
+        else:
+            _x[i] = xi
+            _y[i] = yi
+
+    del xi,yi
+    if not reshape:
+        _x = _x[0]
+        _y = _y[0]
+    # return _x,_y (unless a monitor was provided)
+    if z is not None:
+        return _x, _y
+
+    # if a monitor was provided, return a monitor
+    m = x.__class__()
+    m._x = _x
+    m._y = _y
+    m._id = x._id[:] if ok is True else np.array(x._id)[ok].tolist()
+    #ALT: m._id = x._id
+    m._info = x._info[:]
+    # put rtol and ptol into a single sequence (for printing in info)
+    tol = np.zeros(len(mask)+len(select))
+    tol[mask.keys()] = ptol
+    tol[select] = rtol
+    m.info('FILTERED: tol=%s on "%s"' % (str(tol), bounds))
+    m.k = x.k #XXX: copy?
+    m._npts = x._npts #XXX: copy?
+    m.label = x.label #XXX: copy?
+    return m
+
+
 #XXX: better if reads single id only? (e.g. same interface as read_history)
 def _get_history(source, ids=None):
     """get params and cost from the given source
@@ -81,6 +177,41 @@ args and kwds will be passed to the constructor of the model class
 
 exec(def_get_instance)
 del def_get_instance
+
+
+def _parse_tol(tol, select=None):
+    """parse 'tol' string into 'selected' and 'masked'
+
+tol specifies the max distance from the plotted surface to plotted data
+select contains the dimension specifications on which to plot
+
+For example,
+    >>> selected, masked = _parse_tol(".05, .1, .1, .5", [0,3])
+    >>> selected
+    (.05, .5)
+    >>> masked
+    (.1, .1)
+    >>> selected, masked = _parse_tol(".1")
+    >>> selected
+    .1
+    >>> masked
+    .1
+    """
+    if tol is None:
+        return None,None
+    try:
+        basestring
+    except NameError:
+        basestring = str
+    if type(tol) is basestring:
+        selected = eval(tol)
+    else:
+        selected = tol
+    if hasattr(selected, '__len__'):
+        masked = []
+        selected = [j for i,j in enumerate(selected) if i in select or masked.append(j)]
+        return tuple(selected),tuple(masked)
+    return selected,selected
 
 
 def _parse_input(option):
@@ -424,6 +555,8 @@ Notes:
       nD to 2D, where ``params' = model(params)`` with ``params'`` being 2D.
       A kernel is given by the import path (e.g. ``mymodule.kernel``). Using
       kernel can be slow, as it may calcuate inverse transform at each point.
+    - The option *tol* takes a float of max distance of dots from surface.
+      For finer control, provide an array[float] the same length as ``params``.
 """
     #FIXME: should be able to:
     # - apply a constraint as a region of NaN -- apply when 'xx,yy=x[ij],y[ij]'
@@ -476,6 +609,7 @@ Notes:
             join = kwds.get('join', False)
             verb = kwds.get('verb', False)
             kernel = kwds.get('kernel', None)
+            tol = kwds.get('tol', None)
 
             # special case: bounds passed as list of slices
             if not isinstance(bounds, (basestring, type(None))):
@@ -487,6 +621,15 @@ Notes:
                         cmdargs += "{}, ".format(b)
                 bounds = cmdargs[:-2]
                 cmdargs = ''
+
+            # special case: tol passed as tuple of floats
+            if not isinstance(tol, (basestring, type(None))):
+                if hasattr(tol, '__len__'):
+                    cmdargs = ''
+                    for t in tol:
+                        cmdargs += "{}, ".format(t)
+                    tol = cmdargs[:-2]
+                    cmdargs = ''
 
             if isinstance(reduce, collections.Callable): _reducer, reduce = reduce, None
             if isinstance(kernel, collections.Callable): _kernel, kernel = kernel, None
@@ -519,6 +662,7 @@ Notes:
             cmdargs += '' if join == False else '--join '
             cmdargs += '' if verb == False else '--verb '
             cmdargs += '' if kernel is None else '--kernel={} '.format(kernel)
+            cmdargs += '' if tol is None else '--tol="{}" '.format(tol)
         else:
             cmdargs = ' ' + cmdargs
         cmdargs = model.split() + shlex.split(cmdargs)
@@ -571,6 +715,9 @@ Notes:
     parser.add_option("-k","--kernel",action="store",dest="kernel",\
                       metavar="STR",default="None",
                       help="import path of kernel transform function")
+    parser.add_option("-t","--tol",action="store",dest="tol",\
+                      metavar="STR",default="None",
+                      help="max distance from surface to draw dots")
 
 #   import sys
 #   if 'mystic_model_plotter.py' not in sys.argv:
@@ -641,12 +788,20 @@ Notes:
     except:
       kernel = None
 
+    try: # max distance from surface to draw dots
+      tol = parsed_opts.tol
+      if "None" == tol: tol = None
+    except:
+      tol = None
+
+    vistol = False # ignore visual filter
     style = '-' # default linestyle
     if parsed_opts.dots:
       mark = 'o' # marker=mark
       # when using 'dots', also can turn off 'line'
       if not parsed_opts.line:
         style = '' # linestyle='None'
+        vistol = True # apply visual filter
     else:
       mark = ''
     color = 'w' if fill else 'k'
@@ -754,6 +909,10 @@ Notes:
         params, cost = _get_history(source, ids)
         if len(cost) > 1: style = style[1:] # 'auto-color' #XXX: or grayscale?
 
+        if vistol:
+            tols = _parse_tol(tol, select)
+            params, cost = _visual_filter(options, params, cost, *tols)
+            del tols
         if not kernel:
             kernel = lambda p: [p[int(i)] for i in select[:2]]
 

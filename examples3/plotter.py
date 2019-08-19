@@ -31,6 +31,7 @@ class Plotter(object):
           vals: list of values (one per axis) for unplotted axes [default: ()]
           maxpts: int, maximum number of (x,z) points to use [default: None]
           kernel: function transforming x to x', where x' = kernel(x)
+          vtol: float, maximum distance outside bounds hypercube to plot data
 
         NOTE:
           if scipy is not installed, will use np.interp for 1D (non-rbf),
@@ -48,7 +49,7 @@ class Plotter(object):
         self.function = function
        #self.dim = kwds.pop('dim', None) #XXX: or len(x)?
         # interpolator configuration
-        self.args = dict(step=200, scale=False, shift=False, \
+        self.args = dict(step=200, scale=False, shift=False, vtol=None, \
             kernel=None, density=9, axes=(), vals=(), maxpts=None)
         self.args.update(kwds)
         self.maxpts = self.args.pop('maxpts')
@@ -107,7 +108,8 @@ class Plotter(object):
           vals: list of values (one per axis) for unplotted axes [default: ()]
           maxpts: int, maximum number of (x,z) points to use [default: None]
           kernel: function transforming x to x', where x' = kernel(x)
-        """
+          vtol: float, maximum distance outside bounds hypercube to plot data
+        """ #XXX: vtol can also be a tuple of vtols for each parameter
         step = kwds['step'] if 'step' in kwds else self.args['step']
         scale = kwds['scale'] if 'scale' in kwds else self.args['scale']
         shift = kwds['shift'] if 'shift' in kwds else self.args['shift']
@@ -115,6 +117,7 @@ class Plotter(object):
         vals = kwds['vals'] if 'vals' in kwds else self.args['vals']
         maxpts = kwds['maxpts'] if 'maxpts' in kwds else self.maxpts
         kernel = kwds['kernel'] if 'kernel' in kwds else self.args['kernel']
+        vtol = kwds['vtol'] if 'vtol' in kwds else self.args['vtol']
         density = kwds['density'] if 'density' in kwds else self.args['density']
 
         # plot response surface
@@ -122,6 +125,8 @@ class Plotter(object):
         import matplotlib.pyplot as plt
         from matplotlib import cm
         import numpy as np
+        from mystic.scripts import (_visual_filter as filtered,
+                                    _parse_tol as parsetol)
 
         figure = plt.figure()
         kwds = {'projection':'3d'}
@@ -146,14 +151,28 @@ class Plotter(object):
         # build grid of points, one for each param, apply fixed values
         grid = np.ones((len(x.T),step,step))
         grid[ix] = fix[:,None,None]
-        del ix, fix
 
         # build sub-surface of function(x) to display, apply to the grid
         xy = x.T[axes]
         M = complex('{}j'.format(step))
         grid[axes] = np.mgrid[xy[0].min():xy[0].max():M,
                               xy[1].min():xy[1].max():M]
-        del xy
+
+        # filter the plotted data points by the given vtol
+        ixy = iter(xy)
+        ifx = iter(fix)
+        bounds = ""
+        for i in range(max(axes + ix)+1):
+            if i in axes:
+                it = getattr(ixy, '__next__', ixy.next)()
+                bounds += "%s:%s:%s" % (it.min(), it.max(), M)
+            else:
+                it = getattr(ifx, '__next__', ifx.next)()
+                bounds += "%s" % it
+            bounds += ", "
+        bounds = bounds[:-2]
+        del xy, fix, ix, ixy, ifx
+        x, z = filtered(bounds, x, z, *parsetol(vtol, axes))
 
         # evaluate the function on the sub-surface
         z_ = np.asarray(self.function(*grid))
@@ -214,6 +233,7 @@ def plot(monitor, function=None, **kwds):
       vals: list of values (one per axis) for unplotted axes [default: ()]
       maxpts: int, maximum number of (x,z) points to use [default: None]
       kernel: function transforming x to x', where x' = kernel(x)
+      vtol: float, maximum distance outside bounds hypercube to plot data
 
     NOTE:
       if scipy is not installed, will use np.interp for 1D (non-rbf),
