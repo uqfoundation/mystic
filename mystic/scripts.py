@@ -130,13 +130,14 @@ if provided, ids are the list of 'run ids' to select
     try: # if it's a logfile, it might be multi-id
         from mystic.munge import read_trajectories
         step, param, cost = read_trajectories(source)
+        if not step: step = [(i,) for i in range(len(cost))]
     except: # it's not a logfile, so read and return
         from mystic.munge import read_history
         param, cost = read_history(source)
         return [param],[cost]
 
     # split (i,id) into iteration and id
-    multinode = len(step[0]) - 1  #XXX: what if step = []?
+    multinode = len(step[0]) - 1  if step else 0 #XXX: no step info, so give up
     if multinode: id = [i[1] for i in step]
     else: id = [0 for i in step]
 
@@ -1346,6 +1347,7 @@ Notes:
         instance = instance if instance else filename
         from mystic.munge import read_trajectories
         step, param, cost = read_trajectories(instance)
+        if not step: step = [(i,) for i in range(len(cost))]
     except SyntaxError:
         from mystic.munge import read_raw_file
         read_raw_file(filename)
@@ -1358,7 +1360,7 @@ Notes:
     param = param[:stop]
 
     # split (i,id) into iteration and id
-    multinode = len(step[0]) - 1  #XXX: what if step = []?
+    multinode = len(step[0]) - 1  if step else 0 #XXX: no step info, so give up
     iter = [i[0] for i in step]
     if multinode:
       id = [i[1] for i in step]
