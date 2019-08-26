@@ -459,15 +459,17 @@ NOTE:
         maxiter = settings['maxiter'] * n; del settings['maxiter']
     else: maxiter = 100 * n
     def _constraint(x): #XXX: inefficient, rewrite without append
-        x = [x]
+        x = [x.tolist() if hasattr(x, 'tolist') else x]
         # apply all constaints once
         for c in constraints:
-            x.append(c(x[-1]))
+            ci = c(x[-1])
+            x.append(ci.tolist() if hasattr(ci, 'tolist') else ci)
         if all(xi == x[-1] for xi in x[1:]): return x[-1]
         # cycle constraints until there's no change
         _constraints = it.cycle(constraints) 
         for j in range(n,maxiter):
-            x.append(next(_constraints)(x[-1]))
+            ci = next(_constraints)(x[-1])
+            x.append(ci.tolist() if hasattr(ci, 'tolist') else ci)
             if all(xi == x[-1] for xi in x[-n:]): return x[-1]
             # may be trapped in a cycle... randomize
             if x[-1] == x[-(n+1)]:
@@ -503,15 +505,17 @@ NOTE:
         maxiter = settings['maxiter'] * n; del settings['maxiter']
     else: maxiter = 100 * n
     def _constraint(x): #XXX: inefficient, rewrite without append
-        x = [x]
+        x = [x.tolist() if hasattr(x, 'tolist') else x]
         # check if initial input is valid
         for c in constraints:
-            x.append(c(x[0]))
+            ci = c(x[0])
+            x.append(ci.tolist() if hasattr(ci, 'tolist') else ci)
             if x[-1] == x[0]: return x[-1]
         # cycle constraints until there's no change
         _constraints = it.cycle(constraints) 
         for j in range(n,maxiter):
-            x.append(next(_constraints)(x[-n]))
+            ci = next(_constraints)(x[-n])
+            x.append(ci.tolist() if hasattr(ci, 'tolist') else ci)
             if x[-1] == x[-(n+1)]: return x[-1]
             else: # may be trapped in a rut... randomize
                 x[-1] = x[-rnd.randint(1,n)]
