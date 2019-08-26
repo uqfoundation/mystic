@@ -17,7 +17,7 @@ from mystic.monitors import Monitor
 from mystic.tools import getch, random_seed
 
 from mystic.forward_model import CostFactory
-from mystic.filters import PickComponent
+from mystic.filters import component
 
 def de_solve(CF):
     solver = DifferentialEvolutionSolver(ND, NP)
@@ -42,9 +42,9 @@ def de_solve(CF):
 if __name__ == '__main__':
 
     F = CostFactory()
-    F.addModel(ForwardMogiFactory, 4, 'mogi1', outputFilter = PickComponent(2, -1))
-    F.addModel(ForwardMogiFactory, 4, 'mogi2', outputFilter = PickComponent(2, -1))
-    myCostFunction = F.getCostFunction(evalpts = stations, observations = data_z)
+    F.addModel(ForwardMogiFactory, 4, 'mogi1', outputFilter=component(2, -1))
+    F.addModel(ForwardMogiFactory, 4, 'mogi2', outputFilter=component(2, -1))
+    myCostFunction = F.getCostFunction(evalpts=stations, observations=data_z)
     print(F)
 
     def C2(x):

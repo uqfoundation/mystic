@@ -15,7 +15,7 @@ CostFactory objects
 from test_mogi import *
 
 from mystic.forward_model import CostFactory
-from mystic.filters import PickComponent
+from mystic.filters import component
 
 def de_solve(CF):
     solver = DifferentialEvolutionSolver(ND, NP)
@@ -36,8 +36,8 @@ def de_solve(CF):
 
 if __name__ == '__main__':
     F = CostFactory()
-    F.addModel(ForwardMogiFactory, 4, 'mogi1', outputFilter = PickComponent(2))
-    myCostFunction = F.getCostFunction(evalpts = stations, observations = data_z)
+    F.addModel(ForwardMogiFactory, 4, 'mogi1', outputFilter=component(2))
+    myCostFunction = F.getCostFunction(evalpts=stations, observations=data_z)
     print(F)
     rp =  F.getRandomParams()
     print("new Cost Function : %s " % myCostFunction(rp))

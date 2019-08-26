@@ -60,8 +60,8 @@ function. For an example, see `mystic.examples.forward_model`.
 
 """
 
-from mystic.filters import Identity, PickComponent
-from mystic.filters import NullChecker
+from mystic.filters import identity, component
+from mystic.filters import null_check
 
 from inspect import getargspec
 from numpy import pi, sqrt, array, mgrid, random, real, conjugate, arange, sum
@@ -88,7 +88,7 @@ Takes no initial inputs.
         self._inputCheckers = []
         pass
 
-    def addModel(self, model, inputs, name=None, outputFilter=Identity, inputChecker=NullChecker):
+    def addModel(self, model, inputs, name=None, outputFilter=identity, inputChecker=null_check):
         """
 Adds a forward model factory to the cost factory.
 
@@ -120,7 +120,7 @@ Example:
 
     #XXX: addModelNew is a work in progress...
     '''
-    def addModelNew(self, model, name, outputFilter=Identity, inputChecker=NullChecker):
+    def addModelNew(self, model, name, outputFilter=identity, inputChecker=null_check):
         """
 Adds a forward model factory to the cost factory.
 The number of inputs is determined with inspect.getargspec.
