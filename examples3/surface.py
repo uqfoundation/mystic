@@ -56,6 +56,7 @@ class Surface(object): #FIXME: should be subclass of Interpolator (?)
           noise: float, amplitude of gaussian noise to remove duplicate x
           method: string for kind of interpolator
           dim: number of parameters in the input for the objective function
+          filter: a data filter produced with mystic.filters.generate_filter
 
         NOTE:
           if scipy is not installed, will use np.interp for 1D (non-rbf),
@@ -68,6 +69,7 @@ class Surface(object): #FIXME: should be subclass of Interpolator (?)
         self.sampler = Searcher() if sampler is None else sampler
         self.maxpts = kwds.pop('maxpts', None)  # N = 1000
         self.noise = kwds.pop('noise', 1e-8)
+        self.filter = kwds.pop('filter', None)
         # monitor, archive, and trajectories
         self._minmon = self._maxmon = None  #XXX: better default?
         self._minarch = self._maxarch = None  #XXX: better default?
@@ -140,7 +142,7 @@ class Surface(object): #FIXME: should be subclass of Interpolator (?)
         return
     """
 
-    def Sample(self, bounds, stop, clear=False, verbose=False, all=False):
+    def Sample(self, bounds, stop, clear=False, verbose=False, all=False, **kwds):
         """sample data (x,z) using objective function z=f(x)
 
         Input:
@@ -149,6 +151,7 @@ class Surface(object): #FIXME: should be subclass of Interpolator (?)
           clear: if True, clear the archive of stored points
           verbose: if True, print a summary of search/sampling results
           all: if True, use solver EvalMonitor, else use StepMonitor
+          filter: a data filter produced with mystic.filters.generate_filter
 
         Output:
           x: an array of shape (npts, dim) or (npts,)
@@ -202,6 +205,10 @@ class Surface(object): #FIXME: should be subclass of Interpolator (?)
         # split into params and cost
         self.x = xyz.T[:,:-1]
         self.z = xyz.T[:,-1]
+        # apply any filter, and return
+        filter = kwds.pop('filter', self.filter)
+        if filter: #XXX: better here, or in Interpolate???
+            self.x, self.z = filter(self.x, self.z)
         return self.x, self.z
 
 

@@ -125,10 +125,16 @@ if __name__ == '__main__':
     }
     #surface.doit(bounds, stop, step=step)
    #'multiquadric','inverse','gaussian','linear','cubic','quintic','thin_plate'
+
+    # impose data filter (so X >= 0 and Y >= 0) 
+    from mystic.filters import generate_mask, generate_filter
+    from mystic.constraints import impose_bounds
+    _bounds = impose_bounds((0,None))(lambda x:x)
+    filter = generate_filter(generate_mask(_bounds, _bounds))
     #############
 
     # get trajectories
-    surface.Sample(bounds, stop, all=all)
+    surface.Sample(bounds, stop, all=all, filter=filter)
     print("TOOK: %s" % (time.time() - start))
 #   exit()
     # get interpolated function

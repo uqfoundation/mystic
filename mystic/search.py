@@ -134,6 +134,7 @@ class Searcher(object):
                 memo(*bestSol, out=l*bestRes)  #FIXME: python2.5
         return memo
 
+    #FIXME: accept constraint and penalty (or better, configured solver?)
     def _configure(self, model, bounds, stop=None, monitor=None, evalmon=None):
         """generate ensemble solver from objective, bounds, termination, monitor"""
         from mystic.monitors import Monitor
@@ -197,6 +198,7 @@ class Searcher(object):
         self.disp = bool(disp)
         return
 
+    #FIXME: accept constraint and penalty (or better, configured solver?)
     def Search(self, model, bounds, stop=None, monitor=None, evalmon=None, traj=None, disp=None):
         """use an ensemble of optimizers to search for all minima
 
