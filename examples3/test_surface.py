@@ -129,12 +129,13 @@ if __name__ == '__main__':
     # impose data filter (so X >= 0 and Y >= 0) 
     from mystic.filters import generate_mask, generate_filter
     from mystic.constraints import impose_bounds
-    _bounds = impose_bounds((0,None))(lambda x:x)
+    _bounds = impose_bounds((0.0, None))(lambda x:x)
     filter = generate_filter(generate_mask(_bounds, _bounds))
+    # from numpy import round as _round
     #############
 
     # get trajectories
-    surface.Sample(bounds, stop, all=all, filter=filter)
+    surface.Sample(bounds, stop, all=all, filter=filter)#, constraints=_round)
     print("TOOK: %s" % (time.time() - start))
 #   exit()
     # get interpolated function

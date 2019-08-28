@@ -134,9 +134,14 @@ class Searcher(object):
                 memo(*bestSol, out=l*bestRes)  #FIXME: python2.5
         return memo
 
-    #FIXME: accept constraint and penalty (or better, configured solver?)
-    def _configure(self, model, bounds, stop=None, monitor=None, evalmon=None):
-        """generate ensemble solver from objective, bounds, termination, monitor"""
+    #FIXME: instead, take a configured solver?
+    def _configure(self, model, bounds, stop=None, **kwds):
+        """configure ensemble solver from objective and other solver options"""
+        monitor = kwds.get('monitor', None)
+        evalmon = kwds.get('evalmon', None)
+        penalty = kwds.get('penalty', None)
+        constraints = kwds.get('constraints', None)
+
         from mystic.monitors import Monitor
         # configure monitor
         monitor = Monitor() if monitor is None else monitor
@@ -150,6 +155,8 @@ class Searcher(object):
         self.solver.SetNestedSolver(self.seeker)
         self.solver.SetMapper(self.map)
         self.solver.SetObjective(model)
+        self.solver.SetConstraints(constraints)
+        self.solver.SetPenalty(penalty)
         if stop: self.solver.SetTermination(stop)
         if evalmon is not None: self.solver.SetEvaluationMonitor(evalmon)
         if monitor is not None: self.solver.SetGenerationMonitor(monitor) #NOTE: may be xy,-z
@@ -198,22 +205,24 @@ class Searcher(object):
         self.disp = bool(disp)
         return
 
-    #FIXME: accept constraint and penalty (or better, configured solver?)
-    def Search(self, model, bounds, stop=None, monitor=None, evalmon=None, traj=None, disp=None):
+    #FIXME: instead, take a configured solver?
+    def Search(self, model, bounds, stop=None, traj=None, disp=None, **kwds):
         """use an ensemble of optimizers to search for all minima
 
         Inputs:
           model - function z=f(x) to be used as the objective of the Searcher
           bounds - tuple of floats (min,max), bounds on the search region
           stop - termination condition
+          traj - klepto.archive to store sampled points
+          disp - if True, be verbose
           monitor - mystic.monitor instance to store parameter trajectories
           evalmon - mystic.monitor instance to store parameter evaluations
-          traj - klepto.archive to store sampled points
-          disp - if true, be verbose
+          penalty - mystic.penalty instance of the form y' = k*p(x)
+          constraints - mystic.constraints instance of the form x' = c(x)
         """
         self.traj = self.traj if traj is None else traj
         self.disp = self.disp if disp is None else disp
-        self._configure(model, bounds, stop, monitor, evalmon)
+        self._configure(model, bounds, stop, **kwds)
         sid = 0  # keep track of which solver is which across multiple runs
         run = -1
         while run < self.repeat: # stop after repeat 'runs'

@@ -57,6 +57,8 @@ class Surface(object): #FIXME: should be subclass of Interpolator (?)
           method: string for kind of interpolator
           dim: number of parameters in the input for the objective function
           filter: a data filter produced with mystic.filters.generate_filter
+          penalty: mystic.penalty instance of the form y' = k*p(x)
+          constraints: mystic.constraints instance of the form x' = c(x)
 
         NOTE:
           if scipy is not installed, will use np.interp for 1D (non-rbf),
@@ -70,6 +72,8 @@ class Surface(object): #FIXME: should be subclass of Interpolator (?)
         self.maxpts = kwds.pop('maxpts', None)  # N = 1000
         self.noise = kwds.pop('noise', 1e-8)
         self.filter = kwds.pop('filter', None)
+        self.penalty = kwds.pop('penalty', None)
+        self.constraints = kwds.pop('constraints', None)
         # monitor, archive, and trajectories
         self._minmon = self._maxmon = None  #XXX: better default?
         self._minarch = self._maxarch = None  #XXX: better default?
@@ -152,6 +156,8 @@ class Surface(object): #FIXME: should be subclass of Interpolator (?)
           verbose: if True, print a summary of search/sampling results
           all: if True, use solver EvalMonitor, else use StepMonitor
           filter: a data filter produced with mystic.filters.generate_filter
+          penalty: mystic.penalty instance of the form y' = k*p(x)
+          constraints: mystic.constraints instance of the form x' = c(x)
 
         Output:
           x: an array of shape (npts, dim) or (npts,)
@@ -159,6 +165,9 @@ class Surface(object): #FIXME: should be subclass of Interpolator (?)
         """
         #XXX: does the strategy of finding min/max always apply?
         import numpy as np
+        penalty = kwds.get('penalty', self.penalty)
+        constraints = kwds.get('constraints', self.constraints)
+        kwargs = dict(stop=stop, penalty=penalty, constraints=constraints)
 
         # get model (for minima)
         model = self.objective
@@ -172,10 +181,11 @@ class Surface(object): #FIXME: should be subclass of Interpolator (?)
         if all: #FIXME: better define role/use of Reset/Archive/clear...
             self.sampler.Reset(None, inv=inverse) # reset the sampler
             self.sampler.archive = archive
-            self.sampler.Search(model, bounds, stop=stop, evalmon=monitor)
+            self.sampler.Search(model, bounds, evalmon=monitor, **kwargs)
+
         else:
             self.sampler.Reset(archive, inv=inverse) # reset the sampler
-            self.sampler.Search(model, bounds, stop=stop, monitor=monitor)
+            self.sampler.Search(model, bounds, monitor=monitor, **kwargs)
         if verbose: self.sampler._summarize()
         # read trajectories from log (or monitor)
         xyz = self.sampler.Samples(all=all)
@@ -184,6 +194,8 @@ class Surface(object): #FIXME: should be subclass of Interpolator (?)
 
         # invert model (for maxima)
         imodel = lambda *args, **kwds: -model(*args, **kwds)
+        if penalty is not None: # also invert penalty
+            kwargs['penalty'] = lambda *args, **kwds: -penalty(*args, **kwds)
 
         ### get maxs ###
         monitor = self._maxmon
@@ -193,10 +205,10 @@ class Surface(object): #FIXME: should be subclass of Interpolator (?)
         if all: #FIXME: better define role/use of Reset/Archive/clear...
             self.sampler.Reset(None, inv=inverse) # reset the sampler
             self.sampler.archive = archive
-            self.sampler.Search(imodel, bounds, stop=stop, evalmon=monitor)
+            self.sampler.Search(imodel, bounds, evalmon=monitor, **kwargs)
         else:
             self.sampler.Reset(archive, inv=inverse) # reset the sampler
-            self.sampler.Search(imodel, bounds, stop=stop, monitor=monitor)
+            self.sampler.Search(imodel, bounds, monitor=monitor, **kwargs)
         if verbose: self.sampler._summarize()
         xyz = np.hstack((xyz, self.sampler.Samples(all=all)))
         if clear: self.sampler.Reset()  # reset the sampler
