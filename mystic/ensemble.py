@@ -58,6 +58,9 @@ All important class members are inherited from AbstractEnsembleSolver.
     def _InitialPoints(self):
         """Generate a grid of starting points for the ensemble of optimizers"""
         nbins = self._nbins
+        if isinstance(nbins, int):
+            from mystic.math.grid import randomly_bin
+            nbins = randomly_bin(nbins, self.nDim, ones=True, exact=True)
         if len(self._strictMax): upper = list(self._strictMax)
         else:
             upper = list(self._defaultMax)

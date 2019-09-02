@@ -124,20 +124,22 @@ Important class members::
         # default settings for nested optimization
         #XXX: move nbins and npts to _InitialPoints?
         self._dist = None #kwds['dist'] if 'dist' in kwds else None
-        nbins = kwds['nbins'] if 'nbins' in kwds else [1]*dim
-        if isinstance(nbins, int):
-            from mystic.math.grid import randomly_bin
-            nbins = randomly_bin(nbins, dim, ones=True, exact=True)
-        self._nbins           = nbins
         npts = kwds['npts'] if 'npts' in kwds else 1
         self._npts            = npts
+        nbins = kwds['nbins'] if 'nbins' in kwds else None
+        self._nbins           = nbins
+        if isinstance(nbins, int):
+            self._npts = nbins
+        elif nbins is None:
+            pass # nbins = [1]*dim
+        else:
+            self._npts = reduce(lambda i,j:i*j, nbins) # nbins
         rtol = kwds['rtol'] if 'rtol' in kwds else None
         self._rtol            = rtol
         from mystic.solvers import NelderMeadSimplexSolver
         self._solver          = NelderMeadSimplexSolver
         self._bestSolver      = None # 'best' solver (after Solve)
-        NP = reduce(lambda x,y:x*y, nbins) if 'nbins' in kwds else npts
-        self._allSolvers      = [None for j in range(NP)]
+        self._allSolvers      = [None for j in range(self._npts)]
         return
 
     def __all_evals(self):
@@ -555,11 +557,6 @@ Returns:
         # save final state
         self._AbstractSolver__save_state(force=True)
         return
-
-    #Workflow options:
-    #A) Solvers run to completion. Changes to ensemble change NEW (all)solvers.
-    #B) Ensemble takes Step, returns Solver. Apply ensemble changes. Relaunch.
-    #C) Solvers read/write to eventually consistent database.
 
     # extensions to the solver interface
     _total_evals = property(__total_evals )
