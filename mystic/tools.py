@@ -26,7 +26,7 @@ Main functions exported are::
     - random_state: build a localized random generator
     - wrap_nested: nest a function call within a function object
     - wrap_penalty: append a function call to a function object
-    - wrap_function: bind an EvaluationMonitor and an evaluation counter
+    - wrap_function: bind an eval_monitor and an evaluation counter
         to a function object
     - wrap_bounds: impose bounds on a function object
     - wrap_reducer: convert a reducer function to an arraylike interface
@@ -365,15 +365,15 @@ thus, the penalty will be evaluated at every cost function evaluation.
     return function_wrapper
 
 # slight break to backward compatability: renamed 'args' to 'extra_args'
-def wrap_function(the_function, extra_args, EvaluationMonitor, scale=1):
-    """bind an EvaluationMonitor and evaluation counter to a function object"""
+def wrap_function(the_function, extra_args, eval_monitor, scale=1, start=0):
+    """bind an eval_monitor and evaluation counter to a function object"""
     # scale=-1 intended to seek min(-f) == -max(f)
-    ncalls = [0]
+    ncalls = [start] # [0] or [len(eval_monitor)]
     from numpy import array
     def function_wrapper(x):
         ncalls[0] += 1
         fval = the_function(x, *extra_args)
-        EvaluationMonitor(x, fval)
+        eval_monitor(x, fval)
         return scale*fval
     return ncalls, function_wrapper
 

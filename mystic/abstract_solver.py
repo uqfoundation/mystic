@@ -270,6 +270,7 @@ input::
         """select a callable to monitor (x, f(x)) after each solver iteration"""
         from mystic.monitors import Null, Monitor#, CustomMonitor
         current = Null() if new else self._stepmon
+        if current is monitor: current = Null()
         if isinstance(monitor, Monitor):  # is Monitor()
             self._stepmon = monitor
             self._stepmon.prepend(current)
@@ -289,6 +290,7 @@ input::
         """select a callable to monitor (x, f(x)) after each cost function evaluation"""
         from mystic.monitors import Null, Monitor#, CustomMonitor
         current = Null() if new else self._evalmon
+        if current is monitor: current = Null()
         if isinstance(monitor, (Null, Monitor) ):  # is Monitor() or Null()
             self._evalmon = monitor
             self._evalmon.prepend(current)
@@ -614,61 +616,77 @@ Input::
            #      "with", self.bestEnergy, "@\n#", list(self.bestSolution))
         return collapses if info else bool(collapses) 
 
-    def Collapse(self, disp=False):
-        """if solver has terminated by collapse, apply the collapse
-        (unless both collapse and "stop" are simultaneously satisfied)
-        """
-       #XXX: return True for "collapse and continue" and False otherwise?
+    def __get_collapses(self, disp=False):
+        """get dict of {collapse termination info: collapse}"""
         collapses = self.Collapsed(disp=disp, info=True)
         if collapses: # stop if any Termination is not from Collapse
             stop = getattr(self, '__stop__', self.Terminated(info=True))
             stop = not all(k.startswith("Collapse") for k in stop.split("; "))
             if stop: return {} #XXX: self._collapse = False ?
-        else: stop = True
-        if collapses: # then stomach a bunch of module imports (yuck)
-            import mystic.tools as to
-            import mystic.termination as mt
-            import mystic.constraints as cn
-            import mystic.mask as ma
-            # get collapse conditions  #XXX: efficient? 4x loops over collapses
-            state = mt.state(self._termination)
-            npts = getattr(self._stepmon, '_npts', None)  #XXX: default?
-           #conditions = [cn.impose_at(*to.select_params(self,collapses[k])) if state[k].get('target') is None else cn.impose_at(collapses[k],state[k].get('target')) for k in collapses if k.startswith('CollapseAt')]
-           #conditions += [cn.impose_as(collapses[k],state[k].get('offset')) for k in collapses if k.startswith('CollapseAs')]
-            #randomize = False
-            conditions = []; _conditions = []; conditions_ = []
-            for k in collapses:
-                #FIXME: these should be encapsulted in termination instance
-                if k.startswith('CollapseAt'):
-                    t = state[k]
-                    t = t['target'] if 'target' in t else None
-                    if t is None:
-                        t = cn.impose_at(*to.select_params(self,collapses[k]))
-                    else:
-                        t = cn.impose_at(collapses[k],t)
-                    conditions.append(t)
-                elif k.startswith('CollapseAs'):
-                    t = state[k]
-                    t = t['offset'] if 'offset' in t else None
-                    _conditions.append(cn.impose_as(collapses[k],t))
-                elif k.startswith(('CollapseCost','CollapseGrad')):
-                    t = state[k]
-                    t = t['clip'] if 'clip' in t else True
-                    conditions_.append(cn.impose_bounds(collapses[k],clip=t))
-                    #randomize = True
-            conditions.extend(_conditions)
-            conditions.extend(conditions_)
-            del _conditions; del conditions_
-            # get measure collapse conditions
-            if npts: #XXX: faster/better if comes first or last?
-                conditions += [cn.impose_measure( npts, [collapses[k] for k in collapses if k.startswith('CollapsePosition')], [collapses[k] for k in collapses if k.startswith('CollapseWeight')] )]
+        return collapses
 
+    def __collapse_termination(self, collapses):
+        """get (initial state, resulting termination) for the give collapses"""
+        import mystic.termination as mt
+        import mystic.mask as ma
+        state = mt.state(self._termination)
+        termination = ma.update_mask(self._termination, collapses)
+        return state, termination
+
+    def __collapse_constraints(self, state, collapses):
+        """get updated constraints for the given state and collapses"""
+        import mystic.tools as to
+        import mystic.constraints as cn
+        # get collapse conditions  #XXX: efficient? 4x loops over collapses
+        npts = getattr(self._stepmon, '_npts', None)  #XXX: default?
+        #conditions = [cn.impose_at(*to.select_params(self,collapses[k])) if state[k].get('target') is None else cn.impose_at(collapses[k],state[k].get('target')) for k in collapses if k.startswith('CollapseAt')]
+        #conditions += [cn.impose_as(collapses[k],state[k].get('offset')) for k in collapses if k.startswith('CollapseAs')]
+        #randomize = False
+        conditions = []; _conditions = []; conditions_ = []
+        for k in collapses:
+            #FIXME: these should be encapsulted in termination instance
+            if k.startswith('CollapseAt'):
+                t = state[k]
+                t = t['target'] if 'target' in t else None
+                if t is None:
+                    t = cn.impose_at(*to.select_params(self,collapses[k]))
+                else:
+                    t = cn.impose_at(collapses[k],t)
+                conditions.append(t)
+            elif k.startswith('CollapseAs'):
+                t = state[k]
+                t = t['offset'] if 'offset' in t else None
+                _conditions.append(cn.impose_as(collapses[k],t))
+            elif k.startswith(('CollapseCost','CollapseGrad')):
+                t = state[k]
+                t = t['clip'] if 'clip' in t else True
+                conditions_.append(cn.impose_bounds(collapses[k],clip=t))
+                #randomize = True
+        conditions.extend(_conditions)
+        conditions.extend(conditions_)
+        del _conditions; del conditions_
+        # get measure collapse conditions
+        if npts: #XXX: faster/better if comes first or last?
+            conditions += [cn.impose_measure( npts, [collapses[k] for k in collapses if k.startswith('CollapsePosition')], [collapses[k] for k in collapses if k.startswith('CollapseWeight')] )]
+        # get updated constraints
+        return to.chain(*conditions)(self._constraints)
+
+    def Collapse(self, disp=False):
+        """if solver has terminated by collapse, apply the collapse
+        (unless both collapse and "stop" are simultaneously satisfied)
+
+        updates the solver's termination conditions and constraints
+        """
+       #XXX: return True for "collapse and continue" and False otherwise?
+        collapses = self.__get_collapses(disp)
+        if collapses: # then stomach a bunch of module imports (yuck)
+            state, termination = self.__collapse_termination(collapses)
+            constraints = self.__collapse_constraints(state, collapses)
             # update termination and constraints in solver
-            constraints = to.chain(*conditions)(self._constraints)
-            termination = ma.update_mask(self._termination, collapses)
             self.SetConstraints(constraints)
             self.SetTermination(termination)
             #if randomize: self.SetInitialPoints(self.population[0])
+            #import mystic.termination as mt
             #print(mt.state(self._termination).keys())
        #return bool(collapses) and not stop
         return collapses
@@ -685,9 +703,10 @@ Input::
     def _decorate_objective(self, cost, ExtraArgs=None):
         """decorate the cost function with bounds, penalties, monitors, etc"""
         #print("@%r %r %r" % (cost, ExtraArgs, max))
+        evalmon = self._evalmon
         raw = cost
         if ExtraArgs is None: ExtraArgs = ()
-        self._fcalls, cost = wrap_function(cost, ExtraArgs, self._evalmon)
+        self._fcalls, cost = wrap_function(cost, ExtraArgs, evalmon)
         if self._useStrictRange:
             indx = list(self.popEnergy).index(self.bestEnergy)
             ngen = self.generations #XXX: no random if generations=0 ?
@@ -714,7 +733,6 @@ Input::
         # 'wrap' the 'new' cost function with _decorate
         self.SetObjective(cost, ExtraArgs)
         return self._decorate_objective(*self._cost[1:])
-        #XXX: when _decorate called, solver._fcalls will be reset ?
 
     def _Step(self, cost=None, ExtraArgs=None, **kwds):
         """perform a single optimization iteration
@@ -942,6 +960,10 @@ Returns:
                 except TypeError:
                     setattr(result, k, dill.copy(v))
         return result
+
+    def _is_new(self):
+        'determine if solver has been run or not'
+        return bool(self.evaluations) or bool(self.generations)
 
     # extensions to the solver interface
     evaluations = property(__evaluations )

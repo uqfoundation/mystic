@@ -217,9 +217,10 @@ input::
     def _decorate_objective(self, cost, ExtraArgs=None):
         """decorate cost function with bounds, penalties, monitors, etc"""
         #print("@%r %r %r" % (cost, ExtraArgs, max))
+        evalmon = self._evalmon
         raw = cost
         if ExtraArgs is None: ExtraArgs = ()
-        self._fcalls, cost = wrap_function(cost, ExtraArgs, self._evalmon)
+        self._fcalls, cost = wrap_function(cost, ExtraArgs, evalmon)
         if self._useStrictRange:
             indx = list(self.popEnergy).index(self.bestEnergy)
             ngen = self.generations #XXX: no random if generations=0 ?

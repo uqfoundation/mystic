@@ -168,9 +168,10 @@ The size of the simplex is dim+1.
     def _decorate_objective(self, cost, ExtraArgs=None):
         """decorate the cost function with bounds, penalties, monitors, etc"""
         #print("@%r %r %r" % (cost, ExtraArgs, max))
+        evalmon = self._evalmon
         raw = cost
         if ExtraArgs is None: ExtraArgs = ()
-        self._fcalls, cost = wrap_function(cost, ExtraArgs, self._evalmon)
+        self._fcalls, cost = wrap_function(cost, ExtraArgs, evalmon)
         if self._useStrictRange:
             if self.generations:
                 #NOTE: pop[0] was best, may not be after resetting simplex

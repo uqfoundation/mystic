@@ -197,6 +197,7 @@ def ChangeOverGeneration(tolerance=1e-6, generations=30):
         else: info = bool
         hist = inst.energy_history
         lg = len(hist)
+        if not lg: return info(null)
         if lg <= generations: return info(null)
         if (hist[-generations]-hist[-1]) <= tolerance: return info(doc)
         if (hist[-generations] == hist[-1]): return info(doc)
@@ -217,6 +218,7 @@ def NormalizedChangeOverGeneration(tolerance=1e-4, generations=10):
         else: info = bool
         hist = inst.energy_history
         lg = len(hist)
+        if not lg: return info(null)
         if lg <= generations: return info(null)
         if (hist[-generations] == hist[-1]): return info(doc)
         diff = tolerance*(abs(hist[-generations])+abs(hist[-1])) + eta
@@ -288,8 +290,9 @@ def NormalizedCostTarget(fval=None, tolerance=1e-6, generations=30):
         if info: info = lambda x:x
         else: info = bool
         hist = inst.energy_history
+        lg = len(hist)
+        if not lg: return info(null)
         if generations and fval is None:
-            lg = len(hist)
             #XXX: throws error when hist is shorter than generations ?
             if lg > generations and ((hist[-generations]-hist[-1]) <= 0 or \
                                      (hist[-generations] == hist[-1])):
@@ -315,6 +318,7 @@ or cost of last iteration is < ftol from target:
         else: info = bool
         hist = inst.energy_history
         lg = len(hist)
+        if not lg: return info(null)
         #XXX: throws error when hist is shorter than generations ?
         if (lg > generations and ((hist[-generations]-hist[-1]) <= gtol or \
                                   (hist[-generations] == hist[-1]))) or \
@@ -418,6 +422,7 @@ where mask is (row,column) indices of the selected weights:
         else: info = bool
         hist = inst.energy_history
         lg = len(hist)
+        if not lg: return info(null)
         if lg <= generations: return info(null)
         #XXX: might want to log/utilize *where* collapse happens...
 #       if collapse_weight(inst._stepmon, **kwds): return info(doc)
@@ -442,6 +447,7 @@ where (measures,indices) are (row,column) indices of selected positions:
         else: info = bool
         hist = inst.energy_history
         lg = len(hist)
+        if not lg: return info(null)
         if lg <= generations: return info(null)
         #XXX: might want to log/utilize *where* collapse happens...
 #       if collapse_weight(inst._stepmon, **kwds): return info(doc)
@@ -468,6 +474,7 @@ and mask is column indices of selected params:
         else: info = bool
         hist = inst.energy_history
         lg = len(hist)
+        if not lg: return info(null)
         if lg <= generations: return info(null)
         #XXX: might want to log/utilize *where* collapse happens...
 #       if ct.collapse_at(inst._stepmon, **kwds): return info(doc)
@@ -492,6 +499,7 @@ and mask is column indices of selected params:
         else: info = bool
         hist = inst.energy_history
         lg = len(hist)
+        if not lg: return info(null)
         if lg <= generations: return info(null)
         #XXX: might want to log/utilize *where* collapse happens...
 #       if ct.collapse_as(inst._stepmon, **kwds): return info(doc)
@@ -519,6 +527,7 @@ interval (min,max), or a list of intervals:
         else: info = bool
         hist = inst.energy_history
         lg = len(hist)
+        if not lg: return info(null)
         if lg <= samples: return info(null)
         #XXX: mask = interval_overlap(mask, solver_bounds(inst))?
         #XXX: might want to log/utilize *where* collapse happens...

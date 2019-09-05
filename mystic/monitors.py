@@ -168,7 +168,7 @@ example usage...
         """x.__getitem__(y) <==> x[y]"""
         if type(y) is int:
             return self._x[y],self._y[y]
-        m = self.__class__()
+        m = self.__class__() #XXX: copy/deepcopy?
         if type(y) in (list,numpy.ndarray):
             m._x = numpy.array(self._x)[y].tolist()
             m._y = numpy.array(self._y)[y].tolist()

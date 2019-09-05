@@ -140,6 +140,7 @@ Important class members::
         self._solver          = NelderMeadSimplexSolver
         self._bestSolver      = None # 'best' solver (after Solve)
         self._allSolvers      = [None for j in range(self._npts)]
+        self._step            = False
         return
 
     def __all_evals(self):
@@ -373,7 +374,11 @@ Inputs:
             em._x,em._y,em._id,em._info = _evalmon
             _solver._evalmon[le:] = em[le:]
             del em
-            if not _solver._fcalls[0]: _solver._fcalls[0] = fcalls[lr]
+            if not _solver._fcalls[0]: #FIXME: HACK workaround dropped _fcalls
+                lm = len(_solver._evalmon)   # ...but only works if has evalmon
+                _solver._fcalls[0] = fcalls[lr] or \
+                                     (lm if _solver.Terminated() else 0)
+                                    #(le if s.Terminated() else 0)
             self._allSolvers[lr] = _solver #XXX: update not replace?
         return
 
@@ -406,6 +411,9 @@ Inputs:
         self._fcalls = self._bestSolver._fcalls #XXX: pointer? copy?
         self._maxiter = self._bestSolver._maxiter
         self._maxfun = self._bestSolver._maxfun
+        # write state relevant for collapse
+        self._constraints = self._bestSolver._constraints
+        self._termination = self._bestSolver._termination
 
         # write 'bests' to monitors  #XXX: non-best monitors may be useful too
         self._stepmon = bestpath #XXX: pointer? copy?
@@ -414,9 +422,82 @@ Inputs:
         self.solution_history = None
         return
 
-#   def Collapsed(self, disp=False, info=False): #TODO
-#       """check if the solver meets the given collapse conditions"""
-#       return NotImplemented
+    def Collapsed(self, disp=False, info=False, all=None):
+        """check if the solver meets the given collapse conditions
+
+Input::
+    - disp = if True, print details about the solver state at collapse
+    - info = if True, return collapsed state (instead of boolean)
+    - all = if True, get results for all solvers; if False, only check 'best'
+""" #FIXME: how handle collapse of base solver, mask of base solver...?
+        _all = __builtins__['all']
+        if all is None: all = any #FIXME: what should default be???
+        if disp in ['verbose', 'all']: verbose = True
+        else: verbose = False
+        no = {} if info else False
+        if all is True: # check for 'all' collapses
+            end = [no if s is None else s.Collapsed(verbose, info) for s in self._allSolvers]
+            return end
+        elif all is any: # check for 'any' collapse
+            end = {}
+            for s in self._allSolvers:
+                if s is None: continue
+                s = s.Collapsed(disp, info=True)
+                if not s: continue
+                for k,v in s.items():
+                    r = end.get(k,None)
+                    if r is not None:
+                        if k.startswith(('CollapseCost','CollapseGrad')):
+                            from mystic.tools import interval_overlap
+                            v = interval_overlap(v,r, union=False)
+                        elif k.startswith(('CollapsePosition','CollapseWeight')):
+                            from mystic.tools import indicator_overlap
+                            v = indicator_overlap(v,r, union=False)
+                        else: # CollapseAt, CollapseAs
+                            v = v.union(r)
+                    end[k] = v
+                    if not end[k]: del end[k]
+            #NOTE: ignores prior collapses in 'mask'
+            return end if info else bool(end)
+        elif all is _all: # check for the same collapse
+            terminate = [] # get collapses/terminate for all active solvers
+            collapses = [s.Collapsed(disp, info=True) for s in self._allSolvers if s is not None and not terminate.append(s._termination)]
+            if not any(collapses):
+                return {} if info else False
+            from mystic.tools import masked_collapse, no_mask, _no_mask
+            xlt = {} # dict of {masked: non-masked}
+            for i in terminate: # xlt has all prior collapses
+                xlt.update(no_mask(i))
+            end = {} # dict of {non-masked: collapse}
+            for i,s in enumerate(collapses): #XXX: check: overlap of new & old
+                s = masked_collapse(terminate[i], s, union=False)
+                if not s:
+                    end.clear(); break
+                for k,v in s.items():
+                    # get non-masked from masked
+                    x = xlt.setdefault(k,_no_mask(k))
+                    r = end.get(x,None) # get value from non-masked
+                    if r is not None:
+                        if k.startswith(('CollapseCost','CollapseGrad')):
+                            from mystic.tools import interval_overlap
+                            v = interval_overlap(v,r, union=True)
+                        elif k.startswith(('CollapsePosition','CollapseWeight')):
+                            from mystic.tools import indicator_overlap
+                            v = indicator_overlap(v,r, union=True)
+                        else: # CollapseAt, CollapseAs
+                            v = v.intersection(r)
+                    end[x] = v
+                    if not end[x] or not x: del end[x]
+            _end = {} # dict of {masked: collapse}
+            for k,x in xlt.items():
+                x = end.get(x, None)
+                if x is None: continue
+                _end[k] = x
+            return _end if info else bool(_end)
+        self._AbstractEnsembleSolver__update_state()
+        if self._bestSolver:
+            return self._bestSolver.Collapsed(disp, info)
+        return super(AbstractEnsembleSolver, self).Collapsed(disp, info)
 
     def Collapse(self, disp=False): #TODO
         """if solver has terminated by collapse, apply the collapse
@@ -427,8 +508,11 @@ Inputs:
     def _Step(self, cost=None, ExtraArgs=None, **kwds):
         """perform a single optimization iteration
         Note that ExtraArgs should be a *tuple* of extra arguments"""
-        disp = kwds['disp'] if 'disp' in kwds else False
-        echo = kwds['callback'] if 'callback' in kwds else None
+        # process and activate input settings
+        settings = self._process_inputs(kwds)
+        #(hardwired: due to python3.x exec'ing to locals())
+        disp = settings['disp'] if 'disp' in settings else False
+        echo = settings['callback'] if 'callback' in settings else None
         if disp in ['verbose', 'all']: verbose = True
         else: verbose = False
 
@@ -449,7 +533,10 @@ Inputs:
                 solver.SetInitialPoints(x0)
                 if solver._useStrictRange: #XXX: always, settable, or sync'd ?
                     solver.SetStrictRanges(solver._strictMin,solver._strictMax)
+            _term = (solver._live is False) and solver.Terminated()
+            if _term is True: solver._live = True #XXX: HACK don't reset _fcalls
             solver.Step(cost,ExtraArgs=ExtraArgs,disp=disp,callback=callback)
+            if _term is True: solver._live = False
             sm = solver._stepmon
             em = solver._evalmon
             if isNull(sm): sm = ([],[],[],[])
@@ -482,11 +569,12 @@ Inputs:
         #allow for inputs that don't conform to AbstractSolver interface
         #NOTE: not sticky: callback, disp
         #NOTE: sticky: EvaluationMonitor, StepMonitor, penalty, constraints
-        #NOTE: not sticky: step
+        #NOTE: sticky: step
         settings = super(AbstractEnsembleSolver, self)._process_inputs(kwds)
         settings.update({
-        'step':False}) #run Solve with (or without) Step
+        'step':self._step}) #run Solve with (or without) Step
         [settings.update({i:j}) for (i,j) in getattr(kwds, 'iteritems', kwds.items)() if i in settings]
+        self._step = settings['step']
         return settings
 
     def _Solve(self, cost, ExtraArgs, **settings): #XXX: self._cost?
@@ -501,6 +589,8 @@ Returns:
     None
         """
         #FIXME: 'step' is undocumented (in Solve)
+        #NOTE: if Step once, will ensure always uses step=True, unless...
+        #TODO: if step=False passed after Step taken... this is still TODO!
         step = settings['step'] if 'step' in settings else False
         if step: #FIXME: use abstract_solver _Solve
             super(AbstractEnsembleSolver, self)._Solve(cost, ExtraArgs, **settings)
@@ -526,7 +616,10 @@ Returns:
                 solver.SetInitialPoints(x0)
                 if solver._useStrictRange: #XXX: always, settable, or sync'd ?
                     solver.SetStrictRanges(solver._strictMin,solver._strictMax)
+            _term = (solver._live is False) and solver.Terminated()
+            if _term is True: solver._live = True #XXX: HACK don't reset _fcalls
             solver.Solve(cost,ExtraArgs=ExtraArgs,disp=disp,callback=callback)
+            if _term is True: solver._live = False
             sm = solver._stepmon
             em = solver._evalmon
             if isNull(sm): sm = ([],[],[],[])
