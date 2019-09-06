@@ -509,6 +509,7 @@ Input::
         """perform a single optimization iteration
         Note that ExtraArgs should be a *tuple* of extra arguments"""
         # process and activate input settings
+        kwds['step'] = True  #XXX: once Step is taken, step=True thereafter
         settings = self._process_inputs(kwds)
         #(hardwired: due to python3.x exec'ing to locals())
         disp = settings['disp'] if 'disp' in settings else False
