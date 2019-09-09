@@ -59,7 +59,7 @@ def test_solve():
 
   assert round(mean_constraint(x, 5.0)) == 0.0
   assert round(parameter_constraint(x)) == 0.0
-  assert issolution(penalty, x)
+  assert issolution(penalty, x, tol=0.002)
 
 
 def test_solve_constraint():

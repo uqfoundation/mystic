@@ -175,8 +175,9 @@ input::
         self._solver = solver
         return
 
-    def __get_solver_instance(self):
+    def __get_solver_instance(self, reset=False):
         """ensure the solver is a solver instance"""
+        #NOTE: if reset=True, reset monitor instances
         solver = self._solver
 
         # if a configured solver is not given, then build one of the given type
@@ -196,9 +197,13 @@ input::
         solver.SetRandomInitialPoints() #FIXME: set population; will override
         if self._useStrictRange: #XXX: always, settable, or sync'd ?
             solver.SetStrictRanges(min=self._strictMin, max=self._strictMax)
+        if reset:
+            solver.SetEvaluationMonitor(self._evalmon[:0], new=True)
+            solver.SetGenerationMonitor(self._stepmon[:0], new=True)
+        else:
+            solver.SetEvaluationMonitor(self._evalmon) #XXX: copy? new?
+            solver.SetGenerationMonitor(self._stepmon) #XXX: copy? new?
         solver.SetEvaluationLimits(self._maxiter, self._maxfun) #XXX: new?
-        solver.SetEvaluationMonitor(self._evalmon) #XXX: copy or set? new?
-        solver.SetGenerationMonitor(self._stepmon) #XXX: copy or set? new?
         solver.SetTermination(self._termination)
         solver.SetConstraints(self._constraints)
         solver.SetPenalty(self._penalty)
@@ -337,10 +342,10 @@ Inputs:
         'get the id of the bestSolver'
         return getattr(self._bestSolver, 'id', None)
 
-    def __init_allSolvers(self):
+    def __init_allSolvers(self, reset=False):
         'populate NestedSolver state to allSolvers'
         # get the nested solver instance
-        solver = self._AbstractEnsembleSolver__get_solver_instance()
+        solver = self._AbstractEnsembleSolver__get_solver_instance(reset)
 
         # configure inputs for each solver
         from copy import deepcopy as _copy

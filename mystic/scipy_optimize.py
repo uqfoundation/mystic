@@ -112,8 +112,9 @@ The size of the simplex is dim+1.
         simplex = dim+1
         #XXX: cleaner to set npop=simplex, and use 'population' as simplex
         AbstractSolver.__init__(self,dim) #,npop=simplex)
-        self.popEnergy.append(self._init_popEnergy)
-        self.population.append([0.0 for i in range(dim)])
+        for i in range(dim):
+            self.popEnergy.append(self._init_popEnergy)
+            self.population.append([0.0 for i in range(dim)])
         self.radius = 0.05 #percentage change for initial simplex values
         self.adaptive = False #use adaptive algorithm parameters
         xtol, ftol = 1e-4, 1e-4
