@@ -269,6 +269,7 @@ input::
     def SetGenerationMonitor(self, monitor, new=False):
         """select a callable to monitor (x, f(x)) after each solver iteration"""
         from mystic.monitors import Null, Monitor#, CustomMonitor
+        if monitor is None: monitor = Null()
         current = Null() if new else self._stepmon
         if current is monitor: current = Null()
         if isinstance(monitor, Monitor):  # is Monitor()
@@ -289,6 +290,7 @@ input::
     def SetEvaluationMonitor(self, monitor, new=False):
         """select a callable to monitor (x, f(x)) after each cost function evaluation"""
         from mystic.monitors import Null, Monitor#, CustomMonitor
+        if monitor is None: monitor = Null()
         current = Null() if new else self._evalmon
         if current is monitor: current = Null()
         if isinstance(monitor, (Null, Monitor) ):  # is Monitor() or Null()

@@ -125,6 +125,7 @@ Important class members::
         #XXX: move nbins and npts to _InitialPoints?
         self._dist = None #kwds['dist'] if 'dist' in kwds else None
         npts = kwds['npts'] if 'npts' in kwds else 1
+        if npts is None: npts = 1
         self._npts            = npts
         nbins = kwds['nbins'] if 'nbins' in kwds else None
         self._nbins           = nbins
