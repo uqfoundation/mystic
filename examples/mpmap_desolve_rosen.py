@@ -50,7 +50,7 @@ seed = 100
 
 
 if __name__=='__main__':
-    from pathos.helpers import freeze_support
+    from pathos.helpers import freeze_support, shutdown
     freeze_support() # help Windows use multiprocessing
 
     def print_solution(func):
@@ -82,5 +82,6 @@ if __name__=='__main__':
                   CrossProbability=CROSS, ScalingFactor=SCALE, disp=1)
     print("")
     print_solution( solver2.bestSolution )
+    shutdown() # help multiprocessing shutdown all workers
 
 # end of file

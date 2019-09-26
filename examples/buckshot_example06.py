@@ -70,7 +70,7 @@ def plot_solution(params,style='y-'):
 
 
 if __name__ == '__main__':
-    from pathos.helpers import freeze_support
+    from pathos.helpers import freeze_support, shutdown
     freeze_support() # help Windows use multiprocessing
 
     print("Powell's Method")
@@ -96,6 +96,7 @@ if __name__ == '__main__':
     solver.SetStrictRanges(min=[-300]*ndim, max=[300]*ndim)
     solver.Solve(chebyshev8cost, NCOG(1e-4), disp=1)
     solution = solver.Solution()
+    shutdown() # help multiprocessing shutdown all workers
 
     # write 'convergence' support file
     from mystic.munge import write_support_file

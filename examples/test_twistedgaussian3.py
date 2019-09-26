@@ -38,11 +38,12 @@ if __name__=='__main__':
         xrange = range
     # if available, use a multiprocessing worker pool
     try:
-        from pathos.helpers import freeze_support
+        from pathos.helpers import freeze_support, shutdown
         freeze_support() # help Windows use multiprocessing
         from pathos.pools import ProcessPool as Pool
         map = Pool().map
     except ImportError:
+        shutdown = lambda x=None:None
         pass
 
     Sk = [ [Cs[i][0]] for i in xrange(q) ]
@@ -74,6 +75,7 @@ if __name__=='__main__':
     #import dill
     #print("Writing to data file")
     #dill.dump(sk, open('tg3.pkl','w'))
+    shutdown()
     
     try:
         import matplotlib.pyplot as plt

@@ -17,11 +17,12 @@ if __name__ == '__main__':
 #   start = time.time()
     # if available, use a multiprocessing worker pool
     try:
-        from pathos.helpers import freeze_support
+        from pathos.helpers import freeze_support, shutdown
         freeze_support()
         from pathos.pools import ProcessPool as Pool
     except ImportError:
         from mystic.pools import SerialPool as Pool
+        shutdown = lambda x=None:None
 
     # tools
     from mystic.termination import VTR, ChangeOverGeneration as COG
@@ -98,6 +99,8 @@ if __name__ == '__main__':
     ##### extract results #####
     import numpy as np
     xyz = np.hstack((xyz, searcher.Samples(all=True)))
+    # shutdown worker pool
+    shutdown()
 #   print("TOOK: %s" % (time.time() - start))
 
     ########## interpolate ##########
@@ -216,6 +219,5 @@ if __name__ == '__main__':
 #   print("data and interp: %s" % np.sum((data - interp)**2))
 #   print("actual and interp: %s" % np.sum((actual - interp)**2))
     print("actual and interp: %s" % np.sum((data - interp)**2))
-
 
 # EOF

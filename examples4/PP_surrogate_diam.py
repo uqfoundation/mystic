@@ -179,4 +179,7 @@ if __name__ == '__main__':
 # print(" ...")
   diameter = UQ(RVstart,RVend,lower_bounds,upper_bounds)
 
+  from pathos.helpers import shutdown
+  shutdown()
+
 # EOF

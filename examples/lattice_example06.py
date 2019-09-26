@@ -70,7 +70,7 @@ def plot_solution(params,style='y-'):
 
 
 if __name__ == '__main__':
-    from pathos.helpers import freeze_support
+    from pathos.helpers import freeze_support, shutdown
     freeze_support() # help Windows use multiprocessing
 
     print("Powell's Method")
@@ -96,6 +96,7 @@ if __name__ == '__main__':
     solver.SetStrictRanges(min=[-300]*ndim, max=[300]*ndim)
     solver.Solve(chebyshev8cost, NCOG(1e-4), disp='all', step=False)
     solution = solver.Solution()
+    shutdown() # help multiprocessing shutdown all workers
 
     # use pretty print for polynomials
     print(poly1d(solution))

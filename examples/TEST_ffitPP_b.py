@@ -71,7 +71,7 @@ def main(servers,ncpus):
   
 
 if __name__ == '__main__':
-    from pathos.helpers import freeze_support
+    from pathos.helpers import freeze_support, shutdown
     freeze_support() # help Windows use multiprocessing
 
     # number of local processors
@@ -90,6 +90,7 @@ if __name__ == '__main__':
     solution = main(servers,ncpus) # solve
     t2 = time.time()
 
+    shutdown() # help multiprocessing shutdown all workers
     print_solution(solution)
     print("Finished in %0.3f s" % ((t2-t1)))
     plot_solution(solution)

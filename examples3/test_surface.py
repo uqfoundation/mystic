@@ -42,13 +42,14 @@ if __name__ == '__main__':
 
     # parallel configuration
     try:
-        from pathos.helpers import freeze_support
+        from pathos.helpers import freeze_support, shutdown
         freeze_support()
         from pathos.pools import ProcessPool as Pool
        #from pathos.pools import ThreadPool as Pool
        #from pathos.pools import ParallelPool as Pool
     except ImportError:
         from mystic.pools import SerialPool as Pool
+        shutdown = lambda x=None:None
 
     _map = Pool().map
 
@@ -144,7 +145,8 @@ if __name__ == '__main__':
     f = lambda x,z: (z,surface.surrogate(*x))
     print("min: {}; min@f: {}".format(*f(*surface._min())))
     print("max: {}; max@f: {}".format(*f(*surface._max())))
-
+    # shutdown worker pool
+    shutdown()
 #   print("TOOK: %s" % (time.time() - start))
 
     # plot interpolated surface
