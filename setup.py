@@ -10,7 +10,7 @@ import os
 import sys
 
 # set version numbers
-stable_version = '0.3.4'
+stable_version = '0.3.5'
 target_version = '0.3.5'
 is_release = stable_version == target_version
 
@@ -172,8 +172,8 @@ Requirements
     - ``python``, **version >= 2.6** or **version >= 3.1**, or ``pypy``
     - ``numpy``, **version >= 1.0**
     - ``sympy``, **version >= 0.6.7**
-    - ``dill``, **version >= 0.3.0**
-    - ``klepto``, **version >= 0.1.7**
+    - ``dill``, **version >= 0.3.1**
+    - ``klepto``, **version >= 0.1.8**
 
 Optional requirements:
 
@@ -181,7 +181,7 @@ Optional requirements:
     - ``matplotlib``, **version >= 0.91**
     - ``scipy``, **version >= 0.6.0**
     - ``mpmath``, **version >= 1.0.0**
-    - ``pathos``, **version >= 0.2.4**
+    - ``pathos``, **version >= 0.2.5**
     - ``pyina``, **version >= 0.2.2**
 
 
@@ -386,12 +386,12 @@ elif sysversion == (sysversion >= (3,4) and sysversion < (3,5)):
 else:
     numpy_version = '>=1.0'
     sympy_version = '>=0.6.7'#, <0.7.4'
-dill_version = '>=0.3.0'
-klepto_version = '>=0.1.7'
+dill_version = '>=0.3.1'
+klepto_version = '>=0.1.8'
 scipy_version = '>=0.6.0'
 matplotlib_version = '>=0.91'
 mpmath_version = '>=0.19'
-pathos_version = '>=0.2.4'
+pathos_version = '>=0.2.5'
 pyina_version = '>=0.2.2'
 if has_setuptools:
     setup_code += """
