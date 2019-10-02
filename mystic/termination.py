@@ -30,12 +30,17 @@ def state(condition):
     #NOTE: keys are termination name; values are termination state
     _state = {}
     for term in iter(condition) if isinstance(condition, tuple) else iter((condition,)):
-        if not term.__doc__.split(None,1)[-1].startswith('with '):# Or, And, ...
+        termdoc = term.__doc__# or 'MISSING'
+        if termdoc is None: #HACK
+            import warnings
+            warnings.warn('Collapse termination mishandled')
+            pass #FIXME: HACK: shouldn't be missing (due to ensemble + Mapper)
+        elif not termdoc.split(None,1)[-1].startswith('with '):# Or, And, ...
             _state.update(state(term))
         else:
-            kind,kwds = term.__doc__.split(' with ', 1)
+            kind,kwds = termdoc.split(' with ', 1)
            #_state[kind] = eval(kwds)
-            _state[term.__doc__] = eval(kwds)
+            _state[termdoc] = eval(kwds)
     return _state
 
 def type(condition):

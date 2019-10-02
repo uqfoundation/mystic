@@ -161,6 +161,9 @@ example usage...
         """add the contents of self and the given monitor"""
         m = self.__class__()
         m.extend(self)
+        #XXX: or, alternately... (preserve name and other properties)
+        # import copy
+        # m = copy.deepcopy(self)
         m.extend(monitor)
         return m
 
@@ -168,7 +171,9 @@ example usage...
         """x.__getitem__(y) <==> x[y]"""
         if type(y) is int:
             return self._x[y],self._y[y]
-        m = self.__class__() #XXX: copy/deepcopy?
+        import copy
+        m = copy.deepcopy(self)
+        #m = self.__class__() #XXX: workaround (duplicates entries by copy)
         if type(y) in (list,numpy.ndarray):
             m._x = numpy.array(self._x)[y].tolist()
             m._y = numpy.array(self._y)[y].tolist()

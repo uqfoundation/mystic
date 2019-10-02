@@ -34,7 +34,8 @@ def _update_masks(condition, mask, kind='', new=False):
     if isinstance(condition, tuple):# mystic.termination.When is tuple
         conditions = () #XXX: faster using list?
         for term in condition:
-            if isinstance(term, tuple) or term.__doc__.startswith(kind):
+            termdoc = term.__doc__# or 'MISSING' #FIXME: shouldn't be missing
+            if isinstance(term, tuple) or termdoc.startswith(kind):
                 term = _update_masks(term, mask, kind, new)
             conditions += (term,)
         return type(condition)(*conditions)

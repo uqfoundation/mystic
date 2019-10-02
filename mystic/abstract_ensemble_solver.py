@@ -602,6 +602,14 @@ Returns:
         if step: #FIXME: use abstract_solver _Solve
             super(AbstractEnsembleSolver, self)._Solve(cost, ExtraArgs, **settings)
             return
+            #FIXME: evalmon wrapped around _cost doesn't work (__class__()?)
+        #FIXME: fix the above... remove HACK below (and previous evalmon HACKs)
+        #FIXME: HACK evalmon wrapped around _cost is disabled (bc it works!)
+        evalmon, self._evalmon = self._evalmon, Null() #XXX: fcalls start=0
+        self._live = False #XXX: redo wrap objective with dummy evalmon
+        cost = self._bootstrap_objective(self._cost[1], ExtraArgs)
+        self._evalmon = evalmon
+        #FIXME: HACK (end) to disable evalmon wrapped around cost
 
         disp = settings['disp'] if 'disp' in settings else False
         echo = settings['callback'] if 'callback' in settings else None
