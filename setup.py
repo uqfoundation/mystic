@@ -374,11 +374,19 @@ setup(name='mystic',
 
 # add dependencies
 sysversion = sys.version_info[:2]
+try:
+    import ctypes # if using `pypy`, pythonapi is not found
+    IS_PYPY = not hasattr(ctypes, 'pythonapi')
+except:
+    IS_PYPY = False
 if sysversion < (2,6) or sysversion == (3,0) or sysversion == (3,1):
     numpy_version = '>=1.0, <1.8.0'
     sympy_version = '>=0.6.7, <1.1'
 elif sysversion == (2,6) or sysversion == (3,2) or sysversion == (3,3):
     numpy_version = '>=1.0, <1.12.0'
+    sympy_version = '>=0.6.7, <1.1'
+elif IS_PYPY: #XXX: pypy3?
+    numpy_version = '>=1.0, <1.16.0'
     sympy_version = '>=0.6.7, <1.1'
 elif sysversion == (2,7) or sysversion == (3,4):
     numpy_version = '>=1.0, <1.17.0'
