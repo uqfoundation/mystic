@@ -173,17 +173,22 @@ example usage...
             return self._x[y],self._y[y]
         import copy
         m = copy.deepcopy(self)
+        m._info = [] #XXX: best to lose all or retain all?
         #m = self.__class__() #XXX: workaround (duplicates entries by copy)
         if type(y) in (list,numpy.ndarray):
             m._x = numpy.array(self._x)[y].tolist()
             m._y = numpy.array(self._y)[y].tolist()
+            m._id = numpy.array(self._id)[y].tolist()
         elif type(y) is tuple: #XXX: good idea? Needs more testing...
             nn,nx,ny = len(y),numpy.ndim(self._x),numpy.ndim(self._y)
+            ni = numpy.ndim(self._id)
             m._x = numpy.array(self._x)[y if nn == nx else y[0]].tolist()
             m._y = numpy.array(self._y)[y if nn == ny else y[0]].tolist()
+            m._id = numpy.array(self._id)[y if nn == ni else y[0]].tolist()
         else:
             m._x = self._x[y]
             m._y = self._y[y]
+            m._id = self._id[y]
         return m
 
     def __setitem__(self, i, y):
@@ -200,6 +205,7 @@ example usage...
         if type(i) is int:
             self._x[i:i+1] = y._x
             self._y[i:i+1] = y._y
+            self._id[i:i+1] = y._id
             return
         if type(i) in (list,numpy.ndarray):
             x = numpy.array(self._x)
@@ -208,6 +214,9 @@ example usage...
             x = numpy.array(self._y)
             x[i] = y._y
             self._y[:] = x.tolist()
+            x = numpy.array(self._id)
+            x[i] = y._id
+            self._id[:] = x.tolist()
        #elif type(i) is tuple: #XXX: good idea? Needs more testing...
        #    nn,nx,ny = len(i),numpy.ndim(self._x),numpy.ndim(self._y)
        #    x = numpy.array(self._x)
@@ -219,6 +228,7 @@ example usage...
         else:
             self._x[i] = y._x
             self._y[i] = y._y
+            self._id[i] = y._id
         return
 
     def extend(self, monitor):

@@ -137,8 +137,8 @@ if provided, ids are the list of 'run ids' to select
         return [param],[cost]
 
     # split (i,id) into iteration and id
-    multinode = len(step[0]) - 1  if step else 0 #XXX: no step info, so give up
-    if multinode: id = [i[1] for i in step]
+    multinode = len(step[0]) - 1 if step else 0 #XXX: no step info, so give up
+    if multinode: id = [(i[1] or 0) for i in step]
     else: id = [0 for i in step]
 
     params = [[] for i in range(max(id) + 1)]
