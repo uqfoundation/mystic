@@ -159,18 +159,18 @@ example usage...
 
     def __add__(self, monitor):
         """add the contents of self and the given monitor"""
-        m = self.__class__()
-        m.extend(self)
-        #XXX: or, alternately... (preserve name and other properties)
-        # import copy
-        # m = copy.deepcopy(self)
+        #m = self.__class__()
+        #m.extend(self)
+        #XXX: alternately (below: preserve name and other properties)
+        import copy
+        m = copy.deepcopy(self)
         m.extend(monitor)
         return m
 
     def __getitem__(self, y):
         """x.__getitem__(y) <==> x[y]"""
         if type(y) is int:
-            return self._x[y],self._y[y]
+            return self.x[y],self.y[y]
         import copy
         m = copy.deepcopy(self)
         m._info = [] #XXX: best to lose all or retain all?
@@ -314,7 +314,7 @@ example usage...
     #BELOW: madness due to monitor k-conversion
 
     def get_y(self): # can be slow if k not in (1, None)
-        return divide(self._y, self.k, list)
+        return divide(self._y, 1 if self.k is None else self.k, list)
         #XXX: better if everywhere y = _y, as opposed to y = _ik(_y) ?
         #     better if k only applied to 'output' of __call__ ?
         #     better if k ionly applied on 'exit' from solver ?
@@ -325,16 +325,16 @@ example usage...
         return divide(monitor._y, _ik, iter)
 
     def get_ix(self):
-        return divide(self._y, 1, iter) #XXX: _y ?
+        return divide(self._x, 1, iter) #XXX: _y ?
 
     def get_ax(self):
-        return divide(self._y, 1, numpy.array) #XXX: _y ?
+        return divide(self._x, 1, numpy.array) #XXX: _y ?
 
     def get_iy(self):
-        return divide(self._y, self.k, iter)
+        return divide(self._y, 1 if self.k is None else self.k, iter)
 
     def get_ay(self):
-        return divide(self._y, self.k, numpy.array)
+        return divide(self._y, 1 if self.k is None else self.k, numpy.array)
 
     def _k(self, y, type=list):
         return multiply(y, self.k, type)
