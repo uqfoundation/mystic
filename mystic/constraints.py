@@ -14,10 +14,77 @@ __all__ = ['with_penalty','with_constraint','as_penalty','as_constraint',
            'issolution','solve','discrete','integers','near_integers',
            'unique','has_unique','impose_unique','bounded','impose_bounds',
            'impose_as','impose_at','impose_measure','impose_position',
-           'impose_weight','and_','or_','not_']
+           'impose_weight','and_','or_','not_','vectorize']
 
 from mystic.math.measures import *
 from mystic.math import almostEqual
+
+def vectorize(constraint, axis=1):
+    """vectorize a constraint for 2D input, `x' = k(x)` where `x` is 2D
+
+    Input:
+        constraint -- a mystic constraint, c, where `x' = c(x)`, `x` is a list
+        axis -- axis to apply constraints to, must be 0 or 1 (default is 1)
+
+    Output:
+        transform -- a transform function, k, where `x' = k(x)`, `x` is 2D array
+
+    Notes:
+        Produces a constraints function that is of the form required by
+        sklearn.preprocessing.FunctionTransformer(func=transform).
+        Input to the tranform is a 2D numpy array of shape (samples, features).
+
+    For example:
+        >>> from mystic.constraints import (impose_bounds, integers,
+        ...                                 with_mean, and_)
+        >>> cons = and_(impose_bounds([(0,5),(7,10)])(lambda x:x),
+        ...             integers()(lambda x:x), with_mean(6.0)(lambda x:x))
+        >>> import numpy as np
+        >>> data = np.random.randn(6,4)
+        >>> c = vectorize(cons, axis=0)
+        >>> c(data)
+        array([[ 3,  9,  3, 10],
+               [ 7,  8,  7,  4],
+               [ 9,  3,  7,  7],
+               [ 7,  3,  8,  7],
+               [ 3,  5,  4,  4],
+               [ 7,  8,  7,  4]])
+        >>> _.mean(axis=0)
+        array([6., 6., 6., 6.])
+        >>> c = vectorize(cons, axis=1)
+        >>> c(data)
+        array([[ 3,  3,  9,  9],
+               [ 8,  3,  4,  9],
+               [ 5, 10,  4,  5],
+               [ 7,  8,  7,  2],
+               [ 2,  4,  8, 10],
+               [ 7, 10,  5,  2]])
+        >>> _.mean(axis=1)
+        array([6., 6., 6., 6., 6., 6.])
+        >>> k = FunctionTransformer(func=c)
+        >>> k.fit(data).transform(data).mean(axis=1)
+        array([6., 6., 6., 6., 6., 6.])
+    """
+    if not axis in (0,1):
+        msg = "axis = %s, must be either 0 or 1" % axis
+        raise ValueError(msg)
+    _doc = """mystic kernel transform `x' = k(x)` with x a 2D numpy array.
+
+        """
+    if axis:
+        def transform(x, *args, **kwds):
+            import numpy as np
+            c = lambda x,*args,**kwds: np.array([constraint(xi, *args, **kwds) for xi in x])
+            return c(x, *args, **kwds)
+    else:
+        def transform(x, *args, **kwds):
+            import numpy as np
+            c = lambda x,*args,**kwds: np.array([constraint(xi, *args, **kwds) for xi in x.T]).T
+            return c(x, *args, **kwds)
+    doc = constraint.__doc__
+    transform.__doc__ = _doc + doc if doc else _doc
+    return transform
+
 
 def with_penalty(ptype, *args, **kwds):
     """convert a condition to a penalty function of the chosen type
@@ -561,7 +628,7 @@ NOTE:
 
 
 from numpy import asfarray, asarray, choose, zeros, ones, ndarray
-from numpy import vectorize, shape, broadcast, empty, atleast_1d
+from numpy import shape, broadcast, empty, atleast_1d
 #from random import sample, choice
 def discrete(samples, index=None):
     """impose a discrete set of input values for the selected function
