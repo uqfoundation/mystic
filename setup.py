@@ -125,7 +125,7 @@ The latest released version of ``mystic`` is available from:
 ``mystic`` is distributed under a 3-clause BSD license.
 
     >>> import mystic
-    >>> print (mystic.license())
+    >>> mystic.license()
 
 
 Development Version 
@@ -169,7 +169,7 @@ Requirements
 
 ``mystic`` requires:
 
-    - ``python``, **version >= 2.6** or **version >= 3.1**, or ``pypy``
+    - ``python``, **version >= 2.6** or **version >= 3.3**, or ``pypy``
     - ``numpy``, **version >= 1.0**
     - ``sympy``, **version >= 0.6.7**
     - ``dill``, **version >= 0.3.1**
