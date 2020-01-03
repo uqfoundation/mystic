@@ -364,10 +364,10 @@ thus, the penalty will be evaluated at every cost function evaluation.
         return cost_function(_x) + penalty_function(_x)
     return function_wrapper
 
-# slight break to backward compatability: renamed 'args' to 'extra_args'
+# slight break to backward compatibility: renamed 'args' to 'extra_args'
 def wrap_function(the_function, extra_args, eval_monitor, scale=1, start=0):
     """bind an eval_monitor and evaluation counter to a function object"""
-    # scale=-1 intended to seek min(-f) == -max(f)
+    # scale=-1 intended to seek min(-f) == -max(f) #XXX: default extra_args=()?
     ncalls = [start] # [0] or [len(eval_monitor)]
     from numpy import array
     def function_wrapper(x):

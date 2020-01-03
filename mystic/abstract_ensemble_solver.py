@@ -633,7 +633,9 @@ Returns:
                     solver.SetStrictRanges(solver._strictMin,solver._strictMax)
             _term = (solver._live is False) and solver.Terminated()
             if _term is True: solver._live = True #XXX: HACK don't reset _fcalls
-            solver.Solve(cost,ExtraArgs=ExtraArgs,disp=disp,callback=callback)
+            if solver._cost[1] is None: #XXX: HACK for configured NestedSolver
+                solver.SetObjective(cost, ExtraArgs=ExtraArgs)
+            solver.Solve(disp=disp,callback=callback)
             if _term is True: solver._live = False
             sm = solver._stepmon
             em = solver._evalmon
