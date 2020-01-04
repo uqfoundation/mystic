@@ -201,7 +201,7 @@ NOTE: This function is also useful for combining constraints solvers
     else: ptype = None
     if ptype is None:
         from mystic.penalty import linear_equality as ptype
-    penalty = lambda x: sum(p(x) for p in penalties)
+    penalty = lambda x: sum(p(x) for p in penalties) #XXX: ZeroDivisionError?
     pf = ptype(penalty, **settings)(lambda x:0.)
     pfdoc = "\n".join(p.__doc__ for p in penalties if p.__doc__)
     pf.__doc__ = pfdoc.rstrip('\n')
@@ -243,7 +243,7 @@ NOTE: This function is also useful for combining constraints solvers
     else: ptype = None
     if ptype is None:
         from mystic.penalty import linear_equality as ptype
-    penalty = lambda x: min(p(x) for p in penalties)
+    penalty = lambda x: min(p(x) for p in penalties) #XXX: ZeroDivisionError?
     pf = ptype(penalty, **settings)(lambda x:0.)
     pfdoc = "\n-- OR --\n".join(p.__doc__ for p in penalties if p.__doc__)
     pf.__doc__ = pfdoc.rstrip('\n')
@@ -281,9 +281,9 @@ Additional Inputs:
     except AttributeError:
         condition = penalty # is a raw condition
     if ptype.__name__.endswith('_inequality'):
-        _penalty = lambda x: 0 - condition(x)
+        _penalty = lambda x: 0 - condition(x) #XXX: ZeroDivisionError -> inf?
     else:
-        _penalty = lambda x: not condition(x)
+        _penalty = lambda x: not condition(x) #XXX: ZeroDivisionError -> inf?
     pf = ptype(_penalty, **settings)(lambda x:0.)
     pfdoc = 'NOT( '+ penalty.__doc__ +' )' if penalty.__doc__ else ""
     pf.__doc__ = pfdoc.rstrip('\n')

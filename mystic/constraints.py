@@ -528,16 +528,24 @@ NOTE:
     def _constraint(x): #XXX: inefficient, rewrite without append
         x = [x.tolist() if hasattr(x, 'tolist') else x]
         # apply all constaints once
+        e = None
         for c in constraints:
-            ci = c(x[-1])
+            try:
+                ci = c(x[-1])
+            except ZeroDivisionError as e:
+                ci = x[-1] #XXX: do something else?
             x.append(ci.tolist() if hasattr(ci, 'tolist') else ci)
-        if all(xi == x[-1] for xi in x[1:]): return x[-1]
+        if all(xi == x[-1] for xi in x[1:]) and e is None: return x[-1]
         # cycle constraints until there's no change
         _constraints = it.cycle(constraints) 
         for j in range(n,maxiter):
-            ci = next(_constraints)(x[-1])
+            e = None
+            try:
+                ci = next(_constraints)(x[-1])
+            except ZeroDivisionError as e:
+                ci = x[-1] #XXX: do something else?
             x.append(ci.tolist() if hasattr(ci, 'tolist') else ci)
-            if all(xi == x[-1] for xi in x[-n:]): return x[-1]
+            if all(xi == x[-1] for xi in x[-n:]) and e is None: return x[-1]
             # may be trapped in a cycle... randomize
             if x[-1] == x[-(n+1)]:
                 x[-1] = [(i+rnd.randint(-1,1))*rnd.random() for i in x[-1]]
@@ -574,16 +582,24 @@ NOTE:
     def _constraint(x): #XXX: inefficient, rewrite without append
         x = [x.tolist() if hasattr(x, 'tolist') else x]
         # check if initial input is valid
+        e = None
         for c in constraints:
-            ci = c(x[0])
+            try:
+                ci = c(x[0])
+            except ZeroDivisionError as e:
+                ci = x[0] #XXX: do something else?
             x.append(ci.tolist() if hasattr(ci, 'tolist') else ci)
-            if x[-1] == x[0]: return x[-1]
+            if x[-1] == x[0] and e is None: return x[-1]
         # cycle constraints until there's no change
         _constraints = it.cycle(constraints) 
         for j in range(n,maxiter):
-            ci = next(_constraints)(x[-n])
+            e = None
+            try:
+                ci = next(_constraints)(x[-n])
+            except ZeroDivisionError as e:
+                ci = x[-n] #XXX: do something else?
             x.append(ci.tolist() if hasattr(ci, 'tolist') else ci)
-            if x[-1] == x[-(n+1)]: return x[-1]
+            if x[-1] == x[-(n+1)] and e is None: return x[-1]
             else: # may be trapped in a rut... randomize
                 x[-1] = x[-rnd.randint(1,n)]
             if not j%(2*n):
@@ -616,7 +632,10 @@ NOTE:
     def _constraint(x):
         # check if initial input is valid, else randomize and try again
         for j in range(0,maxiter):
-            if constraint(x) != x: return x
+            try:
+                if constraint(x) != x: return x
+            except ZeroDivisionError as e:
+                pass #XXX: do something else?
             x = [(i+rnd.randint(-1,1))*rnd.random() for i in x]
         # give up
         return x #XXX: or fail by throwing Error?
