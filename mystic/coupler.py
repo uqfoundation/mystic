@@ -281,9 +281,9 @@ Additional Inputs:
     except AttributeError:
         condition = penalty # is a raw condition
     if ptype.__name__.endswith('_inequality'):
-        _penalty = lambda x: 0 - condition(x) #XXX: ZeroDivisionError -> inf?
+        _penalty = lambda x: 0 - condition(x) #XXX: ZeroDivisionError?
     else:
-        _penalty = lambda x: not condition(x) #XXX: ZeroDivisionError -> inf?
+        _penalty = lambda x: not condition(x) #XXX: ZeroDivisionError?
     pf = ptype(_penalty, **settings)(lambda x:0.)
     pfdoc = 'NOT( '+ penalty.__doc__ +' )' if penalty.__doc__ else ""
     pf.__doc__ = pfdoc.rstrip('\n')

@@ -52,7 +52,10 @@ the condition f(x) is satisfied when f(x) == 0.0
     _f = [lambda x:0.] # decorated function
     _y = [] # stored results
     def error(x):
-        rms = condition(x, *args, **kwds)**2 #XXX: ZeroDivisionError -> inf?
+        try:
+            rms = condition(x, *args, **kwds)**2
+        except ZeroDivisionError:
+            return inf
         if hasattr(_f[0], 'error'): rms += _f[0].error(x)**2
         return rms**0.5
     def iter(i=None):
@@ -77,7 +80,10 @@ the condition f(x) is satisfied when f(x) == 0.0
     def dec(f):
         _f[0] = f
         def func(x, *argz, **kwdz):
-            pf = condition(x, *args, **kwds) #XXX: ZeroDivisionError -> inf?
+            try:
+                pf = condition(x, *args, **kwds)
+            except ZeroDivisionError:
+                return inf
             _k = k * pow(h,_n[0])
             return float(_k)*pf**2 + f(x, *argz, **kwdz)
         func.func = condition
@@ -105,7 +111,10 @@ the condition f(x) is satisfied when f(x) == 0.0
     _f = [lambda x:0.] # decorated function
     _y = [] # stored results
     def error(x):
-        rms = condition(x, *args, **kwds)**2 #XXX: ZeroDivisionError -> inf?
+        try:
+            rms = condition(x, *args, **kwds)**2
+        except ZeroDivisionError:
+            return inf
         if hasattr(_f[0], 'error'): rms += _f[0].error(x)**2
         return rms**0.5
     def iter(i=None):
@@ -130,7 +139,10 @@ the condition f(x) is satisfied when f(x) == 0.0
     def dec(f):
         _f[0] = f
         def func(x, *argz, **kwdz):
-            pf = condition(x, *args, **kwds) #XXX: ZeroDivisionError -> inf?
+            try:
+                pf = condition(x, *args, **kwds)
+            except ZeroDivisionError:
+                return inf
             _k = k * pow(h,_n[0])
             return float(_k)*abs(pf) + f(x, *argz, **kwdz)
         func.func = condition
@@ -158,7 +170,10 @@ the condition f(x) is satisfied when f(x) == 0.0
     _f = [lambda x:0.] # decorated function
     _y = [] # stored results
     def error(x):
-        rms = condition(x, *args, **kwds)**2 #XXX: ZeroDivisionError -> inf?
+        try:
+            rms = condition(x, *args, **kwds)**2
+        except ZeroDivisionError:
+            return inf
         if hasattr(_f[0], 'error'): rms += _f[0].error(x)**2
         return rms**0.5
     def iter(i=None):
@@ -183,7 +198,10 @@ the condition f(x) is satisfied when f(x) == 0.0
     def dec(f):
         _f[0] = f
         def func(x, *argz, **kwdz):
-            pf = condition(x, *args, **kwds) #XXX: ZeroDivisionError -> inf?
+            try:
+                pf = condition(x, *args, **kwds)
+            except ZeroDivisionError:
+                return inf
             _k = float(k) * pow(h,_n[0]) if pf else 0.0
             return _k + f(x, *argz, **kwdz)
         func.func = condition
@@ -211,7 +229,10 @@ the condition f(x) is satisfied when f(x) <= 0.0
     _f = [lambda x:0.] # decorated function
     _y = [] # stored results
     def error(x):
-        rms = max(0., condition(x, *args, **kwds))**2 #XXX: ZeroDivisionError
+        try:
+            rms = max(0., condition(x, *args, **kwds))**2
+        except ZeroDivisionError:
+            return inf
         if hasattr(_f[0], 'error'): rms += _f[0].error(x)**2
         return rms**0.5
     def iter(i=None):
@@ -236,7 +257,10 @@ the condition f(x) is satisfied when f(x) <= 0.0
     def dec(f):
         _f[0] = f
         def func(x, *argz, **kwdz):
-            pf = condition(x, *args, **kwds) #XXX: ZeroDivisionError -> inf?
+            try:
+                pf = condition(x, *args, **kwds)
+            except ZeroDivisionError:
+                return inf
             _k = float(k) * pow(h,_n[0]) if pf > 0 else 0.0
             return _k + f(x, *argz, **kwdz)
         func.func = condition
@@ -266,7 +290,10 @@ the condition f(x) is satisfied when f(x) <= 0.0
     _f = [lambda x:0.] # decorated function
     _y = [] # stored results
     def error(x):
-        rms = max(0., condition(x, *args, **kwds))**2 #XXX: ZeroDivisionError
+        try:
+            rms = max(0., condition(x, *args, **kwds))**2
+        except ZeroDivisionError:
+            return inf
         if hasattr(_f[0], 'error'): rms += _f[0].error(x)**2
         return rms**0.5
     def iter(i=None):
@@ -291,7 +318,10 @@ the condition f(x) is satisfied when f(x) <= 0.0
     def dec(f):
         _f[0] = f
         def func(x, *argz, **kwdz):
-            pf = condition(x, *args, **kwds) #XXX: ZeroDivisionError -> inf?
+            try:
+                pf = condition(x, *args, **kwds)
+            except ZeroDivisionError:
+                return inf
             if pf > 0:  # inequality constraint is violated
                 return inf
             # inequality constraint is satisfied
@@ -322,7 +352,10 @@ the condition f(x) is satisfied when f(x) <= 0.0
     _f = [lambda x:0.] # decorated function
     _y = [] # stored results
     def error(x):
-        rms = max(0., condition(x, *args, **kwds))**2 #XXX: ZeroDivisionError
+        try:
+            rms = max(0., condition(x, *args, **kwds))**2
+        except ZeroDivisionError:
+            return inf
         if hasattr(_f[0], 'error'): rms += _f[0].error(x)**2
         return rms**0.5
     def iter(i=None):
@@ -347,7 +380,10 @@ the condition f(x) is satisfied when f(x) <= 0.0
     def dec(f):
         _f[0] = f
         def func(x, *argz, **kwdz):
-            pf = condition(x, *args, **kwds) #XXX: ZeroDivisionError -> inf?
+            try:
+                pf = condition(x, *args, **kwds)
+            except ZeroDivisionError:
+                return inf
             _k = k * pow(h,_n[0])
             return float(2*_k)*max(0., pf)**2 + f(x, *argz, **kwdz) #XXX: use 2*k or k=200?
         func.func = condition
@@ -375,7 +411,10 @@ the condition f(x) is satisfied when f(x) <= 0.0
     _f = [lambda x:0.] # decorated function
     _y = [] # stored results
     def error(x):
-        rms = max(0., condition(x, *args, **kwds))**2 #XXX: ZeroDivisionError
+        try:
+            rms = max(0., condition(x, *args, **kwds))**2
+        except ZeroDivisionError:
+            return inf
         if hasattr(_f[0], 'error'): rms += _f[0].error(x)**2
         return rms**0.5
     def iter(i=None):
@@ -400,7 +439,10 @@ the condition f(x) is satisfied when f(x) <= 0.0
     def dec(f):
         _f[0] = f
         def func(x, *argz, **kwdz):
-            pf = condition(x, *args, **kwds) #XXX: ZeroDivisionError -> inf?
+            try:
+                pf = condition(x, *args, **kwds)
+            except ZeroDivisionError:
+                return inf
             _k = k * pow(h,_n[0])
             return float(2*_k)*abs(max(0., pf)) + f(x, *argz, **kwdz) #XXX: use 2*k or k=200?
         func.func = condition
@@ -429,7 +471,10 @@ the condition f(x) is satisfied when f(x) <= 0.0
     _f = [lambda x:0.] # decorated function
     _y = [] # stored results
     def error(x):
-        rms = max(0., condition(x, *args, **kwds))**2 #XXX: ZeroDivisionError
+        try:
+            rms = max(0., condition(x, *args, **kwds))**2
+        except ZeroDivisionError:
+            return inf
         if hasattr(_f[0], 'error'): rms += _f[0].error(x)**2
         return rms**0.5
     def iter(i=None):
@@ -440,7 +485,10 @@ the condition f(x) is satisfied when f(x) <= 0.0
     def iteration():
         return _n[0]
     def store(x,i=None): #XXX: couple to 'iter' as {n:y} ?
-        y = condition(x, *args, **kwds) #XXX: ZeroDivisionError -> inf?
+        try:
+            y = condition(x, *args, **kwds) #XXX: don't re-evaluate
+        except ZeroDivisionError:
+            y = inf
         l = len(_y)
         if i is None: i = iteration()
         if i >= l: _y.extend([0.]*(i-l) + [y])
@@ -459,7 +507,10 @@ the condition f(x) is satisfied when f(x) <= 0.0
     def dec(f):
         _f[0] = f
         def func(x, *argz, **kwdz):
-            pf = condition(x, *args, **kwds) #XXX: ZeroDivisionError -> inf?
+            try:
+                pf = condition(x, *args, **kwds)
+            except ZeroDivisionError:
+                return inf
             beta = 0.; _k = k
             for i in range(_n[0]):
                 beta += 2.*_k*max(-beta/(2.*_k), stored(i))
@@ -492,7 +543,10 @@ the condition f(x) is satisfied when f(x) = 0.0
     _f = [lambda x:0.] # decorated function
     _y = [] # stored results
     def error(x):
-        rms = condition(x, *args, **kwds)**2 #XXX: ZeroDivisionError -> inf?
+        try:
+            rms = condition(x, *args, **kwds)**2
+        except ZeroDivisionError:
+            return inf
         if hasattr(_f[0], 'error'): rms += _f[0].error(x)**2
         return rms**0.5
     def iter(i=None):
@@ -503,7 +557,10 @@ the condition f(x) is satisfied when f(x) = 0.0
     def iteration():
         return _n[0]
     def store(x,i=None): #XXX: couple to 'iter' as {n:y} ?
-        y = condition(x, *args, **kwds) #XXX: ZeroDivisionError -> inf?
+        try:
+            y = condition(x, *args, **kwds)
+        except ZeroDivisionError:
+            y = inf
         l = len(_y)
         if i is None: i = iteration()
         if i >= l: _y.extend([0.]*(i-l) + [y])
@@ -522,7 +579,10 @@ the condition f(x) is satisfied when f(x) = 0.0
     def dec(f):
         _f[0] = f
         def func(x, *argz, **kwdz):
-            pf = condition(x, *args, **kwds) #XXX: ZeroDivisionError -> inf?
+            try:
+                pf = condition(x, *args, **kwds)
+            except ZeroDivisionError:
+                return inf
             lam = 0.; _k = k
             for i in range(_n[0]):
                 lam += 2.*_k*stored(i)
