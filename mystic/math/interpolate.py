@@ -446,6 +446,8 @@ def interpf(x, z, method=None, extrap=False, arrays=False):
         _f, _fx = _to_array, _array
     else:
         _f, _fx = _to_nonarray, _nonarray
+    if len(x) > len(z): # if len(x) < len(z), points are dropped
+        x = x[:len(z)]  # drop points
     x,z = extrapolate(x,z,method=extrap)
     x,z = _unique(x,z,sort=True)
     # avoid nan as first value #XXX: better choice than 'nearest'?

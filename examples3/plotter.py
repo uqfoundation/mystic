@@ -164,10 +164,10 @@ class Plotter(object):
         bounds = ""
         for i in range(max(axes + ix)+1):
             if i in axes:
-                it = getattr(ixy, '__next__', ixy.next)()
+                it = next(ixy)
                 bounds += "%s:%s:%s" % (it.min(), it.max(), M)
             else:
-                it = getattr(ifx, '__next__', ifx.next)()
+                it = next(ifx)
                 bounds += "%s" % it
             bounds += ", "
         bounds = bounds[:-2]
