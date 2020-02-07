@@ -355,7 +355,7 @@ def _noisy(x, scale=1e-8): #XXX: move to tools?
     return x if not scale else x + np.random.normal(scale=scale, size=x.shape)
 
 
-def interpolate(x, z, xgrid, method=None, extrap=False, arrays=True):
+def interpolate(x, z, xgrid, method=None, extrap=False, arrays=True, **kwds):
     '''interpolate to find z = f(x) sampled at points defined by xgrid
 
     Input:
@@ -381,6 +381,10 @@ def interpolate(x, z, xgrid, method=None, extrap=False, arrays=True):
       'linear','cubic','nearest','inverse','gaussian','multiquadric',
       'quintic','thin_plate') can be used. If extrap is a cost function
       z = f(x), then directly use it in the extrapolation.
+
+    NOTE:
+      additional keyword arguments (epsilon, smooth, norm) are avaiable for use
+      with a Rbf interpolator. See mystic.math.interpolate.Rbf for more details.
     '''
     if arrays:
         _f, _fx = _to_array, _array
@@ -407,7 +411,7 @@ def interpolate(x, z, xgrid, method=None, extrap=False, arrays=True):
         si = _rbf
     if kind == 0: # 'rbf' -> Rbf
         import numpy as np
-        rbf = si.Rbf(*np.vstack((x.T, z)), function=function, smooth=0)
+        rbf = si.Rbf(*np.vstack((x.T, z)), function=function, **kwds)
         return _fx(rbf(*xgrid))
     # method = 'linear' -> LinearNDInterpolator
     # method = 'nearest' -> NearestNDInterpolator
@@ -416,7 +420,7 @@ def interpolate(x, z, xgrid, method=None, extrap=False, arrays=True):
     #XXX: should the extrapolated points be removed?
 
 
-def interpf(x, z, method=None, extrap=False, arrays=False):
+def interpf(x, z, method=None, extrap=False, arrays=False, **kwds):
     '''interpolate to find f, where z = f(*x)
 
     Input:
@@ -441,6 +445,10 @@ def interpf(x, z, method=None, extrap=False, arrays=False):
       'linear','cubic','nearest','inverse','gaussian','multiquadric',
       'quintic','thin_plate') can be used. If extrap is a cost function
       z = f(x), then directly use it in the extrapolation.
+
+    NOTE:
+      additional keyword arguments (epsilon, smooth, norm) are avaiable for use
+      with a Rbf interpolator. See mystic.math.interpolate.Rbf for more details.
     ''' #XXX: return f(*x) or f(x)?
     if arrays:
         _f, _fx = _to_array, _array
@@ -469,7 +477,7 @@ def interpf(x, z, method=None, extrap=False, arrays=False):
         si = _rbf
     if kind == 0: # 'rbf'
         import numpy as np
-        return _f(si.Rbf(*np.vstack((x.T, z)), function=function, smooth=0))
+        return _f(si.Rbf(*np.vstack((x.T, z)), function=function, **kwds))
     elif x.ndim == 1: 
         return _f(si.interp1d(x, z, fill_value='extrapolate', bounds_error=False, kind=method))
     elif kind == 1: # 'linear'
