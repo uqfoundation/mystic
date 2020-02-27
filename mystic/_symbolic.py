@@ -361,7 +361,7 @@ Further Inputs:
     for i in range(1, neqns+1):
         eqn = 'eq' + str(i)
         eqlist += eqn + ","
-        code += eqn + '= Eq(' + left[i-1] + ',' + right[i-1] + ')'+NL
+        code += eqn + '= Eq(' + left[i-1] + ',' + right[i-1].replace(' 0.0',' 0') + ')'+NL # sympy bug for 0.0
     eqlist = eqlist.rstrip(',')
 
     # get full list of variables in 'targeted' order
@@ -551,7 +551,7 @@ def _solve_linear(constraints, variables='x', target=None, **kwds):
     for i in range(1, neqns+1):
         eqn = 'eq' + str(i)
         eqlist += eqn + ","
-        code += eqn + '= Eq(' + left[i-1] + ',' + right[i-1] + ')' + NL
+        code += eqn + '= Eq(' + left[i-1] + ',' + right[i-1].replace(' 0.0',' 0') + ')' + NL # sympy bug for 0.0
     eqlist = eqlist.rstrip(',')
 
     # get full list of variables in 'targeted' order
