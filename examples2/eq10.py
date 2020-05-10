@@ -44,7 +44,10 @@ pf = generate_penalty(generate_conditions(equations))
 from mystic.symbolic import generate_constraint, generate_solvers, solve
 cf = generate_constraint(generate_solvers(solve(equations)))
 
+from mystic.constraints import and_ as combined
 from numpy import round as npround
+
+c = combined(npround, cf)
 
 
 if __name__ == '__main__':
@@ -54,7 +57,7 @@ if __name__ == '__main__':
 
    #result = diffev2(objective, x0=bounds, bounds=bounds, penalty=pf, npop=20, gtol=50, disp=True, full_output=True)
    #result = diffev2(objective, x0=bounds, bounds=bounds, penalty=pf, constraints=npround, npop=40, gtol=50, disp=True, full_output=True)
-    result = diffev2(objective, x0=bounds, bounds=bounds, constraints=cf, npop=4, gtol=1, disp=True, full_output=True)
+    result = diffev2(objective, x0=bounds, bounds=bounds, constraints=c, npop=4, gtol=1, disp=True, full_output=True)
 
     print(result[0])
     assert almostEqual(result[0], xs, tol=1e-8) #XXX: fails b/c rel & zero?
