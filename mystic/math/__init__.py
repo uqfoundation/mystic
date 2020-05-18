@@ -58,14 +58,16 @@ generate a sampling distribution with interface dist(size=None)
 
 input::
     - generator: a 'distribution' method from scipy.stats or numpy.random
+    - rng: a mystic.random_state object [default: random_state('numpy.random')]
     - args: positional arguments for the distribtution object
     - kwds: keyword arguments for the distribution object
 
 note::
-    this method only accepts numpy.random methods with the keyword 'size'
+    this method only accepts numpy.random methods with the keyword 'size',
+    and only accepts random_state objects built with module='numpy.random'
         """
         from mystic.tools import random_state
-        rng = random_state(module='numpy.random')
+        rng = kwds.pop('rng', random_state(module='numpy.random'))
         if generator is None: generator = rng.random
         if getattr(generator, 'rvs', False): 
             d = generator(*args, **kwds)
