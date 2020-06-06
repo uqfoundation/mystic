@@ -8,6 +8,14 @@
 
 import os
 import sys
+# drop support for older python
+unsupported = None
+if sys.version_info < (2, 7):
+    unsupported = 'Versions of Python before 2.7 are not supported'
+elif (3, 0) <= sys.version_info < (3, 5):
+    unsupported = 'Versions of Python before 3.5 are not supported'
+if unsupported:
+    raise ValueError(unsupported)
 
 # set version numbers
 stable_version = '0.3.5'
@@ -87,9 +95,7 @@ enable the user to easily configure and control solvers, ``mystic``
 greatly reduces the barrier to solving hard optimization problems.
 
 ``mystic`` is in active development, so any user feedback, bug reports, comments,
-or suggestions are highly appreciated.  A list of known issues is maintained
-at http://trac.mystic.cacr.caltech.edu/project/mystic/query.html, with a public
-ticket list at https://github.com/uqfoundation/mystic/issues.
+or suggestions are highly appreciated.  list of issues is located at https://github.com/uqfoundation/mystic/issues, with a legacy list maintained at https://uqfoundation.github.io/mystic-issues.html.
 
 
 Major Features
@@ -169,7 +175,7 @@ Requirements
 
 ``mystic`` requires:
 
-    - ``python``, **version >= 2.6** or **version >= 3.3**, or ``pypy``
+    - ``python``, **version >= 2.7** or **version >= 3.5**, or ``pypy``
     - ``numpy``, **version >= 1.0**
     - ``sympy``, **version >= 0.6.7**
     - ``dill``, **version >= 0.3.1**
@@ -242,7 +248,7 @@ functions using the ``pathos`` (i.e. ``multiprocessing``) interface. ``mystic``
 solvers are designed to utilize distributed and parallel tools provided by
 the ``pathos`` package. For more information, see ``mystic.abstract_map_solver``,
 ``mystic.abstract_ensemble_solver``, and the ``pathos`` documentation at
-http://dev.danse.us/trac/pathos.
+http://pathos.rtfd.io.
 
 Important classes and functions are found here:
 
@@ -315,9 +321,9 @@ acknowledge use of ``mystic`` by citing the following in your publication::
 
     Michael McKerns, Patrick Hung, and Michael Aivazis,
     "mystic: highly-constrained non-convex optimization and UQ", 2009- ;
-    http://trac.mystic.cacr.caltech.edu/project/mystic
+    https://uqfoundation.github.io/mystic.html
 
-Please see http://trac.mystic.cacr.caltech.edu/project/mystic or
+Please see https://uqfoundation.github.io/mystic.html or
 http://arxiv.org/pdf/1202.1056 for further information.
 
 """ % {'relver' : stable_version, 'thisver' : this_version}

@@ -36,9 +36,7 @@ enable the user to easily configure and control solvers, ``mystic``
 greatly reduces the barrier to solving hard optimization problems.
 
 ``mystic`` is in active development, so any user feedback, bug reports, comments,
-or suggestions are highly appreciated.  A list of known issues is maintained
-at http://trac.mystic.cacr.caltech.edu/project/mystic/query.html, with a public
-ticket list at https://github.com/uqfoundation/mystic/issues.
+or suggestions are highly appreciated.  A list of issues is located at https://github.com/uqfoundation/mystic/issues, with a legacy list maintained at https://uqfoundation.github.io/mystic-issues.html.
 
 
 Major Features
@@ -73,6 +71,7 @@ Development Version
 [![Documentation Status](https://readthedocs.org/projects/mystic/badge/?version=latest)](https://mystic.readthedocs.io/en/latest/?badge=latest)
 [![Travis Build Status](https://img.shields.io/travis/uqfoundation/mystic.svg?label=build&logo=travis&branch=master)](https://travis-ci.org/uqfoundation/mystic)
 [![codecov](https://codecov.io/gh/uqfoundation/mystic/branch/master/graph/badge.svg)](https://codecov.io/gh/uqfoundation/mystic)
+[![Downloads](https://pepy.tech/badge/mystic)](https://pepy.tech/project/mystic)
 -------------------
 You can get the latest development version with all the shiny new features at:
     https://github.com/uqfoundation
@@ -136,7 +135,7 @@ functions using the ``pathos`` (i.e. ``multiprocessing``) interface. ``mystic``
 solvers are designed to utilize distributed and parallel tools provided by
 the ``pathos`` package. For more information, see ``mystic.abstract_map_solver``,
 ``mystic.abstract_ensemble_solver``, and the ``pathos`` documentation at
-http://dev.danse.us/trac/pathos.
+http://pathos.rtfd.io.
 
 Important classes and functions are found here:
 
@@ -208,8 +207,8 @@ acknowledge use of ``mystic`` by citing the following in your publication::
 
     Michael McKerns, Patrick Hung, and Michael Aivazis,
     "mystic: highly-constrained non-convex optimization and UQ", 2009- ;
-    http://trac.mystic.cacr.caltech.edu/project/mystic
+    https://uqfoundation.github.io/mystic.html
 
-Please see http://trac.mystic.cacr.caltech.edu/project/mystic or
+Please see https://uqfoundation.github.io/mystic.html or
 http://arxiv.org/pdf/1202.1056 for further information.
 
