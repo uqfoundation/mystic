@@ -421,8 +421,10 @@ Notes:
       return [float(i) for i in samples] #samples.tolist()
     from numpy import nan
     return [nan]*len(samples) #XXX: better to space pts evenly across range?
-  from numpy import sqrt
+  from numpy import sqrt, seterr
+  err = seterr(invalid='ignore')
   scale = sqrt(float(v) / sv)
+  seterr(**err)
   samples = samples * scale  #NOTE: not "mean-preserving", until the next line
   return impose_mean(m, samples, weights) #NOTE: not range preserving
 
