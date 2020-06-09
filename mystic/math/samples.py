@@ -175,8 +175,8 @@ Inputs:
     f -- a function that returns a single value, given a list of inputs
     pts -- a list of sample points
 """
-  from numpy import transpose, min
-  return min(f(list(i)) for i in transpose(pts))
+  from numpy import transpose
+  return min([f(list(i)) for i in transpose(pts)])
 
 
 def _expectation_given_samples(f, pts):
@@ -188,7 +188,7 @@ Inputs:
     pts -- a list of sample points
 """
   from numpy import transpose, mean
-  return mean(f(list(i)) for i in transpose(pts))
+  return mean([f(list(i)) for i in transpose(pts)])
 
 
 def _maximum_given_samples(f, pts):
@@ -199,8 +199,8 @@ Inputs:
     f -- a function that returns a single value, given a list of inputs
     pts -- a list of sample points
 """
-  from numpy import transpose, max
-  return max(f(list(i)) for i in transpose(pts))
+  from numpy import transpose
+  return max([f(list(i)) for i in transpose(pts)])
 
 
 def sampled_pts(pts,lb,ub):
