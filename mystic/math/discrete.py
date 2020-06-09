@@ -709,6 +709,66 @@ Notes:
   #     u += self.weights[i]
   # return u  #XXX: does this need to be normalized?
 
+  def sampled_minimum(self, f, npts=10000):
+    """use sampling to calculate ess_minimum for a given function
+
+Args:
+    f (func): a function that takes a list and returns a number
+    npts (int, default=10000): the number of point masses sampled from the
+        underlying discrete measures
+
+Returns:
+    the sampled ess_minimum, a float
+
+Notes:
+    - the function ``f`` should take a list of ``positions`` (for example,
+      ``scenario.positions`` or ``product_measure.positions``) and return a
+      single value (e.g. 0.0)
+"""
+    from mystic.math.samples import _minimum_given_samples
+    pts = self.sampled_support(npts)
+    return _minimum_given_samples(f, pts)
+
+  def sampled_expect(self, f, npts=10000):
+    """use sampling to calculate expected value for a given function
+
+Args:
+    f (func): a function that takes a list and returns a number
+    npts (int, default=10000): the number of point masses sampled from the
+        underlying discrete measures
+
+Returns:
+    the expected value, a float
+
+Notes:
+    - the function ``f`` should take a list of ``positions`` (for example,
+      ``scenario.positions`` or ``product_measure.positions``) and return a
+      single value (e.g. 0.0)
+"""
+    from mystic.math.samples import _expectation_given_samples
+    pts = self.sampled_support(npts)
+    return _expectation_given_samples(f, pts)
+
+  def sampled_maximum(self, f, npts=10000):
+    """use sampling to calculate ess_maximum for a given function
+
+Args:
+    f (func): a function that takes a list and returns a number
+    npts (int, default=10000): the number of point masses sampled from the
+        underlying discrete measures
+
+Returns:
+    the ess_maximum, a float
+
+Notes:
+    - the function ``f`` should take a list of ``positions`` (for example,
+      ``scenario.positions`` or ``product_measure.positions``) and return a
+      single value (e.g. 0.0)
+"""
+    from mystic.math.samples import _maximum_given_samples
+    pts = self.sampled_support(npts)
+    return _maximum_given_samples(f, pts)
+
   def sampled_pof(self, f, npts=10000):
     """use sampling to calculate probability of failure for a given function
 

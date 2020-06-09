@@ -167,6 +167,42 @@ Inputs:
   return pof
 
 
+def _minimum_given_samples(f, pts):
+  """
+use given sample pts to calculate minimum for function f
+
+Inputs:
+    f -- a function that returns a single value, given a list of inputs
+    pts -- a list of sample points
+"""
+  from numpy import transpose, min
+  return min([f(list(i)) for i in transpose(pts)])
+
+
+def _expectation_given_samples(f, pts):
+  """
+use given sample pts to calculate expected value for function f
+
+Inputs:
+    f -- a function that returns a single value, given a list of inputs
+    pts -- a list of sample points
+"""
+  from numpy import transpose, mean
+  return mean([f(list(i)) for i in transpose(pts)])
+
+
+def _maximum_given_samples(f, pts):
+  """
+use given sample pts to calculate maximum for function f
+
+Inputs:
+    f -- a function that returns a single value, given a list of inputs
+    pts -- a list of sample points
+"""
+  from numpy import transpose, max
+  return max([f(list(i)) for i in transpose(pts)])
+
+
 def sampled_pts(pts,lb,ub):
   """
 determine the number of sample points inside the given bounds
