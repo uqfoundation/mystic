@@ -8,6 +8,7 @@
 """
 a global searcher
 """
+#FIXME: refactor to use mystic.samplers (and code in _workflow)
 
 class Searcher(object):
    #searcher has:
