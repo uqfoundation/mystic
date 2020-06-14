@@ -5,7 +5,7 @@
 # License: 3-clause BSD.  The full license text is available at:
 #  - https://github.com/uqfoundation/mystic/blob/master/LICENSE
 """
-an interpolator
+a function/surface interpolator
   - initalize with x (and z)
   - can downsample and/or add noise
   - interpolates with "interp.interp"
@@ -35,7 +35,7 @@ class Interpolator(object):
 
         Input:
           x: an array of shape (npts, dim) or (npts,)
-          z: an array of shape (npts,)
+          z: an array of shape (npts,) or (npts, N)
 
         Additional Inputs:
           maxpts: int, maximum number of points to use from (x,z)
@@ -43,12 +43,18 @@ class Interpolator(object):
           method: string for kind of interpolator
           extrap: if True, extrapolate a bounding box (can reduce # of nans)
           arrays: if True, return a numpy array; otherwise don't return arrays
+          axis: int in [0,N], the axis of z to interpolate (all, by default)
 
         NOTE:
           if scipy is not installed, will use np.interp for 1D (non-rbf),
           or mystic's rbf otherwise. default method is 'nearest' for
           1D and 'linear' otherwise. method can be one of ('rbf','linear',
           'nearest','cubic','inverse','gaussian','quintic','thin_plate').
+
+        NOTE:
+          additional keyword arguments (epsilon, smooth, norm) are avaiable
+          for use with a Rbf interpolator. See mystic.math.interpolate.Rbf
+          for more details.
         """
         # basic configuration
         self.maxpts = kwds.pop('maxpts', None)  # N = 1000
@@ -89,11 +95,11 @@ class Interpolator(object):
         Input:
           maxpts: int, maximum number of points to use from (x,z)
           x: an array of shape (npts, dim) or (npts,)
-          z: an array of shape (npts,)
+          z: an array of shape (npts,) or (npts, N)
 
         Output:
           x: an array of shape (npts, dim) or (npts,)
-          z: an array of shape (npts,)
+          z: an array of shape (npts,) or (npts, N)
         """
         if maxpts is None: maxpts = self.maxpts
         if x is None: x = self.x
@@ -116,12 +122,13 @@ class Interpolator(object):
 
         Input:
           x: an array of shape (npts, dim) or (npts,)
-          z: an array of shape (npts,)
+          z: an array of shape (npts,) or (npts, N)
 
         Additional Inputs:
           method: string for kind of interpolator
           extrap: if True, extrapolate a bounding box (can reduce # of nans)
           arrays: if True, return a numpy array; otherwise don't return arrays
+          axis: int in [0,N], the axis of z to interpolate (all, by default)
 
         Output:
           interpolated response function, where z=f(*x.T)
@@ -131,9 +138,18 @@ class Interpolator(object):
           or mystic's rbf otherwise. default method is 'nearest' for
           1D and 'linear' otherwise. method can be one of ('rbf','linear',
           'nearest','cubic','inverse','gaussian','quintic','thin_plate').
+
+        NOTE:
+          additional keyword arguments (epsilon, smooth, norm) are avaiable
+          for use with a Rbf interpolator. See mystic.math.interpolate.Rbf
+          for more details.
         """
+        import numpy as np
         from mystic.math.interpolate import interpf
-        return interpf(x, z, **kwds)
+        with np.warnings.catch_warnings():
+            np.warnings.filterwarnings('ignore')
+            f = interpf(x, z, **kwds)
+        return f
 
 
     def Interpolate(self, **kwds): #XXX: better take a strategy?
@@ -147,6 +163,7 @@ class Interpolator(object):
           method: string for kind of interpolator
           extrap: if True, extrapolate a bounding box (can reduce # of nans)
           arrays: if True, return a numpy array; otherwise don't return arrays
+          axis: int in [0,N], the axis of z to interpolate (all, by default)
 
         Output:
           interpolated response function, where z=f(*x.T)
@@ -156,6 +173,11 @@ class Interpolator(object):
           or mystic's rbf otherwise. default method is 'nearest' for
           1D and 'linear' otherwise. method can be one of ('rbf','linear',
           'nearest','cubic','inverse','gaussian','quintic','thin_plate').
+
+        NOTE:
+          additional keyword arguments (epsilon, smooth, norm) are avaiable
+          for use with a Rbf interpolator. See mystic.math.interpolate.Rbf
+          for more details.
         """
         maxpts = kwds.pop('maxpts', self.maxpts)
         noise = kwds.pop('noise', self.noise)
@@ -178,16 +200,20 @@ class Interpolator(object):
           shift: float, additive shift for the z-axis [default: False]
           density: int, density of wireframe for the plot surface [default: 9]
           axes: tuple, indicies of the axes to plot [default: ()]
+          axis: int, index of the z-axis to plot, if multi-dim [default: 0]
           vals: list of values (one per axis) for unplotted axes [default: ()]
           maxpts: int, maximum number of (x,z) points to use [default: None]
           kernel: function transforming x to x', where x' = kernel(x)
           vtol: float, maximum distance outside bounds hypercube to plot data
+
+        NOTE: the default axis is 0 unless an interpolation axis has been set
         """
-        # get interpolted function
-        fx = self.function
+        axis = kwds.pop('axis', self.args.get('axis', 0))
+        # get interpolated function
+        fx = self.function or self.Interpolate()
         # plot interpolated surface
         from plotter import Plotter
-        p = Plotter(self.x, self.z, fx, **kwds)
+        p = Plotter(self.x, self.z, fx, axis=axis, **kwds)
         p.Plot()
         # if plotter interpolated the function, get the function
         self.function = fx or p.function
@@ -221,12 +247,18 @@ def interpolate(monitor, method=None, **kwds):
       noise: float, amplitude of gaussian noise to remove duplicate x
       extrap: if True, extrapolate a bounding box (can reduce # of nans)
       arrays: if True, return a numpy array; otherwise don't return arrays
+      axis: int in [0,N], the axis of z to interpolate (all, by default)
 
     NOTE:
       if scipy is not installed, will use np.interp for 1D (non-rbf),
       or mystic's rbf otherwise. default method is 'nearest' for
       1D and 'linear' otherwise. method can be one of ('rbf','linear',
       'nearest','cubic','inverse','gaussian','quintic','thin_plate').
+
+    NOTE:
+      additional keyword arguments (epsilon, smooth, norm) are avaiable
+      for use with a Rbf interpolator. See mystic.math.interpolate.Rbf
+      for more details.
     '''
     d = Interpolator(monitor, method=method, **kwds)
     d.Interpolate()

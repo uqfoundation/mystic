@@ -19,7 +19,7 @@ class Plotter(object):
 
         Input:
           x: an array of shape (npts, dim) or (npts,)
-          z: an array of shape (npts,)
+          z: an array of shape (npts,) or (npts, N)
           function: function f, where z=f(*x.T), or str (interpolation method)
 
         Additional Inputs:
@@ -27,7 +27,8 @@ class Plotter(object):
           scale: float, scaling factor for the z-axis [default: False]
           shift: float, additive shift for the z-axis [default: False]
           density: int, density of wireframe for the plot surface [default: 9]
-          axes: tuple, indicies of the axes to plot [default: ()]
+          axes: tuple, indicies of the x-axes to plot [default: ()]
+          axis: int, index of the z-axis to plot, if multi-dim [default: 0]
           vals: list of values (one per axis) for unplotted axes [default: ()]
           maxpts: int, maximum number of (x,z) points to use [default: None]
           kernel: function transforming x to x', where x' = kernel(x)
@@ -44,13 +45,13 @@ class Plotter(object):
         if function is None:
             function='linear'
         if type(function) is str:
-            from mystic.math.interpolate import interpf
-            function = interpf(self.x,self.z, method=function, arrays=True) #XXX: kwds?
+            from mystic.math.interpolate import interpf #NOTE: axis may change
+            function = interpf(self.x,self.z, method=function, arrays=True) #XXX: extrap, smooth, epsilon, norm?
         self.function = function
        #self.dim = kwds.pop('dim', None) #XXX: or len(x)?
         # interpolator configuration
         self.args = dict(step=200, scale=False, shift=False, vtol=None, \
-            kernel=None, density=9, axes=(), vals=(), maxpts=None)
+            kernel=None, density=9, axes=(), vals=(), maxpts=None, axis=0)
         self.args.update(kwds)
         self.maxpts = self.args.pop('maxpts')
         return
@@ -61,11 +62,11 @@ class Plotter(object):
         Input:
           maxpts: int, maximum number of points to use from (x,z)
           x: an array of shape (npts, dim) or (npts,)
-          z: an array of shape (npts,)
+          z: an array of shape (npts,) or (npts, N)
 
         Output:
           x: an array of shape (npts, dim) or (npts,)
-          z: an array of shape (npts,)
+          z: an array of shape (npts,) or (npts, N)
         """
         if maxpts is None: maxpts = self.maxpts
         if x is None: x = self.x
@@ -82,19 +83,39 @@ class Plotter(object):
         #   exit()
         return x, z
 
-    def _max(self):
+    def _max(self, **kwds):
         """get the x[i],z[i] corresponding to the max(z)
-        """
-        import numpy as np
-        mz = np.argmax(self.z)
-        return self.x[mz], self.z[mz]
 
-    def _min(self):
-        """get the x[i],z[i] corresponding to the min(z)
+        if z is multi-valued, accepts int axis to return single-valued z
         """
         import numpy as np
-        mz = np.argmin(self.z)
-        return self.x[mz], self.z[mz]
+        mz = np.argmax(self.z, axis=0)
+        x = np.asarray(self.x)[mz]
+        z = np.asarray(self.z)[mz]
+        zdim = len(z) if hasattr(z, '__len__') else 0
+        if zdim > 1:
+            axis = kwds.get('axis', self.args['axis']) # default = None?
+            z = z.diagonal()
+            if axis is not None:
+                return (x[axis], z[axis])
+        return (x,z)
+
+    def _min(self, **kwds):
+        """get the x[i],z[i] corresponding to the min(z)
+
+        if z is multi-valued, accepts int axis to return single-valued z
+        """
+        import numpy as np
+        mz = np.argmin(self.z, axis=0)
+        x = np.asarray(self.x)[mz]
+        z = np.asarray(self.z)[mz]
+        zdim = len(z) if hasattr(z, '__len__') else 0
+        if zdim > 1:
+            axis = kwds.get('axis', self.args['axis']) # default = None?
+            z = z.diagonal()
+            if axis is not None:
+                return (x[axis], z[axis])
+        return (x,z)
 
     def Plot(self, **kwds):
         """produce a scatterplot of (x,z) and the surface z = function(*x.T)
@@ -104,7 +125,8 @@ class Plotter(object):
           scale: float, scaling factor for the z-axis [default: False]
           shift: float, additive shift for the z-axis [default: False]
           density: int, density of wireframe for the plot surface [default: 9]
-          axes: tuple, indicies of the axes to plot [default: ()]
+          axes: tuple, indicies of the x-axes to plot [default: ()]
+          axis: int, index of the z-axis to plot, if multi-dim [default: 0]
           vals: list of values (one per axis) for unplotted axes [default: ()]
           maxpts: int, maximum number of (x,z) points to use [default: None]
           kernel: function transforming x to x', where x' = kernel(x)
@@ -114,6 +136,7 @@ class Plotter(object):
         scale = kwds['scale'] if 'scale' in kwds else self.args['scale']
         shift = kwds['shift'] if 'shift' in kwds else self.args['shift']
         axes = kwds['axes'] if 'axes' in kwds else self.args['axes']
+        axis = kwds['axis'] if 'axis' in kwds else self.args['axis']
         vals = kwds['vals'] if 'vals' in kwds else self.args['vals']
         maxpts = kwds['maxpts'] if 'maxpts' in kwds else self.maxpts
         kernel = kwds['kernel'] if 'kernel' in kwds else self.args['kernel']
@@ -133,8 +156,16 @@ class Plotter(object):
         ax = figure.gca(**kwds)
         ax.autoscale(tight=True)
 
+        zdim = len(self.z[0]) if hasattr(self.z[0], '__len__') else 0
+        if zdim == 0:
+            pass
+        elif type(axis) is not int and zdim != 1:
+            msg = "axis should be an int in the range 0 to %s" % (zdim-1)
+            raise ValueError(msg)
         x, z = self._downsample(maxpts)
         x = np.asarray(x)
+        z = np.asarray(z)
+        z = z[:,axis] if zdim > 1 else z
 
         # get two axes to plot, and indices of the remaining axes
         axes = axes[:2]  #XXX: error if wrong size?
@@ -175,7 +206,8 @@ class Plotter(object):
         x, z = filtered(bounds, x, z, *parsetol(vtol, axes))
 
         # evaluate the function on the sub-surface
-        z_ = np.asarray(self.function(*grid))
+        z_ = np.asarray(self.function(*grid)) #XXX: is orientiation correct?
+        z_ = z_[axis] if zdim > 1 else z_
         # scaling used by function plotter
         if scale:
             if shift:
@@ -195,7 +227,7 @@ class Plotter(object):
         d = max(11 - density, 1)
         x_ = grid[ax0]
         y_ = grid[ax1]
-        ax.plot_wireframe(x_, y_, z_, rstride=d, cstride=d)
+        ax.plot_wireframe(x_, y_, z_, rstride=d, cstride=d, alpha=.3)
         #ax.plot_surface(x_, y_, z_, rstride=d, cstride=d, cmap=cm.jet, linewidth=0, antialiased=False)
 
         # use the sampled values
@@ -229,7 +261,8 @@ def plot(monitor, function=None, **kwds):
       scale: float, scaling factor for the z-axis [default: False]
       shift: float, additive shift for the z-axis [default: False]
       density: int, density of wireframe for the plot surface [default: 9]
-      axes: tuple, indicies of the axes to plot [default: ()]
+      axes: tuple, indicies of the x-axes to plot [default: ()]
+      axis: int, index of the z-axis to plot, if multi-dim [default: 0]
       vals: list of values (one per axis) for unplotted axes [default: ()]
       maxpts: int, maximum number of (x,z) points to use [default: None]
       kernel: function transforming x to x', where x' = kernel(x)
