@@ -179,7 +179,7 @@ Requirements
     - ``numpy``, **version >= 1.0**
     - ``sympy``, **version >= 0.6.7**
     - ``dill``, **version >= 0.3.2**
-    - ``klepto``, **version >= 0.1.8**
+    - ``klepto``, **version >= 0.1.9**
 
 Optional requirements:
 
@@ -401,7 +401,7 @@ else:
     numpy_version = '>=1.0'
     sympy_version = '>=0.6.7'#, <0.7.4'
 dill_version = '>=0.3.2'
-klepto_version = '>=0.1.8'
+klepto_version = '>=0.1.9'
 scipy_version = '>=0.6.0'
 matplotlib_version = '>=0.91'
 mpmath_version = '>=0.19'
