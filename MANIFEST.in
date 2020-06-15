@@ -1,1 +1,14 @@
 include LICENSE
+include README*
+include tox.ini
+recursive-include docs *
+recursive-include examples *
+recursive-include examples2 *
+recursive-include examples3 *
+recursive-include examples4 *
+recursive-include examples5 *
+recursive-include scripts *
+recursive-include tests *
+include .*
+prune .git
+prune .coverage
