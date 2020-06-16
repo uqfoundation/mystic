@@ -2,6 +2,7 @@
 # source = mystic
 include =
     */mystic/*
+    */cache/*
     */models/*
     */mystic/math/*
 omit = 
@@ -27,15 +28,18 @@ branch = true
 [paths]
 source =
     mystic
+    cache
     models
     mystic/math
     */site-packages/mystic*/mystic
+    */site-packages/mystic*/mystic/cache
     */site-packages/mystic*/mystic/math
     */site-packages/mystic*/mystic/models
 
 [report]
 include =
     */mystic/*
+    */cache/*
     */models/*
     */mystic/math/*
 exclude_lines =
