@@ -341,12 +341,33 @@ def test_flatten_unflatten():
   return
 
 
+def test_min_max():
+  # build a collection
+  c = collection().load([.1, .4, 0, .2, .3, 1, 2, 6, 3, 5], (5,))
+
+  # build a function
+  f = lambda x: sum((i*i - 2*i) for i in x)
+
+  # check min, max, etc
+  assert c.minimum(f) == -1 == minimum(f, c.positions)
+  assert c.maximum(f) == 24 == maximum(f, c.positions)
+  assert c.ptp(f) == 25 == ptp(f, c.positions)
+  assert c.ess_minimum(f) == -1 == ess_minimum(f, c.positions, c.weights)
+  assert c.ess_maximum(f) == 15 == ess_maximum(f, c.positions, c.weights)
+  assert c.ess_ptp(f) == 16 == ess_ptp(f, c.positions, c.weights)
+  assert c.sampled_minimum(f, 100) == -1
+  assert c.sampled_maximum(f, 100) == 15
+  assert c.sampled_ptp(f, 100) == 16
+  return
+
+
 if __name__ == '__main__':
   test_calculate_methods(npts=2)
   test_set_behavior()
   test_pack_unpack()
   test_collection_behavior()
   test_flatten_unflatten()
+  test_min_max()
 
 
 # EOF

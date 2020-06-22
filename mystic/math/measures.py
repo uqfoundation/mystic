@@ -18,11 +18,11 @@ from mystic.math import almostEqual
 from mystic.math.distance import Lnorm
 
 __all__ = ['weighted_select','spread','norm','maximum','ess_maximum',\
-          'minimum','ess_minimum','expectation','expected_variance',\
-          'expected_std','_expected_moment','mean','support_index',\
-          'support','moment','standard_moment','variance','std','skewness',\
-          'kurtosis','impose_mean','impose_variance','impose_std',\
-          'impose_moment','impose_spread','impose_expectation',\
+          'minimum','ess_minimum','ptp','ess_ptp','expectation',\
+          'expected_variance','expected_std','_expected_moment','mean',\
+          'support_index','support','moment','standard_moment','variance',\
+          'std','skewness','kurtosis','impose_mean','impose_variance',\
+          'impose_std','impose_moment','impose_spread','impose_expectation',\
           '_impose_expected_moment','impose_expected_variance',\
           'impose_expected_std','impose_expected_mean_and_variance',\
           'impose_weight_norm','normalize','impose_reweighted_mean',\
@@ -150,6 +150,39 @@ Returns:
   if weights is None:
     return minimum(f, samples)
   return minimum(f, support(samples, weights, tol))
+
+def ptp(f, samples):
+  """calculate the spread of function for the given list of points
+
+``minimum(f,x) = max(f(x)) - min(f(x))``
+
+Args:
+    f (func): a function that takes a list and returns a number
+    samples (list): a list of sample points
+
+Returns:
+    the spread in output value for a function at the given inputs
+"""
+  y = [f(x) for x in samples] #XXX: parallel map?
+  return max(y) - min(y)
+
+def ess_ptp(f, samples, weights=None, tol=0.):
+  """calculate the spread of function for support on the given list of points
+
+``ess_minimum(f,x,w) = max(f(support(x,w))) - min(f(support(x,w)))``
+
+Args:
+    f (func): a function that takes a list and returns a number
+    samples (list): a list of sample points
+    weights (list, default=None): a list of sample weights
+    tol (float, default=0.0): a tolerance, where any ``weight <= tol`` is zero
+
+Returns:
+    the spread in output value for a function at the given support points
+"""
+  if weights is None:
+    return ptp(f, samples)
+  return ptp(f, support(samples, weights, tol))
 
 def expectation(f, samples, weights=None, tol=0.0):
   """calculate the (weighted) expectation of a function for a list of points

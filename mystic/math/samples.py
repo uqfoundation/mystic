@@ -203,6 +203,18 @@ Inputs:
   return max([f(list(i)) for i in transpose(pts)])
 
 
+def _ptp_given_samples(f, pts):
+  """
+use given sample pts to calculate spread for function f
+
+Inputs:
+    f -- a function that returns a single value, given a list of inputs
+    pts -- a list of sample points
+"""
+  from numpy import transpose, ptp
+  return ptp([f(list(i)) for i in transpose(pts)])
+
+
 def sampled_pts(pts,lb,ub):
   """
 determine the number of sample points inside the given bounds

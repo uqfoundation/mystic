@@ -202,6 +202,33 @@ Returns:
     positions = [(i,) for i in self.positions]
     return ess_minimum(f, positions, self.weights, tol)
 
+  def ptp(self, f):
+    """calculate the spread for a given function
+
+Args:
+    f (func): a function that takes a list and returns a number
+
+Returns:
+    the spread of the values of ``f`` over all measure positions
+"""
+    from .measures import ptp
+    positions = [(i,) for i in self.positions]
+    return ptp(f, positions)
+
+  def ess_ptp(self, f, tol=0.):
+    """calculate the spread for the support of a given function
+
+Args:
+    f (func): a function that takes a list and returns a number
+    tol (float, default=0.0): tolerance, where any ``weight <= tol`` is zero
+
+Returns:
+    the spread of the values of ``f`` over all measure positions with support
+"""
+    from .measures import ess_ptp
+    positions = [(i,) for i in self.positions]
+    return ess_ptp(f, positions, self.weights, tol)
+
   def expect(self, f):
     """calculate the expectation for a given function
 
@@ -501,6 +528,17 @@ Returns:
 """
     return min([i.minimum(f) for i in self])
 
+  def ptp(self, f): #XXX: return max of all or return all ptp?
+    """calculate the spread for a given function
+
+Args:
+    f (func): a function that takes a list and returns a number
+
+Returns:
+    the spread for values of ``f`` over all measure positions
+"""
+    return max([i.ptp(f) for i in self])
+
   def ess_maximum(self, f, tol=0.): #XXX: return max of all or return all max?
     """calculate the maximum for the support of a given function
 
@@ -524,6 +562,18 @@ Returns:
     the minimum value of ``f`` over all measure positions with support
 """
     return min([i.ess_minimum(f, tol) for i in self])
+
+  def ess_ptp(self, f, tol=0.): #XXX: return max of all or return all ptp?
+    """calculate the spread for the support of a given function
+
+Args:
+    f (func): a function that takes a list and returns a number
+    tol (float, default=0.0): tolerance, where any ``weight <= tol`` is zero
+
+Returns:
+    the spread of values of ``f`` over all measure positions with support
+"""
+    return max([i.ess_ptp(f, tol) for i in self])
 
   def expect(self, f):
     """calculate the expectation for a given function
@@ -728,6 +778,26 @@ Notes:
     from mystic.math.samples import _minimum_given_samples
     pts = self.sampled_support(npts)
     return _minimum_given_samples(f, pts)
+
+  def sampled_ptp(self, f, npts=10000):
+    """use sampling to calculate ess_|maximum - minimum| for a given function
+
+Args:
+    f (func): a function that takes a list and returns a number
+    npts (int, default=10000): the number of point masses sampled from the
+        underlying discrete measures
+
+Returns:
+    the sampled |ess_maximum - ess_minimum|, a float
+
+Notes:
+    - the function ``f`` should take a list of ``positions`` (for example,
+      ``scenario.positions`` or ``product_measure.positions``) and return a
+      single value (e.g. 0.0)
+"""
+    from mystic.math.samples import _ptp_given_samples
+    pts = self.sampled_support(npts)
+    return _ptp_given_samples(f, pts)
 
   def sampled_expect(self, f, npts=10000):
     """use sampling to calculate expected value for a given function
