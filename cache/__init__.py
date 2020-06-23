@@ -14,3 +14,72 @@ from . import function
 # backward compatability
 from klepto import lru_cache, lfu_cache, mru_cache
 from klepto import rr_cache, inf_cache, no_cache
+
+def cached(**kwds):
+    """build a caching archive for an objective function
+
+    Input:
+      type: the type of klepto.cache [default: inf_cache]
+      archive: the archive (str name for a new archive, or archive instance)
+      maxsize: maximum cache size [default: None]
+      keymap: cache key encoder [default: klepto.keymap.keymap()]
+      ignore: function argument names to ignore [default: '**']
+      tol: int tolerance for rounding [default: None]
+      deep: bool rounding depth (default: False]
+      purge: bool for purging cache to archive [default: False]
+      multivalued: bool if multivalued return of objective [default: False]
+
+    Returns: 
+      cached objective function
+
+    Notes:
+      inverse (y = -objective(x)) is at objective.__inverse__
+      cache of objective is at objective.__cache__
+      inverse and objective cache to the same archive
+    """
+    _type = kwds.pop('type', inf_cache)
+    multivalued = kwds.pop('multivalued', False)
+    from klepto.keymaps import keymap as _keymap
+    db = kwds.pop('archive', None)
+    kwds.setdefault('keymap', _keymap())
+    kwds.setdefault('ignore', '**')
+    if db is None: 
+        kwds['cache'] = archive.read('archive')
+    elif type(db) in (str, (u''.__class__)):
+        kwds['cache'] = archive.read(db)
+    else:
+        kwds['cache'] = db
+    # produce a cache with an archive backend
+    cache = _type(**kwds)
+
+    def dec(objective):
+        """wrap a caching archive around an objective
+        """
+        # wrap the cache around the objective function
+        inner = cache(lambda *x, **kwds: objective(x, **kwds))
+        _model = lambda x, **kwds: inner(*x, **kwds)
+        _model.__inner__ = inner
+
+        # when caching, always cache the multi-valued tuple
+        if multivalued:
+            def model(x, *argz, **kwdz):
+                axis = kwdz.pop('axis', None)
+                if axis is None: axis = slice(None)
+                return _model(x, *argz, **kwdz)[axis]
+        else:
+            def model(x, *argz, **kwdz):
+                axis = kwdz.pop('axis', None)
+                return _model(x, *argz, **kwdz)
+        # produce objective function that caches multi-valued output
+        model.__cache__ = lambda : inner.__cache__()
+        model.__doc__ = objective.__doc__
+
+        # produce model inverse with shared cache
+        imodel = lambda *args, **kwds: -model(*args, **kwds)
+        model.__inverse__ = imodel
+        imodel.__inverse__ = model
+        imodel.__cache__ = model.__cache__
+
+        return model
+    return dec
+

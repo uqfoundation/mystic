@@ -6,6 +6,9 @@
 #  - https://github.com/uqfoundation/mystic/blob/master/LICENSE
 '''klepto archive readers and writers, for functions and data
 '''
+from klepto.archives import (dict_archive, dir_archive, file_archive,
+                             hdf_archive, hdfdir_archive, null_archive,
+                             sql_archive, sqltable_archive)
 
 def read(name, keys=None, keymap=None, type=None):
     """read klepto db with name 'name'
