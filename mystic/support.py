@@ -315,10 +315,10 @@ Notes:
     - The option *out* takes a string of the filepath for the generated plot.
     - The option *iter* takes an integer of the largest iteration to plot.
     - The option *param* takes an indicator string. The indicator string is
-      built from comma-separated array slices. For example, ``params = ":"``
+      built from comma-separated array slices. For example, ``param = ":"``
       will plot all parameters in a single plot.  Alternatively,
-      ``params = ":2, 2:"`` will split the parameters into two plots, and
-      ``params = "0"`` will only plot the first parameter.
+      ``param = ":2, 2:"`` will split the parameters into two plots, and
+      ``param = "0"`` will only plot the first parameter.
     - The option *label* takes comma-separated strings. For example,
       ``label = "x,y,"`` will label the y-axis of the first plot with 'x', a
       second plot with 'y', and not add a label to a third or subsequent plots.      If more labels are given than plots, then the last label will be used

@@ -1185,8 +1185,8 @@ Notes:
     - The option *legend* takes a boolean, and will display the legend.
     - The option *nid* takes an integer of the nth simultaneous points to plot.
     - The option *param* takes an indicator string. The indicator string is
-      built from comma-separated array slices. For example, ``params = ":"``
-      will plot all parameters.  Alternatively, ``params = ":2, 3:"`` will plot      all parameters except for the third parameter, while ``params = "0"``
+      built from comma-separated array slices. For example, ``param = ":"``
+      will plot all parameters.  Alternatively, ``param = ":2, 3:"`` will plot      all parameters except for the third parameter, while ``param = "0"``
       will only plot the first parameter.
 """
     import shlex
