@@ -149,6 +149,8 @@ def write_raw_file(mon,log_file='paramlog.py',**kwds):
   if 'header' in kwds:
     f.write('# %s\n' % kwds['header'])
     del kwds['header']
+  f.write("inf = float('inf')\n") # define special values
+  f.write("nan = float('nan')\n") # define special values
   for variable,value in getattr(kwds, 'iteritems', kwds.items)():
     f.write('%s = %s\n' % (variable,value))# write remaining kwds as variables
  #f.write('# %s\n' % energy[-1])
