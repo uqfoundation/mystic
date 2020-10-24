@@ -438,6 +438,10 @@ Input::
 """ #FIXME: how handle collapse of base solver, mask of base solver...?
         _all = __builtins__['all']
         if all is None: all = any #FIXME: what should default be???
+        elif all not in (any, _all, True, False): # may be np.all or np.any
+            name = getattr(all, '__name__', '')
+            if name == 'any': all = any
+            elif name == 'all': all = _all
         if disp in ['verbose', 'all']: verbose = True
         else: verbose = False
         no = {} if info else False

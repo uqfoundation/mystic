@@ -225,7 +225,7 @@ AbstractSampler base class for optimizer-directed samplers
          if_terminated - {all: all, True: best, any: 1, False: 0, None: always}
          reset_all - {True: reset all, False: reset solved, None: never reset}
         """
-        from numpy import inf
+        from numpy import inf, all as all_, any as any_
         if evals is None:
             evals = inf
         if iters is None:
@@ -234,9 +234,9 @@ AbstractSampler base class for optimizer-directed samplers
             terminated = self._npts + 1
         else: #NOTE: if termination is specified, don't reset by default
             kwds['reset_all'] = kwds.get('reset_all', None)
-            if terminated is all:
+            if terminated is all or terminated is all_:
                 terminated = self._npts
-            elif terminated is any:
+            elif terminated is any or terminated is any_:
                 terminated = 1
             elif terminated is True: # best
                 pass
@@ -247,9 +247,9 @@ AbstractSampler base class for optimizer-directed samplers
                 raise ValueError(msg)
         if_stop = kwds.pop('if_terminated', None)
         quit = inf
-        if if_stop is all:
+        if if_stop is all or if_stop is all_:
             quit = self._npts
-        elif if_stop is any:
+        elif if_stop is any or if_stop is any_:
             quit = 1
         elif if_stop is True: # best
             quit = True

@@ -128,7 +128,7 @@ def collapse_weight(stepmon, tolerance=0.005, generations=50, mask=None):
                     msg = "bad entry '%s:%s' in mask" % (str(i),str(j))
                     raise ValueError(msg)
     elif hasattr(mask, '__len__') and len(mask) == 2:
-        if np.array(mask).ndim != 2:
+        if np.array(mask, dtype=object).ndim != 2:
             msg = "%s is not a valid mask" % str(mask)
             raise TypeError(msg)
     elif hasattr(mask, '__len__') and not len(mask):
@@ -175,7 +175,7 @@ def collapse_position(stepmon, tolerance=0.005, generations=50, mask=None):
             if type(i[0]) is not int:
                 msg = "bad element '%s' in mask" % str(i)
                 raise ValueError(msg)
-            if np.array(i[1]).ndim != 1:
+            if np.array(i[1], dtype=object).ndim != 1:
                 msg = "bad element '%s' in mask" % str(i)
                 raise ValueError(msg)
     elif type(mask) is dict:
@@ -188,10 +188,10 @@ def collapse_position(stepmon, tolerance=0.005, generations=50, mask=None):
                     msg = "bad entry '%s:%s' in mask" % (str(i),str(j))
                     raise ValueError(msg)
     elif hasattr(mask, '__len__') and len(mask) == 2:
-        if np.array(mask[0]).ndim != 1:
+        if np.array(mask[0], dtype=object).ndim != 1:
             msg = "%s is not a valid mask" % str(mask)
             raise TypeError(msg)
-        if np.array(mask[1]).ndim != 2:
+        if np.array(mask[1], dtype=object).ndim != 2:
             msg = "%s is not a valid mask" % str(mask)
             raise TypeError(msg)
     elif hasattr(mask, '__len__') and not len(mask):
