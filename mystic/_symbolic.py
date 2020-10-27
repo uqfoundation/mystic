@@ -269,6 +269,14 @@ Additional Inputs:
 Further Inputs:
     locals -- a dictionary of additional variables used in the symbolic
         constraints equations, and their desired values.
+    simplest -- if True, simplify all but polynomials order >= 3 [False]
+    rational -- if True, recast floats as rationals during solve [False]
+    sequence -- if True, solve sequentially and not as a matrix [False]
+    implicit -- if True, solve implicitly (with sin, cos, ...) [False]
+    check -- if False, skip minimal testing (divide_by_zero, ...) [True]
+    permute -- if True, return all permutations [False]
+    warn -- if True, don't suppress warnings [False]
+    verbose -- if True, print debug information [False]
 """ #XXX: an very similar version of this code is found in _solve_linear XXX#
     # for now, we abort on multi-line equations or inequalities
     if len(constraint.replace('==','=').split('=')) != 2:
@@ -286,7 +294,7 @@ Further Inputs:
     implicit = False # if True, solve implicitly (contains sin, ...)
     check = True # if False, skip minimal testing (divide_by_zero, ...)
     kwarg = {} # keywords for sympy's symbolic solve
-    #-----------------------undocumented-------------------------------
+
     permute = kwds['permute'] if 'permute' in kwds else permute
     warn = kwds['warn'] if 'warn' in kwds else warn
     verbose = kwds['verbose'] if 'verbose' in kwds else verbose
@@ -295,7 +303,7 @@ Further Inputs:
     kwarg['manual'] = kwds['sequence'] if 'sequence' in kwds else sequence
     kwarg['implicit'] = kwds['implicit'] if 'implicit' in kwds else implicit
     kwarg['check'] = kwds['check'] if 'check' in kwds else check
-    #------------------------------------------------------------------
+
     if target in [None, False]:
         target = []
     elif isinstance(target, str):
@@ -462,6 +470,14 @@ Additional Inputs:
 Further Inputs:
     locals -- a dictionary of additional variables used in the symbolic
         constraints equations, and their desired values.
+    simplest -- if True, simplify all but polynomials order >= 3 [False]
+    rational -- if True, recast floats as rationals during solve [False]
+    sequence -- if True, solve sequentially and not as a matrix [False]
+    implicit -- if True, solve implicitly (with sin, cos, ...) [False]
+    check -- if False, skip minimal testing (divide_by_zero, ...) [True]
+    permute -- if True, return all permutations [False]
+    warn -- if True, don't suppress warnings [False]
+    verbose -- if True, print debug information [False]
 """
 def_solve_linear = '''
 def _solve_linear(constraints, variables='x', target=None, **kwds):
@@ -475,7 +491,7 @@ def _solve_linear(constraints, variables='x', target=None, **kwds):
     implicit = False # if True, solve implicitly (contains sin, ...)
     check = True # if False, skip minimal testing (divide_by_zero, ...)
     kwarg = {} # keywords for sympy's symbolic solve
-    #-----------------------undocumented-------------------------------
+
     permute = kwds['permute'] if 'permute' in kwds else permute
     warn = kwds['warn'] if 'warn' in kwds else warn
     verbose = kwds['verbose'] if 'verbose' in kwds else verbose
@@ -484,7 +500,7 @@ def _solve_linear(constraints, variables='x', target=None, **kwds):
     kwarg['manual'] = kwds['sequence'] if 'sequence' in kwds else sequence
     kwarg['implicit'] = kwds['implicit'] if 'implicit' in kwds else implicit
     kwarg['check'] = kwds['check'] if 'check' in kwds else check
-    #------------------------------------------------------------------
+
     if target in [None, False]:
         target = []
     elif isinstance(target, str):
@@ -681,17 +697,15 @@ Additional Inputs:
 Further Inputs:
     locals -- a dictionary of additional variables used in the symbolic
         constraints equations, and their desired values.
+    simplest -- if True, simplify all but polynomials order >= 3 [False]
+    rational -- if True, recast floats as rationals during solve [False]
+    sequence -- if True, solve sequentially and not as a matrix [False]
+    implicit -- if True, solve implicitly (with sin, cos, ...) [False]
+    check -- if False, skip minimal testing (divide_by_zero, ...) [True]
+    permute -- if True, return all permutations [False]
+    warn -- if True, don't suppress warnings [False]
+    verbose -- if True, print debug information [False]
 """
-    #-----------------------undocumented-------------------------------
-   #kwds['permute'] = False # if True, return all permutations
-    kwds['warn'] = False  # if True, don't suppress warnings
-    kwds['verbose'] = False  # if True, print debug info
-   #kwds['simplest'] = False # if True, simplify all but polynomials order >= 3
-   #kwds['rational'] = False # if True, recast floats as rationals during solve
-   #kwds['sequence'] = False # if True, solve sequentially and not as a matrix
-   #kwds['implicit'] = False # if True, solve implicitly (contains sin, ...)
-   #kwds['check'] = True # if False, skip minimal testing (divide_by_zero, ...)
-    #------------------------------------------------------------------
     try:
         if len(constraints.replace('==','=').split('=')) <= 2:
             soln = _solve_single(constraints, variables=variables, \
@@ -755,6 +769,14 @@ Additional Inputs:
 Further Inputs:
     locals -- a dictionary of additional variables used in the symbolic
         constraints equations, and their desired values.
+    simplest -- if True, simplify all but polynomials order >= 3 [False]
+    rational -- if True, recast floats as rationals during solve [False]
+    sequence -- if True, solve sequentially and not as a matrix [False]
+    implicit -- if True, solve implicitly (with sin, cos, ...) [False]
+    check -- if False, skip minimal testing (divide_by_zero, ...) [True]
+    permute -- if True, return all permutations [False]
+    warn -- if True, don't suppress warnings [False]
+    verbose -- if True, print debug information [False]
 """
     nvars = None
     permute = False # if True, return all permutations
@@ -766,7 +788,7 @@ Further Inputs:
     implicit = False # if True, solve implicitly (contains sin, ...)
     check = True # if False, skip minimal testing (divide_by_zero, ...)
     kwarg = {} # keywords for sympy's symbolic solve
-    #-----------------------undocumented-------------------------------
+
     permute = kwds['permute'] if 'permute' in kwds else permute
     warn = kwds['warn'] if 'warn' in kwds else warn
     verbose = kwds['verbose'] if 'verbose' in kwds else verbose
@@ -775,7 +797,7 @@ Further Inputs:
     kwarg['sequence'] = kwds['sequence'] if 'sequence' in kwds else sequence
     kwarg['implicit'] = kwds['implicit'] if 'implicit' in kwds else implicit
     kwarg['check'] = kwds['check'] if 'check' in kwds else check
-    #------------------------------------------------------------------
+
     if target in [None, False]:
         target = []
     elif isinstance(target, str):

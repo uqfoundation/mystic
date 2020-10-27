@@ -461,6 +461,14 @@ Further Inputs:
         thus creating alternate simplifications. If all is True, return all
         possible simplifications due to negative values in an inequalty.
         The default is False, returning only one possible simplification.
+    simplest -- if True, simplify all but polynomials order >= 3 [False]
+    rational -- if True, recast floats as rationals during solve [False]
+    sequence -- if True, solve sequentially and not as a matrix [False]
+    implicit -- if True, solve implicitly (with sin, cos, ...) [False]
+    check -- if False, skip minimal testing (divide_by_zero, ...) [True]
+    permute -- if True, return all permutations [False]
+    warn -- if True, don't suppress warnings [False]
+    verbose -- if True, print debug information [False]
 """
 #FIXME: should minimize number of times LHS is reused; (or use 'and_')?
 #FIXME: should not fail at ZeroDivisionError (what should it do there?)
@@ -470,7 +478,6 @@ def simplify(constraints, variables='x', target=None, **kwds):
     ### undocumented ###
    #rand -- random number generator [default: random.random]
    #error -- if False, ZeroDivisionError evaluates as None [default: True]
-   #verbose -- print debug messages [default: False]
     ####################
     all = kwds['all'] if 'all' in kwds else False
     import random
