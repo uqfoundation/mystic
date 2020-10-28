@@ -314,7 +314,9 @@ Inputs:
     # find denominators within the enclosed parentheses
     for k,v in subs.items():
         # replace tmp-names in denominators as necessary
-        res.update(e.replace(k,v) for e in denom if k in e)
+        den = (e.replace(k,v) for e in denom if k in e)
+        # exclude replaced k's that don't have variables
+        res.update(d for d in den if get_variables(d, variables))
         # recurse into new statements
         res.update(denominator(v, variables))
     return list(res)
