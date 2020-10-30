@@ -336,7 +336,7 @@ for building RNGs that are different across multiple threads or processes.
         except:   
             seed = 0
         import time
-        seed += int(time.time()*1e6)
+        seed += int(time.time()) #NOTE: don't *1e6, numpy max is 2**32-1
 
     # set the random seed (or 'reset' with None)
     rng.seed(seed)

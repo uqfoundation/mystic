@@ -275,7 +275,7 @@ Further Inputs:
     implicit -- if True, solve implicitly (with sin, cos, ...) [False]
     check -- if False, skip minimal testing (divide_by_zero, ...) [True]
     permute -- if True, return all permutations [False]
-    warn -- if True, don't suppress warnings [False]
+    warn -- if True, don't suppress warnings [True]
     verbose -- if True, print debug information [False]
 """ #XXX: an very similar version of this code is found in _solve_linear XXX#
     # for now, we abort on multi-line equations or inequalities
@@ -476,7 +476,7 @@ Further Inputs:
     implicit -- if True, solve implicitly (with sin, cos, ...) [False]
     check -- if False, skip minimal testing (divide_by_zero, ...) [True]
     permute -- if True, return all permutations [False]
-    warn -- if True, don't suppress warnings [False]
+    warn -- if True, don't suppress warnings [True]
     verbose -- if True, print debug information [False]
 """
 def_solve_linear = '''
@@ -706,6 +706,7 @@ Further Inputs:
     warn -- if True, don't suppress warnings [False]
     verbose -- if True, print debug information [False]
 """
+    kwds['warn'] = kwds.get('warn', False)
     try:
         if len(constraints.replace('==','=').split('=')) <= 2:
             soln = _solve_single(constraints, variables=variables, \
@@ -775,7 +776,7 @@ Further Inputs:
     implicit -- if True, solve implicitly (with sin, cos, ...) [False]
     check -- if False, skip minimal testing (divide_by_zero, ...) [True]
     permute -- if True, return all permutations [False]
-    warn -- if True, don't suppress warnings [False]
+    warn -- if True, don't suppress warnings [True]
     verbose -- if True, print debug information [False]
 """
     nvars = None
