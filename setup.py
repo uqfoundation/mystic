@@ -403,7 +403,7 @@ else:
 dill_version = '>=0.3.3'
 klepto_version = '>=0.2.0'
 scipy_version = '>=0.6.0'
-matplotlib_version = '>=0.91'
+matplotlib_version = '>=0.91' #XXX: kiwisolver-1.3.0
 mpmath_version = '>=0.19'
 pathos_version = '>=0.2.6'
 pyina_version = '>=0.2.3'
