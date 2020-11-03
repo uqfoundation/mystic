@@ -16,7 +16,7 @@ from mystic.svc import *
 
 # define the objective function to match standard QP solver
 # (see: http://www.mathworks.com/help/optim/ug/quadprog.html)
-# the objective funciton is very similar to the dual for SVC
+# the objective function is very similar to the dual for SVC
 # (see: http://scikit-learn.org/stable/modules/svm.html#svc)
 def objective(x, Q, b):
     return 0.5 * dot(dot(x,Q),x) + dot(b,x)

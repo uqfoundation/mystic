@@ -7,7 +7,7 @@
 """
   Example applying mystic to sklearn
 
-  Use a linear regression to fit data generated from:
+  Use a linear regression to fit sparse data generated from:
             f(x) = a*x3**3 + b*x2**2 + c*x1 + d*x0
             a,b,c,d = 0.661, -1.234, 2.983, -16.5571
 

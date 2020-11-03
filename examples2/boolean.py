@@ -6,6 +6,13 @@
 #  - https://github.com/uqfoundation/mystic/blob/master/LICENSE
 """
 Maximization with a boolean variable and constraints.
+
+Maximize:
+    sum_{i=1}^{n-1} sum_{j=i+1}^{n} w_{ij} x_{i} x_{j}
+
+where:
+    sum_{i=1}^{n} x_{i} < b
+    x_{i} in {0,1}
 """
 from mystic.solvers import diffev2
 from mystic.monitors import VerboseMonitor

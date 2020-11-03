@@ -8,6 +8,13 @@
 #  - https://github.com/uqfoundation/mystic/blob/master/LICENSE
 """
 Support Vector Regression. Example 1
+
+Minimize:
+    0.5*x'Qx + b'*x
+
+where: 
+    Q_ij = Kernel(X_i, X_j)
+    b = Y, Y = x with uniform scatter
 """
 #FIXME: works if x is a 1D array, should allow x as a 2D array
 from numpy import *
