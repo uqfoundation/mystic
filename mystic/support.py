@@ -484,24 +484,36 @@ Notes:
             param.append([p[id] for p in params[j]])
         params = param[:]
 
-    if cost: j = 1
-    else: j = 0
-    dim1,dim2 = best_dimensions(plots + j)
+    # handle special case where only plot the cost
+    if cost and len(select) == 1 and select[0].endswith(':0'):
+        dim1,dim2 = best_dimensions(1)
 
-    import matplotlib.pyplot as plt
-    fig = plt.figure()
-    ax1 = fig.add_subplot(dim1,dim2,1)
-    ax1.set_ylabel(label[0])
-    locals = dict(params=params)
-    data = eval("params[{0}]".format(select[0]), locals)
-    try:
-        n = int(select[0].split(":")[0])
-    except ValueError:
-        n = 0
-    for line in data:
-        ax1.plot(line,label=str(n))#, marker='o')
-        n += 1
-    if legend: plt.legend()
+        import matplotlib.pyplot as plt
+        fig = plt.figure()
+        ax1 = fig.add_subplot(dim1,dim2,1)
+        ax1.set_ylabel(label[-1])
+        ax1.plot(cost,label='cost')
+        if legend: plt.legend()
+        cost = None
+    else:
+        if cost: j = 1
+        else: j = 0
+        dim1,dim2 = best_dimensions(plots + j)
+
+        import matplotlib.pyplot as plt
+        fig = plt.figure()
+        ax1 = fig.add_subplot(dim1,dim2,1)
+        ax1.set_ylabel(label[0])
+        locals = dict(params=params)
+        data = eval("params[{0}]".format(select[0]), locals)
+        try:
+            n = int(select[0].split(":")[0])
+        except ValueError:
+            n = 0
+        for line in data:
+            ax1.plot(line,label=str(n))#, marker='o')
+            n += 1
+        if legend: plt.legend()
 
     globals = {'fig':fig, 'dim1':dim1, 'dim2':dim2, 'ax1':ax1, 'label':label}
     for i in range(2, plots + 1):
