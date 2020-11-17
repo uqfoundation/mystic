@@ -231,7 +231,7 @@ class WrapModel(OUQModel):
         return
 
     def __call__(self, x, axis=None):
-        return self.__model__(x, axis=axis)
+        return self.__model__(x, axis=axis, **self.__kwds__)
 
 
 class SuccessModel(OUQModel):
