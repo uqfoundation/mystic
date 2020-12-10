@@ -57,7 +57,19 @@ class Estimator(object):
         return
 
     def _configure(self, kwds):
-        "configure the learning instance"
+        """configure the learning instance
+
+        Inputs:
+          kwds: a dict of configuration options
+
+        NOTE:
+          All entries in kwds are used to update the estimator configuration,
+          with the exception of the following:
+            estimator: a fitted sklearn estimator
+            transform: a fitted sklearn transform
+            axis: int in [0,N], the axis of z to estimate (all, by default)
+            xfopt: dict of configuration options to update the transform
+        """
         learner = self.args.get('learner', None)
         # get new estimator class/instance, if given
         estimator = kwds.pop('estimator', None)

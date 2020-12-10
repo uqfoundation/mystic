@@ -9,7 +9,12 @@ test functions, including those with multivalued returns and the axis keyword
 """
 
 def function5x3(x):
-    "a 5x3 test function"
+    """a 5x3 test function
+
+  For example:
+    >>> function5x3([1,2,3,4,5])
+    [13.922847983320086, -13.730919862656235, -18.0]
+    """
     a,b,c,d,e = x
     y = [
         a + b*abs(c*d**2 - (e/b)**2)**.5, 
@@ -20,29 +25,60 @@ def function5x3(x):
 
 
 def cost5x3(x, axis=None):
-    "a 5x3 test function, using axis"
+    """a 5x3 test function, using axis
+
+  For example:
+    >>> cost5x3([1,2,3,4,5], axis=None)
+    [13.922847983320086, -13.730919862656235, -18.0]
+    >>> cost5x3([1,2,3,4,5], axis=0)
+    13.922847983320086
+    """
     y = function5x3(x)
     return y if axis is None else y[axis]
 
 
 def function5x1(x):
-    "a 5x1 test function"
+    """a 5x1 test function
+
+  For example:
+    >>> function5x1([1,2,3,4,5])
+    [13.922847983320086]
+    """
     return function5x3(x)[:1]
 
 
 def cost5x1(x, axis=None):
-    "a 5x1 test function, using axis"
+    """a 5x1 test function, using axis
+
+  For example:
+    >>> cost5x1([1,2,3,4,5], axis=None)
+    [13.922847983320086]
+    >>> cost5x1([1,2,3,4,5], axis=0)
+    13.922847983320086
+    """
     y = function5x1(x)
     return y if axis is None else y[axis]
 
 
 def function5(x):
-    "a 5d test function"
+    """a 5d test function
+
+  For example:
+    >>> function5([1,2,3,4,5])
+    13.922847983320086
+    """
     return function5x3(x)[0]
 
 
-def cost5(x, axis=None): #XXX: axis ignored
-    "a 5d test function, using axis"
+def cost5(x, axis=None): #XXX: axis ignored, or better raise if not None?
+    """a 5d test function, with axis keyword (ignored)
+
+  For example:
+    >>> cost5([1,2,3,4,5], axis=None)
+    13.922847983320086
+    >>> cost5([1,2,3,4,5], axis=0)
+    13.922847983320086
+    """
     y = function5(x)
     return y
 
