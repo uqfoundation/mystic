@@ -62,7 +62,7 @@ if __name__ == '__main__':
     # fit a learned model using the sampled data, and calculate error
     print('fitting an estimator with machine learning')
     estimate = dict(nx=nx, ny=ny, data=golden)
-    mlarg = dict(alpha=0.0001, batch_size='auto', beta_1=0.9, beta_2=0.999, epsilon=1e-08, hidden_layer_sizes=(100,75,50,25), learning_rate_init=0.001, max_fun=15000, max_iter=1000, momentum=0.9, n_iter_no_change=5, power_t=0.5, tol=0.0001, validation_fraction=0.1, early_stopping=False, nesterovs_momentum=True, shuffle=True, solver='lbfgs', learning_rate='constant', activation='relu')
+    mlarg = dict(hidden_layer_sizes=(100,75,50,25),  max_iter=1000, n_iter_no_change=5, solver='lbfgs')
     import sklearn.neural_network as nn
     estimator = nn.MLPRegressor(**mlarg)
     learned = LearnedModel('learned', estimator=estimator, **estimate)

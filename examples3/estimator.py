@@ -368,9 +368,7 @@ if __name__ == '__main__':
     import mystic.monitors as mm
     m = mm.Monitor()
     m._x, m._y = data.coords, data.values
-    args = dict(alpha=0.0001, batch_size='auto', beta_1=0.9, beta_2=0.999, epsilon=1e-08, hidden_layer_sizes=(100,75,50,25), learning_rate_init=0.001, max_fun=15000, max_iter=1000, momentum=0.9, n_iter_no_change=5, power_t=0.5, tol=0.0001, validation_fraction=0.1)
-    args.update(dict(early_stopping=False, nesterovs_momentum=True, shuffle=True))
-    args.update(dict(solver = 'lbfgs', learning_rate = 'constant', activation = 'relu'))
+    args = dict(hidden_layer_sizes=(100,75,50,25), max_iter=1000, n_iter_no_change=5, solver = 'lbfgs')
     import sklearn.neural_network as nn
     mlp = nn.MLPRegressor(**args)
     e = Estimator(m._x, m._y, estimator=mlp)

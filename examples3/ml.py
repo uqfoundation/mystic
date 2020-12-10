@@ -402,11 +402,7 @@ if __name__ == '__main__':
     import sklearn.neural_network as nn
 
     # build dicts of hyperparameters for ANN instance
-    args,barg,carg = dict(alpha=0.0001, batch_size='auto', beta_1=0.9, beta_2=0.999, epsilon=1e-08, hidden_layer_sizes=(100,75,50,25), learning_rate_init=0.001, max_fun=15000, max_iter=1000, momentum=0.9, n_iter_no_change=5, power_t=0.5, tol=0.0001, validation_fraction=0.1), dict(early_stopping=False, nesterovs_momentum=True, shuffle=True), {} #dict(activation='relu', learning_rate='constant', solver='lbfgs')
-
-    # modify MLP hyperparameters
-    param = dict(alpha=0.0001, batch_size='auto', beta_1=0.9, beta_2=0.999, epsilon=1e-08, hidden_layer_sizes=(100,75,50,25), learning_rate_init=0.001, max_fun=15000, max_iter=1000, momentum=0.9, n_iter_no_change=5, power_t=0.5, tol=0.0001, validation_fraction=0.1)
-
+    args = dict(hidden_layer_sizes=(100,75,50,25), max_iter=1000, n_iter_no_change=5)
     # get tuples of estimator functions, distances, and scores
     extra = dict(
         #verbose = True, # if True, print intermediate scores
@@ -421,9 +417,8 @@ if __name__ == '__main__':
     #NOTE: solver: 'lbfgs','sgd','adam'
     )
 
-    args.update(param)
-    carg.update(extra)
-    mlp = nn.MLPRegressor(**args, **barg, **carg)
+    args.update(extra)
+    mlp = nn.MLPRegressor(**args)
 
     ss = pre.StandardScaler()
     fpred = Estimator(mlp, ss)
