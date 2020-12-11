@@ -74,7 +74,7 @@ if __name__ == '__main__':
 
     Inputs:
         x: list of InterpModel hyperparameters
-        axis: int, the axis if y (2D output) [default is axis=None (1D)]
+        axis: int, the index of y on which to find bound (all, by default)
         samples: int, number of samples, for a non-deterministic OUQ model
 
     Returns:

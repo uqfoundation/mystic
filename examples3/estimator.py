@@ -25,7 +25,7 @@ class Estimator(object):
         Additional Inputs:
           estimator: a fitted sklearn estimator
           transform: a fitted sklearn transform
-          axis: int in [0,N], the axis of z to estimate (all, by default)
+          axis: int in [0,N], the index of z to estimate (all, by default)
 
         NOTE:
           if sklearn is not installed, an error will be thrown.
@@ -67,7 +67,7 @@ class Estimator(object):
           with the exception of the following:
             estimator: a fitted sklearn estimator
             transform: a fitted sklearn transform
-            axis: int in [0,N], the axis of z to estimate (all, by default)
+            axis: int in [0,N], the index of z to estimate (all, by default)
             xfopt: dict of configuration options to update the transform
         """
         learner = self.args.get('learner', None)
@@ -163,7 +163,7 @@ class Estimator(object):
         Additional Inputs:
           estimator: a fitted sklearn estimator
           transform: a fitted sklearn transform
-          axis: int in [0,N], the axis of z to estimate (all, by default)
+          axis: int in [0,N], the index of z to estimate (all, by default)
 
         Output:
           learned response function, where z=f(*x.T)
@@ -238,7 +238,7 @@ class Estimator(object):
         Additional Input:
           estimator: a fitted sklearn estimator
           transform: a fitted sklearn transform
-          axis: int in [0,N], the axis of z to estimate (all, by default)
+          axis: int in [0,N], the index of z to estimate (all, by default)
 
         Output:
           learned response function, where z=f(*x.T)
@@ -275,7 +275,7 @@ class Estimator(object):
 
         Additional Input:
           arrays: if True, z = f(*x) is a numpy array; otherwise don't use arrays
-          axis: int in [0,N], the axis of z to estimate (all, by default)
+          axis: int in [0,N], the index of z to estimate (all, by default)
 
         Output:
           z: an array of shape (npts,) or (npts, N)
@@ -360,7 +360,7 @@ if __name__ == '__main__':
     truth = dict(model=toy, nx=nx, ny=ny, mu=.001, zmu=-.001)
     golden = NoisyModel('golden', cached=True, sigma=0, zsigma=0, **truth)
 
-    # generate some 'truth' data, using optimizer-directed sampling
+    # generate some 'truth' data, using solver-directed sampling
     bounds = [(0,10)]*nx
     data = golden.sample(bounds, pts=-4)
 

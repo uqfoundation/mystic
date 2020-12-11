@@ -23,7 +23,7 @@ class BaseOUQ(object): #XXX: redo with a "Solver" interface, like ensemble?
         bounds: MeasureBounds instance
 
     Additional Input:
-        samples: int, number of samples, for non-deterministic model
+        samples: int, number of samples (used for non-deterministic models)
         constraint: function of the form x' = constraint(x)
         xvalid: function returning True if x == x', given constraint
         cvalid: function similar to xvalid, but with product_measure input
@@ -48,7 +48,7 @@ class BaseOUQ(object): #XXX: redo with a "Solver" interface, like ensemble?
         """find the upper bound on the statistical quantity
 
     Input:
-        axis: int, the axis if y (2D output) [default is axis=None (1D)]
+        axis: int, the index of y on which to find bound (all, by default)
 
     Additional Input:
         kwds: dict, with updates to the instance's stored kwds
@@ -72,7 +72,7 @@ class BaseOUQ(object): #XXX: redo with a "Solver" interface, like ensemble?
         """find the lower bound on the statistical quantity
 
     Input:
-        axis: int, the axis if y (2D output) [default is axis=None (1D)]
+        axis: int, the index of y on which to find bound (all, by default)
 
     Additional Input:
         kwds: dict, with updates to the instance's stored kwds
@@ -98,7 +98,7 @@ class BaseOUQ(object): #XXX: redo with a "Solver" interface, like ensemble?
 
     Input:
         rv: list of input parameters
-        axis: int, the axis if y (2D output) [default is axis=None (1D)]
+        axis: int, the index of output to calculate (all, by default)
 
     Returns:
         the statistical quantity for the specified axis
@@ -181,12 +181,13 @@ class BaseOUQ(object): #XXX: redo with a "Solver" interface, like ensemble?
 
 
 class ExpectedValue(BaseOUQ):
+
     def objective(self, rv, axis=None):
         """calculate expected value of model, under uncertainty
 
     Input:
         rv: list of input parameters
-        axis: int, the axis if y (2D output) [default is axis=None (1D)]
+        axis: int, the index of output to calculate (all, by default)
 
     Returns:
         the expected value for the specified axis
@@ -217,12 +218,13 @@ class ExpectedValue(BaseOUQ):
 
 
 class MaximumValue(BaseOUQ):
+
     def objective(self, rv, axis=None):
         """calculate maximum value of model, under uncertainty
 
     Input:
         rv: list of input parameters
-        axis: int, the axis if y (2D output) [default is axis=None (1D)]
+        axis: int, the index of output to calculate (all, by default)
 
     Returns:
         the maximum value for the specified axis
@@ -254,12 +256,13 @@ class MaximumValue(BaseOUQ):
 
 
 class MinimumValue(BaseOUQ):
+
     def objective(self, rv, axis=None):
         """calculate minimum value of model, under uncertainty
 
     Input:
         rv: list of input parameters
-        axis: int, the axis if y (2D output) [default is axis=None (1D)]
+        axis: int, the index of output to calculate (all, by default)
 
     Returns:
         the minimum value for the specified axis
@@ -291,12 +294,13 @@ class MinimumValue(BaseOUQ):
 
 
 class ValueAtRisk(BaseOUQ):
+
     def objective(self, rv, axis=None):
         """calculate value at risk of model, under uncertainty
 
     Input:
         rv: list of input parameters
-        axis: int, the axis if y (2D output) [default is axis=None (1D)]
+        axis: int, the index of output to calculate (all, by default)
 
     Returns:
         the value at risk for the specified axis
@@ -328,12 +332,13 @@ class ValueAtRisk(BaseOUQ):
 
 
 class ProbOfFailure(BaseOUQ):
+
     def objective(self, rv, axis=None, iter=True):
         """calculate probability of failure for model, under uncertainty
 
     Input:
         rv: list of input parameters
-        axis: int, the axis if y (2D output) [default is axis=None (1D)]
+        axis: int, the index of output to calculate (all, by default)
         iter: bool, if True, calculate per axis, else calculate for all axes
 
     Returns:

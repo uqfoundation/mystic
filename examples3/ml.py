@@ -216,7 +216,7 @@ def improve_score(estimator, xyt, delta=.0001, tries=10, **kwds):
     Additional Inputs:
         verbose: bool, if True, be verbose with intermediate results
         scaled: bool, if True, don't call estimator.apply on xtrain,xtest
-        axis: int, the axis of y (if 2D output); default is axis=None (1D)
+        axis: int, the index of y to estimate (all, by default)
 
     Returns:
         estimator with best score
@@ -236,7 +236,7 @@ def _improve_score(axis, estimator, xyt, delta=.0001, tries=10, **kwds):
     """iteratively improve R^2 score for an estimator with randomness in fit
 
     Inputs:
-        axis: int, the axis of y (if 2D output); for 1D y, use axis=None
+        axis: int, the index of y to estimate (all, by default)
         estimator: a fitted Estimator instance
         xyt: a MLData instance (xtrain, xtest, ytrain, ytest)
         delta: float, the change in target, given target is satisfied
@@ -284,7 +284,7 @@ def _rescore(axis, estimator, xyt, target=0, tries=10, verbose=False):
     """iteratively improve R^2 score for an estimator with randomness in fit
 
     Inputs:
-        axis: int, the axis of y (if 2D output); for 1D y, use axis=None
+        axis: int, the index of y to estimate (all, by default)
         estimator: a fitted Estimator instance
         xyt: a MLData instance (xtrain, xtest, ytrain, ytest)
         target: float, the target score

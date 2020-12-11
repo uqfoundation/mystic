@@ -43,7 +43,7 @@ class Interpolator(object):
           method: string for kind of interpolator
           extrap: if True, extrapolate a bounding box (can reduce # of nans)
           arrays: if True, return a numpy array; otherwise don't return arrays
-          axis: int in [0,N], the axis of z to interpolate (all, by default)
+          axis: int in [0,N], index of z to interpolate (all, by default)
 
         NOTE:
           if scipy is not installed, will use np.interp for 1D (non-rbf),
@@ -128,7 +128,7 @@ class Interpolator(object):
           method: string for kind of interpolator
           extrap: if True, extrapolate a bounding box (can reduce # of nans)
           arrays: if True, return a numpy array; otherwise don't return arrays
-          axis: int in [0,N], the axis of z to interpolate (all, by default)
+          axis: int in [0,N], index of z to interpolate (all, by default)
 
         Output:
           interpolated response function, where z=f(*x.T)
@@ -163,7 +163,7 @@ class Interpolator(object):
           method: string for kind of interpolator
           extrap: if True, extrapolate a bounding box (can reduce # of nans)
           arrays: if True, return a numpy array; otherwise don't return arrays
-          axis: int in [0,N], the axis of z to interpolate (all, by default)
+          axis: int in [0,N], index of z to interpolate (all, by default)
 
         Output:
           interpolated response function, where z=f(*x.T)
@@ -247,7 +247,7 @@ def interpolate(monitor, method=None, **kwds):
       noise: float, amplitude of gaussian noise to remove duplicate x
       extrap: if True, extrapolate a bounding box (can reduce # of nans)
       arrays: if True, return a numpy array; otherwise don't return arrays
-      axis: int in [0,N], the axis of z to interpolate (all, by default)
+      axis: int in [0,N], index of z to interpolate (all, by default)
 
     NOTE:
       if scipy is not installed, will use np.interp for 1D (non-rbf),
