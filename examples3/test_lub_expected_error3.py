@@ -33,24 +33,28 @@ if __name__ == '__main__':
     #from toys import cost5 as toy; nx = 5; ny = None
     from toys import function5 as toy; nx = 5; ny = None
 
+    # update 'inner-loop' optimization parameters
     from misc import param, npts, wlb, wub, is_cons, scons
     from ouq import ExpectedValue
     from mystic.monitors import VerboseLoggingMonitor, Monitor, VerboseMonitor
     from mystic.termination import VTRChangeOverGeneration as VTRCOG
     from mystic.termination import Or, VTR, ChangeOverGeneration as COG
-    # update 'inner-loop' optimization parameters
     param['opts']['termination'] = COG(1e-10, 200)
     param['npop'] = 160
     param['stepmon'] = VerboseLoggingMonitor(1, 20, filename='log.txt', label='output')
+
+    # build inner-loop and outer-loop bounds
     bnd = MeasureBounds((0,0,0,0,0)[:nx],(1,10,10,10,10)[:nx], n=npts[:nx], wlb=wlb[:nx], wub=wub[:nx])
     bounds = [(-10,10),(0,0),(-10,10),(0,0)] #NOTE: mu,sigma,zmu,zsigma
-    import counter as it
-    counter = it.Counter()
 
+    # build a model representing 'truth'
     #print("building truth F'(x|a')...")
     true = dict(mu=.01, sigma=0., zmu=-.01, zsigma=0.)
     truth = NoisyModel('truth', model=toy, nx=nx, ny=ny, **true)
 
+    # get initial guess, a monitor, and a counter
+    import counter as it
+    counter = it.Counter()
     import numpy as np
     in_bounds = lambda a,b: (b-a) * np.random.rand() + a
     from pathos.pools import ProcessPool as Pool
@@ -64,6 +68,16 @@ if __name__ == '__main__':
     stepmon = VerboseLoggingMonitor(1, 1, 1, filename='result.txt', label='solved')
 
     def cost(x, axis=None, samples=Ns):
+        """upper bound on expected model error, for surrogate and 'truth'
+
+    Inputs:
+        x: list of NoisyModel hyperparameters
+        axis: int, the axis if y (2D output) [default is axis=None (1D)]
+        samples: int, number of samples, for a non-deterministic OUQ model
+
+    Returns:
+        upper bound on expected value of model error
+        """
         # CASE 3: |F(x|a) - F'(x|a')|, no G. Tune "a" for optimal F.
         approx = dict(mu=x[0], sigma=x[1], zmu=x[2], zsigma=x[3])
         #print('building model F(x|a) of truth...')
@@ -88,6 +102,7 @@ if __name__ == '__main__':
             #print('[id: %s] %s' % (i, solver[axis].bestSolution))
         return results
 
+    # outer-loop solver configuration and execution
     settings = dict(args=(axis,Ns), bounds=bounds, maxiter=1000, maxfun=100000,
                     disp=1, full_output=1, itermon=stepmon, ftol=1e-6,
                     npop=4, gtol=4, solver=PowellDirectionalSolver)# xtol=1e-6)

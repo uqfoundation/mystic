@@ -33,26 +33,30 @@ if __name__ == '__main__':
     #from toys import cost5 as toy; nx = 5; ny = None
     from toys import function5 as toy; nx = 5; ny = None
 
+    # update 'inner-loop' optimization parameters
     from misc import param, npts, wlb, wub, is_cons, scons
     from ouq import ExpectedValue
     from mystic.monitors import VerboseLoggingMonitor, Monitor, VerboseMonitor
     from mystic.termination import VTRChangeOverGeneration as VTRCOG
     from mystic.termination import Or, VTR, ChangeOverGeneration as COG
-    # update 'inner-loop' optimization parameters
     param['opts']['termination'] = COG(1e-10, 200)
     param['npop'] = 160
     param['stepmon'] = VerboseLoggingMonitor(1, 20, filename='log.txt', label='output')
+
+    # build inner-loop and outer-loop bounds
     bnd = MeasureBounds((0,0,0,0,0)[:nx],(1,10,10,10,10)[:nx], n=npts[:nx], wlb=wlb[:nx], wub=wub[:nx])
     bounds = [(0,10),(0,0)] #NOTE: smooth, noise... epsilon,method,extrap
-    import counter as it
-    counter = it.Counter()
 
+    # build a model representing 'truth', and generate some data
     #print("building truth F'(x|a')...")
     true = dict(mu=.01, sigma=0., zmu=-.01, zsigma=0.)
     truth = NoisyModel('truth', model=toy, nx=nx, ny=ny, **true)
     #print('sampling truth...')
     data = truth.sample([(0,1)]+[(0,10)]*(nx-1), pts=-16)
 
+    # get initial guess, a monitor, and a counter
+    import counter as it
+    counter = it.Counter()
     import numpy as np
     in_bounds = lambda a,b: (b-a) * np.random.rand() + a
     from pathos.pools import ProcessPool as Pool
@@ -66,6 +70,16 @@ if __name__ == '__main__':
     stepmon = VerboseLoggingMonitor(1, 1, 1, filename='result.txt', label='solved')
 
     def cost(x, axis=None, samples=Ns):
+        """upper bound on expected model error, for truth and Interp(data)
+
+    Inputs:
+        x: list of InterpModel hyperparameters
+        axis: int, the axis if y (2D output) [default is axis=None (1D)]
+        samples: int, number of samples, for a non-deterministic OUQ model
+
+    Returns:
+        upper bound on expected value of model error
+        """
         # CASE 1: F(x|a) = F'(x|a'). Tune A for optimal G.
         kwds = dict(smooth=x[0], noise=x[1], method='thin_plate', extrap=False)
 
@@ -90,6 +104,7 @@ if __name__ == '__main__':
             #print('[id: %s] %s' % (i, solver[axis].bestSolution))
         return results
 
+    # outer-loop solver configuration and execution
     settings = dict(args=(axis,Ns), bounds=bounds, maxiter=1000, maxfun=100000,
                     disp=1, full_output=1, itermon=stepmon, ftol=1e-6,
                     npop=4, gtol=4, solver=PowellDirectionalSolver)# xtol=1e-6)

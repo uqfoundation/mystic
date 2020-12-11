@@ -16,6 +16,18 @@ from mystic.monitors import Monitor
 class BaseOUQ(object): #XXX: redo with a "Solver" interface, like ensemble?
 
     def __init__(self, model, bounds, **kwds):
+        """OUQ model for a statistical quantity
+
+    Input:
+        model: function of the form y = model(x, axis=None)
+        bounds: MeasureBounds instance
+
+    Additional Input:
+        samples: int, number of samples, for non-deterministic model
+        constraint: function of the form x' = constraint(x)
+        xvalid: function returning True if x == x', given constraint
+        cvalid: function similar to xvalid, but with product_measure input
+        """
         self.npts = bounds.n  # (2,1,1)
         self.lb = bounds.lower
         self.ub = bounds.upper
@@ -33,7 +45,17 @@ class BaseOUQ(object): #XXX: redo with a "Solver" interface, like ensemble?
     #XXX: expected?
 
     def upper_bound(self, axis=None, **kwds):
-        "find the maximum upper bound"
+        """find the upper bound on the statistical quantity
+
+    Input:
+        axis: int, the axis if y (2D output) [default is axis=None (1D)]
+
+    Additional Input:
+        kwds: dict, with updates to the instance's stored kwds
+
+    Returns:
+        upper bound on the statistical quantity, for the specified axis
+        """
         self.kwds.update(**kwds) #FIXME: good idea???
         if self.axes is None or axis is not None:
             # solve for upper bound of objective (in measure space)
@@ -47,7 +69,17 @@ class BaseOUQ(object): #XXX: redo with a "Solver" interface, like ensemble?
         return upper #FIXME: don't accept "uphill" moves?
 
     def lower_bound(self, axis=None, **kwds):
-        "find the minimum lower bound"
+        """find the lower bound on the statistical quantity
+
+    Input:
+        axis: int, the axis if y (2D output) [default is axis=None (1D)]
+
+    Additional Input:
+        kwds: dict, with updates to the instance's stored kwds
+
+    Returns:
+        lower bound on the statistical quantity, for the specified axis
+        """
         self.kwds.update(**kwds) #FIXME: good idea???
         if self.axes is None or axis is not None:
             # solve for lower bound of objective (in measure space)
@@ -62,11 +94,43 @@ class BaseOUQ(object): #XXX: redo with a "Solver" interface, like ensemble?
 
     # --- func ---
     def objective(self, rv, axis=None):
+        """calculate the statistical quantity, under uncertainty
+
+    Input:
+        rv: list of input parameters
+        axis: int, the axis if y (2D output) [default is axis=None (1D)]
+
+    Returns:
+        the statistical quantity for the specified axis
+
+    NOTE:
+        respects constraints on input parameters and product measure
+        """
         return NotImplemented
 
     # --- solve ---
     def solve(self, objective, **kwds): #NOTE: single axis only
-        "solve for optimal solution (in measure space), given an objective"
+        """solve (in measure space) for bound on given objective
+
+    Input:
+        objective: cost function of the form y = objective(x)
+
+    Additional Input:
+        solver: mystic.solver instance [default: DifferentialEvolutionSolver2]
+        npop: population size [default: None]
+        id: a unique identifier for the solver [default: None]
+        nested: mystic.solver instance [default: None], for ensemble solvers
+        x0: initial parameter guess [default: use RandomInitialPoints]
+        pool: pathos.pool instance [default: None]
+        maxiter: max number of iterations [default: defined in solver]
+        maxfun: max number of objective evaluations [default: defined in solver]
+        evalmon: mystic.monitor instance [default: Monitor], for evaluations
+        stepmon: mystic.monitor instance [default: Monitor], for iterations
+        opts: dict of configuration options for solver.Solve [default: {}]
+
+    Returns:
+        solver instance, after Solve has been called
+        """
         kwds.update(self.kwds) #FIXME: good idea??? [bad in parallel???]
         lb, ub = self.lb, self.ub
         solver = kwds.get('solver', DifferentialEvolutionSolver2)
@@ -118,9 +182,20 @@ class BaseOUQ(object): #XXX: redo with a "Solver" interface, like ensemble?
 
 class ExpectedValue(BaseOUQ):
     def objective(self, rv, axis=None):
-        """get expected value from model under uncertainty for npts
+        """calculate expected value of model, under uncertainty
 
-        respects constraints on expected mean and variance of inputs
+    Input:
+        rv: list of input parameters
+        axis: int, the axis if y (2D output) [default is axis=None (1D)]
+
+    Returns:
+        the expected value for the specified axis
+
+    NOTE:
+        respects constraints on input parameters and product measure
+
+    NOTE:
+        for product_measure, use sampled_expect if samples, else expect
         """
         # check constraints
         c = product_measure().load(rv, self.npts)
@@ -143,9 +218,20 @@ class ExpectedValue(BaseOUQ):
 
 class MaximumValue(BaseOUQ):
     def objective(self, rv, axis=None):
-        """get maximum value from model under uncertainty for npts
+        """calculate maximum value of model, under uncertainty
 
-        respects constraints on expected mean and variance of inputs
+    Input:
+        rv: list of input parameters
+        axis: int, the axis if y (2D output) [default is axis=None (1D)]
+
+    Returns:
+        the maximum value for the specified axis
+
+    NOTE:
+        respects constraints on input parameters and product measure
+
+    NOTE:
+        for product_measure, use sampled_maximum if samples, else ess_maximum
         """
         # check constraints
         c = product_measure().load(rv, self.npts)
@@ -169,9 +255,20 @@ class MaximumValue(BaseOUQ):
 
 class MinimumValue(BaseOUQ):
     def objective(self, rv, axis=None):
-        """get minimum value from model under uncertainty for npts
+        """calculate minimum value of model, under uncertainty
 
-        respects constraints on expected mean and variance of inputs
+    Input:
+        rv: list of input parameters
+        axis: int, the axis if y (2D output) [default is axis=None (1D)]
+
+    Returns:
+        the minimum value for the specified axis
+
+    NOTE:
+        respects constraints on input parameters and product measure
+
+    NOTE:
+        for product_measure, use sampled_minimum if samples, else ess_minimum
         """
         # check constraints
         c = product_measure().load(rv, self.npts)
@@ -195,9 +292,20 @@ class MinimumValue(BaseOUQ):
 
 class ValueAtRisk(BaseOUQ):
     def objective(self, rv, axis=None):
-        """get value at risk from model under uncertainty for npts
+        """calculate value at risk of model, under uncertainty
 
-        respects constraints on expected mean and variance of T
+    Input:
+        rv: list of input parameters
+        axis: int, the axis if y (2D output) [default is axis=None (1D)]
+
+    Returns:
+        the value at risk for the specified axis
+
+    NOTE:
+        respects constraints on input parameters and product measure
+
+    NOTE:
+        for product_measure, use sampled_ptp if samples, else ess_ptp
         """
         # check constraints
         c = product_measure().load(rv, self.npts)
@@ -221,10 +329,22 @@ class ValueAtRisk(BaseOUQ):
 
 class ProbOfFailure(BaseOUQ):
     def objective(self, rv, axis=None, iter=True):
-        """get probability of failure from model under uncertainty for npts
+        """calculate probability of failure for model, under uncertainty
 
-        NOTE: model is a function returning a boolean (True for success)
-        respects constraints on expected mean and variance of T
+    Input:
+        rv: list of input parameters
+        axis: int, the axis if y (2D output) [default is axis=None (1D)]
+        iter: bool, if True, calculate per axis, else calculate for all axes
+
+    Returns:
+        the probability of failure for the specified axis (or all axes)
+
+    NOTE:
+        respects constraints on input parameters and product measure
+        model is a function returning a boolean (True for success)
+
+    NOTE:
+        for product_measure, use sampled_pof(model) if samples, else pof(model)
         """
         # check constraints
         c = product_measure().load(rv, self.npts)
