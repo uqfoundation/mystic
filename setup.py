@@ -397,6 +397,9 @@ elif IS_PYPY: #XXX: pypy3?
 elif sysversion == (2,7) or sysversion == (3,4):
     numpy_version = '>=1.0, <1.17.0'
     sympy_version = '>=0.6.7, <1.1'
+elif sysversion == (3,5):
+    numpy_version = '>=1.0'
+    sympy_version = '>=0.6.7, <1.7'
 else:
     numpy_version = '>=1.0'
     sympy_version = '>=0.6.7'#, <0.7.4'
