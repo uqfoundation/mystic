@@ -32,11 +32,13 @@ from mystic.math import almostEqual as almost
 from mystic.constraints import and_, integers
 from mystic.coupler import outer
 
+# lower and upper bound for parameter weights
 wlb = (0,1,1,1,1)
 wub = (1,1,1,1,1)
+# number of Dirac masses to use for each parameter
 npts = (2,1,1,1,1) #NOTE: rv = (w0,w0,x0,x0,w1,x1,w2,x2,w3,x3,w4,x4)
 index = (5,)       #NOTE: rv[5] -> x1
-
+# moments and uncertainty in first parameter
 a_ave = 5e-1
 a_var = 5e-3
 a_ave_err = 1e-3
@@ -79,6 +81,7 @@ def constrain_moments(ave, var, ave_err, var_err, idx=0):
 
 @integers(ints=float, index=index)
 def integer_indices(rv):
+    'constrain parameters at given index(es) to be ints'
     return rv
 
 

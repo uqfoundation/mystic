@@ -5,19 +5,7 @@
 # License: 3-clause BSD.  The full license text is available at:
 #  - https://github.com/uqfoundation/mystic/blob/master/LICENSE
 '''
-build truth model, F'(x|a'), with selected a'
-generate truth data
-
-build "expensive" model of truth, F(x|a), with F ?= F' and a ?= a'
-
-pick hyperparm A, inerpolate G'(x|A) from G(d), trained on "truth data"
-(workflow: iterate interpolate to minimize graphical distance, for given A)
-expected upper bound on f(x) = F(x|a) - G'(x|A)
-
-1) F(x|a) = F'(x|a'). Tune A for optimal G.
-2) F(x|a) != F'(x|a'). Tune A for optimal G, or "a" for optimal F.
-3) |F(x|a) - F'(x|a')|, no G. Tune "a" for optimal F.
-*) F(x|a) "is callable". Update "d" in G(d), then actively update G(x|A).
+model objects (and helper functions) to be used with OUQ classes
 '''
 from bounds import MeasureBounds
 
@@ -115,12 +103,14 @@ def _init_axis(model):
         return model
     # add axis (as second argument) #XXX: better utilize signature?
     def dummy(x, axis=None, **kwds): #XXX: *args?
+        "model of form, y = model(x, axis=None)"
         result = model(x, **kwds)
         if axis is None or not hasattr(result, '__len__'):
             return result
         return result[axis]
     # copy attributes
     dummy.__orig__ = model #XXX: better name, __wrap__ ? 
+    #dummy.__doc__ = model.__doc__ or "model of form, y = model(x, axis=None)"
     d = model.__dict__.items()
     dummy.__dict__.update((i,j) for (i,j) in d if i not in dummy.__dict__)
     return dummy
@@ -201,12 +191,64 @@ class OUQModel(object): #NOTE: effectively, this is WrapModel
 
     #XXX: use self.bounds?
     def sample(self, bounds=None, pts=1, **kwds): 
+        """sample model within bounds, writing to an archive and returning data
+
+    Inputs:
+        bounds: list of tuples of (lower,upper), bounds on each 'x'
+        pts: int, number of points sampled by the sampler
+
+    Additional Inputs:
+        sampler: the mystic.sampler type [default: LatticeSampler]
+        solver: the mystic.solver type [default: NelderMeadSimplexSolver]
+        dist: a distribution type [default: numpy.random.normal]
+        map: a map instance [default: builtins.map]
+        multivalued: bool, True if output is multivalued [default: False]
+
+    Returns:
+        the mystic.math.legacydata.dataset of sampled data
+
+    NOTE:
+        given the model is cached, a klepto.dir_archive is created by default
+
+    NOTE:
+        if pts is negative (i.e. pts=-4), use solver-directed sampling where
+        initial points chosen by the sampler, then solvers run until converged
+
+    NOTE:
+        dist can be used to add randomness to the sampler
+        """
         model = self.__model__
         mvl = getattr(self, 'ny', getattr(model, 'ny', getattr(model, '__axis__', None))) is not None # True if multivalued
         return sample(model, bounds, pts=pts, multivalued=mvl)
 
     #XXX: np.sum, np.max ?
     def distance(self, data, axis=None, **kwds):
+        """get graphical distance between function y=f(x) and a dataset
+
+    Inputs:
+      data: a mystic.math.legacydata.dataset of i points, M inputs, N outputs
+      hausdorff: if True, use Hausdorff norm
+
+    Additional Inputs:
+      method: string for kind of interpolator
+      maxpts: int, maximum number of points (x,z) to use from the monitor
+      noise: float, amplitude of gaussian noise to remove duplicate x
+      extrap: if True, extrapolate a bounding box (can reduce # of nans)
+      arrays: if True, return a numpy array; otherwise don't return arrays
+      axis: int in [0,N], index of z on which to interpolate (all, by default)
+
+    NOTE:
+      if scipy is not installed, will use np.interp for 1D (non-rbf),
+      or mystic's rbf otherwise. default method is 'nearest' for
+      1D and 'linear' otherwise. method can be one of ('rbf','linear',
+      'nearest','cubic','inverse','gaussian','quintic','thin_plate').
+
+    NOTE:
+      data and function may provide tuple-valued or single-valued output.
+      Distance will be measured component-wise, resulting in a tuple of
+      distances, unless an 'axis' is selected. If an axis is selected,
+      then return distance for the selected component (i.e. axis) only.
+        """
         import dataset as ds
         return ds.distance(data, self.__func__, axis=axis, **kwds)
 
@@ -214,9 +256,28 @@ class OUQModel(object): #NOTE: effectively, this is WrapModel
 class NoisyModel(OUQModel):
 
     def __init__(self, id=None, model=None, mu=0, sigma=1, seed='!', **kwds):
+        """noisy model, with Gaussian noise on inputs and/or outputs
+
+    Input:
+        id: string, unique id for model instance [default: 'noisy']
+        model: a model function, of form y = model(x, axis=None)
+        mu: input distribution mean value [default: 0]
+        sigma: input distribution standard deviation [default: 1]
+        seed: input random seed [default: '!', do not reseed the RNG]
+
+    Additional Input:
+        nx: int, number of model inputs, len(x) [default: None]
+        ny: int, number of model outputs, len(y) [default: None]
+        uid: bool, if True, append a random integer in [0, 1e16] to __name__
+        cached: bool, if True, use a mystic.cache [default: False]
+        zmu: output distribution mean value [default: 0]
+        zsigma: output distribution standard deviation [default: 0]
+        zseed: outut random seed [default: '!', do not reseed the RNG]
+        """
         # get state defined in model
         if model is None:
-            return NotImplemented
+            msg = 'a callable model, y = model(x), is required'
+            raise NotImplementedError(msg)
         model = _init_axis(model) #FIXME: class method?
         uid = kwds.pop('uid', False)
         cached = kwds.pop('cached', False)
@@ -227,6 +288,7 @@ class NoisyModel(OUQModel):
         kwds['sigma'] = kwds.pop('zsigma', 0)
         kwds['seed'] = kwds.pop('zseed', '!')
         def noisy(x, axis=None):
+            """a noisy model, with Gaussian noise on inputs and/or outputs"""
             from noisy import noisy
             return noisy(model(noisy(tuple(x), **args), axis), **kwds)
         self.__model__ = noisy
@@ -249,15 +311,38 @@ class NoisyModel(OUQModel):
         return
 
     def __call__(self, x, axis=None):
+        """evaluate model at x, for the given axis, where y = model(x)
+
+    Input:
+        x: list of input parameters, where len(x) is the number of inputs
+        axis: int, index of output to evaluate (all, by default)
+        """
         return self.__model__(x, axis=axis)
 
 
 class WrapModel(OUQModel):
 
     def __init__(self, id=None, model=None, **kwds):
+        """a model object, to be used with OUQ classes
+
+    Input:
+        id: string, unique id for model instance [default: model.__name__]
+        model: a model function, of form y = model(x, axis=None)
+
+    Additional Input:
+        nx: int, number of model inputs, len(x) [default: None]
+        ny: int, number of model outputs, len(y) [default: None]
+        rnd: bool, if False, treat the model as deterministic [default: True]
+        uid: bool, if True, append a random integer in [0, 1e16] to __name__
+        cached: bool, if True, use a mystic.cache [default: False]
+
+    NOTE:
+        any additional keyword arguments will be passed to 'model'
+        """
         # get state defined in model
         if model is None:
-            return NotImplemented
+            msg = 'a callable model, y = model(x), is required'
+            raise NotImplementedError(msg)
         model = _init_axis(model) #FIXME: class method?
         self.nx = kwds.pop('nx', getattr(model, 'nx', None))
         self.ny = kwds.pop('ny', getattr(model, 'ny', None))
@@ -271,14 +356,35 @@ class WrapModel(OUQModel):
         return
 
     def __call__(self, x, axis=None):
+        """evaluate model at x, for the given axis, where y = model(x)
+
+    Input:
+        x: list of input parameters, where len(x) is the number of inputs
+        axis: int, index of output to evaluate (all, by default)
+        """
         return self.__model__(x, axis=axis, **self.__kwds__)
 
 
 class SuccessModel(OUQModel):
 
     def __init__(self, id=None, model=None, **kwds):
+        """a model of success, where success is model(x) >= cutoff
+
+    Input:
+        id: string, unique id for model instance [default: 'success']
+        model: a model function, of form y = model(x, axis=None)
+
+    Additional Input:
+        nx: int, number of model inputs, len(x) [default: None]
+        ny: int, number of model outputs, len(y) [default: None]
+        rnd: bool, if False, treat the model as deterministic [default: True]
+        uid: bool, if True, append a random integer in [0, 1e16] to __name__
+        cached: bool, if True, use a mystic.cache [default: False]
+        cutoff: float, defines success, where success is model(x) >= cutoff
+        """
         if model is None:
-            return NotImplemented
+            msg = 'a callable model, y = model(x), is required'
+            raise NotImplementedError(msg)
         model = _init_axis(model) #FIXME: class method?
         self.nx = kwds.pop('nx', getattr(model, 'nx', None))
         self.ny = kwds.pop('ny', getattr(model, 'ny', None))
@@ -286,6 +392,7 @@ class SuccessModel(OUQModel):
         self.rnd = kwds.get('rnd', getattr(model, 'rnd', True))
         import numpy as np
         def success(x, axis=None):
+            "a model of success, where success is model(x) >= cutoff"
             if axis is not None and hasattr(cutoff, '__len__'):
                 return np.subtract(model(x, axis), cutoff[axis]) >= 0.0
             return np.all(np.subtract(model(x, axis), cutoff) >= 0.0)
@@ -299,6 +406,12 @@ class SuccessModel(OUQModel):
         return
 
     def __call__(self, x, axis=None):
+        """evaluate model at x, for the given axis, where y = model(x)
+
+    Input:
+        x: list of input parameters, where len(x) is the number of inputs
+        axis: int, index of output to evaluate (all, by default)
+        """
         return self.__model__(x, axis=axis)
 
 
@@ -308,8 +421,25 @@ class SuccessModel(OUQModel):
 class InterpModel(OUQModel):
 
     def __init__(self, id=None, data=None, **kwds):
+        """an interpolated model, generated from the given data
+
+    Input:
+        id: string, unique id for model instance [default: 'interp']
+        data: a mystic legacydata.dataset (or callable model, y = model(x))
+
+    Additional Input:
+        nx: int, number of model inputs, len(x) [default: None]
+        ny: int, number of model outputs, len(y) [default: None]
+        rnd: bool, if False, treat the model as deterministic [default: True]
+        uid: bool, if True, append a random integer in [0, 1e16] to __name__
+        cached: bool, if True, use a mystic.cache [default: False]
+
+    NOTE:
+        any additional keyword arguments will be passed to the interpolator
+        """
         if data is None:
-            return NotImplemented
+            msg = 'a mystic legacydata.dataset (or callable model) is required'
+            raise NotImplementedError(msg)
         if callable(data):
             data = _init_axis(data) #FIXME: class method?
         self.nx = kwds.pop('nx', None)
@@ -317,6 +447,7 @@ class InterpModel(OUQModel):
         self.rnd = kwds.pop('rnd', False) and (bool(kwds.get('noise', -1)))# or callable(data) or isinstance(data, type('')))
         self.__func__ = None
         def bootstrap(x, axis=None):
+            "an interpolated model, generated from the given data"
             return self(x, axis=axis)
         self.__model__ = bootstrap
         self.__kwds__ = kwds.copy()
@@ -329,6 +460,19 @@ class InterpModel(OUQModel):
         return
 
     def fit(self, **kwds):
+        """generate an interpolated model from data
+
+    Input:
+        data: a mystic legacydata.dataset (or callable model, y = model(x))
+        rnd: bool, if False, treat the model as deterministic [default: True]
+        cached: bool, if True, use a mystic.cache [default: False]
+
+    NOTE:
+        any additional keyword arguments will be passed to the interpolator
+
+    NOTE:
+        if data is a model, interpolator will use model's cached archive
+        """
         self.__kwds__.update(kwds)
         cached = self.__kwds__.pop('cached', False)
         archive = data = self.__kwds__.pop('data', None)
@@ -356,6 +500,15 @@ class InterpModel(OUQModel):
         return
 
     def __call__(self, x, axis=None):
+        """evaluate model at x, for the given axis, where y = model(x)
+
+    Input:
+        x: list of input parameters, where len(x) is the number of inputs
+        axis: int, index of output to evaluate (all, by default)
+
+    NOTE:
+        generates an interpolated model, if one does not exist (or rnd=True)
+        """
         if self.__func__ is None or self.rnd:
             self.fit()
         return self.__model__(x, axis=axis)
@@ -367,8 +520,25 @@ class InterpModel(OUQModel):
 class LearnedModel(OUQModel):
 
     def __init__(self, id=None, data=None, **kwds):
+        """a learned model, trained on the given data
+
+    Input:
+        id: string, unique id for model instance [default: 'learn']
+        data: a mystic legacydata.dataset (or callable model, y = model(x))
+
+    Additional Input:
+        nx: int, number of model inputs, len(x) [default: None]
+        ny: int, number of model outputs, len(y) [default: None]
+        rnd: bool, if False, treat the model as deterministic [default: True]
+        uid: bool, if True, append a random integer in [0, 1e16] to __name__
+        cached: bool, if True, use a mystic.cache [default: False]
+
+    NOTE:
+        any additional keyword arguments will be passed to the estimator
+        """
         if data is None:
-            return NotImplemented
+            msg = 'a mystic legacydata.dataset (or callable model) is required'
+            raise NotImplementedError(msg)
         if callable(data):
             data = _init_axis(data) #FIXME: class method?
         self.nx = kwds.pop('nx', None)
@@ -376,6 +546,7 @@ class LearnedModel(OUQModel):
         self.rnd = kwds.pop('rnd', False) and (bool(kwds.get('noise', -1)))
         self.__func__ = None
         def bootstrap(x, axis=None):
+            "a learned model, trained on the given data"
             return self(x, axis=axis)
         self.__model__ = bootstrap
         self.__kwds__ = kwds.copy()
@@ -388,6 +559,20 @@ class LearnedModel(OUQModel):
         return
 
     def fit(self, **kwds):
+        """generate a learned model, trained on the given data
+
+    Input:
+        data: a mystic legacydata.dataset (or callable model, y = model(x))
+        rnd: bool, if False, treat the model as deterministic [default: True]
+        cached: bool, if True, use a mystic.cache [default: False]
+
+    NOTE:
+        any additional keyword arguments will be passed to the estimator
+
+    NOTE:
+        if data is a model, estimator will use model's cached archive
+        """
+        self.__kwds__.update(kwds)
         self.__kwds__.update(kwds)
         cached = self.__kwds__.pop('cached', False)
         archive = data = self.__kwds__.pop('data', None)
@@ -415,6 +600,15 @@ class LearnedModel(OUQModel):
         return
 
     def __call__(self, x, axis=None):
+        """evaluate model at x, for the given axis, where y = model(x)
+
+    Input:
+        x: list of input parameters, where len(x) is the number of inputs
+        axis: int, index of output to evaluate (all, by default)
+
+    NOTE:
+        generates a learned model, if one does not exist (or rnd=True)
+        """
         if self.__func__ is None or self.rnd:
             self.fit()
         return self.__model__(x, axis=axis)
@@ -429,8 +623,27 @@ class LearnedModel(OUQModel):
 class ErrorModel(OUQModel):
 
     def __init__(self, id=None, model=None, surrogate=None, **kwds):
+        """an error model, with metric for distance from model to surrogate
+
+    Input:
+        id: string, unique id for model instance [default: 'learn']
+        model: a model function, of form y = model(x, axis=None)
+        surrogate: a function, y' = surrogate(x, axis=None), approximates model
+
+    Additional Input:
+        nx: int, number of model inputs, len(x) [default: None]
+        ny: int, number of model outputs, len(y) [default: None]
+        rnd: bool, if False, treat the model as deterministic [default: True]
+        uid: bool, if True, append a random integer in [0, 1e16] to __name__
+        cached: bool, if True, use a mystic.cache [default: False]
+        metric: a function of form yerr = error(y, y')
+
+    NOTE:
+        the default metric is pointwise distance (y - y')**2
+        """
         if model is None or surrogate is None:
-            return NotImplemented
+            msg = 'a callable model, and a callable surrogate, are required'
+            raise NotImplementedError(msg)
         model = _init_axis(model) #FIXME: class method?
         surrogate = _init_axis(surrogate) #FIXME: class method?
         if not hasattr(model, 'distance'):
@@ -445,9 +658,11 @@ class ErrorModel(OUQModel):
         if metric is None:
             import numpy as np
             def metric(x, y):
+                "pointwise distance, |x - y|**2, from x to y"
                 z = (np.abs(np.array(x) - y)**2).tolist()
                 return tuple(z) if hasattr(z, '__len__') else z
         def error(x, axis=None):
+            "an error model, with metric for distance from model to surrogate"
             return metric(model(x, axis=axis), surrogate(x, axis=axis))
         self.__model__ = error
         self.__name__ = self.__model__.__name__ if id is None else id
@@ -459,5 +674,11 @@ class ErrorModel(OUQModel):
         return
 
     def __call__(self, x, axis=None):
+        """evaluate model at x, for the given axis, where y = model(x)
+
+    Input:
+        x: list of input parameters, where len(x) is the number of inputs
+        axis: int, index of output to evaluate (all, by default)
+        """
         return self.__model__(x, axis=axis)
 
