@@ -736,7 +736,17 @@ def simplify(constraints, variables='x', target=None, **kwds):
     import itertools as it
     all = kwds['all'] if 'all' in kwds else False
     cons = absval(constraints, **kwds) #NOTE: only uses all,verbose
-    cons = [_simplify(ci, variables=variables, target=target, **kwds) for ci in cons] if type(cons) is tuple else _simplify(cons, variables=variables, target=target, **kwds) #FIXME: SLOW to repeat simplify on many of same equations
+    kwds['variables'] = variables
+    kwds['target'] = target
+    #import klepto as kl
+    """
+    @kl.inf_cache(keymap=kl.keymaps.stringmap(flat=False), ignore=('**','kwds'))
+    def simple(eqn, **kwds):
+        return _simplify(eqn, **kwds)
+    """
+    simple = _simplify
+    cons = [simple(ci, **kwds) for ci in cons] if type(cons) is tuple else simple(cons, **kwds)
+    #simple.__cache__().clear() #NOTE: clear stored entries
     eqns = tuple(it.chain.from_iterable(i if type(i) is tuple else (i,) for i in cons)) if type(cons) is list else (cons if type(cons) is tuple else (cons,))
     return (eqns if all else eqns[random.randint(0,len(eqns)-1)]) if len(eqns) > 1 else (eqns[0] if len(eqns) else '') #FIXME: len(eqns) = 0 --> Error, '', ???
 simplify.__doc__ = _simplify.__doc__
