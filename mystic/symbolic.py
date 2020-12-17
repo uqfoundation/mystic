@@ -14,7 +14,8 @@
 __all__ = ['linear_symbolic','replace_variables','get_variables','denominator',
            'simplify','comparator','flip','_flip','condense','flat','equals',
            'penalty_parser','constraints_parser','generate_conditions','solve',
-           'generate_solvers','generate_penalty','generate_constraint','merge']
+           'generate_solvers','generate_penalty','generate_constraint','merge',
+           '_simplify','absval']
 
 from numpy import ndarray, asarray
 from mystic._symbolic import solve
@@ -417,6 +418,103 @@ Additional Inputs:
     return before == after
 
 
+def _absval(equation, **kwds):
+    verbose = kwds['verbose'] if 'verbose' in kwds else False
+    # find each top-level 'abs(' and the contents in the '()'
+    #FIXME: should search for 'Xabs(' where X cannot be used in a name
+    q = {}
+    abs_ = 'abs('
+    fe0 = flat(equation, q)
+    z = []
+    for e in _enclosed(fe0):
+        if abs_ in e:
+            z.append(e[e.find(abs_)+4:-1])
+
+    # prepare q.values as lists
+    p = {} # 'conditions'
+    for k,v in q.items():
+        if abs_ in v:
+            q[k],p[k] = _absval(v, **kwds)
+        else:
+            q[k] = [v]
+            p[k] = ['']
+
+    if verbose:
+        print('org: {0}'.format(equation))
+        print('sub: {0}'.format(fe0))
+        print('eqn: {0}'.format(q))
+        print('con: {0}'.format(p))
+
+    # build equations out of innards of abs() #NOTE: order is same as 'z'
+    qz0 = [[(c.replace(NL,' >= 0\n',1) if NL in c else c+' >= 0') for c in q[zi]] for zi in z]
+
+    # generate all cases by replacing 'abs' with combinations of '' and '-'
+    s = ['','-']
+    re0 = []
+    ze0 = []
+
+    import itertools as it
+    for si in it.product(s, repeat=fe0.count(abs_)):
+        ze = [] #NOTE: order is same as 'z'
+        re = fe0
+        for i,j in enumerate(si):
+            ze.append([NL.join(flip(ii) for ii in jj.split(NL)) for jj in qz0[i]] if j else qz0[i]) #XXX: flip(ii) or flip(ii,True)?
+            re = re.replace('abs',j,1)
+        ze0.append([(NL+NL.join(i)).rstrip() for i in it.product(*ze,repeat=1)])
+        re0.append(re)
+
+    # replace stubs with inner (sort to ensure same order as ze0)
+    rz0 = []
+    sorter = lambda i:(int(k.strip('$')),v)
+    pk,pv = tuple(zip(*sorted(p.items(), key=sorter )))
+    qk,qv = tuple(zip(*sorted(q.items(), key=sorter )))
+
+    for re,ze in zip(re0,ze0):
+        qkv = []
+        for i,(qvi,pvi) in enumerate(zip(it.product(*qv),it.product(*pv))):
+            r_ = re
+            for ki,vi in zip(qk, qvi):
+                r_ = r_.replace(ki,vi) # replace stubs
+            qkv.append(r_)
+            ze[i] += ''.join(pvi) # include inner conditions
+        rz0.append(qkv)
+
+    if verbose:
+        print('eqns: {0}'.format(re0))
+        print('cond: {0}'.format(ze0))
+    ze0 = list(it.chain.from_iterable(ze0))
+    re0 = list(it.chain.from_iterable(rz0))
+    return re0,ze0
+
+def absval(constraints, **kwds):
+    """rewrite a system of symbolic constraints without using absolute value.
+
+Returns a system of equations where 'abs' has been replaced with the
+equivalent conditional algebraic expressions.
+
+Inputs:
+    constraints -- a string of symbolic constraints, with one constraint
+        equation per line. Standard python syntax should be followed (with
+        the math and numpy modules already imported).
+
+Additional Inputs:
+    all -- boolean to return all simplifications due to absolute values.
+        If all is True, return all possible simplifications due to absolute
+        value being used in one or more of the equations. The default is
+        False, returning only one possible simplification.
+    verbose -- if True, print debug information [False]
+"""
+    import random
+    import itertools as it
+    all = kwds['all'] if 'all' in kwds else False
+    verbose = kwds['verbose'] if 'verbose' in kwds else False
+    abs_ = 'abs('
+    eqns = [([''.join((i,j)) for i,j in zip(*_absval(e.strip(), **kwds))] if abs_ in e else [e.strip()]) for e in constraints.strip().split(NL)]
+    # combine each eqn, and simplify the conditionals
+    eqns = tuple(NL.join(merge(*(NL.join(i).split(NL)), inclusive=True)) for i in it.product(*eqns)) #FIXME: inclusive=True, or False ???
+    return (eqns if all else eqns[random.randint(0,len(eqns)-1)]) if len(eqns) > 1 else (eqns[0] if len(eqns) else '') #FIXME: len(eqns) = 0 --> Error, '', ???
+
+
 doc_simplify = """simplify a system of symbolic constraints equations.
 
 Returns a system of equations where a single variable has been isolated on
@@ -476,7 +574,7 @@ Further Inputs:
 #FIXME: should not fail at ZeroDivisionError (what should it do there?)
 #FIXME: should order better (e.g. C > 0; B == C - 5; A > B + 2)
 def_simplify = '''
-def simplify(constraints, variables='x', target=None, **kwds):
+def _simplify(constraints, variables='x', target=None, **kwds):
     ### undocumented ###
    #rand -- random number generator [default: random.random]
    #error -- if False, ZeroDivisionError evaluates as None [default: True]
@@ -499,7 +597,7 @@ def simplify(constraints, variables='x', target=None, **kwds):
     kwds['locals'] = _locals
     del locals
 
-    def _simplify(eqn, rand=random.random, target=None, **kwds):
+    def _simplify1(eqn, rand=random.random, target=None, **kwds):
         'isolate one variable on the lhs'
         verbose = kwds['verbose'] if 'verbose' in kwds else False
         vars = kwds['variables'] if 'variables' in kwds else 'x'
@@ -515,9 +613,9 @@ def simplify(constraints, variables='x', target=None, **kwds):
         # cycle used variables to the rear
         _allvars = []
         _allvars = [i for i in allvars if i not in used or (_allvars.append(i) if i not in _allvars else False)] + _allvars
-        # simplify so lhs has only one variable
+        # simplify so lhs has only one variable (and replace sympy's Abs)
         res = solve(res, target=target, **kwds)
-        _eqn = res.replace('=',cmp)
+        _eqn = res.replace('=',cmp).replace('Abs(','abs(')
         # find where the sign flips might occur (from after)
         zro += _solve_zeros(res, get_variables(res.split('=')[-1],_allvars))
         _zro = [z.replace('=','!=') for z in zro]
@@ -581,7 +679,7 @@ def simplify(constraints, variables='x', target=None, **kwds):
         if len(results) == 1: results = results[0]
         return results
 
-    #### ...the rest is simplify()... ###
+    #### ...the rest is _simplify()... ###
     cycle = kwds['cycle'] if 'cycle' in kwds else False
     verbose = kwds['verbose'] if 'verbose' in kwds else False
     eqns = []
@@ -594,7 +692,7 @@ def simplify(constraints, variables='x', target=None, **kwds):
         if cycle: vars = [var for var in vars if var not in used] + used
         while vars:
             try: # cycle through variables trying 'simplest' first
-                res = _simplify(eqn, variables=variables, target=vars, **kwds)
+                res = _simplify1(eqn, variables=variables, target=vars, **kwds)
                 if verbose: print('#: {0}'.format(res))
                 res = res if type(res) is tuple else (res,)
                 eqns.append(res)
@@ -612,7 +710,7 @@ def simplify(constraints, variables='x', target=None, **kwds):
                 if verbose: print('PASS')
                 #print("v,u: {0} {1}".format(vars, used))
         else: # failure... so re-raise error
-            res = _simplify(eqn, variables=variables, target=target, **kwds)
+            res = _simplify1(eqn, variables=variables, target=target, **kwds)
             if verbose: print('X: {0}'.format(res))
             res = res if type(res) is tuple else (res,)
             eqns.append(res)
@@ -627,10 +725,22 @@ def simplify(constraints, variables='x', target=None, **kwds):
     #XXX: if all=False, is possible to return "most True" (smallest penalty)?
     return (eqns if all else eqns[random.randint(0,len(eqns)-1)]) if len(eqns) > 1 else (eqns[0] if len(eqns) else '')
 
-simplify.__doc__ = doc_simplify
+_simplify.__doc__ = doc_simplify
 ''' % dict(exec_locals_=exec_locals_, exec_locals=exec_locals)
 exec(def_simplify)
 del def_simplify, doc_simplify, exec_locals_, exec_locals
+
+
+def simplify(constraints, variables='x', target=None, **kwds):
+    import random
+    import itertools as it
+    all = kwds['all'] if 'all' in kwds else False
+    cons = absval(constraints, **kwds) #NOTE: only uses all,verbose
+    cons = [_simplify(ci, variables=variables, target=target, **kwds) for ci in cons] if type(cons) is tuple else _simplify(cons, variables=variables, target=target, **kwds) #FIXME: SLOW to repeat simplify on many of same equations
+    eqns = tuple(it.chain.from_iterable(i if type(i) is tuple else (i,) for i in cons)) if type(cons) is list else (cons if type(cons) is tuple else (cons,))
+    return (eqns if all else eqns[random.randint(0,len(eqns)-1)]) if len(eqns) > 1 else (eqns[0] if len(eqns) else '') #FIXME: len(eqns) = 0 --> Error, '', ???
+simplify.__doc__ = _simplify.__doc__
+
 
 def replace_variables(constraints, variables=None, markers='$'):
     """replace variables in constraints string with a marker.
