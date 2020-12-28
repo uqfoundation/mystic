@@ -4,24 +4,37 @@
 # Copyright (c) 2020 The Uncertainty Quantification Foundation.
 # License: 3-clause BSD.  The full license text is available at:
 #  - https://github.com/uqfoundation/mystic/blob/master/LICENSE
+'''
+hyperparameter tuning for least upper bound of ExpectedValueOUQ on model
 
+Test function is y = F(x), where:
+  y0 = x0 + x1 * | x2 * x3**2 - (x4 / x1)**2 |**.5
+  y1 = x0 - x1 * | x2 * x3**2 + (x4 / x1)**2 |**.5
+  y2 = x0 - | x1 * x2 * x3 - x4 |
+
+toy = lambda x: F(x)[0]
+model = lambda x: toy(x + mu) + zmu
+for hyperparameters z = [mu, zmu]
+
+Calculate least upper bound on E|model(x)|, where:
+  x in [(0,1), (1,10), (0,10), (0,10), (0,10)]
+  wx in [(0,1), (1,1), (1,1), (1,1), (1,1)]
+  npts = [2, 1, 1, 1, 1] (i.e. two Dirac masses on x[0], one elsewhere)
+  sum(wx[i]_j) for j in [0,npts], for each i
+  mean(x[0]) = 5e-1 +/- 1e-3
+  var(x[0]) = 5e-3 +/- 1e-4
+  z in [(-10,10), (-10,10)]
+
+Solves for z that produces least upper bound on E|model(x|z)|,
+given the bounds, normalization, and moment constraints.
+
+Creates 'log' of inner optimizations, and 'result' for outer optimization.
+
+Check results while running (using log reader):
+  $ mystic_log_reader log.txt -n 0 -g -p '0:2,2:4,5,7,9,11'
+  $ mystic_log_reader result.txt -g -p '0,1'
+'''
 from ouq_models import *
-
-# build truth model, F'(x|a'), with selected a'
-# generate truth data
-
-# build "expensive" model of truth, F(x|a), with F ?= F' and a ?= a'
-
-# pick hyperparm A, inerpolate G'(x|A) from G(d), trained on "truth data"
-# (workflow: iterate interpolate to minimize graphical distance, for given A)
-# expected upper bound on f(x) = F(x|a) - G'(x|A)
-
-# 1) F(x|a) = F'(x|a'). Tune A for optimal G.
-# 2) F(x|a) != F'(x|a'). Tune A for optimal G, or "a" for optimal F.
-# 3) |F(x|a) - F'(x|a')|, no G. Tune "a" for optimal F.
-# *) F(x|a) "is callable". Update "d" in G(d), then actively update G(x|A).
-
-# CASE 2b: F(x|a) != F'(x|a'). Tune "a" for optimal F.
 
 
 if __name__ == '__main__':
@@ -39,25 +52,13 @@ if __name__ == '__main__':
     from mystic.monitors import VerboseLoggingMonitor, Monitor, VerboseMonitor
     from mystic.termination import VTRChangeOverGeneration as VTRCOG
     from mystic.termination import Or, VTR, ChangeOverGeneration as COG
-    param['opts']['termination'] = COG(1e-10, 200)
-    param['npop'] = 160
+    param['opts']['termination'] = COG(1e-10, 100) #NOTE: each solve in log.txt
+    param['npop'] = 40 #NOTE: increase if results.txt is not monotonic
     param['stepmon'] = VerboseLoggingMonitor(1, 20, filename='log.txt', label='output')
 
     # build inner-loop and outer-loop bounds
-    bnd = MeasureBounds((0,0,0,0,0)[:nx],(1,10,10,10,10)[:nx], n=npts[:nx], wlb=wlb[:nx], wub=wub[:nx])
-    bounds = [(-10,10),(0,0),(-10,10),(0,0)] #NOTE: mu,sigma,zmu,zsigma
-
-    # build a model representing 'truth', and generate some data
-    #print("building truth F'(x|a')...")
-    true = dict(mu=.01, sigma=0., zmu=-.01, zsigma=0.)
-    truth = NoisyModel('truth', model=toy, nx=nx, ny=ny, **true)
-    #print('sampling truth...')
-    data = truth.sample([(0,1)]+[(0,10)]*(nx-1), pts=-16)
-
-    # build a surrogate model by interpolating the data
-    #print('building estimator G(x) from truth data...')
-    kwds = dict(smooth=0, noise=0, method='thin_plate', extrap=False)
-    surrogate = InterpModel('surrogate', nx=nx, ny=ny, data=truth, **kwds)
+    bnd = MeasureBounds((0,1,0,0,0)[:nx],(1,10,10,10,10)[:nx], n=npts[:nx], wlb=wlb[:nx], wub=wub[:nx])
+    bounds = [(-10,10),(-10,10)] #NOTE: mu,zmu
 
     # get initial guess, a monitor, and a counter
     import counter as it
@@ -75,7 +76,7 @@ if __name__ == '__main__':
     stepmon = VerboseLoggingMonitor(1, 1, 1, filename='result.txt', label='solved')
 
     def cost(x, axis=None, samples=Ns):
-        """upper bound on expected model error, for surrogate and approx
+        """upper bound on expected model output
 
     Inputs:
         x: list of NoisyModel hyperparameters
@@ -83,21 +84,20 @@ if __name__ == '__main__':
         samples: int, number of samples, for a non-deterministic OUQ model
 
     Returns:
-        upper bound on expected value of model error
+        upper bound on expected value of model output
         """
-        # CASE 2b: F(x|a) != F'(x|a'). Tune "a" for optimal F.
-        approx = dict(mu=x[0], sigma=x[1], zmu=x[2], zsigma=x[3])
-        #print('building model F(x|a) of truth...')
-        model = NoisyModel('model', model=toy, nx=nx, ny=ny, **approx)
+        # build a model, F(x|a), and tune "a" for optimal F.
+        kwds = dict(mu=x[0], sigma=0.0, zmu=x[1], zsigma=0.0,
+        #           uid=False, cached=True) # active updates enabled
+                    uid=True, cached=False) # active updates disabled
+        #print('building model F(x|a)...')
+        model = NoisyModel('model', model=toy, nx=nx, ny=ny, **kwds)
 
-        #print('building UQ model of model error...')
-        error = ErrorModel('error', model=model, surrogate=surrogate)
-
-        rnd = Ns if error.rnd else None
-        #print('building UQ objective of expected model error...')
-        b = ExpectedValue(error, bnd, constraint=scons, cvalid=is_cons, samples=rnd)
+        rnd = Ns if model.rnd else None
+        #print('building UQ objective of expected model output...')
+        b = ExpectedValue(model, bnd, constraint=scons, cvalid=is_cons, samples=rnd)
         i = counter.count()
-        #print('solving for upper bound on expected model error...')
+        #print('solving for upper bound on expected model output...')
         solver = b.upper_bound(axis=axis, id=i, **param)
         if type(solver) is not tuple:
             solver = (solver,) #FIXME: save solver to DB (or pkl)

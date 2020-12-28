@@ -21,7 +21,7 @@ from ouq_models import *
 # 3) |F(x|a) - F'(x|a')|, no G. Tune "a" for optimal F.
 # *) F(x|a) "is callable". Update "d" in G(d), then actively update G(x|A).
 
-# CASE 2b: F(x|a) != F'(x|a'). Tune "a" for optimal F.
+# CASE 1: F(x|a) = F'(x|a'). Tune A for optimal G.
 
 
 if __name__ == '__main__':
@@ -39,13 +39,14 @@ if __name__ == '__main__':
     from mystic.monitors import VerboseLoggingMonitor, Monitor, VerboseMonitor
     from mystic.termination import VTRChangeOverGeneration as VTRCOG
     from mystic.termination import Or, VTR, ChangeOverGeneration as COG
-    param['opts']['termination'] = COG(1e-10, 200)
+    param['opts']['termination'] = COG(1e-10, 100) #FIXME: COG(1e-10, 200)
+    param['maxiter'] = 1000                        #FIXME: maxiter = 1500
     param['npop'] = 160
     param['stepmon'] = VerboseLoggingMonitor(1, 20, filename='log.txt', label='output')
 
     # build inner-loop and outer-loop bounds
     bnd = MeasureBounds((0,0,0,0,0)[:nx],(1,10,10,10,10)[:nx], n=npts[:nx], wlb=wlb[:nx], wub=wub[:nx])
-    bounds = [(-10,10),(0,0),(-10,10),(0,0)] #NOTE: mu,sigma,zmu,zsigma
+    bounds = [(50,200),(1,5),(10,40)] #NOTE: maxsize,nlayers,dlayers
 
     # build a model representing 'truth', and generate some data
     #print("building truth F'(x|a')...")
@@ -53,11 +54,6 @@ if __name__ == '__main__':
     truth = NoisyModel('truth', model=toy, nx=nx, ny=ny, **true)
     #print('sampling truth...')
     data = truth.sample([(0,1)]+[(0,10)]*(nx-1), pts=-16)
-
-    # build a surrogate model by interpolating the data
-    #print('building estimator G(x) from truth data...')
-    kwds = dict(smooth=0, noise=0, method='thin_plate', extrap=False)
-    surrogate = InterpModel('surrogate', nx=nx, ny=ny, data=truth, **kwds)
 
     # get initial guess, a monitor, and a counter
     import counter as it
@@ -74,24 +70,36 @@ if __name__ == '__main__':
     #_solver, x0 = lattice, len(bounds)
     stepmon = VerboseLoggingMonitor(1, 1, 1, filename='result.txt', label='solved')
 
+    def hidden_layers(maxsize, nlayers, dlayers):
+        "generate hidden layers from max size, number of layers, and change"
+        return tuple(range(int(maxsize), 0, -int(dlayers)))[:int(nlayers)]
+
     def cost(x, axis=None, samples=Ns):
-        """upper bound on expected model error, for surrogate and approx
+        """upper bound on expected model error, for truth and Learn(data)
 
     Inputs:
-        x: list of NoisyModel hyperparameters
+        x: list of LearnedModel hyperparameters
         axis: int, the index of y on which to find bound (all, by default)
         samples: int, number of samples, for a non-deterministic OUQ model
 
     Returns:
         upper bound on expected value of model error
         """
-        # CASE 2b: F(x|a) != F'(x|a'). Tune "a" for optimal F.
-        approx = dict(mu=x[0], sigma=x[1], zmu=x[2], zsigma=x[3])
-        #print('building model F(x|a) of truth...')
-        model = NoisyModel('model', model=toy, nx=nx, ny=ny, **approx)
+        # CASE 1: F(x|a) = F'(x|a'). Tune A for optimal G.
+        args = dict(hidden_layer_sizes=hidden_layers(*x),  max_iter=100, n_iter_no_change=5, solver='lbfgs', learning_rate_init=0.001) #FIXME: max_iter=1000
+        from sklearn.neural_network import MLPRegressor
+        from sklearn.preprocessing import StandardScaler
+        from ml import Estimator, MLData, improve_score
+        kwds = dict(estimator=MLPRegressor(**args), transform=StandardScaler())
+        # iteratively improve estimator
+        mlp = Estimator(**kwds) #FIXME: traintest so train != test ?
+        best = improve_score(mlp, MLData(data.coords, data.coords, data.values, data.values), tries=1, verbose=True) #FIXME: tries = 2
+        mlkw = dict(estimator=best.estimator, transform=best.transform)
 
+        #print('building estimator G(x) from truth data...')
+        surrogate = LearnedModel('surrogate', nx=nx, ny=ny, data=truth, **mlkw)
         #print('building UQ model of model error...')
-        error = ErrorModel('error', model=model, surrogate=surrogate)
+        error = ErrorModel('error', model=truth, surrogate=surrogate)
 
         rnd = Ns if error.rnd else None
         #print('building UQ objective of expected model error...')
@@ -110,9 +118,12 @@ if __name__ == '__main__':
         return results
 
     # outer-loop solver configuration and execution
+    from mystic.constraints import integers
+    as_integers = integers(ints=float, index=None)(lambda x:x)
     settings = dict(args=(axis,Ns), bounds=bounds, maxiter=1000, maxfun=100000,
                     disp=1, full_output=1, itermon=stepmon, ftol=1e-6,
-                    npop=4, gtol=4, solver=PowellDirectionalSolver)# xtol=1e-6)
+                    npop=4, gtol=4, solver=PowellDirectionalSolver,
+                    constraints=as_integers)# xtol=1e-6)
     pool = Pool(settings['npop'])
     _map = pool.map
     result = _solver(cost, x0, map=_map, **settings)

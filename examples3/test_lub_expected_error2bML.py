@@ -39,7 +39,8 @@ if __name__ == '__main__':
     from mystic.monitors import VerboseLoggingMonitor, Monitor, VerboseMonitor
     from mystic.termination import VTRChangeOverGeneration as VTRCOG
     from mystic.termination import Or, VTR, ChangeOverGeneration as COG
-    param['opts']['termination'] = COG(1e-10, 200)
+    param['opts']['termination'] = COG(1e-10, 100) #FIXME: COG(1e-10, 200)
+    param['maxiter'] = 1000                        #FIXME: maxiter = 1500
     param['npop'] = 160
     param['stepmon'] = VerboseLoggingMonitor(1, 20, filename='log.txt', label='output')
 
@@ -54,10 +55,19 @@ if __name__ == '__main__':
     #print('sampling truth...')
     data = truth.sample([(0,1)]+[(0,10)]*(nx-1), pts=-16)
 
-    # build a surrogate model by interpolating the data
+    # build a surrogate model by training on the data
+    args = dict(hidden_layer_sizes=(100,75,50,25),  max_iter=1000, n_iter_no_change=5, solver='lbfgs', learning_rate_init=0.001)
+    from sklearn.neural_network import MLPRegressor
+    from sklearn.preprocessing import StandardScaler
+    from ml import Estimator, MLData, improve_score
+    kwds = dict(estimator=MLPRegressor(**args), transform=StandardScaler())
+    # iteratively improve estimator
+    mlp = Estimator(**kwds) #FIXME: traintest so train != test ?
+    best = improve_score(mlp, MLData(data.coords, data.coords, data.values, data.values), tries=10, verbose=True)
+    mlkw = dict(estimator=best.estimator, transform=best.transform)
+
     #print('building estimator G(x) from truth data...')
-    kwds = dict(smooth=0, noise=0, method='thin_plate', extrap=False)
-    surrogate = InterpModel('surrogate', nx=nx, ny=ny, data=truth, **kwds)
+    surrogate = LearnedModel('surrogate', nx=nx, ny=ny, data=truth, **mlkw)
 
     # get initial guess, a monitor, and a counter
     import counter as it

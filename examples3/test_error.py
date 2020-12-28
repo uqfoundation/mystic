@@ -6,6 +6,27 @@
 #  - https://github.com/uqfoundation/mystic/blob/master/LICENSE
 '''
 calculate error for actively learned/interpolated models
+
+Test function is y = F(x), where:
+  y0 = x0 + x1 * | x2 * x3**2 - (x4 / x1)**2 |**.5
+  y1 = x0 - x1 * | x2 * x3**2 + (x4 / x1)**2 |**.5
+  y2 = x0 - | x1 * x2 * x3 - x4 |
+
+toy = lambda x: F(x)[0]
+golden = lambda x: toy(x + .001) - .001
+truth = lambda x: G(toy(G(x + .001, .01)) -.001, .01)
+G(mu, sigma) is a Gaussian with mean = mu and std = sigma
+
+1) Sample 10 pts in [0,10] with truth.
+   Find graphical distance between truth and sampled pts.
+2) Sample golden with 4 solvers, then interpolate to produce a surrogate.
+   Find pointwise distance (golden(x) - surrogate(x))**2.
+3) Sample golden with 4 more solvers, then interpolate an updated surrogate.
+   Find pointwise distance (golden(x) - surrogate(x))**2.
+4) Train a MLP Regressor on the sampled data.
+   Find pointwise distance (golden(x) - surrogate(x))**2.
+
+Creates 'golden' and 'truth' databases of stored evaluations.
 '''
 from ouq_models import *
 

@@ -82,3 +82,33 @@ def cost5(x, axis=None): #XXX: axis ignored, or better raise if not None?
     y = function5(x)
     return y
 
+
+def wrap(**kwds):
+    """reduce dimensionality of the input by providing fixed values
+
+  For example:
+    >>> wrap(a=0,c=2)(function5)([1,3,4])
+    1.4142135623730951
+    >>> function5([0,1,2,3,4])
+    1.4142135623730951
+    >>> 
+    >>> wrap(d=0,e=2)(function5)([1,3,4])
+    3.0
+    >>> function5([1,3,4,0,2])
+    3.0
+
+  NOTE: wraps functions with a single argument (y = f(x), not y = f(x, axis))
+  NOTE: assumes wrapped function has 5d input, with x = [a, b, c, d, e]
+    """
+    var = list('abcde')
+    def func(f):
+        def dec(x):
+            i = iter(x)
+            y = []
+            for v in var:
+                k = kwds.get(v, None)
+                y.extend((next(i) if k is None else k,))
+            return f(y)
+        return dec
+    return func
+

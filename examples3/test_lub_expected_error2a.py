@@ -102,10 +102,10 @@ if __name__ == '__main__':
         if type(solver) is not tuple:
             solver = (solver,) #FIXME: save solver to DB (or pkl)
         if axis is None:
-            results = tuple(-s.bestEnergy for s in solver) #NOTE: -1 for GUB
+            results = tuple(-s.bestEnergy for s in solver) #NOTE: -1 for LUB
             #print('[id: %s] %s' % (i, tuple(s.bestSolution for s in solver)))
         else:
-            results = -solver[axis].bestEnergy #NOTE: -1 for GUB
+            results = -solver[axis].bestEnergy #NOTE: -1 for LUB
             #print('[id: %s] %s' % (i, solver[axis].bestSolution))
         return results
 
