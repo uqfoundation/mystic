@@ -44,7 +44,7 @@ if __name__ == '__main__':
     param['stepmon'] = VerboseLoggingMonitor(1, 20, filename='log.txt', label='output')
 
     # build inner-loop and outer-loop bounds
-    bnd = MeasureBounds((0,0,0,0,0)[:nx],(1,^10,10,10,10)[:nx], n=npts[:nx], wlb=wlb[:nx], wub=wub[:nx])
+    bnd = MeasureBounds((0,0,0,0,0)[:nx],(1,10,10,10,10)[:nx], n=npts[:nx], wlb=wlb[:nx], wub=wub[:nx])
     bounds = [(0,10),(0,0)] #NOTE: smooth, noise... epsilon,method,extrap
 
     # build a model representing 'truth', and generate some data
