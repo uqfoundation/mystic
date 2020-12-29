@@ -5,7 +5,7 @@
 # License: 3-clause BSD.  The full license text is available at:
 #  - https://github.com/uqfoundation/mystic/blob/master/LICENSE
 '''
-hyperparameter tuning for least upper bound of Error on |model - surrogate|
+hyperparameter tuning for least upper bound of Error on |truth - model|
 
 Test function is y = F(x), where:
   y0 = x0 + x1 * | x2 * x3**2 - (x4 / x1)**2 |**.5
@@ -13,29 +13,27 @@ Test function is y = F(x), where:
   y2 = x0 - | x1 * x2 * x3 - x4 |
 
 toy = lambda x: F(x)[0]
-truth = lambda x: toy(x + .01) - .01
-surrogate is interpolated from data sampled from truth
-model = lambda x: toy(x + mu) + zmu,
-with hyperparameters z = [mu, zmu]
-error = lambda x: (model(x) - surrogate(x))**2
+truth = lambda x: toy(x), with x[-2:] = (5,5)
+model = lambda x: toy(x), with x[-2:] = (d,e)
+with hyperparameters z = [d, e]
+error = lambda x: (truth(x) - model(x))**2
 
 Calculate least upper bound on E|error(x)|, where:
-  x in [(0,1), (1,10), (0,10), (0,10), (0,10)]
-  wx in [(0,1), (1,1), (1,1), (1,1), (1,1)]
-  npts = [2, 1, 1, 1, 1] (i.e. two Dirac masses on x[0], one elsewhere)
+  x in [(0,1), (1,10), (0,10)]
+  wx in [(0,1), (1,1), (1,1)]
+  npts = [2, 1, 1] (i.e. two Dirac masses on x[0], one elsewhere)
   sum(wx[i]_j) for j in [0,npts], for each i
   mean(x[0]) = 5e-1 +/- 1e-3
   var(x[0]) = 5e-3 +/- 1e-4
-  z in [(-10,10), (-10,10)]
+  z in [(0,10), (0,10)]
 
-Solves for z producing least upper bound on E|(model(x|z) - surrogate(x))**2|,
+Solves for z producing least upper bound on E|(truth(x) - model(x|z))**2|,
 given the bounds, normalization, and moment constraints.
 
-Creates 'log' of inner optimizations, 'result' for outer optimization,
-and 'truth' database of stored evaluations.
+Creates 'log' of inner optimizations and 'result' for outer optimization.
 
 Check results while running (using log reader):
-  $ mystic_log_reader log.txt -n 0 -g -p '0:2,2:4,5,7,9,11'
+  $ mystic_log_reader log.txt -n 0 -g -p '0:2,2:4,5,7'
   $ mystic_log_reader result.txt -g -p '0,1'
 '''
 from ouq_models import *
@@ -54,7 +52,7 @@ from ouq_models import *
 # 3) |F(x|a) - F'(x|a')|, no G. Tune "a" for optimal F.
 # *) F(x|a) "is callable". Update "d" in G(d), then actively update G(x|A).
 
-# CASE 2b: F(x|a) != F'(x|a'). Tune "a" for optimal F.
+# CASE 0: |F(x|a) - F'(x|a')|, no G. Tune "a" for optimal F, a = x[-2:]
 
 
 if __name__ == '__main__':
@@ -65,6 +63,8 @@ if __name__ == '__main__':
     #from toys import function5x1 as toy; nx = 5; ny = 1
     #from toys import cost5 as toy; nx = 5; ny = None
     from toys import function5 as toy; nx = 5; ny = None
+    from toys import wrap
+    toy3 = wrap(d=5, e=5)(toy); nx = nx-2 #NOTE: reduces nx by 2
 
     # update 'inner-loop' optimization parameters
     from misc import param, npts, wlb, wub, is_cons, scons
@@ -78,19 +78,11 @@ if __name__ == '__main__':
 
     # build inner-loop and outer-loop bounds
     bnd = MeasureBounds((0,1,0,0,0)[:nx],(1,10,10,10,10)[:nx], n=npts[:nx], wlb=wlb[:nx], wub=wub[:nx])
-    bounds = [(-10,10),(-10,10)] #NOTE: mu,zmu
+    bounds = [(0,10),(0,10)] #NOTE: x[-2],x[-1]
 
-    # build a model representing 'truth', and generate some data
+    # build a model representing 'truth'
     #print("building truth F'(x|a')...")
-    true = dict(mu=.01, sigma=0., zmu=-.01, zsigma=0.)
-    truth = NoisyModel('truth', model=toy, nx=nx, ny=ny, **true)
-    #print('sampling truth...')
-    data = truth.sample([(0,1),(1,10)]+[(0,10)]*(nx-2), pts=-16)
-
-    # build a surrogate model by interpolating the data
-    #print('building estimator G(x) from truth data...')
-    kwds = dict(smooth=0, noise=0, method='thin_plate', extrap=False)
-    surrogate = InterpModel('surrogate', nx=nx, ny=ny, data=truth, **kwds)
+    truth = WrapModel('truth', model=toy3, nx=nx, ny=ny)
 
     # get initial guess, a monitor, and a counter
     import counter as it
@@ -108,23 +100,23 @@ if __name__ == '__main__':
     stepmon = VerboseLoggingMonitor(1, 1, 1, filename='result.txt', label='solved')
 
     def cost(x, axis=None, samples=Ns):
-        """upper bound on expected model error, for surrogate and approx
+        """upper bound on expected model error, for surrogate and 'truth'
 
     Inputs:
-        x: list of NoisyModel hyperparameters
+        x: list of model hyperparameters
         axis: int, the index of y on which to find bound (all, by default)
         samples: int, number of samples, for a non-deterministic OUQ model
 
     Returns:
         upper bound on expected value of model error
         """
-        # CASE 2b: F(x|a) != F'(x|a'). Tune "a" for optimal F.
-        approx = dict(mu=x[0], sigma=0.0, zmu=x[1], zsigma=0.0)
+        # CASE 0: |F(x|a) - F'(x|a')|, no G. Tune "a" for optimal F, a = x[-2:]
+        toy_ = wrap(d=x[0], e=x[1])(toy)
         #print('building model F(x|a) of truth...')
-        model = NoisyModel('model', model=toy, nx=nx, ny=ny, **approx)
+        model = WrapModel('model', model=toy_, nx=nx, ny=ny)
 
         #print('building UQ model of model error...')
-        error = ErrorModel('error', model=model, surrogate=surrogate)
+        error = ErrorModel('error', model=truth, surrogate=model)
 
         rnd = Ns if error.rnd else None
         #print('building UQ objective of expected model error...')

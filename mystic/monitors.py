@@ -96,6 +96,7 @@ Null objects always and reliably "do nothing." """
     def __getnewargs__(self): return ()
     def __getitem__(self, y): return self
     def __setitem__(self, i, y): return
+    def min(self): return self
 # comply with monitor interface (are these the best responses?)
 Null.info = Null()
 Null.k = None
@@ -278,6 +279,10 @@ example usage...
 
     def __step(self):
         return len(self.x)
+
+    def min(self): # should be the last entry, generally
+        """get the minimum monitor entry"""
+        return self[self.ay.argmin()]
 
     ##### measures #####
     def get_iwts(self):

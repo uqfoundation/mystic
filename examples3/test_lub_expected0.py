@@ -5,7 +5,7 @@
 # License: 3-clause BSD.  The full license text is available at:
 #  - https://github.com/uqfoundation/mystic/blob/master/LICENSE
 '''
-hyperparameter tuning for least upper bound of Error on |model - surrogate|
+hyperparameter tuning for least upper bound of ExpectedValue on model
 
 Test function is y = F(x), where:
   y0 = x0 + x1 * | x2 * x3**2 - (x4 / x1)**2 |**.5
@@ -13,48 +13,28 @@ Test function is y = F(x), where:
   y2 = x0 - | x1 * x2 * x3 - x4 |
 
 toy = lambda x: F(x)[0]
-truth = lambda x: toy(x + .01) - .01
-surrogate is interpolated from data sampled from truth
-model = lambda x: toy(x + mu) + zmu,
-with hyperparameters z = [mu, zmu]
-error = lambda x: (model(x) - surrogate(x))**2
+model = lambda x: toy(x), with x[-2:] = (d,e)
+for hyperparameters z = [d, e]
 
-Calculate least upper bound on E|error(x)|, where:
-  x in [(0,1), (1,10), (0,10), (0,10), (0,10)]
-  wx in [(0,1), (1,1), (1,1), (1,1), (1,1)]
-  npts = [2, 1, 1, 1, 1] (i.e. two Dirac masses on x[0], one elsewhere)
+Calculate least upper bound on E|model(x)|, where:
+  x in [(0,1), (1,10), (0,10)]
+  wx in [(0,1), (1,1), (1,1)]
+  npts = [2, 1, 1] (i.e. two Dirac masses on x[0], one elsewhere)
   sum(wx[i]_j) for j in [0,npts], for each i
   mean(x[0]) = 5e-1 +/- 1e-3
   var(x[0]) = 5e-3 +/- 1e-4
-  z in [(-10,10), (-10,10)]
+  z in [(0,10), (0,10)]
 
-Solves for z producing least upper bound on E|(model(x|z) - surrogate(x))**2|,
+Solves for z that produces least upper bound on E|model(x|z)|,
 given the bounds, normalization, and moment constraints.
 
-Creates 'log' of inner optimizations, 'result' for outer optimization,
-and 'truth' database of stored evaluations.
+Creates 'log' of inner optimizations, and 'result' for outer optimization.
 
 Check results while running (using log reader):
-  $ mystic_log_reader log.txt -n 0 -g -p '0:2,2:4,5,7,9,11'
+  $ mystic_log_reader log.txt -n 0 -g -p '0:2,2:4,5,7'
   $ mystic_log_reader result.txt -g -p '0,1'
 '''
 from ouq_models import *
-
-# build truth model, F'(x|a'), with selected a'
-# generate truth data
-
-# build "expensive" model of truth, F(x|a), with F ?= F' and a ?= a'
-
-# pick hyperparm A, inerpolate G'(x|A) from G(d), trained on "truth data"
-# (workflow: iterate interpolate to minimize graphical distance, for given A)
-# expected upper bound on f(x) = F(x|a) - G'(x|A)
-
-# 1) F(x|a) = F'(x|a'). Tune A for optimal G.
-# 2) F(x|a) != F'(x|a'). Tune A for optimal G, or "a" for optimal F.
-# 3) |F(x|a) - F'(x|a')|, no G. Tune "a" for optimal F.
-# *) F(x|a) "is callable". Update "d" in G(d), then actively update G(x|A).
-
-# CASE 2b: F(x|a) != F'(x|a'). Tune "a" for optimal F.
 
 
 if __name__ == '__main__':
@@ -65,6 +45,7 @@ if __name__ == '__main__':
     #from toys import function5x1 as toy; nx = 5; ny = 1
     #from toys import cost5 as toy; nx = 5; ny = None
     from toys import function5 as toy; nx = 5; ny = None
+    from toys import wrap; nx = nx-2 #NOTE: will reduce nx by 2
 
     # update 'inner-loop' optimization parameters
     from misc import param, npts, wlb, wub, is_cons, scons
@@ -73,24 +54,12 @@ if __name__ == '__main__':
     from mystic.termination import VTRChangeOverGeneration as VTRCOG
     from mystic.termination import Or, VTR, ChangeOverGeneration as COG
     param['opts']['termination'] = COG(1e-10, 100) #NOTE: each solve in log.txt
-    param['npop'] = 160 #NOTE: increase if results.txt is not monotonic
+    param['npop'] = 40 #NOTE: increase if results.txt is not monotonic
     param['stepmon'] = VerboseLoggingMonitor(1, 20, filename='log.txt', label='output')
 
     # build inner-loop and outer-loop bounds
     bnd = MeasureBounds((0,1,0,0,0)[:nx],(1,10,10,10,10)[:nx], n=npts[:nx], wlb=wlb[:nx], wub=wub[:nx])
-    bounds = [(-10,10),(-10,10)] #NOTE: mu,zmu
-
-    # build a model representing 'truth', and generate some data
-    #print("building truth F'(x|a')...")
-    true = dict(mu=.01, sigma=0., zmu=-.01, zsigma=0.)
-    truth = NoisyModel('truth', model=toy, nx=nx, ny=ny, **true)
-    #print('sampling truth...')
-    data = truth.sample([(0,1),(1,10)]+[(0,10)]*(nx-2), pts=-16)
-
-    # build a surrogate model by interpolating the data
-    #print('building estimator G(x) from truth data...')
-    kwds = dict(smooth=0, noise=0, method='thin_plate', extrap=False)
-    surrogate = InterpModel('surrogate', nx=nx, ny=ny, data=truth, **kwds)
+    bounds = [(0,10),(0,10)] #NOTE: x[-2],x[-1]
 
     # get initial guess, a monitor, and a counter
     import counter as it
@@ -108,29 +77,26 @@ if __name__ == '__main__':
     stepmon = VerboseLoggingMonitor(1, 1, 1, filename='result.txt', label='solved')
 
     def cost(x, axis=None, samples=Ns):
-        """upper bound on expected model error, for surrogate and approx
+        """upper bound on expected model output
 
     Inputs:
-        x: list of NoisyModel hyperparameters
+        x: list of model hyperparameters
         axis: int, the index of y on which to find bound (all, by default)
         samples: int, number of samples, for a non-deterministic OUQ model
 
     Returns:
-        upper bound on expected value of model error
+        upper bound on expected value of model output
         """
-        # CASE 2b: F(x|a) != F'(x|a'). Tune "a" for optimal F.
-        approx = dict(mu=x[0], sigma=0.0, zmu=x[1], zsigma=0.0)
-        #print('building model F(x|a) of truth...')
-        model = NoisyModel('model', model=toy, nx=nx, ny=ny, **approx)
+        # build a model, F(x|a), and tune "a" for optimal F.
+        toy_ = wrap(d=x[0], e=x[1])(toy) #NOTE: reduces nx by 2
+        #print('building model F(x|a)...')
+        model = WrapModel('model', model=toy_, nx=nx, ny=ny)
 
-        #print('building UQ model of model error...')
-        error = ErrorModel('error', model=model, surrogate=surrogate)
-
-        rnd = Ns if error.rnd else None
-        #print('building UQ objective of expected model error...')
-        b = ExpectedValue(error, bnd, constraint=scons, cvalid=is_cons, samples=rnd)
+        rnd = Ns if model.rnd else None
+        #print('building UQ objective of expected model output...')
+        b = ExpectedValue(model, bnd, constraint=scons, cvalid=is_cons, samples=rnd)
         i = counter.count()
-        #print('solving for upper bound on expected model error...')
+        #print('solving for upper bound on expected model output...')
         solver = b.upper_bound(axis=axis, id=i, **param)
         if type(solver) is not tuple:
             solver = (solver,) #FIXME: save solver to DB (or pkl)

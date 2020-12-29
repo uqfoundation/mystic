@@ -4,7 +4,39 @@
 # Copyright (c) 2020 The Uncertainty Quantification Foundation.
 # License: 3-clause BSD.  The full license text is available at:
 #  - https://github.com/uqfoundation/mystic/blob/master/LICENSE
+'''
+hyperparameter tuning for least upper bound of Error on |truth - surrogate|
 
+Test function is y = F(x), where:
+  y0 = x0 + x1 * | x2 * x3**2 - (x4 / x1)**2 |**.5
+  y1 = x0 - x1 * | x2 * x3**2 + (x4 / x1)**2 |**.5
+  y2 = x0 - | x1 * x2 * x3 - x4 |
+
+toy = lambda x: F(x)[0]
+truth = lambda x: toy(x + .01) - .01
+surrogate is interpolated from data sampled from truth,
+with hyperparameters z = [smooth]
+error = lambda x: (truth(x) - surrogate(x))**2
+
+Calculate least upper bound on E|error(x)|, where:
+  x in [(0,1), (1,10), (0,10), (0,10), (0,10)]
+  wx in [(0,1), (1,1), (1,1), (1,1), (1,1)]
+  npts = [2, 1, 1, 1, 1] (i.e. two Dirac masses on x[0], one elsewhere)
+  sum(wx[i]_j) for j in [0,npts], for each i
+  mean(x[0]) = 5e-1 +/- 1e-3
+  var(x[0]) = 5e-3 +/- 1e-4
+  z in [(0,10)]
+
+Solves for z producing least upper bound on E|(truth(x) - surrogate(x|z))**2|,
+given the bounds, normalization, and moment constraints.
+
+Creates 'log' of inner optimizations, 'result' for outer optimization,
+and 'truth' database of stored evaluations.
+
+Check results while running (using log reader):
+  $ mystic_log_reader log.txt -n 0 -g -p '0:2,2:4,5,7,9,11'
+  $ mystic_log_reader result.txt -g -p '0'
+'''
 from ouq_models import *
 
 # build truth model, F'(x|a'), with selected a'
@@ -39,20 +71,20 @@ if __name__ == '__main__':
     from mystic.monitors import VerboseLoggingMonitor, Monitor, VerboseMonitor
     from mystic.termination import VTRChangeOverGeneration as VTRCOG
     from mystic.termination import Or, VTR, ChangeOverGeneration as COG
-    param['opts']['termination'] = COG(1e-10, 200)
-    param['npop'] = 160
+    param['opts']['termination'] = COG(1e-10, 100) #NOTE: each solve in log.txt
+    param['npop'] = 160 #NOTE: increase if results.txt is not monotonic
     param['stepmon'] = VerboseLoggingMonitor(1, 20, filename='log.txt', label='output')
 
     # build inner-loop and outer-loop bounds
-    bnd = MeasureBounds((0,0,0,0,0)[:nx],(1,10,10,10,10)[:nx], n=npts[:nx], wlb=wlb[:nx], wub=wub[:nx])
-    bounds = [(0,10),(0,0)] #NOTE: smooth, noise... epsilon,method,extrap
+    bnd = MeasureBounds((0,1,0,0,0)[:nx],(1,10,10,10,10)[:nx], n=npts[:nx], wlb=wlb[:nx], wub=wub[:nx])
+    bounds = [(0,10)] #NOTE: smooth
 
     # build a model representing 'truth', and generate some data
     #print("building truth F'(x|a')...")
     true = dict(mu=.01, sigma=0., zmu=-.01, zsigma=0.)
     truth = NoisyModel('truth', model=toy, nx=nx, ny=ny, **true)
     #print('sampling truth...')
-    data = truth.sample([(0,1)]+[(0,10)]*(nx-1), pts=-16)
+    data = truth.sample([(0,1),(1,10)]+[(0,10)]*(nx-2), pts=-16)
 
     # get initial guess, a monitor, and a counter
     import counter as it
@@ -81,7 +113,7 @@ if __name__ == '__main__':
         upper bound on expected value of model error
         """
         # CASE 1: F(x|a) = F'(x|a'). Tune A for optimal G.
-        kwds = dict(smooth=x[0], noise=x[1], method='thin_plate', extrap=False)
+        kwds = dict(smooth=x[0], noise=0.0, method='thin_plate', extrap=False)
 
         #print('building estimator G(x) from truth data...')
         surrogate = InterpModel('surrogate', nx=nx, ny=ny, data=truth, **kwds)
@@ -112,5 +144,9 @@ if __name__ == '__main__':
     _map = pool.map
     result = _solver(cost, x0, map=_map, **settings)
     pool.close(); pool.join(); pool.clear()
-    print("%s @ %s" % (result[1], result[0])) #NOTE: -1 for max, 1 for min
+
+    # get the best result (generally the same as returned by solver)
+    m = stepmon.min()
+    print("%s @ %s" % (m.y, m.x)) #NOTE: -1 for max, 1 for min
+    #print("%s @ %s" % (result[1], result[0])) #NOTE: -1 for max, 1 for min
 

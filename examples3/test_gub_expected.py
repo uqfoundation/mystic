@@ -5,7 +5,7 @@
 # License: 3-clause BSD.  The full license text is available at:
 #  - https://github.com/uqfoundation/mystic/blob/master/LICENSE
 '''
-hyperparameter tuning for greatest upper bound of ExpectedValueOUQ on model
+hyperparameter tuning for greatest upper bound of ExpectedValue on model
 
 Test function is y = F(x), where:
   y0 = x0 + x1 * | x2 * x3**2 - (x4 / x1)**2 |**.5
@@ -117,5 +117,9 @@ if __name__ == '__main__':
     _map = pool.map
     result = _solver(cost, x0, map=_map, **settings)
     pool.close(); pool.join(); pool.clear()
-    print("%s @ %s" % (-result[1], result[0])) #NOTE: -1 for max, 1 for min
+
+    # get the best result (generally the same as returned by solver)
+    m = stepmon.min()
+    print("%s @ %s" % (-m.y, m.x)) #NOTE: -1 for max, 1 for min
+    #print("%s @ %s" % (-result[1], result[0])) #NOTE: -1 for max, 1 for min
 
