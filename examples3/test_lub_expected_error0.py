@@ -13,7 +13,7 @@ Test function is y = F(x), where:
   y2 = x0 - | x1 * x2 * x3 - x4 |
 
 toy = lambda x: F(x)[0]
-truth = lambda x: toy(x), with x[-2:] = (5,5)
+truth = lambda x: toy(x + .01) - .01, with x[-2:] = (10,10)
 model = lambda x: toy(x), with x[-2:] = (d,e)
 with hyperparameters z = [d, e]
 error = lambda x: (truth(x) - model(x))**2
@@ -64,7 +64,7 @@ if __name__ == '__main__':
     #from toys import cost5 as toy; nx = 5; ny = None
     from toys import function5 as toy; nx = 5; ny = None
     from toys import wrap
-    toy3 = wrap(d=5, e=5)(toy); nx = nx-2 #NOTE: reduces nx by 2
+    toy3 = wrap(d=10, e=10)(toy); nx = nx-2 #NOTE: reduces nx by 2
 
     # update 'inner-loop' optimization parameters
     from misc import param, npts, wlb, wub, is_cons, scons
@@ -72,7 +72,7 @@ if __name__ == '__main__':
     from mystic.monitors import VerboseLoggingMonitor, Monitor, VerboseMonitor
     from mystic.termination import VTRChangeOverGeneration as VTRCOG
     from mystic.termination import Or, VTR, ChangeOverGeneration as COG
-    param['opts']['termination'] = COG(1e-10, 100) #NOTE: each solve in log.txt
+    param['opts']['termination'] = COG(1e-10, 100) #NOTE: short stop?
     param['npop'] = 160 #NOTE: increase if results.txt is not monotonic
     param['stepmon'] = VerboseLoggingMonitor(1, 20, filename='log.txt', label='output')
 
@@ -82,7 +82,8 @@ if __name__ == '__main__':
 
     # build a model representing 'truth'
     #print("building truth F'(x|a')...")
-    truth = WrapModel('truth', model=toy3, nx=nx, ny=ny)
+    true = dict(mu=.01, sigma=0., zmu=-.01, zsigma=0.)
+    truth = NoisyModel('truth', model=toy3, nx=nx, ny=ny, **true)
 
     # get initial guess, a monitor, and a counter
     import counter as it
@@ -113,7 +114,7 @@ if __name__ == '__main__':
         # CASE 0: |F(x|a) - F'(x|a')|, no G. Tune "a" for optimal F, a = x[-2:]
         toy_ = wrap(d=x[0], e=x[1])(toy)
         #print('building model F(x|a) of truth...')
-        model = WrapModel('model', model=toy_, nx=nx, ny=ny)
+        model = WrapModel('model', model=toy_, nx=nx, ny=ny, rnd=False)
 
         #print('building UQ model of model error...')
         error = ErrorModel('error', model=truth, surrogate=model)

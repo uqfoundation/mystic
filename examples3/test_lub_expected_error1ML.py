@@ -71,7 +71,7 @@ if __name__ == '__main__':
     from mystic.monitors import VerboseLoggingMonitor, Monitor, VerboseMonitor
     from mystic.termination import VTRChangeOverGeneration as VTRCOG
     from mystic.termination import Or, VTR, ChangeOverGeneration as COG
-    param['opts']['termination'] = COG(1e-10, 100) #NOTE: each solve in log.txt
+    param['opts']['termination'] = COG(1e-10, 100) #NOTE: short stop?
     param['npop'] = 160 #NOTE: increase if results.txt is not monotonic
     param['maxiter'] = 1000 #FIXME: maxiter = 1500
     param['stepmon'] = VerboseLoggingMonitor(1, 20, filename='log.txt', label='output')

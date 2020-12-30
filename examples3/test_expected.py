@@ -39,10 +39,10 @@ if __name__ == '__main__':
     #from toys import function5x1 as toy; nx = 5; ny = 1
     #from toys import cost5 as toy; nx = 5; ny = None
     from toys import function5 as toy; nx = 5; ny = None
-    Ns = None
+    Ns = 25
 
     # build a model representing 'truth'
-    nargs = dict(nx=nx, ny=ny)
+    nargs = dict(nx=nx, ny=ny, rnd=False)
     model = WrapModel('model', toy, **nargs)
 
     # calculate upper bound on expected value, where x[0] has uncertainty

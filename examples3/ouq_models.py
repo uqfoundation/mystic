@@ -443,8 +443,8 @@ class InterpModel(OUQModel):
         if callable(data):
             data = _init_axis(data) #FIXME: class method?
         self.nx = kwds.pop('nx', None)
-        self.ny = kwds.pop('ny', None)
-        self.rnd = kwds.pop('rnd', False) and (bool(kwds.get('noise', -1)))# or callable(data) or isinstance(data, type('')))
+        self.ny = kwds.pop('ny', None) #FIXME: should rnd check noise?
+        self.rnd = kwds.pop('rnd', True) and (bool(kwds.get('noise', True)))# or callable(data) or isinstance(data, type('')))
         self.__func__ = None
         def bootstrap(x, axis=None):
             "an interpolated model, generated from the given data"
@@ -476,7 +476,7 @@ class InterpModel(OUQModel):
         self.__kwds__.update(kwds)
         cached = self.__kwds__.pop('cached', False)
         archive = data = self.__kwds__.pop('data', None)
-        self.rnd = self.__kwds__.pop('rnd', self.rnd) and (bool(self.__kwds__.get('noise', -1)))# or callable(data) or isinstance(data, type('')))
+        self.rnd = self.__kwds__.pop('rnd', self.rnd) and (bool(self.__kwds__.get('noise', True)))# or callable(data) or isinstance(data, type('')))
         if callable(data): #XXX: is a model, allow this?
             data = sample(data, bounds=None, pts=0)
         elif isinstance(data, type('')): #XXX: is a name, allow this?
@@ -542,8 +542,8 @@ class LearnedModel(OUQModel):
         if callable(data):
             data = _init_axis(data) #FIXME: class method?
         self.nx = kwds.pop('nx', None)
-        self.ny = kwds.pop('ny', None)
-        self.rnd = kwds.pop('rnd', False) and (bool(kwds.get('noise', -1)))
+        self.ny = kwds.pop('ny', None) #FIXME: should rnd check noise?
+        self.rnd = kwds.pop('rnd', True) and (bool(kwds.get('noise', False)))
         self.__func__ = None
         def bootstrap(x, axis=None):
             "a learned model, trained on the given data"
@@ -576,7 +576,7 @@ class LearnedModel(OUQModel):
         self.__kwds__.update(kwds)
         cached = self.__kwds__.pop('cached', False)
         archive = data = self.__kwds__.pop('data', None)
-        self.rnd = self.__kwds__.pop('rnd', self.rnd) and (bool(self.__kwds__.get('noise', -1)))
+        self.rnd = self.__kwds__.pop('rnd', self.rnd) and (bool(self.__kwds__.get('noise', False)))
         if callable(data): #XXX: is a model, allow this?
             data = sample(data, bounds=None, pts=0)
         elif isinstance(data, type('')): #XXX: is a name, allow this?

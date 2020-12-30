@@ -53,7 +53,7 @@ if __name__ == '__main__':
     from mystic.monitors import VerboseLoggingMonitor, Monitor, VerboseMonitor
     from mystic.termination import VTRChangeOverGeneration as VTRCOG
     from mystic.termination import Or, VTR, ChangeOverGeneration as COG
-    param['opts']['termination'] = COG(1e-10, 100) #NOTE: each solve in log.txt
+    param['opts']['termination'] = COG(1e-10, 100) #NOTE: short stop?
     param['npop'] = 40 #NOTE: increase if results.txt is not monotonic
     param['stepmon'] = VerboseLoggingMonitor(1, 20, filename='log.txt', label='output')
 
@@ -90,7 +90,7 @@ if __name__ == '__main__':
         # build a model, F(x|a), and tune "a" for optimal F.
         toy_ = wrap(d=x[0], e=x[1])(toy) #NOTE: reduces nx by 2
         #print('building model F(x|a)...')
-        model = WrapModel('model', model=toy_, nx=nx, ny=ny)
+        model = WrapModel('model', model=toy_, nx=nx, ny=ny, rnd=False)
 
         rnd = Ns if model.rnd else None
         #print('building UQ objective of expected model output...')
