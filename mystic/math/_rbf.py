@@ -3,7 +3,7 @@
 #
 # Forked by: Mike McKerns (October 2018)
 # Author: Mike McKerns (mmckerns @uqfoundation)
-# Copyright (c) 2018-2020 The Uncertainty Quantification Foundation.
+# Copyright (c) 2018-2021 The Uncertainty Quantification Foundation.
 # License: 3-clause BSD.  The full license text is available at:
 #  - https://github.com/uqfoundation/mystic/blob/master/LICENSE
 """rbf - Radial basis functions for interpolation/smoothing scattered Nd data.

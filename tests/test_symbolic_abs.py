@@ -1,3 +1,10 @@
+#!/usr/bin/env python
+#
+# Author: Mike McKerns (mmckerns @caltech and @uqfoundation)
+# Copyright (c) 2020-2021 The Uncertainty Quantification Foundation.
+# License: 3-clause BSD.  The full license text is available at:
+#  - https://github.com/uqfoundation/mystic/blob/master/LICENSE
+
 import mystic.symbolic as ms
 
 
