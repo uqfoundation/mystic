@@ -5,7 +5,7 @@
 # License: 3-clause BSD.  The full license text is available at:
 #  - https://github.com/uqfoundation/mystic/blob/master/LICENSE
 '''
-calculate lower bound on expected Error on |truth - surrogate|
+calculate lower and upper bound on expected Error on |truth - surrogate|
 
 Test function is y = F(x), where:
   y0 = x0 + x1 * | x2 * x3**2 - (x4 / x1)**2 |**.5
@@ -17,7 +17,7 @@ truth = lambda x: toy(x + .01) - .01
 surrogate is interpolated from data sampled from truth
 error = lambda x: (truth(x) - surrogate(x))**2
 
-Calculate lower bound on E|error(x)|, where:
+Calculate lower and upper bound on E|error(x)|, where:
   x in [(0,1), (1,10), (0,10), (0,10), (0,10)]
   wx in [(0,1), (1,1), (1,1), (1,1), (1,1)]
   npts = [2, 1, 1, 1, 1] (i.e. two Dirac masses on x[0], one elsewhere)
@@ -26,7 +26,8 @@ Calculate lower bound on E|error(x)|, where:
   var(x[0]) = 5e-3 +/- 1e-4
 
 Solves for two scenarios of x that produce lower bound on E|error(x)|,
-given the bounds, normalization, and moment constraints.
+given the bounds, normalization, and moment constraints. Repeats
+calculation for upper bound on E|error(x)|.
 
 Creates 'log' of optimizations and 'truth' database of stored evaluations.
 '''
@@ -49,8 +50,8 @@ if __name__ == '__main__':
     from mystic.termination import VTRChangeOverGeneration as VTRCOG
     from mystic.termination import Or, VTR, ChangeOverGeneration as COG
     param['opts']['termination'] = COG(1e-10, 100) #NOTE: short stop?
-    param['npop'] = 80 #NOTE: increase if results.txt is not monotonic
-    param['stepmon'] = VerboseLoggingMonitor(1, 20, filename='log.txt', label='output')
+    param['npop'] = 80 #NOTE: increase if poor convergence
+    param['stepmon'] = VerboseLoggingMonitor(1, 20, filename='log.txt', label='lower')
 
     # build bounds
     bnd = MeasureBounds((0,1,0,0,0)[:nx],(1,10,10,10,10)[:nx], n=npts[:nx], wlb=wlb[:nx], wub=wub[:nx])
@@ -73,8 +74,18 @@ if __name__ == '__main__':
     #print('building UQ objective of expected model error...')
     b = ExpectedValue(error, bnd, constraint=scons, cvalid=is_cons, samples=rnd)
     #print('solving for lower bound on expected model error...')
-    solver = b.lower_bound(axis=None, **param)
+    solver = b.lower_bound(axis=None, id=0, **param)
     if type(solver) is not tuple:
         solver = (solver,)
     for s in solver:
-        print("%s @ %s" % (s.bestEnergy, s.bestSolution))
+        print("lower bound:\n%s @ %s" % (s.bestEnergy, s.bestSolution))
+
+    #print('solving for upper bound on expected model error...')
+    param['opts']['termination'] = COG(1e-10, 200) #NOTE: short stop?
+    param['npop'] = 160 #NOTE: increase if poor convergence
+    param['stepmon'] = VerboseLoggingMonitor(1, 20, filename='log.txt', label='upper')
+    solver = b.upper_bound(axis=None, id=1, **param)
+    if type(solver) is not tuple:
+        solver = (solver,)
+    for s in solver:
+        print("upper bound:\n%s @ %s" % (-s.bestEnergy, s.bestSolution))

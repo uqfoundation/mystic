@@ -25,8 +25,8 @@ def sample(model, bounds, pts=None, **kwds):
         solver: the mystic.solver type [default: NelderMeadSimplexSolver]
         dist: a distribution type [default: numpy.random.normal]
         map: a map instance [default: builtins.map]
-        axis: int, index of output on which to search [default: 0]
         ny: int, number of model outputs, len(y) [default: None]
+        axis: int, index of output on which to search [default: None]
 
     Returns:
         the mystic.math.legacydata.dataset of sampled data
@@ -102,12 +102,12 @@ def sample(model, bounds, pts=None, **kwds):
                 tmap = pool.map
                 list(tmap(doit, range(ny)))
                 pool.close(); pool.join()
-            else:
+            else: #XXX: default to 0, warn, or error?
                 doit(axis=0)
         else:
             doit(axis)
     import dataset as ds
-    return ds.from_archive(cache(), axis=None) #FIXME: multi
+    return ds.from_archive(cache(), axis=None)
 
 
 def _init_axis(model):
