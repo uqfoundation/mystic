@@ -25,7 +25,8 @@ def sample(model, bounds, pts=None, **kwds):
         solver: the mystic.solver type [default: NelderMeadSimplexSolver]
         dist: a distribution type [default: numpy.random.normal]
         map: a map instance [default: builtins.map]
-        multivalued: bool, True if output is multivalued [default: False]
+        axis: int, index of output on which to search [default: 0]
+        ny: int, number of model outputs, len(y) [default: None]
 
     Returns:
         the mystic.math.legacydata.dataset of sampled data
@@ -44,8 +45,12 @@ def sample(model, bounds, pts=None, **kwds):
     searcher = kwds.get('sampler', LatticeSampler)
     from mystic.solvers import NelderMeadSimplexSolver
     solver = kwds.get('solver', NelderMeadSimplexSolver)
-    mvl = getattr(model, 'ny', getattr(model, '__axis__', None)) is not None
-    mvl = kwds.get('multivalued', mvl) # allow override?
+    ax = getattr(model, '__axis__', None)
+    axis = None if hasattr(ax, '__len__') else ax # get default for axis
+    axis = kwds.get('axis', axis) # allow override?
+    ny = kwds.get('ny', getattr(model, 'ny', None)) #XXX: best?
+    mvl = ny is not None # True if multivalued
+    axis = axis if mvl else None #XXX: allow multi-axis search?
     import numpy as np
     dist = kwds.get('dist', np.random.normal)
     map_ = kwds.get('map', map)
@@ -55,7 +60,6 @@ def sample(model, bounds, pts=None, **kwds):
         model = mc.cached(archive=name, multivalued=mvl)(model)
     cache = model.__cache__
     imodel = model.__inverse__
-    axis = 0 if mvl else None #FIXME: choice of '0' is fixed
     if hasattr(pts, '__len__'):
         pts, _pts = -np.prod(pts), pts
     else:
@@ -64,12 +68,18 @@ def sample(model, bounds, pts=None, **kwds):
     if pts == 0: # don't sample, just grab the archive
         pass
     elif pts > 0: # sample pts without optimizing
-        _model = lambda x: model(x, axis=axis)
-        s = searcher(bounds, _model, npts=pts, solver=solver, dist=dist)
-        s.sample()
+        def doit(axis=None):
+            _model = lambda x: model(x, axis=axis)
+            s = searcher(bounds, _model, npts=pts, solver=solver, dist=dist)
+            s.sample()
+            return s
+        if mvl and axis is None:
+            # as we don't optimize, we really don't need axis...?
+            doit(axis=0)
+        else:
+            doit(axis)
     else: # search for minima until terminated
         pts = -pts if _pts is None else _pts
-        #FIXME: iterate over axes?
         def lower(axis=None):
             _model = lambda x: model(x, axis=axis)
             s = searcher(bounds, _model, npts=pts, solver=solver, dist=dist)
@@ -83,7 +93,19 @@ def sample(model, bounds, pts=None, **kwds):
         def _apply(f, arg):
             return f(arg)
         fs = lower, upper
-        list(map_(_apply, fs, [axis]*len(fs)))
+        def doit(axis=None):
+            return list(map_(_apply, fs, [axis]*len(fs)))
+        if mvl and axis is None:
+            if ny:
+                import multiprocess.dummy as mt
+                pool = mt.Pool()
+                tmap = pool.map
+                list(tmap(doit, range(ny)))
+                pool.close(); pool.join()
+            else:
+                doit(axis=0)
+        else:
+            doit(axis)
     import dataset as ds
     return ds.from_archive(cache(), axis=None) #FIXME: multi
 
@@ -202,6 +224,7 @@ class OUQModel(object): #NOTE: effectively, this is WrapModel
         solver: the mystic.solver type [default: NelderMeadSimplexSolver]
         dist: a distribution type [default: numpy.random.normal]
         map: a map instance [default: builtins.map]
+        axis: int, index of output on which to search [default: 0]
         multivalued: bool, True if output is multivalued [default: False]
 
     Returns:
@@ -218,8 +241,15 @@ class OUQModel(object): #NOTE: effectively, this is WrapModel
         dist can be used to add randomness to the sampler
         """
         model = self.__model__
-        mvl = getattr(self, 'ny', getattr(model, 'ny', getattr(model, '__axis__', None))) is not None # True if multivalued
-        return sample(model, bounds, pts=pts, multivalued=mvl)
+        ax = getattr(self, '__axis__', getattr(model, '__axis__', None))
+        axis = None if hasattr(ax, '__len__') else ax
+        axis = kwds.pop('axis', axis) # allow override?
+        ny = getattr(self, 'ny', getattr(model, 'ny', None))
+        mvl = getattr(self, 'ny', getattr(model, 'ny', ax)) is not None # True if multivalued
+        mvl = kwds.pop('multivalued', mvl) # allow override?
+        kwds['axis'] = axis if mvl else None #XXX: allow multiaxis search?
+        kwds['ny'] = ny if mvl else None
+        return sample(model, bounds, pts=pts, **kwds)
 
     #XXX: np.sum, np.max ?
     def distance(self, data, axis=None, **kwds):
@@ -478,7 +508,7 @@ class InterpModel(OUQModel):
         archive = data = self.__kwds__.pop('data', None)
         self.rnd = self.__kwds__.pop('rnd', self.rnd) and (bool(self.__kwds__.get('noise', True)))# or callable(data) or isinstance(data, type('')))
         if callable(data): #XXX: is a model, allow this?
-            data = sample(data, bounds=None, pts=0)
+            data = sample(data, bounds=None, pts=0) #XXX: axis? multivalue?
         elif isinstance(data, type('')): #XXX: is a name, allow this?
             import mystic.cache as mc
             import dataset as ds
@@ -578,7 +608,7 @@ class LearnedModel(OUQModel):
         archive = data = self.__kwds__.pop('data', None)
         self.rnd = self.__kwds__.pop('rnd', self.rnd) and (bool(self.__kwds__.get('noise', False)))
         if callable(data): #XXX: is a model, allow this?
-            data = sample(data, bounds=None, pts=0)
+            data = sample(data, bounds=None, pts=0) #XXX: axis? multivalue?
         elif isinstance(data, type('')): #XXX: is a name, allow this?
             import mystic.cache as mc
             import dataset as ds
