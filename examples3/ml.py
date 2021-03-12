@@ -129,7 +129,7 @@ class Estimator(object): #XXX: use pipeline?
 
 class MLData(object):
     "a container for training and test data"
-    def __init__(self, xtrain, xtest, ytrain, ytest):
+    def __init__(self, xtrain, xtest, ytrain, ytest=None):
         """a container for training and test data
 
     Input:
@@ -311,6 +311,12 @@ def _rescore(axis, estimator, xyt, target=0, tries=10, verbose=False):
             ypred = est.fit(xscale, ytrain if axis is None else ytrain[:,axis]).predict(xstest)
     else:
         ypred = est.predict(xstest)
+    # check if there's something to test against
+    if ytest is None:
+        if verbose:
+            print('no truth velues to compare')
+        return est,ypred,-float('inf')
+    # we have ytest, let's try to make improvements...
     score = sm.r2_score(ytest if axis is None else ytest[:,axis], ypred)
     _ypred = _score = -float('inf')
     if verbose:
