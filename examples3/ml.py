@@ -8,7 +8,6 @@
 mahine learning containers and assorted tools
 """
 
-import dataset as ds
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import axes3d
@@ -396,6 +395,7 @@ def traintest(x, y, test_size=None, random_state=None):
 if __name__ == '__main__':
 
     # get access to data in archive
+    import dataset as ds
     from mystic.monitors import Monitor
     m = Monitor()
     m._x,m._y = ds.read_archive('demo')

@@ -43,6 +43,10 @@ a_ave = 5e-1
 a_var = 5e-3
 a_ave_err = 1e-3
 a_var_err = 1e-4
+b_ave = None
+b_var = None
+b_ave_err = None
+b_var_err = None
 
 
 def flatten(npts):
@@ -66,8 +70,12 @@ def normalize_moments(mass=1.0, tol=1e-18, rel=1e-7):
     return func
 
 
-def constrain_moments(ave, var, ave_err, var_err, idx=0):
+def constrain_moments(ave=None, var=None, ave_err=None, var_err=None, idx=0):
     'impose mean and variance constraints on the selected measure'
+    if ave is None: ave = float('nan')
+    if var is None: var = float('nan')
+    if ave_err is None: ave_err = 0
+    if var_err is None: var_err = 0
     def func(c):
         E = float(c[idx].mean)
         if E > (ave + ave_err) or E < (ave - ave_err):
@@ -92,8 +100,12 @@ def constrained_integers(index=()):
     return func
 
 
-def constrained(ave, var, ave_err, var_err, idx=0, debug=False):
+def constrained(ave=None, var=None, ave_err=None, var_err=None, idx=0, debug=False):
     'check mean and variance on the selected measure are properly constrained'
+    if ave is None: ave = float('nan')
+    if var is None: var = float('nan')
+    if ave_err is None: ave_err = 0
+    if var_err is None: var_err = 0
     def func(c):
         E = float(c[idx].mean)
         if E > (ave + ave_err) or E < (ave - ave_err):
@@ -121,15 +133,23 @@ def check(npts):
 normcon = normalize_moments()
 momcons = constrain_moments(a_ave, a_var, a_ave_err, a_var_err)
 is_cons = constrained(a_ave, a_var, a_ave_err, a_var_err)
+#momcon0 = constrain_moments(a_ave, a_var, a_ave_err, a_var_err, idx=0)
+#momcon1 = constrain_moments(b_ave, b_var, b_ave_err, b_var_err, idx=1)
+#is_con0 = constrained(a_ave, a_var, a_ave_err, a_var_err, idx=0)
+#is_con1 = constrained(b_ave, b_var, b_ave_err, b_var_err, idx=1)
+#is_cons = lambda c: bool(additive(is_con0)(is_con1)(c))
 
 ## index-based constraints ##
 # impose constraints sequentially (faster, but assumes are decoupled)
 #scons = outer(integer_indices)(flatten(npts)(outer(momcons)(normcon)))
 scons = flatten(npts)(outer(momcons)(normcon))
+#scons = flatten(npts)(outer(momcon1)(outer(momcon0)(normcon)))
+
 # impose constraints concurrently (slower, but safer)
 #ccons = and_(flatten(npts)(normcon), flatten(npts)(momcons), integer_indices)
 ccons = and_(flatten(npts)(normcon), flatten(npts)(momcons))
+#ccons = and_(flatten(npts)(normcon), flatten(npts)(momcon0), flatten(npts)(momcon1))
+
 # check parameters (instead of measures)
 iscon = check(npts)(is_cons)
 #rvcon = constrained_integers(index)
-
