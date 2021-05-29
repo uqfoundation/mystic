@@ -36,7 +36,7 @@ enable the user to easily configure and control solvers, ``mystic``
 greatly reduces the barrier to solving hard optimization problems.
 
 ``mystic`` is in active development, so any user feedback, bug reports, comments,
-or suggestions are highly appreciated.  A list of issues is located at https://github.com/uqfoundation/mystic/issues, with a legacy list maintained at https://uqfoundation.github.io/mystic-issues.html.
+or suggestions are highly appreciated.  A list of issues is located at https://github.com/uqfoundation/mystic/issues, with a legacy list maintained at https://uqfoundation.github.io/project/mystic/query.
 
 
 Major Features
@@ -207,8 +207,8 @@ acknowledge use of ``mystic`` by citing the following in your publication::
 
     Michael McKerns, Patrick Hung, and Michael Aivazis,
     "mystic: highly-constrained non-convex optimization and UQ", 2009- ;
-    https://uqfoundation.github.io/mystic.html
+    https://uqfoundation.github.io/project/mystic
 
-Please see https://uqfoundation.github.io/mystic.html or
+Please see https://uqfoundation.github.io/project/mystic or
 http://arxiv.org/pdf/1202.1056 for further information.
 
