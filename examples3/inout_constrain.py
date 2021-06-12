@@ -14,6 +14,7 @@ Objective:
 
 Constraints:
     schedule(x0,x1,x2) >= 480
+    x2 = round(log(x0)**2)
     x1 > x0
     x1 > x2
     x0, x1, x2 are integers
@@ -79,19 +80,26 @@ c = my.constraints.as_constraint(penalty, lower_bounds=lb, upper_bounds=ub, nvar
 2400.0
 '''
 
+# define a constrait function for the input constraint
+def intlog2(x):
+    x[2] = np.round(np.log(x[0])**2)
+    return x
+
 # generate a constraint operator for all given constraints
 ints = np.round
-constraint = and_(c, cons, ints)
+constraint = and_(c, cons, ints, intlog2)
 
-''' #NOTE: constraint ensures c, cons, and ints are satisfied
+''' #NOTE: constraint ensures c, cons, ints, and intlog2 are satisfied
 >>> constraint([5,5,1])
-[23.0, 30.0, 2.0]
+[16.0, 42.0, 8.0]
 >>> c(_)
-[23.0, 30.0, 2.0]
+[16.0, 42.0, 8.0]
 >>> cons(_)
-[23.0, 30.0, 2.0]
+[16.0, 42.0, 8.0]
+>>> intlog2(_)
+[16.0, 42.0, 8.0]
 >>> objective(_)
-53450
+51050.0
 '''
 
 # solve
@@ -99,13 +107,13 @@ from mystic.solvers import diffev2
 from mystic.monitors import VerboseMonitor
 mon = VerboseMonitor(10)
 
-result = diffev2(objective,x0=bounds, bounds=bounds, constraints=constraint, npop=50, gtol=100, disp=False, full_output=True, itermon=mon)
+result = diffev2(objective,x0=bounds, bounds=bounds, constraints=constraint, npop=20, gtol=50, disp=False, full_output=True, itermon=mon)
 
 ''' #NOTE: solution
 >>> result[0]
-array([ 13., 37.,   1.])
+array([ 14., 38.,   7.])
 >>> result[1]
-42725.0
+45450.0
 '''
 print(result[0])
 print(result[1])
