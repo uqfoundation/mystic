@@ -388,31 +388,54 @@ sysversion = sys.version_info[:2]
 try:
     import ctypes # if using `pypy`, pythonapi is not found
     IS_PYPY = not hasattr(ctypes, 'pythonapi')
+    IS_PYPY2 = IS_PYPY and sysversion < (3,0)
 except:
     IS_PYPY = False
+    IS_PYPY2 = False
 if sysversion < (2,6) or sysversion == (3,0) or sysversion == (3,1):
     numpy_version = '>=1.0, <1.8.0'
     sympy_version = '>=0.6.7, <1.1'
+    scipy_version = '>=0.6.0, <0.17.0'
+    mpmath_version = '>=0.19, <1.0.0'
+    matplotlib_version = '>=0.91, <2.0.0'
 elif sysversion == (2,6) or sysversion == (3,2) or sysversion == (3,3):
     numpy_version = '>=1.0, <1.12.0'
     sympy_version = '>=0.6.7, <1.1'
-elif IS_PYPY: #XXX: pypy3?
+    scipy_version = '>=0.6.0, <1.0.0'
+    mpmath_version = '>=0.19, <1.0.0'
+    matplotlib_version = '>=0.91, <2.0.0'
+elif IS_PYPY2:
     numpy_version = '>=1.0, <1.16.0'
     sympy_version = '>=0.6.7, <1.1'
+    scipy_version = '>=0.6.0, <1.3.0'
+    mpmath_version = '>=0.19'
+    matplotlib_version = '>=0.91, <3.0.0'
 elif sysversion == (2,7) or sysversion == (3,4):
     numpy_version = '>=1.0, <1.17.0'
     sympy_version = '>=0.6.7, <1.1'
+    scipy_version = '>=0.6.0, <1.3.0'
+    mpmath_version = '>=0.19'
+    matplotlib_version = '>=0.91, <3.0.0'
 elif sysversion == (3,5):
-    numpy_version = '>=1.0'
+    numpy_version = '>=1.0, <1.19.0'
     sympy_version = '>=0.6.7, <1.7'
+    scipy_version = '>=0.6.0, <1.5.0'
+    mpmath_version = '>=0.19'
+    matplotlib_version = '>=0.91, <3.1.0'
+elif sysversion == (3,6):# or IS_PYPY
+    numpy_version = '>=1.0, <1.20.0'
+    sympy_version = '>=0.6.7'#, <0.7.4'
+    scipy_version = '>=0.6.0, <1.6.0'
+    mpmath_version = '>=0.19'
+    matplotlib_version = '>=0.91, <3.4.0'
 else:
     numpy_version = '>=1.0'
     sympy_version = '>=0.6.7'#, <0.7.4'
+    scipy_version = '>=0.6.0'
+    mpmath_version = '>=0.19'
+    matplotlib_version = '>=0.91' #XXX: kiwisolver-1.3.0
 dill_version = '>=0.3.4'
 klepto_version = '>=0.2.0'
-scipy_version = '>=0.6.0'
-matplotlib_version = '>=0.91' #XXX: kiwisolver-1.3.0
-mpmath_version = '>=0.19'
 pathos_version = '>=0.2.7'
 pyina_version = '>=0.2.4'
 if has_setuptools:
