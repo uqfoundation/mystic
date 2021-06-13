@@ -179,7 +179,7 @@ Requirements
     - ``numpy``, **version >= 1.0**
     - ``sympy``, **version >= 0.6.7**
     - ``dill``, **version >= 0.3.4**
-    - ``klepto``, **version >= 0.2.0**
+    - ``klepto``, **version >= 0.2.1**
 
 Optional requirements:
 
@@ -435,7 +435,7 @@ else:
     mpmath_version = '>=0.19'
     matplotlib_version = '>=0.91' #XXX: kiwisolver-1.3.0
 dill_version = '>=0.3.4'
-klepto_version = '>=0.2.0'
+klepto_version = '>=0.2.1'
 pathos_version = '>=0.2.7'
 pyina_version = '>=0.2.4'
 if has_setuptools:
