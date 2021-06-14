@@ -187,7 +187,7 @@ Optional requirements:
     - ``matplotlib``, **version >= 0.91**
     - ``scipy``, **version >= 0.6.0**
     - ``mpmath``, **version >= 1.0.0**
-    - ``pathos``, **version >= 0.2.7**
+    - ``pathos``, **version >= 0.2.8**
     - ``pyina``, **version >= 0.2.4**
 
 
@@ -436,7 +436,7 @@ else:
     matplotlib_version = '>=0.91' #XXX: kiwisolver-1.3.0
 dill_version = '>=0.3.4'
 klepto_version = '>=0.2.1'
-pathos_version = '>=0.2.7'
+pathos_version = '>=0.2.8'
 pyina_version = '>=0.2.4'
 if has_setuptools:
     setup_code += """
