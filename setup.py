@@ -188,7 +188,7 @@ Optional requirements:
     - ``scipy``, **version >= 0.6.0**
     - ``mpmath``, **version >= 1.0.0**
     - ``pathos``, **version >= 0.2.8**
-    - ``pyina``, **version >= 0.2.4**
+    - ``pyina``, **version >= 0.2.5**
 
 
 More Information
@@ -437,7 +437,7 @@ else:
 dill_version = '>=0.3.4'
 klepto_version = '>=0.2.1'
 pathos_version = '>=0.2.8'
-pyina_version = '>=0.2.4'
+pyina_version = '>=0.2.5'
 if has_setuptools:
     setup_code += """
       zip_safe=False,
