@@ -408,7 +408,7 @@ elif IS_PYPY2:
     numpy_version = '>=1.0, <1.16.0'
     sympy_version = '>=0.6.7, <1.1'
     scipy_version = '>=0.6.0, <1.3.0'
-    mpmath_version = '>=0.19'
+    mpmath_version = '>=0.19, <1.2.1'
     matplotlib_version = '>=0.91, <3.0.0'
 elif sysversion == (2,7) or sysversion == (3,4):
     numpy_version = '>=1.0, <1.17.0'
