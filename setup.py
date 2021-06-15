@@ -178,6 +178,7 @@ Requirements
     - ``python``, **version == 2.7** or **version >= 3.6**, or ``pypy``
     - ``numpy``, **version >= 1.0**
     - ``sympy``, **version >= 0.6.7**
+    - ``mpmath``, **version >= 0.19**
     - ``dill``, **version >= 0.3.4**
     - ``klepto``, **version >= 0.2.1**
 
@@ -186,7 +187,6 @@ Optional requirements:
     - ``setuptools``, **version >= 0.6**
     - ``matplotlib``, **version >= 0.91**
     - ``scipy``, **version >= 0.6.0**
-    - ``mpmath``, **version >= 1.0.0**
     - ``pathos``, **version >= 0.2.8**
     - ``pyina``, **version >= 0.2.5**
 
@@ -408,7 +408,7 @@ elif IS_PYPY2:
     numpy_version = '>=1.0, <1.16.0'
     sympy_version = '>=0.6.7, <1.1'
     scipy_version = '>=0.6.0, <1.3.0'
-    mpmath_version = '>=0.19, <1.2.1'
+    mpmath_version = '>=0.19, !=1.2.1'
     matplotlib_version = '>=0.91, <3.0.0'
 elif sysversion == (2,7) or sysversion == (3,4):
     numpy_version = '>=1.0, <1.17.0'
@@ -441,9 +441,9 @@ pyina_version = '>=0.2.5'
 if has_setuptools:
     setup_code += """
       zip_safe=False,
-      install_requires = ('numpy%s', 'sympy%s', 'klepto%s', 'dill%s'),
-      extras_require = {'math': ['scipy%s','mpmath%s'], 'parallel': ['pathos%s','pyina%s'], 'plotting': ['matplotlib%s']},
-""" % (numpy_version, sympy_version, klepto_version, dill_version, scipy_version, mpmath_version, pathos_version, pyina_version, matplotlib_version)
+      install_requires = ('numpy%s', 'mpmath%s', 'sympy%s', 'klepto%s', 'dill%s'),
+      extras_require = {'math': ['scipy%s'], 'parallel': ['pathos%s','pyina%s'], 'plotting': ['matplotlib%s']},
+""" % (numpy_version, mpmath_version, sympy_version, klepto_version, dill_version, scipy_version, pathos_version, pyina_version, matplotlib_version)
 
 # add the scripts, and close 'setup' call
 setup_code += """
@@ -463,6 +463,7 @@ exec(setup_code)
 try:
     import numpy
     import sympy
+    import mpmath
     import klepto
     import dill
     #import scipy
@@ -472,6 +473,7 @@ except ImportError:
     print("WARNING: One of the following dependencies is unresolved:")
     print("    numpy %s" % numpy_version)
     print("    sympy %s" % sympy_version)
+    print("    mpmath %s" % mpmath_version)
     print("    klepto %s" % klepto_version)
     print("    dill %s" % dill_version)
     print("    scipy %s (optional)" % scipy_version)
