@@ -53,7 +53,7 @@ cache module
 ------------
 
 .. automodule:: mystic.cache
-..  :members:
+    :members:
     :undoc-members:
     :private-members:
     :special-members:

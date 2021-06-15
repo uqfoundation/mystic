@@ -7,6 +7,11 @@
 #  - https://github.com/uqfoundation/mystic/blob/master/LICENSE
 '''decorators for caching function outputs, with function inputs as the keys,
 and interactors for reading and writing to databases of functions and data.
+
+several klepto.cache strategies are included here for backward compatability;
+please also see the klepto package for available archives (i.e. dir_archive,
+file_archive, hdf_archive, sql_archive), cache strategies, filters, encodings,
+serialization, and other configuration options
 '''
 from . import archive
 from . import function
