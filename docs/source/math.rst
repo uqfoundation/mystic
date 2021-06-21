@@ -69,6 +69,14 @@ integrate module
     :undoc-members:
     :show-inheritance:
 
+interpolate module
+------------------
+
+.. automodule:: mystic.math.interpolate
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 legacydata module
 -----------------
 

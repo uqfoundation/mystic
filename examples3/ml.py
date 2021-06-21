@@ -14,7 +14,7 @@ from mpl_toolkits.mplot3d import axes3d
 
 class Estimator(object): #XXX: use pipeline?
     "a container for a trained estimator and transform (not a pipeline)"
-    def __init__(self, estimator, transform):
+    def __init__(self, estimator, transform=None):
         """a container for a trained estimator and transform
 
     Input:
@@ -40,8 +40,11 @@ class Estimator(object): #XXX: use pipeline?
         0.9440222526291645
         """
         self.estimator = estimator
+        if transform is None:
+            import sklearn.preprocessing as pre
+            transform = pre.FunctionTransformer() #XXX: or StandardScaler ?
         self.transform = transform
-        self.function = lambda *x: float(self.estimator.predict(self.transform.transform(np.array(x).reshape(1,-1))).reshape(-1))
+        self.function = lambda *x: float(self.test(np.array(x).reshape(1,-1)).reshape(-1))
     def __call__(self, *x):
         "f(*x) for x of xtest and predict on fitted estimator(transform(xtest))"
         import numpy as np

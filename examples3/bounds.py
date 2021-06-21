@@ -103,6 +103,9 @@ class Bounds(object):
     def __set_upper(self, ub):
         return NotImplemented
 
+    def __repr__(self):
+        return "%s(%s, %s, n=%s)" % (self.__class__.__name__, self.xlb, self.xub, self.n)
+
     lower = property(__lower, __set_lower)
     upper = property(__upper, __set_upper)
 
@@ -185,6 +188,11 @@ class MeasureBounds(Bounds):
 
     def __set_upper(self, ub):
         return NotImplemented
+
+    def __repr__(self):
+        if self.wlb == 0 and self.wub == 1:
+            return super(MeasureBounds, self).__repr__()
+        return "%s(%s, %s, n=%s, wlb=%s, wub=%s)" % (self.__class__.__name__, self.xlb, self.xub, self.n, self.wlb, self.wub)
 
     lower = property(__lower, __set_lower)
     upper = property(__upper, __set_upper)

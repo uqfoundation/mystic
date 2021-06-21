@@ -37,6 +37,18 @@ abstract_map_solver module
     :imported-members:
 ..  :exclude-members:
 
+abstract_sampler module
+-----------------------
+
+.. automodule:: mystic.abstract_sampler
+    :members:
+    :undoc-members:
+    :private-members:
+    :special-members:
+    :show-inheritance:
+    :imported-members:
+..  :exclude-members:
+
 abstract_solver module
 ----------------------
 
@@ -294,6 +306,18 @@ python_map module
     :show-inheritance:
     :imported-members:
     :exclude-members: carddealer_mapper
+
+samplers module
+---------------
+
+.. automodule:: mystic.samplers
+    :members:
+    :undoc-members:
+    :private-members:
+    :special-members:
+    :show-inheritance:
+    :imported-members:
+..  :exclude-members:
 
 scemtools module
 ----------------

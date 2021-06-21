@@ -11,14 +11,17 @@ a multiprocessing-friendly counter
 """
 
 class Counter(object):
-    def __init__(self):
+    def __init__(self, value=0):
         """a counter where the value can be shared by multiple processes
         """
         try: #XXX: is multiprocess ever useful here vs multiprocessing?
             import multiprocess as mp
         except ImportError:
             import multiprocessing as mp
-        self.val = mp.Value('i', 0)
+        self.val = mp.Value('i', value)
+
+    def __repr__(self):
+        return "%s(value=%s)" % (self.__class__.__name__, self.value)
 
     def increment(self, n=1):
         """increase the current value by n
