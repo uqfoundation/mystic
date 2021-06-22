@@ -69,6 +69,7 @@ if __name__ == '__main__':
     # update 'inner-loop' optimization parameters
     from misc import param, npts, wlb, wub, is_cons, scons
     from ouq import ExpectedValue
+    from mystic.bounds import MeasureBounds
     from mystic.monitors import VerboseLoggingMonitor, Monitor, VerboseMonitor
     from mystic.termination import VTRChangeOverGeneration as VTRCOG
     from mystic.termination import Or, VTR, ChangeOverGeneration as COG
@@ -103,7 +104,7 @@ if __name__ == '__main__':
     surrogate = LearnedModel('surrogate', nx=nx, ny=ny, data=truth, **mlkw)
 
     # get initial guess, a monitor, and a counter
-    import counter as it
+    import mystic._counter as it
     counter = it.Counter()
     import numpy as np
     in_bounds = lambda a,b: (b-a) * np.random.rand() + a

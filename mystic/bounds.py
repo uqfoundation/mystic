@@ -7,6 +7,8 @@
 """
 cartesian bounds and measure bounds instances
 """
+__all__ = ['Bounds','MeasureBounds']
+
 from mystic.tools import flatten
 
 

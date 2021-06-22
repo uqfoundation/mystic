@@ -31,7 +31,7 @@ if __name__ == '__main__':
 
     from misc import *
     from ouq import ExpectedValue
-    from bounds import MeasureBounds
+    from mystic.bounds import MeasureBounds
     from ouq_models import WrapModel
     #from toys import cost5x3 as toy; nx = 5; ny = 3
     #from toys import function5x3 as toy; nx = 5; ny = 3

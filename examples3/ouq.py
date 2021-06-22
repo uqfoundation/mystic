@@ -20,7 +20,7 @@ class BaseOUQ(object): #XXX: redo with a "Solver" interface, like ensemble?
 
     Input:
         model: function of the form y = model(x, axis=None)
-        bounds: MeasureBounds instance
+        bounds: mystic.bounds.MeasureBounds instance
 
     Additional Input:
         samples: int, number of samples (used for non-deterministic models)

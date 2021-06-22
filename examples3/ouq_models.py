@@ -7,8 +7,6 @@
 '''
 model objects (and helper functions) to be used with OUQ classes
 '''
-from bounds import MeasureBounds
-
 #FIXME: hardwired to multivalue function
 #FIXME: dict_archive('truth', cached=False) does not cache (is empty)
 #FIXME: option to cache w/o lookup (e.g. for model with randomness)

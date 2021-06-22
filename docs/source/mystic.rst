@@ -61,6 +61,18 @@ abstract_solver module
     :imported-members:
 ..  :exclude-members:
 
+bounds module
+-------------
+
+.. automodule:: mystic.bounds
+    :members:
+    :undoc-members:
+    :private-members:
+    :special-members:
+    :show-inheritance:
+    :imported-members:
+..  :exclude-members:
+
 cache module
 ------------
 

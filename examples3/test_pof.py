@@ -33,7 +33,7 @@ if __name__ == '__main__':
     from misc import *
     from mystic.math.discrete import product_measure
     from ouq import ProbOfFailure
-    from bounds import MeasureBounds
+    from mystic.bounds import MeasureBounds
     from ouq_models import WrapModel, SuccessModel
     #from toys import cost5x3 as toy; nx = 5; ny = 3
     from toys import function5x3 as toy; nx = 5; ny = 3

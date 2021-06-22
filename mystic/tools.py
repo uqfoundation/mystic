@@ -1033,6 +1033,9 @@ def masked_collapse(termination, collapse=None, union=False):
     return dict((j,i) for (j,i) in masked if i) #XXX: pop value if (-inf,inf)?
 
 
+# a multiprocessing-friendly counter
+from mystic._counter import Counter
+
 # backward compatibility
 from dill.source import getblocks as parse_from_history
 from dill.source import getsource as src

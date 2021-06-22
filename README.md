@@ -151,6 +151,7 @@ Important classes and functions are found here:
 * ``mystic.pools``                    [parallel worker pool interface]
 * ``mystic.munge``                    [file readers and writers]
 * ``mystic.scripts``                  [model and convergence plotting]
+* ``mystic.samplers``                 [optimizer-guided sampling]
 * ``mystic.support``                  [hypercube measure support plotting]
 * ``mystic.forward_model``            [cost function generator]
 * ``mystic.tools``                    [constraints, wrappers, and other tools]
@@ -170,10 +171,12 @@ Important functions within ``mystic.math`` are found here:
 * ``mystic.math.poly``                [tools for polynomial functions]
 * ``mystic.math.samples``             [tools related to sampling]
 * ``mystic.math.integrate``           [tools related to integration]
+* ``mystic.math.interpolate``         [tools related to interpolation]
 * ``mystic.math.stats``               [tools related to distributions]
 
-Solver and model API definitions are found here:
+Solver, Sampler, and model API definitions are found here:
 
+* ``mystic.abstract_sampler``         [the sampler API definition]
 * ``mystic.abstract_solver``          [the solver API definition]
 * ``mystic.abstract_map_solver``      [the parallel solver API]
 * ``mystic.abstract_ensemble_solver`` [the ensemble solver API]
