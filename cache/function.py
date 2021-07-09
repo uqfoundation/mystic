@@ -21,6 +21,8 @@ def db(name):
 
 def write(function, archives):
     """write function to corresponding archives"""
+    if isinstance(archives, (str, (u'').__class__)):
+        archives = db(archives)
     if getattr(function, '__axis__', None) is None: #XXX: and no len(archives)
         rb._write_func(archives, function, {})
     else:

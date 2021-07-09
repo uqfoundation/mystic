@@ -63,6 +63,8 @@ def write(archive, entries, keymap=None):
     Notes:
         Within ``entries``, ``xi`` is a tuple of floats, and ``yi`` is a float.
     """
+    if isinstance(archive, (str, (u'').__class__)):
+        archive = read(archive, keymap=keymap) # assumes default type
     if keymap is not None: # apply keymap to keys
         entries = {keymap(*(k if hasattr(k, '__len__') else (k,))):v for k, v in entries.items()}
     # archive = read(name, keys=(False if cached else None))
