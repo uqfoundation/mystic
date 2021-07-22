@@ -376,6 +376,8 @@ if figure is provided, plot to an existing figure
         if scale:
             cost = numpy.asarray(cost)
             cost = numpy.log(4*cost*scale+1)+2
+        x = numpy.asarray(x).reshape(-1)
+        y = numpy.asarray(y).reshape(-1)
         ax.plot(x,y,cost, style, linewidth=2, markersize=4)
         #XXX: need to 'correct' the z-axis (or provide easy conversion)
     else:    # is 2D, cost not needed
