@@ -589,6 +589,9 @@ Notes:
     _kernel = None
 
     instance = None
+    # handle the special case there is no model
+    if model is None or model is '':
+        model = 'None'
     # handle the special case where list is provided by sys.argv
     if isinstance(model, (list,tuple)) and not logfile and not kwds:
         cmdargs = model # (above is used by script to parse command line)
