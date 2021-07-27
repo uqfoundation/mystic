@@ -124,6 +124,26 @@ def divide(x, n, type=list, recurse=False): # list, iter, numpy.array, ...
         return type(divide(i,n,type) for i in x)
     return type(i/n for i in x)
 
+def _cmultiply(x, n, type=list):
+    """elementwise casting multiplication of x by n, as if x were an array"""
+    if type is list:
+        return _multiply(x, n)
+    if type is iter:
+        return _imultiply(x, n)
+    if type.__name__ == 'array': 
+        return _amultiply(x, n)
+    return type(_multiply(x, n))
+
+def _cdivide(x, n, type=list):
+    """elementwise casting division of x by n, as if x were an array"""
+    if type is list:
+        return _divide(x, n)
+    if type is iter:
+        return _idivide(x, n)
+    if type.__name__ == 'array': 
+        return _adivide(x, n)
+    return type(_divide(x, n))
+
 def _multiply(x, n):
     """elementwise multiplication of x by n, as if x were an array"""
     # short-circuit cases for speed

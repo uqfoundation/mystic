@@ -67,9 +67,10 @@ __all__ = ['Null', 'Monitor', 'VerboseMonitor', 'LoggingMonitor',
 import os
 import sys
 import numpy
-from mystic.tools import list_or_tuple_or_ndarray
-from mystic.tools import listify, multiply, divide, _kdiv
 from functools import reduce
+from mystic.tools import list_or_tuple_or_ndarray
+from mystic.tools import listify, _kdiv, _divide, _idivide, \
+                         _adivide, _cdivide, _cmultiply
 
 class Null(object):
     """A Null object
@@ -319,7 +320,7 @@ example usage...
     #BELOW: madness due to monitor k-conversion
 
     def get_y(self): # can be slow if k not in (1, None)
-        return divide(self._y, 1 if self.k is None else self.k, list)
+        return _divide(self._y, 1 if self.k is None else self.k)
         #XXX: better if everywhere y = _y, as opposed to y = _ik(_y) ?
         #     better if k only applied to 'output' of __call__ ?
         #     better if k ionly applied on 'exit' from solver ?
@@ -327,26 +328,26 @@ example usage...
     def _get_y(self, monitor):
         "avoid double-conversion by combining k's"
         _ik = _kdiv(monitor.k, self.k, float) #XXX: always a float?
-        return divide(monitor._y, _ik, iter)
+        return _idivide(monitor._y, _ik)
 
     def get_ix(self):
-        return divide(self._x, 1, iter) #XXX: _y ?
+        return _idivide(self._x, 1) #XXX: _y ?
 
     def get_ax(self):
-        return divide(self._x, 1, numpy.array) #XXX: _y ?
+        return _adivide(self._x, 1) #XXX: _y ?
 
     def get_iy(self):
-        return divide(self._y, 1 if self.k is None else self.k, iter)
+        return _idivide(self._y, 1 if self.k is None else self.k)
 
     def get_ay(self):
-        return divide(self._y, 1 if self.k is None else self.k, numpy.array)
+        return _adivide(self._y, 1 if self.k is None else self.k)
 
     def _k(self, y, type=list):
-        return multiply(y, self.k, type)
+        return _cmultiply(y, self.k, type)
 
     def _ik(self, y, k=False, type=list):
         if k: return y # k's already applied, so don't un-apply it
-        return divide(y, self.k, type)
+        return _cdivide(y, self.k, type)
 
     _step = property(__step)
     x = property(get_x, doc = "Params")
