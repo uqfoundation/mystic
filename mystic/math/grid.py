@@ -14,6 +14,10 @@ def gridpts(q, dist=None):
 takes a list of lists of arbitrary length q = [[1,2],[3,4]]
 and produces a list of gridpoints g = [[1,3],[1,4],[2,3],[2,4]]
 
+Inputs:
+    q  --  a list of lists of integers denoting grid points
+    dist  --  a mystic.math.Distribution instance (or list of Distributions)
+
 Notes:
     if a mystic.math.Distribution is provided, use it to inject randomness
     """
@@ -27,7 +31,11 @@ Notes:
     # inject some randomness
     if dist is None: return pts
     if not len(pts): return pts
-    pts += dist((len(pts),len(pts[0])))
+    if hasattr(dist, '__len__'): #FIXME: isiterable
+      import numpy as np
+      pts += np.array(tuple(di(len(pts)) for di in dist)).T
+    else:
+      pts += dist((len(pts),len(pts[0])))
     return pts.tolist()
 
 
@@ -40,7 +48,7 @@ Inputs:
     lb  --  a list of the lower bounds
     ub  --  a list of the upper bounds
     npts  --  number of sample points
-    dist  --  a mystic.math.Distribution instance
+    dist  --  a mystic.math.Distribution instance (or list of Distributions)
     """
     from mystic.math.samples import random_samples
     q = random_samples(lb,ub,npts,dist)
@@ -62,7 +70,7 @@ Inputs:
     npts  --  number of sample points
     data  --  a list of legacy sample points
     rtol  --  target radial distance from each point
-    dist  --  a mystic.math.Distribution instance
+    dist  --  a mystic.math.Distribution instance (or list of Distributions)
 
 Notes: if rtol is None, use max rtol; if rtol < 0, use quick-n-dirty method
     """
@@ -105,7 +113,11 @@ Notes: if rtol is None, use max rtol; if rtol < 0, use quick-n-dirty method
     # inject some randomness #XXX: what are alternatives? some sampling?
     if dist is None: return pts
     if not len(pts): return pts
-    pts += dist((len(pts),len(pts[0])))
+    if hasattr(dist, '__len__'): #FIXME: isiterable
+      import numpy as np
+      pts += np.array(tuple(di(len(pts)) for di in dist)).T
+    else:
+      pts += dist((len(pts),len(pts[0])))
     return pts.tolist()
 
 

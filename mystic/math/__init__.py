@@ -65,7 +65,7 @@ input::
 note::
     this method only accepts numpy.random methods with the keyword 'size',
     and only accepts random_state objects built with module='numpy.random'
-        """
+        """ #XXX: generate Distribution from list of Distributions?
         from mystic.tools import random_state
         rng = kwds.pop('rng', random_state(module='numpy.random'))
         if generator is None: generator = rng.random

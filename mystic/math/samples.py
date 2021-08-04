@@ -37,7 +37,7 @@ def random_samples(lb,ub, npts=10000, dist=None, clip=False):
 generate npts samples from the given distribution between given lb & ub
 
 Inputs:
-    dist  --  a mystic.tools.Distribution instance
+    dist  --  a mystic.tools.Distribution instance (or list of Distributions)
     lower bounds  --  a list of the lower bounds
     upper bounds  --  a list of the upper bounds
     npts  --  number of sample points [default = 10000]
@@ -46,20 +46,24 @@ Inputs:
   if dist is None:
     return _random_samples(lb,ub, npts)
   import numpy as np
-  dim = len(lb)
-  pts = dist((npts,dim)) # transpose of desired shape
+  if hasattr(dist, '__len__'): #FIXME: isiterable
+    pts = np.array(tuple(di(npts) for di in dist)).T
+  else:
+    pts = dist((npts,len(lb))) # transpose of desired shape
+    dist = (dist,)*len(lb)
   pts = np.clip(pts, lb, ub).T
   if clip: return pts  #XXX: returns a numpy.array
   bad = ((pts.T == lb) + (pts.T == ub)).T
-  new = bad.sum()
+  new = bad.sum(-1)
   _n, n = 1, 1000 #FIXME: fixed number of max tries
-  while new:
+  while any(new):
     if _n == n: #XXX: slows the while loop...
       raise RuntimeError('bounds could not be applied in %s iterations' % n)
-    pts[bad] = dist(new)
+    for i,inew in enumerate(new): #XXX: slows... but enables iterable dist
+      if inew: pts[i][bad[i]] = dist[i](inew)
     pts = np.clip(pts.T, lb, ub).T
     bad = ((pts.T == lb) + (pts.T == ub)).T
-    new = bad.sum()
+    new = bad.sum(-1)
     _n += 1
   return pts  #XXX: returns a numpy.array
 

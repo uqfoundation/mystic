@@ -442,7 +442,7 @@ input::
             dist = _dist
         elif type(_dist) not in dist.__class__.mro():
             dist = Distribution(dist) #XXX: or throw error?
-        for i in range(self.nPop):
+        for i in range(self.nPop): #FIXME: accept a list of Distributions
             self.population[i] = dist(self.nDim)
         return
 

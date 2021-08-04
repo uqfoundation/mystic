@@ -225,15 +225,18 @@ def for_monitor(archive, inverted=False, axis=None):
     return (param, cost)
 
 
-def from_archive(cache, data=None, axis=None):
+def from_archive(cache, data=None, **kwds):
     '''convert a klepto.archive to a mystic.math.legacydata.dataset
 
     Inputs:
       cache: a klepto.archive instance
       data: a mystic.math.legacydata.dataset of i points, M inputs, N outputs
       axis: int, the desired index the tuple-valued dataset [0,N]
+      ids: a list of ids for the data, or a function ids(x,y) to generate ids
     '''
-    import numpy as np
+    axis = kwds.get('axis', None)
+    ids = kwds.get('ids', _iargsort) #XXX: better None?
+    import numpy as np #FIXME: accept lipshitz coeffs as input
     if data is None:
         from mystic.math.legacydata import dataset
         data = dataset()
@@ -245,7 +248,8 @@ def from_archive(cache, data=None, axis=None):
     # cache = memo.__cache__()
     y = np.array(list(cache.items()), dtype=object).T #NOTE: cache.items() slow
     if not len(y): return data
-    ids = list(range(len(y[0])))
+    if callable(ids): #XXX: don't repeat tolist
+        ids = ids(y[0].tolist(), y[1].tolist(), axis=axis)
     if axis is None: #XXX: dataset should be single valued
         return data.load(y[0].tolist(), y[1].tolist(), ids=ids)
     return data.load(y[0].tolist(), [i[axis] for i in y[1]], ids=ids)
@@ -253,3 +257,59 @@ def from_archive(cache, data=None, axis=None):
 
 as_dataset = from_archive #NOTE: just an alias
 
+
+def argsort(x, axis=None):
+    """generate a list of indices i that sort x, so x[i] is in increasing order
+
+    Inputs:
+      x: an array of shape (npts, dim) or (npts,)
+      axis: int in [0,dim], the primary index of x to sort
+
+    NOTE:
+      if axis=None and dim > 1, the 0th index will be used as the primary
+    """
+    if not len(x):
+        return []
+    import numpy as np
+    from mystic import isiterable
+    if axis is None:
+        if isiterable(x[0]): # multi-value data, defaulting to axis=0
+            return np.argsort(x, axis=0).T[0].tolist() #XXX: better to error?
+        else: # single-value data
+            return np.argsort(x).tolist()
+    if isiterable(x[0]): # multi-value data
+        return np.argsort(np.array(x)[:,axis]).tolist()
+    msg = "cannot get axis %s for single-valued data" % axis
+    raise ValueError(msg)
+
+def iargsort(x, axis=None):
+    """generate a list of indices that, when sorted, sort x in increasing order
+
+    Inputs:
+      x: an array of shape (npts, dim) or (npts,)
+      axis: int in [0,dim], the primary index of x to sort
+
+    NOTE:
+      if axis=None and dim > 1, the 0th index will be used as the primary
+    """
+    import numpy as np
+    i = argsort(x, axis=axis)
+    ii = np.empty_like(i)
+    ii[i] = np.arange(len(i))
+    return ii.tolist()
+
+def counting(x):
+    """generate a list of counting indices of len(x)'
+
+    Inputs:
+      x: an array of shape (npts, dim) or (npts,)
+    """
+    return list(range(len(x)))
+
+# interface f(x,y,axis) for use with ids (in from_archive)
+_argsort = lambda x,y,axis=None: argsort(x,axis=axis)
+_argsort.__doc__ = argsort.__doc__
+_iargsort = lambda x,y,axis=None: iargsort(x,axis=axis)
+_iargsort.__doc__ = iargsort.__doc__
+_counting = lambda x,y,axis=None: counting(x)
+_counting.__doc__ = counting.__doc__

@@ -326,7 +326,7 @@ Inputs:
         from mystic.math import Distribution
         if dist and Distribution not in dist.__class__.mro():
             dist = Distribution(dist) #XXX: or throw error?
-        self._dist = dist
+        self._dist = dist #FIXME: accept a list of Distributions
         return
 
     def _InitialPoints(self):
