@@ -48,8 +48,7 @@ if __name__ == '__main__':
     # calculate upper bound on expected value, where x[0] has uncertainty
     bnd = MeasureBounds((0,1,0,0,0),(1,10,10,10,10), n=npts, wlb=wlb, wub=wub)
     b = ExpectedValue(model, bnd, constraint=scons, cvalid=is_cons, samples=Ns)
-    solver = b.upper_bound(axis=None, **param)
-    if type(solver) is not tuple:
-        solver = (solver,)
-    for s in solver:
-        print("%s @ %s" % (-s.bestEnergy, s.bestSolution))
+    b.upper_bound(axis=None, **param)
+    print("upper bound per axis:")
+    for axis,solver in b._upper.items():
+        print("%s: %s @ %s" % (axis, -solver.bestEnergy, solver.bestSolution))

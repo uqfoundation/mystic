@@ -80,18 +80,16 @@ if __name__ == '__main__':
     #print('building UQ objective of expected model error...')
     b = ExpectedValue(error, bnd, constraint=scons, cvalid=is_cons, samples=rnd)
     #print('solving for lower bound on expected model error...')
-    solver = b.lower_bound(axis=None, **param)
-    if type(solver) is not tuple:
-        solver = (solver,)
-    for s in solver:
-        print("lower bound:\n%s @ %s" % (s.bestEnergy, s.bestSolution))
+    b.lower_bound(axis=None, id=0, **param)
+    print("lower bound per axis:")
+    for axis,solver in b._lower.items():
+        print("%s: %s @ %s" % (axis, solver.bestEnergy, solver.bestSolution))
 
     #print('solving for upper bound on expected model error...')
     param['opts']['termination'] = COG(1e-10, 200) #NOTE: short stop?
     param['npop'] = 160 #NOTE: increase if poor convergence
     param['stepmon'] = VerboseLoggingMonitor(1, 20, filename='log.txt', label='upper')
-    solver = b.upper_bound(axis=None, id=1, **param)
-    if type(solver) is not tuple:
-        solver = (solver,)
-    for s in solver:
-        print("upper bound:\n%s @ %s" % (-s.bestEnergy, s.bestSolution))
+    b.upper_bound(axis=None, id=1, **param)
+    print("upper bound per axis:")
+    for axis,solver in b._upper.items():
+        print("%s: %s @ %s" % (axis, -solver.bestEnergy, solver.bestSolution))

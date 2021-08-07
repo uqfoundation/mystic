@@ -99,15 +99,13 @@ if __name__ == '__main__':
         b = ExpectedValue(model, bnd, constraint=scons, cvalid=is_cons, samples=rnd)
         i = counter.count()
         #print('solving for upper bound on expected model output...')
-        solver = b.upper_bound(axis=axis, id=i, **param)
-        if type(solver) is not tuple:
-            solver = (solver,) #FIXME: save solver to DB (or pkl)
+        solved = b.upper_bound(axis=axis, id=i, **param)
+        if type(solved) is not tuple:
+            solved = (solved,)
         if axis is None:
-            results = tuple(s.bestEnergy for s in solver) #NOTE: -1 for GLB
-            #print('[id: %s] %s' % (i, tuple(s.bestSolution for s in solver)))
+            results = solved #NOTE: -1 for GLB
         else:
-            results = solver[axis].bestEnergy #NOTE: -1 for GLB
-            #print('[id: %s] %s' % (i, solver[axis].bestSolution))
+            results = solved[axis] #NOTE: -1 for GLB
         return results
 
     # outer-loop solver configuration and execution

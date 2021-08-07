@@ -7,10 +7,15 @@
 """
 OUQ classes for calculating bounds on statistical quantities
 """
+import mystic.cache
+from mystic.cache import cached
+from mystic.cache.archive import dict_archive
 from mystic.math import almostEqual
 from mystic.math.discrete import product_measure
+from mystic.math.samples import random_samples
 from mystic.solvers import DifferentialEvolutionSolver2
 from mystic.monitors import Monitor
+from ouq_models import WrapModel
 
 
 class BaseOUQ(object): #XXX: redo with a "Solver" interface, like ensemble?
@@ -27,10 +32,15 @@ class BaseOUQ(object): #XXX: redo with a "Solver" interface, like ensemble?
         constraint: function of the form x' = constraint(x)
         xvalid: function returning True if x == x', given constraint
         cvalid: function similar to xvalid, but with product_measure input
+
+    NOTE: when y is multivalued models must be a UQModel with ny != None
         """
         self.npts = bounds.n  # (2,1,1)
         self.lb = bounds.lower
         self.ub = bounds.upper
+        #NOTE: for *_bound(axis=None) to work, requires ny != None
+        #if not isinstance(model, WrapModel.mro()[-2]):
+        #    model = WrapModel(model=model)
         self.model = model
         self.axes = getattr(model, 'ny', None) #FIXME: in kwds?, ny
         rnd = getattr(model, 'rnd', True) #FIXME: ?, rnd
@@ -39,6 +49,9 @@ class BaseOUQ(object): #XXX: redo with a "Solver" interface, like ensemble?
         self.xvalid = kwds.get('xvalid', lambda rv:True)
         self.cvalid = kwds.get('cvalid', lambda c:True)
         self.kwds = {} #FIXME: good idea???
+        self._upper = {} # saved solver instances for upper bounds #XXX: don't?
+        self._lower = {} # saved solver instances for lower bounds #XXX: don't?
+        self._pts = {} # saved sampled {in:out} objective #XXX: out only? ''?
         return
 
     # --- extrema ---
@@ -49,12 +62,40 @@ class BaseOUQ(object): #XXX: redo with a "Solver" interface, like ensemble?
 
     Input:
         axis: int, the index of y on which to find bound (all, by default)
+        instance: bool, if True, return the solver instance (False, by default)
 
     Additional Input:
         kwds: dict, with updates to the instance's stored kwds
 
     Returns:
         upper bound on the statistical quantity, for the specified axis
+        """
+        full = kwds.pop('instance', False)
+        #self._upper.clear() #XXX: good idea?
+        if self.axes is None or axis is not None:
+            # solve for upper bound of objective (in measure space)
+            solver = self._upper_bound(axis, **kwds)
+            self._upper[None if self.axes is None else axis] = solver
+            if full: return solver
+            return solver.bestEnergy
+        # else axis is None
+        solvers = self._upper_bound(axis, **kwds)
+        for i,solver in enumerate(solvers):
+            self._upper[i] = solver
+        if full: return solvers
+        return tuple(i.bestEnergy for i in solvers)
+
+    def _upper_bound(self, axis=None, **kwds):
+        """find the upper bound on the statistical quantity
+
+    Input:
+        axis: int, the index of y on which to find bound (all, by default)
+
+    Additional Input:
+        kwds: dict, with updates to the instance's stored kwds
+
+    Returns:
+        solver instance with solved upper bound on the statistical quantity
         """
         self.kwds.update(**kwds) #FIXME: good idea???
         if self.axes is None or axis is not None:
@@ -64,11 +105,39 @@ class BaseOUQ(object): #XXX: redo with a "Solver" interface, like ensemble?
         import multiprocess.dummy as mp #FIXME: process pickle/recursion Error
         pool = mp.Pool(self.axes)
         map = pool.map #TODO: don't hardwire map
-        upper = tuple(map(self.upper_bound, range(self.axes)))
+        upper = tuple(map(self._upper_bound, range(self.axes)))
         pool.close(); pool.join()
         return upper #FIXME: don't accept "uphill" moves?
 
     def lower_bound(self, axis=None, **kwds):
+        """find the lower bound on the statistical quantity
+
+    Input:
+        axis: int, the index of y on which to find bound (all, by default)
+        instance: bool, if True, return the solver instance (False, by default)
+
+    Additional Input:
+        kwds: dict, with updates to the instance's stored kwds
+
+    Returns:
+        lower bound on the statistical quantity, for the specified axis
+        """
+        full = kwds.pop('instance', False)
+        #self._lower.clear() #XXX: good idea?
+        if self.axes is None or axis is not None:
+            # solve for lower bound of objective (in measure space)
+            solver = self._lower_bound(axis, **kwds)
+            self._lower[None if self.axes is None else axis] = solver
+            if full: return solver
+            return solver.bestEnergy
+        # else axis is None
+        solvers = self._lower_bound(axis, **kwds)
+        for i,solver in enumerate(solvers):
+            self._lower[i] = solver
+        if full: return solvers
+        return tuple(i.bestEnergy for i in solvers)
+
+    def _lower_bound(self, axis=None, **kwds):
         """find the lower bound on the statistical quantity
 
     Input:
@@ -78,7 +147,7 @@ class BaseOUQ(object): #XXX: redo with a "Solver" interface, like ensemble?
         kwds: dict, with updates to the instance's stored kwds
 
     Returns:
-        lower bound on the statistical quantity, for the specified axis
+        solver instance with solved lower bound on the statistical quantity
         """
         self.kwds.update(**kwds) #FIXME: good idea???
         if self.axes is None or axis is not None:
@@ -88,7 +157,7 @@ class BaseOUQ(object): #XXX: redo with a "Solver" interface, like ensemble?
         import multiprocess.dummy as mp #FIXME: process pickle/recursion Error
         pool = mp.Pool(self.axes)
         map = pool.map #TODO: don't hardwire map
-        lower = tuple(map(self.lower_bound, range(self.axes)))
+        lower = tuple(map(self._lower_bound, range(self.axes)))
         pool.close(); pool.join()
         return lower #FIXME: don't accept "uphill" moves?
 
@@ -107,6 +176,41 @@ class BaseOUQ(object): #XXX: redo with a "Solver" interface, like ensemble?
         respects constraints on input parameters and product measure
         """
         return NotImplemented
+
+    def __call__(self, axis=None, **kwds):
+        """apply the reducer to the sampled statistical quantity
+
+    Input:
+        axis: int, the index of y on which to find bound (all, by default)
+
+    Additional Input:
+        reducer: function to reduce a list to a single value (e.g. mean, max)
+        dist: a mystic.tools.Distribution instance (or list of Distributions)
+        npts: number of sample points [default = 10000]
+        clip: if True, clip at bounds, else resample [default = False]
+
+    Returns:
+        sampled statistical quantity, for the specified axis, reduced to a float
+        """
+        #XXX: return what? "energy and solution?" reduced?
+        reducer = kwds.pop('reducer', None)
+        if kwds.get('npts', None) is None: kwds.pop('npts', None)
+        s = random_samples(self.lb, self.ub, **kwds).T
+        fobj = cached(archive=dict_archive())(self.objective) #XXX: bad idea?
+        self._pts = fobj.__cache__() #XXX: also bad idea? include from *_bounds?
+        objective = lambda rv: fobj(self.constraint(rv), axis=axis)
+        import multiprocess.dummy as mp #FIXME: process pickle/recursion Error
+        pool = mp.Pool() # len(s)
+        map = pool.map #TODO: don't hardwire map
+        s = map(objective, s) #NOTE: s = [(...),(...)] or [...]
+        pool.close(); pool.join()
+        if axis is None and self.axes is not None: # apply per axis
+            if reducer is None:
+                return tuple(sum(si)/len(si) for si in zip(*s))
+            #XXX: better tuple(reducer(s, axis=0).tolist()) if numpy ufunc?
+            return tuple(reducer(si) for si in zip(*s))
+        s = tuple(s)
+        return sum(s)/len(s) if reducer is None else reducer(s)
 
     # --- solve ---
     def solve(self, objective, **kwds): #NOTE: single axis only
@@ -211,7 +315,10 @@ class ExpectedValue(BaseOUQ):
             # else use sampled support
             return tuple(c.sampled_expect(m, self.samples) for m in model)
         # else, get expected value for the given axis
-        model = lambda x: self.model(x, axis=axis)
+        if axis is None:
+            model = lambda x: self.model(x)
+        else:
+            model = lambda x: self.model(x, axis=axis)
         if self.samples is None:
             return c.expect(model)
         return c.sampled_expect(model, self.samples)
@@ -248,7 +355,10 @@ class MaximumValue(BaseOUQ):
             # else use sampled support
             return tuple(c.sampled_maximum(m, self.samples) for m in model)
         # else, get maximum value for the given axis
-        model = lambda x: self.model(x, axis=axis)
+        if axis is None:
+            model = lambda x: self.model(x)
+        else:
+            model = lambda x: self.model(x, axis=axis)
         if self.samples is None:
             from mystic.math.measures import ess_maximum #TODO: c.ess_maximum
             return ess_maximum(model, c.positions, c.weights)
@@ -286,7 +396,10 @@ class MinimumValue(BaseOUQ):
             # else use sampled support
             return tuple(c.sampled_minimum(m, self.samples) for m in model)
         # else, get minimum value for the given axis
-        model = lambda x: self.model(x, axis=axis)
+        if axis is None:
+            model = lambda x: self.model(x)
+        else:
+            model = lambda x: self.model(x, axis=axis)
         if self.samples is None:
             from mystic.math.measures import ess_minimum #TODO: c.ess_minimum
             return ess_minimum(model, c.positions, c.weights)
@@ -324,7 +437,10 @@ class ValueAtRisk(BaseOUQ):
             # else use sampled support
             return tuple(c.sampled_ptp(m, self.samples) for m in model)
         # else, get value at risk for the given axis
-        model = lambda x: self.model(x, axis=axis)
+        if axis is None:
+            model = lambda x: self.model(x)
+        else:
+            model = lambda x: self.model(x, axis=axis)
         if self.samples is None:
             from mystic.math.measures import ess_ptp #TODO: c.ess_ptp
             return ess_ptp(model, c.positions, c.weights)
@@ -364,7 +480,10 @@ class ProbOfFailure(BaseOUQ):
             # else use sampled support
             return tuple(c.sampled_pof(m, self.samples) for m in model)
         # else, get probability of failure for the given axis
-        model = lambda x: self.model(x, axis=axis)
+        if axis is None:
+            model = lambda x: self.model(x)
+        else:
+            model = lambda x: self.model(x, axis=axis)
         if self.samples is None:
             return c.pof(model)
         return c.sampled_pof(model, self.samples)

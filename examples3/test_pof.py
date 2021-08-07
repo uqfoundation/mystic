@@ -55,8 +55,7 @@ if __name__ == '__main__':
     bnd = MeasureBounds((0,0,0,0,0),(1,10,10,0,10), n=npts, wlb=wlb, wub=wub)
     rnd = Ns if success.rnd else None
     d = ProbOfFailure(success, bnd, constraint=scons, cvalid=is_cons, samples=rnd)
-    solver = d.upper_bound(axis=0, **param)
-    if type(solver) is not tuple:
-        solver = (solver,)
-    for s in solver:
-        print("%s @ %s" % (-s.bestEnergy, s.bestSolution))
+    d.upper_bound(axis=0, **param)
+    print("upper bound per axis:")
+    for axis,solver in d._upper.items():
+        print("%s: %s @ %s" % (axis, -solver.bestEnergy, solver.bestSolution))
