@@ -60,6 +60,8 @@ To get up and running quickly, ``mystic`` also provides infrastructure to:
 
 
 Current Release
+[![Downloads](https://static.pepy.tech/personalized-badge/mystic?period=total&units=international_system&left_color=grey&right_color=blue&left_text=pypi%20downloads)](https://pepy.tech/project/mystic)
+[![Stack Overflow](https://img.shields.io/badge/stackoverflow-get%20help-black.svg)](https://stackoverflow.com/questions/tagged/mystic)
 ---------------
 The latest released version of ``mystic`` is available from:
     https://pypi.org/project/mystic
@@ -68,10 +70,10 @@ The latest released version of ``mystic`` is available from:
 
 
 Development Version
+[![Support](https://img.shields.io/badge/support-the%20UQ%20Foundation-purple.svg?style=flat&colorA=grey&colorB=purple)](http://www.uqfoundation.org/pages/donate.html)
 [![Documentation Status](https://readthedocs.org/projects/mystic/badge/?version=latest)](https://mystic.readthedocs.io/en/latest/?badge=latest)
 [![Build Status](https://travis-ci.com/uqfoundation/mystic.svg?label=build&logo=travis&branch=master)](https://travis-ci.com/uqfoundation/mystic)
 [![codecov](https://codecov.io/gh/uqfoundation/mystic/branch/master/graph/badge.svg)](https://codecov.io/gh/uqfoundation/mystic)
-[![Downloads](https://pepy.tech/badge/mystic)](https://pepy.tech/project/mystic)
 -------------------
 You can get the latest development version with all the shiny new features at:
     https://github.com/uqfoundation
