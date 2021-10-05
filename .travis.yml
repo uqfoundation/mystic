@@ -26,9 +26,11 @@ matrix:
 
         - python: '3.10-dev'
           env:
+            - CYTHON="true" # numpy source build
 
         - python: 'nightly'
           env:
+            - CYTHON="true" # numpy source build
 
         - python: 'pypy'
           dist: xenial
@@ -53,6 +55,7 @@ before_install:
     - if [[ $MATPLOTLIB == "true" ]]; then pip install matplotlib; fi
     - if [[ $SYMPY == "true" ]]; then pip install sympy; fi
     - if [[ $SCIPY == "true" ]]; then pip install scipy; fi
+    - if [[ $CYTHON == "true" ]]; then pip install cython; fi
 
 install:
     - python setup.py build && python setup.py install
