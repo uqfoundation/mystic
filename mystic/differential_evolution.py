@@ -149,6 +149,7 @@ from mystic.abstract_map_solver import AbstractMapSolver
 
 from numpy import asfarray, ravel
 import collections
+_Callable = getattr(collections, 'Callable', None) or getattr(collections.abc, 'Callable')
 
 class DifferentialEvolutionSolver(AbstractSolver):
     """
@@ -208,7 +209,7 @@ input::
       will satisfy the desired (i.e. encoded) constraints."""
         if not constraints:
             self._constraints = lambda x: x
-        elif not isinstance(constraints, collections.Callable):
+        elif not isinstance(constraints, _Callable):
             raise TypeError("'%s' is not a callable function" % constraints)
         else: #XXX: check for format: x' = constraints(x) ?
             self._constraints = constraints
@@ -395,7 +396,7 @@ input::
       will satisfy the desired (i.e. encoded) constraints."""
         if not constraints:
             self._constraints = lambda x: x
-        elif not isinstance(constraints, collections.Callable):
+        elif not isinstance(constraints, _Callable):
             raise TypeError("'%s' is not a callable function" % constraints)
         else: #XXX: check for format: x' = constraints(x) ?
             self._constraints = constraints

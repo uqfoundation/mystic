@@ -24,6 +24,7 @@ from numpy import atleast_1d, eye, mgrid, argmin, zeros, shape, empty, \
      squeeze, isscalar, vectorize, asarray, absolute, sqrt, Inf, asfarray, isinf
 from mystic import linesearch
 import collections
+_Callable = getattr(collections, 'Callable', None) or getattr(collections.abc, 'Callable')
 
 # These have been copied from Numeric's MLab.py
 # I don't think they made the transition to scipy_core
@@ -2012,7 +2013,7 @@ def brute(func, ranges, args=(), Ns=20, full_output=0, finish=fmin):
     if (N==1):
         grid = grid[0]
         xmin = xmin[0]
-    if isinstance(finish, collections.Callable):
+    if isinstance(finish, _Callable):
         vals = finish(func,xmin,args=args,full_output=1, disp=0)
         xmin = vals[0]
         Jmin = vals[1]

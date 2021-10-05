@@ -79,6 +79,7 @@ from mystic.tools import wrap_function, wrap_nested, wrap_reducer
 from mystic.tools import wrap_bounds, wrap_penalty, reduced
 from klepto import isvalid, validate
 import collections
+_Callable = getattr(collections, 'Callable', None) or getattr(collections.abc, 'Callable')
 
 abs = absolute
 null = lambda x: None
@@ -223,7 +224,7 @@ input::
       (e.g. lambda x,y: x+y), taking two scalars and producing a scalar."""
         if not reducer:
             self._reducer = None
-        elif not isinstance(reducer, collections.Callable):
+        elif not isinstance(reducer, _Callable):
             raise TypeError("'%s' is not a callable function" % reducer)
         elif not arraylike:
             self._reducer = wrap_reducer(reducer)   
@@ -244,7 +245,7 @@ input::
       evaluates to a non-positive number."""
         if not penalty:
             self._penalty = lambda x: 0.0
-        elif not isinstance(penalty, collections.Callable):
+        elif not isinstance(penalty, _Callable):
             raise TypeError("'%s' is not a callable function" % penalty)
         else: #XXX: check for format: y' = penalty(x) ?
             self._penalty = penalty
@@ -260,7 +261,7 @@ input::
       will satisfy the desired (i.e. encoded) constraints."""
         if not constraints:
             self._constraints = lambda x: x
-        elif not isinstance(constraints, collections.Callable):
+        elif not isinstance(constraints, _Callable):
             raise TypeError("'%s' is not a callable function" % constraints)
         else: #XXX: check for format: x' = constraints(x) ?
             self._constraints = constraints

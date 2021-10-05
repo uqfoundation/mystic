@@ -14,6 +14,7 @@ functional interfaces for mystic's visual analytics scripts
 __all__ = ['model_plotter','log_reader','collapse_plotter']
 
 # globals
+_Callable = getattr(collections, 'Callable', None) or getattr(collections.abc, 'Callable')
 __quit = False
 import sys
 if (sys.hexversion >= 0x30000f0):
@@ -637,12 +638,12 @@ Notes:
                     tol = cmdargs[:-2]
                     cmdargs = ''
 
-            if isinstance(reduce, collections.Callable): _reducer, reduce = reduce, None
-            if isinstance(kernel, collections.Callable): _kernel, kernel = kernel, None
+            if isinstance(reduce, _Callable): _reducer, reduce = reduce, None
+            if isinstance(kernel, _Callable): _kernel, kernel = kernel, None
 
         # special case: model passed as model instance
        #model.__doc__.split('using::')[1].split()[0].strip()
-        if isinstance(model, collections.Callable): _model, model = model, "None"
+        if isinstance(model, _Callable): _model, model = model, "None"
 
         # handle logfile if given
         if logfile:

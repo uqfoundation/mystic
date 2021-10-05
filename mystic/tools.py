@@ -55,8 +55,9 @@ Main functions exported are::
 Other tools of interest are in::
     `mystic.mystic.filters` and `mystic.models.poly`
 """
-import collections
 from functools import reduce
+import collections
+_Callable = getattr(collections, 'Callable', None) or getattr(collections.abc, 'Callable')
 
 def isiterable(x):
     """check if an object is iterable"""
@@ -657,7 +658,7 @@ For example:
                 try: x[i] = x[j]
                 except TypeError: # value is tuple with f(x) or constant
                   j0,j1 = (j[:2] + (1,))[:2]
-                  try: x[i] = j1(x[j0]) if isinstance(j1, collections.Callable) else j1*x[j0]
+                  try: x[i] = j1(x[j0]) if isinstance(j1, _Callable) else j1*x[j0]
                   except IndexError: pass
                 except IndexError: pass
             return f(x, *args, **kwds)
