@@ -591,7 +591,7 @@ Notes:
 
     instance = None
     # handle the special case there is no model
-    if model is None or model is '':
+    if model is None or model == '':
         model = 'None'
     # handle the special case where list is provided by sys.argv
     if isinstance(model, (list,tuple)) and not logfile and not kwds:

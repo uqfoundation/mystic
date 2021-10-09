@@ -57,6 +57,10 @@ Other tools of interest are in::
 """
 from functools import reduce
 import collections
+try:
+    import collections.abc
+except ImportError:
+    pass
 _Callable = getattr(collections, 'Callable', None) or getattr(collections.abc, 'Callable')
 
 def isiterable(x):

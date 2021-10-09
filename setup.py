@@ -185,6 +185,7 @@ Requirements
 Optional requirements:
 
     - ``setuptools``, **version >= 0.6**
+    - ``cython``, **version >= 0.29.22**
     - ``matplotlib``, **version >= 0.91**
     - ``scipy``, **version >= 0.6.0**
     - ``pathos``, **version >= 0.2.8**
@@ -442,6 +443,7 @@ dill_version = '>=0.3.4'
 klepto_version = '>=0.2.1'
 pathos_version = '>=0.2.8'
 pyina_version = '>=0.2.5'
+cython_version = '>=0.29.22' #XXX: required to build numpy from source
 if has_setuptools:
     setup_code += """
       zip_safe=False,
@@ -470,6 +472,7 @@ try:
     import mpmath
     import klepto
     import dill
+    #import cython
     #import scipy
     #import matplotlib #XXX: has issues being zip_safe
 except ImportError:
@@ -480,6 +483,7 @@ except ImportError:
     print("    mpmath %s" % mpmath_version)
     print("    klepto %s" % klepto_version)
     print("    dill %s" % dill_version)
+    print("    cython %s (optional)" % cython_version)
     print("    scipy %s (optional)" % scipy_version)
     print("    matplotlib %s (optional)" % matplotlib_version)
     print("***********************************************************\n")
