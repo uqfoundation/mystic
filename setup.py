@@ -448,9 +448,9 @@ if has_setuptools:
     setup_code += """
       zip_safe=False,
       setup_requires = ('cython%s',),
-      install_requires = ('numpy%s', 'mpmath%s', 'sympy%s', 'klepto%s', 'dill%s'),
+      install_requires = ('cython%s', 'numpy%s', 'mpmath%s', 'sympy%s', 'klepto%s', 'dill%s'),
       extras_require = {'math': ['scipy%s'], 'parallel': ['pathos%s','pyina%s'], 'plotting': ['matplotlib%s']},
-""" % (cython_version, numpy_version, mpmath_version, sympy_version, klepto_version, dill_version, scipy_version, pathos_version, pyina_version, matplotlib_version)
+""" % (cython_version, cython_version, numpy_version, mpmath_version, sympy_version, klepto_version, dill_version, scipy_version, pathos_version, pyina_version, matplotlib_version)
 
 # add the scripts, and close 'setup' call
 setup_code += """
