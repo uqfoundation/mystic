@@ -26,9 +26,11 @@ matrix:
 
         - python: '3.10-dev'
           env:
+            - CYTHON="true" # numpy source build
 
         - python: 'nightly'
           env:
+            - CYTHON="true" # numpy source build
 
         - python: 'pypy2.7-7.3.1' # most recent
           dist: xenial
