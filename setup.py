@@ -184,7 +184,7 @@ Requirements
 
 Optional requirements:
 
-    - ``setuptools``, **version >= 0.6**
+    - ``setuptools``, **version >= 40.6.0**
     - ``cython``, **version >= 0.29.22**
     - ``matplotlib``, **version >= 0.91**
     - ``scipy``, **version >= 0.6.0**

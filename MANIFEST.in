@@ -1,6 +1,7 @@
 include LICENSE
 include README*
 include tox.ini
+include pyproject.toml
 recursive-include docs *
 recursive-include examples *
 recursive-include examples2 *
@@ -12,3 +13,4 @@ recursive-include tests *
 include .*
 prune .git
 prune .coverage
+prune .eggs
