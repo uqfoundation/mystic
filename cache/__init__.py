@@ -41,13 +41,13 @@ def cached(**kwds):
       inverse (y = -objective(x)) is at objective.__inverse__
       cache of objective is at objective.__cache__
       inverse and objective cache to the same archive
-    """
+    """ #FIXME: ignore not handle *args as expected due to *args HACK
     _type = kwds.pop('type', inf_cache)
     multivalued = kwds.pop('multivalued', False)
     from klepto.keymaps import keymap as _keymap
     db = kwds.pop('archive', None)
     kwds.setdefault('keymap', _keymap())
-    kwds.setdefault('ignore', '**')
+    kwds.setdefault('ignore', '**') #FIXME: also ignores '*'
     if db is None: 
         kwds['cache'] = archive.read('archive')
     elif type(db) in (str, (u''.__class__)):
@@ -60,9 +60,16 @@ def cached(**kwds):
     def dec(objective):
         """wrap a caching archive around an objective
         """
+        # use a secretkey to store the objective's args
+        SECRETKEY = '*' #XXX: too simple? #FIXME: ignore w/ignore='*', not names
         # wrap the cache around the objective function
-        inner = cache(lambda *x, **kwds: objective(x, **kwds))
-        _model = lambda x, **kwds: inner(*x, **kwds)
+        @cache
+        def inner(*x, **kwds):
+            args = kwds.pop(SECRETKEY, ())
+            return objective(x, *args, **kwds)
+        def _model(x, *args, **kwds):
+            if args: kwds[SECRETKEY] = args
+            return inner(*x, **kwds)
         _model.__inner__ = inner
 
         # when caching, always cache the multi-valued tuple
