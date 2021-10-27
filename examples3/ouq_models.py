@@ -21,7 +21,7 @@ def sample(model, bounds, pts=None, **kwds):
     Additional Inputs:
         sampler: the mystic.sampler type [default: LatticeSampler]
         solver: the mystic.solver type [default: NelderMeadSimplexSolver]
-        dist: a distribution type [default: numpy.random.normal]
+        dist: a distribution type (or None) [default: numpy.random.normal]
         map: a map instance [default: builtins.map]
         ny: int, number of model outputs, len(y) [default: None]
         axis: int, index of output on which to search [default: None]
@@ -30,28 +30,34 @@ def sample(model, bounds, pts=None, **kwds):
         the mystic.math.legacydata.dataset of sampled data
 
     NOTE:
-        given the model is cached, a klepto.dir_archive is created by default
-
-    NOTE:
-        if pts is negative (i.e. pts=-4), use solver-directed sampling where
-        initial points chosen by the sampler, then solvers run until converged
+        additional keywords (evalmon, stepmon, maxiter, maxfun,
+        saveiter, state, termination, constraints, penalty, reducer)
+        are available for use. See mystic.ensemble for more details.
 
     NOTE:
         dist can be used to add randomness to the sampler
+
+    NOTE:
+        if pts is negative (i.e. pts=-4), use solver-directed sampling.
+        initial points are chosen by the sampler, then solvers run
+        until converged. a LatticeSampler also accepts a list of pts,
+        indicating the number of bins on each axis; if the product of
+        npts is negative, then use solver-directed sampling.
+
+    NOTE:
+        given the model is cached, a klepto.dir_archive is created by default
     """
     from mystic.samplers import LatticeSampler
-    searcher = kwds.get('sampler', LatticeSampler)
-    from mystic.solvers import NelderMeadSimplexSolver
-    solver = kwds.get('solver', NelderMeadSimplexSolver)
+    searcher = kwds.pop('sampler', LatticeSampler)
     ax = getattr(model, '__axis__', None)
     axis = None if hasattr(ax, '__len__') else ax # get default for axis
-    axis = kwds.get('axis', axis) # allow override?
-    ny = kwds.get('ny', getattr(model, 'ny', None)) #XXX: best?
+    axis = kwds.pop('axis', axis) # allow override?
+    ny = kwds.pop('ny', getattr(model, 'ny', None)) #XXX: best?
     mvl = ny is not None # True if multivalued
     axis = axis if mvl else None #XXX: allow multi-axis search?
     import numpy as np
-    dist = kwds.get('dist', np.random.normal)
-    map_ = kwds.get('map', map)
+    dist = kwds.pop('dist', np.random.normal)
+    map_ = kwds.pop('map', map)
     if not hasattr(model, '__cache__') or not hasattr(model, '__inverse__'):
         import mystic.cache as mc
         name = getattr(model, '__name__', None) #XXX: do better?
@@ -59,16 +65,17 @@ def sample(model, bounds, pts=None, **kwds):
     cache = model.__cache__
     imodel = model.__inverse__
     if hasattr(pts, '__len__'):
-        pts, _pts = -np.prod(pts), pts
+        pts, _pts = np.prod(pts), [abs(i) for i in pts]
     else:
         _pts = None
     if pts is None: pts = -1
     if pts == 0: # don't sample, just grab the archive
         pass
     elif pts > 0: # sample pts without optimizing
+        pts = pts if _pts is None else _pts
         def doit(axis=None):
             _model = lambda x: model(x, axis=axis)
-            s = searcher(bounds, _model, npts=pts, solver=solver, dist=dist)
+            s = searcher(bounds, _model, npts=pts, dist=dist, **kwds)
             s.sample()
             return s
         if mvl and axis is None:
@@ -80,12 +87,12 @@ def sample(model, bounds, pts=None, **kwds):
         pts = -pts if _pts is None else _pts
         def lower(axis=None):
             _model = lambda x: model(x, axis=axis)
-            s = searcher(bounds, _model, npts=pts, solver=solver, dist=dist)
+            s = searcher(bounds, _model, npts=pts, dist=dist, **kwds)
             s.sample_until(terminated=all)
             return s
         def upper(axis=None):
             model_ = lambda x: imodel(x, axis=axis)
-            si = searcher(bounds, model_, npts=pts, solver=solver, dist=dist)
+            si = searcher(bounds, model_, npts=pts, dist=dist, **kwds)
             si.sample_until(terminated=all)
             return si
         def _apply(f, arg):
@@ -156,6 +163,8 @@ class OUQModel(object): #NOTE: effectively, this is WrapModel
         if kwds.pop('cached', False):
             self.__kwds__['cached'] = True
             self.__init_cache()
+        else:
+            self.__kwds__['cached'] = False
         if not hasattr(self, '__func__'):
             self.__init_func()
         return
@@ -220,7 +229,7 @@ class OUQModel(object): #NOTE: effectively, this is WrapModel
     Additional Inputs:
         sampler: the mystic.sampler type [default: LatticeSampler]
         solver: the mystic.solver type [default: NelderMeadSimplexSolver]
-        dist: a distribution type [default: numpy.random.normal]
+        dist: a distribution type (or None) [default: numpy.random.normal]
         map: a map instance [default: builtins.map]
         axis: int, index of output on which to search [default: 0]
         multivalued: bool, True if output is multivalued [default: False]
@@ -229,14 +238,22 @@ class OUQModel(object): #NOTE: effectively, this is WrapModel
         the mystic.math.legacydata.dataset of sampled data
 
     NOTE:
-        given the model is cached, a klepto.dir_archive is created by default
-
-    NOTE:
-        if pts is negative (i.e. pts=-4), use solver-directed sampling where
-        initial points chosen by the sampler, then solvers run until converged
+        additional keywords (evalmon, stepmon, maxiter, maxfun,
+        saveiter, state, termination, constraints, penalty, reducer)
+        are available for use. See mystic.ensemble for more details.
 
     NOTE:
         dist can be used to add randomness to the sampler
+
+    NOTE:
+        if pts is negative (i.e. pts=-4), use solver-directed sampling.
+        initial points are chosen by the sampler, then solvers run
+        until converged. a LatticeSampler also accepts a list of pts,
+        indicating the number of bins on each axis; if the product of
+        npts is negative, then use solver-directed sampling.
+
+    NOTE:
+        given the model is cached, a klepto.dir_archive is created by default
         """
         model = self.__model__
         ax = getattr(self, '__axis__', getattr(model, '__axis__', None))
@@ -390,7 +407,9 @@ class WrapModel(OUQModel):
         x: list of input parameters, where len(x) is the number of inputs
         axis: int, index of output to evaluate (all, by default)
         """
-        return self.__model__(x, axis=axis, **self.__kwds__)
+        kwds = self.__kwds__.copy()
+        kwds.pop('cached', False) #XXX: don't pass cached to function
+        return self.__model__(x, axis=axis, **kwds)
 
 
 class SuccessModel(OUQModel):
@@ -525,6 +544,8 @@ class InterpModel(OUQModel):
             if hasattr(self.__model__, '__cache__'):
                 c = self.__model__.__cache__()
                 c.clear()
+        else:
+            self.__kwds__['cached'] = False
         return
 
     def __call__(self, x, axis=None):
@@ -625,6 +646,8 @@ class LearnedModel(OUQModel):
             if hasattr(self.__model__, '__cache__'):
                 c = self.__model__.__cache__()
                 c.clear()
+        else:
+            self.__kwds__['cached'] = False
         return
 
     def __call__(self, x, axis=None):
