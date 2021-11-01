@@ -194,11 +194,16 @@ Important class members::
     def __bestSolution(self):
         """get the bestSolution (default: bestSolution = population[0])"""
         if self._bestSolution is None: return self.population[0]
+        #   bs = self.population[0]
+        #   return bs.copy() if hasattr(bs, 'copy') else bs[:]
         return self._bestSolution
 
     def __set_bestSolution(self, params):
         """set the bestSolution (params=None will sync with population[0])"""
         self._bestSolution = params
+        #bs = params
+        #if bs is None: self._bestSolution = None
+        #else: self._bestSolution = bs.copy() if hasattr(bs, 'copy') else bs[:]
         return
 
     def __bestEnergy(self):

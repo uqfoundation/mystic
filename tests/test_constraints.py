@@ -11,7 +11,7 @@ from mystic.penalty import quadratic_equality
 from mystic.coupler import inner
 from mystic.math import almostEqual
 from mystic.tools import random_seed
-random_seed(213)
+random_seed(669)
 
 def test_penalize():
 

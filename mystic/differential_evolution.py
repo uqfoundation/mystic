@@ -257,8 +257,10 @@ input::
             strategy = None
             self.population[0] = asfarray(self.population[0])
             # decouple bestSolution from population and bestEnergy from popEnergy
-            self.bestSolution = self.population[0]
+            bs = self.population[0]
+            self.bestSolution = bs.copy() if hasattr(bs, 'copy') else bs[:]
             self.bestEnergy = self.popEnergy[0]
+            del bs
 
         for candidate in range(self.nPop):
             if not len(self._stepmon):
@@ -449,8 +451,10 @@ input::
             strategy = None
             self.population[0] = asfarray(self.population[0])
             # decouple bestSolution from population and bestEnergy from popEnergy
-            self.bestSolution = self.population[0]
+            bs = self.population[0]
+            self.bestSolution = bs.copy() if hasattr(bs, 'copy') else bs[:]
             self.bestEnergy = self.popEnergy[0]
+            del bs
 
         for candidate in range(self.nPop):
             if not len(self._stepmon):
