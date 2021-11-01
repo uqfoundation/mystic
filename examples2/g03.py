@@ -36,7 +36,7 @@ for len(x) == 10, x* = 0.31622777 for all xi. y* = -0.00031623
 for len(x) == 20, x* = 0.22360680 for all xi, y* = -8.73464054e-12
 """
 
-from mystic.symbolic import generate_constraint, generate_solvers, solve
+from mystic.symbolic import generate_constraint, generate_solvers, simplify
 from mystic.symbolic import generate_penalty, generate_conditions
 
 #sum([x0**2, x1**2, x2**2]) - 1.0 = 0.0
@@ -47,7 +47,7 @@ def equations(len=3):
     return eqn[:-2]+"]) - 1.0 = 0.0\n"
 
 def cf(len=3):
-    return generate_constraint(generate_solvers(solve(equations(len))))
+    return generate_constraint(generate_solvers(simplify(equations(len))))
 def pf(len=3):
     return generate_penalty(generate_conditions(equations(len)))
 
