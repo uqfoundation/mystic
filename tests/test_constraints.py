@@ -93,7 +93,7 @@ def test_as_constraint():
     return 0.0
 
   ndim = 3
-  constraints = as_constraint(penalty, solver='fmin')
+  constraints = as_constraint(penalty)#, solver='fmin')
   #XXX: this is expensive to evaluate, as there are nested optimizations
 
   from numpy import arange

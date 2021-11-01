@@ -554,7 +554,8 @@ NOTE:
         # give up
         return x[-1] #XXX: or fail by throwing Error?
     cf = lambda x: _constraint(x)
-    cfdoc = "\n".join(c.__doc__ for c in constraints if c.__doc__)
+    cfdoc = "\n-- AND --\n".join(c.__doc__ for c in constraints if c.__doc__)
+    cfdoc = '{ '+ cfdoc +' }' if cfdoc else cfdoc #XXX: can be {c} w/no AND
     cf.__doc__ = cfdoc.rstrip('\n')
     cf.__name__ = 'constraint'
     return cf
@@ -608,6 +609,7 @@ NOTE:
         return x[-1] #XXX: or fail by throwing Error?
     cf = lambda x: _constraint(x)
     cfdoc = "\n-- OR --\n".join(c.__doc__ for c in constraints if c.__doc__)
+    cfdoc = '[ '+ cfdoc +' ]' if cfdoc else cfdoc #XXX: can be [c] w/no OR
     cf.__doc__ = cfdoc.rstrip('\n')
     cf.__name__ = 'constraint'
     return cf

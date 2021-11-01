@@ -203,7 +203,8 @@ NOTE: This function is also useful for combining constraints solvers
         from mystic.penalty import linear_equality as ptype
     penalty = lambda x: sum(p(x) for p in penalties) #XXX: ZeroDivisionError?
     pf = ptype(penalty, **settings)(lambda x:0.)
-    pfdoc = "\n".join(p.__doc__ for p in penalties if p.__doc__)
+    pfdoc = "\n-- AND --\n".join(p.__doc__ for p in penalties if p.__doc__)
+    pfdoc = '{ '+ pfdoc +' }' if pfdoc else pfdoc #XXX: can be {p} w/no AND
     pf.__doc__ = pfdoc.rstrip('\n')
     pf.__name__ = 'penalty'
     return pf
@@ -246,6 +247,7 @@ NOTE: This function is also useful for combining constraints solvers
     penalty = lambda x: min(p(x) for p in penalties) #XXX: ZeroDivisionError?
     pf = ptype(penalty, **settings)(lambda x:0.)
     pfdoc = "\n-- OR --\n".join(p.__doc__ for p in penalties if p.__doc__)
+    pfdoc = '[ '+ pfdoc +' ]' if pfdoc else pfdoc #XXX: can be [p] w/no OR
     pf.__doc__ = pfdoc.rstrip('\n')
     pf.__name__ = 'penalty'
     return pf
