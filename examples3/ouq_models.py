@@ -21,7 +21,7 @@ def sample(model, bounds, pts=None, **kwds):
     Additional Inputs:
         sampler: the mystic.sampler type [default: LatticeSampler]
         solver: the mystic.solver type [default: NelderMeadSimplexSolver]
-        dist: a distribution type (or None) [default: numpy.random.normal]
+        dist: a distribution type (or None) [default: N(0,sig)]
         map: a map instance [default: builtins.map]
         ny: int, number of model outputs, len(y) [default: None]
         axis: int, index of output on which to search [default: None]
@@ -35,7 +35,9 @@ def sample(model, bounds, pts=None, **kwds):
         are available for use. See mystic.ensemble for more details.
 
     NOTE:
-        dist can be used to add randomness to the sampler
+        dist can be used to add randomness to the sampler.
+        the default is a Normal distribution with mean = 0 and std = sig,
+        where sig = .1 * sum(bounds[i]) for each bound in bounds.
 
     NOTE:
         if pts is negative (i.e. pts=-4), use solver-directed sampling.
@@ -55,8 +57,13 @@ def sample(model, bounds, pts=None, **kwds):
     ny = kwds.pop('ny', getattr(model, 'ny', None)) #XXX: best?
     mvl = ny is not None # True if multivalued
     axis = axis if mvl else None #XXX: allow multi-axis search?
-    import numpy as np
-    dist = kwds.pop('dist', np.random.normal)
+    if 'dist' in kwds:
+        dist = kwds.pop('dist')
+    else: # add noise N(0, sig), where sig = .1*(ub+lb)
+        import numpy as np
+        from mystic.math import Distribution
+        sig = [.1 * (ub+lb) for (lb,ub) in bounds] #FIXME: allow None and inf
+        dist = Distribution(np.random.normal, 0, sig)
     map_ = kwds.pop('map', map)
     if not hasattr(model, '__cache__') or not hasattr(model, '__inverse__'):
         import mystic.cache as mc
@@ -65,6 +72,7 @@ def sample(model, bounds, pts=None, **kwds):
     cache = model.__cache__
     imodel = model.__inverse__
     if hasattr(pts, '__len__'):
+        import numpy as np
         pts, _pts = np.prod(pts), [abs(i) for i in pts]
     else:
         _pts = None
