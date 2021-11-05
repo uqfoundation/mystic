@@ -20,11 +20,13 @@ else:
 def read_history(source):
     """read parameter history and cost history from the given source
 
-'source' can be a monitor, logfile, support file, or solver restart file
+source is a monitor, logfile, support file, solver restart file, dataset, etc
     """
-    monitor = solver = False
+    monitor = solver = data = arxiv = False
     from mystic.monitors import Monitor, Null
     from mystic.abstract_solver import AbstractSolver
+    from mystic.math.legacydata import dataset
+    from klepto.archives import archive, cache
     try:
         basestring
     except NameError:
@@ -38,6 +40,13 @@ def read_history(source):
         source = re.sub(r'\.py*.$', '', source)  # strip off .py* extension
     elif isinstance(source, Monitor):
         monitor = True
+    elif isinstance(source, dataset):
+        data = True
+    elif isinstance(source, cache):
+        source = source.__archive__
+        arxiv = True
+    elif isinstance(source, archive):
+        arxiv = True
     elif isinstance(source, AbstractSolver):
         solver = True
     elif isinstance(source, Null):
@@ -47,6 +56,12 @@ def read_history(source):
     try:  # read standard logfile (or monitor)
         if monitor:
             params, cost = read_monitor(source)
+        elif data:
+            params, cost = source.coords, source.values
+        elif arxiv:
+            params = list(list(k) for k in source.keys())
+            cost = source.values()
+            cost = cost if type(cost) is list else list(cost)
         elif solver:
             params, cost = source.solution_history, source.energy_history
         else:
