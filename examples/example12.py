@@ -70,7 +70,7 @@ def plot_frame(label=None):
 # plot the polynomial
 def plot_data(evalpts,datapts,style='k.'):
     plt.plot(evalpts,datapts,'%s' % style)
-    plt.axis([0,5,0,50],'k-')
+    plt.axis([0,5,0,50])#,'k-')
     plt.draw()
     plt.pause(0.001)
     return

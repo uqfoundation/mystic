@@ -55,7 +55,7 @@ def plot_solution(func, benchmark=Chebyshev8):
         plt.plot([1.2, 1.2],[-1, 10],'k-')
         plt.plot([-1.0, -1.0],[1, 10],'k-')
         plt.plot([1.0, 1.0],[1, 10],'k-')
-        plt.axis([-1.4, 1.4, -2, 8],'k-')
+        plt.axis([-1.4, 1.4, -2, 8])#,'k-')
         plt.legend(('Fitted','Chebyshev'))
         plt.show()
     except ImportError:

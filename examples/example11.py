@@ -50,7 +50,7 @@ def plot_params(monitor):
     x = list(range(len(monitor)))
     y = monitor.y
     plt.plot(x,y,'b-')
-    plt.axis([1,0.5*x[-1],0,y[1]],'k-')
+    plt.axis([1,0.5*x[-1],0,y[1]])#,'k-')
     plt.draw()
     plt.pause(0.001)
     return
@@ -65,7 +65,7 @@ def plot_exact():
     exact = chebyshev8(x)
     plt.plot(x,exact,'b-')
     plt.legend(["Exact"])
-    plt.axis([-1.4,1.4,-2,8],'k-')
+    plt.axis([-1.4,1.4,-2,8])#,'k-')
     plt.draw()
     plt.pause(0.001)
     return
@@ -78,7 +78,7 @@ def plot_solution(params,style='y-'):
     y = f(x)
     plt.plot(x,y,style)
     plt.legend(["Exact","Fitted"])
-    plt.axis([-1.4,1.4,-2,8],'k-')
+    plt.axis([-1.4,1.4,-2,8])#,'k-')
     plt.draw()
     plt.pause(0.001)
     return

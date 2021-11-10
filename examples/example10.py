@@ -51,7 +51,7 @@ def plot_params(monitor):
     x = list(range(len(monitor)))
     y = monitor.y
     plt.plot(x,y,'b-')
-    plt.axis([1,0.5*x[-1],0,y[1]],'k-')
+    plt.axis([1,0.5*x[-1],0,y[1]])#,'k-')
     plt.draw()
     plt.pause(0.001)
     return
