@@ -154,7 +154,7 @@ if __name__ == '__main__':
 
     figure = plt.figure()
     kwds = {'projection':'3d'}
-    ax = figure.gca(**kwds)
+    ax = figure.axes[0] if figure.axes else plt.axes(projection='3d')
     ax.autoscale(tight=True)
 
     # build a list of fixed values (default zero) and override with user input

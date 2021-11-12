@@ -34,8 +34,9 @@ print(p.head())
 import pandas as pd
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
-fig = plt.figure().gca(projection='3d')
+fig = plt.figure()
+ax = fig.axes[0] if fig.axes else plt.axes(projection='3d')
 p.reset_index(inplace=True)
 p.columns = 'x','y','rosen'
-fig.scatter(p['x'], p['y'], p['rosen'])
+ax.scatter(p['x'], p['y'], p['rosen'])
 plt.show()

@@ -153,7 +153,7 @@ class Plotter(object):
 
         figure = plt.figure()
         kwds = {'projection':'3d'}
-        ax = figure.gca(**kwds)
+        ax = figure.axes[0] if figure.axes else plt.axes(**kwds)
         ax.autoscale(tight=True)
 
         zdim = len(self.z[0]) if hasattr(self.z[0], '__len__') else 0

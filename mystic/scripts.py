@@ -364,7 +364,7 @@ if figure is provided, plot to an existing figure
 
     if cost: kwds = {'projection':'3d'} # 3D
     else: kwds = {}                     # 2D
-    ax = figure.gca(**kwds)
+    ax = figure.axes[0] if figure.axes else plt.axes(**kwds)
 
     if style in [None, False]:
         style = 'w-o' #if not scale else 'k-o'
@@ -483,7 +483,7 @@ Using a kernel is very slow, as it calcuates inverse transform at each point
     from mpl_toolkits.mplot3d import axes3d
     fig = plt.figure()
     if surface and fill is None: # 'hidden' option; full 3D surface plot
-        ax = fig.gca(projection='3d')
+        ax = fig.axes[0] if fig.axes else plt.axes(projection='3d')
         d = max(11 - density, 1) # or 1/density ?
         kwds = {'rstride':d,'cstride':d,'cmap':cm.jet,'linewidth':0}
         ax.plot_surface(x, y, z, **kwds)
@@ -492,7 +492,7 @@ Using a kernel is very slow, as it calcuates inverse transform at each point
         elif surface is None: # 1D
             raise NotImplementedError('need to add an option string parser')
         else: kwds = {}                        # 2D
-        ax = fig.gca(**kwds)
+        ax = fig.axes[0] if fig.axes else plt.axes(**kwds)
         density = 10*density
         if fill: plotf = ax.contourf  # filled contours
         else: plotf = ax.contour      # wire contours
@@ -522,6 +522,7 @@ Returns:
 
 Notes:
     - The option *out* takes a string of the filepath for the generated plot.
+      If ``out = True``, return the Figure object instead of generating a plot.
     - The option *bounds* takes an indicator string, where bounds are given as
       comma-separated slices. For example, using ``bounds = "-1:10, 0:20"``
       will set lower and upper bounds for x to be (-1,10) and y to be (0,20).
@@ -588,6 +589,7 @@ Notes:
     _reducer = None
     _solver = None
     _kernel = None
+    _out = False
 
     instance = None
     # handle the special case there is no model
@@ -640,6 +642,7 @@ Notes:
 
             if isinstance(reduce, _Callable): _reducer, reduce = reduce, None
             if isinstance(kernel, _Callable): _kernel, kernel = kernel, None
+            if isinstance(out, bool): _out, out = out, None
 
         # special case: model passed as model instance
        #model.__doc__.split('using::')[1].split()[0].strip()
@@ -795,6 +798,12 @@ Notes:
     except:
       kernel = None
 
+    try: # path of plot output file
+      out = parsed_opts.out  # e.g. 'myplot.png'
+      if "None" == out: out = None
+    except:
+      out = None
+
     try: # max distance from surface to draw dots
       tol = parsed_opts.tol
       if "None" == tol: tol = None
@@ -850,12 +859,14 @@ Notes:
     if _model: model = _model
     if _reducer: reducer = _reducer
     if _kernel: kernel = _kernel
+    if _out: out = _out
     if _solver: solver = _solver
     select, spec, mask = _parse_input(options)
     x,y = _parse_axes(spec, grid=True) # grid=False for 1D plots
     #FIXME: does grid=False still make sense here...?
     if kernel: kernel = _kernel or _get_instance(kernel)
     if reducer: reducer = _reducer or _get_instance(reducer)
+    if out: out = _out or out
     if solver and (not source or not model): #XXX: not instance?
         raise RuntimeError('a model and results filename are required')
     elif not source and not model and not instance:
@@ -953,15 +964,17 @@ Notes:
     # add labels to the axes
     if surface: kwds = {'projection':'3d'} # 3D
     else: kwds = {}                        # 2D
-    ax = fig.gca(**kwds)
+    ax = fig.axes[0] if fig.axes else plt.axes(**kwds)
     ax.set_xlabel(label[0])
     ax.set_ylabel(label[1])
     if surface: ax.set_zlabel(label[2])
 
-    if not parsed_opts.out:
+    if not out:
         plt.show()
+    elif out is True:
+        return fig #XXX: better?: fig.axes if len(fig.axes) > 1 else ax
     else:
-        fig.savefig(parsed_opts.out)
+        fig.savefig(out)
 
 
 def collapse_plotter(filename, **kwds):
@@ -986,6 +999,7 @@ Notes:
     - The option *dots* takes a boolean, and will show data points in the plot.
     - The option *linear* takes a boolean, and will plot in a linear scale.
     - The option *out* takes a string of the filepath for the generated plot.
+      If ``out = True``, return the Figure object instead of generating a plot.
     - The option *iter* takes an integer of the largest iteration to plot.
     - The option *label* takes a label string. For example, ``label = "y"``
       will label the plot with a 'y', while ``label = " log-cost,
@@ -1007,6 +1021,7 @@ Notes:
         from io import StringIO
     global __quit
     __quit = False
+    _out = False
 
     instance = None
     # handle the special case where list is provided by sys.argv
@@ -1025,6 +1040,8 @@ Notes:
             iter = kwds.get('iter', None)
             label = kwds.get('label', None)
             col = kwds.get('col', None)
+
+            if isinstance(out, bool): _out, out = out, None
 
             # process "commandline" arguments
             cmdargs = ''
@@ -1109,6 +1126,12 @@ Notes:
     except:
       raise IOError("please provide log file name")
 
+    try: # path of plot output file
+      out = parsed_opts.out  # e.g. 'myplot.png'
+      if "None" == out: out = None
+    except:
+      out = None
+
     try: # select which iteration to stop plotting at
       stop = int(parsed_opts.stop)
     except:
@@ -1159,10 +1182,16 @@ Notes:
         plt.ylabel(label)
         #plt.ylabel('$log-error,\; log_{10}(\hat{P} - \hat{P}_{max})$')
 
-    if not parsed_opts.out:
+    # process inputs
+    if _out: out = _out
+    if out: out = _out or out
+
+    if not out:
         plt.show()
+    elif out is True:
+        return fig #XXX: better?: fig.axes if len(fig.axes) > 1 else ax
     else:
-        fig.savefig(parsed_opts.out)
+        fig.savefig(out)
 
 
 def log_reader(filename, **kwds):
@@ -1185,6 +1214,7 @@ Returns:
 
 Notes:
     - The option *out* takes a string of the filepath for the generated plot.
+      If ``out = True``, return the Figure object instead of generating a plot.
     - The option *dots* takes a boolean, and will show data points in the plot.
     - The option *line* takes a boolean, and will connect the data with a line.
     - The option *iter* takes an integer of the largest iteration to plot.
@@ -1204,6 +1234,7 @@ Notes:
         from io import StringIO
     global __quit
     __quit = False
+    _out = False
 
     instance = None
     # handle the special case where list is provided by sys.argv
@@ -1222,6 +1253,8 @@ Notes:
             legend = kwds.get('legend', False)
             nid = kwds.get('nid', None)
             param = kwds.get('param', None)
+
+            if isinstance(out, bool): _out, out = out, None
 
             # process "commandline" arguments
             cmdargs = ''
@@ -1306,6 +1339,12 @@ Notes:
         filename = parsed_args[0]
     except:
       raise IOError("please provide log file name")
+
+    try: # path of plot output file
+      out = parsed_opts.out  # e.g. 'myplot.png'
+      if "None" == out: out = None
+    except:
+      out = None
 
     try: # select which iteration to stop plotting at
       stop = int(parsed_opts.stop)
@@ -1427,10 +1466,16 @@ Notes:
         ax2.plot(iter_conv[i],cost_conv[i],label='cost %s' % tag,marker=mark,linestyle=style)
     if parsed_opts.legend: plt.legend()
 
-    if not parsed_opts.out:
+    # process inputs
+    if _out: out = _out
+    if out: out = _out or out
+
+    if not out:
         plt.show()
+    elif out is True:
+        return fig #XXX: better?: fig.axes if len(fig.axes) > 1 else ax
     else:
-        fig.savefig(parsed_opts.out)
+        fig.savefig(out)
 
 
 # initialize doc

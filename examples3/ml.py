@@ -189,7 +189,7 @@ def plot_train_pred(x, t, y, xaxis=None, yaxis=None, mark=None, ax=None):
     if ax is None:
         figure = plt.figure()
         kwds = {'projection':'3d'}
-        ax = figure.gca(**kwds)
+        ax = figure.axes[0] if figure.axes else plt.axes(**kwds)
     ax.autoscale(tight=True)
     if mark is None:
         s0,s1 = 'ko','rx'

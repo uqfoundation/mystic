@@ -111,7 +111,7 @@ def _cone_builder(slope, bounds, strict=True):
     Z = Z + position[2]
     return X,Z,Y
 
-  return cone    
+  return cone
 
 
 #### plotting the cones ####
@@ -313,6 +313,7 @@ Returns:
 
 Notes:
     - The option *out* takes a string of the filepath for the generated plot.
+      If ``out = True``, return the Figure object instead of generating a plot.
     - The option *iter* takes an integer of the largest iteration to plot.
     - The option *param* takes an indicator string. The indicator string is
       built from comma-separated array slices. For example, ``param = ":"``
@@ -339,6 +340,7 @@ Notes:
         from io import StringIO
     global __quit
     __quit = False
+    _out = False
 
     instance = None
     # handle the special case where list is provided by sys.argv
@@ -357,6 +359,8 @@ Notes:
             nid = kwds.get('nid', None)
             cost = kwds.get('cost', False)
             legend = kwds.get('legend', False)
+
+            if isinstance(out, bool): _out, out = out, None
 
             # process "commandline" arguments
             cmdargs = ''
@@ -434,6 +438,12 @@ Notes:
     else:
         cost = None
 
+    try: # path of plot output file
+      out = parsed_opts.out  # e.g. 'myplot.png'
+      if "None" == out: out = None
+    except:
+      out = None
+
     if parsed_opts.legend: # show the legend
         legend = True
     else:
@@ -459,7 +469,7 @@ Notes:
         label += [''] * max(0, plots - len(label))
     except:
         label = [''] * plots
-    
+
     try: # select which 'id' to plot results for
         id = int(parsed_opts.id)
     except:
@@ -542,10 +552,16 @@ Notes:
         %(exec_string)s
         if legend: plt.legend()
 
-    if not parsed_opts.out:
+    # process inputs
+    if _out: out = _out
+    if out: out = _out or out
+
+    if not out:
         plt.show()
+    elif out is True:
+        return fig #XXX: better?: fig.axes if len(fig.axes) > 1 else ax
     else:
-        fig.savefig(parsed_opts.out)
+        fig.savefig(out)
 ''' % dict(exec_string=exec_string)
 
     ### USUAL WAY OF CREATING PLOTS ###
@@ -591,6 +607,7 @@ Returns:
 
 Notes:
     - The option *out* takes a string of the filepath for the generated plot.
+      If ``out = True``, return the Figure object instead of generating a plot.
     - The options *bounds*, *axes*, and *iters* all take indicator strings.
       The bounds should be given as comma-separated slices. For example, using
       ``bounds = "60:105, 0:30, 2.1:2.8"`` will set the lower and upper bounds
@@ -618,6 +635,7 @@ Notes:
         from io import StringIO
     global __quit
     __quit = False
+    _out = False
 
     instance = None
     # handle the special case where list is provided by sys.argv
@@ -637,6 +655,8 @@ Notes:
             nid = kwds.get('nid', None)
             scale = kwds.get('scale', None)
             flat = kwds.get('flat', False)
+
+            if isinstance(out, bool): _out, out = out, None
 
             # process "commandline" arguments
             cmdargs = ''
@@ -721,18 +741,18 @@ Notes:
         bounds = [tuple(float(j) for j in i.split(':')) for i in bounds]
     except:
         bounds = [(0,1),(0,1),(0,1)]
-    
+
     try: # select which params are along which axes
         xyz = parsed_opts.xyz.split(",")  # format is "0 1, 4 5, 8 9"
         xyz = [tuple(int(j) for j in i.split()) for i in xyz]
     except:
         xyz = [(0,),(1,),(2,)]
-    
+
     try: # select labels for the axes
         label = parsed_opts.label.split(',')  # format is "x, y, z"
     except:
         label = ['','','']
-    
+
     x = params[max(xyz[0])]
     try: # select which iterations to plot
         select = parsed_opts.iters.split(',')  # format is ":2, 2:4, 5, 6:"
@@ -743,6 +763,12 @@ Notes:
        #select = [':2','2:']
        #select = [':1','1:2','2:3','3:']
        #select = ['0','1','2','3']
+
+    try: # path of plot output file
+      out = parsed_opts.out  # e.g. 'myplot.png'
+      if "None" == out: out = None
+    except:
+      out = None
 
     try: # collapse non-consecutive iterations into a single plot...
         flatten = parsed_opts.flatten
@@ -873,10 +899,16 @@ Notes:
                     for k in eval("[params[q][{0}] for q in xyz[2]]".format(s), locals):
                         a[v].plot(i,j,k,marker='o',color=t,ms=10)
 
-    if not parsed_opts.out:
+    # process inputs
+    if _out: out = _out
+    if out: out = _out or out
+
+    if not out:
         plt.show()
+    elif out is True:
+        return fig #XXX: better?: fig.axes if len(fig.axes) > 1 else ax
     else:
-        fig.savefig(parsed_opts.out)
+        fig.savefig(out)
 ''' % dict(exec_string=exec_string)
 
 
@@ -901,6 +933,7 @@ Returns:
 
 Notes:
     - The option *out* takes a string of the filepath for the generated plot.
+      If ``out = True``, return the Figure object instead of generating a plot.
     - The options *bounds*, *axes*, *weight*, and *iters* all take indicator
       strings. The bounds should be given as comma-separated slices. For
       example, using ``bounds = "60:105, 0:30, 2.1:2.8"`` will set lower and
@@ -936,6 +969,7 @@ Warning:
         from io import StringIO
     global __quit
     __quit = False
+    _out = False
 
     instance = None
     # handle the special case where list is provided by sys.argv
@@ -956,6 +990,8 @@ Warning:
             nid = kwds.get('nid', None)
             scale = kwds.get('scale', None)
             flat = kwds.get('flat', False)
+
+            if isinstance(out, bool): _out, out = out, None
 
             # process "commandline" arguments
             cmdargs = ''
@@ -1039,6 +1075,12 @@ Warning:
     # would be nice to use meta = ['wx','wx2','x','x2','wy',...]
     # exec "from {file} import meta".format(file=file)
 
+    try: # path of plot output file
+      out = parsed_opts.out  # e.g. 'myplot.png'
+      if "None" == out: out = None
+    except:
+      out = None
+
     try: # select the bounds
         bounds = parsed_opts.bounds.split(",")  # format is "60:105, 0:30, 2.1:2.8"
         bounds = [tuple(float(j) for j in i.split(':')) for i in bounds]
@@ -1050,18 +1092,18 @@ Warning:
         xyz = [tuple(int(j) for j in i.split()) for i in xyz]
     except:
         xyz = [(1,),(3,),(5,)]
-    
+
     try: # select which params are along which axes
         wxyz = parsed_opts.wxyz.split(",")  # format is "0 1, 4 5, 8 9"
         wxyz = [tuple(int(j) for j in i.split()) for i in wxyz]
     except:
         wxyz = [(0,),(2,),(4,)]
-    
+
     try: # select labels for the axes
         label = parsed_opts.label.split(',')  # format is "x, y, z"
     except:
         label = ['','','']
-    
+
     x = params[max(xyz[0])]
     try: # select which iterations to plot
         select = parsed_opts.iters.split(',')  # format is "2, 4, 5, 6"
@@ -1221,10 +1263,16 @@ Warning:
                             a[v].plot([i[q]],[j[q]],[k[q]],marker='o',color=t[v][u][q],ms=10)
                         u += 1
 
-    if not parsed_opts.out:
+    # process inputs
+    if _out: out = _out
+    if out: out = _out or out
+
+    if not out:
         plt.show()
+    elif out is True:
+        return fig #XXX: better?: fig.axes if len(fig.axes) > 1 else ax
     else:
-        fig.savefig(parsed_opts.out)
+        fig.savefig(out)
 ''' % dict(exec_string=exec_string)
 
 
@@ -1251,6 +1299,7 @@ Returns:
 
 Notes:
     - The option *out* takes a string of the filepath for the generated plot.
+      If ``out = True``, return the Figure object instead of generating a plot.
     - The options *bounds*, *dim*, and *iters* all take indicator strings.
       The bounds should be given as comma-separated slices. For example, using
       ``bounds = ".062:.125, 0:30, 2300:3200"`` will set lower and upper bounds
@@ -1288,6 +1337,7 @@ Notes:
         from io import StringIO
     global __quit
     __quit = False
+    _out = False
 
     instance = None
     # handle the special case where list is provided by sys.argv
@@ -1313,6 +1363,8 @@ Notes:
             cones = kwds.get('cones', False)
             vertical = kwds.get('vertical', False)
             flat = kwds.get('flat', False)
+
+            if isinstance(out, bool): _out, out = out, None
 
             # process "commandline" arguments
             cmdargs = ''
@@ -1424,6 +1476,12 @@ Notes:
         legacy = parsed_opts.legacy
     except:
         legacy = False
+
+    try: # path of plot output file
+      out = parsed_opts.out  # e.g. 'myplot.png'
+      if "None" == out: out = None
+    except:
+      out = None
 
     try: # get dataset filter
         filter = parsed_opts.filter
@@ -1682,7 +1740,7 @@ Notes:
             d.load(pm.coords, pm.values)
             # dot color determined by number of simultaneous iterations
             t = str((s/qp)**scale)
-            # get and plot dataset coords for selected axes      
+            # get and plot dataset coords for selected axes
             _coords = _get_coords(d, xs, cs)
             # check if we are replacing an axis
             if _2D and xs == 0:
@@ -1697,10 +1755,16 @@ Notes:
         plt.xlim((bounds[0][0],bounds[0][1]))
         plt.ylim((bounds[1][0],bounds[1][1]))
 
-    if not parsed_opts.out:
+    # process inputs
+    if _out: out = _out
+    if out: out = _out or out
+
+    if not out:
         plt.show()
+    elif out is True:
+        return fig #XXX: better?: fig.axes if len(fig.axes) > 1 else ax
     else:
-        fig.savefig(parsed_opts.out)
+        fig.savefig(out)
 ''' % dict(exec_string=exec_string)
 
 exec(def_convergence)
