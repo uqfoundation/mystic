@@ -15,9 +15,9 @@ __all__ = ['linear_symbolic','replace_variables','get_variables','denominator',
            'simplify','comparator','flip','_flip','condense','flat','equals',
            'penalty_parser','constraints_parser','generate_conditions','solve',
            'generate_solvers','generate_penalty','generate_constraint','merge',
-           '_simplify','absval']
+           '_simplify','absval','symbolic_bounds']
 
-from numpy import ndarray, asarray
+from numpy import ndarray, asarray, any as _any
 from mystic._symbolic import solve
 from mystic.tools import list_or_tuple_or_ndarray, flatten
 import sys
@@ -36,7 +36,7 @@ NL = '\n'
 
 
 # XXX: another function for the inverse... symbolic to matrix? (good for scipy)
-def linear_symbolic(A=None, b=None, G=None, h=None):
+def linear_symbolic(A=None, b=None, G=None, h=None, variables=None):
     """convert linear equality and inequality constraints from matrices to a 
 symbolic string of the form required by mystic's constraint parser.
 
@@ -45,6 +45,11 @@ Inputs:
     b -- (ndarray) vector of solutions of linear equality constraints
     G -- (ndarray) matrix of coefficients of linear inequality constraints
     h -- (ndarray) vector of solutions of linear inequality constraints
+    variables -- (list[str]) list of variable names
+
+    NOTE: if variables=None, then variables = ['x0', 'x1', ...];
+          if variables='y', then variables = ['y0', 'y1', ...];
+          otherwise use the explicit list of variables provided.
 
     NOTE: Must provide A and b; G and h; or A, b, G, and h;
           where Ax = b and Gx <= h. 
@@ -60,6 +65,13 @@ Inputs:
     3.0*x0 + 4.0*x1 + 5.0*x2 = 0.0
     1.0*x0 + 6.0*x1 + -9.0*x2 = 0.0
 """
+    if variables is None: variables = 'x'
+    try:
+        basestring
+    except NameError:
+        basestring = str
+    has_base = isinstance(variables, basestring)
+
     eqstring = ""
     # Equality constraints
     if A is not None and b is not None:
@@ -75,14 +87,21 @@ Inputs:
             b = ndarray.flatten(asarray(b)).tolist()
 
         # Check dimensions and give errors if incorrect.
-        if len(A) != len(b):
-            raise Exception("Dimensions of A and b are not consistent.")
+        if len(A) != len(b): #NOTE: changed from Exception 11/15/21
+            raise ValueError("dimensions of A and b are not consistent")
+
+        if has_base:
+            names = [variables+str(j) for j in range(ndim)]
+        else:
+            if len(variables) != ndim:
+                raise ValueError("variables is not consistent with A")
+            names = variables
 
         # 'matrix multiply' and form the string
         for i in range(len(b)):
             Asum = ""
             for j in range(ndim):
-                Asum += str(A[i][j]) + '*x' + str(j) + ' + '
+                Asum += str(A[i][j]) + '*' + names[j] + ' + '
             eqstring += Asum.rstrip(' + ') + ' = ' + str(b[i]) + '\n'
 
     # Inequality constraints
@@ -100,17 +119,85 @@ Inputs:
             h = ndarray.flatten(asarray(h)).tolist()
 
         # Check dimensions and give errors if incorrect.
-        if len(G) != len(h):
-            raise Exception("Dimensions of G and h are not consistent.")
+        if len(G) != len(h): #NOTE: changed from Exception 11/15/21
+            raise ValueError("dimensions of G and h are not consistent")
+
+        if has_base:
+            names = [variables+str(j) for j in range(ndim)]
+        else:
+            if len(variables) != ndim:
+                raise ValueError("variables is not consistent with G")
+            names = variables
 
         # 'matrix multiply' and form the string
         for i in range(len(h)):
             Gsum = ""
             for j in range(ndim):
-                Gsum += str(G[i][j]) + '*x' + str(j) + ' + '
+                Gsum += str(G[i][j]) + '*' + names[j] + ' + '
             ineqstring += Gsum.rstrip(' + ') + ' <= ' + str(h[i]) + '\n'
     totalconstraints = ineqstring + eqstring
     return totalconstraints 
+
+
+def symbolic_bounds(min, max, variables=None):
+    """convert min,max to symbolic string for use in mystic's constraint parser
+
+Inputs:
+    min -- (list[float]) list of lower bounds
+    max -- (list[float]) list of upper bounds
+    variables -- (list[str]) list of variable names
+
+    NOTE: if variables=None, then variables = ['x0', 'x1', ...];
+          if variables='y', then variables = ['y0', 'y1', ...];
+          otherwise use the explicit list of variables provided.
+
+    For example:
+    >>> eqn = symbolic_bounds(min=[-10,None], max=[10,69], variables='y')
+    >>> print(eqn)
+    y0 >= -10.0
+    y0 <= 10.0
+    y1 <= 69.0
+
+    >>> eqn = symbolic_bounds(min=[-1,-2], max=[1,2], variables=list('AB'))
+    >>> print(eqn)
+    A >= -1.0
+    B >= -2.0
+    A <= 1.0
+    B <= 2.0
+"""
+    inf = float('inf')
+    if len(min) != len(max):
+        raise ValueError("length of min and max are not consistent")
+    # when 'some' of the bounds are given as 'None', replace with default
+    for i in range(len(min)):
+        if min[i] is None: min[i] = -inf
+        if max[i] is None: max[i] = inf
+    min = asarray(min); max = asarray(max)
+    if _any(( min > max ),0):
+        raise ValueError("each min[i] must be <= the corresponding max[i]")
+
+    if variables is None: variables = 'x'
+    try:
+        basestring
+    except NameError:
+        basestring = str
+    has_base = isinstance(variables, basestring)
+    lo = '%s >= %s'
+    hi = '%s <= %s'
+    if has_base:
+        lo = variables + lo
+        hi = variables + hi
+        imin = enumerate(min)
+        imax = enumerate(max)
+    else:
+        if len(min) != len(variables):
+            raise ValueError("variables is not consistent with bounds")
+        imin = zip(variables, min)
+        imax = zip(variables, max)
+    #NOTE: we are stripping off leading zeros
+    lo = '\n'.join(lo % (i,str(float(j)).lstrip('0')) for (i,j) in imin if j != -inf)
+    hi = '\n'.join(hi % (i,str(float(j)).lstrip('0')) for (i,j) in imax if j != inf)
+    return '\n'.join([lo, hi]).strip()
 
 
 def comparator(equation):
