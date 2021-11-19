@@ -128,6 +128,7 @@ Important class members::
         self.sigint_callback  = None
         self._handle_sigint   = False
         self._useStrictRange  = False
+        self._useTightRange   = False
         self._defaultMin      = [-1e3] * dim
         self._defaultMax      = [ 1e3] * dim
         self._strictMin       = []
@@ -145,6 +146,7 @@ Important class members::
         self._solution_history= None
         self.id               = None     # identifier (use like "rank" for MPI)
 
+        self._strictbounds    = lambda x: x
         self._constraints     = lambda x: x
         self._penalty         = lambda x: 0.0
         self._reducer         = None
@@ -273,7 +275,12 @@ input::
         return self._update_objective()
 
     def SetGenerationMonitor(self, monitor, new=False):
-        """select a callable to monitor (x, f(x)) after each solver iteration"""
+        """select a callable to monitor (x, f(x)) after each solver iteration
+
+input::
+    - a monitor instance or monitor type used to track (x, f(x)). Any data
+      collected in an existing generation monitor will be prepended, unless
+      new is True."""
         from mystic.monitors import Null, Monitor#, CustomMonitor
         if monitor is None: monitor = Null()
         current = Null() if new else self._stepmon
@@ -294,7 +301,12 @@ input::
         return
 
     def SetEvaluationMonitor(self, monitor, new=False):
-        """select a callable to monitor (x, f(x)) after each cost function evaluation"""
+        """select a callable to monitor (x, f(x)) after each cost function evaluation
+
+input::
+    - a monitor instance or monitor type used to track (x, f(x)). Any data
+      collected in an existing evaluation monitor will be prepended, unless
+      new is True."""
         from mystic.monitors import Null, Monitor#, CustomMonitor
         if monitor is None: monitor = Null()
         current = Null() if new else self._evalmon
@@ -312,17 +324,57 @@ input::
             raise TypeError("'%s' is not a monitor instance" % monitor)
         return
 
-    def SetStrictRanges(self, min=None, max=None):
+    def SetStrictRanges(self, min=None, max=None, **kwds):
         """ensure solution is within bounds
 
 input::
     - min, max: must be a sequence of length self.nDim
     - each min[i] should be <= the corresponding max[i]
 
+additional input::
+    - tight (bool): if True, apply bounds concurrent with other constraints
+    - clip (bool): if True, bounding constraints will clip exterior values
+
 note::
-    SetStrictRanges(None) will remove strict range constraints"""
+    SetStrictRanges(None) will remove strict range constraints
+
+notes::
+    By default, the bounds are coupled to the other constraints with a coupler
+    (e.g. ``mystic.coupler.outer``), and not applied concurrently (i.e. with
+    ``mystic.constraints.and_``). Using a coupler favors speed over robustness,
+    and relies on the user to formulate the constraints so they do not conflict
+    with imposing the bounds.
+
+note::
+    The keyword ``clip`` controls the clipping behavior for the bounding
+    constraints. The default is to rely on ``_clipGuessWithinRangeBoundary``
+    when ensuring the bounds are respected, and to not take action when the
+    other constraints are being imposed. However when ``tight=True``, the
+    default is that the bounds constraints clip at the bounds. By default,
+    bounds constraints are applied with a symbolic solver, as the symbolic
+    solver is generally faster than ``mystic.constraints.impose_bounds``.
+    All of the above default behaviors are active when ``clip=None``.
+
+note::
+    If ``clip=False``, ``impose_bounds`` will be used to map the candidate
+    solution inside the bounds, while ``clip=True`` will use ``impose_bounds``
+    to clip the candidate solution at the bounds. Note that ``clip=True`` is
+    *not* the same as the default (``clip=None``, which uses a symbolic solver).
+    If ``clip`` is specified while ``tight`` is not, then ``tight`` will be
+    set to ``True``."""
+        tight = kwds['tight'] if 'tight' in kwds else None
+        clip = kwds['clip'] if 'clip' in kwds else None
+        if clip is None: # tight in (True, False, None)
+            args = dict(symbolic=True) if tight else dict()
+        elif tight is False: # clip in (True, False)
+            raise ValueError('can not specify clip when tight is False')
+        else: # tight in (True, None)
+            args = dict(symbolic=False, clip=clip)
+        #XXX: we are ignoring bad kwds entries, should we?
+
         if min is False or max is False:
             self._useStrictRange = False
+            self._strictbounds = self._boundsconstraints(**args)
             return self._update_objective()
         #XXX: better to use 'defaultMin,defaultMax' or '-inf,inf' ???
         if min is None: min = self._defaultMin
@@ -340,13 +392,78 @@ note::
         self._useStrictRange = True
         self._strictMin = min
         self._strictMax = max
+        self._strictbounds = self._boundsconstraints(**args)
         return self._update_objective()
+
+    def _boundsconstraints(self, **kwds):
+        """if _useStrictRange, build a constraint from (_strictMin,strictMax)
+
+        symbolic: bool, if True, use symbolic constraints [default: None]
+        clip: bool, if True, clip exterior values to the bounds [default: None]
+        nearest: bool, if True, clip to the nearest bound [default: None]
+
+        NOTE: By default, the bounds and constraints are imposed sequentially
+        with a coupler. Using a coupler chooses speed over robustness, and
+        relies on the user to formulate the constraints so that they do not
+        conflict with imposing the bounds. Hence, if no keywords are provided,
+        the bounds and constraints are applied sequentially.
+
+        NOTE: If any of the keyword arguments are used, then the bounds and
+        constraints are imposed concurrently. This is slower but more robust
+        than applying the bounds and constraints sequentially (the default).
+        When the bounds and constraints are applied concurrently, the defaults
+        for the keywords (symbolic, clip, and nearest) are set to True, unless
+        otherwise specified.
+
+        NOTE: If `symbolic=True`, use symbolic constraints to impose the
+        bounds; otherwise use `mystic.constraints.impose_bounds`. Using
+        `clip=False` or `nearest=False` will set `symbolic=False` unless
+        symbolic is specified otherwise.
+        """
+        symbolic = kwds['symbolic'] if 'symbolic' in kwds else None
+        clip = kwds['clip'] if 'clip' in kwds else None
+        near = kwds['nearest'] if 'nearest' in kwds else None
+        # set the (complicated) defaults
+        if symbolic is None:
+            if clip is None and near is None:
+                pass
+            elif clip is None: # near in [False, True]
+                clip = True
+                symbolic = bool(near)
+            elif near is None: # clip in [False, True]
+                near = True
+                symbolic = bool(clip)
+        else:
+            if clip is None:
+                clip = True
+            if near is None:
+                near = True
+        ignore = symbolic is None
+        if not self._useStrictRange or ignore:
+            self._useTightRange = False
+            return lambda x: x
+        self._useTightRange = True
+        if symbolic and not (clip and near):
+            raise NotImplementedError("symbolic must clip to the nearest bound")
+        # build the constraint
+        min = self._strictMin
+        max = self._strictMax
+        if not symbolic: #XXX: much slower than symbolic
+            from mystic.constraints import impose_bounds
+            cons = dict((i,j) for (i,j) in enumerate(zip(min, max)))
+            cons = impose_bounds(cons, clip=clip, nearest=near)(lambda x: x)
+            return cons
+        import mystic.symbolic as ms #XXX: randomness due to sympy?
+        cons = ms.symbolic_bounds(min, max) #XXX: how clipping with symbolic?
+        cons = ms.generate_constraint(ms.generate_solvers(ms.simplify(cons))) #XXX: join=and_?
+        return cons
 
     def _clipGuessWithinRangeBoundary(self, x0, at=True):
         """ensure that initial guess is set within bounds
 
 input::
-    - x0: must be a sequence of length self.nDim"""
+    - x0: must be a sequence of length self.nDim
+    - at: bool, if True, then clip at the bounds"""
        #if len(x0) != self.nDim: #XXX: unnecessary w/ self.trialSolution
        #    raise ValueError, "initial guess must be length %s" % self.nDim
         x0 = asarray(x0)
@@ -472,7 +589,7 @@ input::
         """disable workflow interrupt handler while solver is running"""
         self._handle_sigint = False
 
-    def SetSaveFrequency(self, generations=None, filename=None, **kwds):
+    def SetSaveFrequency(self, generations=None, filename=None):
         """set frequency for saving solver restart file
 
 input::
@@ -491,8 +608,10 @@ note::
         """set limits for generations and/or evaluations
 
 input::
-    - generations = maximum number of solver iterations (i.e. steps)
-    - evaluations = maximum number of function evaluations"""
+    - generations: maximum number of solver iterations (i.e. steps)
+    - evaluations: maximum number of function evaluations
+    - new: bool, if True, the above limit the new evaluations and iterations;
+      otherwise, the limits refer to total evaluations and iterations."""
         # backward compatibility
         self._maxiter = kwds['maxiter'] if 'maxiter' in kwds else generations
         self._maxfun = kwds['maxfun'] if 'maxfun' in kwds else evaluations
@@ -509,7 +628,15 @@ input::
         return
 
     def _SetEvaluationLimits(self, iterscale=None, evalscale=None):
-        """set the evaluation limits"""
+        """set the evaluation limits
+
+input::
+    - iterscale and evalscale are integers used to set the maximum iteration
+      and evaluation limits, respectively. The new limit is defined as
+      limit = (nDim * nPop * scale) + count, where count is the number
+      of existing iterations or evaluations, respectively. The default for
+      iterscale is 10, while the default for evalscale is 1000.
+        """
         if iterscale is None: iterscale = 10
         if evalscale is None: evalscale = 1000
         N = len(self.population[0]) # usually self.nDim
@@ -571,7 +698,10 @@ Notes::
         return bool(msg)
 
     def SetTermination(self, termination): # disp ?
-        """set the termination conditions"""
+        """set the termination conditions
+
+input::
+    - termination = termination conditions to check against"""
         #XXX: validate that termination is a 'condition' ?
         self._termination = termination
         self._collapse = False
@@ -583,7 +713,15 @@ Notes::
         return
 
     def SetObjective(self, cost, ExtraArgs=None):  # callback=None/False ?
-        """decorate the cost function with bounds, penalties, monitors, etc"""
+        """set the cost function for the optimization
+
+input::
+    - cost is the objective function, of the form y = cost(x, *ExtraArgs),
+      where x is a candidate solution, and ExtraArgs is the tuple of positional
+      arguments required to evaluate the objective.
+
+note::
+    this method decorates the objective with bounds, penalties, monitors, etc"""
         _cost,_raw,_args = self._cost
         # check if need to 'wrap' or can return the stored cost
         if (cost is None or cost is _raw or cost is _cost) and \
@@ -611,9 +749,8 @@ Notes::
         """check if the solver meets the given collapse conditions
 
 Input::
-    - disp = if True, print details about the solver state at collapse
-    - info = if True, return collapsed state (instead of boolean)
-"""
+    - disp: if True, print details about the solver state at collapse
+    - info: if True, return collapsed state (instead of boolean)"""
         stop = getattr(self, '__stop__', self.Terminated(info=True))
         import mystic.collapse as ct
         collapses = ct.collapsed(stop) or dict()
@@ -625,7 +762,10 @@ Input::
         return collapses if info else bool(collapses) 
 
     def __get_collapses(self, disp=False):
-        """get dict of {collapse termination info: collapse}"""
+        """get dict of {collapse termination info: collapse}
+
+input::
+    - disp: if True, print details about the solver state at collapse"""
         collapses = self.Collapsed(disp=disp, info=True)
         if collapses: # stop if any Termination is not from Collapse
             stop = getattr(self, '__stop__', self.Terminated(info=True))
@@ -683,7 +823,11 @@ Input::
         """if solver has terminated by collapse, apply the collapse
         (unless both collapse and "stop" are simultaneously satisfied)
 
-        updates the solver's termination conditions and constraints
+input::
+    - disp: if True, print details about the solver state at collapse
+
+note::
+    updates the solver's termination conditions and constraints
         """
        #XXX: return True for "collapse and continue" and False otherwise?
         collapses = self.__get_collapses(disp)
@@ -709,7 +853,12 @@ Input::
         return
 
     def _decorate_objective(self, cost, ExtraArgs=None):
-        """decorate the cost function with bounds, penalties, monitors, etc"""
+        """decorate the cost function with bounds, penalties, monitors, etc
+
+input::
+    - cost is the objective function, of the form y = cost(x, *ExtraArgs),
+      where x is a candidate solution, and ExtraArgs is the tuple of positional
+      arguments required to evaluate the objective."""
         #print("@%r %r %r" % (cost, ExtraArgs, max))
         evalmon = self._evalmon
         raw = cost
@@ -720,9 +869,12 @@ Input::
             ngen = self.generations #XXX: no random if generations=0 ?
             for i in range(self.nPop):
                 self.population[i] = self._clipGuessWithinRangeBoundary(self.population[i], (not ngen) or (i == indx))
-            cost = wrap_bounds(cost, self._strictMin, self._strictMax)
+            cost = wrap_bounds(cost, self._strictMin, self._strictMax) #XXX: remove?
+            from mystic.constraints import and_
+            constraints = and_(self._constraints, self._strictbounds, onfail=self._strictbounds)
+        else: constraints = self._constraints
         cost = wrap_penalty(cost, self._penalty)
-        cost = wrap_nested(cost, self._constraints)
+        cost = wrap_nested(cost, constraints)
         if self._reducer:
            #cost = reduced(*self._reducer)(cost) # was self._reducer = (f,bool)
             cost = reduced(self._reducer, arraylike=True)(cost)
@@ -732,7 +884,12 @@ Input::
         return cost
 
     def _bootstrap_objective(self, cost=None, ExtraArgs=None):
-        """HACK to enable not explicitly calling _decorate_objective"""
+        """HACK to enable not explicitly calling _decorate_objective
+
+input::
+    - cost is the objective function, of the form y = cost(x, *ExtraArgs),
+      where x is a candidate solution, and ExtraArgs is the tuple of positional
+      arguments required to evaluate the objective."""
         _cost,_raw,_args = self._cost
         # check if need to 'wrap' or can return the stored cost
         if (cost is None or cost is _raw or cost is _cost) and \
@@ -745,11 +902,22 @@ Input::
     def _Step(self, cost=None, ExtraArgs=None, **kwds):
         """perform a single optimization iteration
 
+input::
+    - cost is the objective function, of the form y = cost(x, *ExtraArgs),
+      where x is a candidate solution, and ExtraArgs is the tuple of positional
+      arguments required to evaluate the objective.
+
 *** this method must be overwritten ***"""
         raise NotImplementedError("an optimization algorithm was not provided")
 
     def SaveSolver(self, filename=None, **kwds):
-        """save solver state to a restart file"""
+        """save solver state to a restart file
+
+input::
+    - filename: string of full filepath for the restart file
+
+note::
+    any additional keyword arguments are passed to dill.dump"""
         import dill
         fd = None
         if filename is None: # then check if already has registered file
@@ -768,7 +936,10 @@ Input::
         return
 
     def __save_state(self, force=False):
-        """save the solver state, if chosen save frequency is met"""
+        """save the solver state, if chosen save frequency is met
+
+input::
+    - if force is True, save the solver state regardless of save frequency"""
         # save the last iteration
         if force and bool(self._state):
             self.SaveSolver()
@@ -785,18 +956,40 @@ Input::
         return
 
     def __load_state(self, solver, **kwds):
-        """load solver.__dict__ into self.__dict__; override with kwds"""
+        """load solver.__dict__ into self.__dict__; override with kwds
+
+input::
+    - solver is a solver instance, while kwds are a dict of solver state"""
         #XXX: should do some filtering on kwds ?
         self.__dict__.update(solver.__dict__, **kwds)
         return
 
-    def Finalize(self, **kwds):
+    def Finalize(self):
         """cleanup upon exiting the main optimization loop"""
         self._live = False
         return
 
     def _process_inputs(self, kwds):
-        """process and activate input settings"""
+        """process and activate input settings
+
+Args:
+    callback (func, default=None): function to call after each iteration. The
+        interface is ``callback(xk)``, with xk the current parameter vector.
+    disp (bool, default=False): if True, print convergence messages.
+
+Additional Args:
+    EvaluationMonitor: a monitor instance to capture each evaluation of cost.
+    StepMonitor: a monitor instance to capture each iteration's best results.
+    penalty: a function of the form: y' = penalty(xk), with y = cost(xk) + y',
+        where xk is the current parameter vector.
+    constraints: a function of the form: xk' = constraints(xk), where xk is
+        the current parameter vector.
+
+Note:
+   The additional args are 'sticky', in that once they are given, they remain
+   set until they are explicitly changed. Conversely, the args are not sticky,
+   and are thus set for a one-time use.
+        """
         #allow for inputs that don't conform to AbstractSolver interface
         #NOTE: not sticky: callback, disp
         #NOTE: sticky: EvaluationMonitor, StepMonitor, penalty, constraints
@@ -840,6 +1033,9 @@ Notes:
     the call to ``Step``, the solver may be left in an "out-of-sync" state.
     When abandoning an non-terminated solver, one should call ``Finalize()``
     to make sure the solver is fully returned to a "synchronized" state.
+
+    This method accepts additional args that are specific for the current
+    solver, as detailed in the `_process_inputs` method.
         """
         if 'disp' in kwds:
             disp = bool(kwds['disp'])#; del kwds['disp']
@@ -948,12 +1144,14 @@ Returns:
         return
 
     def __copy__(self):
+        """return a shallow copy of the solver"""
         cls = self.__class__
         result = cls.__new__(cls)
         result.__dict__.update(self.__dict__)
         return result
 
     def __deepcopy__(self, memo):
+        """return a deep copy of the solver"""
         import copy
         import dill
         cls = self.__class__

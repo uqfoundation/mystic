@@ -428,8 +428,8 @@ NOTE: The default solver is 'diffev', with npop=min(40, ndim*5). The default
             solver.SetInitialPoints(guess) #XXX: nice if 'diffev' had methods
         else:
             solver.SetRandomInitialPoints(lower_bounds, upper_bounds)
-    if lower_bounds or upper_bounds:
-        solver.SetStrictRanges(lower_bounds, upper_bounds)
+    if lower_bounds or upper_bounds: #XXX: allow choice of tight?
+        solver.SetStrictRanges(lower_bounds, upper_bounds, tight=True)
     if hasattr(constraints, 'iter') and hasattr(constraints, 'error'):
         solver.SetPenalty(constraints) #i.e. is a penalty function
     else: # is a constraints solver
@@ -515,6 +515,8 @@ Inputs:
 
 Additional Inputs:
     maxiter -- maximum number of iterations to attempt to solve [default: 100]
+    onexit -- function x' = f(x) to call on success [default: None]
+    onfail -- function x' = f(x) to call on failure [default: None]
 
 NOTE: 
     If a repeating cycle is detected, some of the inputs may be randomized.
@@ -525,34 +527,42 @@ NOTE:
     if 'maxiter' in settings:
         maxiter = settings['maxiter'] * n; del settings['maxiter']
     else: maxiter = 100 * n
+    if 'onexit' in settings:
+        onexit = settings['onexit']; del settings['onexit']
+    else: onexit = None
+    if 'onfail' in settings:
+        onfail = settings['onfail']; del settings['onfail']
+    else: onfail = None
     def _constraint(x): #XXX: inefficient, rewrite without append
-        x = [x.tolist() if hasattr(x, 'tolist') else x]
-        # apply all constaints once
+        x = [x.tolist() if hasattr(x, 'tolist') else x[:]]
+        # apply all constraints once
         e = None
         for c in constraints:
             try:
-                ci = c(x[-1])
+                ci = c(x[-1][:])
             except ZeroDivisionError as e:
-                ci = x[-1] #XXX: do something else?
+                ci = x[-1][:] #XXX: do something else?
             x.append(ci.tolist() if hasattr(ci, 'tolist') else ci)
-        if all(xi == x[-1] for xi in x[1:]) and e is None: return x[-1]
+        if all(xi == x[-1] for xi in x[1:]) and e is None:
+            return x[-1] if onexit is None else onexit(x[-1][:])
         # cycle constraints until there's no change
         _constraints = it.cycle(constraints) 
         for j in range(n,maxiter):
             e = None
             try:
-                ci = next(_constraints)(x[-1])
+                ci = next(_constraints)(x[-1][:])
             except ZeroDivisionError as e:
-                ci = x[-1] #XXX: do something else?
+                ci = x[-1][:] #XXX: do something else?
             x.append(ci.tolist() if hasattr(ci, 'tolist') else ci)
-            if all(xi == x[-1] for xi in x[-n:]) and e is None: return x[-1]
+            if all(xi == x[-1] for xi in x[-n:]) and e is None:
+                return x[-1] if onexit is None else onexit(x[-1][:])
             # may be trapped in a cycle... randomize
             if x[-1] == x[-(n+1)]:
                 x[-1] = [(i+rnd.randint(-1,1))*rnd.random() for i in x[-1]]
             if not j%(2*n):
                 del x[:n]
-        # give up
-        return x[-1] #XXX: or fail by throwing Error?
+        # give up #XXX: or fail with Error?
+        return x[-1] if onfail is None else onfail(x[-1][:])
     cf = lambda x: _constraint(x)
     cfdoc = "\n-- AND --\n".join(c.__doc__ for c in constraints if c.__doc__)
     cfdoc = '{ '+ cfdoc +' }' if cfdoc else cfdoc #XXX: can be {c} w/no AND
@@ -570,6 +580,8 @@ Inputs:
 
 Additional Inputs:
     maxiter -- maximum number of iterations to attempt to solve [default: 100]
+    onexit -- function x' = f(x) to call on success [default: None]
+    onfail -- function x' = f(x) to call on failure [default: None]
 
 NOTE: 
     If a repeating cycle is detected, some of the inputs may be randomized.
@@ -580,33 +592,41 @@ NOTE:
     if 'maxiter' in settings:
         maxiter = settings['maxiter'] * n; del settings['maxiter']
     else: maxiter = 100 * n
+    if 'onexit' in settings:
+        onexit = settings['onexit']; del settings['onexit']
+    else: onexit = None
+    if 'onfail' in settings:
+        onfail = settings['onfail']; del settings['onfail']
+    else: onfail = None
     def _constraint(x): #XXX: inefficient, rewrite without append
-        x = [x.tolist() if hasattr(x, 'tolist') else x]
+        x = [x.tolist() if hasattr(x, 'tolist') else x[:]]
         # check if initial input is valid
         e = None
         for c in constraints:
             try:
-                ci = c(x[0])
+                ci = c(x[0][:])
             except ZeroDivisionError as e:
-                ci = x[0] #XXX: do something else?
+                ci = x[0][:] #XXX: do something else?
             x.append(ci.tolist() if hasattr(ci, 'tolist') else ci)
-            if x[-1] == x[0] and e is None: return x[-1]
+            if x[-1] == x[0] and e is None:
+                return x[-1] if onexit is None else onexit(x[-1][:])
         # cycle constraints until there's no change
         _constraints = it.cycle(constraints) 
         for j in range(n,maxiter):
             e = None
             try:
-                ci = next(_constraints)(x[-n])
+                ci = next(_constraints)(x[-n][:])
             except ZeroDivisionError as e:
-                ci = x[-n] #XXX: do something else?
+                ci = x[-n][:] #XXX: do something else?
             x.append(ci.tolist() if hasattr(ci, 'tolist') else ci)
-            if x[-1] == x[-(n+1)] and e is None: return x[-1]
+            if x[-1] == x[-(n+1)] and e is None:
+                return x[-1] if onexit is None else onexit(x[-1][:])
             else: # may be trapped in a rut... randomize
                 x[-1] = x[-rnd.randint(1,n)]
             if not j%(2*n):
                 del x[:n]
-        # give up
-        return x[-1] #XXX: or fail by throwing Error?
+        # give up #XXX: or fail with Error?
+        return x[-1] if onfail is None else onfail(x[-1][:])
     cf = lambda x: _constraint(x)
     cfdoc = "\n-- OR --\n".join(c.__doc__ for c in constraints if c.__doc__)
     cfdoc = '[ '+ cfdoc +' ]' if cfdoc else cfdoc #XXX: can be [c] w/no OR
@@ -623,6 +643,8 @@ Inputs:
 
 Additional Inputs:
     maxiter -- maximum number of iterations to attempt to solve [default: 100]
+    onexit -- function x' = f(x) to call on success [default: None]
+    onfail -- function x' = f(x) to call on failure [default: None]
 
 NOTE: 
     If a repeating cycle is detected, some of the inputs may be randomized.
@@ -631,16 +653,23 @@ NOTE:
     if 'maxiter' in settings:
         maxiter = settings['maxiter']; del settings['maxiter']
     else: maxiter = 100
+    if 'onexit' in settings:
+        onexit = settings['onexit']; del settings['onexit']
+    else: onexit = None
+    if 'onfail' in settings:
+        onfail = settings['onfail']; del settings['onfail']
+    else: onfail = None
     def _constraint(x):
         # check if initial input is valid, else randomize and try again
         for j in range(0,maxiter):
             try:
-                if constraint(x) != x: return x
+                if constraint(x[:]) != x:
+                    return x[:] if onexit is None else onexit(x[:])
             except ZeroDivisionError as e:
                 pass #XXX: do something else?
             x = [(i+rnd.randint(-1,1))*rnd.random() for i in x]
-        # give up
-        return x #XXX: or fail by throwing Error?
+        # give up #XXX: or fail with Error?
+        return x[:] if onfail is None else onfail(x[:])
     cf = lambda x: _constraint(x)
     cfdoc = 'NOT( '+ constraint.__doc__ +' )' if constraint.__doc__ else ""
     cf.__doc__ = cfdoc.rstrip('\n')

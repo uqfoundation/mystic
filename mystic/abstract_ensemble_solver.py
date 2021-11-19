@@ -177,8 +177,10 @@ input::
         return
 
     def __get_solver_instance(self, reset=False):
-        """ensure the solver is a solver instance"""
-        #NOTE: if reset=True, reset monitor instances
+        """ensure the solver is a solver instance
+
+input::
+    - reset: if reset is True, reset the monitor instances"""
         solver = self._solver
 
         # if a configured solver is not given, then build one of the given type
@@ -197,7 +199,9 @@ input::
         solver = solver(self.nDim)
         solver.SetRandomInitialPoints() #FIXME: set population; will override
         if self._useStrictRange: #XXX: always, settable, or sync'd ?
-            solver.SetStrictRanges(min=self._strictMin, max=self._strictMax)
+            solver.SetStrictRanges(min=self._strictMin, \
+                                   max=self._strictMax, \
+                                   tight=self._useTightRange)
         if reset:
             solver.SetEvaluationMonitor(self._evalmon[:0], new=True)
             solver.SetGenerationMonitor(self._stepmon[:0], new=True)
@@ -322,7 +326,7 @@ Notes::
 
 Inputs:
     - dist: a mystic.math.Distribution instance
-"""
+        """
         from mystic.math import Distribution
         if dist and Distribution not in dist.__class__.mro():
             dist = Distribution(dist) #XXX: or throw error?
@@ -336,15 +340,18 @@ Inputs:
         raise NotImplementedError("a sampling algorithm was not provided")
 
     def _is_new(self):
-        'determine if solver has been run or not'
+        """determine if solver has been run or not"""
         return not any(self._allSolvers)
 
     def _is_best(self):
-        'get the id of the bestSolver'
+        """get the id of the bestSolver"""
         return getattr(self._bestSolver, 'id', None)
 
     def __init_allSolvers(self, reset=False):
-        'populate NestedSolver state to allSolvers'
+        """populate NestedSolver state to allSolvers
+
+input::
+    - reset: if reset is True, reset the monitor instances"""
         # get the nested solver instance
         solver = self._AbstractEnsembleSolver__get_solver_instance(reset)
 
@@ -360,7 +367,7 @@ Inputs:
         return self._allSolvers
 
     def __update_allSolvers(self, results):
-        'replace allSolvers with solvers found in results'
+        """replace allSolvers with solvers found in results"""
         #NOTE: apparently, monitors internal to the solver don't work as well
         # reconnect monitors; save all solvers
         fcalls = [getattr(s, '_fcalls', [0])[0] for s in self._allSolvers]
@@ -389,7 +396,7 @@ Inputs:
         return
 
     def __update_bestSolver(self):
-        'update _bestSolver from _allSolvers'
+        """update _bestSolver from _allSolvers"""
         if self._bestSolver is None:
             self._bestSolver = self._allSolvers[0]
         bestpath = besteval = None
@@ -404,7 +411,7 @@ Inputs:
         return bestpath, besteval
 
     def __update_state(self):
-        'update solver state from _bestSolver'
+        """update solver state from _bestSolver"""
         bestpath, besteval = self._AbstractEnsembleSolver__update_bestSolver()
         if bestpath is besteval is None: return
 
@@ -509,15 +516,32 @@ Input::
             return self._bestSolver.Collapsed(disp, info)
         return super(AbstractEnsembleSolver, self).Collapsed(disp, info)
 
-    def Collapse(self, disp=False): #TODO
+    def Collapse(self, disp=False): #FIXME #TODO
         """if solver has terminated by collapse, apply the collapse
         (unless both collapse and "stop" are simultaneously satisfied)
+
+input::
+    - disp: if True, print details about the solver state at collapse
+
+note::
+    updates the solver's termination conditions and constraints
         """
         return False
 
     def _Step(self, cost=None, ExtraArgs=None, **kwds):
         """perform a single optimization iteration
-        Note that ExtraArgs should be a *tuple* of extra arguments"""
+
+input::
+    - cost is the objective function, of the form y = cost(x, *ExtraArgs),
+      where x is a candidate solution, and ExtraArgs is the tuple of positional
+      arguments required to evaluate the objective.
+
+note::
+    ExtraArgs needs to be a *tuple* of extra arguments.
+
+    This method accepts additional args that are specific for the current
+    solver, as detailed in the `_process_inputs` method.
+        """
         # process and activate input settings
         kwds['step'] = True  #XXX: once Step is taken, step=True thereafter
         settings = self._process_inputs(kwds)
@@ -543,7 +567,9 @@ Input::
             if x0 is not None:
                 solver.SetInitialPoints(x0)
                 if solver._useStrictRange: #XXX: always, settable, or sync'd ?
-                    solver.SetStrictRanges(solver._strictMin,solver._strictMax)
+                    solver.SetStrictRanges(solver._strictMin, \
+                                           solver._strictMax, \
+                                           tight=solver._useTightRange)
             _term = (solver._live is False) and solver.Terminated()
             if _term is True: solver._live = True #XXX: HACK don't reset _fcalls
             solver.Step(cost,ExtraArgs=ExtraArgs,disp=disp,callback=callback)
@@ -576,7 +602,27 @@ Input::
         return
 
     def _process_inputs(self, kwds):
-        """process and activate input settings"""
+        """process and activate input settings
+
+Args:
+    callback (func, default=None): function to call after each iteration. The
+        interface is ``callback(xk)``, with xk the current parameter vector.
+    disp (bool, default=False): if True, print convergence messages.
+
+Additional Args:
+    EvaluationMonitor: a monitor instance to capture each evaluation of cost.
+    StepMonitor: a monitor instance to capture each iteration's best results.
+    penalty: a function of the form: y' = penalty(xk), with y = cost(xk) + y',
+        where xk is the current parameter vector.
+    constraints: a function of the form: xk' = constraints(xk), where xk is
+        the current parameter vector.
+    step (bool, default=False): if True, enable Step within the ensemble.
+
+Note:
+   The additional args are 'sticky', in that once they are given, they remain
+   set until they are explicitly changed. Conversely, the args are not sticky,
+   and are thus set for a one-time use.
+        """
         #allow for inputs that don't conform to AbstractSolver interface
         #NOTE: not sticky: callback, disp
         #NOTE: sticky: EvaluationMonitor, StepMonitor, penalty, constraints
@@ -598,6 +644,13 @@ Args:
 
 Returns:
     None
+
+Note:
+    Optimizer settings for ensemble solvers include the `step` keyword,
+    which enables the Step menthod within the ensemble. By default, ensemble
+    solvers run to completion (i.e. Solve), for efficiency. Using `Step`
+    enables the ensemble to communicate state between members of the ensemble
+    at each iteration.
         """
         #FIXME: 'step' is undocumented (in Solve)
         #NOTE: if Step once, will ensure always uses step=True, unless...
@@ -634,7 +687,9 @@ Returns:
             if x0 is not None:
                 solver.SetInitialPoints(x0)
                 if solver._useStrictRange: #XXX: always, settable, or sync'd ?
-                    solver.SetStrictRanges(solver._strictMin,solver._strictMax)
+                    solver.SetStrictRanges(solver._strictMin, \
+                                           solver._strictMax, \
+                                           tight=solver._useTightRange)
             _term = (solver._live is False) and solver.Terminated()
             if _term is True: solver._live = True #XXX: HACK don't reset _fcalls
             if solver._cost[1] is None: #XXX: HACK for configured NestedSolver

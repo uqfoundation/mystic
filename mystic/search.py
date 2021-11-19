@@ -142,6 +142,7 @@ class Searcher(object):
         evalmon = kwds.get('evalmon', None)
         penalty = kwds.get('penalty', None)
         constraints = kwds.get('constraints', None)
+        tight = kwds.get('tight', None)
 
         from mystic.monitors import Monitor
         # configure monitor
@@ -161,7 +162,7 @@ class Searcher(object):
         if stop: self.solver.SetTermination(stop)
         if evalmon is not None: self.solver.SetEvaluationMonitor(evalmon)
         if monitor is not None: self.solver.SetGenerationMonitor(monitor) #NOTE: may be xy,-z
-        self.solver.SetStrictRanges(min=_min, max=_max)
+        self.solver.SetStrictRanges(min=_min, max=_max, tight=tight)
         return
 
     def _solve(self, id=None, disp=None):
@@ -220,6 +221,7 @@ class Searcher(object):
           evalmon - mystic.monitor instance to store parameter evaluations
           penalty - mystic.penalty instance of the form y' = k*p(x)
           constraints - mystic.constraints instance of the form x' = c(x)
+          tight - if True, enforce bounds and constraints concurrently
         """
         self.traj = self.traj if traj is None else traj
         self.disp = self.disp if disp is None else disp

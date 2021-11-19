@@ -1410,8 +1410,8 @@ Returns:
     a ``mystic.penalty`` function built from the given constraints
 
 Notes:
-    If ``join=None``, then apply the given penalty constraints iteratively.
-    Otherwise, couple the penalty constraints with the selected coupler.
+    If ``join=None``, then apply the given penalty constraints sequentially.
+    Otherwise, apply the penalty constraints concurrently using a coupler.
 
 Examples:
     >>> constraints = '''
@@ -1488,8 +1488,8 @@ Returns:
     a ``mystic.constaints`` function built from the given constraints
 
 Notes:
-    If ``join=None``, then apply the given constraints iteratively. Otherwise,
-    couple the constraints with the selected coupler.
+    If ``join=None``, then apply the given constraints sequentially.
+    Otherwise, apply the constraints concurrently using a constraints coupler.
 
 Warning:
     This constraint generator doesn't check for conflicts in conditions, but

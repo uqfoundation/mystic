@@ -123,6 +123,8 @@ The size of the simplex is dim+1.
 
     def _setSimplexWithinRangeBoundary(self, radius=None):
         """ensure that initial simplex is set within bounds
+
+Input::
     - radius: size of the initial simplex [default=0.05]"""
         x0 = self.population[0]
         #code modified from park-1.2/park/simplex.py (version 1257)
@@ -163,11 +165,25 @@ The size of the simplex is dim+1.
         return val
 
     def _SetEvaluationLimits(self, iterscale=200, evalscale=200):
+        """set the evaluation limits
+
+input::
+    - iterscale and evalscale are integers used to set the maximum iteration
+      and evaluation limits, respectively. The new limit is defined as
+      limit = (nDim * nPop * scale) + count, where count is the number
+      of existing iterations or evaluations, respectively. The default for
+      iterscale is 200, and the default for evalscale is also 200.
+        """
         super(NelderMeadSimplexSolver, self)._SetEvaluationLimits(iterscale,evalscale)
         return
 
     def _decorate_objective(self, cost, ExtraArgs=None):
-        """decorate the cost function with bounds, penalties, monitors, etc"""
+        """decorate the cost function with bounds, penalties, monitors, etc
+
+input::
+    - cost is the objective function, of the form y = cost(x, *ExtraArgs),
+      where x is a candidate solution, and ExtraArgs is the tuple of positional
+      arguments required to evaluate the objective."""
         #print("@%r %r %r" % (cost, ExtraArgs, max))
         evalmon = self._evalmon
         raw = cost
@@ -181,9 +197,12 @@ The size of the simplex is dim+1.
                     self.population[i+1][i] = j
             else:
                 self.population[0] = self._clipGuessWithinRangeBoundary(self.population[0])
-            cost = wrap_bounds(cost, self._strictMin, self._strictMax)
+            cost = wrap_bounds(cost, self._strictMin, self._strictMax) #XXX: remove?
+            from mystic.constraints import and_
+            constraints = and_(self._constraints, self._strictbounds, onfail=self._strictbounds)
+        else: constraints = self._constraints
         cost = wrap_penalty(cost, self._penalty)
-        cost = wrap_nested(cost, self._constraints)
+        cost = wrap_nested(cost, constraints)
         if self._reducer:
            #cost = reduced(*self._reducer)(cost) # was self._reducer = (f,bool)
             cost = reduced(self._reducer, arraylike=True)(cost)
@@ -194,7 +213,18 @@ The size of the simplex is dim+1.
 
     def _Step(self, cost=None, ExtraArgs=None, **kwds):
         """perform a single optimization iteration
-        Note that ExtraArgs should be a *tuple* of extra arguments"""
+
+input::
+    - cost is the objective function, of the form y = cost(x, *ExtraArgs),
+      where x is a candidate solution, and ExtraArgs is the tuple of positional
+      arguments required to evaluate the objective.
+
+note::
+    ExtraArgs needs to be a *tuple* of extra arguments.
+
+    This method accepts additional args that are specific for the current
+    solver, as detailed in the `_process_inputs` method.
+        """
         # process and activate input settings
         settings = self._process_inputs(kwds)
         #(hardwired: due to python3.x exec'ing to locals())
@@ -205,6 +235,11 @@ The size of the simplex is dim+1.
 
         # HACK to enable not explicitly calling _decorate_objective
         cost = self._bootstrap_objective(cost, ExtraArgs)
+
+        if self._useStrictRange: #XXX: necessary? or handled by wrap_nested?
+            from mystic.constraints import and_
+            constraints = and_(self._constraints, self._strictbounds, onfail=self._strictbounds)
+        else: constraints = self._constraints
 
         if adaptive:
             dim = float(len(self.population[0])) # dimensionality of x0
@@ -217,7 +252,7 @@ The size of the simplex is dim+1.
             init = True
             x0 = self.population[0]
             x0 = asfarray(x0).flatten()
-            x0 = asfarray(self._constraints(x0))
+            x0 = asfarray(constraints(x0))
             #####XXX: this blows away __init__, so replace __init__ with this?
             N = len(x0)
             rank = len(x0.shape)
@@ -255,7 +290,7 @@ The size of the simplex is dim+1.
             one2np1 = range(1,N+1)
 
             # apply constraints  #XXX: is this the only appropriate place???
-            sim[0] = asfarray(self._constraints(sim[0]))
+            sim[0] = asfarray(constraints(sim[0]))
 
             xbar = numpy.add.reduce(sim[:-1],0) / N
             xr = (1+rho)*xbar - rho*sim[-1]
@@ -321,7 +356,29 @@ The size of the simplex is dim+1.
         return #XXX: call Terminated ?
 
     def _process_inputs(self, kwds):
-        """process and activate input settings"""
+        """process and activate input settings
+
+Args:
+    callback (func, default=None): function to call after each iteration. The
+        interface is ``callback(xk)``, with xk the current parameter vector.
+    disp (bool, default=False): if True, print convergence messages.
+
+Additional Args:
+    EvaluationMonitor: a monitor instance to capture each evaluation of cost.
+    StepMonitor: a monitor instance to capture each iteration's best results.
+    penalty: a function of the form: y' = penalty(xk), with y = cost(xk) + y',
+        where xk is the current parameter vector.
+    constraints: a function of the form: xk' = constraints(xk), where xk is
+        the current parameter vector.
+    radius (float, default=0.05): percentage change for initial simplex values.
+    adaptive (bool, default=False): adapt algorithm parameters to the
+        dimensionality of the initial parameter vector ``x``.
+
+Note:
+   The additional args are 'sticky', in that once they are given, they remain
+   set until they are explicitly changed. Conversely, the args are not sticky,
+   and are thus set for a one-time use.
+        """
         #allow for inputs that don't conform to AbstractSolver interface
         #NOTE: not sticky: callback, disp
         #NOTE: sticky: EvaluationMonitor, StepMonitor, penalty, constraints
@@ -403,6 +460,7 @@ Args:
     penalty (func, default=None): a function ``y = penalty(xk)``, where xk is
         the current parameter vector, and ``y' == 0`` when the encoded
         constraints are satisfied (and ``y' > 0`` otherwise).
+    tight (bool, default=False): enforce bounds and constraints concurrently.
 
 Returns:
     ``(xopt, {fopt, iter, funcalls, warnflag}, {allvecs})``
@@ -440,7 +498,8 @@ Notes:
         solver.SetConstraints(kwds['constraints'])
     if bounds is not None:
         minb,maxb = unpair(bounds)
-        solver.SetStrictRanges(minb,maxb)
+        tight = kwds['tight'] if 'tight' in kwds else False
+        solver.SetStrictRanges(minb,maxb,tight=tight) # clip?
 
     if handler: solver.enable_signal_handler()
     solver.Solve(cost, termination=termination, \
@@ -515,12 +574,32 @@ Takes one initial input:
         return max(0,len(self.energy_history)-1)  #XXX: slower for k=-1 ?
 
     def _SetEvaluationLimits(self, iterscale=1000, evalscale=1000):
+        """set the evaluation limits
+
+input::
+    - iterscale and evalscale are integers used to set the maximum iteration
+      and evaluation limits, respectively. The new limit is defined as
+      limit = (nDim * nPop * scale) + count, where count is the number
+      of existing iterations or evaluations, respectively. The default for
+      iterscale is 1000, and the default for evalscale is also 1000.
+        """
         super(PowellDirectionalSolver, self)._SetEvaluationLimits(iterscale,evalscale)
         return
 
     def _Step(self, cost=None, ExtraArgs=None, **kwds):
         """perform a single optimization iteration
-        Note that ExtraArgs should be a *tuple* of extra arguments"""
+
+input::
+    - cost is the objective function, of the form y = cost(x, *ExtraArgs),
+      where x is a candidate solution, and ExtraArgs is the tuple of positional
+      arguments required to evaluate the objective.
+
+note::
+    ExtraArgs needs to be a *tuple* of extra arguments.
+
+    This method accepts additional args that are specific for the current
+    solver, as detailed in the `_process_inputs` method.
+        """
         # process and activate input settings
         settings = self._process_inputs(kwds)
         #(hardwired: due to python3.x exec'ing to locals())
@@ -532,6 +611,11 @@ Takes one initial input:
         # HACK to enable not explicitly calling _decorate_objective
         cost = self._bootstrap_objective(cost, ExtraArgs)
 
+        if self._useStrictRange: #XXX: necessary? or handled by wrap_nested?
+            from mystic.constraints import and_
+            constraints = and_(self._constraints, self._strictbounds, onfail=self._strictbounds)
+        else: constraints = self._constraints
+
         direc = self._direc #XXX: throws Error if direc=None after generation=0
         x = self.population[0]   # bestSolution
         fval = self.popEnergy[0] # bestEnergy
@@ -541,7 +625,7 @@ Takes one initial input:
         if not len(self._stepmon): # do generation = 0
             init = True
             x = asfarray(x).flatten()
-            x = asfarray(self._constraints(x))
+            x = asfarray(constraints(x))
             N = len(x) #XXX: this should be equal to self.nDim
             rank = len(x.shape)
             if not -1 < rank < 2:
@@ -573,7 +657,7 @@ Takes one initial input:
                     bigind = i
 
                 # apply constraints
-                x = asfarray(self._constraints(x)) #XXX: use self._map?
+                x = asfarray(constraints(x)) #XXX: use self._map?
             # decouple from 'best' energy
             self.energy_history = self.energy_history + [fval]
 
@@ -595,7 +679,7 @@ Takes one initial input:
                     direc[bigind] = direc[-1]
                     direc[-1] = direc1
 
-           #        x = asfarray(self._constraints(x))
+           #        x = asfarray(constraints(x))
 
             self._direc = direc
             self.population[0] = x   # bestSolution
@@ -618,7 +702,7 @@ Takes one initial input:
                     bigind = i
 
                 # apply constraints
-                x = asfarray(self._constraints(x)) #XXX: use self._map?
+                x = asfarray(constraints(x)) #XXX: use self._map?
 
             # decouple from 'best' energy
             self.energy_history = self.energy_history + [fval]
@@ -634,7 +718,7 @@ Takes one initial input:
         if init: self._termination(self) #XXX: at generation 0 or always?
         return #XXX: call Terminated ?
 
-    def Finalize(self, **kwds):
+    def Finalize(self):
         """cleanup upon exiting the main optimization loop"""
         if self.energy_history != None and self._live:
             self.energy_history = None # resync with 'best' energy
@@ -645,7 +729,29 @@ Takes one initial input:
         return
 
     def _process_inputs(self, kwds):
-        """process and activate input settings"""
+        """process and activate input settings
+
+Args:
+    callback (func, default=None): function to call after each iteration. The
+        interface is ``callback(xk)``, with xk the current parameter vector.
+    disp (bool, default=False): if True, print convergence messages.
+
+Additional Args:
+    EvaluationMonitor: a monitor instance to capture each evaluation of cost.
+    StepMonitor: a monitor instance to capture each iteration's best results.
+    penalty: a function of the form: y' = penalty(xk), with y = cost(xk) + y',
+        where xk is the current parameter vector.
+    constraints: a function of the form: xk' = constraints(xk), where xk is
+        the current parameter vector.
+    direc (tuple, default=None): the initial direction set.
+    xtol (float, default=1e-4): line-search error tolerance.
+    imax (float, default=500): line-search maximum iterations.
+
+Note:
+   The additional args are 'sticky', in that once they are given, they remain
+   set until they are explicitly changed. Conversely, the args are not sticky,
+   and are thus set for a one-time use.
+        """
         #allow for inputs that don't conform to AbstractSolver interface
         #NOTE: not sticky: callback, disp
         #NOTE: sticky: EvaluationMonitor, StepMonitor, penalty, constraints
@@ -739,6 +845,7 @@ Args:
     penalty (func, default=None): a function ``y = penalty(xk)``, where xk is
         the current parameter vector, and ``y' == 0`` when the encoded
         constraints are satisfied (and ``y' > 0`` otherwise).
+    tight (bool, default=False): enforce bounds and constraints concurrently.
 
 Returns:
     ``(xopt, {fopt, iter, funcalls, warnflag, direc}, {allvecs})``
@@ -784,7 +891,8 @@ Notes:
         solver.SetConstraints(kwds['constraints'])
     if bounds is not None:
         minb,maxb = unpair(bounds)
-        solver.SetStrictRanges(minb,maxb)
+        tight = kwds['tight'] if 'tight' in kwds else False
+        solver.SetStrictRanges(minb,maxb,tight=tight) # clip?
 
     if handler: solver.enable_signal_handler()
     solver.Solve(cost, termination=termination, \

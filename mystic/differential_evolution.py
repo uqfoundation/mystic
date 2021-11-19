@@ -192,9 +192,11 @@ All important class members are inherited from AbstractSolver.
 #       return
 
     def UpdateGenealogyRecords(self, id, newchild):
-        """
-Override me for more refined behavior. Currently all changes
-are logged.
+        """create an in-memory log of the genealogy of the population
+
+Input::
+    - id: (int) the index of the candidate in the population matrix
+    - newchild: (list[float]) a new trialSolution
         """
         self.genealogy[id].append(newchild)
         return
@@ -216,7 +218,12 @@ input::
         return # doesn't use wrap_nested
 
     def _decorate_objective(self, cost, ExtraArgs=None):
-        """decorate cost function with bounds, penalties, monitors, etc"""
+        """decorate the cost function with bounds, penalties, monitors, etc
+
+input::
+    - cost is the objective function, of the form y = cost(x, *ExtraArgs),
+      where x is a candidate solution, and ExtraArgs is the tuple of positional
+      arguments required to evaluate the objective."""
         #print("@%r %r %r" % (cost, ExtraArgs, max))
         evalmon = self._evalmon
         raw = cost
@@ -227,7 +234,7 @@ input::
             ngen = self.generations #XXX: no random if generations=0 ?
             for i in range(self.nPop):
                 self.population[i] = self._clipGuessWithinRangeBoundary(self.population[i], (not ngen) or (i is indx))
-            cost = wrap_bounds(cost, self._strictMin, self._strictMax)
+            cost = wrap_bounds(cost, self._strictMin, self._strictMax) #XXX: remove?
         cost = wrap_penalty(cost, self._penalty)
         if self._reducer:
            #cost = reduced(*self._reducer)(cost) # was self._reducer = (f,bool)
@@ -239,7 +246,18 @@ input::
 
     def _Step(self, cost=None, ExtraArgs=None, **kwds):
         """perform a single optimization iteration
-        Note that ExtraArgs should be a *tuple* of extra arguments"""
+
+input::
+    - cost is the objective function, of the form y = cost(x, *ExtraArgs),
+      where x is a candidate solution, and ExtraArgs is the tuple of positional
+      arguments required to evaluate the objective.
+
+note::
+    ExtraArgs needs to be a *tuple* of extra arguments.
+
+    This method accepts additional args that are specific for the current
+    solver, as detailed in the `_process_inputs` method.
+        """
         # process and activate input settings
         settings = self._process_inputs(kwds)
         #(hardwired: due to python3.x exec'ing to locals())
@@ -262,6 +280,11 @@ input::
             self.bestEnergy = self.popEnergy[0]
             del bs
 
+        if self._useStrictRange:
+            from mystic.constraints import and_
+            constraints = and_(self._constraints, self._strictbounds, onfail=self._strictbounds)
+        else: constraints = self._constraints
+
         for candidate in range(self.nPop):
             if not len(self._stepmon):
                 # generate trialSolution (within valid range)
@@ -270,7 +293,7 @@ input::
                 # generate trialSolution (within valid range)
                 strategy(self, candidate)
             # apply constraints
-            self.trialSolution[:] = self._constraints(self.trialSolution)
+            self.trialSolution[:] = constraints(self.trialSolution)
             # apply penalty
            #trialEnergy = self._penalty(self.trialSolution)
             # calculate cost
@@ -304,7 +327,31 @@ input::
         return #XXX: call Terminated ?
 
     def _process_inputs(self, kwds):
-        """process and activate input settings"""
+        """process and activate input settings
+
+Args:
+    callback (func, default=None): function to call after each iteration. The
+        interface is ``callback(xk)``, with xk the current parameter vector.
+    disp (bool, default=False): if True, print convergence messages.
+
+Additional Args:
+    EvaluationMonitor: a monitor instance to capture each evaluation of cost.
+    StepMonitor: a monitor instance to capture each iteration's best results.
+    penalty: a function of the form: y' = penalty(xk), with y = cost(xk) + y',
+        where xk is the current parameter vector.
+    constraints: a function of the form: xk' = constraints(xk), where xk is
+        the current parameter vector.
+    strategy (strategy, default=Best1Bin): the mutation strategy for generating        new trial solutions.
+    CrossProbability (float, default=0.9): the probability of cross-parameter
+        mutations.
+    ScalingFactor (float, default=0.8): multiplier for mutations on the trial
+        solution.
+
+Note:
+   The additional args are 'sticky', in that once they are given, they remain
+   set until they are explicitly changed. Conversely, the args are not sticky,
+   and are thus set for a one-time use.
+        """
         #allow for inputs that don't conform to AbstractSolver interface
         #NOTE: not sticky: callback, disp
         #NOTE: sticky: EvaluationMonitor, StepMonitor, penalty, constraints
@@ -381,9 +428,11 @@ All important class members are inherited from AbstractSolver.
         self._termination = VTRChangeOverGeneration(ftol)
         
     def UpdateGenealogyRecords(self, id, newchild):
-        """
-Override me for more refined behavior. Currently all changes
-are logged.
+        """create an in-memory log of the genealogy of the population
+
+Input::
+    - id: (int) the index of the candidate in the population matrix
+    - newchild: (list[float]) a new trialSolution
         """
         self.genealogy[id].append(newchild)
         return
@@ -405,7 +454,12 @@ input::
         return # doesn't use wrap_nested
 
     def _decorate_objective(self, cost, ExtraArgs=None):
-        """decorate cost function with bounds, penalties, monitors, etc"""
+        """decorate the cost function with bounds, penalties, monitors, etc
+
+input::
+    - cost is the objective function, of the form y = cost(x, *ExtraArgs),
+      where x is a candidate solution, and ExtraArgs is the tuple of positional
+      arguments required to evaluate the objective."""
         #print("@%r %r %r" % (cost, ExtraArgs, max))
         raw = cost
         if ExtraArgs is None: ExtraArgs = ()
@@ -421,7 +475,7 @@ input::
             ngen = self.generations #XXX: no random if generations=0 ?
             for i in range(self.nPop):
                 self.population[i] = self._clipGuessWithinRangeBoundary(self.population[i], (not ngen) or (i is indx))
-            cost = wrap_bounds(cost, self._strictMin, self._strictMax)
+            cost = wrap_bounds(cost, self._strictMin, self._strictMax) #XXX: remove?
         cost = wrap_penalty(cost, self._penalty)
         if self._reducer:
            #cost = reduced(*self._reducer)(cost) # was self._reducer = (f,bool)
@@ -433,7 +487,18 @@ input::
 
     def _Step(self, cost=None, ExtraArgs=None, **kwds):
         """perform a single optimization iteration
-        Note that ExtraArgs should be a *tuple* of extra arguments"""
+
+input::
+    - cost is the objective function, of the form y = cost(x, *ExtraArgs),
+      where x is a candidate solution, and ExtraArgs is the tuple of positional
+      arguments required to evaluate the objective.
+
+note::
+    ExtraArgs needs to be a *tuple* of extra arguments.
+
+    This method accepts additional args that are specific for the current
+    solver, as detailed in the `_process_inputs` method.
+        """
         # process and activate input settings
         settings = self._process_inputs(kwds)
         #(hardwired: due to python3.x exec'ing to locals())
@@ -456,6 +521,11 @@ input::
             self.bestEnergy = self.popEnergy[0]
             del bs
 
+        if self._useStrictRange:
+            from mystic.constraints import and_
+            constraints = and_(self._constraints, self._strictbounds, onfail=self._strictbounds)
+        else: constraints = self._constraints
+
         for candidate in range(self.nPop):
             if not len(self._stepmon):
                 # generate trialSolution (within valid range)
@@ -464,9 +534,9 @@ input::
                 # generate trialSolution (within valid range)
                 strategy(self, candidate)
             # apply constraints
-            self.trialSolution[candidate][:] = self._constraints(self.trialSolution[candidate])
+            self.trialSolution[candidate][:] = constraints(self.trialSolution[candidate])
         # bind constraints to cost #XXX: apparently imposes constraints poorly
-       #concost = wrap_nested(cost, self._constraints)
+       #concost = wrap_nested(cost, constraints)
 
         # apply penalty
        #trialEnergy = map(self._penalty, self.trialSolution)#,**self._mapconfig)
@@ -504,7 +574,31 @@ input::
         return #XXX: call Terminated ?
 
     def _process_inputs(self, kwds):
-        """process and activate input settings"""
+        """process and activate input settings
+
+Args:
+    callback (func, default=None): function to call after each iteration. The
+        interface is ``callback(xk)``, with xk the current parameter vector.
+    disp (bool, default=False): if True, print convergence messages.
+
+Additional Args:
+    EvaluationMonitor: a monitor instance to capture each evaluation of cost.
+    StepMonitor: a monitor instance to capture each iteration's best results.
+    penalty: a function of the form: y' = penalty(xk), with y = cost(xk) + y',
+        where xk is the current parameter vector.
+    constraints: a function of the form: xk' = constraints(xk), where xk is
+        the current parameter vector.
+    strategy (strategy, default=Best1Bin): the mutation strategy for generating        new trial solutions.
+    CrossProbability (float, default=0.9): the probability of cross-parameter
+        mutations.
+    ScalingFactor (float, default=0.8): multiplier for mutations on the trial
+        solution.
+
+Note:
+   The additional args are 'sticky', in that once they are given, they remain
+   set until they are explicitly changed. Conversely, the args are not sticky,
+   and are thus set for a one-time use.
+        """
         #allow for inputs that don't conform to AbstractSolver interface
         #NOTE: not sticky: callback, disp
         #NOTE: sticky: EvaluationMonitor, StepMonitor, penalty, constraints
@@ -592,6 +686,7 @@ Args:
     penalty (func, default=None): a function ``y = penalty(xk)``, where xk is
         the current parameter vector, and ``y' == 0`` when the encoded
         constraints are satisfied (and ``y' > 0`` otherwise).
+    tight (bool, default=False): enforce bounds and constraints concurrently.
     map (func, default=None): a (parallel) map function ``y = map(f, x)``.
 
 Returns:
@@ -654,6 +749,7 @@ Args:
     penalty (func, default=None): a function ``y = penalty(xk)``, where xk is
         the current parameter vector, and ``y' == 0`` when the encoded
         constraints are satisfied (and ``y' > 0`` otherwise).
+    tight (bool, default=False): enforce bounds and constraints concurrently.
     map (func, default=None): a (parallel) map function ``y = map(f, x)``.
 
 Returns:
@@ -699,7 +795,8 @@ Notes:
         solver.SetConstraints(kwds['constraints'])
     if bounds is not None:
         minb,maxb = unpair(bounds)
-        solver.SetStrictRanges(minb,maxb)
+        tight = kwds['tight'] if 'tight' in kwds else False
+        solver.SetStrictRanges(minb,maxb,tight=tight) # clip?
 
     try: #x0 passed as 1D array of (min,max) pairs
         minb,maxb = unpair(x0)

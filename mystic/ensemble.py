@@ -183,9 +183,11 @@ Args:
     penalty (func, default=None): a function ``y = penalty(xk)``, where xk is
         the current parameter vector, and ``y' == 0`` when the encoded
         constraints are satisfied (and ``y' > 0`` otherwise).
+    tight (bool, default=False): enforce bounds and constraints concurrently.
     map (func, default=None): a (parallel) map function ``y = map(f, x)``.
     dist (mystic.math.Distribution, default=None): generate randomness in
         ensemble starting position using the given distribution.
+    step (bool, default=False): if True, enable Step within the ensemble.
 
 Returns:
     ``(xopt, {fopt, iter, funcalls, warnflag, allfuncalls}, {allvecs})``
@@ -231,7 +233,8 @@ Notes:
         solver.SetConstraints(kwds['constraints'])
     if bounds is not None:
         minb,maxb = unpair(bounds)
-        solver.SetStrictRanges(minb,maxb)
+        tight = kwds['tight'] if 'tight' in kwds else False
+        solver.SetStrictRanges(minb,maxb,tight=tight) # clip?
 
     _map = kwds['map'] if 'map' in kwds else None
     if _map: solver.SetMapper(_map)
@@ -305,9 +308,11 @@ Args:
     penalty (func, default=None): a function ``y = penalty(xk)``, where xk is
         the current parameter vector, and ``y' == 0`` when the encoded
         constraints are satisfied (and ``y' > 0`` otherwise).
+    tight (bool, default=False): enforce bounds and constraints concurrently.
     map (func, default=None): a (parallel) map function ``y = map(f, x)``.
     dist (mystic.math.Distribution, default=None): generate randomness in
         ensemble starting position using the given distribution.
+    step (bool, default=False): if True, enable Step within the ensemble.
 
 Returns:
     ``(xopt, {fopt, iter, funcalls, warnflag, allfuncalls}, {allvecs})``
@@ -353,7 +358,8 @@ Notes:
         solver.SetConstraints(kwds['constraints'])
     if bounds is not None:
         minb,maxb = unpair(bounds)
-        solver.SetStrictRanges(minb,maxb)
+        tight = kwds['tight'] if 'tight' in kwds else False
+        solver.SetStrictRanges(minb,maxb,tight=tight) # clip?
 
     _map = kwds['map'] if 'map' in kwds else None
     if _map: solver.SetMapper(_map)
@@ -428,9 +434,11 @@ Args:
     penalty (func, default=None): a function ``y = penalty(xk)``, where xk is
         the current parameter vector, and ``y' == 0`` when the encoded
         constraints are satisfied (and ``y' > 0`` otherwise).
+    tight (bool, default=False): enforce bounds and constraints concurrently.
     map (func, default=None): a (parallel) map function ``y = map(f, x)``.
     dist (mystic.math.Distribution, default=None): generate randomness in
         ensemble starting position using the given distribution.
+    step (bool, default=False): if True, enable Step within the ensemble.
 
 Returns:
     ``(xopt, {fopt, iter, funcalls, warnflag, allfuncalls}, {allvecs})``
@@ -477,7 +485,8 @@ Notes:
         solver.SetConstraints(kwds['constraints'])
     if bounds is not None:
         minb,maxb = unpair(bounds)
-        solver.SetStrictRanges(minb,maxb)
+        tight = kwds['tight'] if 'tight' in kwds else False
+        solver.SetStrictRanges(minb,maxb,tight=tight) # clip?
 
     _map = kwds['map'] if 'map' in kwds else None
     if _map: solver.SetMapper(_map)

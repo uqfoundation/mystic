@@ -141,8 +141,6 @@ Important class members::
     def SelectServers(self, servers, ncpus=None): #XXX: needs some thought...
         """Select the compute server.
 
-Description:
-
     Accepts a tuple of ('hostname:port',), listing each available
     computing server.
 
@@ -163,8 +161,6 @@ Additional inputs:
 
     def SetMapper(self, map, strategy=None): #XXX: use strategy+format ?
         """Set the map function and the mapping strategy.
-
-Description:
 
     Sets a mapping function to perform the map-reduce algorithm.
     Uses a mapping strategy to provide the algorithm for distributing
@@ -191,8 +187,6 @@ Inputs:
     def SetLauncher(self, launcher, nnodes=None): #XXX: use run+scheduler ?
         """Set launcher and (optionally) number of nodes.
 
-Description:
-
     Uses a launcher to provide the solver with the syntax to
     configure and launch optimization jobs on the selected resource.
 
@@ -212,8 +206,6 @@ Additional inputs:
 
     def SelectScheduler(self, scheduler, queue, timelimit=None):
         """Select scheduler and queue (and optionally) timelimit.
-
-Description:
 
     Takes a scheduler function and a string queue name to submit
     the optimization job. Additionally takes string time limit

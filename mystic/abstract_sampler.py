@@ -44,7 +44,7 @@ AbstractSampler base class for optimizer-directed samplers
          npts -- int: number of points to sample the model
 
         NOTE:
-          additional keywords (evalmon, stepmon, maxiter, maxfun, dist,
+          additional keywords (evalmon, stepmon, maxiter, maxfun, dist, tight,
           saveiter, state, termination, constraints, penalty, reducer, solver)
           are available for use. See mystic.ensemble for more details.
         """
@@ -61,7 +61,7 @@ AbstractSampler base class for optimizer-directed samplers
         self._kwds.update(kwds)
 
         s = self._init_solver()
-        s.SetStrictRanges(*zip(*bounds))
+        s.SetStrictRanges(*zip(*bounds), tight=self._kwds['tight'])
         #s.SetObjective(memo) #model) #XXX: ExtraArgs: axis ???
         s.SetObjective(model) #FIXME: ensure cached model
 
