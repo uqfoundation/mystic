@@ -400,7 +400,6 @@ note::
 
         symbolic: bool, if True, use symbolic constraints [default: None]
         clip: bool, if True, clip exterior values to the bounds [default: None]
-        nearest: bool, if True, clip to the nearest bound [default: None]
 
         NOTE: By default, the bounds and constraints are imposed sequentially
         with a coupler. Using a coupler chooses speed over robustness, and
@@ -412,50 +411,33 @@ note::
         constraints are imposed concurrently. This is slower but more robust
         than applying the bounds and constraints sequentially (the default).
         When the bounds and constraints are applied concurrently, the defaults
-        for the keywords (symbolic, clip, and nearest) are set to True, unless
-        otherwise specified.
+        for the keywords (symbolic and clip) are set to True, unless otherwise
+        specified.
 
         NOTE: If `symbolic=True`, use symbolic constraints to impose the
         bounds; otherwise use `mystic.constraints.impose_bounds`. Using
-        `clip=False` or `nearest=False` will set `symbolic=False` unless
-        symbolic is specified otherwise.
+        `clip=False` will set `symbolic=False` unless symbolic is specified
+        otherwise.
         """
         symbolic = kwds['symbolic'] if 'symbolic' in kwds else None
         clip = kwds['clip'] if 'clip' in kwds else None
-        near = kwds['nearest'] if 'nearest' in kwds else None
         # set the (complicated) defaults
-        if symbolic is None:
-            if clip is None and near is None:
-                pass
-            elif clip is None: # near in [False, True]
-                clip = True
-                symbolic = bool(near)
-            elif near is None: # clip in [False, True]
-                near = True
-                symbolic = bool(clip)
-        else:
-            if clip is None:
-                clip = True
-            if near is None:
-                near = True
+        if symbolic is None and clip is not None: # clip in [False, True]
+            symbolic = bool(clip)
+        elif clip is None:
+            clip = True
         ignore = symbolic is None
         if not self._useStrictRange or ignore:
             self._useTightRange = False
             return lambda x: x
         self._useTightRange = True
-        if symbolic and not (clip and near):
+        if symbolic and not clip:
             raise NotImplementedError("symbolic must clip to the nearest bound")
         # build the constraint
         min = self._strictMin
         max = self._strictMax
-        if not symbolic: #XXX: much slower than symbolic
-            from mystic.constraints import impose_bounds
-            cons = dict((i,j) for (i,j) in enumerate(zip(min, max)))
-            cons = impose_bounds(cons, clip=clip, nearest=near)(lambda x: x)
-            return cons
-        import mystic.symbolic as ms #XXX: randomness due to sympy?
-        cons = ms.symbolic_bounds(min, max) #XXX: how clipping with symbolic?
-        cons = ms.generate_constraint(ms.generate_solvers(ms.simplify(cons))) #XXX: join=and_?
+        from mystic.constraints import boundsconstrain as bcon
+        cons = bcon(min, max, symbolic=symbolic, clip=clip)
         return cons
 
     def _clipGuessWithinRangeBoundary(self, x0, at=True):

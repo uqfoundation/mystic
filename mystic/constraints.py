@@ -14,7 +14,7 @@ __all__ = ['with_penalty','with_constraint','as_penalty','as_constraint',
            'issolution','solve','discrete','integers','near_integers',
            'unique','has_unique','impose_unique','bounded','impose_bounds',
            'impose_as','impose_at','impose_measure','impose_position',
-           'impose_weight','and_','or_','not_','vectorize']
+           'impose_weight','and_','or_','not_','vectorize','boundsconstrain']
 
 from mystic.math.measures import *
 from mystic.math import almostEqual
@@ -1122,6 +1122,49 @@ def impose_bounds(bounds, index=None, clip=True, nearest=True):
         func.__doc__ = f.__doc__
         return func
     return dec
+
+
+def boundsconstrain(min, max, **kwds):
+    """build a constraint from the bounds (min,max)
+
+Input:
+    min: list of floats specifying the lower bounds
+    max: list of floats specifying the upper bounds
+
+Additional Input:
+    symbolic: bool, if True, use symbolic constraints [default: True]
+    clip: bool, if True, clip exterior values to the bounds [default: True]
+
+Notes:
+    Prepares a constraint function that imposes the bounds. The intent is
+    so that the bounds and other constraints can be imposed concurrently
+    (e.g. using `mystic.constraints.and_`). This is slower but more robust
+    than applying the bounds sequential with the other constraints (the
+    default for a solver).
+
+    For entries where there is no upper bound, use either `inf` or `None`.
+    Similarly for entries where there is no lower bound. When no upper
+    bound exists for any of the entries, ``max`` should be an iterable
+    with all entries of `inf` or `None`. Again, similarly for lower bounds.
+
+    If `symbolic=True`, use symbolic constraints to impose the bounds;
+    otherwise use `mystic.constraints.impose_bounds`. Using `clip=False`
+    requires `symbolic=False`.
+    """
+    #NOTE: symbolic_bounds doesn't handle non-iterables (min=None or min=0)
+    symbolic = kwds['symbolic'] if 'symbolic' in kwds else True
+    clip = kwds['clip'] if 'clip' in kwds else True
+    if symbolic and not clip:
+        raise NotImplementedError("symbolic must clip to the nearest bound")
+    # build the constraint
+    if not symbolic: #XXX: much slower than symbolic
+        cons = dict((i,j) for (i,j) in enumerate(zip(min, max)))
+        cons = impose_bounds(cons, clip=clip)(lambda x: x)
+        return cons
+    import mystic.symbolic as ms #XXX: randomness due to sympy?
+    cons = ms.symbolic_bounds(min, max) #XXX: how clipping with symbolic?
+    cons = ms.generate_constraint(ms.generate_solvers(ms.simplify(cons))) #join?
+    return cons
 
 
 #XXX: enable near_integers and has_unique on selected members of x?
