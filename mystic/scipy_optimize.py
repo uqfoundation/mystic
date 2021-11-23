@@ -652,7 +652,8 @@ note::
                 direc1 = self._direc[i]
                 fx2 = fval
                 fval, x, direc1 = _linesearch_powell(cost, x, direc1, tol=xtol*100, maxiter=imax)
-                if (fx2 - fval) > delta:
+                isnan = numpy.isinf(fx2) & numpy.isinf(fval)
+                if not isnan and (fx2 - fval) > delta:
                     delta = fx2 - fval
                     bigind = i
 
@@ -697,7 +698,8 @@ note::
                 direc1 = direc[i]
                 fx2 = fval
                 fval, x, direc1 = _linesearch_powell(cost, x, direc1, tol=xtol*100, maxiter=imax)
-                if (fx2 - fval) > delta:
+                isnan = numpy.isinf(fx2) & numpy.isinf(fval)
+                if not isnan and (fx2 - fval) > delta:
                     delta = fx2 - fval
                     bigind = i
 
