@@ -443,10 +443,7 @@ dill_version = '>=0.3.4'
 klepto_version = '>=0.2.1'
 pathos_version = '>=0.2.8'
 pyina_version = '>=0.2.5'
-if sysversion == (3,10) or sysversion == (3,11):
-    cython_version = '>=0.29.22, <0.29.25' #FIXME: TEMP 0.29.25 build fails
-else:
-    cython_version = '>=0.29.22' #XXX: required to build numpy from source
+cython_version = '>=0.29.22' #XXX: required to build numpy from source
 if has_setuptools:
     setup_code += """
       zip_safe=False,

@@ -59,7 +59,7 @@ before_install:
     - if [[ $MATPLOTLIB == "true" ]]; then pip install matplotlib; fi
     - if [[ $SYMPY == "true" ]]; then pip install sympy; fi
     - if [[ $SCIPY == "true" ]]; then pip install scipy; fi
-    - if [[ $CYTHON == "true" ]]; then pip install cython; fi
+    - if [[ $CYTHON == "true" ]]; then pip install "cython<0.29.25"; fi #FIXME
 
 install:
     - python setup.py build && python setup.py install
