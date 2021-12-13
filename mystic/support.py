@@ -828,11 +828,17 @@ Notes:
 
     # correctly bound the first plot.  there must be at least one plot
     import matplotlib.pyplot as plt
-    from mpl_toolkits.mplot3d import Axes3D as _Axes3D
-    from matplotlib.axes import subplot_class_factory
-    Subplot3D = subplot_class_factory(_Axes3D)
     fig = plt.figure()
-    ax1 = Subplot3D(fig, dim1,dim2,1)
+    try:
+        Subplot3D = None
+        ax1 = fig.add_subplot(dim1, dim2, 1, projection='3d')
+        newsubplotcode = "ax = ax{0:d} = fig.add_subplot(dim1,dim2,{0:d}, projection='3d');"
+    except:
+        from mpl_toolkits.mplot3d import Axes3D as _Axes3D
+        from matplotlib.axes import subplot_class_factory
+        Subplot3D = subplot_class_factory(_Axes3D)
+        ax1 = Subplot3D(fig, dim1,dim2,1)
+        newsubplotcode = "ax = ax{0:d} = Subplot3D(fig, dim1,dim2,{0:d});"
     ax1.plot([bounds[0][0]],[bounds[1][0]],[bounds[2][0]])
     ax1.plot([bounds[0][1]],[bounds[1][1]],[bounds[2][1]])
     globals = {'plt':plt,'fig':fig,'dim1':dim1,'dim2':dim2,\
@@ -851,7 +857,7 @@ Notes:
     # set up additional plots
     if not flatten:
         for i in range(2, plots + 1):
-            code = "ax = ax{0:d} = Subplot3D(fig, dim1,dim2,{0:d});".format(i)
+            code = newsubplotcode.format(i)
             code += "ax.plot([bounds[0][0]],[bounds[1][0]],[bounds[2][0]]);"
             code += "ax.plot([bounds[0][1]],[bounds[1][1]],[bounds[2][1]]);"
             code += "plt.title('iterations[{0}]');".format(select[i - 1])
@@ -1177,11 +1183,17 @@ Warning:
 
     # correctly bound the first plot.  there must be at least one plot
     import matplotlib.pyplot as plt
-    from mpl_toolkits.mplot3d import Axes3D as _Axes3D
-    from matplotlib.axes import subplot_class_factory
-    Subplot3D = subplot_class_factory(_Axes3D)
     fig = plt.figure()
-    ax1 = Subplot3D(fig, dim1,dim2,1)
+    try:
+        Subplot3D = None
+        ax1 = fig.add_subplot(dim1, dim2, 1, projection='3d')
+        newsubplotcode = "ax = ax{0:d} = fig.add_subplot(dim1,dim2,{0:d}, projection='3d');"
+    except:
+        from mpl_toolkits.mplot3d import Axes3D as _Axes3D
+        from matplotlib.axes import subplot_class_factory
+        Subplot3D = subplot_class_factory(_Axes3D)
+        ax1 = Subplot3D(fig, dim1,dim2,1)
+        newsubplotcode = "ax = ax{0:d} = Subplot3D(fig, dim1,dim2,{0:d});"
     ax1.plot([bounds[0][0]],[bounds[1][0]],[bounds[2][0]])
     ax1.plot([bounds[0][1]],[bounds[1][1]],[bounds[2][1]])
     globals = {'plt':plt,'fig':fig,'dim1':dim1,'dim2':dim2,\
@@ -1200,7 +1212,7 @@ Warning:
     # set up additional plots
     if not flatten:
         for i in range(2, plots + 1):
-            code = "ax = ax{0:d} = Subplot3D(fig, dim1,dim2,{0:d});".format(i)
+            code = newsubplotcode.format(i)
             code += "ax.plot([bounds[0][0]],[bounds[1][0]],[bounds[2][0]]);"
             code += "ax.plot([bounds[0][1]],[bounds[1][1]],[bounds[2][1]]);"
             code += "plt.title('iterations[{0}]');".format(select[i - 1])
@@ -1647,16 +1659,25 @@ Notes:
 
     # correctly bound the first plot.  there must be at least one plot
     import matplotlib.pyplot as plt
-    from mpl_toolkits.mplot3d import Axes3D as _Axes3D
-    from matplotlib.axes import subplot_class_factory
-    Subplot3D = subplot_class_factory(_Axes3D)
-    fig = plt.figure() 
+    fig = plt.figure()
+    try:
+        Subplot3D = None
+        if _2D:
+            ax1 = fig.add_subplot(dim1, dim2, 1)
+            newsubplotcode = "ax{0:d} = ax = fig.add_subplot(dim1,dim2,{0:d});"
+        else:
+            ax1 = fig.add_subplot(dim1, dim2, 1, projection='3d')
+            newsubplotcode = "ax{0:d} = ax = fig.add_subplot(dim1,dim2,{0:d}, projection='3d');"
+    except:
+        from mpl_toolkits.mplot3d import Axes3D as _Axes3D
+        from matplotlib.axes import subplot_class_factory
+        Subplot3D = subplot_class_factory(_Axes3D)
+        ax1 = Subplot3D(fig, dim1,dim2,1)
+        newsubplotcode = "ax{0:d} = ax = Subplot3D(fig, dim1,dim2,{0:d});"
     if _2D:
-        ax1 = fig.add_subplot(dim1,dim2,1)
         ax1.plot([bounds[0][0]],[bounds[1][0]])
         ax1.plot([bounds[0][1]],[bounds[1][1]])
     else:
-        ax1 = Subplot3D(fig, dim1,dim2,1)
         ax1.plot([bounds[0][0]],[bounds[1][0]],[bounds[2][0]])
         ax1.plot([bounds[0][1]],[bounds[1][1]],[bounds[2][1]])
     globals = {'plt':plt,'fig':fig,'dim1':dim1,'dim2':dim2,\
@@ -1681,12 +1702,11 @@ Notes:
     # set up additional plots
     if not flatten:
         for i in range(2, plots + 1):
+            code = newsubplotcode.format(i)
             if _2D:
-                code = "ax{0:d} = ax = fig.add_subplot(dim1,dim2,{0:d});".format(i)
                 code += "ax.plot([bounds[0][0]],[bounds[1][0]]);"
                 code += "ax.plot([bounds[0][1]],[bounds[1][1]]);"
             else:
-                code = "ax{0:d} = ax = Subplot3D(fig, dim1,dim2,{0:d});".format(i)
                 code += "ax.plot([bounds[0][0]],[bounds[1][0]],[bounds[2][0]]);"
                 code += "ax.plot([bounds[0][1]],[bounds[1][1]],[bounds[2][1]]);"
             code += "plt.title('iterations[{0}]');".format(select[i - 1])
