@@ -433,6 +433,12 @@ elif sysversion == (3,6):# or IS_PYPY
     scipy_version = '>=0.6.0, <1.6.0'
     mpmath_version = '>=0.19'
     matplotlib_version = '>=0.91, <3.4.0'
+elif sysversion == (3,10) or sysversion == (3,11):
+    numpy_version = '>=1.0, <1.22.0rc1' #FIXME: TEMP: 1.22.0rc* fails to build
+    sympy_version = '>=0.6.7'#, <0.7.4'
+    scipy_version = '>=0.6.0'
+    mpmath_version = '>=0.19'
+    matplotlib_version = '>=0.91'
 else:
     numpy_version = '>=1.0'
     sympy_version = '>=0.6.7'#, <0.7.4'
