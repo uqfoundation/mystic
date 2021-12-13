@@ -433,12 +433,6 @@ elif sysversion == (3,6):# or IS_PYPY
     scipy_version = '>=0.6.0, <1.6.0'
     mpmath_version = '>=0.19'
     matplotlib_version = '>=0.91, <3.4.0'
-elif sysversion == (3,10) or sysversion == (3,11):
-    numpy_version = '>=1.0, <1.22.0rc1' #FIXME: TEMP: 1.22.0rc* fails to build
-    sympy_version = '>=0.6.7'#, <0.7.4'
-    scipy_version = '>=0.6.0'
-    mpmath_version = '>=0.19'
-    matplotlib_version = '>=0.91'
 else:
     numpy_version = '>=1.0'
     sympy_version = '>=0.6.7'#, <0.7.4'
@@ -449,7 +443,10 @@ dill_version = '>=0.3.4'
 klepto_version = '>=0.2.1'
 pathos_version = '>=0.2.8'
 pyina_version = '>=0.2.5'
-cython_version = '>=0.29.22' #XXX: required to build numpy from source
+if sysversion == (3,10) or sysversion == (3,11):
+    cython_version = '>=0.29.22, <0.29.25' #FIXME: TEMP 0.29.25 build fails
+else:
+    cython_version = '>=0.29.22' #XXX: required to build numpy from source
 if has_setuptools:
     setup_code += """
       zip_safe=False,
