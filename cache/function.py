@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #
 # Author: Mike McKerns (mmckerns @caltech and @uqfoundation)
-# Copyright (c) 2019-2021 The Uncertainty Quantification Foundation.
+# Copyright (c) 2019-2022 The Uncertainty Quantification Foundation.
 # License: 3-clause BSD.  The full license text is available at:
 #  - https://github.com/uqfoundation/mystic/blob/master/LICENSE
 '''higher-level readers and writers for stored functions

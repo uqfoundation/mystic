@@ -1,3 +1,10 @@
+#!/usr/bin/env python
+#
+# Author: Mike McKerns (mmckerns @caltech and @uqfoundation)
+# Copyright (c) 2021-2022 The Uncertainty Quantification Foundation.
+# License: 3-clause BSD.  The full license text is available at:
+#  - https://github.com/uqfoundation/mystic/blob/master/LICENSE
+
 import mystic.symbolic as ms
 from mystic.constraints import and_ as _and, or_ as _or
 from mystic.coupler import and_, or_
