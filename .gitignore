@@ -3,3 +3,6 @@
 *.egg-info/
 *.pyc
 /.idea
+/README
+/mystic/info.py
+/build
