@@ -6,7 +6,7 @@
 #  - https://github.com/uqfoundation/mystic/blob/master/LICENSE
 
 from mystic.solvers import DifferentialEvolutionSolver
-from mystic.models import rosen
+from models import rosen
 from mystic.tools import solver_bounds
 from mystic.termination import ChangeOverGeneration as COG, Or, CollapseCost
 from mystic.monitors import VerboseLoggingMonitor as Monitor

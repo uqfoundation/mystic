@@ -141,8 +141,8 @@ class TestSolverApp(Script):
 
 def output_chebyshev():
     # Chebyshev8 polynomial
-    from mystic.models.poly import chebyshev8coeffs as target_coeffs
-    from mystic.models.poly import poly1d
+    from models.poly import chebyshev8coeffs as target_coeffs
+    from models.poly import poly1d
     print("target:\n%s" % poly1d(target_coeffs))
     print("\nSolver Solution:\n%s" % poly1d(app.solution))
 

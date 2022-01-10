@@ -6,7 +6,7 @@
 # License: 3-clause BSD.  The full license text is available at:
 #  - https://github.com/uqfoundation/mystic/blob/master/LICENSE
 
-from mystic.models import rosen
+from models import rosen
 from mystic.solvers import *
 from mystic.termination import VTRChangeOverGeneration
 from mystic.monitors import VerboseMonitor, Monitor

@@ -44,7 +44,7 @@ class TestZimmermann(unittest.TestCase):
     """Test the zimmermann optimization problem."""
 
     def setUp(self):
-        from mystic.models import zimmermann
+        from models import zimmermann
         self.costfunction = zimmermann
         self.expected=[7., 2.]
         self.ND = len(self.expected)
@@ -255,7 +255,7 @@ class TestRosenbrock(unittest.TestCase):
     """Test the 2-dimensional rosenbrock optimization problem."""
 
     def setUp(self):
-        from mystic.models import rosen
+        from models import rosen
         self.costfunction = rosen
         self.expected=[1., 1.]
         self.ND = len(self.expected)
@@ -460,7 +460,7 @@ class TestCorana(unittest.TestCase):
 minima."""
 
     def setUp(self):
-        from mystic.models import corana
+        from models import corana
         self.costfunction = corana
         self.ND = 4
         self.maxexpected=[0.05]*self.ND
@@ -664,7 +664,7 @@ class TestQuartic(unittest.TestCase):
     """Test the quartic (noisy) optimization problem."""
 
     def setUp(self):
-        from mystic.models import quartic
+        from models import quartic
         self.costfunction = quartic
         self.ND = 30
         self.expected=[0.]*self.ND
@@ -866,7 +866,7 @@ class TestShekel(unittest.TestCase):
     """Test the 5th DeJong function (Shekel) optimization problem."""
 
     def setUp(self):
-        from mystic.models import shekel
+        from models import shekel
         self.costfunction = shekel
         self.ND = 2
         self.expected=[-32., -32.]
@@ -1069,7 +1069,7 @@ class TestStep(unittest.TestCase):
     """Test the 3rd DeJong function (step) optimization problem."""
 
     def setUp(self):
-        from mystic.models import step
+        from models import step
         self.costfunction = step
         self.ND = 5
         self.expected = [-5.]*self.ND # xi=-5-n where n=[0.0,0.12]
@@ -1273,7 +1273,7 @@ class TestGriewangk(unittest.TestCase):
     """Test the Griewangk optimization problem."""
 
     def setUp(self):
-        from mystic.models import griewangk
+        from models import griewangk
         self.costfunction = griewangk
         self.ND = 10
         self.expected = [0.]*self.ND 
@@ -1476,7 +1476,7 @@ class TestPeaks(unittest.TestCase):
     """Test the peaks optimization problem."""
 
     def setUp(self):
-        from mystic.models import peaks
+        from models import peaks
         self.costfunction = peaks
         self.ND = 2
         self.expected = [0.23, -1.63]
@@ -1680,7 +1680,7 @@ class TestVenkataraman91(unittest.TestCase):
     """Test Venkataraman's sinc optimization problem."""
 
     def setUp(self):
-        from mystic.models import venkat91
+        from models import venkat91
         self.costfunction = venkat91
         self.ND = 2
         self.expected = [4., 4.]
@@ -1882,7 +1882,7 @@ class TestSchwefel(unittest.TestCase):
     """Test Schwefel's optimization problem."""
 
     def setUp(self):
-        from mystic.models import schwefel
+        from models import schwefel
         self.costfunction = schwefel
         self.ND = 2
         self.expected = [420.9687]*self.ND
@@ -2084,7 +2084,7 @@ class TestEasom(unittest.TestCase):
     """Test Easom's function."""
 
     def setUp(self):
-        from mystic.models import easom
+        from models import easom
         self.costfunction = easom
         self.ND = 2
         self.expected = [pi]*self.ND
@@ -2286,7 +2286,7 @@ class TestRotatedEllipsoid(unittest.TestCase):
     """Test the rotated ellipsoid function in 2 dimensions."""
 
     def setUp(self):
-        from mystic.models import ellipsoid
+        from models import ellipsoid
         self.costfunction = ellipsoid
         self.ND = 2
         self.expected = [0.]*self.ND
@@ -2488,7 +2488,7 @@ class TestAckley(unittest.TestCase):
     """Test Ackley's path function in 2 dimensions."""
 
     def setUp(self):
-        from mystic.models import ackley
+        from models import ackley
         self.costfunction = ackley
         self.ND = 2
         self.expected = [0.]*self.ND
@@ -2690,7 +2690,7 @@ class TestRastrigin(unittest.TestCase):
     """Test Rastrigin's function in 2 dimensions."""
 
     def setUp(self):
-        from mystic.models import rastrigin
+        from models import rastrigin
         self.costfunction = rastrigin
         self.ND = 2
         self.expected = [0.]*self.ND
@@ -2891,7 +2891,7 @@ class TestGoldsteinPrice(unittest.TestCase):
     """Test the Goldstein-Price function."""
 
     def setUp(self):
-        from mystic.models import goldstein
+        from models import goldstein
         self.costfunction = goldstein
         self.ND = 2
         self.expected = [0., -1.]
@@ -3094,7 +3094,7 @@ class TestChampion(unittest.TestCase):
     """Test Champion's NMinimize test function 51."""
 
     def setUp(self):
-        from mystic.models import nmin51
+        from models import nmin51
         self.costfunction = nmin51
         self.ND = 2
         self.expected = [-0.0244031,0.210612]
@@ -3297,7 +3297,7 @@ class TestPaviani(unittest.TestCase):
     """Test Paviani's function, or TP110 of Schittkowski's test problems."""
 
     def setUp(self):
-        from mystic.models import paviani
+        from models import paviani
         self.costfunction = paviani
         self.ND = 10
         self.x0 = [9.]*self.ND

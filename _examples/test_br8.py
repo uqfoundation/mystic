@@ -19,9 +19,9 @@ from mystic.termination import ChangeOverGeneration, VTR
 from mystic.tools import getch, random_seed
 from mystic.monitors import VerboseMonitor as MyMonitor
 
-from mystic.models.br8 import decay; F = decay.ForwardFactory
-from mystic.models.br8 import cost as myCF
-from mystic.models.br8 import data
+from models.br8 import decay; F = decay.ForwardFactory
+from models.br8 import cost as myCF
+from models.br8 import data
 # evalpts = data[:,0], observations = data[:,1]
 
 def myshow():

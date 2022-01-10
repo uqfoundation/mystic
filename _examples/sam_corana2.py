@@ -20,7 +20,7 @@ from mystic.termination import CandidateRelativeTolerance as CRT
 from mystic.monitors import Monitor
 from mystic.tools import getch
 
-from mystic.models.corana import corana2d as Corana2
+from models.corana import corana2d as Corana2
 
 def draw_contour():
     import numpy

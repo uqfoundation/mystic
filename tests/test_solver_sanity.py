@@ -38,7 +38,7 @@ class TestRosenbrock(unittest.TestCase):
     """Test the 2-dimensional rosenbrock optimization problem."""
 
     def setUp(self):
-        from mystic.models import rosen
+        from models import rosen
         self.costfunction = rosen
         self.exact=[1., 1.]
         self.NP = 40

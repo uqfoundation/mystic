@@ -9,7 +9,7 @@
 from mystic.solvers import DifferentialEvolutionSolver
 from mystic.solvers import NelderMeadSimplexSolver, PowellDirectionalSolver
 from mystic.termination import VTR, ChangeOverGeneration, When, Or
-from mystic.models import rosen
+from models import rosen
 from mystic.solvers import LoadSolver
 import os
 import sys

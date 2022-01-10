@@ -10,7 +10,7 @@
 roseninputs.py -- inputs for testing the rosenbrock function for testsolvers_pyre.py
 """
 
-from mystic.models import rosen as cost
+from models import rosen as cost
 from mystic.termination import *
 
 ND = 3

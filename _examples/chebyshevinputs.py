@@ -11,8 +11,8 @@ chebyshevinputs.py -- cost function container module for NelderMeadSimplexSolver
 and PowellDirectionalSolver for testsolvers_pyre.py
 """
 
-from mystic.models.poly import chebyshev8cost as cost
-from mystic.models.poly import chebyshev8coeffs
+from models.poly import chebyshev8cost as cost
+from models.poly import chebyshev8coeffs
 from mystic.termination import *
 
 ND = 9

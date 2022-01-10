@@ -14,7 +14,7 @@ import sam, numpy, mystic
 from mystic.solvers import fmin
 from mystic.tools import getch
 
-from mystic.models.corana import corana1d as Corana1
+from models.corana import corana1d as Corana1
 
 x = numpy.arange(-2., 2., 0.01)
 y = [Corana1([c]) for c in x]

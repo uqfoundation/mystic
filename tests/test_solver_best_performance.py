@@ -56,7 +56,7 @@ Time elapsed:  0.113857030869  seconds
     if verbose:
         print("Testing 2-D Rosenbrock:")
         print("Expected: x=[1., 1.] and f=0")
-    from mystic.models import rosen as costfunc
+    from models import rosen as costfunc
     ndim = 2
     lb = [-5.]*ndim
     ub = [5.]*ndim
@@ -199,7 +199,7 @@ Time elapsed:  32.8412370682  seconds
     if verbose:
         print("Testing Griewangk:")
         print("Expected: x=[0.]*10 and f=0")
-    from mystic.models import griewangk as costfunc
+    from models import griewangk as costfunc
     ndim = 10
     lb = [-400.]*ndim
     ub = [400.]*ndim

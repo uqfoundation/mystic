@@ -15,7 +15,7 @@ except ImportError:
 scipy_solvers = ['fmin_powell', 'fmin']
 
 import mystic.solvers as solvers
-from mystic.models import rosen
+from models import rosen
 from mystic.math import almostEqual
 from mystic.monitors import VerboseMonitor
 from mystic.tools import random_seed

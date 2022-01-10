@@ -48,7 +48,7 @@ using numpy.poly1d(coeffs)"""
 
 
 # coefficients for specific Chebyshev polynomials
-from mystic.models._model_helper import chebyshev2coeffs, chebyshev4coeffs, \
+from models._model_helper import chebyshev2coeffs, chebyshev4coeffs, \
                       chebyshev6coeffs, chebyshev8coeffs, chebyshev16coeffs
 
 class Chebyshev(Polynomial):
@@ -102,7 +102,7 @@ def chebyshevcostfactory(target):
     def chebyshevcost(trial,M=61):
         """The costfunction for order-n Chebyshev fitting.
 M evaluation points between [-1, 1], and two end points"""
-        from mystic.models._model_helper import chebyshev
+        from models._model_helper import chebyshev
         return chebyshev(trial, target, M)
     return chebyshevcost
 
@@ -118,27 +118,27 @@ chebyshev16 = Chebyshev(16)
 def chebyshev2cost(trial,M=61):
     """The costfunction for order-n Chebyshev fitting.
 M evaluation points between [-1, 1], and two end points"""
-    from mystic.models._model_helper import chebyshev, chebyshev2coeffs
+    from models._model_helper import chebyshev, chebyshev2coeffs
     return chebyshev(trial, chebyshev2coeffs, M)
 def chebyshev4cost(trial,M=61):
     """The costfunction for order-n Chebyshev fitting.
 M evaluation points between [-1, 1], and two end points"""
-    from mystic.models._model_helper import chebyshev, chebyshev4coeffs
+    from models._model_helper import chebyshev, chebyshev4coeffs
     return chebyshev(trial, chebyshev4coeffs, M)
 def chebyshev6cost(trial,M=61):
     """The costfunction for order-n Chebyshev fitting.
 M evaluation points between [-1, 1], and two end points"""
-    from mystic.models._model_helper import chebyshev, chebyshev6coeffs
+    from models._model_helper import chebyshev, chebyshev6coeffs
     return chebyshev(trial, chebyshev6coeffs, M)
 def chebyshev8cost(trial,M=61):
     """The costfunction for order-n Chebyshev fitting.
 M evaluation points between [-1, 1], and two end points"""
-    from mystic.models._model_helper import chebyshev, chebyshev8coeffs
+    from models._model_helper import chebyshev, chebyshev8coeffs
     return chebyshev(trial, chebyshev8coeffs, M)
 def chebyshev16cost(trial,M=61):
     """The costfunction for order-n Chebyshev fitting.
 M evaluation points between [-1, 1], and two end points"""
-    from mystic.models._model_helper import chebyshev, chebyshev16coeffs
+    from models._model_helper import chebyshev, chebyshev16coeffs
     return chebyshev(trial, chebyshev16coeffs, M)
 
 

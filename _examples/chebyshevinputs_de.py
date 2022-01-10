@@ -11,7 +11,7 @@ chebychevinputs_de.py -- cost function container module for differential evoluti
 and the chebyshev function for testsolvers_pyre.py
 """
 
-from mystic.models.poly import chebyshev8cost as cost
+from models.poly import chebyshev8cost as cost
 from mystic.termination import *
 from mystic.strategy import *
 

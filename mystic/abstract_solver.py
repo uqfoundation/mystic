@@ -21,7 +21,7 @@ Examples:
     A typical call to a solver will roughly follow this example:
 
     >>> # the function to be minimized and the initial values
-    >>> from mystic.models import rosen
+    >>> from models import rosen
     >>> x0 = [0.8, 1.2, 0.7]
     >>> 
     >>> # get monitors and termination condition objects
@@ -46,7 +46,7 @@ Examples:
     An equivalent, but less flexible, call using the function interface is:
 
     >>> # the function to be minimized and the initial values
-    >>> from mystic.models import rosen
+    >>> from models import rosen
     >>> x0 = [0.8, 1.2, 0.7]
     >>> 
     >>> # configure the solver and obtain the solution

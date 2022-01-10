@@ -10,7 +10,7 @@
 dummy.py -- cost function container module for derun.py
 """
 
-from mystic.models.poly import chebyshev8cost as cost
+from models.poly import chebyshev8cost as cost
 from mystic.termination import *
 from mystic.strategy import *
 

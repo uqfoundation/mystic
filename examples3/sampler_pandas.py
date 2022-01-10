@@ -6,7 +6,7 @@
 #  - https://github.com/uqfoundation/mystic/blob/master/LICENSE
 
 from ouq_models import WrapModel
-from mystic.models import rosen
+from models import rosen
 
 # generate a sampled dataset for the model
 model = WrapModel('rosen', rosen, cached=True)

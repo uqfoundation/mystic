@@ -25,7 +25,7 @@ Examples:
     A typical call to a 'map' solver will roughly follow this example:
 
     >>> # the function to be minimized and the initial values
-    >>> from mystic.models import rosen
+    >>> from models import rosen
     >>> lb = [0.0, 0.0, 0.0]
     >>> ub = [2.0, 2.0, 2.0]
     >>> 

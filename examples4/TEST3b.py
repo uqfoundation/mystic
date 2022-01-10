@@ -26,8 +26,8 @@ percent_change = 0.9
 # the model function
 # (similar to Simulation.cpp)
 #######################################################################
-from mystic.models.poly import poly1d
-from mystic.models.poly import chebyshev8coeffs as Chebyshev8
+from models.poly import poly1d
+from models.poly import chebyshev8coeffs as Chebyshev8
 from math import sin
 def function(x):
   """a 8th-order Chebyshev polynomial + sin + a constant

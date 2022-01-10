@@ -18,8 +18,8 @@ from mystic.termination import ChangeOverGeneration as COG
 # also requires updated masks as input
 verbose = True#False
 
-#from mystic.models import rosen as model; target = 1.0
-from mystic.models import sphere as model; target = 0.0
+#from models import rosen as model; target = 1.0
+from models import sphere as model; target = 0.0
 n = 10
 
 #term = Or((COG(generations=300), CollapseAt(None, generations=100), CollapseAs(generations=100)))

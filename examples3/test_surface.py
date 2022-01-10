@@ -16,7 +16,7 @@ import time
 if __name__ == '__main__':
     start = time.time()
     """
-    from mystic.models import griewangk
+    from models import griewangk
     from mystic.termination import NormalizedChangeOverGeneration as NCOG
 
     stop = NCOG(1e-4)
@@ -68,7 +68,7 @@ if __name__ == '__main__':
     traj = not monitor # save all trajectories internally, if no logs
 
     # cost function
-    from mystic.models import griewangk as model
+    from models import griewangk as model
     ndim = 2  # model dimensionality
     bounds = ndim * [(-9.5,9.5)] # griewangk
 

@@ -31,7 +31,7 @@ assert ip.gradient(x, f, method='linear').shape \
     == ip.gradient(x, fx, method='linear').shape
 
 
-from mystic.models import rosen0der as rosen
+from models import rosen0der as rosen
 y = rosen(x.T)
 
 f = ip.interpf(x, y, method='linear')
