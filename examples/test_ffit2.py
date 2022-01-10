@@ -21,13 +21,13 @@ from mystic.termination import ChangeOverGeneration, VTR
 from mystic.strategy import Best1Exp, Best1Bin, Rand1Exp, Best2Bin, Best2Exp
 from mystic.math import poly1d
 from mystic.monitors import VerboseMonitor
-from mystic.models.poly import chebyshev16cost
+from models.poly import chebyshev16cost
 
 from mystic.tools import random_seed
 random_seed(123)
 
 # get the target coefficients
-from mystic.models.poly import chebyshev16coeffs as Chebyshev16
+from models.poly import chebyshev16coeffs as Chebyshev16
 
 def ChebyshevCost(trial):
     """

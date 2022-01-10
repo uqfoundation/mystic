@@ -10,7 +10,7 @@ from mystic.solvers import DifferentialEvolutionSolver
 from mystic.solvers import NelderMeadSimplexSolver
 from mystic.termination import VTR, ChangeOverGeneration, When, Or
 from mystic.monitors import VerboseMonitor
-from mystic.models import rosen
+from models import rosen
 from mystic.solvers import LoadSolver
 import dill
 import os

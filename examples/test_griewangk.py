@@ -26,7 +26,7 @@ from mystic.tools import random_seed
 random_seed(123)
 
 # The costfunction for Griewangk's Function, Eq. (23) of [1].
-from mystic.models import griewangk as Griewangk_cost
+from models import griewangk as Griewangk_cost
 
 
 ND = 10

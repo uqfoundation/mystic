@@ -31,8 +31,8 @@ from mystic.tools import random_seed
 random_seed(123)
 
 # get the target coefficients and cost function
-from mystic.models.poly import chebyshev8coeffs as Chebyshev8
-from mystic.models.poly import chebyshev8cost as ChebyshevCost
+from models.poly import chebyshev8coeffs as Chebyshev8
+from models.poly import chebyshev8cost as ChebyshevCost
 
 def print_solution(func):
     print(poly1d(func))

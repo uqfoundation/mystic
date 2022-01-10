@@ -23,7 +23,7 @@ try: http://www.icsi.berkeley.edu/~storn/deshort1.ps
 
 from mystic.solvers import DifferentialEvolutionSolver
 from mystic.termination import ChangeOverGeneration, VTR
-from mystic.models.dejong import step as DeJong3
+from models.dejong import step as DeJong3
 
 from mystic.tools import random_seed
 random_seed(123)

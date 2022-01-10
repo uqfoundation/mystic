@@ -20,7 +20,7 @@ test_rosenbrock*.py (or optimize.py in scipy.optimize).
 
 from mystic.solvers import DifferentialEvolutionSolver, diffev
 from mystic.termination import ChangeOverGeneration, VTR
-from mystic.models import rosen
+from models import rosen
 from mystic.monitors import Monitor, VerboseMonitor
 
 from mystic.tools import random_seed

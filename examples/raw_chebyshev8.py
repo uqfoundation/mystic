@@ -15,7 +15,7 @@ def chebyshev8cost(trial,M=61):
     """The costfunction for order-n Chebyshev fitting.
 M evaluation points between [-1, 1], and two end points"""
 
-    from mystic.models.poly import chebyshev8coeffs as target
+    from models.poly import chebyshev8coeffs as target
     from mystic.math import polyeval
 
     result=0.0
@@ -36,7 +36,7 @@ M evaluation points between [-1, 1], and two end points"""
     return result
 
 if __name__=='__main__':
-    from mystic.models.poly import chebyshev8coeffs as target
+    from models.poly import chebyshev8coeffs as target
     from mystic.math import poly1d
     print(poly1d(target))
     print("")

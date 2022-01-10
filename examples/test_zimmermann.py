@@ -29,7 +29,7 @@ from mystic.tools import random_seed
 random_seed(123)
 
 # Eq. (24-26) of [2].
-from mystic.models import zimmermann as CostFunction
+from models import zimmermann as CostFunction
 
 ND = 2
 NP = 20

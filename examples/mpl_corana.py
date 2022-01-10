@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt, numpy, mystic
 from mystic.solvers import fmin
 from mystic.tools import getch
 
-from mystic.models.storn import Corana
+from models.storn import Corana
 Corana1 = Corana(1)
 
 x = numpy.arange(-2., 2., 0.01)

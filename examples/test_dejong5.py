@@ -21,7 +21,7 @@ Optimization 11: 341-359, 1997.
 from mystic.solvers import DifferentialEvolutionSolver
 from mystic.termination import ChangeOverGeneration, VTR
 from mystic.strategy import Best1Exp, Rand1Exp
-from mystic.models.dejong import shekel as DeJong5
+from models.dejong import shekel as DeJong5
 
 from mystic.tools import random_seed
 random_seed(123)

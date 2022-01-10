@@ -13,7 +13,7 @@ Alternate fitting of a lorentzian peak (see test_lorentzian2.py)
 import matplotlib.pyplot as plt, matplotlib
 from numpy import *
 
-from mystic.models import lorentzian
+from models import lorentzian
 from test_lorentzian2 import *
 import warnings
 
@@ -79,7 +79,7 @@ if __name__ == '__main__':
     #NOTE: we will calculate the norm, not solve for it as a parameter
     target = [1., 45., -10., 20., 1., 0.1, 1.0] # norm set to 1.0
 
-    from mystic.models.lorentzian import gendata, histogram
+    from models.lorentzian import gendata, histogram
     npts = 4000; binwidth = 0.1
     N = npts * binwidth
     xmin, xmax = 0.0, 3.0

@@ -19,7 +19,7 @@ from mystic.strategy import Best1Exp, Best1Bin, Rand1Exp
 from mystic.tools import random_seed
 random_seed(123)
 
-from mystic.models import fosc3d as fOsc3D
+from models import fosc3d as fOsc3D
 
 def draw_contour():
     import matplotlib.pyplot as plt, numpy

@@ -38,7 +38,7 @@ from mystic.math import poly1d
 
 #from raw_chebyshev8 import chebyshev8cost as ChebyshevCost     # no globals
 #from raw_chebyshev8b import chebyshev8cost as ChebyshevCost    # use globals
-from mystic.models.poly import chebyshev8cost as ChebyshevCost  # no helper
+from models.poly import chebyshev8cost as ChebyshevCost  # no helper
 
 ND = 9
 NP = 80

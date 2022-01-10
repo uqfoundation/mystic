@@ -19,7 +19,7 @@ Demonstrates:
 from mystic.solvers import fmin
 
 # Rosenbrock function
-from mystic.models import rosen
+from models import rosen
 
 # tools
 import matplotlib.pyplot as plt

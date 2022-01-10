@@ -20,8 +20,8 @@ Demonstrates:
 from mystic.solvers import diffev
 
 # Chebyshev polynomial and cost function
-from mystic.models.poly import chebyshev8, chebyshev8cost
-from mystic.models.poly import chebyshev8coeffs
+from models.poly import chebyshev8, chebyshev8cost
+from models.poly import chebyshev8coeffs
 
 # tools
 from mystic.math import poly1d

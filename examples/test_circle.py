@@ -19,7 +19,7 @@ The matplotlib output will draw
   -- the optimized circle with minimum R enclosing the points
 """
 
-from mystic.models import circle, sparse_circle
+from models import circle, sparse_circle
 import matplotlib.pyplot as plt
 
 # generate training set & define cost function

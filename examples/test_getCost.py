@@ -16,7 +16,7 @@ from mystic.strategy import *
 from forward_model import *
 
 from mystic.math import poly1d as ForwardPolyFactory
-from mystic.models import poly; PolyCostFactory = poly.CostFactory
+from models import poly; PolyCostFactory = poly.CostFactory
 from mystic.solvers import DifferentialEvolutionSolver
 from mystic.monitors import VerboseMonitor
 from mystic.tools import getch

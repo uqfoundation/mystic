@@ -26,7 +26,7 @@ random_seed(123)
 
 #matplotlib.interactive(True)
 
-from mystic.models import lorentzian
+from models import lorentzian
 F = lorentzian.ForwardFactory
 
 def show():
@@ -77,7 +77,7 @@ def de_solve(CF):
 if __name__ == '__main__':
     target = [1., 45., -10., 20., 1., 0.1, 120.]
 
-    from mystic.models.lorentzian import gendata, histogram
+    from models.lorentzian import gendata, histogram
     npts = 4000; binwidth = 0.1
     N = npts * binwidth
     xmin, xmax = 0.0, 3.0

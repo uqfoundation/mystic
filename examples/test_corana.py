@@ -25,8 +25,8 @@ from mystic.strategy import Best1Exp, Rand1Exp
 from mystic.tools import random_seed
 random_seed(123)
 
-from mystic.models import corana
-from mystic.models.storn import Corana as Corana1
+from models import corana
+from models.storn import Corana as Corana1
 corana1 = Corana1(1)
 
 ND = 4

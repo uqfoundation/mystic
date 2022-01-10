@@ -21,7 +21,7 @@ Demonstrates:
 from mystic.solvers import fmin
 
 # Rosenbrock function
-from mystic.models import rosen
+from models import rosen
 
 # tools
 from mystic.tools import getch

@@ -12,7 +12,7 @@ Testing the 'Peaks" Function.
 (tests VTR when minimum has negative value)
 """
 from math import *
-from mystic.models import peaks
+from models import peaks
 
 nd = 2
 npop = 20

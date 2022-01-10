@@ -10,7 +10,7 @@
 example of using PowellDirectionalSolver on the rosenbrock function
 """
 
-from mystic.models import rosen
+from models import rosen
 import numpy
 
 def constrain(x):

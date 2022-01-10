@@ -20,7 +20,7 @@ Demonstrates:
 from mystic.solvers import fmin_powell
 
 # Rosenbrock function
-from mystic.models import rosen
+from models import rosen
 
 iter = 0
 # plot the parameter trajectories

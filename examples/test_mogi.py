@@ -37,7 +37,7 @@ import numpy
 
 random_seed(123)
 
-from mystic.models import mogi; ForwardMogiFactory = mogi.ForwardFactory
+from models import mogi; ForwardMogiFactory = mogi.ForwardFactory
 
 # Let the "actual parameters" be :
 actual_params = [1234.,-500., 10., .1]

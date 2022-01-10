@@ -22,8 +22,8 @@ from mystic.solvers import LatticeSolver
 from mystic.solvers import PowellDirectionalSolver
 
 # Chebyshev polynomial and cost function
-from mystic.models.poly import chebyshev8, chebyshev8cost
-from mystic.models.poly import chebyshev8coeffs
+from models.poly import chebyshev8, chebyshev8cost
+from models.poly import chebyshev8coeffs
 
 # if available, use a pathos worker pool
 try:

@@ -21,7 +21,7 @@ Demonstrates:
 from mystic.solvers import fmin_powell
 
 # Rosenbrock function
-from mystic.models import rosen
+from models import rosen
 
 # tools
 from mystic.monitors import VerboseMonitor

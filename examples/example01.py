@@ -18,7 +18,7 @@ Demonstrates:
 from mystic.solvers import fmin_powell
 
 # Rosenbrock function
-from mystic.models import rosen
+from models import rosen
 
 
 if __name__ == '__main__':

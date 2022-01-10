@@ -22,7 +22,7 @@ from mystic.solvers import fmin
 from mystic.tools import random_seed
 random_seed(123)
 
-from mystic.models import wavy1, wavy2
+from models import wavy1, wavy2
 wavy = wavy1
 
 def show():
