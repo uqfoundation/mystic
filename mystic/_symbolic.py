@@ -369,7 +369,7 @@ Further Inputs:
     for i in range(1, neqns+1):
         eqn = 'eq' + str(i)
         eqlist += eqn + ","
-        code += eqn + '= Eq(' + left[i-1] + ',' + right[i-1].replace(' 0.0',' 0') + ')'+NL # sympy bug for 0.0
+        code += eqn + '= Eq(' + left[i-1] + ',' + right[i-1].replace(' 0.00', ' .00').replace(' 0.01', ' .01').replace(' 0.02', ' .02').replace(' 0.03', ' .03').replace(' 0.04', ' .04').replace(' 0.05', ' .05').replace(' 0.06', '.06').replace(' 0.07', ' .07').replace(' 0.08', ' .08').replace(' 0.09', ' .09').replace(' 0.0',' 0') + ')'+NL # sympy bug for 0.0
     eqlist = eqlist.rstrip(',')
 
     # get full list of variables in 'targeted' order
@@ -567,7 +567,7 @@ def _solve_linear(constraints, variables='x', target=None, **kwds):
     for i in range(1, neqns+1):
         eqn = 'eq' + str(i)
         eqlist += eqn + ","
-        code += eqn + '= Eq(' + left[i-1] + ',' + right[i-1].replace(' 0.0',' 0') + ')' + NL # sympy bug for 0.0
+        code += eqn + '= Eq(' + left[i-1] + ',' + right[i-1].replace(' 0.00', ' .00').replace(' 0.01', ' .01').replace(' 0.02', ' .02').replace(' 0.03', ' .03').replace(' 0.04', ' .04').replace(' 0.05', ' .05').replace(' 0.06', '.06').replace(' 0.07', ' .07').replace(' 0.08', ' .08').replace(' 0.09', ' .09').replace(' 0.0',' 0') + ')' + NL # sympy bug for 0.0
     eqlist = eqlist.rstrip(',')
 
     # get full list of variables in 'targeted' order
