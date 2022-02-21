@@ -8,15 +8,12 @@ matrix:
           env:
             - COVERAGE="true"
 
-        - python: '3.6'
+        - python: '3.7'
           env:
             - COVERAGE="true"
             - MATPLOTLIB="true"
             - SYMPY="true"
             - SCIPY="true"
-
-        - python: '3.7'
-          env:
 
         - python: '3.8'
           env:
@@ -36,11 +33,6 @@ matrix:
           dist: xenial
           env:
 
-        - python: 'pypy3.6-7.3.3' # most recent
-          dist: bionic
-          env:
-            - SYMPY="true" # SyntaxError with 1.10rc1
-
         - python: 'pypy3.7-7.3.5' # most recent
           dist: bionic
           env:
@@ -58,7 +50,7 @@ before_install:
     - set -e  # fail on any error
     - if [[ $COVERAGE == "true" ]]; then pip install coverage; fi
     - if [[ $MATPLOTLIB == "true" ]]; then pip install matplotlib; fi
-    - if [[ $SYMPY == "true" ]]; then pip install "sympy<1.10a0"; fi #FIXME
+    - if [[ $SYMPY == "true" ]]; then pip install sympy; fi
     - if [[ $SCIPY == "true" ]]; then pip install scipy; fi
     - if [[ $CYTHON == "true" ]]; then pip install "cython<0.29.25"; fi #FIXME
 
