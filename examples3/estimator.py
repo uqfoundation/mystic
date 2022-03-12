@@ -213,18 +213,27 @@ class Estimator(object):
                     from mystic.math.interpolate import _getaxis
                     from ml import Estimator as Learner
                     func = Learner(estimator, transform)
+                    _z = _getaxis(z, i)
+                    #from ml import improve_score, MLData
+                    #_z = MLData(x, x, _z, _z)
+                    #kwds = dict(tries=10, verbose=True)
                     with np.warnings.catch_warnings(): #FIXME: enable warn=True
                         np.warnings.filterwarnings('ignore')
-                        func = func.train(x, _getaxis(z, i))
+                        func = func.train(x, _z)
+                        #func = improve_score(func, _z, **kwds)
                     return func
                 function.__axis__ = list(_map(learn_ax, range(len(z[0]))))
                 return function
         else:
             from mystic.math.interpolate import _getaxis
             z = _getaxis(z, axis)
+        #from ml import improve_score, MLData
+        #_z = MLData(x, x, z, z)
+        #kwds = dict(tries=10, verbose=True)
         with np.warnings.catch_warnings(): #FIXME: enable warn=True
             np.warnings.filterwarnings('ignore')
             function = learner.train(x, z)
+            #function = improve_score(learner, _z, **kwds)
         function.__axis__ = axis
         return function
 

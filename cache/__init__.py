@@ -20,6 +20,34 @@ from . import function
 from klepto import lru_cache, lfu_cache, mru_cache
 from klepto import rr_cache, inf_cache, no_cache
 
+class _cached(object):
+    def __init__(self, func, multivalued=False):
+        self.func = func
+        self.multivalued = multivalued
+    def mvmodel(self, x, *argz, **kwdz):
+        axis = kwdz.pop('axis', None)
+        if axis is None: axis = slice(None)
+        return self.func(x, *argz, **kwdz)[axis]
+    def model(self, x, *argz, **kwdz):
+        axis = kwdz.pop('axis', None)
+        return self.func(x, *argz, **kwdz)
+    def __call__(self, x, *argz, **kwdz):
+        doit = self.mvmodel if self.multivalued else self.model
+        return doit(x, *argz, **kwdz)
+
+class _cache(object):
+    def __init__(self, func):
+       self.func = func
+    def __call__(self):
+       return self.func.__cache__()
+
+class _imodel(object):
+    def __init__(self, model):
+       self.model = model
+    def __call__(self, *args, **kwds):
+        return -self.model(*args, **kwds)
+
+
 def cached(**kwds):
     """build a caching archive for an objective function
 
@@ -73,22 +101,13 @@ def cached(**kwds):
         _model.__inner__ = inner
 
         # when caching, always cache the multi-valued tuple
-        if multivalued:
-            def model(x, *argz, **kwdz):
-                axis = kwdz.pop('axis', None)
-                if axis is None: axis = slice(None)
-                return _model(x, *argz, **kwdz)[axis]
-        else:
-            def model(x, *argz, **kwdz):
-                axis = kwdz.pop('axis', None)
-                return _model(x, *argz, **kwdz)
+        model = _cached(_model, multivalued)
         # produce objective function that caches multi-valued output
-        model.__cache__ = lambda : inner.__cache__()
+        model.__cache__ = _cache(inner)
         model.__doc__ = objective.__doc__
 
         # produce model inverse with shared cache
-        imodel = lambda *args, **kwds: -model(*args, **kwds)
-        model.__inverse__ = imodel
+        model.__inverse__ = imodel = _imodel(model)
         imodel.__inverse__ = model
         imodel.__cache__ = model.__cache__
 
