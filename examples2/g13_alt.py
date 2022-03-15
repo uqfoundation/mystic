@@ -46,10 +46,10 @@ if __name__ == '__main__':
 
     result = lattice(objective, 5, [2]*5, bounds=bounds, penalty=penalty, ftol=1e-8, xtol=1e-8, disp=False, full_output=True)
 
-    assert almostEqual(result[0], xs, tol=2e-2) \
-        or almostEqual(result[0], _xs, tol=2e-2) \
-        or almostEqual(result[0], x_s, tol=2e-2) \
-        or almostEqual(result[0], xs_, tol=2e-2)
-    assert almostEqual(result[1], ys, rel=2e-2)
+    assert almostEqual(result[0], xs, tol=5e-2) \
+        or almostEqual(result[0], _xs, tol=5e-2) \
+        or almostEqual(result[0], x_s, tol=5e-2) \
+        or almostEqual(result[0], xs_, tol=5e-2)
+    assert almostEqual(result[1], ys, rel=5e-2)
 
 # EOF

@@ -14,7 +14,7 @@ from mystic.termination import ChangeOverGeneration as COG
 # kwds for solver
 opts = dict(termination=COG(1e-10, 100))
 param = dict(solver=DifferentialEvolutionSolver2,
-             npop=80,
+             npop=80, #XXX:npop
              maxiter=1500,
              maxfun=1e+6,
              x0=None, # use RandomInitialPoints
@@ -41,18 +41,18 @@ wub = (1,1,1,1,1)
 npts = (2,1,1,1,1) #NOTE: rv = (w0,w0,x0,x0,w1,x1,w2,x2,w3,x3,w4,x4)
 index = (5,)       #NOTE: rv[5] -> x1
 # moments and uncertainty in first parameter
-a_ave = 5e-1
-a_var = 5e-3
-a_ave_err = 1e-3
-a_var_err = 1e-4
+a_ave = None
+a_var = None
+a_ave_err = None
+a_var_err = None
 # moments and uncertainty in second parameter
 b_ave = None
 b_var = None
 b_ave_err = None
 b_var_err = None
 # moments and uncertainty in output
-o_ave = None
-o_ave_err = None
+o_ave = 11.0
+o_ave_err = 1.0
 
 
 def flatten(npts):
@@ -93,6 +93,28 @@ def constrain_moments(ave=None, var=None, ave_err=None, var_err=None, idx=0):
     return func
 
 
+#NOTE: model has single-value output; bounds = (lb,ub)
+def constrain_expected(model, ave=None, ave_err=None, bounds=None):#, **kwds):
+    'impose mean constraint on the expected value of the measure'
+    if ave is None: ave = float('nan')
+    if ave_err is None: ave_err = 0
+    samples = None #kwds.get('samples', None) #NOTE: int or None
+    if samples is None:
+        def func(c):
+            E = float(c.expect(model))
+            if E > (ave + ave_err) or E < (ave - ave_err):
+                c.set_expect(ave, model, bounds, tol=ave_err, npop=200)#XXX:npop
+            return c
+    else:
+        return NotImplemented #FIXME: samples != None
+        def func(c):
+            E = float(c.sampled_expect(model, samples))
+            if E > (ave + ave_err) or E < (ave - ave_err):
+                c.set_sampled_expect(ave, model, bounds, tol=ave_err, npts=samples) #FIXME: NotImplemented
+            return c
+    return func
+
+
 @integers(ints=float, index=index)
 def integer_indices(rv):
     'constrain parameters at given index(es) to be ints'
@@ -125,6 +147,29 @@ def constrained(ave=None, var=None, ave_err=None, var_err=None, idx=0, debug=Fal
     return func
 
 
+#NOTE: model has single-value output
+def constrained_out(model, ave=None, ave_err=None, debug=False):#, **kwds):
+    'check the expected output is properly constrained'
+    if ave is None: ave = float('nan')
+    if ave_err is None: ave_err = 0
+    samples = None #kwds.get('samples', None) #NOTE: int or None
+    if samples is None:
+        def func(c):
+            E = float(c.expect(model))
+            if E > (ave + ave_err) or E < (ave - ave_err):
+                if debug: print("skipping expected value: %s" % E)
+                return False
+            return True
+    else:
+        def func(c):
+            E = float(c.sampled_expect(model, samples))
+            if E > (ave + ave_err) or E < (ave - ave_err):
+                if debug: print("skipping expected value: %s" % E)
+                return False
+            return True
+    return func
+
+
 def check(npts):
     'convert a moment check to a "flattened" check'
     def dec(f):
@@ -135,15 +180,29 @@ def check(npts):
     return dec
 
 
+# build a model representing 'truth'
+from ouq_models import WrapModel
+from toys import function5 as toy; nx = 5; ny = None
+nargs = dict(nx=nx, ny=ny, rnd=False)
+model = WrapModel('model', toy, **nargs)
+
+
+# set the bounds
+from mystic.bounds import MeasureBounds
+bnd = MeasureBounds(xlb, xub, n=npts, wlb=wlb, wub=wub)
+
+
 ## moment-based constraints ##
 normcon = normalize_moments()
-momcons = constrain_moments(a_ave, a_var, a_ave_err, a_var_err)
-is_cons = constrained(a_ave, a_var, a_ave_err, a_var_err)
+###momcons = constrain_moments(a_ave, a_var, a_ave_err, a_var_err)
+###is_cons = constrained(a_ave, a_var, a_ave_err, a_var_err)
 #momcon0 = constrain_moments(a_ave, a_var, a_ave_err, a_var_err, idx=0)
 #momcon1 = constrain_moments(b_ave, b_var, b_ave_err, b_var_err, idx=1)
 #is_con0 = constrained(a_ave, a_var, a_ave_err, a_var_err, idx=0)
 #is_con1 = constrained(b_ave, b_var, b_ave_err, b_var_err, idx=1)
 #is_cons = lambda c: bool(additive(is_con0)(is_con1)(c))
+momcons = constrain_expected(model, o_ave, o_ave_err, (bnd.lower,bnd.upper))
+is_cons = constrained_out(model, o_ave, o_ave_err)
 
 ## index-based constraints ##
 # impose constraints sequentially (faster, but assumes are decoupled)
