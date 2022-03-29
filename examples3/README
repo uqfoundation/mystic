@@ -5,18 +5,23 @@ for an unknown surface, or using support vectors in optimization.
 
 == Notes on mystic examples3 ==
 Naming convention:
+  - `3D` denotes use of 3-D toy model in surrogate.py
+  - `5D` denotes use of 5-D toy model in toys.py
+  - `GP` denotes use of sklearn GP regression instead of RBF interpolation
+  - `ML` denotes use of sklearn MLP regression instead of RBF interpolation
   - `collapse` denotes use of dimensional collapse detectors
   - `ouq` denotes use of high-level UQ interface to find bounds, surrogates
   - `pandas` denotes mystic extensions/interface to pandas
-  - `searcher` denotes using mystic to find all minima and maxima [OLD]
+  - `pof` denotes a probability of failure calculation
+  - `searcher` denotes optimizer-driven discovery of all extrema [DEPRECATED]
   - `sklearn` denotes mystic extensions/interface to sklearn
-  - `surface` denotes using mystic to interpolate an unknown surface [OLD]
+  - `surface` denotes optimizer-driven surface interpolation [DEPRECATED]
   - `svc` denotes use of support vectors in classification
   - `svr` denotes use of support vectors in regression
   - `sparsity` denotes use of the sparsity sampler
 
 OUQ calculations:
-  - test_*D_ub_*: find upper bound on (input/output mean, PoF) [see examples5]
+  - test_*_ub_*: find upper bound on (mean of input/output, or PoF) [examples5]
   - test_error*: find model error
   - test_expected*: find expected value
   - test_expected_error* find expected error
@@ -25,12 +30,11 @@ OUQ calculations:
   - test_llb*: find least lower bound
   - test_lub*: find least upper bound
   - test_pof: find probability of failure (PoF)
-  - test_*ML: use sklearn MLP regression instead of RBF interpolation
 
 Miscellaneous:
  - test_improve_score: workflow to retry/update sklearn estimators
 
-Dependencies:
+External dependencies:
   - examples with "svc", "svr", or "sparsity" in the name require `matplotlib`.
   - examples with "surface" and "searcher" require `scipy` and `matplotlib`.
   - examples with "pandas" require `pandas` and `matplotlib`.
@@ -44,6 +48,6 @@ In-place dependencies for ouq*:
   - ml: lower-level interface to sklearn, used by estimator
   - noisy: add noise for OUQ noisy model
   - plotter: high-level interface to plotting learned surrogates
-  - spec*D: same as misc, used for test_*D_ub_* OUQ calculations
-  - surrogate: same as toys, used for test_*D_ub_* OUQ calculations
-  - toys: toy models for OUQ calculations
+  - spec*: same as misc, used in test_*_ub_* OUQ calculations
+  - surrogate: hypervelocity impact model, used in test_*_ub_* OUQ calculations
+  - toys: simple toy models for OUQ calculations
