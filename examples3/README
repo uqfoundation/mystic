@@ -9,7 +9,9 @@ Naming convention:
   - `5D` denotes use of 5-D toy model in toys.py
   - `GP` denotes use of sklearn GP regression instead of RBF interpolation
   - `ML` denotes use of sklearn MLP regression instead of RBF interpolation
+  - `c0mean` denotes a (backpropagation) calculation of mean value of an input
   - `collapse` denotes use of dimensional collapse detectors
+  - `mean` denotes a calculation of mean value of an output
   - `ouq` denotes use of high-level UQ interface to find bounds, surrogates
   - `pandas` denotes mystic extensions/interface to pandas
   - `pof` denotes a probability of failure calculation
