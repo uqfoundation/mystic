@@ -109,7 +109,10 @@ source can either be a monitor instance or a logfile path
   if isinstance(source, str):
     step, param, cost = logfile_reader(source)
   else:
-    step = enumerate(source.id)
+    if source.id and isinstance(source.id[0], tuple):
+      step = source.id
+    else:
+      step = enumerate(source.id)
     if len(source) == source.id.count(None):
       step = [(i,) for (i,j) in step]
     else:

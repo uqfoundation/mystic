@@ -957,6 +957,7 @@ Notes:
             _x = eval('px[%s]' % stop, locals)
             _y = eval('py[%s]' % stop, locals)
             _c = eval('c[%s]' % stop, locals) if surface else None
+            del locals
             fig = _draw_trajectory(_x,_y,_c, style=style, scale=scale, shift=shift, figure=fig)
 
     import matplotlib.pyplot as plt
@@ -1080,8 +1081,9 @@ Notes:
     parser.add_option("-u","--out",action="store",dest="out",\
                       metavar="STR",default=None,
                       help="filepath to save generated plot")
-    parser.add_option("-i","--iter",action="store",dest="stop",metavar="INT",\
-                      default=None,help="the largest iteration to plot")
+    parser.add_option("-i","--iter",action="store",dest="stop",\
+                      metavar="STR",default=":",
+                      help="string for smallest:largest iterations to plot")
     parser.add_option("-l","--label",action="store",dest="label",\
                       metavar="STR",default="",\
                       help="string to assign label to y-axis")
@@ -1133,9 +1135,10 @@ Notes:
       out = None
 
     try: # select which iteration to stop plotting at
-      stop = int(parsed_opts.stop)
+      stop = parsed_opts.stop  # format is "1:10:1"
+      stop = stop if ":" in stop else ":"+stop
     except:
-      stop = None
+      stop = ":"
 
     try: # select collapse boundaries to plot
       collapse = parsed_opts.collapse.split(';')  # format is "2, 3; 4, 5, 6; 7"
@@ -1148,8 +1151,10 @@ Notes:
     params, cost = read_history(filename)
 
     # ignore everything after 'stop'
-    cost = cost[:stop]
-    params = params[:stop]
+    locals = dict(cost=cost, params=params)
+    cost = eval('cost[%s]' % stop, locals)
+    params = eval('params[%s]' % stop, locals)
+    del locals
 
     # get the minimum cost
     import numpy as np
@@ -1291,8 +1296,9 @@ Notes:
                       default=False,help="show data points in plot")
     parser.add_option("-l","--line",action="store_true",dest="line",\
                       default=False,help="connect data points in plot with a line")
-    parser.add_option("-i","--iter",action="store",dest="stop",metavar="INT",\
-                      default=None,help="the largest iteration to plot")
+    parser.add_option("-i","--iter",action="store",dest="stop",\
+                      metavar="STR",default=":",
+                      help="string for smallest:largest iterations to plot")
     parser.add_option("-g","--legend",action="store_true",dest="legend",\
                       default=False,help="show the legend")
     parser.add_option("-n","--nid",action="store",dest="id",\
@@ -1347,9 +1353,10 @@ Notes:
       out = None
 
     try: # select which iteration to stop plotting at
-      stop = int(parsed_opts.stop)
+      stop = parsed_opts.stop  # format is "1:10:1"
+      stop = stop if ":" in stop else ":"+stop
     except:
-      stop = None
+      stop = ":"
 
     try: # select which 'id' to plot results for
       runs = (int(parsed_opts.id),) #XXX: allow selecting more than one id ?
@@ -1400,9 +1407,11 @@ Notes:
         raise SyntaxError(msg)
 
     # ignore everything after 'stop'
-    step = step[:stop]
-    cost = cost[:stop]
-    param = param[:stop]
+    locals = dict(step=step, cost=cost, param=param)
+    step = eval('step[%s]' % stop, locals)
+    cost = eval('cost[%s]' % stop, locals)
+    param = eval('param[%s]' % stop, locals)
+    del locals
 
     # split (i,id) into iteration and id
     multinode = len(step[0]) - 1  if step else 0 #XXX: no step info, so give up
