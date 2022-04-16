@@ -142,6 +142,10 @@ if provided, ids are the list of 'run ids' to select
     if multinode: id = [(i[1] or 0) for i in step]
     else: id = [0 for i in step]
 
+    if ids is not None:
+        maxid = max(id)+1
+        ids = [(maxid+i if i < 0 else i) for i in ids]
+
     params = [[] for i in range(max(id) + 1)]
     costs = [[] for i in range(len(params))]
     # populate params for each id with the corresponding (param,cost)
@@ -835,7 +839,7 @@ Notes:
 
     try: # select which iteration to stop plotting at
       stop = parsed_opts.stop  # format is "1:10:1"
-      stop = stop if ":" in stop else ":"+stop
+      stop = stop if ":" in stop else (stop+":" if "-" in stop else ":"+stop)
     except:
       stop = ":"
 
@@ -1136,7 +1140,7 @@ Notes:
 
     try: # select which iteration to stop plotting at
       stop = parsed_opts.stop  # format is "1:10:1"
-      stop = stop if ":" in stop else ":"+stop
+      stop = stop if ":" in stop else (stop+":" if "-" in stop else ":"+stop)
     except:
       stop = ":"
 
@@ -1354,7 +1358,7 @@ Notes:
 
     try: # select which iteration to stop plotting at
       stop = parsed_opts.stop  # format is "1:10:1"
-      stop = stop if ":" in stop else ":"+stop
+      stop = stop if ":" in stop else (stop+":" if "-" in stop else ":"+stop)
     except:
       stop = ":"
 
@@ -1428,6 +1432,10 @@ Notes:
     for i in select:
       selected.extend(eval("params[%s]" % i, locals))
     selected = list(set(selected))
+
+    if runs is not None:
+      maxid = max(id)+1
+      runs = [maxid+i if i < 0 else i for i in runs]
 
     results = [[] for i in range(max(id) + 1)]
 
