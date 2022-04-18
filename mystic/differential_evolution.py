@@ -677,6 +677,7 @@ Args:
     callback (func, default=None): function to call after each iteration. The
         interface is ``callback(xk)``, with xk the current parameter vector.
     handler (bool, default=False): if True, enable handling interrupt signals.
+    id (int, default=None): the ``id`` of the solver used in logging.
     strategy (strategy, default=None): override the default mutation strategy.
     itermon (monitor, default=None): override the default GenerationMonitor.
     evalmon (monitor, default=None): override the default EvaluationMonitor.
@@ -740,6 +741,7 @@ Args:
     callback (func, default=None): function to call after each iteration. The
         interface is ``callback(xk)``, with xk the current parameter vector.
     handler (bool, default=False): if True, enable handling interrupt signals.
+    id (int, default=None): the ``id`` of the solver used in logging.
     strategy (strategy, default=None): override the default mutation strategy.
     itermon (monitor, default=None): override the default GenerationMonitor.
     evalmon (monitor, default=None): override the default EvaluationMonitor.
@@ -789,6 +791,8 @@ Notes:
     solver.SetEvaluationLimits(maxiter,maxfun)
     solver.SetEvaluationMonitor(evalmon)
     solver.SetGenerationMonitor(stepmon)
+    if 'id' in kwds:
+        solver.id = int(kwds['id'])
     if 'penalty' in kwds:
         solver.SetPenalty(kwds['penalty'])
     if 'constraints' in kwds:

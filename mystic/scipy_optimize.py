@@ -451,6 +451,7 @@ Args:
     retall (bool, default=False): True if allvecs is desired.
     callback (func, default=None): function to call after each iteration. The
         interface is ``callback(xk)``, with xk the current parameter vector.
+    id (int, default=None): the ``id`` of the solver used in logging.
     handler (bool, default=False): if True, enable handling interrupt signals.
     itermon (monitor, default=None): override the default GenerationMonitor.
     evalmon (monitor, default=None): override the default EvaluationMonitor.
@@ -492,6 +493,8 @@ Notes:
     solver.SetEvaluationLimits(maxiter,maxfun)
     solver.SetEvaluationMonitor(evalmon)
     solver.SetGenerationMonitor(stepmon)
+    if 'id' in kwds:
+        solver.id = int(kwds['id'])
     if 'penalty' in kwds:
         solver.SetPenalty(kwds['penalty'])
     if 'constraints' in kwds:
@@ -617,8 +620,9 @@ note::
         else: constraints = self._constraints
 
         direc = self._direc #XXX: throws Error if direc=None after generation=0
-        x = self.population[0]   # bestSolution
+        x = self.population[0][:]   # bestSolution
         fval = self.popEnergy[0] # bestEnergy
+        self.__internals[0] = self.__internals[0][:] # decouple x1 from x
         x1, fx, bigind, delta = self.__internals
         init = False  # flag to do 0th iteration 'post-initialization'
 
@@ -838,6 +842,7 @@ Args:
     callback (func, default=None): function to call after each iteration. The
         interface is ``callback(xk)``, with xk the current parameter vector.
     direc (tuple, default=None): the initial direction set.
+    id (int, default=None): the ``id`` of the solver used in logging.
     handler (bool, default=False): if True, enable handling interrupt signals.
     itermon (monitor, default=None): override the default GenerationMonitor.
     evalmon (monitor, default=None): override the default EvaluationMonitor.
@@ -887,6 +892,8 @@ Notes:
     solver.SetEvaluationLimits(maxiter,maxfun)
     solver.SetEvaluationMonitor(evalmon)
     solver.SetGenerationMonitor(stepmon)
+    if 'id' in kwds:
+        solver.id = int(kwds['id'])
     if 'penalty' in kwds:
         solver.SetPenalty(kwds['penalty'])
     if 'constraints' in kwds:

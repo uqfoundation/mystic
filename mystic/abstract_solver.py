@@ -486,7 +486,7 @@ input::
         max[max==0] = asarray([radius for i in range(numzeros)])
         self.SetRandomInitialPoints(min,max)
         #stick initial values in population[i], i=0
-        self.population[0] = x0.tolist()
+        self.population[0][:] = x0.tolist()
     
     def SetRandomInitialPoints(self, min=None, max=None):
         """Generate Random Initial Points within given Bounds
@@ -850,7 +850,7 @@ input::
             indx = list(self.popEnergy).index(self.bestEnergy)
             ngen = self.generations #XXX: no random if generations=0 ?
             for i in range(self.nPop):
-                self.population[i] = self._clipGuessWithinRangeBoundary(self.population[i], (not ngen) or (i == indx))
+                self.population[i][:] = self._clipGuessWithinRangeBoundary(self.population[i], (not ngen) or (i == indx))
             cost = wrap_bounds(cost, self._strictMin, self._strictMax) #XXX: remove?
             from mystic.constraints import and_
             constraints = and_(self._constraints, self._strictbounds, onfail=self._strictbounds)

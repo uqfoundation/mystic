@@ -175,6 +175,7 @@ Args:
         interface is ``callback(xk)``, with xk the current parameter vector.
     solver (solver, default=None): override the default nested Solver instance.
     handler (bool, default=False): if True, enable handling interrupt signals.
+    id (int, default=None): the ``id`` of the solver used in logging.
     itermon (monitor, default=None): override the default GenerationMonitor.
     evalmon (monitor, default=None): override the default EvaluationMonitor.
     constraints (func, default=None): a function ``xk' = constraints(xk)``,
@@ -225,6 +226,8 @@ Notes:
     solver.SetEvaluationLimits(maxiter,maxfun)
     solver.SetEvaluationMonitor(evalmon)
     solver.SetGenerationMonitor(stepmon)
+    if 'id' in kwds:
+        solver.id = int(kwds['id'])
     if 'dist' in kwds:
         solver.SetDistribution(kwds['dist'])
     if 'penalty' in kwds:
@@ -300,6 +303,7 @@ Args:
         interface is ``callback(xk)``, with xk the current parameter vector.
     solver (solver, default=None): override the default nested Solver instance.
     handler (bool, default=False): if True, enable handling interrupt signals.
+    id (int, default=None): the ``id`` of the solver used in logging.
     itermon (monitor, default=None): override the default GenerationMonitor.
     evalmon (monitor, default=None): override the default EvaluationMonitor.
     constraints (func, default=None): a function ``xk' = constraints(xk)``,
@@ -350,6 +354,8 @@ Notes:
     solver.SetEvaluationLimits(maxiter,maxfun)
     solver.SetEvaluationMonitor(evalmon)
     solver.SetGenerationMonitor(stepmon)
+    if 'id' in kwds:
+        solver.id = int(kwds['id'])
     if 'dist' in kwds:
         solver.SetDistribution(kwds['dist'])
     if 'penalty' in kwds:
@@ -426,6 +432,7 @@ Args:
         interface is ``callback(xk)``, with xk the current parameter vector.
     solver (solver, default=None): override the default nested Solver instance.
     handler (bool, default=False): if True, enable handling interrupt signals.
+    id (int, default=None): the ``id`` of the solver used in logging.
     itermon (monitor, default=None): override the default GenerationMonitor.
     evalmon (monitor, default=None): override the default EvaluationMonitor.
     constraints (func, default=None): a function ``xk' = constraints(xk)``,
@@ -477,6 +484,8 @@ Notes:
     solver.SetEvaluationLimits(maxiter,maxfun)
     solver.SetEvaluationMonitor(evalmon)
     solver.SetGenerationMonitor(stepmon)
+    if 'id' in kwds:
+        solver.id = int(kwds['id'])
     if 'dist' in kwds:
         solver.SetDistribution(kwds['dist'])
     if 'penalty' in kwds:
