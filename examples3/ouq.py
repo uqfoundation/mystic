@@ -230,7 +230,6 @@ class BaseOUQ(object): #XXX: redo with a "Solver" interface, like ensemble?
         maxfun: max number of objective evaluations [default: defined in solver]
         evalmon: mystic.monitor instance [default: Monitor], for evaluations
         stepmon: mystic.monitor instance [default: Monitor], for iterations
-        save: iteration frequency to save solver [default: None]
         opts: dict of configuration options for solver.Solve [default: {}]
 
     Returns:
@@ -252,9 +251,6 @@ class BaseOUQ(object): #XXX: redo with a "Solver" interface, like ensemble?
         else: # DiffEv/Nelder/Powell
             if x0 is None: solver.SetRandomInitialPoints(min=lb,max=ub)
             else: solver.SetInitialPoints(x0)
-        save = kwds.get('save', None)
-        if save is not None:
-            solver.SetSaveFrequency(save, 'Solver.pkl') #XXX: set name?
         mapper = kwds.get('pool', None)
         if mapper is not None:
             pool = mapper() #XXX: ThreadPool, ProcessPool, etc

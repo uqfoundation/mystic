@@ -7,11 +7,6 @@
 '''
 model objects (and helper functions) to be used with OUQ classes
 '''
-def _modelaxis(model, axis=None):
-    def axmodel(x):
-        return model(x, axis=axis)
-    return axmodel
-
 #FIXME: hardwired to multivalue function
 #FIXME: dict_archive('truth', cached=False) does not cache (is empty)
 #FIXME: option to cache w/o lookup (e.g. for model with randomness)
@@ -90,7 +85,7 @@ def sample(model, bounds, pts=None, **kwds):
     elif pts > 0: # sample pts without optimizing
         pts = pts if _pts is None else _pts
         def doit(axis=None):
-            _model = _modelaxis(model, axis)
+            _model = lambda x: model(x, axis=axis)
             s = searcher(bounds, _model, npts=pts, dist=dist, **kwds)
             s.sample()
             return s
@@ -102,12 +97,12 @@ def sample(model, bounds, pts=None, **kwds):
     else: # search for minima until terminated
         pts = -pts if _pts is None else _pts
         def lower(axis=None):
-            _model = _modelaxis(model, axis)
+            _model = lambda x: model(x, axis=axis)
             s = searcher(bounds, _model, npts=pts, dist=dist, **kwds)
             s.sample_until(terminated=all)
             return s
         def upper(axis=None):
-            model_ = _modelaxis(imodel, axis)
+            model_ = lambda x: imodel(x, axis=axis)
             si = searcher(bounds, model_, npts=pts, dist=dist, **kwds)
             si.sample_until(terminated=all)
             return si
