@@ -111,7 +111,7 @@ def test_inner_solver(nested, solver):
   lb,ub = [0,0,0,0,0],[100,100,100,100,100]
   solver.SetRandomInitialPoints(lb, ub)
   solver.SetConstraints(constraints)
-  solver.SetStrictRanges(lb, ub)
+  solver.SetStrictRanges(lb, ub, tight=True)
   nested = nested(5, 4)
   nested.SetEvaluationMonitor(evalmon)
   nested.SetGenerationMonitor(stepmon)
@@ -144,7 +144,7 @@ def test_mapped_solver(nested, solver, map):
   lb,ub = [0,0,0,0,0],[100,100,100,100,100]
   solver.SetRandomInitialPoints(lb, ub)
   solver.SetConstraints(constraints)
-  solver.SetStrictRanges(lb, ub)
+  solver.SetStrictRanges(lb, ub, tight=True)
   nested = nested(5, 4)
   nested.SetEvaluationMonitor(evalmon)
   nested.SetGenerationMonitor(stepmon)

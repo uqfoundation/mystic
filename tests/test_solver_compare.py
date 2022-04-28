@@ -9,8 +9,10 @@
 
 try:
   from scipy.optimize import fmin, fmin_powell
+  HAS_SCIPY = True
 except ImportError:
   from mystic._scipyoptimize import fmin, fmin_powell
+  HAS_SCIPY = False
 # print("Warning: scipy not installed; defaulting to local solver copy")
 scipy_solvers = ['fmin_powell', 'fmin']
 
@@ -52,7 +54,12 @@ def test_compare(solvername, x0, **kwds):
   maxfun = kwds['maxfun'] if 'maxfun' in kwds else None
   my_x = my(rosen, x0, disp=0, full_output=True, **kwds)
 # itermon = kwds.pop('itermon',None)
-  sp_x = sp(rosen, x0, disp=0, full_output=True, **kwds)
+  try:
+    sp_x = sp(rosen, x0, disp=0, full_output=True, **kwds)
+  except: # _MaxFuncCallError
+    if HAS_SCIPY:
+      return
+    assert False
   # similar bestSolution and bestEnergy
 # print('my: %s' % my_x[0:2])
 # print('sp: %s' % sp_x[0:2])
@@ -103,7 +110,7 @@ if __name__ == '__main__':
   for solver in scipy_solvers:
 #   print("comparing %s from mystic and scipy" % (solver))
     test_compare(solver, x0)
-    test_compare(solver, x0, maxiter=None, maxfun=0)
+    test_compare(solver, x0, maxiter=None, maxfun=0)# _MaxFuncCallError
     test_compare(solver, x0, maxiter=None, maxfun=1)
     test_compare(solver, x0, maxiter=None, maxfun=2)
     test_compare(solver, x0, maxiter=None, maxfun=9)
