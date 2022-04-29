@@ -461,7 +461,8 @@ Args:
     penalty (func, default=None): a function ``y = penalty(xk)``, where xk is
         the current parameter vector, and ``y' == 0`` when the encoded
         constraints are satisfied (and ``y' > 0`` otherwise).
-    tight (bool, default=False): enforce bounds and constraints concurrently.
+    tightrange (bool, default=None): impose bounds and constraints concurrently.
+    cliprange (bool, default=None): bounding constraints clip exterior values.
 
 Returns:
     ``(xopt, {fopt, iter, funcalls, warnflag}, {allvecs})``
@@ -501,8 +502,9 @@ Notes:
         solver.SetConstraints(kwds['constraints'])
     if bounds is not None:
         minb,maxb = unpair(bounds)
-        tight = kwds['tight'] if 'tight' in kwds else False
-        solver.SetStrictRanges(minb,maxb,tight=tight) # clip?
+        tight = kwds['tightrange'] if 'tightrange' in kwds else None
+        clip = kwds['cliprange'] if 'cliprange' in kwds else None
+        solver.SetStrictRanges(minb,maxb,tight=tight,clip=clip)
 
     if handler: solver.enable_signal_handler()
     solver.Solve(cost, termination=termination, \
@@ -852,7 +854,8 @@ Args:
     penalty (func, default=None): a function ``y = penalty(xk)``, where xk is
         the current parameter vector, and ``y' == 0`` when the encoded
         constraints are satisfied (and ``y' > 0`` otherwise).
-    tight (bool, default=False): enforce bounds and constraints concurrently.
+    tightrange (bool, default=None): impose bounds and constraints concurrently.
+    cliprange (bool, default=None): bounding constraints clip exterior values.
 
 Returns:
     ``(xopt, {fopt, iter, funcalls, warnflag, direc}, {allvecs})``
@@ -900,8 +903,9 @@ Notes:
         solver.SetConstraints(kwds['constraints'])
     if bounds is not None:
         minb,maxb = unpair(bounds)
-        tight = kwds['tight'] if 'tight' in kwds else False
-        solver.SetStrictRanges(minb,maxb,tight=tight) # clip?
+        tight = kwds['tightrange'] if 'tightrange' in kwds else None
+        clip = kwds['cliprange'] if 'cliprange' in kwds else None
+        solver.SetStrictRanges(minb,maxb,tight=tight,clip=clip)
 
     if handler: solver.enable_signal_handler()
     solver.Solve(cost, termination=termination, \

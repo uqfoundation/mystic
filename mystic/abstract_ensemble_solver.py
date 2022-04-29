@@ -201,7 +201,8 @@ input::
         if self._useStrictRange: #XXX: always, settable, or sync'd ?
             solver.SetStrictRanges(min=self._strictMin, \
                                    max=self._strictMax, \
-                                   tight=self._useTightRange)
+                                   tight=self._useTightRange, \
+                                   clip=self._useClipRange)
         if reset:
             solver.SetEvaluationMonitor(self._evalmon[:0], new=True)
             solver.SetGenerationMonitor(self._stepmon[:0], new=True)
@@ -569,7 +570,8 @@ note::
                 if solver._useStrictRange: #XXX: always, settable, or sync'd ?
                     solver.SetStrictRanges(solver._strictMin, \
                                            solver._strictMax, \
-                                           tight=solver._useTightRange)
+                                           tight=solver._useTightRange, \
+                                           clip=self._useClipRange)
             _term = (solver._live is False) and solver.Terminated()
             if _term is True: solver._live = True #XXX: HACK don't reset _fcalls
             solver.Step(cost,ExtraArgs=ExtraArgs,disp=disp,callback=callback)
@@ -689,7 +691,8 @@ Note:
                 if solver._useStrictRange: #XXX: always, settable, or sync'd ?
                     solver.SetStrictRanges(solver._strictMin, \
                                            solver._strictMax, \
-                                           tight=solver._useTightRange)
+                                           tight=solver._useTightRange, \
+                                           clip=self._useClipRange)
             _term = (solver._live is False) and solver.Terminated()
             if _term is True: solver._live = True #XXX: HACK don't reset _fcalls
             if solver._cost[1] is None: #XXX: HACK for configured NestedSolver

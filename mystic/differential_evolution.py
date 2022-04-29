@@ -687,7 +687,8 @@ Args:
     penalty (func, default=None): a function ``y = penalty(xk)``, where xk is
         the current parameter vector, and ``y' == 0`` when the encoded
         constraints are satisfied (and ``y' > 0`` otherwise).
-    tight (bool, default=False): enforce bounds and constraints concurrently.
+    tightrange (bool, default=None): impose bounds and constraints concurrently.
+    cliprange (bool, default=None): bounding constraints clip exterior values.
     map (func, default=None): a (parallel) map function ``y = map(f, x)``.
 
 Returns:
@@ -751,7 +752,8 @@ Args:
     penalty (func, default=None): a function ``y = penalty(xk)``, where xk is
         the current parameter vector, and ``y' == 0`` when the encoded
         constraints are satisfied (and ``y' > 0`` otherwise).
-    tight (bool, default=False): enforce bounds and constraints concurrently.
+    tightrange (bool, default=None): impose bounds and constraints concurrently.
+    cliprange (bool, default=None): bounding constraints clip exterior values.
     map (func, default=None): a (parallel) map function ``y = map(f, x)``.
 
 Returns:
@@ -799,8 +801,9 @@ Notes:
         solver.SetConstraints(kwds['constraints'])
     if bounds is not None:
         minb,maxb = unpair(bounds)
-        tight = kwds['tight'] if 'tight' in kwds else False
-        solver.SetStrictRanges(minb,maxb,tight=tight) # clip?
+        tight = kwds['tightrange'] if 'tightrange' in kwds else None
+        clip = kwds['cliprange'] if 'cliprange' in kwds else None
+        solver.SetStrictRanges(minb,maxb,tight=tight,clip=clip)
 
     try: #x0 passed as 1D array of (min,max) pairs
         minb,maxb = unpair(x0)

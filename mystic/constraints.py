@@ -358,7 +358,8 @@ Input:
 
 
 def solve(constraints, guess=None, nvars=None, solver=None, \
-          lower_bounds=None, upper_bounds=None, termination=None):
+          lower_bounds=None, upper_bounds=None, termination=None, \
+          tightrange=None, cliprange=None):
     """Use optimization to find a solution to a set of constraints.
 
 Inputs:
@@ -369,8 +370,10 @@ Additional Inputs:
     lower_bounds -- list of lower bounds on solution values.
     upper_bounds -- list of upper bounds on solution values.
     nvars -- number of parameter values.
-    solver -- the mystic solver to use in the optimization
-    termination -- the mystic termination to use in the optimization
+    solver -- the mystic solver to use in the optimization.
+    termination -- the mystic termination to use in the optimization.
+    tightrange -- if True, impose bounds and constraints concurrently.
+    cliprange -- if True, bounding constraints clip exterior values.
 
 NOTE: The resulting constraints will likely be more expensive to evaluate
     and less accurate than writing the constraints solver from scratch.
@@ -428,8 +431,9 @@ NOTE: The default solver is 'diffev', with npop=min(40, ndim*5). The default
             solver.SetInitialPoints(guess) #XXX: nice if 'diffev' had methods
         else:
             solver.SetRandomInitialPoints(lower_bounds, upper_bounds)
-    if lower_bounds or upper_bounds: #XXX: allow choice of tight?
-        solver.SetStrictRanges(lower_bounds, upper_bounds, tight=True)
+    if lower_bounds or upper_bounds: #XXX: disable/hardwire tight, clip?
+        kwds = dict(tight=tightrange, clip=cliprange)
+        solver.SetStrictRanges(lower_bounds, upper_bounds, **kwds)
     if hasattr(constraints, 'iter') and hasattr(constraints, 'error'):
         solver.SetPenalty(constraints) #i.e. is a penalty function
     else: # is a constraints solver
@@ -459,8 +463,10 @@ Additional Inputs:
     lower_bounds -- list of lower bounds on solution values.
     upper_bounds -- list of upper bounds on solution values.
     nvars -- number of parameter values.
-    solver -- the mystic solver to use in the optimization
-    termination -- the mystic termination to use in the optimization
+    solver -- the mystic solver to use in the optimization.
+    termination -- the mystic termination to use in the optimization.
+    tightrange -- if True, impose bounds and constraints concurrently.
+    cliprange -- if True, bounding constraints clip exterior values.
 
 NOTE: The default solver is 'diffev', with npop=min(40, ndim*5). The default
     termination is ChangeOverGeneration(), and the default guess is randomly

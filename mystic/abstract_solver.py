@@ -128,7 +128,8 @@ Important class members::
         self.sigint_callback  = None
         self._handle_sigint   = False
         self._useStrictRange  = False
-        self._useTightRange   = False
+        self._useTightRange   = None
+        self._useClipRange    = None
         self._defaultMin      = [-1e3] * dim
         self._defaultMax      = [ 1e3] * dim
         self._strictMin       = []
@@ -371,6 +372,8 @@ note::
         else: # tight in (True, None)
             args = dict(symbolic=False, clip=clip)
         #XXX: we are ignoring bad kwds entries, should we?
+        self._useTightRange = tight
+        self._useClipRange = clip
 
         if min is False or max is False:
             self._useStrictRange = False
@@ -428,9 +431,7 @@ note::
             clip = True
         ignore = symbolic is None
         if not self._useStrictRange or ignore:
-            self._useTightRange = False
             return lambda x: x
-        self._useTightRange = True
         if symbolic and not clip:
             raise NotImplementedError("symbolic must clip to the nearest bound")
         # build the constraint
