@@ -28,6 +28,7 @@ matrix:
         - python: '3.11-dev'
           env:
             - CYTHON="true" # numpy source build
+            - KLEPTO="master"
 
         - python: 'pypy2.7-7.3.1' # most recent
           dist: xenial
@@ -53,6 +54,8 @@ before_install:
     - if [[ $SYMPY == "true" ]]; then pip install sympy; fi
     - if [[ $SCIPY == "true" ]]; then pip install scipy; fi
     - if [[ $CYTHON == "true" ]]; then pip install "cython<0.29.25"; fi #FIXME
+    - if [[ $KLEPTO == "master" ]]; then pip install "https://github.com/uqfoundation/klepto/archive/master.tar.gz"; fi
+
 
 install:
     - python -m pip install .
