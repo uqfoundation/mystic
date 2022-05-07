@@ -81,6 +81,47 @@ You can get the latest development version with all the shiny new features at:
 If you have a new contribution, please submit a pull request.
 
 
+Installation
+------------
+``mystic`` can be installed with ``pip``::
+
+    $ pip install mystic
+
+To include optional scientific python support, with ``scipy``, install::
+
+    $ pip install mystic[math]
+
+To include optional plotting support with ``matplotlib``, install::
+
+    $ pip install mystic[plotting]
+
+To include optional parallel computing support, with ``pathos``, install::
+
+    $ pip install mystic[parallel]
+
+
+Requirements
+------------
+``mystic`` requires:
+
+* ``python`` (or ``pypy``), **==2.7** or **>=3.7**
+* ``setuptools``, **>=42**
+* ``wheel``, **>=0.1**
+* ``cython``, **>=0.29.22**
+* ``numpy``, **>=1.0**
+* ``sympy``, **>=0.6.7**
+* ``mpmath``, **>=0.19**
+* ``dill``, **>=0.3.4**
+* ``klepto``, **>=0.2.1**
+
+Optional requirements:
+
+* ``matplotlib``, **>=0.91**
+* ``scipy``, **>=0.6.0**
+* ``pathos``, **>=0.2.8**
+* ``pyina``, **>=0.2.5**
+
+
 More Information
 ----------------
 Probably the best way to get started is to look at the documentation at
