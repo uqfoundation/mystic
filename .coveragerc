@@ -31,10 +31,14 @@ source =
     cache
     models
     mystic/math
-    */site-packages/mystic*/mystic
-    */site-packages/mystic*/mystic/cache
-    */site-packages/mystic*/mystic/math
-    */site-packages/mystic*/mystic/models
+    */site-packages/mystic
+    */site-packages/mystic/cache
+    */site-packages/mystic/math
+    */site-packages/mystic/models
+    */site-packages/mystic-*/mystic
+    */site-packages/mystic-*/mystic/cache
+    */site-packages/mystic-*/mystic/math
+    */site-packages/mystic-*/mystic/models
 
 [report]
 include =
