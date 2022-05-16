@@ -317,38 +317,34 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 """
 
-try:
-    # This is a hack to import a minimal package for the build process
-    __MYSTIC_SETUP__
-except NameError:
-    __all__ = ['solvers','termination','strategy','munge','tools','support', \
-               'penalty','coupler','symbolic','monitors','license','citation', \
-               'constraints','model_plotter','log_reader','collapse_plotter']
+__all__ = ['solvers','termination','strategy','munge','tools','support', \
+           'penalty','coupler','symbolic','monitors','license','citation', \
+           'constraints','model_plotter','log_reader','collapse_plotter']
 
-    # solvers
-    import mystic.solvers as solvers
+# solvers
+import mystic.solvers as solvers
 
-    # strategies, termination conditions
-    import mystic.termination as termination
-    import mystic.strategy as strategy
+# strategies, termination conditions
+import mystic.termination as termination
+import mystic.strategy as strategy
 
-    # constraints and penalties
-    import mystic.constraints as constraints
-    import mystic.penalty as penalty
-    import mystic.coupler as coupler
-    import mystic.symbolic as symbolic
+# constraints and penalties
+import mystic.constraints as constraints
+import mystic.penalty as penalty
+import mystic.coupler as coupler
+import mystic.symbolic as symbolic
 
-    # monitors, function wrappers, and other tools
-    import mystic.monitors as monitors
-    import mystic.munge as munge
-    import mystic.tools as tools
+# monitors, function wrappers, and other tools
+import mystic.monitors as monitors
+import mystic.munge as munge
+import mystic.tools as tools
 
-    # scripts
-    from mystic.scripts import model_plotter, log_reader, collapse_plotter
-    import mystic.support as support
+# scripts
+from mystic.scripts import model_plotter, log_reader, collapse_plotter
+import mystic.support as support
 
-    # backward compatibility
-    from mystic.tools import *
+# backward compatibility
+from mystic.tools import *
 
 
 def license():
