@@ -63,7 +63,7 @@ function. For an example, see `mystic.examples.forward_model`.
 from mystic.filters import identity, component
 from mystic.filters import null_check
 
-from inspect import getargspec
+#from inspect import getargspec
 from numpy import pi, sqrt, array, mgrid, random, real, conjugate, arange, sum
 
 __all__ = ['CostFactory']
