@@ -124,7 +124,7 @@ class BinaryDistribution(Distribution):
 
 # define dependencies
 sysversion = sys.version_info[:2]
-dill_version = 'dill>=0.3.4'
+dill_version = 'dill>=0.3.5'
 klepto_version = 'klepto>=0.2.1'
 pathos_version = 'pathos>=0.2.8'
 pyina_version = 'pyina>=0.2.5'
