@@ -2,7 +2,6 @@
 # Further build requirements come from setup.py via the PEP 517 interface
 requires = [
     "setuptools>=42",
-    "wheel",
     "Cython>=0.29.22", #XXX: required to build numpy from source
     #"oldest-supported-numpy>=1.0", #XXX: oldest supported numpy with wheels
 ]
