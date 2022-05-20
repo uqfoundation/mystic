@@ -110,8 +110,8 @@ Requirements
 * ``numpy``, **>=1.0**
 * ``sympy``, **>=0.6.7**
 * ``mpmath``, **>=0.19**
-* ``dill``, **>=0.3.4**
-* ``klepto``, **>=0.2.1**
+* ``dill``, **>=0.3.5.1**
+* ``klepto``, **>=0.2.2**
 
 Optional requirements:
 
