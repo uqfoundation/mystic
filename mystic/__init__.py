@@ -9,7 +9,7 @@
 #  - https://github.com/uqfoundation/mystic/blob/master/LICENSE
 
 # author, version, license, and long description
-__version__ = '0.3.9'
+__version__ = '0.4.0.dev0'
 __author__ = 'Mike McKerns'
 
 __doc__ = """
