@@ -9,7 +9,7 @@
 #  - https://github.com/uqfoundation/mystic/blob/master/LICENSE
 
 # author, version, license, and long description
-__version__ = '0.3.9.dev0'
+__version__ = '0.3.9'
 __author__ = 'Mike McKerns'
 
 __doc__ = """
@@ -134,8 +134,8 @@ Optional requirements:
 
     - ``matplotlib``, **>=0.91**
     - ``scipy``, **>=0.6.0**
-    - ``pathos``, **>=0.2.8**
-    - ``pyina``, **>=0.2.5**
+    - ``pathos``, **>=0.2.9**
+    - ``pyina``, **>=0.2.6**
 
 
 More Information

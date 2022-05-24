@@ -126,8 +126,8 @@ class BinaryDistribution(Distribution):
 sysversion = sys.version_info[:2]
 dill_version = 'dill>=0.3.5.1'
 klepto_version = 'klepto>=0.2.2'
-pathos_version = 'pathos>=0.2.8'
-pyina_version = 'pyina>=0.2.5'
+pathos_version = 'pathos>=0.2.9'
+pyina_version = 'pyina>=0.2.6'
 cython_version = 'cython>=0.29.22' #XXX: required to build numpy from source
 try:
     import ctypes # if using `pypy`, pythonapi is not found
