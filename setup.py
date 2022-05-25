@@ -9,12 +9,8 @@
 import os
 import sys
 # drop support for older python
-unsupported = None
-if sys.version_info < (2, 7):
-    unsupported = 'Versions of Python before 2.7 are not supported'
-elif (3, 0) <= sys.version_info < (3, 7):
+if sys.version_info < (3, 7):
     unsupported = 'Versions of Python before 3.7 are not supported'
-if unsupported:
     raise ValueError(unsupported)
 
 # get distribution meta info
@@ -84,14 +80,12 @@ setup_kwds = dict(
         'Source Code':'https://github.com/uqfoundation/mystic',
         'Bug Tracker':'https://github.com/uqfoundation/mystic/issues',
     },
-    python_requires = '>=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, !=3.5.*, !=3.6.*',
+    python_requires = '>=3.7',
     classifiers = [
         'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
         'Intended Audience :: Science/Research',
         'License :: OSI Approved :: BSD License',
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
@@ -123,61 +117,16 @@ class BinaryDistribution(Distribution):
         return True
 
 # define dependencies
-sysversion = sys.version_info[:2]
 dill_version = 'dill>=0.3.5.1'
 klepto_version = 'klepto>=0.2.2'
 pathos_version = 'pathos>=0.2.9'
 pyina_version = 'pyina>=0.2.6'
 cython_version = 'cython>=0.29.22' #XXX: required to build numpy from source
-try:
-    import ctypes # if using `pypy`, pythonapi is not found
-    IS_PYPY = not hasattr(ctypes, 'pythonapi')
-    IS_PYPY2 = IS_PYPY and sysversion < (3,0)
-except:
-    IS_PYPY = False
-    IS_PYPY2 = False
-if sysversion < (2,6) or sysversion == (3,0) or sysversion == (3,1):
-    numpy_version = 'numpy>=1.0, <1.8.0'
-    sympy_version = 'sympy>=0.6.7, <1.1'
-    scipy_version = 'scipy>=0.6.0, <0.17.0'
-    mpmath_version = 'mpmath>=0.19, <1.0.0'
-    matplotlib_version = 'matplotlib>=0.91, <2.0.0'
-elif sysversion == (2,6) or sysversion == (3,2) or sysversion == (3,3):
-    numpy_version = 'numpy>=1.0, <1.12.0'
-    sympy_version = 'sympy>=0.6.7, <1.1'
-    scipy_version = 'scipy>=0.6.0, <1.0.0'
-    mpmath_version = 'mpmath>=0.19, <1.0.0'
-    matplotlib_version = 'matplotlib>=0.91, <2.0.0'
-elif IS_PYPY2:
-    numpy_version = 'numpy>=1.0, <1.16.0'
-    sympy_version = 'sympy>=0.6.7, <1.1'
-    scipy_version = 'scipy>=0.6.0, <1.3.0'
-    mpmath_version = 'mpmath>=0.19, <1.2.1' #XXX: != 1.2.1
-    matplotlib_version = 'matplotlib>=0.91, <3.0.0'
-elif sysversion == (2,7) or sysversion == (3,4):
-    numpy_version = 'numpy>=1.0, <1.17.0'
-    sympy_version = 'sympy>=0.6.7, <1.1'
-    scipy_version = 'scipy>=0.6.0, <1.3.0'
-    mpmath_version = 'mpmath>=0.19'
-    matplotlib_version = 'matplotlib>=0.91, <3.0.0'
-elif sysversion == (3,5):
-    numpy_version = 'numpy>=1.0, <1.19.0'
-    sympy_version = 'sympy>=0.6.7, <1.7'
-    scipy_version = 'scipy>=0.6.0, <1.5.0'
-    mpmath_version = 'mpmath>=0.19'
-    matplotlib_version = 'matplotlib>=0.91, <3.1.0'
-elif sysversion == (3,6):# or IS_PYPY
-    numpy_version = 'numpy>=1.0, <1.20.0'
-    sympy_version = 'sympy>=0.6.7'#, <0.7.4'
-    scipy_version = 'scipy>=0.6.0, <1.6.0'
-    mpmath_version = 'mpmath>=0.19'
-    matplotlib_version = 'matplotlib>=0.91, <3.4.0'
-else:
-    numpy_version = 'numpy>=1.0'
-    sympy_version = 'sympy>=0.6.7'#, <0.7.4'
-    scipy_version = 'scipy>=0.6.0'
-    mpmath_version = 'mpmath>=0.19'
-    matplotlib_version = 'matplotlib>=0.91' #XXX: kiwisolver-1.3.0
+numpy_version = 'numpy>=1.0'
+sympy_version = 'sympy>=0.6.7'#, <0.7.4'
+scipy_version = 'scipy>=0.6.0'
+mpmath_version = 'mpmath>=0.19'
+matplotlib_version = 'matplotlib>=0.91' #XXX: kiwisolver-1.3.0
 # add dependencies
 depend = [dill_version, klepto_version, numpy_version, sympy_version, mpmath_version]
 extras = {'math': [scipy_version], 'parallel': [pathos_version, pyina_version], 'plotting': [matplotlib_version]}
