@@ -121,7 +121,7 @@ dill_version = 'dill>=0.3.5.1'
 klepto_version = 'klepto>=0.2.2'
 pathos_version = 'pathos>=0.2.9'
 pyina_version = 'pyina>=0.2.6'
-cython_version = 'cython>=0.29.22' #XXX: required to build numpy from source
+cython_version = 'cython>=0.29.30' #XXX: required to build numpy from source
 numpy_version = 'numpy>=1.0'
 sympy_version = 'sympy>=0.6.7'#, <0.7.4'
 scipy_version = 'scipy>=0.6.0'

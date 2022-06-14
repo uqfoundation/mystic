@@ -123,7 +123,7 @@ Requirements
 
     - ``python`` (or ``pypy``), **>=3.7**
     - ``setuptools``, **>=42**
-    - ``cython``, **>=0.29.22**
+    - ``cython``, **>=0.29.30**
     - ``numpy``, **>=1.0**
     - ``sympy``, **>=0.6.7**
     - ``mpmath``, **>=0.19**
