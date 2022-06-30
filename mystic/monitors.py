@@ -574,17 +574,15 @@ Examples:
     >>> sow.d
     []
     """
+    if not args and not kwds:
+        raise ValueError("at least one monitor input must be specified")
+    for arg in args:
+        kwds.setdefault(arg, arg) # use arg name if not in kwds
     from mystic._genSow import genSow
     return genSow(**kwds)(*args)
 
 
 ##### loaders ##### #XXX: should be class method?
-if (sys.hexversion >= 0x30000f0):
-    exec_string = 'exec(code, _globals)'
-else:
-    exec_string = 'exec code in _globals'
-#FIXME: remove this head-standing to workaround python2.6 exec bug
-def_load = """
 def _load(path, monitor=None, verbose=False): #XXX: duplicate in mystic.munge?
     '''load npts, params, and cost into monitor from file at given path'''
 
@@ -604,7 +602,7 @@ sys.modules.pop('{base}', None);
         _globals = {}
         _globals.update(globals())
         code = compile(string, '<string>', 'exec')
-        %s
+        exec(code, _globals)
         npts = _globals['___npts'] if '___npts' in _globals else None
         params = _globals['___params'] if '___params' in _globals else None
         cost = _globals['___cost'] if '___cost' in _globals else None
@@ -630,9 +628,7 @@ sys.modules.pop('{base}', None);
     monitor._npts = npts
 
     return monitor
-""" % exec_string
-exec(def_load)
-del def_load, exec_string
+
 
 ##### readers ##### #XXX: should be class methods?
 def _solutions(monitor, last=None):

@@ -37,7 +37,9 @@ Takes string names of properties (given as *args), and sets the
 corresponding properties as required inputs for the Monitor.
         """
         self.__args = [ i for i in args if i in self.__dict ]
-        exec(self._genClass()) # generates Monitor() #FIXME: fail in python3.x
+        _locals = {}
+        exec(self._genClass(), _locals) # generates Monitor()
+        Monitor = _locals['Monitor']
         return Monitor()
        #return self._genClass()
 
@@ -64,6 +66,7 @@ class Monitor(object):
 """
         for line in self.__initlist:
             code1 += "        %s\n" % line
+        code1 += "        return\n"
         return code1
 
     def __genCall(self):
@@ -80,6 +83,7 @@ class Monitor(object):
         for line in self.__argslist:
             code2 += "        try: %s\n" % line
             code2 += "        except: pass\n"
+        code2 += "        return\n"
         return code2
 
     def __genMeth(self):
