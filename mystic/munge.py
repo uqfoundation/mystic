@@ -10,10 +10,6 @@ from mystic.tools import list_or_tuple_or_ndarray as sequence
 from mystic.tools import isNull
 
 import sys
-if (sys.hexversion >= 0x30000f0):
-    exec_string = 'exec(code, globals)'
-else:
-    exec_string = 'exec code in globals'
 
 # generalized history reader
 
@@ -27,15 +23,11 @@ source is a monitor, logfile, support file, solver restart file, dataset, etc
     from mystic.abstract_solver import AbstractSolver
     from mystic.math.legacydata import dataset
     from klepto.archives import archive, cache
-    try:
-        basestring
-    except NameError:
-        basestring = str
-        import io
-        file = io.IOBase
+    import io
+    file = io.IOBase
     if isinstance(source, file):
         return read_history(source.name)
-    if isinstance(source, basestring):
+    if isinstance(source, str):
         import re
         source = re.sub(r'\.py*.$', '', source)  # strip off .py* extension
     elif isinstance(source, Monitor):
@@ -169,7 +161,7 @@ def write_raw_file(mon,log_file='paramlog.py',**kwds):
     del kwds['header']
   f.write("inf = float('inf')\n") # define special values
   f.write("nan = float('nan')\n") # define special values
-  for variable,value in getattr(kwds, 'iteritems', kwds.items)():
+  for variable,value in kwds.items():
     f.write('%s = %s\n' % (variable,value))# write remaining kwds as variables
  #f.write('# %s\n' % energy[-1])
   f.write('params = %s\n' % steps)
@@ -204,7 +196,6 @@ def read_raw_file(file_in):
   return steps, energy  # was 'from file_in import params as steps', etc
 
 #TODO: check impact of having gradient ([i,j,k]) and/not cost
-def_read_import = r'''
 def read_import(file, *targets):
   "import the targets; targets are name strings"
   import re, os, sys
@@ -220,12 +211,12 @@ def read_import(file, *targets):
       for target in targets:
         code = "from {0} import {1} as result".format(file, target)
         code = compile(code, '<string>', 'exec')
-        %(exec_string)s
+        exec(code, globals)
         results.append(globals['result'])
     else:
         code = "import {0} as result".format(file)
         code = compile(code, '<string>', 'exec')
-        %(exec_string)s
+        exec(code, globals)
         results.append(globals['result'])
   except ImportError:
     raise RuntimeError('File: {0} not found'.format(file))
@@ -234,10 +225,6 @@ def read_import(file, *targets):
     sys.path.pop()
   if not len(results): return None
   return results[-1] if (len(results) == 1) else results
-''' % dict(exec_string=exec_string)
-
-exec(def_read_import)
-del def_read_import
 
 def read_converge_file(file_in):
   steps, energy = read_raw_file(file_in)

@@ -546,7 +546,7 @@ note::
         # process and activate input settings
         kwds['step'] = True  #XXX: once Step is taken, step=True thereafter
         settings = self._process_inputs(kwds)
-        #(hardwired: due to python3.x exec'ing to locals())
+        #(hardwired: due to python exec'ing to locals())
         disp = settings['disp'] if 'disp' in settings else False
         echo = settings['callback'] if 'callback' in settings else None
         if disp in ['verbose', 'all']: verbose = True
@@ -632,7 +632,7 @@ Note:
         settings = super(AbstractEnsembleSolver, self)._process_inputs(kwds)
         settings.update({
         'step':self._step}) #run Solve with (or without) Step
-        [settings.update({i:j}) for (i,j) in getattr(kwds, 'iteritems', kwds.items)() if i in settings]
+        [settings.update({i:j}) for (i,j) in kwds.items() if i in settings]
         self._step = settings['step']
         return settings
 

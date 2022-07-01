@@ -10,11 +10,7 @@
 # should report clock-time, # of iterations, and # of function evaluations
 
 import sys
-PY3 = (sys.hexversion >= 0x30000f0)
-if PY3:
-    from io import StringIO
-else:
-    from StringIO import StringIO
+from io import StringIO
 import unittest
 from math import *
 from mystic.math import almostEqual

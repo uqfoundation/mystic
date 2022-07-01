@@ -227,7 +227,7 @@ note::
         """
         # process and activate input settings
         settings = self._process_inputs(kwds)
-        #(hardwired: due to python3.x exec'ing to locals())
+        #(hardwired: due to python exec'ing to locals())
         callback = settings['callback'] if 'callback' in settings else None
         disp = settings['disp'] if 'disp' in settings else False
         radius = settings['radius'] if 'radius' in settings else self.radius
@@ -387,7 +387,7 @@ Note:
         settings.update({
         'radius':self.radius, #percentage change for initial simplex values
         'adaptive':self.adaptive}) #use adaptive algorithm parameters
-        [settings.update({i:j}) for (i,j) in getattr(kwds, 'iteritems', kwds.items)() if i in settings]
+        [settings.update({i:j}) for (i,j) in kwds.items() if i in settings]
         self.radius = settings['radius']
         self.adaptive = settings['adaptive']
         return settings
@@ -607,7 +607,7 @@ note::
         """
         # process and activate input settings
         settings = self._process_inputs(kwds)
-        #(hardwired: due to python3.x exec'ing to locals())
+        #(hardwired: due to python exec'ing to locals())
         callback = settings['callback'] if 'callback' in settings else None
         disp = settings['disp'] if 'disp' in settings else False
         xtol = settings['xtol'] if 'xtol' in settings else self.xtol
@@ -769,7 +769,7 @@ Note:
         'xtol':self.xtol,    #line-search error tolerance
         'imax':self.imax})   #line-search maximum iterations
         direc=self._direc    #initial direction set
-        [settings.update({i:j}) for (i,j) in getattr(kwds, 'iteritems', kwds.items)() if i in settings]
+        [settings.update({i:j}) for (i,j) in kwds.items() if i in settings]
         self._direc = kwds['direc'] if 'direc' in kwds else direc
         self.xtol = settings['xtol']
         self.imax = settings['imax']

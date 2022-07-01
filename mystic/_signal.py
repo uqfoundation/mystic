@@ -8,11 +8,6 @@
 #  - https://github.com/uqfoundation/mystic/blob/master/LICENSE
 '''a signal handler for a mystic solver instance'''
 
-try:
-    input = raw_input
-except NameError:
-    pass
-
 # pull from the signal module
 from signal import *
 

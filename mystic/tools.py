@@ -56,12 +56,7 @@ Other tools of interest are in::
     `mystic.mystic.filters` and `mystic.models.poly`
 """
 from functools import reduce
-import collections
-try:
-    import collections.abc
-except ImportError:
-    pass
-_Callable = getattr(collections, 'Callable', None) or getattr(collections.abc, 'Callable')
+from collections.abc import Callable as _Callable
 
 def isiterable(x):
     """check if an object is iterable"""
@@ -350,14 +345,8 @@ for building RNGs that are different across multiple threads or processes.
         return rng
     if seed == '*': # special case: random seeding for multiprocessing
         try:
-            try:
-                import multiprocessing as mp
-            except ImportError:
-                import processing as mp
-            try:
-                seed = mp.current_process().pid
-            except AttributeError:
-                seed = mp.currentProcess().getPid()
+            import multiprocessing as mp
+            seed = mp.current_process().pid
         except:   
             seed = 0
         import time
@@ -600,7 +589,7 @@ For example:
     """
     def dec(f):
         def func(x, *args, **kwds):
-            for i,j in getattr(mask, 'iteritems', mask.items)():
+            for i,j in mask.items():
                 try: x[i] = j
                 except IndexError: pass
             return f(x, *args, **kwds)
@@ -658,7 +647,7 @@ For example:
     """
     def dec(f):
         def func(x, *args, **kwds):
-            for i,j in getattr(mask, 'iteritems', mask.items)():
+            for i,j in mask.items():
                 try: x[i] = x[j]
                 except TypeError: # value is tuple with f(x) or constant
                   j0,j1 = (j[:2] + (1,))[:2]
@@ -781,7 +770,7 @@ For example:
     #XXX: any vectorized way to do this?
     for i,j in pairs: #XXX: sorted(sorted(pair) for pair in pairs): # ordering?
         found = False
-        for k,v in getattr(collapse, 'iteritems', collapse.items)():
+        for k,v in collapse.items():
             if i in (k,) or i in v:
                 v.add(j); found = True; break
             if j in (k,) or j in v:
@@ -833,44 +822,6 @@ def _symmetric(pairs): # assumes pairs is a set of tuples
     return set(list(pairs) + _inverted(pairs))
 
 
-try:
-    from itertools import permutations
-except ImportError:
-    def permutations(iterable, r=None):
-        """return successive r-length permutations of elements in the iterable.
-Produces a generator object.
-
-For example: 
-    >>> print(list( permutations(range(3),2) ))
-    [(0,1), (0,2), (1,0), (1,2), (2,0), (2,1)]
-    >>> print(list( permutations(range(3)) ))
-    [(0,1,2), (0,2,1), (1,0,2), (1,2,0), (2,0,1), (2,1,0)]
-        """
-        # code from http://docs.python.org/library/itertools.html
-        pool = tuple(iterable)
-        n = len(pool)
-        r = n if r is None else r
-        if r > n:
-            return
-        indices = list(range(n))
-        cycles = list(range(n, n-r, -1))
-        yield tuple(pool[i] for i in indices[:r])
-        while n:
-            for i in reversed(range(r)):
-                cycles[i] -= 1
-                if cycles[i] == 0:
-                    indices[i:] = indices[i+1:] + indices[i:i+1]
-                    cycles[i] = n - i
-                else:
-                    j = cycles[i]
-                    indices[i], indices[-j] = indices[-j], indices[i]
-                    yield tuple(pool[i] for i in indices[:r])
-                    break
-            else:
-                return
-        return
-
-
 def measure_indices(npts):
     '''get the indices corresponding to weights and to positions'''
     wts, pos = [], []
@@ -891,9 +842,8 @@ def select_params(params, index):
             if type(params).__module__ == 'mystic.monitors':
                 params = params._x[-1]
         except: pass
-    import itertools
     # returns (tuple(index), tuple(params[index]))
-    return tuple(getattr(itertools, 'izip', zip)(*((i,params[i]) for i in index)))
+    return tuple(zip(*((i,params[i]) for i in index)))
 
 
 def solver_bounds(solver):
@@ -956,16 +906,16 @@ def interval_overlap(bounds1, bounds2, union=False):
     where bounds is a list of tuples [(lo,hi),...]
     """
     # ensure we have a list of tuples
-    for (k,v) in getattr(bounds1, 'iteritems', bounds1.items)():
+    for (k,v) in bounds1.items():
         if not hasattr(v[0], '__len__'):
             bounds1[k] = [v]
     # ensure we have a list of tuples
-    for (k,v) in getattr(bounds2, 'iteritems', bounds2.items)():
+    for (k,v) in bounds2.items():
         if not hasattr(v[0], '__len__'):
             bounds2[k] = [v]
     results = {}
     # get all entries in bounds1
-    for k,v in getattr(bounds1, 'iteritems', bounds1.items)():
+    for k,v in bounds1.items():
         m = bounds2.get(k, None) 
         if m is None:
             if union is False:
@@ -1062,6 +1012,7 @@ def masked_collapse(termination, collapse=None, union=False):
 from mystic._counter import Counter
 
 # backward compatibility
+from itertools import permutations
 from dill.source import getblocks as parse_from_history
 from dill.source import getsource as src
 from mystic.monitors import Monitor as Sow

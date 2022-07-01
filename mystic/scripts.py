@@ -1,4 +1,4 @@
-import collections
+from collections.abc import Callable as _Callable
 #!/usr/bin/env python
 #
 # Author: Mike McKerns (mmckerns @caltech and @uqfoundation)
@@ -14,15 +14,7 @@ functional interfaces for mystic's visual analytics scripts
 __all__ = ['model_plotter','log_reader','collapse_plotter']
 
 # globals
-_Callable = getattr(collections, 'Callable', None) or getattr(collections.abc, 'Callable')
 __quit = False
-import sys
-if (sys.hexversion >= 0x30000f0):
-    exec_string = 'exec(code, globals)'
-    PY3 = True
-else:
-    exec_string = 'exec code in globals'
-    PY3 = False 
 
 
 def _visual_filter(bounds, x, z=None, rtol=1e-8, ptol=1e-8):
@@ -163,7 +155,6 @@ if provided, ids are the list of 'run ids' to select
     return params, costs
 
 
-def_get_instance = '''
 def _get_instance(location, *args, **kwds):
     """given the import location of a model or model class, return the model
 
@@ -173,16 +164,12 @@ args and kwds will be passed to the constructor of the model class
     package, target = location.rsplit('.',1)
     code = "from {0} import {1} as model".format(package, target)
     code = compile(code, '<string>', 'exec')
-    %(exec_string)s
+    exec(code, globals)
     model = globals['model']
     import inspect
     if inspect.isclass(model):
         model = model(*args, **kwds)
     return model
-''' % dict(exec_string=exec_string)
-
-exec(def_get_instance)
-del def_get_instance
 
 
 def _parse_tol(tol, select=None):
@@ -205,11 +192,7 @@ For example,
     """
     if tol is None:
         return None,None
-    try:
-        basestring
-    except NameError:
-        basestring = str
-    if type(tol) is basestring:
+    if type(tol) is str:
         selected = eval(tol)
     else:
         selected = tol
@@ -250,7 +233,6 @@ For example,
     return select, axes, mask
 
 
-def_parse_axes = '''
 def _parse_axes(option, grid=True):
     """parse option string into grid axes; using modified numpy.ogrid notation
 
@@ -281,7 +263,7 @@ Returns tuple (x,y) with 'x,y' defined above.
         try: # x,y form a 2D grid
             code += 'x,y = numpy.ogrid[{0},{1}]'.format(opt['x'],opt['y'])
             code = compile(code, '<string>', 'exec')
-            %(exec_string)s
+            exec(code, globals)
             x = globals['x']
             y = globals['y']
         except: # AttributeError:
@@ -291,7 +273,7 @@ Returns tuple (x,y) with 'x,y' defined above.
         try:
             code += 'x = numpy.ogrid[{0}]'.format(opt['x'])
             code = compile(code, '<string>', 'exec')
-            %(exec_string)s
+            exec(code, globals)
             x = globals['x']
             y = float(opt['y'])
         except: # (AttributeError, SyntaxError, ValueError):
@@ -302,7 +284,7 @@ Returns tuple (x,y) with 'x,y' defined above.
             x = float(opt['x'])
             code += 'y = numpy.ogrid[{0}]'.format(opt['y'])
             code = compile(code, '<string>', 'exec')
-            %(exec_string)s
+            exec(code, globals)
             y = globals['y']
         except: # (AttributeError, SyntaxError, ValueError):
             msg = "invalid format string: '{0}'".format(','.join(option))
@@ -314,10 +296,6 @@ Returns tuple (x,y) with 'x,y' defined above.
         msg = "invalid format string: '{0}'".format(','.join(option))
         raise ValueError(msg)
     return x,y
-''' % dict(exec_string=exec_string)
-
-exec(def_parse_axes)
-del def_parse_axes
 
 
 def _draw_projection(x, cost, scale=True, shift=False, style=None, figure=None):
@@ -581,12 +559,7 @@ Notes:
     # - if trajectory outside contour grid, will increase bounds
     #   (see support_hypercube.py for how to fix bounds)
     import shlex
-    try:
-        basestring
-        from StringIO import StringIO
-    except NameError:
-        basestring = str
-        from io import StringIO
+    from io import StringIO
     global __quit
     __quit = False
     _model = None
@@ -602,7 +575,7 @@ Notes:
     # handle the special case where list is provided by sys.argv
     if isinstance(model, (list,tuple)) and not logfile and not kwds:
         cmdargs = model # (above is used by script to parse command line)
-    elif isinstance(model, basestring) and not logfile and not kwds:
+    elif isinstance(model, str) and not logfile and not kwds:
         cmdargs = shlex.split(model)
     # 'everything else' is essentially the functional interface
     else:
@@ -625,7 +598,7 @@ Notes:
             tol = kwds.get('tol', None)
 
             # special case: bounds passed as list of slices
-            if not isinstance(bounds, (basestring, type(None))):
+            if not isinstance(bounds, (str, type(None))):
                 cmdargs = ''
                 for b in bounds:
                     if isinstance(b, slice):
@@ -636,7 +609,7 @@ Notes:
                 cmdargs = ''
 
             # special case: tol passed as tuple of floats
-            if not isinstance(tol, (basestring, type(None))):
+            if not isinstance(tol, (str, type(None))):
                 if hasattr(tol, '__len__'):
                     cmdargs = ''
                     for t in tol:
@@ -654,7 +627,7 @@ Notes:
 
         # handle logfile if given
         if logfile:
-            if isinstance(logfile, basestring):
+            if isinstance(logfile, str):
                 model += ' ' + logfile
             else: # special case of passing in monitor instance
                 instance = logfile
@@ -681,7 +654,7 @@ Notes:
             cmdargs = ' ' + cmdargs
         cmdargs = model.split() + shlex.split(cmdargs)
 
-    #XXX: note that 'argparse' is new as of python2.7
+    #XXX: replace with 'argparse'?
     from optparse import OptionParser
     def _exit(self, errno=None, msg=None):
       global __quit
@@ -735,16 +708,12 @@ Notes:
 
 #   import sys
 #   if 'mystic_model_plotter.py' not in sys.argv:
-    if PY3:
-      f = StringIO()
-      parser.print_help(file=f)
-      f.seek(0)
-      if 'Options:' not in model_plotter.__doc__:
-        model_plotter.__doc__ += '\nOptions:%s' % f.read().split('Options:')[-1]
-      f.close()
-    else:
-      if 'Options:' not in model_plotter.__doc__:
-        model_plotter.__doc__ += '\nOptions:%s' % parser.format_help().split('Options:')[-1]
+    f = StringIO()
+    parser.print_help(file=f)
+    f.seek(0)
+    if 'Options:' not in model_plotter.__doc__:
+      model_plotter.__doc__ += '\nOptions:%s' % f.read().split('Options:')[-1]
+    f.close()
 
     try:
       parsed_opts, parsed_args = parser.parse_args(cmdargs)
@@ -1018,12 +987,7 @@ Notes:
       different type of collapse).
 """
     import shlex
-    try:
-        basestring
-        from StringIO import StringIO
-    except NameError:
-        basestring = str
-        from io import StringIO
+    from io import StringIO
     global __quit
     __quit = False
     _out = False
@@ -1032,7 +996,7 @@ Notes:
     # handle the special case where list is provided by sys.argv
     if isinstance(filename, (list,tuple)) and not kwds:
         cmdargs = filename # (above is used by script to parse command line)
-    elif isinstance(filename, basestring) and not kwds:
+    elif isinstance(filename, str) and not kwds:
         cmdargs = shlex.split(filename)
     # 'everything else' is essentially the functional interface
     else:
@@ -1059,13 +1023,13 @@ Notes:
             cmdargs += '' if col is None else '--col="{}" '.format(col)
         else:
             cmdargs = ' ' + cmdargs
-        if isinstance(filename, basestring):
+        if isinstance(filename, str):
             cmdargs = filename.split() + shlex.split(cmdargs)
         else: # special case of passing in monitor instance
             instance = filename
             cmdargs = shlex.split(cmdargs)
 
-    #XXX: note that 'argparse' is new as of python2.7
+    #XXX: replace with 'argparse'?
     from optparse import OptionParser
     def _exit(self, errno=None, msg=None):
       global __quit
@@ -1096,16 +1060,12 @@ Notes:
                       help="string to indicate collapse indices")
 #   import sys
 #   if 'mystic_collapse_plotter.py' not in sys.argv:
-    if PY3:
-      f = StringIO()
-      parser.print_help(file=f)
-      f.seek(0)
-      if 'Options:' not in collapse_plotter.__doc__:
-        collapse_plotter.__doc__ += '\nOptions:%s' % f.read().split('Options:')[-1]
-      f.close()
-    else:
-      if 'Options:' not in collapse_plotter.__doc__:
-        collapse_plotter.__doc__ += '\nOptions:%s' % parser.format_help().split('Options:')[-1]
+    f = StringIO()
+    parser.print_help(file=f)
+    f.seek(0)
+    if 'Options:' not in collapse_plotter.__doc__:
+      collapse_plotter.__doc__ += '\nOptions:%s' % f.read().split('Options:')[-1]
+    f.close()
 
     try:
       parsed_opts, parsed_args = parser.parse_args(cmdargs)
@@ -1235,12 +1195,7 @@ Notes:
       will only plot the first parameter.
 """
     import shlex
-    try:
-        basestring
-        from StringIO import StringIO
-    except NameError:
-        basestring = str
-        from io import StringIO
+    from io import StringIO
     global __quit
     __quit = False
     _out = False
@@ -1249,7 +1204,7 @@ Notes:
     # handle the special case where list is provided by sys.argv
     if isinstance(filename, (list,tuple)) and not kwds:
         cmdargs = filename # (above is used by script to parse command line)
-    elif isinstance(filename, basestring) and not kwds:
+    elif isinstance(filename, str) and not kwds:
         cmdargs = shlex.split(filename)
     # 'everything else' is essentially the functional interface
     else:
@@ -1276,13 +1231,13 @@ Notes:
             cmdargs += '' if param is None else '--param="{}" '.format(param)
         else:
             cmdargs = ' ' + cmdargs
-        if isinstance(filename, basestring):
+        if isinstance(filename, str):
             cmdargs = filename.split() + shlex.split(cmdargs)
         else: # special case of passing in monitor instance
             instance = filename
             cmdargs = shlex.split(cmdargs)
 
-    #XXX: note that 'argparse' is new as of python2.7
+    #XXX: replace with 'argparse'?
     from optparse import OptionParser
     def _exit(self, errno=None, msg=None):
       global __quit
@@ -1316,16 +1271,12 @@ Notes:
 
 #   import sys
 #   if 'mystic_log_reader.py' not in sys.argv:
-    if PY3:
-      f = StringIO()
-      parser.print_help(file=f)
-      f.seek(0)
-      if 'Options:' not in log_reader.__doc__:
-        log_reader.__doc__ += '\nOptions:%s' % f.read().split('Options:')[-1]
-      f.close()
-    else:
-      if 'Options:' not in log_reader.__doc__:
-        log_reader.__doc__ += '\nOptions:%s' % parser.format_help().split('Options:')[-1]
+    f = StringIO()
+    parser.print_help(file=f)
+    f.seek(0)
+    if 'Options:' not in log_reader.__doc__:
+      log_reader.__doc__ += '\nOptions:%s' % f.read().split('Options:')[-1]
+    f.close()
 
     try:
       parsed_opts, parsed_args = parser.parse_args(cmdargs)

@@ -9,10 +9,7 @@
 # This example is a derivative of vtk's ClipCow
 # It is a visualization of Prince Rupert's problem
 
-try:
-    import tkinter
-except ImportError:
-    import Tkinter as tkinter
+import tkinter
 import vtk
 from vtk.tk.vtkTkRenderWindowInteractor import \
      vtkTkRenderWindowInteractor

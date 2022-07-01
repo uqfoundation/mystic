@@ -8,7 +8,6 @@
 #  - https://github.com/uqfoundation/mystic/blob/master/LICENSE
 """rbf - Radial basis functions for interpolation/smoothing scattered Nd data.
 """
-from __future__ import division
 #
 # original documentation/license (below)
 """
@@ -54,18 +53,10 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
-import sys
 import numpy as np
 
-if sys.hexversion >= 0x30000f0: # PY3
-    get_function_code = lambda x: getattr(x,'__code__')
-    get_method_function = lambda x: getattr(x,'__func__')
-else:
-    get_function_code = lambda x: getattr(x,'func_code')
-    get_method_function = lambda x: getattr(x,'im_func')
-
-if 0x30200f0 > sys.hexversion >= 0x30000f0: #PY30-PY31
-    callable = lambda x: hasattr(x,'__code__')
+get_function_code = lambda x: x.__code__
+get_method_function = lambda x: x.__func__
 
 
 __all__ = ['Rbf']
@@ -184,11 +175,10 @@ class Rbf(object):
             self._function = getattr(self, "_h_"+self.function)
         elif callable(self.function):
             allow_one = False
-            if hasattr(self.function, 'func_code') or \
-                   hasattr(self.function, '__code__'):
+            if hasattr(self.function, '__code__'):
                 val = self.function
                 allow_one = True
-            elif hasattr(self.function, "im_func"):
+            elif hasattr(self.function, "__func__"):
                 val = get_method_function(self.function)
             elif hasattr(self.function, "__call__"):
                 val = get_method_function(self.function.__call__)
@@ -199,12 +189,7 @@ class Rbf(object):
             if allow_one and argcount == 1:
                 self._function = self.function
             elif argcount == 2:
-                if sys.version_info[0] >= 3:
-                    self._function = self.function.__get__(self, Rbf)
-                else:
-                    import new
-                    self._function = new.instancemethod(self.function, self,
-                                                        Rbf)
+                self._function = self.function.__get__(self, Rbf)
             else:
                 raise ValueError("Function argument must take 1 or 2 arguments.")
 

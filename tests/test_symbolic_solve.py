@@ -116,7 +116,7 @@ bylen = lambda x: len(x)
 res = ['\n'.join(sorted(eqns.split('\n'), key=bylen)) for eqns in res]
 resA = res[0].split('\n')[-1]
 resB = res[1].split('\n')[-1]
-if res[0].count('<') != res[0].count('>'): resA,resB = resB,resA #XXX: why in python3?
+if res[0].count('<') != res[0].count('>'): resA,resB = resB,resA #XXX: why in python3.x?
 assert equals(eqn, resA, dict(A=0.1,B=0.,C=1.,sqrt=sqrt))
 resB = flip(resB) if resB.count('<') else resB #FIXME: HACK (flip comparator)
 assert equals(eqn, resB, dict(A=-0.1,B=2.,C=-10.,sqrt=sqrt))

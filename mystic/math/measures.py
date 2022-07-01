@@ -202,7 +202,6 @@ Returns:
   # contributed by TJS #
   # to prevent function evaluation if weight is "too small":
   # skip evaluation of f(x) if the corresponding weight <= tol
-  # import itertools as it   #XXX: assumes is faster than zip
   #weights = normalize(weights, mass=1.0) #FIXME: below is atol, should be rtol?
   if not sum(abs(w) > tol for w in weights):
       yw = ((0.0,0.0),)
@@ -1750,7 +1749,7 @@ Notes: is 'mean-preserving' for samples and 'norm-preserving' for weights
     #XXX: any vectorized way to do this?
     from mystic.tools import connected
     pairs = connected(pairs)
-    for i,j in getattr(pairs,'iteritems',pairs.items)():
+    for i,j in pairs.items():
         v = weights[i]
         for k in j:
             v += weights[k]

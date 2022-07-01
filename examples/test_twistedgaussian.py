@@ -68,13 +68,9 @@ L = 10000
 if __name__=='__main__':
     from mystic.metropolis import *
     import time
-    try:
-        xrange
-    except NameError:
-        xrange = range
 
     t1 = time.time()
-    for i in xrange(L):
+    for i in range(L):
         scem(Ck, ak, Sk, Sak, target, 0.1)
     t2 = time.time()
     print("SCEM 1 chain for x[%d] took %0.3f ms" % (len(Sk), (t2-t1)*1000))
@@ -82,7 +78,7 @@ if __name__=='__main__':
 
     t1 = time.time()
     x = [ [0,10] ]
-    for i in xrange(L):
+    for i in range(L):
         x.append(metropolis_hastings(proposal, target, x[-1]))
     t2 = time.time()
     print("2D Metropolis for x[%d] took %0.3f ms" % (len(x), (t2-t1)*1000))

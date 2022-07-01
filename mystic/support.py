@@ -17,16 +17,8 @@ __all__ = ['convergence', 'hypercube', 'hypercube_measures', \
 # globals
 __quit = False
 ZERO = 1.0e-6  # zero-ish
-import sys
-if (sys.hexversion >= 0x30000f0):
-    PY3 = True
-    exec_string = 'exec(code, globals)'
-else:
-    PY3 = False
-    exec_string = 'exec code in globals'
 NL = '\n'
 NL2 = '\n\n'
-#FIXME: remove this head-standing to workaround python2.6 exec bug
 
 def best_dimensions(n):
   """get the 'best' dimensions ``(i x j)`` for arranging plots
@@ -292,7 +284,6 @@ Returns:
   return alist[:index] + alist[index+1:] + alist[index:index+1]
 
 
-def_convergence = '''
 def convergence(filename, **kwds):
     """
 generate parameter convergence plots from file written with ``write_support_file``
@@ -332,12 +323,7 @@ Notes:
     - The option *legend* takes a boolean, and will display the legend.
 """
     import shlex
-    try:
-        basestring
-        from StringIO import StringIO
-    except NameError:
-        basestring = str
-        from io import StringIO
+    from io import StringIO
     global __quit
     __quit = False
     _out = False
@@ -346,7 +332,7 @@ Notes:
     # handle the special case where list is provided by sys.argv
     if isinstance(filename, (list,tuple)) and not kwds:
         cmdargs = filename # (above is used by script to parse command line)
-    elif isinstance(filename, basestring) and not kwds:
+    elif isinstance(filename, str) and not kwds:
         cmdargs = shlex.split(filename)
     # 'everything else' is essentially the functional interface
     else:
@@ -373,13 +359,13 @@ Notes:
             cmdargs += '' if legend == False else '--legend '
         else:
             cmdargs = ' ' + cmdargs
-        if isinstance(filename, basestring):
+        if isinstance(filename, str):
             cmdargs = filename.split() + shlex.split(cmdargs)
         else: # special case of passing in monitor instance
             instance = filename
             cmdargs = shlex.split(cmdargs)
 
-    #XXX: note that 'argparse' is new as of python2.7
+    #XXX: replace with 'argparse'?
     from optparse import OptionParser
     def _exit(self, errno=None, msg=None):
         global __quit
@@ -409,16 +395,12 @@ Notes:
     parser.add_option("-g","--legend",action="store_true",dest="legend",\
                       default=False,help="show the legend")
 
-    if PY3:
-        f = StringIO()
-        parser.print_help(file=f)
-        f.seek(0)
-        if 'Options:' not in convergence.__doc__:
-            convergence.__doc__ += NL+'Options:{0}'.format(f.read().split('Options:')[-1])
-        f.close()
-    else:
-        if 'Options:' not in convergence.__doc__:
-            convergence.__doc__ += NL+'Options:{0}'.format(parser.format_help().split('Options:')[-1])
+    f = StringIO()
+    parser.print_help(file=f)
+    f.seek(0)
+    if 'Options:' not in convergence.__doc__:
+        convergence.__doc__ += NL+'Options:{0}'.format(f.read().split('Options:')[-1])
+    f.close()
 
     try:
         parsed_opts, parsed_args = parser.parse_args(cmdargs)
@@ -530,7 +512,7 @@ Notes:
         code = "ax{0:d} = fig.add_subplot(dim1,dim2,{0:d}, sharex=ax1);".format(i)
         code += "ax{0:d}.set_ylabel(label[{1:d}]);".format(i,i-1)
         code = compile(code, '<string>', 'exec')
-        %(exec_string)s
+        exec(code, globals)
         data = eval("params[{0}]".format(select[i-1]), locals)
         try:
             n = int(select[i-1].split(":")[0])
@@ -540,7 +522,7 @@ Notes:
             globals['line'] = line
             code = "ax{0:d}.plot(line,label='{1}')#, marker='o')".format(i,n)
             code = compile(code, '<string>', 'exec')
-            %(exec_string)s
+            exec(code, globals)
             n += 1
         if legend: plt.legend()
     if cost:
@@ -549,7 +531,7 @@ Notes:
         code += "cx1.plot(cost,label='cost');"#, marker='o')"
         if max(0, len(label) - plots): code += "cx1.set_ylabel(label[-1]);"
         code = compile(code, '<string>', 'exec')
-        %(exec_string)s
+        exec(code, globals)
         if legend: plt.legend()
 
     # process inputs
@@ -562,7 +544,6 @@ Notes:
         return fig #XXX: better?: fig.axes if len(fig.axes) > 1 else ax
     else:
         fig.savefig(out)
-''' % dict(exec_string=exec_string)
 
     ### USUAL WAY OF CREATING PLOTS ###
     #fig = plt.figure()
@@ -586,7 +567,6 @@ Notes:
     ###################################
 
 
-def_hypercube = '''
 def hypercube(filename, **kwds):
     """
 generate parameter support plots from file written with ``write_support_file``
@@ -627,12 +607,7 @@ Notes:
     - The option *flat* takes a boolean, to plot results in a single plot.
 """
     import shlex
-    try:
-        basestring
-        from StringIO import StringIO
-    except NameError:
-        basestring = str
-        from io import StringIO
+    from io import StringIO
     global __quit
     __quit = False
     _out = False
@@ -641,7 +616,7 @@ Notes:
     # handle the special case where list is provided by sys.argv
     if isinstance(filename, (list,tuple)) and not kwds:
         cmdargs = filename # (above is used by script to parse command line)
-    elif isinstance(filename, basestring) and not kwds:
+    elif isinstance(filename, str) and not kwds:
         cmdargs = shlex.split(filename)
     # 'everything else' is essentially the functional interface
     else:
@@ -670,13 +645,13 @@ Notes:
             cmdargs += '' if flat == False else '--flat '
         else:
             cmdargs = ' ' + cmdargs
-        if isinstance(filename, basestring):
+        if isinstance(filename, str):
             cmdargs = filename.split() + shlex.split(cmdargs)
         else: # special case of passing in monitor instance
             instance = filename
             cmdargs = shlex.split(cmdargs)
 
-    #XXX: note that 'argparse' is new as of python2.7
+    #XXX: replace with 'argparse'?
     from optparse import OptionParser
     def _exit(self, errno=None, msg=None):
         global __quit
@@ -711,16 +686,12 @@ Notes:
     parser.add_option("-f","--flat",action="store_true",dest="flatten",\
                       default=False,help="show selected iterations in a single plot")
 
-    if PY3:
-        f = StringIO()
-        parser.print_help(file=f)
-        f.seek(0)
-        if 'Options:' not in hypercube.__doc__:
-            hypercube.__doc__ += NL+'Options:{0}'.format(f.read().split('Options:')[-1])
-        f.close()
-    else:
-        if 'Options:' not in hypercube.__doc__:
-            hypercube.__doc__ += NL+'Options:{0}'.format(parser.format_help().split('Options:')[-1])
+    f = StringIO()
+    parser.print_help(file=f)
+    f.seek(0)
+    if 'Options:' not in hypercube.__doc__:
+        hypercube.__doc__ += NL+'Options:{0}'.format(f.read().split('Options:')[-1])
+    f.close()
 
     try:
         parsed_opts, parsed_args = parser.parse_args(cmdargs)
@@ -848,7 +819,7 @@ Notes:
     else: 
         code = "plt.title('iterations[*]');"
     code = compile(code, '<string>', 'exec')
-    %(exec_string)s
+    exec(code, globals)
     ax1.set_xlabel(label[0])
     ax1.set_ylabel(label[1])
     ax1.set_zlabel(label[2])
@@ -865,7 +836,7 @@ Notes:
             code += "ax.set_ylabel(label[1]);"
             code += "ax.set_zlabel(label[2]);"
             code = compile(code, '<string>', 'exec')
-            %(exec_string)s
+            exec(code, globals)
             a.append(globals['ax'])
 
     # turn each "n:m" in select to a list
@@ -915,10 +886,8 @@ Notes:
         return fig #XXX: better?: fig.axes if len(fig.axes) > 1 else ax
     else:
         fig.savefig(out)
-''' % dict(exec_string=exec_string)
 
 
-def_hypercube_measures = '''
 def hypercube_measures(filename, **kwds):
     """
 generate measure support plots from file written with ``write_support_file``
@@ -967,12 +936,7 @@ Warning:
     will be thrown.
 """
     import shlex
-    try:
-        basestring
-        from StringIO import StringIO
-    except NameError:
-        basestring = str
-        from io import StringIO
+    from io import StringIO
     global __quit
     __quit = False
     _out = False
@@ -981,7 +945,7 @@ Warning:
     # handle the special case where list is provided by sys.argv
     if isinstance(filename, (list,tuple)) and not kwds:
         cmdargs = filename # (above is used by script to parse command line)
-    elif isinstance(filename, basestring) and not kwds:
+    elif isinstance(filename, str) and not kwds:
         cmdargs = shlex.split(filename)
     # 'everything else' is essentially the functional interface
     else:
@@ -1012,13 +976,13 @@ Warning:
             cmdargs += '' if flat == False else '--flat '
         else:
             cmdargs = ' ' + cmdargs
-        if isinstance(filename, basestring):
+        if isinstance(filename, str):
             cmdargs = filename.split() + shlex.split(cmdargs)
         else: # special case of passing in monitor instance
             instance = filename
             cmdargs = shlex.split(cmdargs)
 
-    #XXX: note that 'argparse' is new as of python2.7
+    #XXX: replace with 'argparse'?
     from optparse import OptionParser
     def _exit(self, errno=None, msg=None):
         global __quit
@@ -1056,16 +1020,12 @@ Warning:
     parser.add_option("-f","--flat",action="store_true",dest="flatten",\
                       default=False,help="show selected iterations in a single plot")
 
-    if PY3:
-        f = StringIO()
-        parser.print_help(file=f)
-        f.seek(0)
-        if 'Options:' not in hypercube_measures.__doc__:
-            hypercube_measures.__doc__ += NL+'Options:{0}'.format(f.read().split('Options:')[-1])
-        f.close()
-    else:
-        if 'Options:' not in hypercube_measures.__doc__:
-            hypercube_measures.__doc__ += NL+'Options:{0}'.format(parser.format_help().split('Options:')[-1])
+    f = StringIO()
+    parser.print_help(file=f)
+    f.seek(0)
+    if 'Options:' not in hypercube_measures.__doc__:
+        hypercube_measures.__doc__ += NL+'Options:{0}'.format(f.read().split('Options:')[-1])
+    f.close()
 
     try:
         parsed_opts, parsed_args = parser.parse_args(cmdargs)
@@ -1203,7 +1163,7 @@ Warning:
     else: 
         code = "plt.title('iterations[*]');"
     code = compile(code, '<string>', 'exec')
-    %(exec_string)s
+    exec(code, globals)
     ax1.set_xlabel(label[0])
     ax1.set_ylabel(label[1])
     ax1.set_zlabel(label[2])
@@ -1220,7 +1180,7 @@ Warning:
             code += "ax.set_ylabel(label[1]);"
             code += "ax.set_zlabel(label[2]);"
             code = compile(code, '<string>', 'exec')
-            %(exec_string)s
+            exec(code, globals)
             a.append(globals['ax'])
 
     # turn each "n:m" in select to a list
@@ -1285,10 +1245,8 @@ Warning:
         return fig #XXX: better?: fig.axes if len(fig.axes) > 1 else ax
     else:
         fig.savefig(out)
-''' % dict(exec_string=exec_string)
 
 
-def_hypercube_scenario = '''
 def hypercube_scenario(filename, datafile=None, **kwds):
     """
 generate scenario support plots from file written with ``write_support_file``;
@@ -1341,12 +1299,7 @@ Notes:
     - The option *flat* takes a boolean, to plot results in a single plot.
 """
     import shlex
-    try:
-        basestring
-        from StringIO import StringIO
-    except NameError:
-        basestring = str
-        from io import StringIO
+    from io import StringIO
     global __quit
     __quit = False
     _out = False
@@ -1355,7 +1308,7 @@ Notes:
     # handle the special case where list is provided by sys.argv
     if isinstance(filename, (list,tuple)) and not kwds:
         cmdargs = filename # (above is used by script to parse command line)
-    elif isinstance(filename, basestring) and not kwds:
+    elif isinstance(filename, str) and not kwds:
         cmdargs = shlex.split(filename)
     # 'everything else' is essentially the functional interface
     else:
@@ -1396,13 +1349,13 @@ Notes:
             cmdargs += '' if flat == False else '--flat '
         else:
             cmdargs = ' ' + cmdargs
-        if isinstance(filename, basestring):
+        if isinstance(filename, str):
             cmdargs = filename.split() + shlex.split(cmdargs)
         else: # special case of passing in monitor instance
             instance = filename
             cmdargs = shlex.split(cmdargs)
 
-    #XXX: note that 'argparse' is new as of python2.7
+    #XXX: replace with 'argparse'?
     from optparse import OptionParser
     def _exit(self, errno=None, msg=None):
         global __quit
@@ -1452,16 +1405,12 @@ Notes:
     parser.add_option("-f","--flat",action="store_true",dest="flatten",\
                       default=False,help="show selected iterations in a single plot")
 
-    if PY3:
-        f = StringIO()
-        parser.print_help(file=f)
-        f.seek(0)
-        if 'Options:' not in hypercube_scenario.__doc__:
-            hypercube_scenario.__doc__ += NL+'Options:{0}'.format(f.read().split('Options:')[-1])
-        f.close()
-    else:
-        if 'Options:' not in hypercube_scenario.__doc__:
-            hypercube_scenario.__doc__ += NL+'Options:{0}'.format(parser.format_help().split('Options:')[-1])
+    f = StringIO()
+    parser.print_help(file=f)
+    f.seek(0)
+    if 'Options:' not in hypercube_scenario.__doc__:
+        hypercube_scenario.__doc__ += NL+'Options:{0}'.format(f.read().split('Options:')[-1])
+    f.close()
 
     try:
         parsed_opts, parsed_args = parser.parse_args(cmdargs)
@@ -1687,7 +1636,7 @@ Notes:
     else: 
         code = "plt.title('iterations[*]');"
     code = compile(code, '<string>', 'exec')
-    %(exec_string)s
+    exec(code, globals)
     if cones and data and xs in range(len(bounds)):
         if _2D:
             _plot_bowtie(ax1,coords,slope,bounds,axis=axis,tol=gap)
@@ -1711,7 +1660,7 @@ Notes:
                 code += "ax.plot([bounds[0][1]],[bounds[1][1]],[bounds[2][1]]);"
             code += "plt.title('iterations[{0}]');".format(select[i - 1])
             code = compile(code, '<string>', 'exec')
-            %(exec_string)s
+            exec(code, globals)
             ax = globals['ax']
             if cones and data and xs in range(len(bounds)):
                 if _2D:
@@ -1785,18 +1734,6 @@ Notes:
         return fig #XXX: better?: fig.axes if len(fig.axes) > 1 else ax
     else:
         fig.savefig(out)
-''' % dict(exec_string=exec_string)
-
-exec(def_convergence)
-exec(def_hypercube)
-exec(def_hypercube_measures)
-exec(def_hypercube_scenario)
-del exec_string, def_convergence, def_hypercube
-del def_hypercube_measures, def_hypercube_scenario
-
-
-if __name__ == '__main__':
-    pass
 
 
 # EOF

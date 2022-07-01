@@ -19,15 +19,7 @@
 
 from mystic.tools import permutations
 from mystic.tools import list_or_tuple_or_ndarray
-import sys
-if (sys.hexversion >= 0x30000f0):
-    exec_locals_ = 'exec(code, _locals)'
-    exec_globals_ = 'exec(_code, globals(), _locals)'
-else:
-    exec_locals_ = 'exec code in _locals'
-    exec_globals_ = 'exec _code in globals(), _locals'
 NL = '\n'
-#FIXME: remove this head-standing to workaround python2.6 exec bug
 
 def _classify_variables(constraints, variables='x', nvars=None): 
     """Takes a string of constraint equations and determines which variables
@@ -238,7 +230,6 @@ Additional Inputs:
     return code, left, right, xlist, neqns
 
 
-def_solve_single = '''
 def _solve_single(constraint, variables='x', target=None, **kwds):
     """Solve a symbolic constraints equation for a single variable.
 
@@ -347,7 +338,7 @@ Further Inputs:
         code = """from sympy import Eq, Symbol;"""
         code += """from sympy import solve as symsol;"""
         code = compile(code, '<string>', 'exec')
-        %(exec_locals_)s
+        exec(code, _locals)
     except ImportError: # Equation will not be simplified."
         if warn: print("Warning: sympy not installed.")
         return constraint
@@ -359,7 +350,7 @@ Further Inputs:
     code += """from numpy import var as variance;""" # look like mystic.math
     code += """from numpy import ptp as spread;"""   # look like mystic.math
     code = compile(code, '<string>', 'exec')
-    %(exec_locals_)s
+    exec(code, _locals)
     _locals.update(dict(symsol_kwds=kwarg))
     _locals.update(locals) #XXX: allow this?
 
@@ -402,7 +393,7 @@ Further Inputs:
     if verbose: print(code)
     _code = compile(code, '<string>', 'exec')
     try: 
-        %(exec_globals_)s
+        exec(_code, globals(), _locals)
         soln = _locals['soln'] if 'soln' in _locals else None
         if not soln:
             if warn: print("Warning: target variable is not valid")
@@ -416,7 +407,7 @@ Further Inputs:
     if verbose: print(soln)
 
     #XXX handles multiple solutions?
-    soln = getattr(soln, 'iteritems', soln.items)()
+    soln = soln.items()
     soln = dict([(str(key),str(value)) for key, value in soln])
     soln = [(i,soln[i]) for i in targeted if i in soln] #XXX: order as targeted?
     
@@ -429,11 +420,10 @@ Further Inputs:
         sol = None if not solns[:1] else solns[0]
         return '' if sol and not sol.strip() else sol
     return tuple(solns)
-''' % dict(exec_locals_=exec_locals_, exec_globals_=exec_globals_)
-exec(def_solve_single)
-del def_solve_single
 
-doc_solve_linear = """Solve a system of symbolic linear constraints equations.
+
+def _solve_linear(constraints, variables='x', target=None, **kwds):
+    """Solve a system of symbolic linear constraints equations.
 
 Inputs:
     constraints -- a string of symbolic constraints, with one constraint
@@ -479,8 +469,6 @@ Further Inputs:
     warn -- if True, don't suppress warnings [True]
     verbose -- if True, print debug information [False]
 """
-def_solve_linear = '''
-def _solve_linear(constraints, variables='x', target=None, **kwds):
     nvars = None
     permute = False # if True, return all permutations
     warn = True  # if True, don't suppress warnings
@@ -545,7 +533,7 @@ def _solve_linear(constraints, variables='x', target=None, **kwds):
         code = """from sympy import Eq, Symbol;"""
         code += """from sympy import solve as symsol;"""
         code = compile(code, '<string>', 'exec')
-        %(exec_locals_)s
+        exec(code, _locals)
     except ImportError: # Equation will not be simplified."
         if warn: print("Warning: sympy not installed.")
         return constraints
@@ -557,7 +545,7 @@ def _solve_linear(constraints, variables='x', target=None, **kwds):
     code += """from numpy import var as variance;""" # look like mystic.math
     code += """from numpy import ptp as spread;"""   # look like mystic.math
     code = compile(code, '<string>', 'exec')
-    %(exec_locals_)s
+    exec(code, _locals)
     _locals.update(dict(symsol_kwds=kwarg))
     _locals.update(locals) #XXX: allow this?
 
@@ -602,7 +590,7 @@ def _solve_linear(constraints, variables='x', target=None, **kwds):
         if verbose: print(_code)
         _code = compile(_code, '<string>', 'exec')
         try: 
-            %(exec_globals_)s
+            exec(_code, globals(), _locals)
             soln = _locals['soln'] if 'soln' in _locals else None
             if not soln:
                 if warn: print("Warning: could not simplify equation.")
@@ -616,7 +604,7 @@ def _solve_linear(constraints, variables='x', target=None, **kwds):
         if verbose: print(soln)
 
         solved = ""
-        for key, value in getattr(soln, 'iteritems', soln.items)():
+        for key, value in soln.items():
             solved += str(key) + ' = ' + str(value) + NL
         if solved: solns.append( restore(variables, solved.rstrip()) )
 
@@ -631,11 +619,6 @@ def _solve_linear(constraints, variables='x', target=None, **kwds):
             filter.append(_eqs)
             results.append(i)
     return tuple(results)
-
-_solve_linear.__doc__ = doc_solve_linear
-''' % dict(exec_locals_=exec_locals_, exec_globals_=exec_globals_)
-exec(def_solve_linear)
-del def_solve_linear, doc_solve_linear, exec_locals_, exec_globals_
 
     # Create strings of all permutations of the solved equations.
     # Remove duplicates, then take permutations of the lines of equations

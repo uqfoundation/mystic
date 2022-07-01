@@ -20,19 +20,7 @@ __all__ = ['linear_symbolic','replace_variables','get_variables','denominator',
 from numpy import ndarray, asarray, any as _any
 from mystic._symbolic import solve
 from mystic.tools import list_or_tuple_or_ndarray, flatten
-import sys
-if (sys.hexversion >= 0x30000f0):
-    exec_locals_ = 'exec(code, _locals)'
-    exec_locals = 'exec(code, locals)'
-    exec_globals = 'exec(code, globals)'
-    exec_results = 'exec(code, globals, results)'
-else:
-    exec_locals_ = 'exec code in _locals'
-    exec_locals = 'exec code in locals'
-    exec_globals = 'exec code in globals'
-    exec_results = 'exec code in globals, results'
 NL = '\n'
-#FIXME: remove this head-standing to workaround python2.6 exec bug
 
 
 # XXX: another function for the inverse... symbolic to matrix? (good for scipy)
@@ -66,11 +54,7 @@ Inputs:
     1.0*x0 + 6.0*x1 + -9.0*x2 = 0.0
 """
     if variables is None: variables = 'x'
-    try:
-        basestring
-    except NameError:
-        basestring = str
-    has_base = isinstance(variables, basestring)
+    has_base = isinstance(variables, str)
 
     eqstring = ""
     # Equality constraints
@@ -177,11 +161,7 @@ Inputs:
         raise ValueError("each min[i] must be <= the corresponding max[i]")
 
     if variables is None: variables = 'x'
-    try:
-        basestring
-    except NameError:
-        basestring = str
-    has_base = isinstance(variables, basestring)
+    has_base = isinstance(variables, str)
     lo = '%s >= %s'
     hi = '%s <= %s'
     if has_base:
@@ -468,13 +448,13 @@ Additional Inputs:
         try:
             after, before = eval(after,{},locals_), eval(before,{},locals_)
             break
-        except (ValueError,TypeError) as error:  #FIXME: python2.5
+        except (ValueError,TypeError) as error:
             if (error.args[0].startswith('negative number') and \
                error.args[0].endswith('raised to a fractional power')) or \
                (error.args[0].find('not supported') and \
                error.args[0].rfind("'complex'")):
                 val = variants.pop()
-                [locals_.update({k:v+val}) for k,v in getattr(locals_, 'iteritems', locals_.items)() if k in _vars]
+                [locals_.update({k:v+val}) for k,v in locals_.items() if k in _vars]
             else:
                 raise error
         except ZeroDivisionError as error:
@@ -573,6 +553,7 @@ def _absval(equation, **kwds):
     re0 = list(it.chain.from_iterable(rz0))
     return re0,ze0
 
+
 def absval(constraints, **kwds):
     """rewrite a system of symbolic constraints without using absolute value.
 
@@ -602,7 +583,11 @@ Additional Inputs:
     return (eqns if all else eqns[random.randint(0,len(eqns)-1)]) if len(eqns) > 1 else (eqns[0] if len(eqns) else '') #FIXME: len(eqns) = 0 --> Error, '', ???
 
 
-doc_simplify = """simplify a system of symbolic constraints equations.
+#FIXME: should minimize number of times LHS is reused; (or use 'and_')?
+#FIXME: should not fail at ZeroDivisionError (what should it do there?)
+#FIXME: should order better (e.g. C > 0; B == C - 5; A > B + 2)
+def _simplify(constraints, variables='x', target=None, **kwds):
+    """simplify a system of symbolic constraints equations.
 
 Returns a system of equations where a single variable has been isolated on
 the left-hand side of each constraints equation, thus all constraints are
@@ -657,11 +642,6 @@ Further Inputs:
     warn -- if True, don't suppress warnings [False]
     verbose -- if True, print debug information [False]
 """
-#FIXME: should minimize number of times LHS is reused; (or use 'and_')?
-#FIXME: should not fail at ZeroDivisionError (what should it do there?)
-#FIXME: should order better (e.g. C > 0; B == C - 5; A > B + 2)
-def_simplify = '''
-def _simplify(constraints, variables='x', target=None, **kwds):
     ### undocumented ###
    #rand -- random number generator [default: random.random]
    #error -- if False, ZeroDivisionError evaluates as None [default: True]
@@ -679,7 +659,7 @@ def _simplify(constraints, variables='x', target=None, **kwds):
     code += """from numpy import ptp as spread;"""   # look like mystic.math
     code += """_sqrt = lambda x:x**.5;""" # 'domain error' to 'negative power'
     code = compile(code, '<string>', 'exec')
-    %(exec_locals_)s
+    exec(code, _locals)
     _locals.update(locals)
     kwds['locals'] = _locals
     del locals
@@ -738,14 +718,14 @@ def _simplify(constraints, variables='x', target=None, **kwds):
             code = ';'.join(i for i in testcode)
             code = compile(code, '<string>', 'exec')
             try:
-                %(exec_locals)s
+                exec(code, locals)
             except SyntaxError as error:
                 msg = "cannot simplify '{0}'".format(testcode)
                 raise SyntaxError(msg,)
             return dict((i,locals[i]) for i in allvars)
 
         # iterator of dicts of test values
-        testvals = getattr(it, 'imap', map)(_testvals, testvals)
+        testvals = map(_testvals, testvals)
 
         # evaluate expression to see if comparator needs to be flipped
         results = []
@@ -756,7 +736,7 @@ def _simplify(constraints, variables='x', target=None, **kwds):
                 new = [after]
             else:
                 new = [after.replace(cmp,flip(cmp))] #XXX: or flip(cmp,True)?
-            new.extend(z.replace('=',i) for (z,i) in getattr(it, 'izip', zip)(zro,sign))
+            new.extend(z.replace('=',i) for (z,i) in zip(zro,sign))
             results.append(new)
 
         # reduce the results to the simplest representation
@@ -788,11 +768,7 @@ def _simplify(constraints, variables='x', target=None, **kwds):
                 #print("v,u: {0} {1}".format(vars, used))
                 break
             except ValueError:
-                try:
-                    basestring
-                except NameError:
-                    basestring = str
-                if isinstance(vars, basestring): vars = []
+                if isinstance(vars, str): vars = []
                 else: vars.pop(0)
                 if verbose: print('PASS')
                 #print("v,u: {0} {1}".format(vars, used))
@@ -811,11 +787,6 @@ def _simplify(constraints, variables='x', target=None, **kwds):
     eqns = tuple(NL.join(e) for e in eqns if e != None)
     #XXX: if all=False, is possible to return "most True" (smallest penalty)?
     return (eqns if all else eqns[random.randint(0,len(eqns)-1)]) if len(eqns) > 1 else (eqns[0] if len(eqns) else '')
-
-_simplify.__doc__ = doc_simplify
-''' % dict(exec_locals_=exec_locals_, exec_locals=exec_locals)
-exec(def_simplify)
-del def_simplify, doc_simplify, exec_locals_, exec_locals
 
 
 def simplify(constraints, variables='x', target=None, **kwds):
@@ -904,7 +875,7 @@ Additional Inputs:
     >>> vars = ['x','y','z','x3']
     >>> print(replace_variables(equation,vars))
     $4 = ma$1($2,$1) + $1
-    ''' #FIXME: don't parse if __name__ in __builtins__, globals, or locals?
+    ''' #FIXME: don't parse if __name__ in builtins, globals, or locals?
     for i in indices: #FIXME: or better, use 're' pattern matching
         constraints = constraints.replace(variables[i], marker + str(i))
     return constraints.replace(marker, markers)
@@ -1196,7 +1167,8 @@ Additional Inputs:
     return tuple(reversed(parsed))
 
 
-doc_generate_conditions = """generate penalty condition functions from a set of constraint strings
+def generate_conditions(constraints, variables='x', nvars=None, locals=None):
+    """generate penalty condition functions from a set of constraint strings
 
 Inputs:
     constraints -- a string of symbolic constraints, with one constraint
@@ -1234,13 +1206,7 @@ Additional Inputs:
         and relative difference from the extremal value in a given inequality.
         For more details, see `mystic.math.tolerance`.
 """
-def_generate_conditions = '''
-def generate_conditions(constraints, variables='x', nvars=None, locals=None):
-    try:
-        basestring
-    except NameError:
-        basestring = str
-    if not isinstance(constraints, basestring):
+    if not isinstance(constraints, str):
         return tuple(generate_conditions(constraint, variables, nvars, locals) for constraint in constraints)
 
     ineqconstraints, eqconstraints = penalty_parser(constraints, \
@@ -1260,7 +1226,7 @@ def generate_conditions(constraints, variables='x', nvars=None, locals=None):
    #code += """from mystic.math.measures import spread, variance, mean;"""
     code += """from mystic.math import tolerance as _tol;"""
     code = compile(code, '<string>', 'exec')
-    %(exec_globals)s
+    exec(code, globals)
     globals.update(locals) #XXX: allow this?
     
     # build an empty local scope to exec the code and build the functions
@@ -1281,18 +1247,15 @@ def {container}_{name}(x): return eval('{equation}')
 {container}.append({container}_{name})
 del {container}_{name}""".format(**fdict)
         code = compile(code, '<string>', 'exec')
-        %(exec_results)s
+        exec(code, globals, results)
 
     #XXX: what's best form to return?  will couple these with ptypes
     return tuple(results['inequality']), tuple(results['equality'])
    #return results
 
-generate_conditions.__doc__ = doc_generate_conditions
-''' % dict(exec_globals=exec_globals, exec_results=exec_results)
-exec(def_generate_conditions)
-del def_generate_conditions, doc_generate_conditions
 
-doc_generate_solvers = """generate constraints solver functions from a set of constraint strings
+def generate_solvers(constraints, variables='x', nvars=None, locals=None):
+    """generate constraints solver functions from a set of constraint strings
 
 Inputs:
     constraints -- a string of symbolic constraints, with one constraint
@@ -1331,13 +1294,7 @@ Additional Inputs:
         and relative difference from the extremal value in a given inequality.
         For more details, see `mystic.math.tolerance`.
 """
-def_generate_solvers = '''
-def generate_solvers(constraints, variables='x', nvars=None, locals=None):
-    try:
-        basestring
-    except NameError:
-        basestring = str
-    if not isinstance(constraints, basestring):
+    if not isinstance(constraints, str):
         return tuple(generate_solvers(constraint, variables, nvars, locals) for constraint in constraints)
 
     _constraints = constraints_parser(constraints, \
@@ -1360,7 +1317,7 @@ def generate_solvers(constraints, variables='x', nvars=None, locals=None):
     code += """from mystic.math.measures import impose_variance;"""
     code += """from mystic.math import tolerance as _tol;"""
     code = compile(code, '<string>', 'exec')
-    %(exec_globals)s
+    exec(code, globals)
     globals.update(locals) #XXX: allow this?
     
     # build an empty local scope to exec the code and build the functions
@@ -1382,16 +1339,11 @@ def {container}_{name}(x):
 {container}.append({container}_{name})
 del {container}_{name}""".format(**fdict)
         code = compile(code, '<string>', 'exec')
-        %(exec_results)s
+        exec(code, globals, results)
 
     #XXX: what's best form to return?  will couple these with ctypes ?
     return tuple(results['solver'])
    #return results
-
-generate_solvers.__doc__ = doc_generate_solvers
-''' % dict(exec_globals=exec_globals, exec_results=exec_results)
-exec(def_generate_solvers)
-del def_generate_solvers, doc_generate_solvers, exec_globals, exec_results
 
 
 def generate_penalty(conditions, ptype=None, join=None, **kwds):

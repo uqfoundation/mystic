@@ -78,8 +78,7 @@ from numpy import inf, shape, asarray, absolute, asfarray, seterr
 from mystic.tools import wrap_function, wrap_nested, wrap_reducer
 from mystic.tools import wrap_bounds, wrap_penalty, reduced
 from klepto import isvalid, validate
-import collections
-_Callable = getattr(collections, 'Callable', None) or getattr(collections.abc, 'Callable')
+from collections.abc import Callable as _Callable
 
 abs = absolute
 null = lambda x: None
@@ -691,7 +690,7 @@ input::
         if termination is not None:
             from mystic.termination import state
             stop = state(termination)
-            stop = getattr(stop, 'iterkeys', stop.keys)()
+            stop = stop.keys()
             self._collapse = any(key.startswith('Collapse') for key in stop)
         return
 
@@ -738,7 +737,7 @@ Input::
         import mystic.collapse as ct
         collapses = ct.collapsed(stop) or dict()
         if collapses and disp:
-            for (k,v) in getattr(collapses, 'iteritems', collapses.items)():
+            for (k,v) in collapses.items():
                 print("         %s: %s" % (k.split()[0],v))
            #print("# Collapse at: Generation", self._stepmon._step-1, \
            #      "with", self.bestEnergy, "@\n#", list(self.bestSolution))

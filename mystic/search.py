@@ -73,12 +73,7 @@ class Searcher(object):
         from mystic.solvers import BuckshotSolver #XXX: or SparsitySolver?
         from mystic.solvers import PowellDirectionalSolver
         from mystic.pools import SerialPool as Pool
-        import sys
-        if (sys.hexversion >= 0x30000f0):
-            from builtins import map as _map
-        else:
-            from __builtin__ import map as _map
-        del sys
+        from builtins import map as _map
         self.archive = _archive(cached=False) if archive is None else archive
         self.cache = _archive(cached=False) if cache is None else cache
         self.sprayer = BuckshotSolver if sprayer is None else sprayer
@@ -126,13 +121,13 @@ class Searcher(object):
             for _solver in solver._allSolvers:
                 if _solver._evalmon:
                     param = _solver._evalmon._x
-                    cost = _solver._evalmon._y             #FIXME: python2.5
+                    cost = _solver._evalmon._y
                     cache.update((tuple(x),l*y) for (x,y) in zip(param,cost))
         else:
             for _solver in solver._allSolvers:
                 bestSol = tuple(_solver.bestSolution)
                 bestRes = float(_solver.bestEnergy)
-                memo(*bestSol, out=l*bestRes)  #FIXME: python2.5
+                memo(*bestSol, out=l*bestRes)
         return memo
 
     #FIXME: instead, take a configured solver?
@@ -169,7 +164,7 @@ class Searcher(object):
     def _solve(self, id=None, disp=None):
         """run the solver (i.e. search for the minima)"""
         from copy import deepcopy as _copy
-        solver = _copy(self.solver) #FIXME: python2.6
+        solver = _copy(self.solver)
         # configure solver
         solver.id = id
         model = solver._cost[1] #FIXME: HACK b/c Solve(model) is required
@@ -271,7 +266,7 @@ class Searcher(object):
           a list of stored response surface outputs
         """
         archive = self.archive if all else self.cache
-        vals = getattr(archive, 'itervalues', archive.values)()
+        vals = archive.values()
         new = set()
         return [v for v in vals if v not in new and not new.add(v)] if unique else list(vals)
 
@@ -286,7 +281,7 @@ class Searcher(object):
           a list of parameter trajectories
         """
         archive = self.archive if all else self.cache
-        keys = getattr(archive, 'iterkeys', archive.keys)()
+        keys = archive.keys()
         new = set()
         return [k for k in keys if k not in new and not new.add(k)] if unique else list(keys)
 
@@ -302,17 +297,12 @@ class Searcher(object):
         if tol is None: tol=self.tol
         data = self.cache
         _min = max if self._inv else min
-        _min = _min(getattr(data, 'itervalues', data.values)())
-        return dict((k,v) for (k,v) in getattr(data, 'iteritems', data.items)() if round(v, tol) == round(_min, tol))
+        _min = _min(data.values())
+        return dict((k,v) for (k,v) in data.items() if round(v, tol) == round(_min, tol))
 
     def _summarize(self):
         """provide a summary of the search results"""
-        import sys
-        if (sys.hexversion >= 0x30000f0):
-            from builtins import min as _min
-        else:
-            from __builtin__ import min as _min
-        del sys
+        from builtins import min as _min
         #NOTE: len(size) = # of dirs; len(vals) = # unique dirs
         keys = self.Coordinates()
         vals = self.Values()

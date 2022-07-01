@@ -148,8 +148,7 @@ from mystic.abstract_solver import AbstractSolver
 from mystic.abstract_map_solver import AbstractMapSolver
 
 from numpy import asfarray, ravel
-import collections
-_Callable = getattr(collections, 'Callable', None) or getattr(collections.abc, 'Callable')
+from collections.abc import Callable as _Callable
 
 class DifferentialEvolutionSolver(AbstractSolver):
     """
@@ -260,7 +259,7 @@ note::
         """
         # process and activate input settings
         settings = self._process_inputs(kwds)
-        #(hardwired: due to python3.x exec'ing to locals())
+        #(hardwired: due to python exec'ing to locals())
         callback = settings['callback'] if 'callback' in settings else None
         disp = settings['disp'] if 'disp' in settings else False
         strategy = settings['strategy'] if 'strategy' in settings else self.strategy
@@ -501,7 +500,7 @@ note::
         """
         # process and activate input settings
         settings = self._process_inputs(kwds)
-        #(hardwired: due to python3.x exec'ing to locals())
+        #(hardwired: due to python exec'ing to locals())
         callback = settings['callback'] if 'callback' in settings else None
         disp = settings['disp'] if 'disp' in settings else False
         strategy = settings['strategy'] if 'strategy' in settings else self.strategy

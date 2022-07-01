@@ -60,7 +60,7 @@ if __name__ == '__main__':
     #CUTE: 'configure' monitor and archive if they are desired
     if stepmon: stepmon = LoggingMonitor(1) # montor for all runs
     else: stepmon = None
-    if archive: #python2.5
+    if archive:
         name = getattr(model,'__name__','model')
         ar_name = '__%s_%sD_cache__' % (name,ndim)
         archive = dir_archive(ar_name, serialized=True, cached=False)
@@ -85,7 +85,7 @@ if __name__ == '__main__':
     if stepmon not in (None, False):
         itermon = LoggingMonitor(1, filename='inv.txt') #XXX: log.txt?
     else: itermon = None
-    if archive not in (None, False): #python2.5
+    if archive not in (None, False):
         name = getattr(model,'__name__','model')
         ar_name = '__%s_%sD_invcache__' % (name,ndim)
         archive = dir_archive(ar_name, serialized=True, cached=False)

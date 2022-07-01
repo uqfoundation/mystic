@@ -22,7 +22,7 @@ def get_mask(condition): #FIXME: gets None if is None *and* if no mask
 def update_mask(condition, collapse, new=False):
     '''update the termination condition with the given collapse (dict)'''
     if collapse is None: return condition
-    for kind,mask in getattr(collapse, 'iteritems', collapse.items)():
+    for kind,mask in collapse.items():
         condition = _update_masks(condition, mask, kind, new)
     return condition
 
@@ -64,7 +64,7 @@ def _extend_mask(condition, mask):
         kwds['mask'].update(mask)
     elif type(_mask) is dict: # assumes mask is dict
         try: #XXX: better way to distinguish bounds collapse from not?
-            for k,v in getattr(mask, 'iteritems', mask.items)():
+            for k,v in mask.items():
                 _mask.setdefault(k,v).update(v)
             kwds['mask'] = _mask
         except AttributeError: # are list/tuple not set/dict, _mask is included

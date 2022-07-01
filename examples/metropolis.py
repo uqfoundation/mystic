@@ -16,10 +16,6 @@ from numpy import mean, cov
 if __name__=='__main__':
     from numpy import random
     import time
-    try:
-        xrange
-    except NameError:
-        xrange = range
 
     def prop(x):
         return random.normal(x, 1)
@@ -31,7 +27,7 @@ if __name__=='__main__':
 
     t1 = time.time()
     x = [1]
-    for i in xrange(100000):
+    for i in range(100000):
         x.append(metropolis_hastings(prop, target, x[-1]) )
     t2 = time.time()
     print('Metropolis took %0.3f ms' % ((t2-t1)*1000 ))

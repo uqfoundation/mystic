@@ -97,7 +97,7 @@ Additional Inputs:
     # return the satisfied conditions
     if info == 'self': return tuple(set(stop.keys())) if _all else ()
     # return info about the satisfied conditions
-    return "; ".join(set("; ".join(getattr(stop, 'itervalues', stop.values)()).split("; "))) if _all else ""
+    return "; ".join(set("; ".join(stop.values()).split("; "))) if _all else ""
 
   def __repr__(self):
     return "When(%s)" % str(self[0])
@@ -161,11 +161,11 @@ Additional Inputs:
     _any = any(stop.values())
     # return T/F if the conditions are met
     if not info: return _any
-    [stop.pop(cond) for (cond,met) in tuple(getattr(stop, 'iteritems', stop.items)()) if not met]
+    [stop.pop(cond) for (cond,met) in tuple(stop.items()) if not met]
     # return the satisfied conditions
     if info == 'self': return tuple(set(stop.keys()))
     # return info about the satisfied conditions
-    return "; ".join(set("; ".join(getattr(stop, 'itervalues', stop.values)()).split("; ")))
+    return "; ".join(set("; ".join(stop.values()).split("; ")))
 
   def __repr__(self):
     return "Or%s" % str(tuple([f for f in self]))

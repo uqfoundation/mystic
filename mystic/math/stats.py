@@ -17,16 +17,7 @@ import math
 
 def erf(x):
     "evaluate the error function at x" 
-    try:                                               
-        from math import erf
-    except ImportError:
-        try:
-            from ctypes import util, CDLL, c_double
-            erf = CDLL(util.find_library('m')).erf
-            erf.argtypes = [c_double]
-            erf.restype = c_double
-        except ImportError:
-            erf = _erf
+    from math import erf
     if hasattr(x, '__len__'):
         from numpy import vectorize
         erf = vectorize(erf)
@@ -34,16 +25,7 @@ def erf(x):
 
 def gamma(x):
     "evaluate the gamma function at x"
-    try:
-        from math import gamma
-    except ImportError:
-        try:
-            from ctypes import util, CDLL, c_double
-            gamma = CDLL(util.find_library('m')).gamma
-            gamma.argtypes = [c_double]
-            gamma.restype = c_double
-        except ImportError:
-            gamma = _gamma
+    from math import gamma
     if hasattr(x, '__len__'):
         from numpy import vectorize
         gamma = vectorize(gamma)
@@ -51,16 +33,7 @@ def gamma(x):
 
 def lgamma(x):
     "evaluate the natual log of the abs value of the gamma function at x"
-    try:
-        from math import lgamma
-    except ImportError:
-        try:
-            from ctypes import util, CDLL, c_double
-            lgamma = CDLL(util.find_library('m')).lgamma
-            lgamma.argtypes = [c_double]
-            lgamma.restype = c_double
-        except ImportError:
-            lgamma = _lgamma
+    from math import lgamma
     if hasattr(x, '__len__'):
         from numpy import vectorize
         lgamma = vectorize(lgamma)

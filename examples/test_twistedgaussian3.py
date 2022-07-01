@@ -32,10 +32,6 @@ def scemmap(Q):
 if __name__=='__main__':
     import time
     from mystic.metropolis import *
-    try:
-        xrange
-    except NameError:
-        xrange = range
     # if available, use a multiprocessing worker pool
     try:
         from pathos.helpers import freeze_support, shutdown
@@ -46,12 +42,12 @@ if __name__=='__main__':
         shutdown = lambda x=None:None
         pass
 
-    Sk = [ [Cs[i][0]] for i in xrange(q) ]
-    Sak = [ [As[i][0]] for i in xrange(q) ]
+    Sk = [ [Cs[i][0]] for i in range(q) ]
+    Sak = [ [As[i][0]] for i in range(q) ]
 
-    args = [(Cs[chain], As[chain], Sk[chain], Sak[chain], target, 0.1) for chain in xrange(q)]
+    args = [(Cs[chain], As[chain], Sk[chain], Sak[chain], target, 0.1) for chain in range(q)]
 
-    for iter in xrange(5):
+    for iter in range(5):
        # this is parallel
        print("iteration: %s" % str(iter+1))
 
@@ -65,7 +61,7 @@ if __name__=='__main__':
        # need to gather and remix
        Cs , As = remix(Cs, As)
 
-       args = [(Cs[chain], As[chain], Sk[chain], Sak[chain], target, 0.1) for chain in xrange(q)]
+       args = [(Cs[chain], As[chain], Sk[chain], Sak[chain], target, 0.1) for chain in range(q)]
 
     
     from mystic.tools import flatten_array

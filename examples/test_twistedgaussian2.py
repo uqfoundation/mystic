@@ -23,19 +23,15 @@ As = [xx.tolist() for xx in sequential_deal(b, q)]
 if __name__=='__main__':
     from mystic.metropolis import *
     import time
-    try:
-        xrange
-    except NameError:
-        xrange = range
 
-    Sk = [ [Cs[i][0]] for i in xrange(q) ]
-    Sak = [ [As[i][0]] for i in xrange(q) ]
+    Sk = [ [Cs[i][0]] for i in range(q) ]
+    Sak = [ [As[i][0]] for i in range(q) ]
 
-    for iter in xrange(5):
+    for iter in range(5):
        # this is parallel
        print("iteration: %s" % str(iter+1))
-       for chain in xrange(q):
-           for i in xrange(1000):
+       for chain in range(q):
+           for i in range(1000):
               scem(Cs[chain], As[chain], Sk[chain], Sak[chain], target, 0.1)
 
        

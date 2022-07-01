@@ -65,11 +65,7 @@ def gendata(params,xmin,xmax,npts=4000):
             if t2 < t3:
                 return t1
     fwd = F(params)
-    try:
-        xrange
-    except NameError:
-        xrange = range
-    return array([gensample(fwd, xmin,xmax) for i in xrange(npts)])
+    return array([gensample(fwd, xmin,xmax) for i in range(npts)])
 
 # probably shouldn't be in here...
 from numpy import histogram as numpyhisto

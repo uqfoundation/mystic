@@ -1231,7 +1231,7 @@ For example,
     [-2, -2, -2, -3]
     """
     offset = lambda i: (i if isinstance(i, int) else (i[0], lambda x:(x+i[1])))
-    return synchronized(dict((i,offset(j)) for (i,j) in getattr(mask, 'iteritems', mask.items)()))
+    return synchronized(dict((i,offset(j)) for (i,j) in mask.items()))
 
 
 def impose_as(mask, offset=None):
@@ -1274,7 +1274,7 @@ For example,
         def func(x, *args, **kwds):
             x = copy.copy(x) #XXX: inefficient
             pairs = connected(mask)
-            pairs = getattr(pairs, 'iteritems', pairs.items)()
+            pairs = pairs.items()
             for i,j in pairs:
                 for k in j:
                     try: x[k] = x[i]
@@ -1426,11 +1426,11 @@ For example,
             c.load(x, npts)
             # apply all collapses
             for clps in tracking:
-                for k,v in getattr(clps, 'iteritems', clps.items)():
+                for k,v in clps.items():
                     c[k].positions, c[k].weights = \
                       impose_collapse(v, c[k].positions, c[k].weights)
             for clps in noweight:
-                for k,v in getattr(clps, 'iteritems', clps.items)():
+                for k,v in clps.items():
                     c[k].positions, c[k].weights = \
                       impose_unweighted(v, c[k].positions, c[k].weights, False)
             # convert to params and apply function

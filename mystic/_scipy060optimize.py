@@ -23,8 +23,7 @@ import numpy
 from numpy import atleast_1d, eye, mgrid, argmin, zeros, shape, empty, \
      squeeze, isscalar, vectorize, asarray, absolute, sqrt, Inf, asfarray, isinf
 from mystic import linesearch
-import collections
-_Callable = getattr(collections, 'Callable', None) or getattr(collections.abc, 'Callable')
+from collections.abc import Callable as _Callable
 
 # These have been copied from Numeric's MLab.py
 # I don't think they made the transition to scipy_core
@@ -40,12 +39,7 @@ def min(m,axis=0):
     m = asarray(m)
     return numpy.minimum.reduce(m,axis)
 
-import sys
-if (sys.hexversion >= 0x30000f0):
-    import builtins
-else:
-    import __builtin__ as builtins
-del sys
+import builtins
 pymin = builtins.min
 pymax = builtins.max
 abs = absolute

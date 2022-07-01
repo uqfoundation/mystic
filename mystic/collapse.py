@@ -119,7 +119,7 @@ def collapse_weight(stepmon, tolerance=0.005, generations=50, mask=None):
                 msg = "bad element '%s' in mask" % str(i)
                 raise ValueError(msg)
     elif type(mask) is dict:
-        for (i,j) in getattr(mask, 'iteritems', mask.items)():
+        for (i,j) in mask.items():
             if type(j) is not set or type(i) is not int:
                 msg = "bad entry '%s:%s' in mask" % (str(i),str(j))
                 raise ValueError(msg)
@@ -144,8 +144,7 @@ def collapse_weight(stepmon, tolerance=0.005, generations=50, mask=None):
     wts = (tuple(i) for i in np.where(weights) if len(i))
     # apply mask and selected format...
     if pairs: # return explicit 'pairs' {(measure,index)}
-        import itertools
-        return mask(set(getattr(itertools, 'izip', zip)(*wts)))
+        return mask(set(zip(*wts)))
     if pairs is None: # return 'where' format [measures,indices]
         return mask(wts)
     # returns a dict of {measure:indices}
@@ -179,7 +178,7 @@ def collapse_position(stepmon, tolerance=0.005, generations=50, mask=None):
                 msg = "bad element '%s' in mask" % str(i)
                 raise ValueError(msg)
     elif type(mask) is dict:
-        for (i,j) in getattr(mask, 'iteritems', mask.items)():
+        for (i,j) in mask.items():
             if type(j) is not set or type(i) is not int:
                 msg = "bad entry '%s:%s' in mask" % (str(i),str(j))
                 raise ValueError(msg)
@@ -208,7 +207,7 @@ def collapse_position(stepmon, tolerance=0.005, generations=50, mask=None):
     # select off the desired pairs (of indices)
     counts = np.cumsum(distances.sum(axis=-1))
     import warnings
-    with warnings.catch_warnings():  #FIXME: python2.5
+    with warnings.catch_warnings():
         warnings.simplefilter('ignore')
         #XXX: throws a FutureWarning
         distances = np.split(np.array((pairs,)*distances.shape[0])[distances], counts)[:-1]
@@ -220,15 +219,13 @@ def collapse_position(stepmon, tolerance=0.005, generations=50, mask=None):
     select, pairs = _position_filter(mask)
     # convert to selected format...
     if pairs: # return explicit 'pairs' {(measure,indices)}
-        import itertools
         mask = set()
         for i,j in distances:
-            [mask.add(k) for k in getattr(itertools, 'izip', zip)(*((i,)*len(j), j))]
+            [mask.add(k) for k in zip(*((i,)*len(j), j))]
     elif pairs is None: # return 'where' format [measures,indices]
-        import itertools
         # tuple of where,pairs
         measures,mask = (),()
-        for (i,j) in (getattr(itertools, 'izip', zip)(*((j[0],i) for i in j[1])) for j in distances):
+        for (i,j) in (zip(*((j[0],i) for i in j[1])) for j in distances):
             measures += i
             mask += j
         mask = (measures,mask) if len(measures) else ()
@@ -257,7 +254,7 @@ def collapse_cost(stepmon, clip=False, limit=1.0, samples=50, mask=None):
     # reject bad masks
     if mask is None: pass
     elif type(mask) is dict:
-        for (i,j) in getattr(mask, 'iteritems', mask.items)():
+        for (i,j) in mask.items():
             if i is None and len(mask) != 1: # {None:..., 0:...}
                 msg = "%s is not a valid mask" % str(mask)
                 raise ValueError(msg)
@@ -326,7 +323,7 @@ def collapse_cost(stepmon, clip=False, limit=1.0, samples=50, mask=None):
     results = interval_overlap(results, mask)
     # if any index has [], replace with mask? #XXX: or drop index?
     _results = results.copy()
-    for (i,j) in getattr(_results, 'iteritems', _results.items)():
+    for (i,j) in _results.items():
         if not(j):
             results[i] = mask[i] if i in mask else []
     return {} if results == mask else results
@@ -367,10 +364,9 @@ def _weight_filter(mask):
         selector = lambda x: x - mask
     elif type(mask) is dict:
         pairs = False
-        selector = lambda x: dict((k,v) for (k,v) in ((i,j - (mask[i] if i in mask else set())) for (i,j) in getattr(x, 'iteritems', x.items)()) if v)
+        selector = lambda x: dict((k,v) for (k,v) in ((i,j - (mask[i] if i in mask else set())) for (i,j) in x.items()) if v)
     else:
-        import itertools
-        _zip = getattr(itertools, 'izip', zip)
+        _zip = zip
         pairs = None #XXX: special case, use where notation
         selector = lambda x: tuple(_zip(*(i for i in _zip(*x) if i not in _zip(*mask)))) #FIXME: searching set would be faster
     return selector, pairs
@@ -381,8 +377,7 @@ def _position_filter(mask):
         pairs = False # the default format
         selector = lambda x: x
     elif type(mask) is set:
-        import itertools
-        _zip = getattr(itertools, 'izip', zip)
+        _zip = zip
         if mask:
             from mystic.tools import _inverted
             _mask,pairs = _zip(*mask)
@@ -393,11 +388,10 @@ def _position_filter(mask):
     elif type(mask) is dict:
         pairs = False
         from mystic.tools import _symmetric
-        selector = lambda x: dict((k,v) for (k,v) in ((i,j - _symmetric((mask[i] if i in mask else set()))) for (i,j) in getattr(x, 'iteritems', x.items)()) if v)
+        selector = lambda x: dict((k,v) for (k,v) in ((i,j - _symmetric((mask[i] if i in mask else set()))) for (i,j) in x.items()) if v)
     else:
-        import itertools
         from mystic.tools import _inverted
-        _zip = getattr(itertools, 'izip', zip)
+        _zip = zip
         _mask,pairs = mask
         mask = _mask+_mask, tuple(pairs)+tuple(_inverted(pairs))
         pairs = None #XXX: special case, use where notation
