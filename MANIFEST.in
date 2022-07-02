@@ -10,7 +10,6 @@ recursive-include examples3 *
 recursive-include examples4 *
 recursive-include examples5 *
 recursive-include scripts *
-recursive-include tests *
 include .*
 prune .git
 prune .coverage

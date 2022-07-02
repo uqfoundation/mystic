@@ -2,8 +2,8 @@
 # source = mystic
 include =
     */mystic/*
-    */cache/*
-    */models/*
+    */mystic/cache/*
+    */mystic/models/*
     */mystic/math/*
 omit = 
     */tests/*
@@ -28,8 +28,8 @@ branch = true
 [paths]
 source =
     mystic
-    cache
-    models
+    mystic/cache
+    mystic/models
     mystic/math
     */site-packages/mystic
     */site-packages/mystic/cache
@@ -43,8 +43,8 @@ source =
 [report]
 include =
     */mystic/*
-    */cache/*
-    */models/*
+    */mystic/cache/*
+    */mystic/models/*
     */mystic/math/*
 exclude_lines =
     pragma: no cover
