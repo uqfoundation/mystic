@@ -29,6 +29,7 @@ class BaseOUQ(object): #XXX: redo with a "Solver" interface, like ensemble?
 
     Additional Input:
         samples: int, number of samples (used for non-deterministic models)
+        penalty: function of the form y' = penalty(x)
         constraint: function of the form x' = constraint(x)
         xvalid: function returning True if x == x', given constraint
         cvalid: function similar to xvalid, but with product_measure input
@@ -46,6 +47,7 @@ class BaseOUQ(object): #XXX: redo with a "Solver" interface, like ensemble?
         rnd = getattr(model, 'rnd', True) #FIXME: ?, rnd
         self.samples = kwds.get('samples', None) if rnd else None
         self.constraint = kwds.get('constraint', lambda rv:rv)
+        self.penalty = kwds.get('penalty', lambda rv:0.)
         self.xvalid = kwds.get('xvalid', lambda rv:True)
         self.cvalid = kwds.get('cvalid', lambda c:True)
         self.kwds = {} #FIXME: good idea???
@@ -198,7 +200,7 @@ class BaseOUQ(object): #XXX: redo with a "Solver" interface, like ensemble?
         s = random_samples(self.lb, self.ub, **kwds).T
         fobj = cached(archive=dict_archive())(self.objective) #XXX: bad idea?
         self._pts = fobj.__cache__() #XXX: also bad idea? include from *_bounds?
-        objective = lambda rv: fobj(self.constraint(rv), axis=axis)
+        objective = lambda rv: fobj(self.constraint(rv), axis=axis) # penalty?
         import multiprocess.dummy as mp #FIXME: process pickle/recursion Error
         pool = mp.Pool() # len(s)
         map = pool.map #TODO: don't hardwire map
@@ -266,6 +268,7 @@ class BaseOUQ(object): #XXX: redo with a "Solver" interface, like ensemble?
         solver.SetGenerationMonitor(stepmon[:0])
         solver.SetStrictRanges(min=lb,max=ub)
         solver.SetConstraints(self.constraint)
+        solver.SetPenalty(self.penalty)
         opts = kwds.get('opts', {})
         # solve
         solver.Solve(objective, **opts)
