@@ -66,6 +66,7 @@ if __name__ == '__main__':
     counter = it.Counter()
     import numpy as np
     in_bounds = lambda a,b: (b-a) * np.random.rand() + a
+    from pathos.maps import Map
     from pathos.pools import ProcessPool as Pool
     from mystic.solvers import fmin_powell, lattice, PowellDirectionalSolver
     axis = 0 #FIXME: calculation axis (for lower_bound, and thus cost)
@@ -112,10 +113,9 @@ if __name__ == '__main__':
     settings = dict(args=(axis,Ns), bounds=bounds, maxiter=1000, maxfun=100000,
                     disp=1, full_output=1, itermon=stepmon, ftol=1e-6,
                     npop=4, gtol=4, solver=PowellDirectionalSolver)# xtol=1e-6)
-    pool = Pool(settings['npop'])
-    _map = pool.map
+    _map = Map(Pool, settings['npop'])
     result = _solver(cost, x0, map=_map, **settings)
-    pool.close(); pool.join(); pool.clear()
+    _map.close(); _map.join(); _map.clear()
 
     # get the best result (generally the same as returned by solver)
     m = stepmon.min()
