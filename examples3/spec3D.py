@@ -19,7 +19,7 @@ param = dict(solver=DifferentialEvolutionSolver2,
              maxfun=1e+6,
              x0=None, # use RandomInitialPoints
              nested=None, # don't use SetNested
-             pool=None, # don't use SetMapper
+             map=None, # don't use SetMapper
              stepmon=VerboseMonitor(1, label='output'), # monitor config
              evalmon=Monitor(), # monitor config (re-initialized in solve)
              # kwds to pass directly to Solve(objective, **opt)
@@ -108,7 +108,7 @@ def constrain_expected(model, ave=None, ave_err=None, bounds=None):#, **kwds):
     else:
         return NotImplemented #FIXME: samples != None
         def func(c):
-            E = float(c.sampled_expect(model, samples))
+            E = float(c.sampled_expect(model, samples)) #FIXME: map
             if E > (ave + ave_err) or E < (ave - ave_err):
                 c.set_sampled_expect(ave, model, bounds, tol=ave_err, npts=samples) #FIXME: NotImplemented
             return c
@@ -162,7 +162,7 @@ def constrained_out(model, ave=None, ave_err=None, debug=False):#, **kwds):
             return True
     else:
         def func(c):
-            E = float(c.sampled_expect(model, samples))
+            E = float(c.sampled_expect(model, samples)) #FIXME: map
             if E > (ave + ave_err) or E < (ave - ave_err):
                 if debug: print("skipping expected value: %s" % E)
                 return False

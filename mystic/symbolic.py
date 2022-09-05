@@ -210,8 +210,8 @@ Inputs:
     return _flip(cmp, bounds).join(equation.split(cmp)) if cmp else equation
 
 
-#FIXME: if 'cycle=True', do all perumtations (and select shortest)?
-#FIXME: should be better, currenlty only condenses exact matches
+#FIXME: if 'cycle=True', do all permutations (and select shortest)?
+#FIXME: should be better, currently only condenses exact matches
 def condense(*equations, **kwds):
     """condense tuples of equations to the simplest representation
 
@@ -302,8 +302,8 @@ Examples:
 
 
 def _enclosed(equation):
-    import re
     "split equation at the close of all enclosing parentheses"
+    import re
     res = []
     # split equation at the close of the first enclosing parenthesis
     ir = iter(re.findall(r'[^\)]*\)', equation)) #FIXME: misses **2

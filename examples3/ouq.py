@@ -33,6 +33,7 @@ class BaseOUQ(object): #XXX: redo with a "Solver" interface, like ensemble?
         constraint: function of the form x' = constraint(x)
         xvalid: function returning True if x == x', given constraint
         cvalid: function similar to xvalid, but with product_measure input
+        map: function equivalent to evaluating samples in a for loop
 
     NOTE: when y is multivalued models must be a UQModel with ny != None
         """
@@ -46,6 +47,7 @@ class BaseOUQ(object): #XXX: redo with a "Solver" interface, like ensemble?
         self.axes = getattr(model, 'ny', None) #FIXME: in kwds?, ny
         rnd = getattr(model, 'rnd', True) #FIXME: ?, rnd
         self.samples = kwds.get('samples', None) if rnd else None
+        self.map = None if self.samples is None else kwds.get('map', None)
         self.constraint = kwds.get('constraint', lambda rv:rv)
         self.penalty = kwds.get('penalty', lambda rv:0.)
         self.xvalid = kwds.get('xvalid', lambda rv:True)
@@ -227,7 +229,7 @@ class BaseOUQ(object): #XXX: redo with a "Solver" interface, like ensemble?
         id: a unique identifier for the solver [default: None]
         nested: mystic.solver instance [default: None], for ensemble solvers
         x0: initial parameter guess [default: use RandomInitialPoints]
-        pool: pathos.pool instance [default: None]
+        map: pathos map function [default: None]
         maxiter: max number of iterations [default: defined in solver]
         maxfun: max number of objective evaluations [default: defined in solver]
         evalmon: mystic.monitor instance [default: Monitor], for evaluations
@@ -253,10 +255,9 @@ class BaseOUQ(object): #XXX: redo with a "Solver" interface, like ensemble?
         else: # DiffEv/Nelder/Powell
             if x0 is None: solver.SetRandomInitialPoints(min=lb,max=ub)
             else: solver.SetInitialPoints(x0)
-        mapper = kwds.get('pool', None)
+        mapper = kwds.get('map', None)
         if mapper is not None:
-            pool = mapper() #XXX: ThreadPool, ProcessPool, etc
-            solver.SetMapper(pool.map) #NOTE: not Nelder/Powell
+            solver.SetMapper(mapper) #NOTE: not Nelder/Powell
         maxiter = kwds.get('maxiter', None)
         maxfun = kwds.get('maxfun', None)
         solver.SetEvaluationLimits(maxiter,maxfun)
@@ -273,9 +274,7 @@ class BaseOUQ(object): #XXX: redo with a "Solver" interface, like ensemble?
         # solve
         solver.Solve(objective, **opts)
         if mapper is not None:
-            pool.close()
-            pool.join()
-            pool.clear() #NOTE: if used, then shut down pool
+            del mapper #NOTE: shut down internal pool
         #NOTE: debugging code
         #print("solved: %s" % solver.Solution())
         #func_bound = solver.bestEnergy
@@ -316,7 +315,7 @@ class ExpectedValue(BaseOUQ):
             if self.samples is None:
                 return tuple(c.expect(m) for m in model)
             # else use sampled support
-            return tuple(c.sampled_expect(m, self.samples) for m in model)
+            return tuple(c.sampled_expect(m, self.samples, map=self.map) for m in model)
         # else, get expected value for the given axis
         if axis is None:
             model = lambda x: self.model(x)
@@ -324,7 +323,7 @@ class ExpectedValue(BaseOUQ):
             model = lambda x: self.model(x, axis=axis)
         if self.samples is None:
             return c.expect(model)
-        return c.sampled_expect(model, self.samples)
+        return c.sampled_expect(model, self.samples, map=self.map)
 
 
 class MaximumValue(BaseOUQ):
@@ -356,7 +355,7 @@ class MaximumValue(BaseOUQ):
             if self.samples is None:
                 return tuple(c.ess_maximum(m) for m in model)
             # else use sampled support
-            return tuple(c.sampled_maximum(m, self.samples) for m in model)
+            return tuple(c.sampled_maximum(m, self.samples, map=self.map) for m in model)
         # else, get maximum value for the given axis
         if axis is None:
             model = lambda x: self.model(x)
@@ -365,7 +364,7 @@ class MaximumValue(BaseOUQ):
         if self.samples is None:
             from mystic.math.measures import ess_maximum #TODO: c.ess_maximum
             return ess_maximum(model, c.positions, c.weights)
-        return c.sampled_maximum(model, self.samples)
+        return c.sampled_maximum(model, self.samples, map=self.map)
 
 
 class MinimumValue(BaseOUQ):
@@ -397,7 +396,7 @@ class MinimumValue(BaseOUQ):
             if self.samples is None:
                 return tuple(c.ess_minimum(m) for m in model)
             # else use sampled support
-            return tuple(c.sampled_minimum(m, self.samples) for m in model)
+            return tuple(c.sampled_minimum(m, self.samples, map=self.map) for m in model)
         # else, get minimum value for the given axis
         if axis is None:
             model = lambda x: self.model(x)
@@ -406,7 +405,7 @@ class MinimumValue(BaseOUQ):
         if self.samples is None:
             from mystic.math.measures import ess_minimum #TODO: c.ess_minimum
             return ess_minimum(model, c.positions, c.weights)
-        return c.sampled_minimum(model, self.samples)
+        return c.sampled_minimum(model, self.samples, map=self.map)
 
 
 class ValueAtRisk(BaseOUQ):
@@ -438,7 +437,7 @@ class ValueAtRisk(BaseOUQ):
             if self.samples is None:
                 return tuple(c.ess_ptp(m) for m in model)
             # else use sampled support
-            return tuple(c.sampled_ptp(m, self.samples) for m in model)
+            return tuple(c.sampled_ptp(m, self.samples, map=self.map) for m in model)
         # else, get value at risk for the given axis
         if axis is None:
             model = lambda x: self.model(x)
@@ -447,7 +446,7 @@ class ValueAtRisk(BaseOUQ):
         if self.samples is None:
             from mystic.math.measures import ess_ptp #TODO: c.ess_ptp
             return ess_ptp(model, c.positions, c.weights)
-        return c.sampled_ptp(model, self.samples)
+        return c.sampled_ptp(model, self.samples, map=self.map)
 
 
 class ProbOfFailure(BaseOUQ):
@@ -481,7 +480,7 @@ class ProbOfFailure(BaseOUQ):
             if self.samples is None:
                 return tuple(c.pof(m) for m in model)
             # else use sampled support
-            return tuple(c.sampled_pof(m, self.samples) for m in model)
+            return tuple(c.sampled_pof(m, self.samples, map=self.map) for m in model)
         # else, get probability of failure for the given axis
         if axis is None:
             model = lambda x: self.model(x)
@@ -489,5 +488,5 @@ class ProbOfFailure(BaseOUQ):
             model = lambda x: self.model(x, axis=axis)
         if self.samples is None:
             return c.pof(model)
-        return c.sampled_pof(model, self.samples)
+        return c.sampled_pof(model, self.samples, map=self.map)
 

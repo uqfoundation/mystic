@@ -14,7 +14,7 @@ tools related to sampling
 # everything else is from samples.py
 
 # SAMPLING #
-def _random_samples(lb,ub,npts=10000):
+def _random_samples(lb, ub, npts=10000):
   """
 generate npts random samples between given lb & ub
 
@@ -32,7 +32,7 @@ Inputs:
  #return [list(i) for i in pts]
 
 
-def random_samples(lb,ub, npts=10000, dist=None, clip=False):
+def random_samples(lb, ub, npts=10000, dist=None, clip=False):
   """
 generate npts samples from the given distribution between given lb & ub
 
@@ -68,7 +68,7 @@ Inputs:
   return pts  #XXX: returns a numpy.array
 
 
-def sample(f,lb,ub,npts=10000):
+def sample(f, lb, ub, npts=10000, map=None):
   """
 return number of failures and successes for some boolean function f
 
@@ -77,22 +77,21 @@ Inputs:
     lb -- a list of lower bounds
     ub -- a list of upper bounds
     npts -- the number of points to sample [Default is npts=10000]
+    map -- the mapping function [Default is builtins.map]
 """
-  from numpy import transpose
+  if map is None:
+    from builtins import map
+  from numpy import transpose, atleast_2d
   pts = _random_samples(lb, ub, npts)
 
-  failure = 0; success = 0
-  for i in range(npts):
-    xvector = transpose(pts)[i]
-    if f(list(xvector)):
-      success += 1
-    else:
-      failure += 1
-  return failure,success
+  results = list(map(f, atleast_2d(transpose(pts)).tolist()))
+  failure = results.count(False)
+  success = len(results) - failure
+  return failure, success
 
 
 # STATISTICS #
-def sampled_mean(f, lb,ub, npts=10000):
+def sampled_mean(f, lb, ub, npts=10000, map=None):
   """
 use random sampling to calculate the mean of a function
 
@@ -101,27 +100,37 @@ Inputs:
     lb -- a list of lower bounds
     ub -- a list of upper bounds
     npts -- the number of points to sample [Default is npts=10000]
+    map -- the mapping function [Default is builtins.map]
 """
-  from numpy import inf, transpose
-  from mystic.tools import wrap_bounds
   pts = _random_samples(lb, ub, npts)
-  f = wrap_bounds(f,lb,ub)
-  ave = 0; count = 0
-  for i in range(len(pts[0])):
-    if len(lb) != 1:
-      xvector = transpose(pts)[i]
-      Fx = f(list(xvector))
-    else:
-      Fx = f(float(transpose(pts)[i]))
-    if Fx != -inf: # outside of bounds evaluates to -inf
-      ave += Fx
-      count += 1
-  if not count: return None  #XXX: define 0/0 = None
-  ave = float(ave) / float(count)
-  return ave
+  return _expectation_given_samples(f, pts, map)
+
+# if map is None:
+#   from builtins import map
+# from numpy import inf, transpose, atleast_2d
+# from mystic.tools import wrap_bounds
+# pts = _random_samples(lb, ub, npts)
+# f = wrap_bounds(f,lb,ub)
+
+# if len(lb) != 1:
+#   results = map(f, atleast_2d(transpose(pts)).tolist())
+# else: #FIXME: fails for len(lb) == 1 (and the above works!)
+#   _f = lambda x: f(float(x))
+#   results = map(_f, transpose(pts))
+# #ave = 0; count = 0
+# #for Fx in results:
+# #  if Fx != inf: # outside of bounds evaluates to inf
+# #    ave += Fx
+# #    count += 1
+# results = list(filter(lambda Fx: Fx != inf, results))
+# count = len(results)
+# if not count: return None  #XXX: define 0/0 = None
+# ave = sum(results)
+# ave = float(ave) / float(count)
+# return ave
 
 
-def sampled_variance(f, lb, ub, npts=10000): #XXX: this could be improved
+def sampled_variance(f, lb, ub, npts=10000, map=None): #XXX: could be improved
   """
 use random sampling to calculate the variance of a function
 
@@ -130,14 +139,15 @@ Inputs:
     lb -- a list of lower bounds
     ub -- a list of upper bounds
     npts -- the number of points to sample [Default is npts=10000]
+    map -- the mapping function [Default is builtins.map]
 """
-  m = sampled_mean(f,lb,ub)
+  m = sampled_mean(f,lb,ub,npts,map)
   def g(x):
     return abs(f(x) - m)**2
-  return sampled_mean(g,lb,ub)
+  return sampled_mean(g,lb,ub,npts,map)
 
 
-def sampled_pof(f, lb, ub, npts=10000):
+def sampled_pof(f, lb, ub, npts=10000, map=None):
   """
 use random sampling to calculate probability of failure for a function
 
@@ -146,80 +156,91 @@ Inputs:
     lb -- a list of lower bounds
     ub -- a list of upper bounds
     npts -- the number of points to sample [Default is npts=10000]
+    map -- the mapping function [Default is builtins.map]
 """
   pts = _random_samples(lb, ub, npts)
-  return _pof_given_samples(f, pts)
+  return _pof_given_samples(f, pts, map)
 
 
 # ALTERNATE: GIVEN SAMPLE POINTS #
-def _pof_given_samples(f, pts):
+def _pof_given_samples(f, pts, map=None):
   """
 use given sample pts to calculate probability of failure for function f
 
 Inputs:
     f -- a function that returns True for 'success' and False for 'failure'
     pts -- a list of sample points
+    map -- the mapping function [Default is builtins.map]
 """
-  from numpy import transpose
-  failure = 0
-  npts = len(pts[0]) #XXX: fails when pts = []; also assumes a nested list
-  for i in range(npts):
-    xvector = transpose(pts)[i]
-    if not f(list(xvector)):
-      failure += 1
-  pof = float(failure) / float(npts)
+  if map is None:
+    from builtins import map
+  from numpy import transpose, atleast_2d
+  results = list(map(f, atleast_2d(transpose(pts)).tolist()))
+  pof = float(results.count(False)) / float(len(results))
   return pof
 
 
-def _minimum_given_samples(f, pts):
+def _minimum_given_samples(f, pts, map=None):
   """
 use given sample pts to calculate minimum for function f
 
 Inputs:
     f -- a function that returns a single value, given a list of inputs
     pts -- a list of sample points
+    map -- the mapping function [Default is builtins.map]
 """
-  from numpy import transpose
-  return min([f(list(i)) for i in transpose(pts)])
+  if map is None:
+    from builtins import map
+  from numpy import transpose, atleast_2d
+  return min(list(map(f, atleast_2d(transpose(pts)).tolist())))
 
 
-def _expectation_given_samples(f, pts):
+def _expectation_given_samples(f, pts, map=None):
   """
 use given sample pts to calculate expected value for function f
 
 Inputs:
     f -- a function that returns a single value, given a list of inputs
     pts -- a list of sample points
+    map -- the mapping function [Default is builtins.map]
 """
-  from numpy import transpose, mean
-  return mean([f(list(i)) for i in transpose(pts)])
+  if map is None:
+    from builtins import map
+  from numpy import transpose, mean, atleast_2d
+  return mean(list(map(f, atleast_2d(transpose(pts)).tolist())))
 
 
-def _maximum_given_samples(f, pts):
+def _maximum_given_samples(f, pts, map=None):
   """
 use given sample pts to calculate maximum for function f
 
 Inputs:
     f -- a function that returns a single value, given a list of inputs
     pts -- a list of sample points
+    map -- the mapping function [Default is builtins.map]
 """
-  from numpy import transpose
-  return max([f(list(i)) for i in transpose(pts)])
+  if map is None:
+    from builtins import map
+  from numpy import transpose, atleast_2d
+  return max(list(map(f, atleast_2d(transpose(pts)).tolist())))
 
 
-def _ptp_given_samples(f, pts):
+def _ptp_given_samples(f, pts, map=None):
   """
 use given sample pts to calculate spread for function f
 
 Inputs:
     f -- a function that returns a single value, given a list of inputs
     pts -- a list of sample points
+    map -- the mapping function [Default is builtins.map]
 """
-  from numpy import transpose, ptp
-  return ptp([f(list(i)) for i in transpose(pts)])
+  if map is None:
+    from builtins import map
+  from numpy import transpose, ptp, atleast_2d
+  return ptp(list(map(f, atleast_2d(transpose(pts)).tolist())))
 
 
-def sampled_pts(pts,lb,ub):
+def sampled_pts(pts, lb, ub, map=None):
   """
 determine the number of sample points inside the given bounds
 
@@ -227,21 +248,21 @@ Inputs:
     pts -- a list of sample points
     lb -- a list of lower bounds
     ub -- a list of upper bounds
+    map -- the mapping function [Default is builtins.map]
 """
-  from numpy import inf, transpose
-  def identity(x):
-    return x
+  if map is None:
+    from builtins import map
+  from numpy import inf, transpose, atleast_2d
   from mystic.tools import wrap_bounds
-  f = wrap_bounds(identity,lb,ub)
-  npts = 0
-  for i in range(len(pts[0])):
-    xvector = transpose(pts)[i]
-    Fx = f(list(xvector))
-    if Fx != -inf: # outside of bounds evaluates to -inf
-      npts += 1
+  def zero(x):
+    return 0
+  f = wrap_bounds(zero,lb,ub)
+  results = map(f, atleast_2d(transpose(pts)).tolist())
+  #npts = len(list(filter(lambda Fx: Fx != inf, results)))
+  npts = list(results).count(0) # outside of bounds evaluates to inf
   return npts
 
-def sampled_prob(pts,lb,ub):
+def sampled_prob(pts, lb, ub, map=None):
   """
 calculates probability by sampling if points are inside the given bounds
 
@@ -249,8 +270,9 @@ Inputs:
     pts -- a list of sample points
     lb -- a list of lower bounds
     ub -- a list of upper bounds
+    map -- the mapping function [Default is builtins.map]
 """
-  prob = float(sampled_pts(pts,lb,ub)) / float(len(pts[0]))
+  prob = float(sampled_pts(pts,lb,ub,map)) / float(len(pts[0]))
   return prob
 
 
@@ -264,7 +286,7 @@ Inputs:
 #def maxF(x):
 #  return -model(x)
 
-def alpha(n,diameter,epsilon=0.01):
+def alpha(n, diameter, epsilon=0.01):
   from math import log
  #return diameter * n**(-0.5) * (-log(epsilon))**(0.5)
   return diameter * (-log(epsilon) / (2.0 * n))**(0.5)
@@ -303,9 +325,9 @@ if __name__ == '__main__':
     random_seed(123)
     print("PoF using method 2: %s" % sampled_pof(model,lower,upper))
 
-    # run the tests
-    __test1()
-    __test2()
+  # run the tests
+  __test1()
+  __test2()
 
 
 # EOF

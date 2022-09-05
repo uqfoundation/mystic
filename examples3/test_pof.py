@@ -43,8 +43,17 @@ if __name__ == '__main__':
     #from toys import function5 as toy; nx = 5; ny = None
     Ns = 25
 
+    try: # parallel map
+        from pathos.maps import Map
+        from pathos.pools import ProcessPool, ThreadPool
+        smap = Map(ThreadPool)
+        cmap = None #Map(ProcessPool)
+    except ImportError:
+        smap = None # for sampling
+        cmap = None # for objective
+
     # build a model representing 'truth'
-    nargs = dict(nx=nx, ny=ny, rnd=False)
+    nargs = dict(nx=nx, ny=ny, rnd=True)
     model = WrapModel('model', toy, **nargs)
 
     # build a model of success, relative to the cutoff
@@ -54,7 +63,8 @@ if __name__ == '__main__':
     # calculate upper bound on expected success, where x[0] has uncertainty
     bnd = MeasureBounds((0,0,0,0,0),(1,10,10,0,10), n=npts, wlb=wlb, wub=wub)
     rnd = Ns if success.rnd else None
-    d = ProbOfFailure(success, bnd, constraint=scons, cvalid=is_cons, samples=rnd)
+    d = ProbOfFailure(success, bnd, constraint=scons, cvalid=is_cons, samples=rnd, map=smap)
+    param['map'] = cmap
     d.upper_bound(axis=0, **param)
     print("upper bound per axis:")
     for axis,solver in d._upper.items():

@@ -759,13 +759,14 @@ Notes:
   #     u += self.weights[i]
   # return u  #XXX: does this need to be normalized?
 
-  def sampled_minimum(self, f, npts=10000):
+  def sampled_minimum(self, f, npts=10000, map=None):
     """use sampling to calculate ess_minimum for a given function
 
 Args:
     f (func): a function that takes a list and returns a number
     npts (int, default=10000): the number of point masses sampled from the
         underlying discrete measures
+    map (func, default=builtins.map): the mapping function
 
 Returns:
     the sampled ess_minimum, a float
@@ -777,15 +778,16 @@ Notes:
 """
     from mystic.math.samples import _minimum_given_samples
     pts = self.sampled_support(npts)
-    return _minimum_given_samples(f, pts)
+    return _minimum_given_samples(f, pts, map)
 
-  def sampled_ptp(self, f, npts=10000):
+  def sampled_ptp(self, f, npts=10000, map=None):
     """use sampling to calculate ess_|maximum - minimum| for a given function
 
 Args:
     f (func): a function that takes a list and returns a number
     npts (int, default=10000): the number of point masses sampled from the
         underlying discrete measures
+    map (func, default=builtins.map): the mapping function
 
 Returns:
     the sampled |ess_maximum - ess_minimum|, a float
@@ -797,15 +799,16 @@ Notes:
 """
     from mystic.math.samples import _ptp_given_samples
     pts = self.sampled_support(npts)
-    return _ptp_given_samples(f, pts)
+    return _ptp_given_samples(f, pts, map)
 
-  def sampled_expect(self, f, npts=10000):
+  def sampled_expect(self, f, npts=10000, map=None):
     """use sampling to calculate expected value for a given function
 
 Args:
     f (func): a function that takes a list and returns a number
     npts (int, default=10000): the number of point masses sampled from the
         underlying discrete measures
+    map (func, default=builtins.map): the mapping function
 
 Returns:
     the expected value, a float
@@ -817,15 +820,16 @@ Notes:
 """
     from mystic.math.samples import _expectation_given_samples
     pts = self.sampled_support(npts)
-    return _expectation_given_samples(f, pts)
+    return _expectation_given_samples(f, pts, map)
 
-  def sampled_maximum(self, f, npts=10000):
+  def sampled_maximum(self, f, npts=10000, map=None):
     """use sampling to calculate ess_maximum for a given function
 
 Args:
     f (func): a function that takes a list and returns a number
     npts (int, default=10000): the number of point masses sampled from the
         underlying discrete measures
+    map (func, default=builtins.map): the mapping function
 
 Returns:
     the ess_maximum, a float
@@ -837,15 +841,16 @@ Notes:
 """
     from mystic.math.samples import _maximum_given_samples
     pts = self.sampled_support(npts)
-    return _maximum_given_samples(f, pts)
+    return _maximum_given_samples(f, pts, map)
 
-  def sampled_pof(self, f, npts=10000):
+  def sampled_pof(self, f, npts=10000, map=None):
     """use sampling to calculate probability of failure for a given function
 
 Args:
     f (func): a function returning True for 'success' and False for 'failure'
     npts (int, default=10000): the number of point masses sampled from the
         underlying discrete measures
+    map (func, default=builtins.map): the mapping function
 
 Returns:
     the probabilty of failure, a float in ``[0.0,1.0]``
@@ -857,7 +862,7 @@ Notes:
 """
     from mystic.math.samples import _pof_given_samples
     pts = self.sampled_support(npts)
-    return _pof_given_samples(f, pts)
+    return _pof_given_samples(f, pts, map)
 
   def sampled_support(self, npts=10000): ##XXX: was 'def support'
     """randomly select support points from the underlying discrete measures
@@ -869,7 +874,7 @@ Returns:
     a list of ``len(product measure)`` lists, each of length ``len(npts)``
 """
     from mystic.math.measures import weighted_select as _select
-    pts = []
+    pts = [] #XXX: use list comprehension, or map?
     for i in range(npts):
       # for a single trial, select positions from all sets
       pts.append( [_select(set.positions, set.weights) for set in self] )

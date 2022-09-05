@@ -19,7 +19,7 @@ param = dict(solver=DifferentialEvolutionSolver2,
              maxfun=1e+6,
              x0=None, # use RandomInitialPoints
              nested=None, # don't use SetNested
-             pool=None, # don't use SetMapper
+             map=None, # don't use SetMapper
              stepmon=VerboseMonitor(1, label='output'), # monitor config
              evalmon=Monitor(), # monitor config (re-initialized in solve)
              # kwds to pass directly to Solve(objective, **opt)
