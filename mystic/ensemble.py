@@ -12,7 +12,7 @@ Solvers
 This module contains a collection of optimization routines that use "map"
 to distribute several optimizer instances over parameter space. Each
 solver accepts a imported solver object as the "nested" solver, which
-becomes the target of the map function.
+becomes the target of the callable map instance.
 
 The set of solvers built on mystic's AbstractEnsembleSolver are::
    LatticeSolver -- start from center of N grid points
@@ -186,7 +186,7 @@ Args:
         constraints are satisfied (and ``y' > 0`` otherwise).
     tightrange (bool, default=None): impose bounds and constraints concurrently.
     cliprange (bool, default=None): bounding constraints clip exterior values.
-    map (func, default=None): a (parallel) map function ``y = map(f, x)``.
+    map (func, default=None): a (parallel) map instance ``y = map(f, x)``.
     dist (mystic.math.Distribution, default=None): generate randomness in
         ensemble starting position using the given distribution.
     step (bool, default=False): if True, enable Step within the ensemble.
@@ -316,7 +316,7 @@ Args:
         constraints are satisfied (and ``y' > 0`` otherwise).
     tightrange (bool, default=None): impose bounds and constraints concurrently.
     cliprange (bool, default=None): bounding constraints clip exterior values.
-    map (func, default=None): a (parallel) map function ``y = map(f, x)``.
+    map (func, default=None): a (parallel) map instance ``y = map(f, x)``.
     dist (mystic.math.Distribution, default=None): generate randomness in
         ensemble starting position using the given distribution.
     step (bool, default=False): if True, enable Step within the ensemble.
@@ -447,7 +447,7 @@ Args:
         constraints are satisfied (and ``y' > 0`` otherwise).
     tightrange (bool, default=None): impose bounds and constraints concurrently.
     cliprange (bool, default=None): bounding constraints clip exterior values.
-    map (func, default=None): a (parallel) map function ``y = map(f, x)``.
+    map (func, default=None): a (parallel) map instance ``y = map(f, x)``.
     dist (mystic.math.Distribution, default=None): generate randomness in
         ensemble starting position using the given distribution.
     step (bool, default=False): if True, enable Step within the ensemble.

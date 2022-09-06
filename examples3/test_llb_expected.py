@@ -95,7 +95,7 @@ if __name__ == '__main__':
         #print('building model F(x|a)...')
         model = NoisyModel('model', model=toy, nx=nx, ny=ny, **kwds)
 
-        rnd = Ns if model.rnd else None
+        rnd = samples if model.rnd else None
         #print('building UQ objective of expected model output...')
         b = ExpectedValue(model, bnd, constraint=scons, cvalid=is_cons, samples=rnd)
         i = counter.count()

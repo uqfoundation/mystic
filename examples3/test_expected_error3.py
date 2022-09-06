@@ -63,6 +63,14 @@ if __name__ == '__main__':
     truth = NoisyModel('truth', model=toy, nx=nx, ny=ny, **true)
     Ns = 25 #XXX: number of samples, when model has randomness
 
+    try: # parallel maps
+        from pathos.maps import Map
+        from pathos.pools import ThreadPool, _ThreadPool
+        pmap = Map(ThreadPool) if Ns else Map() # for sampling
+        if ny: param['axmap'] = Map(_ThreadPool, join=True) # for multi-axis
+    except ImportError:
+        pmap = None
+
     # build a model that approximates 'truth'
     #print('building model F(x|a) of truth...')
     approx = dict(mu=-.05, sigma=0., zmu=.05, zsigma=0.)
@@ -71,8 +79,9 @@ if __name__ == '__main__':
     error = ErrorModel('error', model=truth, surrogate=model)
 
     rnd = Ns if error.rnd else None
+    if not rnd: pmap = None
     #print('building UQ objective of expected model error...')
-    b = ExpectedValue(error, bnd, constraint=scons, cvalid=is_cons, samples=rnd)
+    b = ExpectedValue(error, bnd, constraint=scons, cvalid=is_cons, samples=rnd, map=pmap)
     #print('solving for lower bound on expected model error...')
     b.lower_bound(axis=None, id=0, **param)
     print("lower bound per axis:")

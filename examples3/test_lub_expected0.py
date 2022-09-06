@@ -94,7 +94,7 @@ if __name__ == '__main__':
         #print('building model F(x|a)...')
         model = WrapModel('model', model=toy_, nx=nx, ny=ny, rnd=False)
 
-        rnd = Ns if model.rnd else None
+        rnd = samples if model.rnd else None
         #print('building UQ objective of expected model output...')
         b = ExpectedValue(model, bnd, constraint=scons, cvalid=is_cons, samples=rnd)
         i = counter.count()

@@ -33,7 +33,7 @@ class BaseOUQ(object): #XXX: redo with a "Solver" interface, like ensemble?
         constraint: function of the form x' = constraint(x)
         xvalid: function returning True if x == x', given constraint
         cvalid: function similar to xvalid, but with product_measure input
-        map: function equivalent to evaluating samples in a for loop
+        map: callable map instance for evaluating samples in parallel
 
     NOTE: when y is multivalued models must be a UQModel with ny != None
         """
@@ -66,6 +66,7 @@ class BaseOUQ(object): #XXX: redo with a "Solver" interface, like ensemble?
 
     Input:
         axis: int, the index of y on which to find bound (all, by default)
+        axmap: map instance, to execute each axis in parallel (None, by default)
         instance: bool, if True, return the solver instance (False, by default)
 
     Additional Input:
@@ -94,6 +95,7 @@ class BaseOUQ(object): #XXX: redo with a "Solver" interface, like ensemble?
 
     Input:
         axis: int, the index of y on which to find bound (all, by default)
+        axmap: map instance, to execute each axis in parallel (None, by default)
 
     Additional Input:
         kwds: dict, with updates to the instance's stored kwds
@@ -101,16 +103,14 @@ class BaseOUQ(object): #XXX: redo with a "Solver" interface, like ensemble?
     Returns:
         solver instance with solved upper bound on the statistical quantity
         """
+        axmap = kwds.pop('axmap', map) #NOTE: was _ThreadPool.map w/ join
+        if axmap is None: axmap = map
         self.kwds.update(**kwds) #FIXME: good idea???
         if self.axes is None or axis is not None:
             # solve for upper bound of objective (in measure space)
             return self.solve(lambda rv: -self.objective(rv, axis))
         # else axis is None
-        import multiprocess.dummy as mp #FIXME: process pickle/recursion Error
-        pool = mp.Pool(self.axes)
-        map = pool.map #TODO: don't hardwire map
-        upper = tuple(map(self._upper_bound, range(self.axes)))
-        pool.close(); pool.join()
+        upper = tuple(axmap(self._upper_bound, range(self.axes)))
         return upper #FIXME: don't accept "uphill" moves?
 
     def lower_bound(self, axis=None, **kwds):
@@ -118,6 +118,7 @@ class BaseOUQ(object): #XXX: redo with a "Solver" interface, like ensemble?
 
     Input:
         axis: int, the index of y on which to find bound (all, by default)
+        axmap: map instance, to execute each axis in parallel (None, by default)
         instance: bool, if True, return the solver instance (False, by default)
 
     Additional Input:
@@ -146,6 +147,7 @@ class BaseOUQ(object): #XXX: redo with a "Solver" interface, like ensemble?
 
     Input:
         axis: int, the index of y on which to find bound (all, by default)
+        axmap: map instance, to execute each axis in parallel (None, by default)
 
     Additional Input:
         kwds: dict, with updates to the instance's stored kwds
@@ -153,16 +155,14 @@ class BaseOUQ(object): #XXX: redo with a "Solver" interface, like ensemble?
     Returns:
         solver instance with solved lower bound on the statistical quantity
         """
+        axmap = kwds.pop('axmap', map) #NOTE: was _ThreadPool.map w/ join
+        if axmap is None: axmap = map
         self.kwds.update(**kwds) #FIXME: good idea???
         if self.axes is None or axis is not None:
             # solve for lower bound of objective (in measure space)
             return self.solve(lambda rv: self.objective(rv, axis))
         # else axis is None
-        import multiprocess.dummy as mp #FIXME: process pickle/recursion Error
-        pool = mp.Pool(self.axes)
-        map = pool.map #TODO: don't hardwire map
-        lower = tuple(map(self._lower_bound, range(self.axes)))
-        pool.close(); pool.join()
+        lower = tuple(axmap(self._lower_bound, range(self.axes)))
         return lower #FIXME: don't accept "uphill" moves?
 
     # --- func ---
@@ -192,22 +192,21 @@ class BaseOUQ(object): #XXX: redo with a "Solver" interface, like ensemble?
         dist: a mystic.tools.Distribution instance (or list of Distributions)
         npts: number of sample points [default = 10000]
         clip: if True, clip at bounds, else resample [default = False]
+        map: map instance, to sample in parallel [default = None]
 
     Returns:
         sampled statistical quantity, for the specified axis, reduced to a float
         """
         #XXX: return what? "energy and solution?" reduced?
         reducer = kwds.pop('reducer', None)
+        smap = kwds.pop('map', None) #NOTE: was _ThreadPool.map w/ join
+        if smap is None: smap = map
         if kwds.get('npts', None) is None: kwds.pop('npts', None)
         s = random_samples(self.lb, self.ub, **kwds).T
         fobj = cached(archive=dict_archive())(self.objective) #XXX: bad idea?
         self._pts = fobj.__cache__() #XXX: also bad idea? include from *_bounds?
         objective = lambda rv: fobj(self.constraint(rv), axis=axis) # penalty?
-        import multiprocess.dummy as mp #FIXME: process pickle/recursion Error
-        pool = mp.Pool() # len(s)
-        map = pool.map #TODO: don't hardwire map
-        s = map(objective, s) #NOTE: s = [(...),(...)] or [...]
-        pool.close(); pool.join()
+        s = smap(objective, s) #NOTE: s = [(...),(...)] or [...]
         if axis is None and self.axes is not None: # apply per axis
             if reducer is None:
                 return tuple(sum(si)/len(si) for si in zip(*s))
@@ -229,11 +228,11 @@ class BaseOUQ(object): #XXX: redo with a "Solver" interface, like ensemble?
         id: a unique identifier for the solver [default: None]
         nested: mystic.solver instance [default: None], for ensemble solvers
         x0: initial parameter guess [default: use RandomInitialPoints]
-        map: pathos map function [default: None]
         maxiter: max number of iterations [default: defined in solver]
         maxfun: max number of objective evaluations [default: defined in solver]
         evalmon: mystic.monitor instance [default: Monitor], for evaluations
         stepmon: mystic.monitor instance [default: Monitor], for iterations
+        map: pathos map instance for solver.SetMapper [default: None]
         opts: dict of configuration options for solver.Solve [default: {}]
 
     Returns:

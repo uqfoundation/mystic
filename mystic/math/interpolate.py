@@ -523,7 +523,7 @@ def interpf(x, z, method=None, extrap=False, arrays=False, **kwds):
       extrap: if True, extrapolate a bounding box (can reduce # of nans)
       arrays: if True, z = f(*x) is a numpy array; otherwise don't use arrays
       axis: int in [0,N], the axis of z to interpolate (all, by default)
-      map: map function, used to parallelize interpf for each axis
+      axmap: map instance, to execute each axis in parallel (None, by default)
 
     Output:
       interpolated function f, where z=f(*x)
@@ -547,7 +547,8 @@ def interpf(x, z, method=None, extrap=False, arrays=False, **kwds):
       for more details.
     '''
     axis = kwds.get('axis', None)
-    _map = kwds.get('map', map)
+    _map = kwds.get('axmap', kwds.get('map', map)) # backward compatibility
+    if _map is None: _map = map
     _kwd = dict(method=method, extrap=extrap, arrays=arrays)
     if 'norm' in kwds: _kwd['norm'] = kwds.pop('norm')
     if 'smooth' in kwds: _kwd['smooth'] = kwds.pop('smooth')

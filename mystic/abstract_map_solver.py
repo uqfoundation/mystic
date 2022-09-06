@@ -160,14 +160,14 @@ Additional inputs:
         return
 
     def SetMapper(self, map, strategy=None): #XXX: use strategy+format ?
-        """Set the map function and the mapping strategy.
+        """Set the map and the mapping strategy.
 
-    Sets a mapping function to perform the map-reduce algorithm.
+    Sets a callable map to perform the map-reduce algorithm.
     Uses a mapping strategy to provide the algorithm for distributing
     the work list of optimization jobs across available resources.
 
 Inputs:
-    map -- the mapping function [DEFAULT: python_map]
+    map -- the callable map instance [DEFAULT: python_map]
     strategy -- map strategy (see pyina.mappers) [DEFAULT: worker_pool]
         """
         self._map = map

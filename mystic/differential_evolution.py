@@ -64,7 +64,7 @@ Mystic solver behavior activated in diffev and diffev2::
 
 Storn & Price's DE Solver has also been implemented to use the "map"
 interface. Mystic enables the user to override the standard python
-map function with their own 'map' function, or one of the map functions
+map function with their own 'map' function, or one of the maps
 provided by the pathos package (see http://dev.danse.us/trac/pathos)
 for distributed and high-performance computing.
 
@@ -688,7 +688,7 @@ Args:
         constraints are satisfied (and ``y' > 0`` otherwise).
     tightrange (bool, default=None): impose bounds and constraints concurrently.
     cliprange (bool, default=None): bounding constraints clip exterior values.
-    map (func, default=None): a (parallel) map function ``y = map(f, x)``.
+    map (func, default=None): a (parallel) map instance ``y = map(f, x)``.
 
 Returns:
     ``(xopt, {fopt, iter, funcalls, warnflag}, {allvecs})``
@@ -753,7 +753,7 @@ Args:
         constraints are satisfied (and ``y' > 0`` otherwise).
     tightrange (bool, default=None): impose bounds and constraints concurrently.
     cliprange (bool, default=None): bounding constraints clip exterior values.
-    map (func, default=None): a (parallel) map function ``y = map(f, x)``.
+    map (func, default=None): a (parallel) map instance ``y = map(f, x)``.
 
 Returns:
     ``(xopt, {fopt, iter, funcalls, warnflag}, {allvecs})``

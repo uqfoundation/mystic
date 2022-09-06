@@ -73,7 +73,7 @@ if __name__ == '__main__':
     #'''
     # sample more data, refit, and recalculate error
     print('resampling and refitting surrogate')
-    data = golden.sample(bounds, pts=-4)
+    data = golden.sample(bounds, pts=-4) #XXX: use map,axmap here?
     surrogate.fit()
     print('estimate: %s' % str(surrogate([1,2,3,4,5])))
     print('error: %s' % str(misfit([1,2,3,4,5])))

@@ -22,9 +22,10 @@ def sample(model, bounds, pts=None, **kwds):
         sampler: the mystic.sampler type [default: LatticeSampler]
         solver: the mystic.solver type [default: NelderMeadSimplexSolver]
         dist: a distribution type (or float amplitude) [default: None]
-        map: a map instance [default: builtins.map]
+        map: map instance, to search for min/max in parallel [default: None]
         ny: int, number of model outputs, len(y) [default: None]
         axis: int, index of output on which to search [default: None]
+        axmap: map instance, to execute each axis in parallel [default: None]
 
     Returns:
         the mystic.math.legacydata.dataset of sampled data
@@ -67,7 +68,10 @@ def sample(model, bounds, pts=None, **kwds):
         from mystic.math import Distribution
         sig = [dist * (ub+lb) for (lb,ub) in bounds] #FIXME: allow None and inf
         dist = Distribution(np.random.normal, 0, sig)
-    map_ = kwds.pop('map', map)
+    pmap = kwds.pop('map', None)
+    axmap = kwds.pop('axmap', None) #NOTE: was _ThreadPool.map w/ join
+    if pmap is None: pmap = map
+    if axmap is None: axmap = map
     if not hasattr(model, '__cache__') or not hasattr(model, '__inverse__'):
         import mystic.cache as mc
         name = getattr(model, '__name__', None) #XXX: do better?
@@ -110,14 +114,10 @@ def sample(model, bounds, pts=None, **kwds):
             return f(arg)
         fs = lower, upper
         def doit(axis=None):
-            return list(map_(_apply, fs, [axis]*len(fs)))
+            return list(pmap(_apply, fs, [axis]*len(fs)))
         if mvl and axis is None:
             if ny:
-                import multiprocess.dummy as mt
-                pool = mt.Pool()
-                tmap = pool.map
-                list(tmap(doit, range(ny)))
-                pool.close(); pool.join()
+                list(axmap(doit, range(ny)))
             else: #XXX: default to 0, warn, or error?
                 doit(axis=0)
         else:
@@ -241,8 +241,9 @@ class OUQModel(object): #NOTE: effectively, this is WrapModel
         sampler: the mystic.sampler type [default: LatticeSampler]
         solver: the mystic.solver type [default: NelderMeadSimplexSolver]
         dist: a distribution type (or float amplitude) [default: None]
-        map: a map instance [default: builtins.map]
+        map: map instance, to search for min/max in parallel [default: None]
         axis: int, index of output on which to search [default: 0]
+        axmap: map instance, to execute each axis in parallel [default: None]
         multivalued: bool, True if output is multivalued [default: False]
 
     Returns:

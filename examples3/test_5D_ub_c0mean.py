@@ -33,6 +33,13 @@ if __name__ == '__main__':
     from ouq_ import MeanValue
     Ns = None #FIXME: non-deterministic model is NotImplemented
 
+    try: # parallel maps
+        from pathos.maps import Map
+        from pathos.pools import _ThreadPool
+        if ny: param['axmap'] = Map(_ThreadPool, join=True) # for multi-axis
+    except ImportError:
+        pass
+
     # calculate upper bound on mean value, where x[0] has uncertainty
     b = MeanValue(model, bnd, constraint=scons, cvalid=is_cons, samples=Ns, idx=0) #FIXME: idx is ignored; fixed in objective
     b.upper_bound(axis=None, **param)

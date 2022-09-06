@@ -135,7 +135,7 @@ if __name__ == '__main__':
         #print('building UQ model of model error...')
         error = ErrorModel('error', model=truth, surrogate=surrogate)
 
-        rnd = Ns if error.rnd else None
+        rnd = samples if error.rnd else None
         #print('building UQ objective of expected model error...')
         b = ExpectedValue(error, bnd, constraint=scons, cvalid=is_cons, samples=rnd)
         i = counter.count()

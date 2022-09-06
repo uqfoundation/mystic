@@ -65,6 +65,14 @@ if __name__ == '__main__':
     data = truth.sample([(0,1),(1,10)]+[(0,10)]*(nx-2), pts=-16)
     Ns = 25 #XXX: number of samples, when model has randomness
 
+    try: # parallel maps
+        from pathos.maps import Map
+        from pathos.pools import ThreadPool, _ThreadPool
+        pmap = Map(ThreadPool) if Ns else Map() # for sampling
+        if ny: param['axmap'] = Map(_ThreadPool, join=True) # for multi-axis
+    except ImportError:
+        pmap = None
+
     #print('building estimator G(x) from truth data...')
     kwds = dict(smooth=0.0, noise=0.0, method='thin_plate', extrap=False)
     surrogate = InterpModel('surrogate', nx=nx, ny=ny, data=truth, **kwds)
@@ -72,8 +80,9 @@ if __name__ == '__main__':
     error = ErrorModel('error', model=truth, surrogate=surrogate)
 
     rnd = Ns if error.rnd else None
+    if not rnd: pmap = None
     #print('building UQ objective of expected model error...')
-    b = ExpectedValue(error, bnd, constraint=scons, cvalid=is_cons, samples=rnd)
+    b = ExpectedValue(error, bnd, constraint=scons, cvalid=is_cons, samples=rnd, map=pmap)
     #print('solving for lower bound on expected model error...')
     b.lower_bound(axis=None, id=0, **param)
     print("lower bound per axis:")

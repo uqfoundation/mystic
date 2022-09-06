@@ -40,13 +40,21 @@ if __name__ == '__main__':
     from toys import function5 as toy; nx = 5; ny = None
     Ns = 25
 
+    try: # parallel maps
+        from pathos.maps import Map
+        from pathos.pools import ThreadPool, _ThreadPool
+        pmap = Map(ThreadPool) if Ns else Map() # for sampling
+        if ny: param['axmap'] = Map(_ThreadPool, join=True) # for multi-axis
+    except ImportError:
+        pmap = None
+
     # build a model representing 'truth'
     nargs = dict(nx=nx, ny=ny, rnd=False)
     model = WrapModel('model', toy, **nargs)
 
     # calculate upper bound on expected value, where x[0] has uncertainty
     bnd = MeasureBounds(xlb, xub, n=npts, wlb=wlb, wub=wub)
-    b = ExpectedValue(model, bnd, constraint=scons, cvalid=is_cons, samples=Ns)
+    b = ExpectedValue(model, bnd, constraint=scons, cvalid=is_cons, samples=Ns, map=pmap)
     b.upper_bound(axis=None, **param)
     print("upper bound per axis:")
     for axis,solver in b._upper.items():
