@@ -40,6 +40,15 @@ if __name__ == '__main__':
     #from toys import cost5 as toy; nx = 5; ny = None
     from toys import function5 as toy; nx = 5; ny = None
 
+    try: # parallel maps
+        from pathos.maps import Map
+        from pathos.pools import ThreadPool, _ThreadPool
+        pmap = Map(ThreadPool) # for min/max
+        smap = Map(_ThreadPool, join=True) if ny else None # for sample
+    except ImportError:
+        pmap = None
+        smap = None
+
     # build a model representing 'truth' (one deterministic, and one not)
     truth = dict(model=toy, nx=nx, ny=ny, mu=.001, zmu=-.001)#, uid=True)
     golden = NoisyModel('golden', cached=True, sigma=0, zsigma=0, **truth)
@@ -60,7 +69,7 @@ if __name__ == '__main__':
     print('max error: %s' % np.max(error, axis=-1))
 
     # calculate model error for 'golden'
-    data = golden.sample(bounds, pts=-4)
+    data = golden.sample(bounds, pts=-4, map=pmap, axmap=smap)
     #print('truth: %s' % str(golden([1,2,3,4,5])))
     estimate = dict(nx=nx, ny=ny, data=golden, noise=0, smooth=0)
     surrogate = InterpModel('surrogate', method='thin_plate', **estimate)
@@ -73,7 +82,7 @@ if __name__ == '__main__':
     #'''
     # sample more data, refit, and recalculate error
     print('resampling and refitting surrogate')
-    data = golden.sample(bounds, pts=-4) #XXX: use map,axmap here?
+    data = golden.sample(bounds, pts=-4, map=pmap, axmap=smap)
     surrogate.fit()
     print('estimate: %s' % str(surrogate([1,2,3,4,5])))
     print('error: %s' % str(misfit([1,2,3,4,5])))
