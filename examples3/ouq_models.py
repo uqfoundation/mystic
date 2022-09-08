@@ -156,7 +156,7 @@ def _init_axis(model):
 
 class OUQModel(object): #NOTE: effectively, this is WrapModel
 
-    def __init__(self, id=None, **kwds):
+    def __init__(self, id=None, **kwds): #XXX: take 'map' now in sample(map)?
         """base class for models to be used with OUQ classes
 
     Input:

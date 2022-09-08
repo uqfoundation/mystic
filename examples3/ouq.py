@@ -233,6 +233,7 @@ class BaseOUQ(object): #XXX: redo with a "Solver" interface, like ensemble?
         evalmon: mystic.monitor instance [default: Monitor], for evaluations
         stepmon: mystic.monitor instance [default: Monitor], for iterations
         map: pathos map instance for solver.SetMapper [default: None]
+        save: iteration frequency to save solver [default: None]
         opts: dict of configuration options for solver.Solve [default: {}]
 
     Returns:
@@ -254,6 +255,9 @@ class BaseOUQ(object): #XXX: redo with a "Solver" interface, like ensemble?
         else: # DiffEv/Nelder/Powell
             if x0 is None: solver.SetRandomInitialPoints(min=lb,max=ub)
             else: solver.SetInitialPoints(x0)
+        save = kwds.get('save', None)
+        if save is not None:
+            solver.SetSaveFrequency(save, 'Solver.pkl') #FIXME: set name
         mapper = kwds.get('map', None)
         if mapper is not None:
             solver.SetMapper(mapper) #NOTE: not Nelder/Powell
@@ -273,7 +277,9 @@ class BaseOUQ(object): #XXX: redo with a "Solver" interface, like ensemble?
         # solve
         solver.Solve(objective, **opts)
         if mapper is not None:
-            del mapper #NOTE: shut down internal pool
+            mapper.close()
+            mapper.join()
+            mapper.clear() #NOTE: if used, then shut down pool
         #NOTE: debugging code
         #print("solved: %s" % solver.Solution())
         #func_bound = solver.bestEnergy
