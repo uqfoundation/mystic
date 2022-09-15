@@ -1143,7 +1143,7 @@ Notes:
 
     for param,color,style in zip(collapse,colors,linestyles):
       for clps in set(param):
-        plt.axvline(x=clps, ymin=-10, ymax=1, hold=None, linestyle=style, linewidth=param.count(clps), color=color)
+        plt.axvline(x=clps, ymin=-10, ymax=1, linestyle=style, linewidth=param.count(clps), color=color)
 
     if label:
         #plt.title('convergence rate')

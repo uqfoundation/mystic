@@ -9,7 +9,7 @@ OUQ classes for calculating bounds on statistical quantities
 """
 import mystic.cache
 from mystic.cache import cached
-from mystic.cache.archive import dict_archive
+from mystic.cache.archive import dict_archive, file_archive, read
 from mystic.math import almostEqual
 from mystic.math.discrete import product_measure
 from mystic.math.samples import random_samples
@@ -189,6 +189,7 @@ class BaseOUQ(object): #XXX: redo with a "Solver" interface, like ensemble?
 
     Additional Input:
         reducer: function to reduce a list to a single value (e.g. mean, max)
+        archive: the archive (str name for a new archive, or archive instance)
         dist: a mystic.tools.Distribution instance (or list of Distributions)
         npts: number of sample points [default = 10000]
         clip: if True, clip at bounds, else resample [default = False]
@@ -198,15 +199,33 @@ class BaseOUQ(object): #XXX: redo with a "Solver" interface, like ensemble?
         sampled statistical quantity, for the specified axis, reduced to a float
         """
         #XXX: return what? "energy and solution?" reduced?
+        archive = kwds.pop('archive', None)
+        if archive is None: archive = dict_archive()
+        elif type(archive) in (str, (u''.__class__)):
+            archive = read(archive, type=file_archive)
         reducer = kwds.pop('reducer', None)
         smap = kwds.pop('map', None) #NOTE: was _ThreadPool.map w/ join
         if smap is None: smap = map
-        if kwds.get('npts', None) is None: kwds.pop('npts', None)
-        s = random_samples(self.lb, self.ub, **kwds).T
-        fobj = cached(archive=dict_archive())(self.objective) #XXX: bad idea?
+        npts = kwds.get('npts', None)
+        if npts is None: kwds.pop('npts', None)
+        fobj = cached(archive=archive)(self.objective) #XXX: bad idea?
         self._pts = fobj.__cache__() #XXX: also bad idea? include from *_bounds?
         objective = lambda rv: fobj(self.constraint(rv), axis=axis) # penalty?
-        s = smap(objective, s) #NOTE: s = [(...),(...)] or [...]
+        _pts = len(self._pts)
+        pts = npts - _pts
+        if pts > 0: # need to sample some new points
+            kwds['npts'] = pts
+            s = random_samples(self.lb, self.ub, **kwds).T
+            if _pts: #NOTE: s = [(...),(...)] or [...]
+                s = list(self._pts.values()) + list(smap(objective, s))
+            else:
+                s = list(smap(objective, s))
+        elif pts == 0:
+            s = list(self._pts.values())
+        else: # randomly choose points from archive
+            import numpy as np
+            s = np.random.choice(range(_pts), size=npts, replace=False)
+            s = np.array(list(self._pts.values()))[s].tolist()
         if axis is None and self.axes is not None: # apply per axis
             if reducer is None:
                 return tuple(sum(si)/len(si) for si in zip(*s))

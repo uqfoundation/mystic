@@ -428,10 +428,14 @@ Logs output 'y' and input parameters 'x' to a file every 'interval'.
         self._xinterval = interval
         if new: ind = 'w'
         else: ind = 'a'
+        head = new or not os.path.exists(self._filename) or 'label' in kwds
         self._file = open(self._filename,ind)
-        self._file.write("# %s\n" % datetime.datetime.now().ctime() )
-        if info: self._file.write("# %s\n" % str(info))
-        self._file.write("# ___#___  __%s__  __params__\n" % self.label)
+        if info or head:
+            self._file.write("# %s\n" % datetime.datetime.now().ctime() )
+            if info:
+                self._file.write("# %s\n" % str(info))
+            if head:
+                self._file.write("# ___#___  __%s__  __params__\n" % self.label)
         self._file.close()
         self._all = all
         return
