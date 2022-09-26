@@ -141,10 +141,8 @@ Inputs:
     npts -- the number of points to sample [Default is npts=10000]
     map -- the mapping function [Default is builtins.map]
 """
-  m = sampled_mean(f,lb,ub,npts,map)
-  def g(x):
-    return abs(f(x) - m)**2
-  return sampled_mean(g,lb,ub,npts,map)
+  pts = _random_samples(lb, ub, npts)
+  return _variance_given_samples(f, pts, map)
 
 
 def sampled_pof(f, lb, ub, npts=10000, map=None):
@@ -208,6 +206,21 @@ Inputs:
     from builtins import map
   from numpy import transpose, mean, atleast_2d
   return mean(list(map(f, atleast_2d(transpose(pts)).tolist())))
+
+
+def _variance_given_samples(f, pts, map=None):
+  """
+use given sample pts to calculate expected variance for function f
+
+Inputs:
+    f -- a function that returns a single value, given a list of inputs
+    pts -- a list of sample points
+    map -- the mapping function [Default is builtins.map]
+"""
+  if map is None:
+    from builtins import map
+  from numpy import transpose, var, atleast_2d
+  return var(list(map(f, atleast_2d(transpose(pts)).tolist())))
 
 
 def _maximum_given_samples(f, pts, map=None):

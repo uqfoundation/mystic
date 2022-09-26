@@ -822,6 +822,27 @@ Notes:
     pts = self.sampled_support(npts)
     return _expectation_given_samples(f, pts, map)
 
+  def sampled_variance(self, f, npts=10000, map=None):
+    """use sampling to calculate expected variance for a given function
+
+Args:
+    f (func): a function that takes a list and returns a number
+    npts (int, default=10000): the number of point masses sampled from the
+        underlying discrete measures
+    map (func, default=builtins.map): the mapping function
+
+Returns:
+    the expected variance, a float
+
+Notes:
+    - the function ``f`` should take a list of ``positions`` (for example,
+      ``scenario.positions`` or ``product_measure.positions``) and return a
+      single value (e.g. 0.0)
+"""
+    from mystic.math.samples import _variance_given_samples
+    pts = self.sampled_support(npts)
+    return _variance_given_samples(f, pts, map)
+
   def sampled_maximum(self, f, npts=10000, map=None):
     """use sampling to calculate ess_maximum for a given function
 
