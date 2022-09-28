@@ -358,21 +358,23 @@ Args:
     constraints (func, default=None): a function ``c' = constraints(c)``,
         where ``c`` is a product measure, and ``c'`` is a product measure
         where the encoded constaints are satisfied.
-    tol (float, default=None): maximum allowable deviation from ``expected``
+    tol (tuple(float), default=None): maximum allowed deviation of ``expected``
     npop (int, default=200): size of the trial solution population
     maxiter (int, default=1000): the maximum number of iterations to perform
     maxfun (int, default=1e+6): the maximum number of function evaluations
+    k (float, default=1e+6): the penalty multiplier (for misfit in variance)
 
 Returns:
     None
 
 Notes:
     Expected mean ``E`` and expected variance ``R`` are calculated by
-    minimizing the sum of the absolute values of ``mean(f(x)) - m`` and
-    ``variance(f(x)) - v`` over the given *bounds*, and will terminate when
-    ``E`` and ``R`` are found within tolerance ``tol`` of the target mean ``m``
-    and variance ``v``, respectively. If ``tol`` is not provided, then a
-    relative deviation of 1% of ``max(m,v)`` will be used.
+    minimizing the cost plus a penalty, where the cost is the absolute value
+    of ``mean(f(x)) - m`` and a penalty is incurred when ``variance(f(x)) - v``
+    is greater than tol[-1]. The optimization is over the given *bounds*,
+    and will terminate when ``E`` and ``R`` are found within tolerance ``tol``
+    of the target mean ``m`` and variance ``v``, respectively. If ``tol`` is
+    not provided, then a relative deviation of 1% of ``max(m,v)`` will be used.
 
     This function does not preserve the mean, variance, or range, as there
     is no initial list of samples to draw the mean, variance, and etc from
@@ -697,21 +699,23 @@ Args:
     constraints (func, default=None): a function ``c' = constraints(c)``,
         where ``c`` is a product measure, and ``c'`` is a product measure
         where the encoded constaints are satisfied.
-    tol (float, default=None): maximum allowable deviation from ``expected``
+    tol (tuple(float), default=None): maximum allowed deviation of ``expected``
     npop (int, default=200): size of the trial solution population
     maxiter (int, default=1000): the maximum number of iterations to perform
     maxfun (int, default=1e+6): the maximum number of function evaluations
+    k (float, default=1e+6): the penalty multiplier (for misfit in variance)
 
 Returns:
     None
 
 Notes:
     Expected mean ``E`` and expected variance ``R`` are calculated by
-    minimizing the sum of the absolute values of ``mean(f(x)) - m`` and
-    ``variance(f(x)) - v`` over the given *bounds*, and will terminate when
-    ``E`` and ``R`` are found within tolerance ``tol`` of the target mean ``m``
-    and variance ``v``, respectively. If ``tol`` is not provided, then a
-    relative deviation of 1% of ``max(m,v)`` will be used.
+    minimizing the cost plus a penalty, where the cost is the absolute value
+    of ``mean(f(x)) - m`` and a penalty is incurred when ``variance(f(x)) - v``
+    is greater than tol[-1]. The optimization is over the given *bounds*,
+    and will terminate when ``E`` and ``R`` are found within tolerance ``tol``
+    of the target mean ``m`` and variance ``v``, respectively. If ``tol`` is
+    not provided, then a relative deviation of 1% of ``max(m,v)`` will be used.
 
     This function does not preserve the mean, variance, or range, as there
     is no initial list of samples to draw the mean, variance, and etc from

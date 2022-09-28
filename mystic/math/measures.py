@@ -1138,9 +1138,9 @@ Examples:
 #XXX: better ...variance(param, f, ...) or ...variance(m,v, f, ...) ?
 def impose_expected_mean_and_variance(param, f, npts, bounds=None, weights=None, **kwds):
   """impose a given expected mean ``E`` on a given function *f*,
-where ``E = m +/- tol`` and ``E = mean(f(x))`` for ``x`` in *bounds*.
+where ``E = m +/- mtol`` and ``E = mean(f(x))`` for ``x`` in *bounds*.
 Additionally, impose a given expected variance ``R`` on *f*,
-where ``R = v +/- tol`` and ``R = variance(f(x))`` for ``x`` in *bounds*.
+where ``R = v +/- vtol`` and ``R = variance(f(x))`` for ``x`` in *bounds*.
 
 Args:
     param (tuple(float)): target parameters, ``(mean, variance)``
@@ -1148,24 +1148,26 @@ Args:
     npts (tuple(int)): a tuple of dimensions of the target product measure
     bounds (tuple, default=None): tuple is ``(lower_bounds, upper_bounds)``
     weights (list, default=None):  a list of sample weights
-    tol (float, default=None): maximum allowable deviation from ``m`` and ``v``
+    tol (tuple(float), default=None): maximum allowed deviation from ``m,v``
     constraints (func, default=None): a function that takes a nested list of
         ``N x 1D`` discrete measure positions and weights, with the intended
         purpose of kernel-transforming ``x,w`` as ``x' = constraints(x, w)``
     npop (int, default=200): size of the trial solution population
     maxiter (int, default=1000): the maximum number of iterations to perform
     maxfun (int, default=1e+6): the maximum number of function evaluations
+    k (float, default=1e+6): the penalty multiplier (for misfit in variance)
 
 Returns:
     a list of sample positions, with expected mean ``E`` and variance ``R``
 
 Notes:
     Expected mean ``E`` and expected variance ``R`` are calculated by
-    minimizing the sum of the absolute values of ``mean(f(x)) - m`` and
-    ``variance(f(x)) - v`` over the given *bounds*, and will terminate when
-    ``E`` and ``R`` are found within tolerance ``tol`` of the target mean ``m``
-    and variance ``v``, respectively. If ``tol`` is not provided, then a
-    relative deviation of 1% of ``max(m,v)`` will be used.
+    minimizing the cost plus a penalty, where the cost is the absolute value
+    of ``mean(f(x)) - m`` and a penalty is incurred when ``variance(f(x)) - v``
+    is greater than tol[-1]. The optimization is over the given *bounds*,
+    and will terminate when ``E`` and ``R`` are found within tolerance ``tol``
+    of the target mean ``m`` and variance ``v``, respectively. If ``tol`` is
+    not provided, then a relative deviation of 1% of ``max(m,v)`` will be used.
 
     This function does not preserve the mean, variance, or range, as there
     is no initial list of samples to draw the mean, variance, and etc from
@@ -1184,22 +1186,28 @@ Examples:
     >>> ub = (nx * x_ub) + (ny * y_ub) + (nz * z_ub)
     >>>
     >>> # generate a list of samples with mean and variance imposed
-    >>> mean = 5.0;  var = 2.0;  tol = 0.01
+    >>> mean = 10.0;  var = 2.0;  tol = 0.01
     >>> samples = impose_expected_mean_and_variance((mean,var), f, (nx,ny,nz), \
     ...                                             (lb,ub), tol=tol)
     >>>
     >>> # test the results by calculating the expected mean for the samples
-    >>> expected_mean(f, samples)
+    >>> expectation(f, samples)
+    >>> 9.9939677586948521
     >>> 
     >>> # test the results by calculating the expected variance for the samples
     >>> expected_variance(f, samples)
-    >>> 2.000010010122465
+    >>> 1.9936039288789822
 """
   # param[0] is the target mean
   # param[1] is the target variance
-  # param[2] is the acceptable deviation from the target mean and variance
+  # param[2] is the acceptable deviation from the target mean
+  # param[3] is the acceptable deviation from the target variance
+  k = kwds['k'] if 'k' in kwds else 1e6
   tol = kwds['tol'] if 'tol' in kwds else None
-  param = tuple(param) + (tol or 0.01*max(param),)
+  if hasattr(tol, '__len__'):
+      param = tuple(param) + tuple(t or 0.01*max(param) for t in tol)
+  else:
+      param = tuple(param) + (tol or 0.01*max(param),)*2
 
   # FIXME: the following is a HACK to recover from lost 'weights' information
   #        we 'mimic' discrete measures using the product measure weights
@@ -1216,16 +1224,28 @@ Examples:
       coords = list(zip(*coords))              # revert back to a packed list
       return _flat( _unpack(coords,npts) )
 
-  # construct cost function to reduce deviation from expected mean and variance
+  # construct cost function to reduce deviation from expected mean
   def cost(rv):
     """compute cost from a 1-d array of model parameters,
-    where:  cost = | E[model] - m |**2 + | E_var[model] - n |**2 """
+    where:  cost = | E[model] - m |**2 """
     # from mystic.math.measures import _pack, _nested
-    # from mystic.math.measures import expectation, expected_variance
+    # from mystic.math.measures import expectation
     samples = _pack( _nested(rv,npts) )
     Em = expectation(f, samples, weights)
+    return (Em - param[0])**2
+
+  # construct penalty to reduce deviation from expected variance
+  def penalty(rv):
+    """compute penalty from a 1-d array of model parameters,
+    where:  penalty when | vtol |**2 < | E_var[model] - v |**2 """
+    # from mystic.math.measures import _pack, _nested
+    # from mystic.math.measures import expected_variance
+    samples = _pack( _nested(rv,npts) )
     Ev = expected_variance(f, samples, weights)
-    return (Em - param[0])**2 + (Ev - param[1])**2
+    return (Ev - param[1])**2 - param[3]**2
+
+  from mystic.penalty import linear_inequality
+  penalty = linear_inequality(penalty, k=k)(lambda x:0.0) # good k?
 
   # if bounds are not set, use the default optimizer bounds
   if not bounds:
@@ -1236,8 +1256,8 @@ Examples:
   else:
     lower_bounds, upper_bounds = bounds
 
-  if len(lower_bounds) == 1 and not (param[2] >= -param[1] >= -param[2]):
-     msg = 'if size == 1, then variance == 0 (variance %s +/- %s)' % param[1:]
+  if len(lower_bounds) == 1 and not (param[3] >= -param[1] >= -param[3]):
+     msg = 'if size == 1, then variance == 0 (variance %s +/- %s)' % param[1::2]
      raise ValueError(msg)
 
   # construct and configure optimizer
@@ -1247,7 +1267,7 @@ Examples:
   maxfun = kwds.pop('maxfun', 1e+6)
   crossover = 0.9; percent_change = 0.9
 
-  def optimize(cost, bounds, tolerance, _constraints):
+  def optimize(cost, bounds, tolerance, _constraints, _penalty):
     (lb,ub) = bounds
     from mystic.solvers import DifferentialEvolutionSolver2
     from mystic.termination import VTR
@@ -1265,9 +1285,9 @@ Examples:
     solver.SetEvaluationLimits(maxiter,maxfun)
     solver.SetEvaluationMonitor(evalmon)
     solver.SetGenerationMonitor(stepmon)
-    solver.Solve(cost,termination=VTR(tolerance),strategy=Best1Exp, \
-                 CrossProbability=crossover,ScalingFactor=percent_change, \
-                 constraints = _constraints) #XXX: parallel map?
+    solver.Solve(cost, termination=VTR(tolerance), strategy=Best1Exp, \
+                 CrossProbability=crossover, ScalingFactor=percent_change, \
+                 constraints=_constraints, penalty=_penalty) #XXX: map?
 
     solved = solver.Solution()
     diameter_squared = solver.bestEnergy
@@ -1275,8 +1295,9 @@ Examples:
     return solved, diameter_squared, func_evals
 
   # use optimization to get expected mean and variance
-  tolerance = (param[-1])**2 #XXX: correct? or (?*D)**2
-  results = optimize(cost, (lower_bounds, upper_bounds), tolerance, constraints)
+  tolerance = param[2]**2
+  _bounds = (lower_bounds, upper_bounds)
+  results = optimize(cost, _bounds, tolerance, constraints, penalty)
 
   # repack the results
   samples = _pack( _nested(results[0],npts) )
