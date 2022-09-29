@@ -105,11 +105,18 @@ class Bounds(object):
     def __set_upper(self, ub):
         return NotImplemented
 
+    def __none(self):
+        return None
+
     def __repr__(self):
         return "%s(%s, %s, n=%s)" % (self.__class__.__name__, self.xlb, self.xub, self.n)
 
     lower = property(__lower, __set_lower)
     upper = property(__upper, __set_upper)
+    xlower = lower
+    xupper = upper
+    wlower = property(__none, __set_lower)
+    wupper = property(__none, __set_upper)
 
 
 class MeasureBounds(Bounds):
@@ -180,6 +187,26 @@ class MeasureBounds(Bounds):
         xub = (self.xub,) if not hasattr(self.xub, '__len__') else self.xub
         return list(flatten(i*[j] + i*[k] for i,j,k in zip(n,wub,xub)))
 
+    def __wlower(self):
+        n = (self.n,) if not hasattr(self.n, '__len__') else self.n
+        wlb = (self.wlb,) if not hasattr(self.wlb, '__len__') else self.wlb
+        return list(flatten(i*[j] for i,j in zip(n,wlb)))
+
+    def __wupper(self):
+        n = (self.n,) if not hasattr(self.n, '__len__') else self.n
+        wub = (self.wub,) if not hasattr(self.wub, '__len__') else self.wub
+        return list(flatten(i*[j] for i,j in zip(n,wub)))
+
+    def __xlower(self):
+        n = (self.n,) if not hasattr(self.n, '__len__') else self.n
+        xlb = (self.xlb,) if not hasattr(self.xlb, '__len__') else self.xlb
+        return list(flatten(i*[k] for i,k in zip(n,xlb)))
+
+    def __xupper(self):
+        n = (self.n,) if not hasattr(self.n, '__len__') else self.n
+        xub = (self.xub,) if not hasattr(self.xub, '__len__') else self.xub
+        return list(flatten(i*[k] for i,k in zip(n,xub)))
+
     def __add__(self, other): #FIXME: create new MeasureBounds instance
         if not isinstance(other, Bounds):
             return NotImplemented
@@ -198,4 +225,8 @@ class MeasureBounds(Bounds):
 
     lower = property(__lower, __set_lower)
     upper = property(__upper, __set_upper)
+    xlower = property(__xlower, __set_lower)
+    xupper = property(__xupper, __set_upper)
+    wlower = property(__wlower, __set_lower)
+    wupper = property(__wupper, __set_upper)
 

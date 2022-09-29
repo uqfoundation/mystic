@@ -14,6 +14,7 @@ Factories that provide termination conditions for a mystic.solver
 import numpy
 abs = numpy.absolute
 inf = Inf = numpy.Inf
+nan = NaN = numpy.NaN
 null = ""
 _type = type #NOTE: save builtin type
 import mystic.collapse as ct #XXX: avoid if move Collapse* to collapse

@@ -284,7 +284,8 @@ Notes:
     is no initial list of samples to draw the mean, variance, and etc from.
 
     *bounds* is tuple with ``length(bounds) == 2``, composed of all the lower
-    bounds, then all the upper bounds, for each parameter.
+    bounds, then all the upper bounds, for each positional value (i.e. bounds
+    for the weights should not be included).
 """ #XXX: maybe more natural if f takes a positional value x, not a list x ?
     #XXX: maybe also natural c' = constraints(c) where c is a measure ?
     m = expected
@@ -330,7 +331,8 @@ Notes:
     is no initial list of samples to draw the mean, variance, and etc from.
 
     *bounds* is tuple with ``length(bounds) == 2``, composed of all the lower
-    bounds, then all the upper bounds, for each parameter.
+    bounds, then all the upper bounds, for each positional value (i.e. bounds
+    for the weights should not be included).
 """ #XXX: maybe more natural if f takes a positional value x, not a list x ?
     #XXX: maybe also natural c' = constraints(c) where c is a measure ?
     m = expected
@@ -377,10 +379,11 @@ Notes:
     not provided, then a relative deviation of 1% of ``max(m,v)`` will be used.
 
     This function does not preserve the mean, variance, or range, as there
-    is no initial list of samples to draw the mean, variance, and etc from
+    is no initial list of samples to draw the mean, variance, and etc from.
 
     *bounds* is tuple with ``length(bounds) == 2``, composed of all the lower
-    bounds, then all the upper bounds, for each parameter
+    bounds, then all the upper bounds, for each positional value (i.e. bounds
+    for the weights should not be included).
 """ #XXX: maybe more natural if f takes a positional value x, not a list x ?
     #XXX: maybe also natural c' = constraints(c) where c is a measure ?
     m,v = expected
@@ -630,7 +633,8 @@ Notes:
     is no initial list of samples to draw the mean, variance, and etc from.
 
     *bounds* is tuple with ``length(bounds) == 2``, composed of all the lower
-    bounds, then all the upper bounds, for each parameter.
+    bounds, then all the upper bounds, for each positional value (i.e. bounds
+    for the weights should not be included).
 """
     #self.__center = m
     #self.__delta = D
@@ -673,7 +677,8 @@ Notes:
     is no initial list of samples to draw the mean, variance, and etc from.
 
     *bounds* is tuple with ``length(bounds) == 2``, composed of all the lower
-    bounds, then all the upper bounds, for each parameter.
+    bounds, then all the upper bounds, for each positional value (i.e. bounds
+    for the weights should not be included).
 """
     #self.__center = m
     #self.__delta = D
@@ -718,10 +723,11 @@ Notes:
     not provided, then a relative deviation of 1% of ``max(m,v)`` will be used.
 
     This function does not preserve the mean, variance, or range, as there
-    is no initial list of samples to draw the mean, variance, and etc from
+    is no initial list of samples to draw the mean, variance, and etc from.
 
     *bounds* is tuple with ``length(bounds) == 2``, composed of all the lower
-    bounds, then all the upper bounds, for each parameter
+    bounds, then all the upper bounds, for each positional value (i.e. bounds
+    for the weights should not be included).
 """
     #self.__center = m
     #self.__delta = D
