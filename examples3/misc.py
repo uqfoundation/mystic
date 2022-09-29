@@ -10,6 +10,7 @@ misc user-defined items (solver configuration, moment constraints)
 from mystic.solvers import DifferentialEvolutionSolver2
 from mystic.monitors import VerboseMonitor, Monitor
 from mystic.termination import ChangeOverGeneration as COG
+from mystic.bounds import Bounds, MeasureBounds
 
 # kwds for solver
 opts = dict(termination=COG(1e-10, 100))
@@ -21,7 +22,7 @@ param = dict(solver=DifferentialEvolutionSolver2,
              nested=None, # don't use SetNested
              map=None, # don't use SetMapper
              stepmon=VerboseMonitor(1, label='output'), # monitor config
-             evalmon=Monitor(), # monitor config (re-initialized in solve)
+             #evalmon=Monitor(), # monitor config (re-initialized in solve)
              # kwds to pass directly to Solve(objective, **opt)
              opts=opts,
             )
@@ -30,7 +31,7 @@ param = dict(solver=DifferentialEvolutionSolver2,
 from mystic.math.discrete import product_measure
 from mystic.math import almostEqual as almost
 from mystic.constraints import and_, integers
-from mystic.coupler import outer
+from mystic.coupler import outer, additive
 
 # lower and upper bound for parameters and weights
 xlb = (0,1,0,0,0)
@@ -52,7 +53,9 @@ b_ave_err = None
 b_var_err = None
 # moments and uncertainty in output
 o_ave = None
+o_var = None
 o_ave_err = None
+o_var_err = None
 
 
 def flatten(npts):
@@ -62,6 +65,15 @@ def flatten(npts):
             c = product_measure().load(rv, npts)
             c = f(c)
             return c.flatten()
+        return func
+    return dec
+
+
+def unflatten(npts):
+    'convert a "flattened" constraint to a moment constraint'
+    def dec(f):
+        def func(c):
+            return product_measure().load(f(c.flatten()), npts)
         return func
     return dec
 
@@ -90,6 +102,35 @@ def constrain_moments(ave=None, var=None, ave_err=None, var_err=None, idx=0):
         if E > (var + var_err) or E < (var - var_err):
             c[idx].var = var
         return c
+    return func
+
+
+#NOTE: model has single-value output
+def constrain_expected(model, ave=None, var=None, ave_err=None, var_err=None, bounds=None, **kwds):
+    'impose mean and variance constraints on the measure'
+    if ave is None: ave = float('nan')
+    if var is None: var = float('nan'); kwds['k'] = 0
+    if ave_err is None: ave_err = 0
+    if var_err is None: var_err = 0
+    if 'npop' not in kwds: kwds['npop'] = 20 #XXX: better default?
+    if isinstance(bounds, Bounds): bounds = (bounds.xlower,bounds.xupper)
+    samples = None #kwds.pop('samples', None) #NOTE: int or None
+    if samples is None:
+        def func(c):
+            E = float(c.expect(model))
+            Ev = float(c.expect_var(model))
+            if E > (ave + ave_err) or E < (ave - ave_err) or \
+               Ev > (var + var_err) or Ev < (var - var_err):
+                c.set_expect_mean_and_var((ave,var), model, bounds, tol=(ave_err,var_err), **kwds) #NOTE: debug, maxiter, k
+            return c
+    else:
+        def func(c):
+            E = float(c.sampled_expect(model, samples)) #TODO: map
+            Ev = float(c.sampled_variance(model, samples)) #TODO: map
+            if E > (ave + ave_err) or E < (ave - ave_err) or \
+               Ev > (var + var_err) or Ev < (var - var_err):
+                c.set_expect_mean_and_var((ave,var), model, bounds, tol=(ave_err,var_err), **kwds) #NOTE: debug, maxiter, k #FIXME: Ns=samples
+            return c
     return func
 
 
@@ -122,6 +163,35 @@ def constrained(ave=None, var=None, ave_err=None, var_err=None, idx=0, debug=Fal
             if debug: print("skipping var: %s" % E)
             return False
         return True
+    return func
+
+
+#NOTE: model has single-value output
+def constrained_out(model, ave=None, var=None, ave_err=None, var_err=None, debug=False, **kwds):
+    'check the expected output is properly constrained'
+    if ave is None: ave = float('nan')
+    if var is None: var = float('nan')
+    if ave_err is None: ave_err = 0
+    if var_err is None: var_err = 0
+    samples = None #kwds.pop('samples', None) #NOTE: int or None
+    if samples is None:
+        def func(c):
+            E = float(c.expect(model))
+            Ev = float(c.expect_var(model))
+            if E > (ave + ave_err) or E < (ave - ave_err) or \
+               Ev > (var + var_err) or Ev < (var - var_err):
+                if debug: print("skipping expected value,var: %s, %s" % (E,Ev))
+                return False
+            return True
+    else:
+        def func(c):
+            E = float(c.sampled_expect(model, samples)) #TODO: map
+            Ev = float(c.sampled_variance(model, samples)) #TODO: map
+            if E > (ave + ave_err) or E < (ave - ave_err) or \
+               Ev > (var + var_err) or Ev < (var - var_err):
+                if debug: print("skipping expected value,var: %s, %s" % (E,Ev))
+                return False
+            return True
     return func
 
 

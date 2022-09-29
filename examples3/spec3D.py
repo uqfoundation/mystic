@@ -10,6 +10,7 @@ misc user-defined items (solver configuration, moment constraints)
 from mystic.solvers import DifferentialEvolutionSolver2
 from mystic.monitors import VerboseMonitor, Monitor
 from mystic.termination import ChangeOverGeneration as COG
+from mystic.bounds import Bounds, MeasureBounds
 
 # kwds for solver
 opts = dict(termination=COG(1e-6, 40), CrossProbability=0.9, ScalingFactor=0.9)
@@ -21,7 +22,7 @@ param = dict(solver=DifferentialEvolutionSolver2,
              nested=None, # don't use SetNested
              map=None, # don't use SetMapper
              stepmon=VerboseMonitor(1, label='output'), # monitor config
-             evalmon=Monitor(), # monitor config (re-initialized in solve)
+             #evalmon=Monitor(), # monitor config (re-initialized in solve)
              # kwds to pass directly to Solve(objective, **opt)
              opts=opts,
             )
@@ -30,7 +31,7 @@ param = dict(solver=DifferentialEvolutionSolver2,
 from mystic.math.discrete import product_measure
 from mystic.math import almostEqual as almost
 from mystic.constraints import and_, integers
-from mystic.coupler import outer
+from mystic.coupler import outer, additive
 
 # lower and upper bound for parameters and weights
 xlb = (20.0,0.0,2.1)
@@ -52,7 +53,9 @@ b_ave_err = None
 b_var_err = None
 # moments and uncertainty in output
 o_ave = 6.5
+o_var = None
 o_ave_err = 1.0
+o_var_err = None
 
 
 def flatten(npts):
@@ -62,6 +65,15 @@ def flatten(npts):
             c = product_measure().load(rv, npts)
             c = f(c)
             return c.flatten()
+        return func
+    return dec
+
+
+def unflatten(npts):
+    'convert a "flattened" constraint to a moment constraint'
+    def dec(f):
+        def func(c):
+            return product_measure().load(f(c.flatten()), npts)
         return func
     return dec
 
@@ -93,24 +105,31 @@ def constrain_moments(ave=None, var=None, ave_err=None, var_err=None, idx=0):
     return func
 
 
-#NOTE: model has single-value output; bounds = (lb,ub)
-def constrain_expected(model, ave=None, ave_err=None, bounds=None):#, **kwds):
-    'impose mean constraint on the expected value of the measure'
+#NOTE: model has single-value output
+def constrain_expected(model, ave=None, var=None, ave_err=None, var_err=None, bounds=None, **kwds):
+    'impose mean and variance constraints on the measure'
     if ave is None: ave = float('nan')
+    if var is None: var = float('nan'); kwds['k'] = 0
     if ave_err is None: ave_err = 0
-    samples = None #kwds.get('samples', None) #NOTE: int or None
+    if var_err is None: var_err = 0
+    if 'npop' not in kwds: kwds['npop'] = 20 #XXX: better default?
+    if isinstance(bounds, Bounds): bounds = (bounds.xlower,bounds.xupper)
+    samples = None #kwds.pop('samples', None) #NOTE: int or None
     if samples is None:
         def func(c):
             E = float(c.expect(model))
-            if E > (ave + ave_err) or E < (ave - ave_err):
-                c.set_expect(ave, model, bounds, tol=ave_err, npop=4)#XXX:npop
+            Ev = float(c.expect_var(model))
+            if E > (ave + ave_err) or E < (ave - ave_err) or \
+               Ev > (var + var_err) or Ev < (var - var_err):
+                c.set_expect_mean_and_var((ave,var), model, bounds, tol=(ave_err,var_err), **kwds) #NOTE: debug, maxiter, k
             return c
     else:
-        return NotImplemented #FIXME: samples != None
         def func(c):
-            E = float(c.sampled_expect(model, samples)) #FIXME: map
-            if E > (ave + ave_err) or E < (ave - ave_err):
-                c.set_sampled_expect(ave, model, bounds, tol=ave_err, npts=samples) #FIXME: NotImplemented
+            E = float(c.sampled_expect(model, samples)) #TODO: map
+            Ev = float(c.sampled_variance(model, samples)) #TODO: map
+            if E > (ave + ave_err) or E < (ave - ave_err) or \
+               Ev > (var + var_err) or Ev < (var - var_err):
+                c.set_expect_mean_and_var((ave,var), model, bounds, tol=(ave_err,var_err), **kwds) #NOTE: debug, maxiter, k #FIXME: Ns=samples
             return c
     return func
 
@@ -148,23 +167,29 @@ def constrained(ave=None, var=None, ave_err=None, var_err=None, idx=0, debug=Fal
 
 
 #NOTE: model has single-value output
-def constrained_out(model, ave=None, ave_err=None, debug=False):#, **kwds):
+def constrained_out(model, ave=None, var=None, ave_err=None, var_err=None, debug=False, **kwds):
     'check the expected output is properly constrained'
     if ave is None: ave = float('nan')
+    if var is None: var = float('nan')
     if ave_err is None: ave_err = 0
-    samples = None #kwds.get('samples', None) #NOTE: int or None
+    if var_err is None: var_err = 0
+    samples = None #kwds.pop('samples', None) #NOTE: int or None
     if samples is None:
         def func(c):
             E = float(c.expect(model))
-            if E > (ave + ave_err) or E < (ave - ave_err):
-                if debug: print("skipping expected value: %s" % E)
+            Ev = float(c.expect_var(model))
+            if E > (ave + ave_err) or E < (ave - ave_err) or \
+               Ev > (var + var_err) or Ev < (var - var_err):
+                if debug: print("skipping expected value,var: %s, %s" % (E,Ev))
                 return False
             return True
     else:
         def func(c):
-            E = float(c.sampled_expect(model, samples)) #FIXME: map
-            if E > (ave + ave_err) or E < (ave - ave_err):
-                if debug: print("skipping expected value: %s" % E)
+            E = float(c.sampled_expect(model, samples)) #TODO: map
+            Ev = float(c.sampled_variance(model, samples)) #TODO: map
+            if E > (ave + ave_err) or E < (ave - ave_err) or \
+               Ev > (var + var_err) or Ev < (var - var_err):
+                if debug: print("skipping expected value,var: %s, %s" % (E,Ev))
                 return False
             return True
     return func
@@ -182,13 +207,12 @@ def check(npts):
 
 # build a model representing 'truth'
 from ouq_models import WrapModel
-from surrogate import marc_surr as toy; nx = 3; ny = None
-nargs = dict(nx=nx, ny=ny, rnd=False)
+from surrogate import marc_surr as toy; nx = 3; ny = None; Ns = None
+nargs = dict(nx=nx, ny=ny, rnd=(True if Ns else False))
 model = WrapModel('model', toy, **nargs)
 
 
 # set the bounds
-from mystic.bounds import MeasureBounds
 bnd = MeasureBounds(xlb, xub, n=npts, wlb=wlb, wub=wub)
 
 
@@ -201,19 +225,19 @@ normcon = normalize_moments()
 #is_con0 = constrained(a_ave, a_var, a_ave_err, a_var_err, idx=0)
 #is_con1 = constrained(b_ave, b_var, b_ave_err, b_var_err, idx=1)
 #is_cons = lambda c: bool(additive(is_con0)(is_con1)(c))
-momcons = constrain_expected(model, o_ave, o_ave_err, (bnd.lower,bnd.upper))
-is_cons = constrained_out(model, o_ave, o_ave_err)
+momcons = constrain_expected(model, o_ave, o_var, o_ave_err, o_var_err, bnd, constraints=normcon)
+is_cons = constrained_out(model, o_ave, o_var, o_ave_err, o_var_err)
 
 ## index-based constraints ##
 # impose constraints sequentially (faster, but assumes are decoupled)
 #scons = outer(integer_indices)(flatten(npts)(outer(momcons)(normcon)))
-scons = flatten(npts)(outer(momcons)(normcon))
 #scons = flatten(npts)(outer(momcon1)(outer(momcon0)(normcon)))
+scons = flatten(npts)(momcons)
 
 # impose constraints concurrently (slower, but safer)
 #ccons = and_(flatten(npts)(normcon), flatten(npts)(momcons), integer_indices)
-ccons = and_(flatten(npts)(normcon), flatten(npts)(momcons))
 #ccons = and_(flatten(npts)(normcon), flatten(npts)(momcon0), flatten(npts)(momcon1))
+ccons = scons
 
 # check parameters (instead of measures)
 iscon = check(npts)(is_cons)
