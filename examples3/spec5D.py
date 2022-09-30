@@ -225,19 +225,22 @@ normcon = normalize_moments()
 #is_con0 = constrained(a_ave, a_var, a_ave_err, a_var_err, idx=0)
 #is_con1 = constrained(b_ave, b_var, b_ave_err, b_var_err, idx=1)
 #is_cons = lambda c: bool(additive(is_con0)(is_con1)(c))
-momcons = constrain_expected(model, o_ave, o_var, o_ave_err, o_var_err, bnd, constraints=normcon)
+#momcons = constrain_expected(model, o_ave, o_var, o_ave_err, o_var_err, bnd, constraints=normcon)
+momcons = constrain_expected(model, o_ave, o_var, o_ave_err, o_var_err, bnd)
 is_cons = constrained_out(model, o_ave, o_var, o_ave_err, o_var_err)
 
 ## index-based constraints ##
 # impose constraints sequentially (faster, but assumes are decoupled)
 #scons = outer(integer_indices)(flatten(npts)(outer(momcons)(normcon)))
 #scons = flatten(npts)(outer(momcon1)(outer(momcon0)(normcon)))
-scons = flatten(npts)(momcons)
+scons = flatten(npts)(outer(momcons)(normcon))
+#scons = flatten(npts)(momcons)
 
 # impose constraints concurrently (slower, but safer)
 #ccons = and_(flatten(npts)(normcon), flatten(npts)(momcons), integer_indices)
 #ccons = and_(flatten(npts)(normcon), flatten(npts)(momcon0), flatten(npts)(momcon1))
-ccons = scons
+ccons = and_(flatten(npts)(normcon), flatten(npts)(momcons))
+#ccons = scons
 
 # check parameters (instead of measures)
 iscon = check(npts)(is_cons)
