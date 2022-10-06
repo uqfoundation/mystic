@@ -52,7 +52,8 @@ class BaseOUQ(object): #XXX: redo with a "Solver" interface, like ensemble?
         self.penalty = kwds.get('penalty', lambda rv:0.)
         self.xvalid = kwds.get('xvalid', lambda rv:True)
         self.cvalid = kwds.get('cvalid', lambda c:True)
-        self.kwds = {} #FIXME: good idea???
+        self._invalid = float('inf') #XXX: need to save state?
+        self.kwds = {} #XXX: good idea???
         self._upper = {} # saved solver instances for upper bounds #XXX: don't?
         self._lower = {} # saved solver instances for lower bounds #XXX: don't?
         self._pts = {} # saved sampled {in:out} objective #XXX: out only? ''?
@@ -108,7 +109,10 @@ class BaseOUQ(object): #XXX: redo with a "Solver" interface, like ensemble?
         self.kwds.update(**kwds) #FIXME: good idea???
         if self.axes is None or axis is not None:
             # solve for upper bound of objective (in measure space)
-            return self.solve(lambda rv: -self.objective(rv, axis))
+            self._invalid *= -1
+            solver = self.solve(lambda rv: -self.objective(rv, axis))
+            self._invalid *= -1
+            return solver
         # else axis is None
         upper = tuple(axmap(self._upper_bound, range(self.axes)))
         return upper #FIXME: don't accept "uphill" moves?
@@ -192,6 +196,7 @@ class BaseOUQ(object): #XXX: redo with a "Solver" interface, like ensemble?
         archive: the archive (str name for a new archive, or archive instance)
         dist: a mystic.tools.Distribution instance (or list of Distributions)
         npts: number of sample points [default = 10000]
+        tight: if True, apply bounds concurrent with other constraints
         clip: if True, clip at bounds, else resample [default = False]
         map: map instance, to sample in parallel [default = None]
 
@@ -199,6 +204,7 @@ class BaseOUQ(object): #XXX: redo with a "Solver" interface, like ensemble?
         sampled statistical quantity, for the specified axis, reduced to a float
         """
         #XXX: return what? "energy and solution?" reduced?
+        tight = kwds.pop('tight', True) #XXX: better False?
         archive = kwds.pop('archive', None)
         if archive is None: archive = dict_archive()
         elif type(archive) in (str, (u''.__class__)):
@@ -210,7 +216,13 @@ class BaseOUQ(object): #XXX: redo with a "Solver" interface, like ensemble?
         if npts is None: kwds.pop('npts', None)
         fobj = cached(archive=archive)(self.objective) #XXX: bad idea?
         self._pts = fobj.__cache__() #XXX: also bad idea? include from *_bounds?
-        objective = lambda rv: fobj(self.constraint(rv), axis=axis) # penalty?
+        if tight:
+            from mystic.constraints import and_, boundsconstrain
+            bounds = boundsconstrain(self.lb, self.ub) #XXX: symbolic?
+            constraint = and_(self.constraint, bounds, onfail=bounds)
+        else:
+            constraint = self.constraint
+        objective = lambda rv: fobj(constraint(rv), axis=axis) # penalty?
         _pts = len(self._pts)
         pts = npts - _pts
         if pts > 0: # need to sample some new points
@@ -226,8 +238,22 @@ class BaseOUQ(object): #XXX: redo with a "Solver" interface, like ensemble?
             import numpy as np
             s = np.random.choice(range(_pts), size=npts, replace=False)
             s = np.array(list(self._pts.values()))[s].tolist()
+        '''
+        # mark error (nan/inf) in keys with nan in values
+        import numpy as np
+        keys = list(self._pts.keys())
+        bad = np.where(np.isfinite(np.array(keys).sum(axis=-1)) == False)[0]
+        for k in bad:
+            self._pts[keys[k]] = float('nan')
+        # convert errors in values to nan
+        bad = np.where(np.isfinite(s) == False)[0]
+        for k in bad:
+            s[k] = float('nan')
+        #NOTE: then, use nanmean(s) instead of sum(s)/len(s)
+        '''
+        # calculate expected value
         if axis is None and self.axes is not None: # apply per axis
-            if reducer is None:
+            if reducer is None: #XXX: nanreducer?
                 return tuple(sum(si)/len(si) for si in zip(*s))
             #XXX: better tuple(reducer(s, axis=0).tolist()) if numpy ufunc?
             return tuple(reducer(si) for si in zip(*s))
@@ -287,9 +313,9 @@ class BaseOUQ(object): #XXX: redo with a "Solver" interface, like ensemble?
         evalmon = Monitor() if evalmon is None else evalmon
         solver.SetEvaluationMonitor(evalmon[:0])
         stepmon = kwds.get('stepmon', None)
-        stepmon = Monitor() if stepmon is None else stepmon
-        solver.SetGenerationMonitor(stepmon[:0])
-        solver.SetStrictRanges(min=lb,max=ub)
+        stepmon = Monitor() if stepmon is None else stepmon[:0]
+        solver.SetGenerationMonitor(stepmon)
+        solver.SetStrictRanges(min=lb,max=ub)#,tight=True) #XXX: tight?
         solver.SetConstraints(self.constraint)
         solver.SetPenalty(self.penalty)
         opts = kwds.get('opts', {})
@@ -331,8 +357,7 @@ class ExpectedValue(BaseOUQ):
         # check constraints
         c = product_measure().load(rv, self.npts)
         if not self.cvalid(c) or not self.xvalid(rv):
-            import numpy as np
-            return np.inf
+            return self._invalid
         # get expected value
         if axis is None and self.axes is not None:
             model = (lambda x: self.model(x, axis=i) for i in range(self.axes))
@@ -371,8 +396,7 @@ class MaximumValue(BaseOUQ):
         # check constraints
         c = product_measure().load(rv, self.npts)
         if not self.cvalid(c) or not self.xvalid(rv):
-            import numpy as np
-            return np.inf
+            return self._invalid
         # get maximum value
         if axis is None and self.axes is not None:
             model = (lambda x: self.model(x, axis=i) for i in range(self.axes))
@@ -412,8 +436,7 @@ class MinimumValue(BaseOUQ):
         # check constraints
         c = product_measure().load(rv, self.npts)
         if not self.cvalid(c) or not self.xvalid(rv):
-            import numpy as np
-            return np.inf
+            return self._invalid
         # get minimum value
         if axis is None and self.axes is not None:
             model = (lambda x: self.model(x, axis=i) for i in range(self.axes))
@@ -453,8 +476,7 @@ class ValueAtRisk(BaseOUQ):
         # check constraints
         c = product_measure().load(rv, self.npts)
         if not self.cvalid(c) or not self.xvalid(rv):
-            import numpy as np
-            return np.inf
+            return self._invalid
         # get value at risk
         if axis is None and self.axes is not None:
             model = (lambda x: self.model(x, axis=i) for i in range(self.axes))
@@ -496,8 +518,7 @@ class ProbOfFailure(BaseOUQ):
         # check constraints
         c = product_measure().load(rv, self.npts)
         if not self.cvalid(c) or not self.xvalid(rv):
-            import numpy as np
-            return np.inf
+            return self._invalid
         # get probability of failure
         if iter and axis is None and self.axes is not None:
             model = (lambda x: self.model(x,axis=i) for i in range(self.axes))

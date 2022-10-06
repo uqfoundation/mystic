@@ -106,6 +106,7 @@ def multiply(x, n, type=list, recurse=False): # list, iter, numpy.array, ...
     if n == 1: return type(x)
     if type.__name__ == 'array': return type(x)*n
     # multiply by n != 1 for iterables (iter and non-iter)
+    if type is None: type = list
     if recurse:
         return type(multiply(i,n,type) for i in x)
     return type(i*n for i in x)
@@ -120,13 +121,14 @@ def divide(x, n, type=list, recurse=False): # list, iter, numpy.array, ...
     if n == 1: return type(x)
     if type.__name__ == 'array': return type(x)/n
     # divide by n != 1 for iterables (iter and non-iter)
+    if type is None: type = list
     if recurse:
         return type(divide(i,n,type) for i in x)
     return type(i/n for i in x)
 
 def _cmultiply(x, n, type=list):
     """elementwise casting multiplication of x by n, as if x were an array"""
-    if type is list:
+    if type is list or type is None:
         return _multiply(x, n)
     if type is iter:
         return _imultiply(x, n)
@@ -136,7 +138,7 @@ def _cmultiply(x, n, type=list):
 
 def _cdivide(x, n, type=list):
     """elementwise casting division of x by n, as if x were an array"""
-    if type is list:
+    if type is list or type is None:
         return _divide(x, n)
     if type is iter:
         return _idivide(x, n)

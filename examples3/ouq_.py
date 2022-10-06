@@ -32,8 +32,7 @@ class MeanValue(BaseOUQ):
         # check constraints
         c = product_measure().load(rv, self.npts)
         if not self.cvalid(c) or not self.xvalid(rv): #FIXME: set model,samples in constraints
-            import numpy as np
-            return np.inf
+            return self._invalid
         # get mean value
         if axis is None and self.axes is not None:
             model = (lambda x: self.model(x, axis=i) for i in range(self.axes))
