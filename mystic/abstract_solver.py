@@ -471,19 +471,24 @@ input::
         x0 = asfarray(x0)
         rank = len(x0.shape)
         if rank == 0:
-            x0 = asfarray([x0])
+            x0.shape = (1,)
             rank = 1
         if not -1 < rank < 2:
             raise ValueError("Initial guess must be a scalar or rank-1 sequence.")
         if len(x0) != self.nDim:
             raise ValueError("Initial guess must be length %s" % self.nDim)
 
+        radius = asfarray(radius) # may be scalar or a nDim array
+        _rank = len(radius.shape)
+
+        if _rank and len(radius) != self.nDim:
+            raise ValueError("Radius must be length %s" % self.nDim)
+
         #slightly alter initial values for solvers that depend on randomness
         min = x0*(1-radius)
         max = x0*(1+radius)
-        numzeros = len(x0[x0==0])
-        min[min==0] = asarray([-radius for i in range(numzeros)])
-        max[max==0] = asarray([radius for i in range(numzeros)])
+        min[min==0] = -radius[min==0] if _rank else -radius
+        max[max==0] = radius[max==0] if _rank else radius
         self.SetRandomInitialPoints(min,max)
         #stick initial values in population[i], i=0
         self.population[0][:] = x0.tolist()
