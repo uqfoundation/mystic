@@ -21,7 +21,7 @@ and in each derived optimizer.  Mystic's optimizers are::
     DifferentialEvolutionSolver  -- Differential Evolution algorithm
     DifferentialEvolutionSolver2 -- Price & Storn's Differential Evolution
     ** Pseudo-Global Optimizers **
-    SparsitySolver               -- N Solvers sampled where point desity is low
+    SparsitySolver               -- N Solvers sampled where point density is low
     BuckshotSolver               -- Uniform Random Distribution of N Solvers
     LatticeSolver                -- Distribution of N Solvers on a Regular Grid
     ** Local-Search Optimizers **
