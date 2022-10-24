@@ -118,7 +118,7 @@ Optional requirements:
 * ``matplotlib``, **>=0.91**
 * ``scipy``, **>=0.6.0**
 * ``pathos``, **>=0.3.0**
-* ``pyina``, **>=0.2.6**
+* ``pyina``, **>=0.2.7**
 
 
 More Information
