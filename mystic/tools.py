@@ -240,8 +240,16 @@ def list_or_tuple_or_ndarray(x): # set, ...?
     import numpy
     return isinstance(x, (list, tuple, numpy.ndarray))
 
+def is_ndarray(x):
+    "True if x is a ndarray"
+    return hasattr(x, 'tolist')
+
+def is_zero_d_ndarray(x):
+    "True if x is a zero-dimensional ndarray"
+    return hasattr(x, 'tolist') and not x.shape
+
 def listify(x):
-    "recursivly convert all members of a sequence to a list"
+    "recursively convert all members of a sequence to a list"
     if not isiterable(x): return x
     if x is iter(x): return listify(list(x))
     try: # e.g. if array(1)

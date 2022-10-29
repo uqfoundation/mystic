@@ -388,13 +388,13 @@ input parameters 'x' every 'xinterval'.
            int((self._step-1) % self._yinterval) == 0:
             if not list_or_tuple_or_ndarray(y):
                 who = ''
-                y = " %f" % self._ik(self._y[-1], k)
+                y = " %s" % self._ik(self._y[-1], k)
             elif self._all:
                 who = ''
                 y = " %s" % self._ik(self._y[-1], k)
             else:
                 who = ' best'
-                y = " %f" % self._ik(self._y[-1][best], k)
+                y = " %s" % self._ik(self._y[-1][best], k)
             msg = "Generation %d has%s %s:%s" % (self._step-1,who,self.label,y)
             if id is not None: msg = "[id: %d] " % (id) + msg
             print(msg)
@@ -402,7 +402,7 @@ input parameters 'x' every 'xinterval'.
            int((self._step-1) % self._xinterval) == 0:
             if not list_or_tuple_or_ndarray(x):
                 who = ''
-                x = " %f" % self._x[-1]
+                x = " %s" % self._x[-1]
             elif self._all:
                 who = ''
                 x = "\n %s" % self._x[-1]
@@ -452,23 +452,23 @@ Logs output 'y' and input parameters 'x' to a file every 'interval'.
         if self._yinterval is not numpy.inf and \
            int((self._step-1) % self._yinterval) == 0:
             if not list_or_tuple_or_ndarray(y):
-                y = "%f" % self._ik(self._y[-1], k)
+                y = "%s" % self._ik(self._y[-1], k)
             elif self._all:
                 y = "%s" % self._ik(self._y[-1], k)
             else:
-                y = "%f" % self._ik(self._y[-1][best], k)
+                y = "%s" % self._ik(self._y[-1][best], k)
             if not list_or_tuple_or_ndarray(x):
-                x = "[%f]" % self._x[-1]
+                x = "[%s]" % self._x[-1]
             elif self._all:
                 xa = self._x[-1]
                 if not list_or_tuple_or_ndarray(xa):
-                  x = "[%f]" % xa
+                  x = "[%s]" % xa
                 else:
                   x = "%s" % xa
             else:
                 xb = self._x[-1][best]
                 if not list_or_tuple_or_ndarray(xb):
-                  x = "[%f]" % xb
+                  x = "[%s]" % xb
                 else:
                   x = "%s" % xb
             step = [self._step-1]
@@ -514,13 +514,13 @@ print every 'yinterval'.
            int((self._step-1) % self._vyinterval) == 0:
             if not list_or_tuple_or_ndarray(y):
                 who = ''
-                y = " %f" % self._ik(self._y[-1], k)
+                y = " %s" % self._ik(self._y[-1], k)
             elif self._all:
                 who = ''
                 y = " %s" % self._ik(self._y[-1], k)
             else:
                 who = ' best'
-                y = " %f" % self._ik(self._y[-1][best], k)
+                y = " %s" % self._ik(self._y[-1][best], k)
             msg = "Generation %d has%s %s:%s" % (self._step-1,who,self.label,y)
             if id is not None: msg = "[id: %d] " % (id) + msg
             print(msg)
@@ -528,7 +528,7 @@ print every 'yinterval'.
            int((self._step-1) % self._vxinterval) == 0:
             if not list_or_tuple_or_ndarray(x):
                 who = ''
-                x = " %f" % self._x[-1]
+                x = " %s" % self._x[-1]
             elif self._all:
                 who = ''
                 x = "\n %s" % self._x[-1]

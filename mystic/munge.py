@@ -144,6 +144,9 @@ def raw_to_converge(steps, energy):
     if not sequence(steps[0][0]):
       steps = [[step] for step in steps]  # needed when steps = [1,2,3,...]
     steps = [list(zip(*step)) for step in steps] # also can be used to revert 'steps'
+  if len(energy) > 0:
+    if hasattr(energy[0], 'tolist'):
+      energy = [e.tolist() for e in energy]
   return steps, energy
 
 def raw_to_support(steps, energy):
