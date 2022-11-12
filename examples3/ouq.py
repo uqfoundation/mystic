@@ -57,8 +57,9 @@ class BaseOUQ(object): #XXX: redo with a "Solver" interface, like ensemble?
         self._upper = {} # saved solver instances for upper bounds
         self._lower = {} # saved solver instances for lower bounds
         self._expect = {} # saved solver instances for expected value
-        self._value = {} # saved expected value from sampling
+        self._ave = {} # saved expected value from sampling
         self._var = {} # saved expected variance from sampling
+        self._err = {} # saved misfit to sampled expected value
         self._cost = {} # saved cache of the most recent cost (for penalty)
         self._pts = {} # saved sampled {in:out} objective #XXX: out only? ''?
         return
@@ -198,11 +199,11 @@ class BaseOUQ(object): #XXX: redo with a "Solver" interface, like ensemble?
         # downselect ave to the specified axis, where relevant
         if isinstance(ave, tuple): # self.axes is not None
             for i,me in enumerate(ave):
-                self._value[i] = me
+                self._ave[i] = me
                 self._var[i] = var[i]
         else:
             ax = None if self.axes is None else axis
-            self._value[ax] = ave
+            self._ave[ax] = ave
             self._var[ax] = var
 
         # solve for params that yield expected value
@@ -211,8 +212,8 @@ class BaseOUQ(object): #XXX: redo with a "Solver" interface, like ensemble?
             solver = self._expected(axis, **kwds_)
             ax = None if self.axes is None else axis
             self._expect[ax] = solver
+            self._err[ax] = abs(self._ave[ax] - solver.bestEnergy)
             if verbose:
-                me = abs(self._value[ax] - solver.bestEnergy)
                 print("%s: misfit = %s, var = %s" % (ax, me, self._var[ax]))
             if full: return solver
             return ave #NOTE: within misfit of solver.bestEnergy
@@ -220,8 +221,8 @@ class BaseOUQ(object): #XXX: redo with a "Solver" interface, like ensemble?
         solvers = self._expected(axis, **kwds_)
         for ax,solver in enumerate(solvers):
             self._expect[ax] = solver
+            self._err[ax] = abs(self._ave[ax] - solver.bestEnergy)
             if verbose:
-                me = abs(self._value[ax] - solver.bestEnergy)
                 print("%s: misfit = %s, var = %s" % (ax, me, self._var[ax]))
         if full: return solvers
         return tuple(solver.bestEnergy for solver in solvers)
@@ -256,13 +257,13 @@ class BaseOUQ(object): #XXX: redo with a "Solver" interface, like ensemble?
         if self.axes is None or axis is not None:
             #FIXME: enable user-provided (kpen,ftol)?
             # set penalty at same scale as expected value
-            kpen = self._value[axis]
+            kpen = self._ave[axis]
             from mystic.penalty import linear_equality
-            penalty = linear_equality(lambda rv, ave: abs(ave - self._cost[axis]), kwds={'ave':self._value[axis]}, k=kpen)(lambda rv: 0.)
+            penalty = linear_equality(lambda rv, ave: abs(ave - self._cost[axis]), kwds={'ave':self._ave[axis]}, k=kpen)(lambda rv: 0.)
             # stop at exact cost, however if noisy stop within variance
             ftol = 1e-16 if self.samples is None else self._var[axis]
             from mystic.termination import VTR
-            stop = VTR(ftol, self._value[axis])
+            stop = VTR(ftol, self._ave[axis])
             # solve for expected value of objective (in measure space)
             def objective(rv):
                 cost = self._cost[axis] = self.objective(rv, axis)
