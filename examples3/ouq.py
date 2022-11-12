@@ -33,7 +33,7 @@ class BaseOUQ(object): #XXX: redo with a "Solver" interface, like ensemble?
         constraint: function of the form x' = constraint(x)
         xvalid: function returning True if x == x', given constraint
         cvalid: function similar to xvalid, but with product_measure input
-        map: callable map instance for evaluating samples in parallel
+        map: map instance, to evaluate model on the product_measure in parallel
 
     NOTE: when y is multivalued models must be a UQModel with ny != None
         """
@@ -48,19 +48,230 @@ class BaseOUQ(object): #XXX: redo with a "Solver" interface, like ensemble?
         rnd = getattr(model, 'rnd', True) #FIXME: ?, rnd
         self.samples = kwds.get('samples', None) if rnd else None
         self.map = None if self.samples is None else kwds.get('map', None)
-        self.constraint = kwds.get('constraint', lambda rv:rv)
         self.penalty = kwds.get('penalty', lambda rv:0.)
+        self.constraint = kwds.get('constraint', lambda rv:rv)
         self.xvalid = kwds.get('xvalid', lambda rv:True)
         self.cvalid = kwds.get('cvalid', lambda c:True)
         self._invalid = float('inf') #XXX: need to save state?
         self.kwds = {} #XXX: good idea???
-        self._upper = {} # saved solver instances for upper bounds #XXX: don't?
-        self._lower = {} # saved solver instances for lower bounds #XXX: don't?
+        self._upper = {} # saved solver instances for upper bounds
+        self._lower = {} # saved solver instances for lower bounds
+        self._expect = {} # saved solver instances for expected value
+        self._value = {} # saved expected value from sampling
+        self._var = {} # saved expected variance from sampling
+        self._cost = {} # saved cache of the most recent cost (for penalty)
         self._pts = {} # saved sampled {in:out} objective #XXX: out only? ''?
         return
 
     # --- extrema ---
-    #XXX: expected?
+    def expected(self, axis=None, **kwds):
+        """find the expected value of the statistical quantity
+
+    Input:
+        axis: int, the index of y on which to find value (all, by default)
+        axmap: map instance, to execute each axis in parallel (None, by default)
+        instance: bool, if True, return the solver instance (False, by default)
+
+    Additional Input:
+        solver: mystic.solver instance [default: DifferentialEvolutionSolver2]
+        npop: population size [default: None]
+        id: a unique identifier for the solver [default: None]
+        nested: mystic.solver instance [default: None], for ensemble solvers
+        x0: initial parameter guess [default: use RandomInitialPoints]
+        maxiter: max number of iterations [default: defined in solver]
+        maxfun: max number of objective evaluations [default: defined in solver]
+        evalmon: mystic.monitor instance [default: Monitor], for evaluations
+        stepmon: mystic.monitor instance [default: Monitor], for iterations
+        map: pathos map instance for solver.SetMapper [default: None]
+        save: iteration frequency to save solver [default: None]
+        opts: dict of configuration options for solver.Solve [default: {}]
+
+    Further Input:
+        archive: the archive (str name for a new archive, or archive instance)
+        dist: a mystic.tools.Distribution instance (or list of Distributions)
+        tight: if True, apply bounds concurrent with other constraints
+        clip: if True, clip at bounds, else resample [default = False]
+        smap: map instance, to sample the quantity in parallel [default = None]
+        npts: maximum number of sample points [default = 10000]
+        ipts: number of sample points per iteration [default = npts]
+        iter: number of iterations to stop after if change < itol [default = 1]
+        itol: stop if change in value < itol over iter [default = 1e-15]
+
+    Returns:
+        expected value of the statistical quantity, for the specified axis
+
+    NOTE: by default, npts samplings of the expected value will be drawn,
+        where npts is large. When the randomness of the model is expected to
+        be small, the expected value can often be found quickly by setting
+        ipts=1 and iter to a small number. Note however, that iterations are
+        serial, while samplings within an iteration can utilize a parallel map.
+
+    NOTE: an optimization is used to solve for inputs that yield the expected
+        value, where the objective includes a penalty targeted to stop at the
+        sampled mean. The additional penalty is 'linear_equality' with a
+        strength, k, set equal to the sampled mean. The additional termination
+        condition is 'VTR(ftol, target)', where ftol=1e-16 for models with
+        no randomness, and ftol is the sampled variance for models with
+        randomness. Target is the sampled mean.
+        """
+        #NOTE: kwds(verbose, reducer) undocumented
+        full = kwds.pop('instance', False)
+        #self._expect.clear() #XXX: good idea?
+        # use __call__ to get expected value [float or tuple(float)]
+        from mystic.monitors import VerboseMonitor, Null
+        verbose = kwds.pop('verbose', False) #NOTE: used for debug
+        label = self.__class__.__name__
+        mon = VerboseMonitor(1,None,label=label) if verbose else Null()
+        db = kwds.pop('archive', None)
+        if db is None: db = file_archive()
+        elif type(db) in (str, (u''.__class__)):
+            db = read(db, type=file_archive)
+        # populate monitor with existing archive data
+        m = Monitor()
+        xs = list(db.values())
+        N = size = ys = len(xs)
+        if size:
+            xtype = type(xs[-1]) # is tuple or float
+            multi = hasattr(xtype, '__len__')
+            import numpy as np
+            xs = np.array(xs)
+            var = xtype(xs.var(axis=0)) if multi else xs.var()
+            if xs.ndim == 1: xs = np.atleast_2d(xs).T
+            ys = np.arange(1, size+1)
+            m._x = xs = (xs.cumsum(axis=0).T/ys).T.tolist()
+            m._y = ys = ys.tolist()
+            ave = xtype(xs[-1]) if multi else xs[-1][0]
+            if verbose: print("%s: %s @ %s" % (label, ave, N))
+        else:
+            var = ave = float('nan') #XXX: good idea?
+            multi = self.axes is not None
+            if multi:
+                var = ave = (ave,) * self.axes
+        # sample expected value iteratively until termination met
+        #reducer = kwds.pop('reducer', None) #XXX: throw error if provided?
+        npts = kwds.pop('npts', 10000)
+        ipts = kwds.pop('ipts', None)
+        niter = kwds.pop('iter', None)
+        itol = kwds.pop('itol', None)
+        if npts is None: npts = float('inf')
+        if ipts is None: ipts = npts
+        if niter is None: niter = 1
+        if itol is None: itol = 1e-15
+        if ipts == float('inf') or ipts < 1:
+            msg = 'ipts must be a positive integer'
+            raise ValueError(msg)
+        if npts < ipts:
+            msg = 'ipts must be less than npts'
+            raise ValueError(msg)
+        smap = kwds.pop('smap', None)
+        kwds_ = {} # kwds for _expected
+        keys = ('reducer','dist','tight','clip') # keys for __call__
+        kwds = {k:v for k,v in kwds.items() if k in keys or kwds_.update({k:v})}
+
+        import numpy as np
+        from mystic.abstract_solver import AbstractSolver
+        from mystic.termination import CollapseAt
+        solver = AbstractSolver(self.axes or 1) #XXX: axis?
+        solver.SetTermination(CollapseAt(tolerance=itol, generations=niter))
+        solver.SetEvaluationLimits(maxiter=npts) # max num of samples
+        solver.SetGenerationMonitor(m)
+        while not solver.Terminated():
+            N += ipts                       #XXX: or self.axes?
+            ave = self.__call__(archive=db, axis=axis, npts=N, map=smap, **kwds)
+            # update stepmon with the sampled values
+            xs = list(db.values())
+            xtype = type(xs[-1]) # is tuple or float
+            multi = hasattr(xtype, '__len__')
+            xs = np.array(xs)
+            var = xtype(xs.var(axis=0)) if multi else xs.var()
+            if xs.ndim == 1: xs = np.atleast_2d(xs).T
+            ys = np.arange(1, xs.shape[0]+1)
+            solver._stepmon._x = xs = (xs.cumsum(axis=0).T/ys).T.tolist()
+            solver._stepmon._y = ys = ys.tolist()
+            ave = xtype(xs[-1]) if multi else xs[-1][0]
+            mon(N, ave) #XXX: or use (ave, N)?
+
+        if verbose and len(m) > size:
+            print(solver.Terminated(info=True)) #XXX: also disp=True?
+            print("%s: %s @ %s" % (label, ave, N))
+
+        # downselect ave to the specified axis, where relevant
+        if isinstance(ave, tuple): # self.axes is not None
+            for i,me in enumerate(ave):
+                self._value[i] = me
+                self._var[i] = var[i]
+        else:
+            ax = None if self.axes is None else axis
+            self._value[ax] = ave
+            self._var[ax] = var
+
+        # solve for params that yield expected value
+        if self.axes is None or axis is not None:
+            # solve for expected value of objective (in measure space)
+            solver = self._expected(axis, **kwds_)
+            ax = None if self.axes is None else axis
+            self._expect[ax] = solver
+            if verbose:
+                me = abs(self._value[ax] - solver.bestEnergy)
+                print("%s: misfit = %s, var = %s" % (ax, me, self._var[ax]))
+            if full: return solver
+            return ave #NOTE: within misfit of solver.bestEnergy
+        # else axis is None
+        solvers = self._expected(axis, **kwds_)
+        for ax,solver in enumerate(solvers):
+            self._expect[ax] = solver
+            if verbose:
+                me = abs(self._value[ax] - solver.bestEnergy)
+                print("%s: misfit = %s, var = %s" % (ax, me, self._var[ax]))
+        if full: return solvers
+        return tuple(solver.bestEnergy for solver in solvers)
+
+    def _expected(self, axis=None, **kwds):
+        """find the expected value of the statistical quantity
+
+    Input:
+        axis: int, the index of y on which to find value (all, by default)
+        axmap: map instance, to execute each axis in parallel (None, by default)
+
+    Additional Input:
+        solver: mystic.solver instance [default: DifferentialEvolutionSolver2]
+        npop: population size [default: None]
+        id: a unique identifier for the solver [default: None]
+        nested: mystic.solver instance [default: None], for ensemble solvers
+        x0: initial parameter guess [default: use RandomInitialPoints]
+        maxiter: max number of iterations [default: defined in solver]
+        maxfun: max number of objective evaluations [default: defined in solver]
+        evalmon: mystic.monitor instance [default: Monitor], for evaluations
+        stepmon: mystic.monitor instance [default: Monitor], for iterations
+        map: pathos map instance for solver.SetMapper [default: None]
+        save: iteration frequency to save solver [default: None]
+        opts: dict of configuration options for solver.Solve [default: {}]
+
+    Returns:
+        solver instance with solved expected value of the statistical quantity
+        """
+        axmap = kwds.pop('axmap', map) #NOTE: was _ThreadPool.map w/ join
+        if axmap is None: axmap = map
+        self.kwds.update(**kwds) #FIXME: good idea???
+        if self.axes is None or axis is not None:
+            #FIXME: enable user-provided (kpen,ftol)?
+            # set penalty at same scale as expected value
+            kpen = self._value[axis]
+            from mystic.penalty import linear_equality
+            penalty = linear_equality(lambda rv, ave: abs(ave - self._cost[axis]), kwds={'ave':self._value[axis]}, k=kpen)(lambda rv: 0.)
+            # stop at exact cost, however if noisy stop within variance
+            ftol = 1e-16 if self.samples is None else self._var[axis]
+            from mystic.termination import VTR
+            stop = VTR(ftol, self._value[axis])
+            # solve for expected value of objective (in measure space)
+            def objective(rv):
+                cost = self._cost[axis] = self.objective(rv, axis)
+                return cost
+            solver = self.solve(objective, penalty=penalty, stop=stop)
+            return solver
+        # else axis is None
+        expected = tuple(axmap(self._expected, range(self.axes)))
+        return expected #FIXME: don't accept "uphill" moves?
 
     def upper_bound(self, axis=None, **kwds):
         """find the upper bound on the statistical quantity
@@ -71,7 +282,18 @@ class BaseOUQ(object): #XXX: redo with a "Solver" interface, like ensemble?
         instance: bool, if True, return the solver instance (False, by default)
 
     Additional Input:
-        kwds: dict, with updates to the instance's stored kwds
+        solver: mystic.solver instance [default: DifferentialEvolutionSolver2]
+        npop: population size [default: None]
+        id: a unique identifier for the solver [default: None]
+        nested: mystic.solver instance [default: None], for ensemble solvers
+        x0: initial parameter guess [default: use RandomInitialPoints]
+        maxiter: max number of iterations [default: defined in solver]
+        maxfun: max number of objective evaluations [default: defined in solver]
+        evalmon: mystic.monitor instance [default: Monitor], for evaluations
+        stepmon: mystic.monitor instance [default: Monitor], for iterations
+        map: pathos map instance for solver.SetMapper [default: None]
+        save: iteration frequency to save solver [default: None]
+        opts: dict of configuration options for solver.Solve [default: {}]
 
     Returns:
         upper bound on the statistical quantity, for the specified axis
@@ -99,7 +321,18 @@ class BaseOUQ(object): #XXX: redo with a "Solver" interface, like ensemble?
         axmap: map instance, to execute each axis in parallel (None, by default)
 
     Additional Input:
-        kwds: dict, with updates to the instance's stored kwds
+        solver: mystic.solver instance [default: DifferentialEvolutionSolver2]
+        npop: population size [default: None]
+        id: a unique identifier for the solver [default: None]
+        nested: mystic.solver instance [default: None], for ensemble solvers
+        x0: initial parameter guess [default: use RandomInitialPoints]
+        maxiter: max number of iterations [default: defined in solver]
+        maxfun: max number of objective evaluations [default: defined in solver]
+        evalmon: mystic.monitor instance [default: Monitor], for evaluations
+        stepmon: mystic.monitor instance [default: Monitor], for iterations
+        map: pathos map instance for solver.SetMapper [default: None]
+        save: iteration frequency to save solver [default: None]
+        opts: dict of configuration options for solver.Solve [default: {}]
 
     Returns:
         solver instance with solved upper bound on the statistical quantity
@@ -126,7 +359,18 @@ class BaseOUQ(object): #XXX: redo with a "Solver" interface, like ensemble?
         instance: bool, if True, return the solver instance (False, by default)
 
     Additional Input:
-        kwds: dict, with updates to the instance's stored kwds
+        solver: mystic.solver instance [default: DifferentialEvolutionSolver2]
+        npop: population size [default: None]
+        id: a unique identifier for the solver [default: None]
+        nested: mystic.solver instance [default: None], for ensemble solvers
+        x0: initial parameter guess [default: use RandomInitialPoints]
+        maxiter: max number of iterations [default: defined in solver]
+        maxfun: max number of objective evaluations [default: defined in solver]
+        evalmon: mystic.monitor instance [default: Monitor], for evaluations
+        stepmon: mystic.monitor instance [default: Monitor], for iterations
+        map: pathos map instance for solver.SetMapper [default: None]
+        save: iteration frequency to save solver [default: None]
+        opts: dict of configuration options for solver.Solve [default: {}]
 
     Returns:
         lower bound on the statistical quantity, for the specified axis
@@ -154,7 +398,18 @@ class BaseOUQ(object): #XXX: redo with a "Solver" interface, like ensemble?
         axmap: map instance, to execute each axis in parallel (None, by default)
 
     Additional Input:
-        kwds: dict, with updates to the instance's stored kwds
+        solver: mystic.solver instance [default: DifferentialEvolutionSolver2]
+        npop: population size [default: None]
+        id: a unique identifier for the solver [default: None]
+        nested: mystic.solver instance [default: None], for ensemble solvers
+        x0: initial parameter guess [default: use RandomInitialPoints]
+        maxiter: max number of iterations [default: defined in solver]
+        maxfun: max number of objective evaluations [default: defined in solver]
+        evalmon: mystic.monitor instance [default: Monitor], for evaluations
+        stepmon: mystic.monitor instance [default: Monitor], for iterations
+        map: pathos map instance for solver.SetMapper [default: None]
+        save: iteration frequency to save solver [default: None]
+        opts: dict of configuration options for solver.Solve [default: {}]
 
     Returns:
         solver instance with solved lower bound on the statistical quantity
@@ -185,33 +440,35 @@ class BaseOUQ(object): #XXX: redo with a "Solver" interface, like ensemble?
         """
         return NotImplemented
 
-    def __call__(self, axis=None, **kwds):
+    def __call__(self, axis=None, reducer=None, **kwds):
         """apply the reducer to the sampled statistical quantity
 
     Input:
-        axis: int, the index of y on which to find bound (all, by default)
+        axis: int, the index of y on which to find quantity (all, by default)
+        reducer: function, reduces a list to a single value (mean, by default)
 
-    Additional Input:
-        reducer: function to reduce a list to a single value (e.g. mean, max)
+    Further Input:
         archive: the archive (str name for a new archive, or archive instance)
         dist: a mystic.tools.Distribution instance (or list of Distributions)
-        npts: number of sample points [default = 10000]
         tight: if True, apply bounds concurrent with other constraints
         clip: if True, clip at bounds, else resample [default = False]
-        map: map instance, to sample in parallel [default = None]
+        smap: map instance, to sample the quantity in parallel [default = None]
+        npts: number of sample points [default = 10000]
 
     Returns:
         sampled statistical quantity, for the specified axis, reduced to a float
         """
         #XXX: return what? "energy and solution?" reduced?
+        if 'map' in kwds and 'smap' in kwds:
+            msg = "__call__() can either accept 'smap' or 'map', not both"
+            raise TypeError(msg)
         tight = kwds.pop('tight', True) #XXX: better False?
         archive = kwds.pop('archive', None)
         if archive is None: archive = dict_archive()
         elif type(archive) in (str, (u''.__class__)):
             archive = read(archive, type=file_archive)
-        reducer = kwds.pop('reducer', None)
-        smap = kwds.pop('map', None) #NOTE: was _ThreadPool.map w/ join
-        if smap is None: smap = map
+        smap = kwds.pop('smap', kwds.pop('map', None))
+        if smap is None: smap = map #NOTE: was _ThreadPool.map w/ join
         npts = kwds.get('npts', None)
         if npts is None: kwds.pop('npts', None)
         fobj = cached(archive=archive)(self.objective) #XXX: bad idea?
@@ -257,7 +514,10 @@ class BaseOUQ(object): #XXX: redo with a "Solver" interface, like ensemble?
                 return tuple(sum(si)/len(si) for si in zip(*s))
             #XXX: better tuple(reducer(s, axis=0).tolist()) if numpy ufunc?
             return tuple(reducer(si) for si in zip(*s))
-        s = tuple(s)
+        if axis is None:
+            s = tuple(s)
+        else:
+            s = list(zip(*s))[axis]
         return sum(s)/len(s) if reducer is None else reducer(s)
 
     # --- solve ---
@@ -284,7 +544,11 @@ class BaseOUQ(object): #XXX: redo with a "Solver" interface, like ensemble?
     Returns:
         solver instance, after Solve has been called
         """
-        kwds.update(self.kwds) #FIXME: good idea??? [bad in parallel???]
+        #NOTE: kwds(penalty, stop) undocumented
+        penalty = kwds.pop('penalty', None) # special case 'and(penalty)'
+        stop = kwds.pop('stop', None) # special case 'Or(stop)'
+        k = self.kwds.copy(); k.update(kwds) # overrides self.kwds
+        kwds.update(k) #FIXME: good idea??? [bad in parallel???]
         lb, ub = self.lb, self.ub
         solver = kwds.get('solver', DifferentialEvolutionSolver2)
         npop = kwds.get('npop', None)
@@ -317,8 +581,17 @@ class BaseOUQ(object): #XXX: redo with a "Solver" interface, like ensemble?
         solver.SetGenerationMonitor(stepmon)
         solver.SetStrictRanges(min=lb,max=ub)#,tight=True) #XXX: tight?
         solver.SetConstraints(self.constraint)
-        solver.SetPenalty(self.penalty)
-        opts = kwds.get('opts', {})
+        if penalty is not None: # add the special-case penalty
+            from mystic.coupler import and_
+            penalty = and_(self.penalty, penalty)
+        else:
+            penalty = self.penalty
+        solver.SetPenalty(penalty)
+        opts = kwds.get('opts', {}) #XXX: copy is necessary?
+        if stop is not None: # add the special-case termination
+            term = opts.get('termination', solver._termination)
+            from mystic.termination import Or
+            opts['termination'] = Or(stop, term)
         # solve
         solver.Solve(objective, **opts)
         if mapper is not None:
