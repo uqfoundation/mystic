@@ -113,7 +113,8 @@ class BaseOUQ(object): #XXX: redo with a "Solver" interface, like ensemble?
         strength, k, set equal to the sampled mean. The additional termination
         condition is 'VTR(ftol, target)', where ftol=1e-16 for models with
         no randomness, and ftol is the sampled variance for models with
-        randomness. Target is the sampled mean.
+        randomness. Target is the sampled mean. If only the expected value is
+        of interest, setting `instance=None` will skip the optimization.
         """
         #NOTE: kwds(verbose, reducer) undocumented
         full = kwds.pop('instance', False)
@@ -201,11 +202,17 @@ class BaseOUQ(object): #XXX: redo with a "Solver" interface, like ensemble?
             for i,me in enumerate(ave):
                 self._ave[i] = me
                 self._var[i] = var[i]
+                self._expect[i] = None
+                self._err[i] = None
         else:
             ax = None if self.axes is None else axis
             self._ave[ax] = ave
             self._var[ax] = var
+            self._expect[ax] = None
+            self._err[ax] = None
 
+        if full is None: # short-circuit the solver
+            return ave
         # solve for params that yield expected value
         if self.axes is None or axis is not None:
             # solve for expected value of objective (in measure space)
@@ -225,7 +232,7 @@ class BaseOUQ(object): #XXX: redo with a "Solver" interface, like ensemble?
             if verbose:
                 print("%s: misfit = %s, var = %s" % (ax, me, self._var[ax]))
         if full: return solvers
-        return tuple(solver.bestEnergy for solver in solvers)
+        return ave #NOTE: within misfit of solver.bestEnergy
 
     def _expected(self, axis=None, **kwds):
         """find the expected value of the statistical quantity
