@@ -219,7 +219,7 @@ class BaseOUQ(object): #XXX: redo with a "Solver" interface, like ensemble?
             solver = self._expected(axis, **kwds_)
             ax = None if self.axes is None else axis
             self._expect[ax] = solver
-            self._err[ax] = abs(self._ave[ax] - solver.bestEnergy)
+            self._err[ax] = me = abs(self._ave[ax] - solver.bestEnergy)
             if verbose:
                 print("%s: misfit = %s, var = %s" % (ax, me, self._var[ax]))
             if full: return solver
@@ -228,7 +228,7 @@ class BaseOUQ(object): #XXX: redo with a "Solver" interface, like ensemble?
         solvers = self._expected(axis, **kwds_)
         for ax,solver in enumerate(solvers):
             self._expect[ax] = solver
-            self._err[ax] = abs(self._ave[ax] - solver.bestEnergy)
+            self._err[ax] = me = abs(self._ave[ax] - solver.bestEnergy)
             if verbose:
                 print("%s: misfit = %s, var = %s" % (ax, me, self._var[ax]))
         if full: return solvers
