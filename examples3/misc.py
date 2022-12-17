@@ -27,6 +27,8 @@ param = dict(solver=DifferentialEvolutionSolver2,
              opts=opts,
             )
 
+# kwds for sampling
+kwds = dict(npts=500, ipts=None, itol=1e-8, iter=5)
 
 from mystic.math.discrete import product_measure
 from mystic.math import almostEqual as almost
