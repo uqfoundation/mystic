@@ -41,6 +41,13 @@ if __name__ == '__main__':
     from toys import function5 as toy; nx = 5; ny = None
     Ns = 25
 
+    # build a model representing 'truth'
+    nargs = dict(nx=nx, ny=ny, rnd=False)
+    model = WrapModel('model', toy, **nargs)
+
+    # set the bounds
+    bnd = MeasureBounds(xlb, xub, n=npts, wlb=wlb, wub=wub)
+
     try: # parallel maps
         from pathos.maps import Map
         from pathos.pools import ProcessPool, ThreadPool, _ThreadPool
@@ -50,12 +57,7 @@ if __name__ == '__main__':
     except ImportError:
         pmap = None
 
-    # build a model representing 'truth'
-    nargs = dict(nx=nx, ny=ny, rnd=False)
-    model = WrapModel('model', toy, **nargs)
-
     # calculate upper bound on expected value, where x[0] has uncertainty
-    bnd = MeasureBounds((0,1,0,0,0),(1,10,10,10,10), n=npts, wlb=wlb, wub=wub)
     b = ExpectedValue(model, bnd, constraint=scons, cvalid=is_cons, samples=Ns, map=pmap)
     b.upper_bound(axis=None, **param)
     print("upper bound per axis:")
