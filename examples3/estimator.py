@@ -183,8 +183,7 @@ class Estimator(object):
           while hyperparameters for the estimator can be given directly as
           keyword arguments.
         """
-        import numpy as np
-        #import warnings
+        import warnings
         #from sklearn.exceptions import ConvergenceWarning
         #warnings.simplefilter('ignore', ConvergenceWarning)
         #warnings.simplefilter('ignore', RuntimeWarning)
@@ -206,15 +205,15 @@ class Estimator(object):
                         return tuple(fi(*args) for fi in fs)
                     return fs[axis](*args)
                 def learn_ax(i):
-                    import numpy as np
+                    import warnings
                     from sklearn.base import clone
                     estimator = clone(learner.estimator)
                     transform = clone(learner.transform)
                     from mystic.math.interpolate import _getaxis
                     from ml import Estimator as Learner
                     func = Learner(estimator, transform)
-                    with np.warnings.catch_warnings(): #FIXME: enable warn=True
-                        np.warnings.filterwarnings('ignore')
+                    with warnings.catch_warnings(): #FIXME: enable warn=True
+                        warnings.filterwarnings('ignore')
                         func = func.train(x, _getaxis(z, i))
                     return func
                 function.__axis__ = list(_map(learn_ax, range(len(z[0]))))
@@ -222,8 +221,8 @@ class Estimator(object):
         else:
             from mystic.math.interpolate import _getaxis
             z = _getaxis(z, axis)
-        with np.warnings.catch_warnings(): #FIXME: enable warn=True
-            np.warnings.filterwarnings('ignore')
+        with warnings.catch_warnings(): #FIXME: enable warn=True
+            warnings.filterwarnings('ignore')
             function = learner.train(x, z)
         function.__axis__ = axis
         return function

@@ -144,10 +144,10 @@ class Interpolator(object):
           for use with a Rbf interpolator. See mystic.math.interpolate.Rbf
           for more details.
         """
-        import numpy as np
+        import warnings
         from mystic.math.interpolate import interpf
-        with np.warnings.catch_warnings():
-            np.warnings.filterwarnings('ignore')
+        with warnings.catch_warnings():
+            warnings.filterwarnings('ignore')
             f = interpf(x, z, **kwds)
         return f
 

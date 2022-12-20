@@ -579,8 +579,9 @@ def interpf(x, z, method=None, extrap=False, arrays=False, **kwds):
     #XXX: what if dataset is empty? (i.e. len(data.values) == 0)
     #NOTE: the following is the same as Interpolator(...)._interpolate(...)
     import numpy as np
-    with np.warnings.catch_warnings():
-        np.warnings.filterwarnings('ignore')
+    import warnings
+    with warnings.catch_warnings():
+        warnings.filterwarnings('ignore')
         function = _interpf(x, z, **_kwd)
     # from mystic.math.interpolate import _to_objective
     # function = _to_objective(function)
