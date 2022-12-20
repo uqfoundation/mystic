@@ -21,20 +21,26 @@ Naming convention:
   - `svc` denotes use of support vectors in classification
   - `svr` denotes use of support vectors in regression
   - `sparsity` denotes use of the sparsity sampler
+  - `xrd` denotes the lattice parameter toy model
 
 OUQ calculations:
   - test_*_ub_*: find upper bound on (mean of input/output, or PoF) [examples5]
   - test_error*: find model error
-  - test_expected*: find expected value
-  - test_expected_error* find expected error
+  - test_expect: find expected value
+  - test_expected*: find bound on expected value
+  - test_expected_error* find bound on expected error
   - test_glb*: find greatest lower bound
   - test_gub*: find greatest upper bound
   - test_llb*: find least lower bound
   - test_lub*: find least upper bound
   - test_pof: find probability of failure (PoF)
+  - xrd_design*: find average and bounds on expected value and bounds
 
 Miscellaneous:
- - test_improve_score: workflow to retry/update sklearn estimators
+  - test_improve_score: workflow to retry/update sklearn estimators
+  - xrd_opt*: find minimum using ensemble optimization
+  - xrd_optML*: find minimum using iterative surrogate improvement
+  - xrd_*_db: inspect expected value databases generated with xrd_design*
 
 External dependencies:
   - examples with "svc", "svr", or "sparsity" in the name require `matplotlib`.
@@ -42,8 +48,9 @@ External dependencies:
   - examples with "pandas" require `pandas` and `matplotlib`.
   - otherwise, assume `sklearn` and `matplotlib` are required.
 
-In-place dependencies for ouq*:
+In-place dependencies for ouq* calculations:
   - dataset: extensions on dataset operations
+  - emulators: toy models emulating XRD calculations
   - estimator: high-level OUQ estimator (requires sklearn)
   - interpolator: high-level OUQ interpolator
   - misc: miscellaneous constraints and definitions for OUQ calculation
