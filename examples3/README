@@ -37,6 +37,7 @@ OUQ calculations:
   - xrd_design*: find average and bounds on expected value and bounds
 
 Miscellaneous:
+  - test_cache: demonstrate use and customization of mystic.cache
   - test_improve_score: workflow to retry/update sklearn estimators
   - xrd_opt*: find minimum using ensemble optimization
   - xrd_optML*: find minimum using iterative surrogate improvement
