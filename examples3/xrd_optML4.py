@@ -1,3 +1,11 @@
+#!/usr/bin/env python
+#
+# Author: Mike McKerns (mmckerns @caltech and @uqfoundation)
+# Copyright (c) 2022-2023 The Uncertainty Quantification Foundation.
+# License: 3-clause BSD.  The full license text is available at:
+#  - https://github.com/uqfoundation/mystic/blob/master/LICENSE
+#
+# adapted from XRD example at: https://spotlight.readthedocs.io/
 """
 optimization of 4-input cost function using online learning of a surrogate
 """
