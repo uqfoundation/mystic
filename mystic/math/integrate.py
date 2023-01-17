@@ -123,7 +123,7 @@ References:
   from mystic.math.samples import random_samples
   vol = volume(lb, ub)
   x = [random_samples(lb, ub, npts=1) for k in range(1, n+1)]
-  r = map(f, x)  #FIXME: , nnodes=nnodes, launcher=launcher)
+  r = map(f, x)
   s = sum(r)[0]
   I = (vol/n)*s
   return float(I)

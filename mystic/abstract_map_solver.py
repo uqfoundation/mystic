@@ -115,114 +115,24 @@ Important class members::
         self._map_solver      = True
 
         # import 'map' defaults
-        from mystic.python_map import serial_launcher
         from mystic.python_map import python_map
-        from mystic.python_map import worker_pool
-        from mystic.python_map import defaults
 
-        # default settings for parallel and distributed computing
-        launcher        = serial_launcher   # launcher
-        mapper          = worker_pool       # map_strategy
-        nodes           = int(defaults['nodes'])
-        scheduler       = defaults['scheduler'] # scheduler
-        queue           = defaults['queue'] # scheduler_queue
-        timelimit       = defaults['timelimit']
-        servers         = ('*',) #<detect>  # hostname:port
-        ncpus           = None   #<detect>  # local processors
-       #servers         = ()     #<None>    # hostname:port
-       #ncpus           = 0      #<None>    # local processors
-        self._mapconfig = dict(nodes=nodes, launcher=launcher, \
-                               mapper=mapper, queue=queue, \
-                               timelimit=timelimit, scheduler=scheduler, \
-                               ncpus=ncpus, servers=servers)
+        # map and kwds used for parallel and distributed computing
         self._map       = python_map        # map
+        self._mapconfig = dict()
         return
 
-    def SelectServers(self, servers, ncpus=None): #XXX: needs some thought...
-        """Select the compute server.
+    def SetMapper(self, map, **kwds):
+        """Set the map and any mapping keyword arguments.
 
-    Accepts a tuple of ('hostname:port',), listing each available
-    computing server.
-
-    If ncpus=None, then 'autodetect'; or if ncpus=0, then 'no local'.
-    If servers=('*',), then 'autodetect'; or if servers=(), then 'no remote'.
-
-Inputs:
-    servers -- tuple of compute servers  [DEFAULT: autodetect]
-
-Additional inputs:
-    ncpus -- number of local processors  [DEFAULT: autodetect]
-        """
-        self._mapconfig['servers'] = servers
-        self._mapconfig['ncpus'] = ncpus  #XXX: merge with nodes, somehow ???
-       #print("known servers: %s" % str(servers))
-       #print("known # of local processors: %s" % str(ncpus))
-        return
-
-    def SetMapper(self, map, strategy=None): #XXX: use strategy+format ?
-        """Set the map and the mapping strategy.
-
-    Sets a callable map to perform the map-reduce algorithm.
-    Uses a mapping strategy to provide the algorithm for distributing
-    the work list of optimization jobs across available resources.
+    Sets a callable map to enable parallel and/or distributed evaluations.
+    Any kwds given are passed to the map.
 
 Inputs:
     map -- the callable map instance [DEFAULT: python_map]
-    strategy -- map strategy (see pyina.mappers) [DEFAULT: worker_pool]
         """
         self._map = map
-        if strategy:
-          self._mapconfig['mapper'] = strategy
-        #FIXME: not a true mapping function... just a dummy interface to a str
-        # a real mapper has map(func,*args) interface... this expects map().
-        # should be...
-        #   def xxx_map( f, input, *args, **kwds ):
-        #     ...
-        #     from yyy.xxx import map
-        #     result = map(f, input, *args, **kwds)
-        #     ...
-        #     return result
-        return
-
-    def SetLauncher(self, launcher, nnodes=None): #XXX: use run+scheduler ?
-        """Set launcher and (optionally) number of nodes.
-
-    Uses a launcher to provide the solver with the syntax to
-    configure and launch optimization jobs on the selected resource.
-
-Inputs:
-    launcher -- launcher function (see pyina.launchers)  [DEFAULT: serial_launcher]
-
-Additional inputs:
-    nnodes -- number of parallel compute nodes  [DEFAULT: 1]
-        """
-       #XXX: should be a Launcher class, not a function (see pathos.SSHLauncher)
-        self._mapconfig['launcher'] = launcher
-       #if launcher != python_map: #FIXME: CANNOT currently change to ez_map!!!
-       #    exec("import pyina")   #FIXME: launcher should provide launcher.map
-       #    exec("self._map = pyina.ez_map")
-        self._mapconfig['nodes'] = nnodes
-        return
-
-    def SelectScheduler(self, scheduler, queue, timelimit=None):
-        """Select scheduler and queue (and optionally) timelimit.
-
-    Takes a scheduler function and a string queue name to submit
-    the optimization job. Additionally takes string time limit
-    for scheduled job.
-
-    Example: scheduler, queue='normal', timelimit='00:02'
-
-Inputs:
-    scheduler -- scheduler function (see pyina.launchers)  [DEFAULT: None]
-    queue -- queue name string (see pyina.launchers)  [DEFAULT: None]
-
-Additional inputs:
-    timelimit -- time string HH:MM:SS format  [DEFAULT: '00:05:00']
-        """
-        self._mapconfig['scheduler'] = scheduler
-        self._mapconfig['queue'] = queue
-        self._mapconfig['timelimit'] = timelimit
+        self._mapconfig = kwds
         return
 
 

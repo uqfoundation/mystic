@@ -50,19 +50,9 @@ Notes:
 def python_map(func, *arglist, **kwds):
     """maps function *func* across arguments *arglist*.
 
-Provides the standard python map function, however also accepts *kwds* in
-order to conform with the (deprecated) ``pyina.ez_map`` interface.
-
-Notes:
-    The following *kwds* used in ``ez_map`` are accepted, but disabled:
-        * nodes -- the number of parallel nodes
-        * launcher -- the launcher object
-        * scheduler -- the scheduler object
-        * mapper -- the mapper object
-        * timelimit -- string representation of maximum run time (e.g. '00:02')
-        * queue -- string name of selected queue (e.g. 'normal')
+Provides the standard python map interface as a function; however returns
+returns a list instead of a map iterator and accepts (and ignores) kwds.
 """
-   #print("ignoring: %s" % kwds)  #XXX: should allow use of **kwds
     result = list(map(func, *arglist)) #     see pathos.pyina.ez_map
     return result
 

@@ -47,11 +47,10 @@ M evaluation points between [-1, 1], and two end points"""
 
 def main(servers,ncpus):
     from mystic.solvers import DifferentialEvolutionSolver2
-   #from pathos.pools import ProcessPool as Pool
     from pathos.pools import ParallelPool as Pool
 
     solver = DifferentialEvolutionSolver2(ND, NP)
-    solver.SetMapper(Pool().map)
+    solver.SetMapper(Pool(ncpus, servers=servers).map)
     solver.SetRandomInitialPoints(min = [-100.0]*ND, max = [100.0]*ND)
     solver.SetEvaluationLimits(generations=MAX_GENERATIONS)
     solver.SetGenerationMonitor(VerboseMonitor(30))
@@ -60,7 +59,6 @@ def main(servers,ncpus):
     strategy = Best1Exp
     #strategy = Best1Bin
 
-    solver.SelectServers(servers,ncpus)
     solver.Solve(ChebyshevCost, termination=VTR(0.01), strategy=strategy, \
                  CrossProbability=1.0, ScalingFactor=0.9 , \
                  sigint_callback=plot_solution)
