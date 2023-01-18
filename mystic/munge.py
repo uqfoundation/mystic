@@ -77,6 +77,18 @@ source is a monitor, logfile, support file, solver restart file, dataset, etc
 #TODO: behavior is identical for 'raw_to_support'... apply changes there also
 
 def logfile_reader(filename):
+  """read a log file (e.g. written by a LoggingMonitor) in three-column format
+
+  filename is a log file path, with format:
+
+  `__iter__  __energy__  __params__`
+
+  `iter` is a tuple of (iteration, id), with `id` an int or None
+  `energy` is a float or tuple[float], and is the output of the cost function
+  `params` is a list[float], and is the input to the cost function
+
+  Returns tuple of (iter, params, energy), as defined above.
+  """
   from numpy import inf, nan
   f = open(filename,"r")
   file = f.read()
@@ -94,9 +106,17 @@ def logfile_reader(filename):
   return step, param, cost
 
 def read_trajectories(source):
-  """read trajectories from a convergence logfile or a monitor
+  """read trajectories from a monitor instance or three-column format log file
 
-source can either be a monitor instance or a logfile path
+  source is a monitor instance or a log file path, with format:
+
+  `__iter__  __energy__  __params__`
+
+  `iter` is a tuple of (iteration, id), with `id` an int or None
+  `energy` is a float or tuple[float], and is the output of the cost function
+  `params` is a list[float], and is the input to the cost function
+
+  Returns tuple of (iter, params, energy), as defined above.
   """
   if isinstance(source, str):
     step, param, cost = logfile_reader(source)
@@ -116,6 +136,13 @@ source can either be a monitor instance or a logfile path
 # read and write monitor (to and from raw data)
 
 def read_monitor(mon, id=False):
+  """read trajectories from a monitor instance
+
+  mon is a monitor instance
+  id is a bool, where if True, `id` is also returned
+
+  Returns tuple of (mon.x, mon.y) or (mon.x, mon.y, mon.id)
+  """
   steps = mon.x[:]
   energy = mon.y[:]
   if not id:
@@ -124,6 +151,15 @@ def read_monitor(mon, id=False):
   return steps, energy, id 
 
 def write_monitor(steps, energy, id=[], k=None):
+  """write trajectories to a monitor instance
+
+  `steps` is a list[float], and is the input to the cost function
+  `energy` is a float or tuple[float], and is the output of the cost function
+  `id` is a list[int], and is the `id` of the monitored object
+  `k` is float multiplier on `energy` (e.g. k=-1 inverts the cost function)
+
+  Returns a mystic.monitors.Monitor instance
+  """
   from mystic.monitors import Monitor
   mon = Monitor()
   mon.k = k
