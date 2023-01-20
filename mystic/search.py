@@ -324,7 +324,7 @@ class Searcher(object):
         if not self.traj:
             try: #NOTE: FRAGILE (if absolute path is not used)
                 filename = getattr(self.solver, mon)._filename
-                step, param, cost = read_trajectories(filename)
+                step, param, cost = read_trajectories(filename, iter=True)
             except AttributeError:
                 msg = "a LoggingMonitor or UseTrajectories is required"
                 raise RuntimeError(msg)
@@ -332,7 +332,7 @@ class Searcher(object):
             step = []; cost = []; param = [];
             for sprayer in self._allSolvers:  #XXX: slow? better thread.map?
                 for seeker in sprayer._allSolvers:
-                    values = read_trajectories(getattr(seeker,mon))
+                    values = read_trajectories(getattr(seeker,mon), iter=True)
                     step.extend(values[0])
                     param.extend(values[1])
                     cost.extend(values[2])

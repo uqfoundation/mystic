@@ -13,10 +13,16 @@ import sys
 
 # generalized history reader
 
-def read_history(source):
+def read_history(source, iter=False):
     """read parameter history and cost history from the given source
 
 source is a monitor, logfile, support file, solver restart file, dataset, etc
+iter is a bool, where if True, `iter` is also returned
+
+Returns (iter, params, cost) if iter is True, else returns (params, cost), where
+    - iter is a list of tuples of ints (iteration, id), where id may be None
+    - params is input to cost; a list of lists of floats
+    - cost is output of cost; a list of floats, or a list of tuples of floats
     """
     monitor = solver = data = arxiv = False
     from mystic.monitors import Monitor, Null
@@ -26,7 +32,7 @@ source is a monitor, logfile, support file, solver restart file, dataset, etc
     import io
     file = io.IOBase
     if isinstance(source, file):
-        return read_history(source.name)
+        return read_history(source.name, iter)
     if isinstance(source, str):
         import re
         source = re.sub(r'\.py*.$', '', source)  # strip off .py* extension
@@ -41,32 +47,42 @@ source is a monitor, logfile, support file, solver restart file, dataset, etc
         arxiv = True
     elif isinstance(source, AbstractSolver):
         solver = True
-    elif isinstance(source, Null):
-        return [],[] #XXX: or source.x, source.y (e.g. Null(),Null())? or Error?
+    elif isinstance(source, Null): #XXX: or source.x, source.y or Error?
+        return ([],[],[]) if iter else ([],[])
     else:
         raise IOError("a history filename or instance is required")
+    ids = None
     try:  # read standard logfile (or monitor)
         if monitor:
-            params, cost = read_monitor(source)
+            if iter:
+                params, cost, ids = read_monitor(source, id=True)
+                if not len(ids): ids = None
+                ids = _process_ids(ids, len(cost))
+            else:
+                params, cost = read_monitor(source)
         elif data:
             params, cost = source.coords, source.values
-        elif arxiv:
+            if iter: ids = _process_ids(source.ids, len(cost))
+        elif arxiv: #NOTE: does not store ids
             params = list(list(k) for k in source.keys())
             cost = source.values()
             cost = cost if type(cost) is list else list(cost)
-        elif solver:
+            if iter: ids = _process_ids(None, len(cost))
+        elif solver: #NOTE: ids are single-valued, unless ensemble
             params, cost = source.solution_history, source.energy_history
+            if iter: ids = _process_ids(source.id, len(cost))
         else:
             try:
                 from mystic.solvers import LoadSolver
-                return read_history(LoadSolver(source))
+                return read_history(LoadSolver(source), iter)
             except: #KeyError
-                _step, params, cost = logfile_reader(source)
+                ids, params, cost = logfile_reader(source, iter=True)
+                if iter: ids = _process_ids(ids, len(cost))
                 #FIXME: doesn't work for multi-id logfile; select id?
         params, cost = raw_to_support(params, cost)
     except:
-        params, cost = read_import(source+'.py', 'params', 'cost')
-    return params, cost
+        return read_raw_file(source+'.py', iter) #NOTE: assumes 'support' format
+    return (ids, params, cost) if iter else (params, cost)
 
 
 # logfile reader
@@ -76,9 +92,10 @@ source is a monitor, logfile, support file, solver restart file, dataset, etc
 #TODO: (mixed) split/filter values in 'step','param' using indices from 'cost'
 #TODO: behavior is identical for 'raw_to_support'... apply changes there also
 
-def logfile_reader(filename):
+def logfile_reader(filename, iter=False):
   """read a log file (e.g. written by a LoggingMonitor) in three-column format
 
+  iter is a bool, where if True, `iter` is also returned
   filename is a log file path, with format:
 
   `__iter__  __energy__  __params__`
@@ -87,7 +104,8 @@ def logfile_reader(filename):
   `energy` is a float or tuple[float], and is the output of the cost function
   `params` is a list[float], and is the input to the cost function
 
-  Returns tuple of (iter, params, energy), as defined above.
+  If iter=True, returns tuple of (iter, params, energy), as defined above.
+  If iter=False, returns tuple of (params, energy).
   """
   from numpy import inf, nan
   f = open(filename,"r")
@@ -97,17 +115,18 @@ def logfile_reader(filename):
   # parse file contents to get (i,id), cost, and parameters
   step = []; cost = []; param = [];
   for line in contents[:-1]:
-    if line.startswith("#"): pass
+    if line.startswith(("#","inf =","nan =")): pass
     else:
       values = line.split("   ")
       step.append(eval(values[0]))  #XXX: yields (i,id)
       cost.append(eval(values[1]))
       param.append(eval(values[2]))
-  return step, param, cost
+  return (step, param, cost) if iter else (param, cost)
 
-def read_trajectories(source):
+def read_trajectories(source, iter=False):
   """read trajectories from a monitor instance or three-column format log file
 
+  iter is a bool, where if True, `iter` is also returned
   source is a monitor instance or a log file path, with format:
 
   `__iter__  __energy__  __params__`
@@ -116,21 +135,38 @@ def read_trajectories(source):
   `energy` is a float or tuple[float], and is the output of the cost function
   `params` is a list[float], and is the input to the cost function
 
-  Returns tuple of (iter, params, energy), as defined above.
+  If iter=True, returns tuple of (iter, params, energy), as defined above.
+  If iter=False, returns tuple of (params, energy).
   """
   if isinstance(source, str):
-    step, param, cost = logfile_reader(source)
+    return logfile_reader(source, iter)
+  param, cost = source.x, source.y
+  if not iter:
+    return param, cost
+  # otherwise, id may need some processing...
+  return _process_ids(source.id, len(cost)), param, cost
+
+
+def _process_ids(ids, n=None): #NOTE: n only needed when ids is single value
+  """convert ids to list of tuples of (iterations, ids)
+
+  ids is a list of ints, an int, or None
+  n is target length (generally used when ids is a single-value)
+  """
+  if ids is None:
+    return [(i,) for i in range(n)] if n else None
+  if isinstance(ids, int):
+    return [(i,ids) for i in range(n)] if n else ids
+  # ids is [(iter,id)] where id may be None
+  if len(ids) and isinstance(ids[0], tuple):
+    step = ids
   else:
-    if source.id and isinstance(source.id[0], tuple):
-      step = source.id
-    else:
-      step = enumerate(source.id)
-    if len(source) == source.id.count(None):
-      step = [(i,) for (i,j) in step]
-    else:
-      step = list(step)
-    param, cost = source.x, source.y
-  return step, param, cost
+    step = enumerate(ids)
+  if len(ids) == ids.count(None):
+    step = [(i,) for (i,j) in step]
+  else:
+    step = list(step)
+  return step[:n]
 
 
 # read and write monitor (to and from raw data)
@@ -150,7 +186,7 @@ def read_monitor(mon, id=False):
   id = mon.id[:]
   return steps, energy, id 
 
-def write_monitor(steps, energy, id=[], k=None):
+def write_monitor(steps, energy, id=None, k=None):
   """write trajectories to a monitor instance
 
   `steps` is a list[float], and is the input to the cost function
@@ -165,7 +201,7 @@ def write_monitor(steps, energy, id=[], k=None):
   mon.k = k
   mon._x.extend(steps)
   mon._y.extend(mon._k(energy, iter))
-  mon._id.extend(id)
+  if id is not None: mon._id.extend(id)
   return mon
 
 # converters 
@@ -192,8 +228,28 @@ def raw_to_support(steps, energy):
 ## FIXME: 'converge' and 'raw' files are virtually unused and unsupported
 
 def write_raw_file(mon,log_file='paramlog.py',**kwds):
+  """write parameter and solution trajectory to a log file in 'raw' format
+
+  mon is a monitor; log_file is a str log file path, with format:
+
+  # header
+  id = ...
+  params = ...
+  cost = ...
+
+  `id` is a tuple of (iteration, id), with `id` an int or None
+  `params` is a list[float], and is the input to the cost function
+  `cost` is a float or tuple[float], and is the output of the cost function
+
+  if header is provided, then the given string is written as the file header
+  all other kwds are written as file entries
+  """
   if isNull(mon): return  #XXX: throw error? warning? ???
-  steps, energy = read_monitor(mon)
+  steps, energy, ids = read_monitor(mon, id=True) 
+  if not len(ids): #XXX: is manipulating ids a good idea?
+    ids = None
+  elif ids.count(ids[0]) == len(ids): #XXX: generally, all None or all ints
+    ids = ids[0]
   f = open(log_file,'w')
   if 'header' in kwds:
     f.write('# %s\n' % kwds['header'])
@@ -202,6 +258,8 @@ def write_raw_file(mon,log_file='paramlog.py',**kwds):
   f.write("nan = float('nan')\n") # define special values
   for variable,value in kwds.items():
     f.write('%s = %s\n' % (variable,value))# write remaining kwds as variables
+  if ids is not None:
+    f.write('id = %s\n' % ids)
  #f.write('# %s\n' % energy[-1])
   f.write('params = %s\n' % steps)
   f.write('cost = %s\n' % energy)
@@ -209,8 +267,28 @@ def write_raw_file(mon,log_file='paramlog.py',**kwds):
   return
 
 def write_support_file(mon,log_file='paramlog.py',**kwds):
+  """write parameter and solution trajectory to a log file in 'support' format
+
+  mon is a monitor; log_file is a str log file path, with format:
+
+  # header
+  id = ...
+  params = ...
+  cost = ...
+
+  `id` is a tuple of (iteration, id), with `id` an int or None
+  `params` is a list[float], and is the input to the cost function
+  `cost` is a float or tuple[float], and is the output of the cost function
+
+  if header is provided, then the given string is written as the file header
+  all other kwds are written as file entries
+
+  NOTE: params are the transpose of how they are stored in monitor.x
+  """
   if isNull(mon): return  #XXX: throw error? warning? ???
   monitor = write_monitor( *raw_to_support( *read_monitor(mon) ) )
+  monitor._id = mon._id[:] #HACK: workaround loss of id above
+  monitor.k = mon.k #HACK: workaround loss of k above (ensure is copy?)
   header = "written in 'support' format"
   if 'header' in kwds:
     header += "\n# " + str(kwds['header'])
@@ -221,6 +299,8 @@ def write_support_file(mon,log_file='paramlog.py',**kwds):
 def write_converge_file(mon,log_file='paramlog.py',**kwds):
   if isNull(mon): return  #XXX: throw error? warning? ???
   monitor = write_monitor( *raw_to_converge( *read_monitor(mon) ) )
+  monitor._id = mon._id[:] #HACK: workaround loss of id above
+  monitor.k = mon.k #HACK: workaround loss of k above (ensure is copy?)
   header = "written in 'converge' format"
   if 'header' in kwds:
     header += "\n# " + str(kwds['header'])
@@ -230,9 +310,29 @@ def write_converge_file(mon,log_file='paramlog.py',**kwds):
 
 # file to data (support file, converge file, raw file)
 
-def read_raw_file(file_in):
-  steps, energy = read_import(file_in, "params", "cost")
-  return steps, energy  # was 'from file_in import params as steps', etc
+def read_raw_file(file_in, iter=False):
+    """read parameter and solution trajectory log file in 'raw' format
+
+  file_in is a str log file path, with format:
+
+  # header
+  id = ...
+  params = ...
+  cost = ...
+
+  `id` is a tuple of (iteration, id), with `id` an int or None
+  `params` is a list[float], and is the input to the cost function
+  `cost` is a float or tuple[float], and is the output of the cost function
+
+  if iter is True, return (id,params,cost) otherwise return (params,cost)
+
+  NOTE: params are stored how they are stored in monitor.x
+    """
+    if iter:
+        ids, params, cost = read_import(file_in,'id','params','cost')
+        return _process_ids(ids, len(cost)), params, cost
+    else:
+        return read_import(file_in,'params','cost')
 
 #TODO: check impact of having gradient ([i,j,k]) and/not cost
 def read_import(file, *targets):
@@ -250,14 +350,24 @@ def read_import(file, *targets):
       for target in targets:
         code = "from {0} import {1} as result".format(file, target)
         code = compile(code, '<string>', 'exec')
-        exec(code, globals)
+        try:
+            exec(code, globals)
+        except ModuleNotFoundError:
+            raise RuntimeError('File: {0} not found'.format(file))
+        except ImportError:
+            globals['result'] = None #XXX: or throw error?
         results.append(globals['result'])
     else:
         code = "import {0} as result".format(file)
         code = compile(code, '<string>', 'exec')
-        exec(code, globals)
+        try:
+            exec(code, globals)
+        except ModuleNotFoundError:
+            raise RuntimeError('File: {0} not found'.format(file))
+        except ImportError:
+            globals['result'] = None #XXX: or throw error?
         results.append(globals['result'])
-  except ImportError:
+  except FileNotFoundError:
     raise RuntimeError('File: {0} not found'.format(file))
   finally:
     if _dir: os.chdir(curdir)
@@ -265,15 +375,33 @@ def read_import(file, *targets):
   if not len(results): return None
   return results[-1] if (len(results) == 1) else results
 
-def read_converge_file(file_in):
-  steps, energy = read_raw_file(file_in)
- #steps = [zip(*step) for step in steps] # also can be used to revert 'steps'
-  return raw_to_converge(steps,energy)
+def read_converge_file(file_in, iter=False):
+  data = read_raw_file(file_in, iter)
+  return (data[0], raw_to_converge(*data[1:])) if iter else raw_to_converge(*data)
+ #return ids, raw_to_converge(params,cost)
+ #params = [zip(*param) for param in params] # alternate to revert 'params'
 
-def read_support_file(file_in):
-  steps, energy = read_raw_file(file_in)
-  return raw_to_support(steps,energy)
- #return converge_to_support(steps,energy)
+def read_support_file(file_in, iter=False):
+  """read parameter and solution trajectory log file in 'support' format
+
+  file_in is a str log file path, with format:
+
+  # header
+  id = ...
+  params = ...
+  cost = ...
+
+  `id` is a tuple of (iteration, id), with `id` an int or None
+  `params` is a list[float], and is the input to the cost function
+  `cost` is a float or tuple[float], and is the output of the cost function
+
+  if iter is True, return (id,params,cost) otherwise return (params,cost)
+
+  NOTE: params are the transpose of how they are stored in monitor.x
+  """
+  data = read_raw_file(file_in, iter)
+  return (data[0], raw_to_support(*data[1:])) if iter else raw_to_support(*data)
+ #return ids, raw_to_support(params,cost)
 
 # file converters
 
@@ -331,4 +459,3 @@ if __name__ == '__main__':
   pass
 
 # EOF
-

@@ -122,17 +122,16 @@ if provided, ids are the list of 'run ids' to select
     """
     try: # if it's a logfile, it might be multi-id
         from mystic.munge import read_trajectories
-        step, param, cost = read_trajectories(source)
-        if not step: step = [(i,) for i in range(len(cost))]
+        step, param, cost = read_trajectories(source, iter=True)
     except: # it's not a logfile, so read and return
         from mystic.munge import read_history
-        param, cost = read_history(source)
+        param, cost = read_history(source, iter=False)
         return [param],[cost]
 
     # split (i,id) into iteration and id
     multinode = len(step[0]) - 1 if step else 0 #XXX: no step info, so give up
     if multinode: id = [(i[1] or 0) for i in step]
-    else: id = [0 for i in step]
+    else: id = [0 for i in step] #FIXME: hardwired to 0
 
     if ids is not None:
         maxid = max(id)+1
@@ -1112,7 +1111,7 @@ Notes:
 
     # read file
     from mystic.munge import read_history
-    params, cost = read_history(filename)
+    params, cost = read_history(filename, iter=False)
 
     # ignore everything after 'stop'
     locals = dict(cost=cost, params=params)
@@ -1353,8 +1352,7 @@ Notes:
     try:
         instance = instance if instance else filename
         from mystic.munge import read_trajectories
-        step, param, cost = read_trajectories(instance)
-        if not step: step = [(i,) for i in range(len(cost))]
+        step, param, cost = read_trajectories(instance, iter=True)
     except SyntaxError:
         from mystic.munge import read_raw_file
         read_raw_file(filename)

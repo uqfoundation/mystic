@@ -412,7 +412,7 @@ Notes:
     if instance is None:
         instance = parsed_args[0]
     from mystic.munge import read_history
-    params, cost = read_history(instance)
+    params, cost = read_history(instance, iter=False)
 
     if parsed_opts.cost: # also plot the cost
        #exec "from {file} import cost".format(file=file)
@@ -703,7 +703,7 @@ Notes:
     if instance is None:
         instance = parsed_args[0]
     from mystic.munge import read_history
-    params, _cost = read_history(instance)
+    params, _cost = read_history(instance, iter=False)
     # would be nice to use meta = ['wx','wx2','x','x2','wy',...]
     # exec "from {file} import meta".format(file=file)
 
@@ -1037,7 +1037,7 @@ Warning:
     if instance is None:
         instance = parsed_args[0]
     from mystic.munge import read_history
-    params, _cost = read_history(instance)
+    params, _cost = read_history(instance, iter=False)
     # would be nice to use meta = ['wx','wx2','x','x2','wy',...]
     # exec "from {file} import meta".format(file=file)
 
@@ -1422,7 +1422,7 @@ Notes:
     if instance is None:
         instance = parsed_args[0]
     from mystic.munge import read_history
-    params, _cost = read_history(instance)
+    params, _cost = read_history(instance, iter=False)
     # would be nice to use meta = ['wx','wx2','x','x2','wy',...]
     # exec "from {file} import meta".format(file=file)
 

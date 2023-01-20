@@ -182,8 +182,7 @@ def read_logfile(filename):
       filename: str path to location of klepto.archives.dir_archive
     """
     from mystic.munge import read_trajectories
-    param, param, cost = read_trajectories(filename)
-    return param, cost
+    return read_trajectories(filename, iter=False)
 
 
 # reader for archive(s)
