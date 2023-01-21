@@ -123,10 +123,11 @@ if provided, ids are the list of 'run ids' to select
     try: # if it's a logfile, it might be multi-id
         from mystic.munge import read_trajectories
         step, param, cost = read_trajectories(source, iter=True)
-    except: # it's not a logfile, so read and return
+    except: # it's not a logfile, so read and convert from support format
         from mystic.munge import read_history
-        param, cost = read_history(source, iter=False)
-        return [param],[cost]
+        step, param, cost = read_history(source, iter=True)
+        import numpy as np
+        param = np.array(param).reshape(len(param),-1).T.tolist()
 
     # split (i,id) into iteration and id
     multinode = len(step[0]) - 1 if step else 0 #XXX: no step info, so give up

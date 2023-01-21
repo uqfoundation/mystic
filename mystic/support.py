@@ -476,7 +476,7 @@ Notes:
         cost = cost[:step]
 
     # take only the selected 'id'
-    if id != None:
+    if id != None: #XXX: use mystic.scripts._get_history? 
         from numpy import where, array
         ids = where(array(ids) == id)[0]
         for k in range(len(params)):
