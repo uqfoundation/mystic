@@ -147,6 +147,18 @@ def read_trajectories(source, iter=False):
   return _process_ids(source.id, len(cost)), param, cost
 
 
+def _reduce_ids(ids):
+    """convert ids from list of tuples of (iterations, ids) to a list of ids
+    """
+    if not hasattr(ids, '__len__'):
+        return ids
+    if len(ids) and len(ids[0]) == 1:
+        ids = [None]*len(ids)
+    else:
+        ids = [i[-1] for i in ids]
+    return ids
+
+
 def _process_ids(ids, n=None): #NOTE: n only needed when ids is single value
   """convert ids to list of tuples of (iterations, ids)
 
@@ -161,7 +173,9 @@ def _process_ids(ids, n=None): #NOTE: n only needed when ids is single value
   if len(ids) and isinstance(ids[0], tuple):
     step = ids
   else:
-    step = enumerate(ids)
+    step = ids[:]
+    for i,j in enumerate(ids):
+      step[i] = (list(zip(*step[:i]))[1].count(j), j) if i else (i,j)
   if len(ids) == ids.count(None):
     step = [(i,) for (i,j) in step]
   else:

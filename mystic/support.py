@@ -411,8 +411,13 @@ Notes:
     # get the name of the parameter log file
     if instance is None:
         instance = parsed_args[0]
-    from mystic.munge import read_history
-    params, cost = read_history(instance, iter=False)
+    from mystic.munge import read_history, _reduce_ids
+    ids, params, cost = read_history(instance, iter=True)
+
+    # convert ids to a list of ints
+    ids = _reduce_ids(ids)
+    if ids.count(None) == len(ids): #XXX: 1-D, replace None with 0
+        ids = [0]*len(ids)
 
     if parsed_opts.cost: # also plot the cost
        #exec "from {file} import cost".format(file=file)
@@ -466,15 +471,23 @@ Notes:
 
     # take only the first 'step' iterations
     params = [var[:step] for var in params]
+    ids = ids[:step]
     if cost:
         cost = cost[:step]
 
     # take only the selected 'id'
     if id != None:
-        param = []
-        for j in range(len(params)):
-            param.append([p[id] for p in params[j]])
-        params = param[:]
+        from numpy import where, array
+        ids = where(array(ids) == id)[0]
+        for k in range(len(params)):
+            params[k] = [j for i,j in enumerate(params[k]) if i in ids]
+        if cost:
+            cost = [j for i,j in enumerate(cost) if i in ids]
+        ids = [id]*len(ids)
+    else:
+        if len(set(ids)) > 1: #FIXME: enable plot of all ids
+            msg = "select `nid`, or try mystic_log_reader"
+            raise ValueError(msg)
 
     # handle special case where only plot the cost
     if cost and len(select) == 1 and select[0].endswith(':0'):
