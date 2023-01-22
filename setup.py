@@ -78,6 +78,7 @@ setup_kwds = dict(
                    'mystic.math':'mystic/math','mystic.cache':'mystic/cache',
                    'mystic.tests':'mystic/tests'},
     scripts=['scripts/mystic_log_reader',
+             'scripts/mystic_log_converter',
              'scripts/mystic_model_plotter',
              'scripts/mystic_collapse_plotter',
              'scripts/support_convergence',
