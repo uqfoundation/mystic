@@ -13,6 +13,12 @@ mystic_log_reader script
 .. automodule:: _mystic_log_reader
     :members:
 
+mystic_log_converter script
+---------------------------
+
+.. automodule:: _mystic_log_converter
+    :members:
+
 mystic_model_plotter script
 ---------------------------
 

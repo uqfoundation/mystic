@@ -398,18 +398,111 @@ def _isdir(filepath, guess=True):
     return not os.path.splitext(filepath)[-1]
 
 
-#FIXME: if False, archive doesn't store (iter,ids), thus no repeated points
-ARCHIVE_ITER = False #FIXME: if True, breaks current format of mystic.cache
-
-def log_converter(readpath, writepath=None, format=None):
-    """convert trajectories stored at readpath to writepath
-
-    readpath: the string path of the trajectories to read
-    writepath: the string path at which to write the trajectories
-    format: ('logfile', 'support', or klepto.archive type) for writepath
-
-    if format is None, choose format based on extension of writepath
+def log_converter(readpath, writepath=None, **kwds):
     """
+convert between cached archives, convergence, and support log files
+
+Available from the command shell as::
+
+    mystic_log_converter readpath (writepath) [options]
+
+or as a function call::
+
+    mystic.log_converter(readpath, writepath=None, **options)
+
+Args:
+    readpath (str): path of the logfile (e.g ``paramlog.py``).
+    writepath (str, default=None): path of converted file (e.g. ``log.txt``).
+
+Returns:
+    None
+
+Notes:
+    - If *writepath* is None, write file with derived name to current directory.
+    - The option *format* takes a string name of the file format at writepath.
+      Available formats are ('logfile', 'support', or a klepto.archive type).
+"""
+    import shlex
+    from io import StringIO
+    global __quit
+    __quit = False
+    _iter = False #FIXME: if True, breaks current format of mystic.cache
+    #FIXME: if False, archive doesn't store (iter,ids), thus no repeated points
+
+    instance = None
+    # handle the special case where list is provided by sys.argv
+    if isinstance(readpath, (list,tuple)) and not kwds:
+        cmdargs = readpath # (above is used by script to parse command line)
+    elif isinstance(readpath, str) and not kwds:
+        cmdargs = shlex.split(readpath)
+    # 'everything else' is essentially the functional interface
+    else:
+        cmdargs = kwds.get('kwds', '')
+        if not cmdargs:
+            format = kwds.get('format', None)
+
+            # process "commandline" arguments
+            cmdargs = ''
+            cmdargs += '' if format is None else '--format={} '.format(format)
+        else:
+            cmdargs = ' ' + cmdargs
+        if isinstance(readpath, str):
+            cmdargs = readpath.split() + shlex.split(cmdargs)
+        else: # special case of passing in monitor instance
+            instance = readpath
+            cmdargs = shlex.split(cmdargs)
+
+    #XXX: replace with 'argparse'?
+    from optparse import OptionParser
+    def _exit(self, errno=None, msg=None):
+      global __quit
+      __quit = True
+      if errno or msg:
+        msg = msg.split(': error: ')[-1].strip()
+        raise IOError(msg)
+    OptionParser.exit = _exit
+
+    parser = OptionParser(usage=log_converter.__doc__.split('\n\nOptions:')[0])
+    parser.add_option("-f","--format",action="store",dest="format",\
+                      metavar="STR",default=None,
+                      help="format of convergence archive to write")
+
+#   import sys
+#   if 'mystic_log_converter.py' not in sys.argv:
+    f = StringIO()
+    parser.print_help(file=f)
+    f.seek(0)
+    if 'Options:' not in log_converter.__doc__:
+      log_converter.__doc__ += '\nOptions:%s' % f.read().split('Options:')[-1]
+    f.close()
+
+    try:
+      parsed_opts, parsed_args = parser.parse_args(cmdargs)
+    except UnboundLocalError:
+      pass
+    if __quit: return
+
+    try: # get path to archive to read
+      if instance:
+        raise NotImplementedError("cannot read monitor or file object")
+      else:
+        readpath = parsed_args[0]
+    except:
+      raise IOError("please provide path to read convergence log")
+
+    try: # get the path of the archive to write
+      writepath = parsed_args[1]  # e.g. 'log.txt'
+      if "None" == writepath: writepath = None
+    except:
+      writepath = None
+
+    try: # format of the archive to write
+      format = parsed_opts.format  # e.g. 'logfile'
+      if "None" == format: format = None
+    except:
+      format = None
+
+    #TODO: enable read-and-write of monitor, _iter as option, other options?
     if isinstance(format, str) and "archive" in format:
         import klepto.archives as kl
         format = kl.__dict__[format]
@@ -437,9 +530,9 @@ def log_converter(readpath, writepath=None, format=None):
         raise TypeError(msg)
     convert = eval("_{0}_to_{1}".format(file_in,file_out))
     if type_in:
-        convert(readpath, writepath, type=type_in, iter=ARCHIVE_ITER)
+        convert(readpath, writepath, type=type_in, iter=_iter)
     elif type_out:
-        convert(readpath, writepath, type=type_out, iter=ARCHIVE_ITER)
+        convert(readpath, writepath, type=type_out, iter=_iter)
     else:
         convert(readpath, writepath)
     return
@@ -1619,7 +1712,8 @@ Notes:
     - The option *nid* takes an integer of the nth simultaneous points to plot.
     - The option *param* takes an indicator string. The indicator string is
       built from comma-separated array slices. For example, ``param = ":"``
-      will plot all parameters.  Alternatively, ``param = ":2, 3:"`` will plot      all parameters except for the third parameter, while ``param = "0"``
+      will plot all parameters.  Alternatively, ``param = ":2, 3:"`` will plot
+      all parameters except for the third parameter, while ``param = "0"``
       will only plot the first parameter.
 """
     import shlex
@@ -1878,6 +1972,9 @@ try: log_reader()
 except TypeError:
     pass
 try: model_plotter()
+except TypeError:
+    pass
+try: log_converter()
 except TypeError:
     pass
 try: collapse_plotter()

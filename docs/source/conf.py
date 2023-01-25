@@ -24,6 +24,7 @@ sys.path.insert(0, scripts)
 try:
     os.symlink(scripts+os.sep+'mystic_collapse_plotter', scripts+os.sep+'_mystic_collapse_plotter.py')
     os.symlink(scripts+os.sep+'mystic_log_reader', scripts+os.sep+'_mystic_log_reader.py')
+    os.symlink(scripts+os.sep+'mystic_log_converter', scripts+os.sep+'_mystic_log_converter.py')
     os.symlink(scripts+os.sep+'mystic_model_plotter', scripts+os.sep+'_mystic_model_plotter.py')
     os.symlink(scripts+os.sep+'support_convergence', scripts+os.sep+'_support_convergence.py')
     os.symlink(scripts+os.sep+'support_hypercube', scripts+os.sep+'_support_hypercube.py')

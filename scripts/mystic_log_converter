@@ -10,12 +10,11 @@ from mystic import log_converter
 
 __doc__ = log_converter.__doc__
 
-
 if __name__ == '__main__':
 
     import sys
 
-    log_converter(*sys.argv[1:])
+    log_converter(sys.argv[1:])
 
 
 # EOF
