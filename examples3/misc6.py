@@ -64,12 +64,12 @@ d_ave = x6[3]
 d_var = .5 * error6[3]**2
 d_ave_err = 2 * d_var
 d_var_err = d_var
-# moments and uncertainty in fourth parameter
+# moments and uncertainty in fifth parameter
 e_ave = x6[4]
 e_var = .5 * error6[4]**2
 e_ave_err = 2 * e_var
 e_var_err = e_var
-# moments and uncertainty in fourth parameter
+# moments and uncertainty in sixth parameter
 f_ave = x6[5]
 f_var = .5 * error6[5]**2
 f_ave_err = 2 * f_var
