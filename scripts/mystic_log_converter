@@ -6,78 +6,9 @@
 # License: 3-clause BSD.  The full license text is available at:
 #  - https://github.com/uqfoundation/mystic/blob/master/LICENSE
 
-
-def log_converter(file_in, file_out=None):
-    """convert logfile to support file, or vice-versa
-
-    logfile is the string path to the 3-column log file
-    supportfile is the str path to the importable support file
-
-    logfiles are written with a LoggingMonitor [extension should be .txt]
-    supportfiles are read with write_support_file [extension should be .py]
-
-    if file_out is None, the filename will be derived from file_in
-    """
-    try:
-        log_to_support(file_in, file_out)
-    except SyntaxError:
-        support_to_log(file_in, file_out)
-    return
+from mystic import log_converter
 
 __doc__ = log_converter.__doc__
-
-
-def log_to_support(logfile, supportfile=None):
-    """convert logfile to support file
-
-    logfile is the string path to the 3-column log file to read
-    supportfile is the str path at which to write the support file
-
-    logfile is written with a LoggingMonitor [extension should be .txt]
-    supportfile is read with read_history [extension should be .py]
-
-    if supportfile is None, supportfile name will be derived from logfile
-    """
-    if supportfile is None:
-        import os
-        supportfile = os.path.splitext(logfile)[0]+'.py'
-    from mystic.monitors import Monitor
-    from mystic.munge import logfile_reader, write_support_file
-    m = Monitor()
-    step, m._x, m._y = logfile_reader(logfile, iter=True)
-    if len(step) and len(step[0]) > 1:
-        m._id = [j for i,j in step]
-    write_support_file(m, supportfile)
-    return
-
-def support_to_log(supportfile, logfile=None):
-    """convert supportfile to log file
-
-    supportfile is the str path to the importable support file
-    logfile is the string path to the 3-column log file to write
-
-    logfile is written with a LoggingMonitor [extension should be .txt]
-    supportfile is read with read_history [extension should be .py]
-
-    if logfile is None, logfile name will be derived from supportfile
-    """ 
-    if logfile is None:
-        import os
-        logfile = os.path.splitext(supportfile)[0]+'.txt'
-    import numpy as np
-    from mystic.munge import read_import
-    from mystic.monitors import LoggingMonitor
-    ids,params,cost = read_import(supportfile,'id','params','cost')
-    params = np.array(params).reshape(len(params),-1).T.tolist()
-    if not hasattr(ids, '__len__'): #XXX: ids is not 'processed'
-        ids = [ids]*len(cost)
-    id = max(set(ids)) or 0
-    m = [LoggingMonitor(filename=logfile) for i in range(id + 1)]
-    if ids is None or isinstance(ids, int):
-        [m[ids or 0](p,c,id=ids) for (p,c) in zip(params,cost)]
-    else: #NOTE: m[None] -> m[0]
-        [m[i or 0](p,c,id=i) for (p,c,i) in zip(params,cost,ids)]
-    return
 
 
 if __name__ == '__main__':

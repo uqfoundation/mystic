@@ -11,10 +11,438 @@ __doc__ = """
 functional interfaces for mystic's visual analytics scripts
 """
 
-__all__ = ['model_plotter','log_reader','collapse_plotter']
+__all__ = ['model_plotter','log_reader','collapse_plotter','log_converter']
 
 # globals
 __quit = False
+
+
+def _get_ext(file_type):
+    """get extension corresponding to ('support', 'logfile', or archive type)
+
+    file_type: one of ('logfile', 'support', or archive type)
+    """
+    import klepto.archives as kl
+    if file_type == 'support': ext = '.py'
+    elif file_type == 'logfile': ext = '.txt'
+    elif file_type in ('file_archive','dir_archive'): ext = '.db'
+    elif file_type in (kl.file_archive,kl.dir_archive): ext = '.db'
+    elif file_type in ('hdf_archive','hdfdir_archive'): ext = '.h5'
+    elif file_type in (kl.hdf_archive,kl.hdfdir_archive): ext = '.h5'
+    elif file_type in ('sql_archive','sqltable_archive'): ext = '.sql'
+    elif file_type in (kl.sql_archive,kl.sqltable_archive): ext = '.sql'
+    else: ext = '' #XXX: only gets here if is a new archive type
+    return ext
+
+
+def _type_existing(readpath, format=None):
+    """determine type ('logfile', 'support', or archive type) from readpath
+
+    readpath: the string path to the stored trajectories
+    format: type ('logfile', 'support', or klepto.archive type) of readpath
+    """
+    import os
+    if not os.path.exists(readpath):
+        msg = "File not found at: {0}".format(readpath)
+        raise FileNotFoundError(msg)
+    if _issupport(readpath, guess=False):
+        file_in = 'support'
+        if format not in ['support', None]:
+            msg = "{0} format invalid for {1}".format(format, readpath)
+            raise ValueError(msg)
+    elif _islogfile(readpath, guess=False):
+        file_in = 'logfile'
+        if format not in ['logfile', None]:
+            msg = "{0} format invalid for {1}".format(format, readpath)
+            raise ValueError(msg)
+    else:
+        if format is None:
+            file_in = _archive_inferred(readpath) #XXX: guess based on extension
+        else:
+            if format in ['logfile', 'support']:
+                msg = "{0} format invalid for {1}".format(format, readpath)
+                raise ValueError(msg)
+            file_in = _type_inferred(readpath, format)
+    return file_in
+
+
+def _type_inferred(writepath=None, format=None):
+    """guess ('logfile', 'support', or archive type) from format and writepath
+
+    writepath: the string path at which to write the trajectories
+    format: type ('logfile', 'support', or klepto.archive type) for writepath
+    """
+    if writepath is None:
+        if format is None:
+            msg = 'either a format or writepath must be provided'
+            raise ValueError(msg)
+    if format is None:
+        import os
+        guess = not os.path.exists(writepath)
+        if _issupport(writepath, guess=guess):
+            file_out = 'support'
+        elif _islogfile(writepath, guess=guess):
+            file_out = 'logfile'
+        else:
+            file_out = _archive_inferred(writepath) #FIXME: is always guess
+    else:
+        import klepto.archives as kl
+        archives = kl.__all__[:]
+        [archives.remove(i) for i in ('cache','dict_archive','null_archive')]
+        if format in ['support','logfile'] + [kl.__dict__[a] for a in archives]:
+            file_out = format
+        elif format in archives:
+            file_out = kl.__dict__[format]
+        else:
+            msg = 'unknown archive format: {0}'.format(format)
+            raise ValueError(msg)
+    return file_out
+
+
+def _archive_inferred(archivepath):
+    """return archive class object, inferred from the archivepath extension
+
+    archivepath: the string file path to the archive
+    """
+    import os
+    import klepto.archives as ka
+    SQL_EXT = ('.sql','.sqlite','.mdf')
+    ext = os.path.splitext(archivepath)[-1]
+    if ext in SQL_EXT or 'sql' in ext or ext.startswith(('.sq','.mysq','.pg','.post')):
+        return ka.sqltable_archive if _isdir(archivepath) else ka.sql_archive
+    HDF_EXT = ('.hdf','.h5','.hdf5')
+    if ext in HDF_EXT or 'hdf' in ext or ext.startswith('.h'):
+        return ka.hdfdir_archive if _isdir(archivepath) else ka.hdf_archive
+    #DBX_EXT = ('.db','.ar','.klp','.txt')
+    return ka.dir_archive if _isdir(archivepath) else ka.file_archive
+
+
+def _logfile_to_support(logfile, support=None): #.txt -> .py
+    """convert logfile to support file
+
+    logfile: the string path to the 3-column log file to read
+    support: the str path at which to write the support file
+
+    logfile is written with a LoggingMonitor [extension should be .txt]
+    support is read with read_history [extension should be .py]
+
+    if support is None, support name will be derived from logfile
+    """
+    if support is None:
+        import os
+        support = os.path.splitext(os.path.basename(logfile))[0]+'.py'
+    from mystic.monitors import Monitor
+    from mystic.munge import logfile_reader, write_support_file
+    m = Monitor()
+    step, m._x, m._y = logfile_reader(logfile, iter=True)
+    if len(step) and len(step[0]) > 1:
+        m._id = [j for i,j in step]
+    write_support_file(m, support)
+    return
+
+
+def _support_to_logfile(support, logfile=None): #.py -> .txt
+    """convert support file to log file
+
+    support: the str path to the importable support file
+    logfile: the string path to the 3-column log file to write
+
+    logfile is written with a LoggingMonitor [extension should be .txt]
+    support is read with read_history [extension should be .py]
+
+    if logfile is None, logfile name will be derived from support file
+    """
+    if logfile is None:
+        import os
+        logfile = os.path.splitext(os.path.basename(support))[0]+'.txt'
+    import numpy as np
+    from mystic.munge import read_import
+    from mystic.monitors import LoggingMonitor
+    ids,params,cost = read_import(support,'id','params','cost')
+    params = np.array(params).reshape(len(params),-1).T.tolist()
+    if not hasattr(ids, '__len__'): #XXX: ids is not 'processed'
+        ids = [ids]*len(cost)
+    id = max(set(ids)) or 0
+    m = [LoggingMonitor(filename=logfile) for i in range(id + 1)]
+    if ids is None or isinstance(ids, int):
+        [m[ids or 0](p,c,id=ids) for (p,c) in zip(params,cost)]
+    else: #NOTE: m[None] -> m[0]
+        [m[i or 0](p,c,id=i) for (p,c,i) in zip(params,cost,ids)]
+    return
+
+
+def _archive_to_logfile(archive, logfile=None, type=None, iter=False):
+    """convert cached archive to log file
+
+    archive: the str path to the archive to read
+    logfile: the string path to the 3-column log file to write
+    type: the klepto archive type
+    iter: if True, include (iter,ids) tuple in archive keys
+
+    logfile is written with a LoggingMonitor [extension should be .txt]
+    archive is read with mystic.cache.archive.read [extension is .db, .h5, ...]
+
+    if logfile is None, logfile name will be derived from archive
+    if type is None, type will be derived from extension of archive
+    if iter is False, archive doesn't preserve "repeat" entries in log
+    (however, if iter is True, archive format is incompatible with mystic.cache)
+    """ #FIXME: iter=True should be default, and used in mystic.cache
+    import os
+    if not os.path.exists(archive):
+        msg = "File not found at: {0}".format(archive)
+        raise FileNotFoundError(msg)
+    if logfile is None:
+        logfile = os.path.splitext(os.path.basename(archive))[0]+'.txt'
+    import mystic.cache as mc
+    from mystic.monitors import LoggingMonitor
+    source = mc.archive.read(archive, type=type)
+    cost = list(source.values())
+    if iter:
+        step, params = list(zip(*source.keys()))
+        params = list(list(k) for k in params)
+        step = [i[-1] if len(i) == 2 else None for i in step]
+        id = max(set(step)) or 0
+        m = [LoggingMonitor(filename=logfile) for i in range(id + 1)]
+        [m[i or 0](p,c,id=i) for (p,c,i) in zip(params,cost,step)]
+    else:
+        params = list(list(k) for k in source.keys())
+        step = [None]*len(cost)
+        # no ids, so only write with a single monitor
+        m = LoggingMonitor(filename=logfile)
+        [m(p,c) for (p,c) in zip(params,cost)]
+    return
+
+
+def _archive_to_support(archive, support=None, type=None, iter=False):
+    """convert cached archive to support file
+
+    archive: the str path to the archive to read
+    support: the str path at which to write the support file
+    type: the klepto archive type
+    iter: if True, include (iter,ids) tuple in archive keys
+
+    archive is read with mystic.cache.archive.read [extension is .db, .h5, ...]
+    support is read with read_history [extension should be .py]
+
+    if support is None, support name will be derived from archive
+    if type is None, type will be derived from extension of archive
+    if iter is False, archive doesn't preserve "repeat" entries in log
+    (however, if iter is True, archive format is incompatible with mystic.cache)
+    """ #FIXME: iter=True should be default, and used in mystic.cache
+    import os
+    if not os.path.exists(archive):
+        msg = "File not found at: {0}".format(archive)
+        raise FileNotFoundError(msg)
+    if support is None:
+        support = os.path.splitext(os.path.basename(archive))[0]+'.py'
+    import mystic.cache as mc
+    source = mc.archive.read(archive, type=type)
+    from mystic.monitors import Monitor
+    from mystic.munge import write_support_file
+    m = Monitor()
+    if iter:
+        m._id, m._x = list(zip(*source.keys()))
+        m._x = list(list(k) for k in m._x)
+        m._id = [i[-1] if len(i) == 2 else None for i in m._id]
+    else:
+        m._x = list(list(k) for k in source.keys())
+    m._y = list(source.values())
+    write_support_file(m, support)
+    return
+
+
+def _logfile_to_archive(logfile, archive=None, type=None, iter=False):
+    """convert log file to cached archive
+
+    archive: the str path to the archive to read
+    logfile: the string path to the 3-column log file to write
+    type: the klepto archive type
+    iter: if True, include (iter,ids) tuple in archive keys
+
+    archive is read with mystic.cache.archive.read [extension is .db, .h5, ...]
+    logfile is written with a LoggingMonitor [extension should be .txt]
+
+    if archive is None, archive name will be derived from logfile
+    if type is None, type will be derived from extension of archive
+    if iter is False, archive doesn't preserve "repeat" entries in log
+    (however, if iter is True, archive format is incompatible with mystic.cache)
+    """ #FIXME: iter=True should be default, and used in mystic.cache
+    try:
+        type_out = _type_inferred(archive, format=type)
+    except ValueError:
+        type_out = ''
+    if isinstance(type_out, str): # then oops... use the default
+        import klepto.archives as kl
+        type_out = kl.dir_archive if _isdir(archive) else kl.file_archive
+    if archive is None:
+        import os
+        ext = _get_ext(type_out)
+        archive = os.path.splitext(os.path.basename(logfile))[0]+ext
+    from mystic.munge import logfile_reader
+    import mystic.cache as mc
+    a = mc.archive.read(archive, type=type_out)
+    func = mc.cached(archive=a)(lambda param,**kwds: kwds['cost'])
+    if iter:
+        step, params, cost = logfile_reader(logfile, iter=True)
+        [func((i,tuple(p)), cost=c) for (i,p,c) in zip(step,params,cost)]
+    else:
+        params, cost = logfile_reader(logfile, iter=False)
+        [func(p, cost=c) for (p,c) in zip(params,cost)]
+    return
+
+
+def _support_to_archive(support, archive=None, type=None, iter=False):
+    """convert support file to cached archive
+
+    support: the str path to read the support file
+    archive: the str path at which to write the archive
+    type: the klepto archive type
+    iter: if True, include (iter,ids) tuple in archive keys
+
+    support is read with read_history [extension should be .py]
+    archive is read with mystic.cache.archive.read [extension is .db, .h5, ...]
+
+    if archive is None, archive name will be derived from support
+    if type is None, type will be derived from extension of archive
+    if iter is False, archive doesn't preserve "repeat" entries in log
+    (however, if iter is True, archive format is incompatible with mystic.cache)
+    """ #FIXME: iter=True should be default, and used in mystic.cache
+    try:
+        type_out = _type_inferred(archive, format=type)
+    except ValueError:
+        type_out = ''
+    if isinstance(type_out, str): # then oops... use the default
+        import klepto.archives as kl
+        type_out = kl.dir_archive if _isdir(archive) else kl.file_archive
+    if archive is None:
+        import os
+        ext = _get_ext(type_out)
+        archive = os.path.splitext(os.path.basename(support))[0]+ext
+    import numpy as np
+    from mystic.munge import read_import
+    import mystic.cache as mc
+    a = mc.archive.read(archive, type=type_out)
+    func = mc.cached(archive=a)(lambda param,**kwds: kwds['cost'])
+    if iter:
+        step,params,cost = read_import(support,'id''params','cost')
+        params = np.array(params).reshape(len(params),-1).T.tolist()
+        [func((i,tuple(p)), cost=c) for (i,p,c) in zip(step,params,cost)]
+    else:
+        params,cost = read_import(support,'params','cost')
+        params = np.array(params).reshape(len(params),-1).T.tolist()
+        [func(p, cost=c) for (p,c) in zip(params,cost)]
+    return
+
+
+def _islogfile(filepath, guess=True):
+    """return True if the filepath refers to a LoggingMonitor logfile
+
+    is False if filepath doesn't exist, or guess based on filepath extension
+    """
+    if _issupport(filepath, guess): return False
+    if _isdir(filepath, guess=False): return False
+    import os
+    if os.path.exists(filepath):
+        from mystic.munge import logfile_reader
+        try:
+            logfile_reader(filepath)
+            return True
+        except: # SyntaxError, UnicodeDecodeError
+            return False
+    # file DNE, so guess from the extension
+    LOG_EXT = ('.txt','.log','.mon')
+    ext = os.path.splitext(filepath)[-1]
+    if ext in LOG_EXT or 'log' in ext or 'mon' in ext: return True
+    #DBX_EXT = ('.db','.ar','.klp','')
+    return False
+
+
+def _issupport(filepath, guess=True):
+    """return True if the filepath refers to a file written in 'support' format
+
+    is False if filepath doesn't exist, or guess based on filepath extension
+    """
+    import os
+    if os.path.exists(filepath):
+        from mystic.munge import read_raw_file
+        try:
+            return not read_raw_file(filepath).count(None)
+        except RuntimeError:
+            return False
+    if not guess: return False
+    return os.path.splitext(filepath)[-1].startswith('.py')
+
+
+def _isarchive(filepath, guess=True):
+    """return True if the filepath refers to a cached archive
+
+    is False if filepath doesn't exist, or guess based on filepath extension
+    """
+    if _issupport(filepath, guess): return False
+    if _islogfile(filepath, guess): return False
+    return guess #XXX: by default
+
+
+def _isdir(filepath, guess=True):
+    """return True if the filepath refers to a directory
+
+    is False if filepath doesn't exist, or guess based on filepath extension
+    """
+    import os
+    if os.path.exists(filepath):
+        if os.path.islink(filepath):
+            filepath = os.readline(filepath)
+        return os.path.isdir(filepath)
+    if not guess: return False
+    # file DNE, so guess it's a file if it has an extension
+    return not os.path.splitext(filepath)[-1]
+
+
+#FIXME: if False, archive doesn't store (iter,ids), thus no repeated points
+ARCHIVE_ITER = False #FIXME: if True, breaks current format of mystic.cache
+
+def log_converter(readpath, writepath=None, format=None):
+    """convert trajectories stored at readpath to writepath
+
+    readpath: the string path of the trajectories to read
+    writepath: the string path at which to write the trajectories
+    format: ('logfile', 'support', or klepto.archive type) for writepath
+
+    if format is None, choose format based on extension of writepath
+    """
+    if isinstance(format, str) and "archive" in format:
+        import klepto.archives as kl
+        format = kl.__dict__[format]
+    file_in = _type_existing(readpath)
+    #if isinstance(file_in, str): # logfile or support
+    file_out = _type_inferred(writepath, format=format)
+    #else: # readpath is archive, so redo with format hint
+    #    file_in = _type_inferred(readpath, format=format)
+    #    file_out = _type_inferred(writepath)
+    # writepath in curdir, base derived from readpath name, with new format
+    if writepath is None:
+        import os
+        ext = _get_ext(file_out)
+        writepath = os.path.splitext(os.path.basename(readpath))[0]+ext
+    type_in = type_out = None
+    if not isinstance(file_in, str):
+        file_in,type_in = 'archive',file_in
+    if not isinstance(file_out, str):
+        file_out,type_out = 'archive',file_out
+    if file_in == file_out:
+        if file_in == 'archive':
+            msg = 'either a logfile or a support file is required'
+        else:
+            msg = 'file types cannot be identical'
+        raise TypeError(msg)
+    convert = eval("_{0}_to_{1}".format(file_in,file_out))
+    if type_in:
+        convert(readpath, writepath, type=type_in, iter=ARCHIVE_ITER)
+    elif type_out:
+        convert(readpath, writepath, type=type_out, iter=ARCHIVE_ITER)
+    else:
+        convert(readpath, writepath)
+    return
 
 
 def _visual_filter(bounds, x, z=None, rtol=1e-8, ptol=1e-8):

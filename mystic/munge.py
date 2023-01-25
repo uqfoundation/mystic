@@ -367,7 +367,7 @@ def read_import(file, *targets):
         try:
             exec(code, globals)
         except ModuleNotFoundError:
-            raise RuntimeError('File: {0} not found'.format(file))
+            raise RuntimeError('Module: {0} not found'.format(file))
         except ImportError:
             globals['result'] = None #XXX: or throw error?
         results.append(globals['result'])
@@ -377,7 +377,7 @@ def read_import(file, *targets):
         try:
             exec(code, globals)
         except ModuleNotFoundError:
-            raise RuntimeError('File: {0} not found'.format(file))
+            raise RuntimeError('Module: {0} not found'.format(file))
         except ImportError:
             globals['result'] = None #XXX: or throw error?
         results.append(globals['result'])
