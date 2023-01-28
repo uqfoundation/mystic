@@ -400,7 +400,7 @@ def _isdir(filepath, guess=True):
 
 def log_converter(readpath, writepath=None, **kwds):
     """
-convert between cached archives, convergence, and support log files
+convert between cached archives, convergence logfiles, and support logfiles
 
 Available from the command shell as::
 
@@ -1474,7 +1474,7 @@ Notes:
 
 def collapse_plotter(filename, **kwds):
     r"""
-generate cost convergence rate plots from file written with ``write_support_file``
+generate convergence plots of | cost - cost_min | from convergence logfile
 
 Available from the command shell as::
 
@@ -1496,6 +1496,8 @@ Notes:
     - The option *out* takes a string of the filepath for the generated plot.
       If ``out = True``, return the Figure object instead of generating a plot.
     - The option *iter* takes an integer of the largest iteration to plot.
+    - The option *legend* takes a boolean, and will display the legend.
+    - The option *nid* takes an integer of the nth simultaneous points to plot.
     - The option *label* takes a label string. For example, ``label = "y"``
       will label the plot with a 'y', while ``label = " log-cost,
       $ log_{10}(\hat{P} - \hat{P}_{max})$"`` will label the y-axis with
@@ -1528,6 +1530,8 @@ Notes:
            #line = kwds.get('line', False)
             linear = kwds.get('linear', False)
             iter = kwds.get('iter', None)
+            legend = kwds.get('legend', False)
+            nid = kwds.get('nid', None)
             label = kwds.get('label', None)
             col = kwds.get('col', None)
 
@@ -1540,6 +1544,8 @@ Notes:
             cmdargs += '' if linear == False else '--linear '
            #cmdargs += '' if line == False else '--line '
             cmdargs += '' if iter is None else '--iter={} '.format(iter)
+            cmdargs += '' if legend == False else '--legend '
+            cmdargs += '' if nid is None else '--nid={} '.format(nid)
             cmdargs += '' if label == None else '--label={} '.format(label)
             cmdargs += '' if col is None else '--col="{}" '.format(col)
         else:
@@ -1573,6 +1579,11 @@ Notes:
     parser.add_option("-i","--iter",action="store",dest="stop",\
                       metavar="STR",default=":",
                       help="string for smallest:largest iterations to plot")
+    parser.add_option("-n","--nid",action="store",dest="id",\
+                      metavar="INT",default=None,
+                      help="id # of the nth simultaneous points to plot")
+    parser.add_option("-g","--legend",action="store_true",dest="legend",\
+                      default=False,help="show the legend")
     parser.add_option("-l","--label",action="store",dest="label",\
                       metavar="STR",default="",\
                       help="string to assign label to y-axis")
@@ -1625,6 +1636,11 @@ Notes:
     except:
       stop = ":"
 
+    try: # select which 'id' to plot results for
+      runs = (int(parsed_opts.id),) #XXX: allow selecting more than one id ?
+    except:
+      runs = None # i.e. 'all' **or** use id=0, which should be 'best' energy ?
+
     try: # select collapse boundaries to plot
       collapse = parsed_opts.collapse.split(';')  # format is "2, 3; 4, 5, 6; 7"
       collapse = [eval("(%s,)" % i) if i.strip() else () for i in collapse]
@@ -1633,34 +1649,77 @@ Notes:
 
     # read file
     from mystic.munge import read_history
-    params, cost = read_history(filename, iter=False)
+    step, params, cost = read_history(filename, iter=True)
 
     # ignore everything after 'stop'
-    locals = dict(cost=cost, params=params)
+    locals = dict(step=step, cost=cost, params=params)
+    step = eval('step[%s]' % stop, locals)
     cost = eval('cost[%s]' % stop, locals)
     params = eval('params[%s]' % stop, locals)
     del locals
 
+    # split (i,id) into iteration and id
+    multinode = len(step[0]) - 1  if step else 0 #XXX: no step info, so give up
+    iter = [i[0] for i in step]
+    if multinode:
+      id = [i[1] for i in step]
+    else:
+      id = [0 for i in step]
+
+    if runs is not None:
+      maxid = max(id)+1
+      runs = [maxid+i if i < 0 else i for i in runs]
+      if not set(id).intersection(runs):
+        raise IOError("please provide a valid id")
+
+    results = [[] for i in range(max(id) + 1)]
+
+    # populate results for each id with the corresponding (iter,cost)
+    for i in range(len(id)):
+      if runs is None or id[i] in runs: # take only the selected 'id'
+        results[id[i]].append((iter[i],cost[i]))
+
+    # build list of cost convergences for each id
+    cost_conv = []; iter_conv = []
+    for i in range(len(results)):
+      if len(results[i]):
+        cost_conv.append([results[i][j][1] for j in range(len(results[i]))])
+        iter_conv.append([results[i][j][0] for j in range(len(results[i]))])
+      else:
+        cost_conv.append([])
+        iter_conv.append([])
+
+    #print("iter_conv = %s" % iter_conv)
+    #print("cost_conv = %s" % cost_conv)
+
     # get the minimum cost
     import numpy as np
-    cost_min = min(cost)
-
-    # convert to log scale
-    x = np.arange(len(cost))
-    settings = np.seterr(all='ignore')
-    if parsed_opts.linear:
-      y = np.array(cost)
-     #y = np.abs(cost_min - np.array(cost))
-    else:
-      y = np.log10(np.abs(cost_min - np.array(cost)))
-    np.seterr(**settings)
-
-    import matplotlib.pyplot as plt
-    fig = plt.figure()
-    plt.plot(x, y, linestyle=style, marker=mark, markersize=1)
+    cost_min = min(cost) #XXX: scale min per id? or vs global min???
 
     colors = ['orange','red','brown','pink']
     linestyles = ['--','-.',':','-']
+
+    import matplotlib.pyplot as plt
+    fig = plt.figure()
+
+    #NOTE: uses min(cost) of each nid
+    for i in range(len(cost_conv)):
+      if runs is None or i in runs:
+        tag = "%d" % i
+
+        # convert to log scale
+        #x = np.arange(len(cost))
+        x = iter_conv[i]
+        settings = np.seterr(all='ignore')
+        y = np.array(cost_conv[i])
+        ymin = min(y) if y.size else cost_min #avoids error when empty
+        if not parsed_opts.linear:
+          y = np.log10(np.abs(ymin - y))
+        else:
+          y = np.abs(ymin - y)
+        np.seterr(**settings)
+
+        plt.plot(x, y, label="%s" % tag, linestyle=style, marker=mark, markersize=1)
 
     for param,color,style in zip(collapse,colors,linestyles):
       for clps in set(param):
@@ -1671,6 +1730,8 @@ Notes:
         plt.xlabel('iteration number, $n$')
         plt.ylabel(label)
         #plt.ylabel('$log-error,\; log_{10}(\hat{P} - \hat{P}_{max})$')
+
+    if parsed_opts.legend: plt.legend()
 
     # process inputs
     if _out: out = _out
@@ -1686,7 +1747,7 @@ Notes:
 
 def log_reader(filename, **kwds):
     """
-plot parameter convergence from file written with ``LoggingMonitor``
+generate parameter convergence plot from convergence logfile
 
 Available from the command shell as::
 
