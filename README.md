@@ -131,22 +131,22 @@ several plotting scripts that are installed with ``mystic``, primary of which
 are ``mystic_log_reader`` (also available with ``python -m mystic``) and the
 ``mystic_model_plotter`` (also available with ``python -m mystic.models``).
 There are several other plotting scripts that come with ``mystic``, and they
-are detailed elsewhere in the documentation.  See ``mystic.examples`` for
-examples that demonstrate the basic use cases for configuration and launching
-of optimization jobs using one of the sample models provided in
-``mystic.models``. Many of the included examples are standard optimization
-test problems. The use of constraints and penalties are detailed in
-``mystic.examples2``, while more advanced features leveraging ensemble solvers
-and dimensional collapse are found in ``mystic.examples3``. The scripts in
-``mystic.examples4`` demonstrate leveraging ``pathos`` for parallel computing,
-as well as demonstrate some auto-partitioning schemes. ``mystic`` has the
-ability to work in product measure space, and the scripts in
-``mystic.examples5`` show to work with product measures.  The source code is
-generally well documented, so further questions may be resolved by inspecting
-the code itself.  Please feel free to submit a ticket on github, or ask a
-question on stackoverflow (**@Mike McKerns**).
-If you would like to share how you use ``mystic`` in your work, please send
-an email (to **mmckerns at uqfoundation dot org**).
+are detailed elsewhere in the documentation.  See https://github.com/uqfoundation/mystic/tree/master/examples for examples that demonstrate the basic use
+cases for configuration and launching of optimization jobs using one of the
+sample models provided in ``mystic.models``. Many of the included examples
+are standard optimization test problems. The use of constraints and penalties
+are detailed in https://github.com/uqfoundation/mystic/tree/master/examples2
+ while more advanced features leveraging ensemble solvers, machine learning,
+uncertainty quantification, and dimensional collapse are found in https://github.com/uqfoundation/mystic/tree/master/examples3. The scripts in https://github.com/uqfoundation/mystic/tree/master/examples4 demonstrate leveraging ``pathos``
+for parallel computing, as well as demonstrate some auto-partitioning schemes.
+``mystic`` has the ability to work in product measure space, and the scripts in
+https://github.com/uqfoundation/mystic/tree/master/examples5 show how to work
+with product measures at a low level. The source code is generally well
+documented, so further questions may be resolved by inspecting the code itself.
+Please feel free to submit a ticket on github, or ask a question on
+stackoverflow (**@Mike McKerns**). If you would like to share how you use
+``mystic`` in your work, please send an email (to **mmckerns at uqfoundation
+dot org**).
 
 Instructions on building a new model are in ``mystic.models.abstract_model``.
 ``mystic`` provides base classes for two types of models:
@@ -229,6 +229,7 @@ models, convergence, and support on the hypercube. These scripts are installed
 to a directory on the user's ``$PATH``, and thus can be run from anywhere:
 
 * ``mystic_log_reader``               [parameter and cost convergence]
+* ``mystic_log_converter``            [logfile format converter]
 * ``mystic_collapse_plotter``         [convergence and dimensional collapse]
 * ``mystic_model_plotter``            [model surfaces and solver trajectory]
 * ``support_convergence``             [convergence plots for measures]
