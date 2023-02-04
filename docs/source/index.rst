@@ -4,9 +4,7 @@ mystic package documentation
 ============================
 
 .. automodule:: mystic
-    :members:
-    :undoc-members:
-    :show-inheritance:
+..  :exclude-members: +
 
 .. toctree::
     :maxdepth: 2

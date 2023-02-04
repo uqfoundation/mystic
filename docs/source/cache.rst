@@ -5,15 +5,10 @@ archive module
 --------------
 
 .. automodule:: mystic.cache.archive
-    :members:
-    :undoc-members:
-    :show-inheritance:
+..  :exclude-members: +
 
 function module
 ---------------
 
 .. automodule:: mystic.cache.function
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
+..  :exclude-members: +

@@ -5,47 +5,47 @@ mystic_collapse_plotter script
 ------------------------------
 
 .. automodule:: _mystic_collapse_plotter
-    :members:
+..  :exclude-members: +
 
 mystic_log_reader script
 ------------------------
 
 .. automodule:: _mystic_log_reader
-    :members:
+..  :exclude-members: +
 
 mystic_log_converter script
 ---------------------------
 
 .. automodule:: _mystic_log_converter
-    :members:
+..  :exclude-members: +
 
 mystic_model_plotter script
 ---------------------------
 
 .. automodule:: _mystic_model_plotter
-    :members:
+..  :exclude-members: +
 
 support_convergence script
 --------------------------
 
 .. automodule:: _support_convergence
-    :members:
+..  :exclude-members: +
 
 support_hypercube script
 ------------------------
 
 .. automodule:: _support_hypercube
-    :members:
+..  :exclude-members: +
 
 support_hypercube_measures script
 ---------------------------------
 
 .. automodule:: _support_hypercube_measures
-    :members:
+..  :exclude-members: +
 
 support_hypercube_scenario script
 ---------------------------------
 
 .. automodule:: _support_hypercube_scenario
-    :members:
+..  :exclude-members: +
 

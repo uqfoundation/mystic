@@ -5,119 +5,88 @@ abstract_model module
 ---------------------
 
 .. automodule:: mystic.models.abstract_model
-    :members:
-    :undoc-members:
-    :show-inheritance:
+..  :exclude-members: +
 
 br8 module
 ----------
 
 .. automodule:: mystic.models.br8
-    :members:
-    :undoc-members:
-    :show-inheritance:
+..  :exclude-members: +
 
 circle module
 -------------
 
 .. automodule:: mystic.models.circle
-    :members:
-    :undoc-members:
-    :show-inheritance:
+..  :exclude-members: +
 
 dejong module
 -------------
 
 .. automodule:: mystic.models.dejong 
-    :members:
-    :undoc-members:
-    :show-inheritance:
+..  :exclude-members: +
 
 functions module
 ----------------
 
 .. automodule:: mystic.models.functions 
-    :members:
-    :undoc-members:
-    :show-inheritance:
+..  :exclude-members: +
 
 lorentzian module
 -----------------
 
 .. automodule:: mystic.models.lorentzian 
-    :members:
-    :undoc-members:
-    :show-inheritance:
+..  :exclude-members: +
 
 mogi module
 -----------
 
 .. automodule:: mystic.models.mogi 
-    :members:
-    :undoc-members:
-    :show-inheritance:
+..  :exclude-members: +
 
 nag module
 ----------
 
 .. automodule:: mystic.models.nag 
-    :members:
-    :undoc-members:
-    :show-inheritance:
+..  :exclude-members: +
 
 pohlheim module
 ---------------
 
 .. automodule:: mystic.models.pohlheim 
-    :members:
-    :undoc-members:
-    :show-inheritance:
+..  :exclude-members: +
 
 poly module
 -----------
 
 .. automodule:: mystic.models.poly 
-    :members:
-    :undoc-members:
-    :show-inheritance:
+..  :exclude-members: +
 
 schittkowski module
 -------------------
 
 .. automodule:: mystic.models.schittkowski
-    :members:
-    :undoc-members:
-    :show-inheritance:
+..  :exclude-members: +
 
 storn module
 ------------
 
 .. automodule:: mystic.models.storn 
-    :members:
-    :undoc-members:
-    :show-inheritance:
+..  :exclude-members: +
 
 venkataraman module
 -------------------
 
 .. automodule:: mystic.models.venkataraman 
-    :members:
-    :undoc-members:
-    :show-inheritance:
+..  :exclude-members: +
 
 wavy module
 -----------
 
 .. automodule:: mystic.models.wavy 
-    :members:
-    :undoc-members:
-    :show-inheritance:
+..  :exclude-members: +
 
 wolfram module
 --------------
 
 .. automodule:: mystic.models.wolfram 
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
+..  :exclude-members: +
