@@ -78,6 +78,11 @@ class Bounds(object):
             self.xub = len(self.n) * (self.xub,)
             self.xlb = len(self.n) * (self.xlb,)
 
+    def __len__(self):
+        "get length of list of tuples of (lower, upper) bounds"
+        n = (self.n,) if not hasattr(self.n, '__len__') else self.n
+        return sum(n)
+
     def __lower(self):
         "get list of lower bounds"
         n = (self.n,) if not hasattr(self.n, '__len__') else self.n
@@ -95,6 +100,7 @@ class Bounds(object):
         return list(zip(self.lower, self.upper))
 
     def __add__(self, other): #FIXME: create new Bounds instance
+        "add the contents of self and the given other bounds"
         if not isinstance(other, Bounds):
             return NotImplemented
         return self() + other()
@@ -175,13 +181,19 @@ class MeasureBounds(Bounds):
             self.xlb = len(self.wlb) * (self.xlb,)
             self.xub = len(self.wub) * (self.xub,)
 
+    def __len__(self):
+        "get length of list of tuples of (lower, upper) bounds"
+        return 2 * super(MeasureBounds, self).__len__()
+
     def __lower(self):
+        "get list of lower bounds"
         n = (self.n,) if not hasattr(self.n, '__len__') else self.n
         wlb = (self.wlb,) if not hasattr(self.wlb, '__len__') else self.wlb
         xlb = (self.xlb,) if not hasattr(self.xlb, '__len__') else self.xlb
         return list(flatten(i*[j] + i*[k] for i,j,k in zip(n,wlb,xlb)))
 
     def __upper(self):
+        "get list of upper bounds"
         n = (self.n,) if not hasattr(self.n, '__len__') else self.n
         wub = (self.wub,) if not hasattr(self.wub, '__len__') else self.wub
         xub = (self.xub,) if not hasattr(self.xub, '__len__') else self.xub
@@ -208,6 +220,7 @@ class MeasureBounds(Bounds):
         return list(flatten(i*[k] for i,k in zip(n,xub)))
 
     def __add__(self, other): #FIXME: create new MeasureBounds instance
+        "add the contents of self and the given other bounds"
         if not isinstance(other, Bounds):
             return NotImplemented
         return self() + other()
