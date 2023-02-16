@@ -169,6 +169,8 @@ def _process_ids(ids, n=None): #NOTE: n only needed when ids is single value
     return [(i,) for i in range(n)] if n else None
   if isinstance(ids, int):
     return [(i,ids) for i in range(n)] if n else ids
+  if not len(ids):
+    return [(i,) for i in range(n)] if n else []
   # ids is [(iter,id)] where id may be None
   if len(ids) and isinstance(ids[0], tuple):
     step = ids
