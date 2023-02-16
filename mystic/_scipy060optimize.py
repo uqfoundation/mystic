@@ -287,7 +287,7 @@ def fmin(func, x0, args=(), xtol=1e-4, ftol=1e-4, maxiter=None, maxfun=None,
     else:
         if disp:
             print("Optimization terminated successfully.")
-            print("         Current function value: %f" % fval)
+            print("         Current function value: %s" % fval)
             print("         Iterations: %d" % iterations)
             print("         Function evaluations: %d" % fcalls[0])
 
@@ -780,7 +780,7 @@ def fmin_bfgs(f, x0, fprime=None, args=(), gtol=1e-5, norm=Inf,
     if warnflag == 2:
         if disp:
             print("Warning: Desired error not necessarily achieved due to precision loss")
-            print("         Current function value: %f" % fval)
+            print("         Current function value: %s" % fval)
             print("         Iterations: %d" % k)
             print("         Function evaluations: %d" % func_calls[0])
             print("         Gradient evaluations: %d" % grad_calls[0])
@@ -789,14 +789,14 @@ def fmin_bfgs(f, x0, fprime=None, args=(), gtol=1e-5, norm=Inf,
         warnflag = 1
         if disp:
             print("Warning: Maximum number of iterations has been exceeded")
-            print("         Current function value: %f" % fval)
+            print("         Current function value: %s" % fval)
             print("         Iterations: %d" % k)
             print("         Function evaluations: %d" % func_calls[0])
             print("         Gradient evaluations: %d" % grad_calls[0])
     else:
         if disp:
             print("Optimization terminated successfully.")
-            print("         Current function value: %f" % fval)
+            print("         Current function value: %s" % fval)
             print("         Iterations: %d" % k)
             print("         Function evaluations: %d" % func_calls[0])
             print("         Gradient evaluations: %d" % grad_calls[0])
@@ -948,7 +948,7 @@ def fmin_cg(f, x0, fprime=None, args=(), gtol=1e-5, norm=Inf, epsilon=_epsilon,
     if warnflag == 2:
         if disp:
             print("Warning: Desired error not necessarily achieved due to precision loss")
-            print("         Current function value: %f" % fval)
+            print("         Current function value: %s" % fval)
             print("         Iterations: %d" % k)
             print("         Function evaluations: %d" % func_calls[0])
             print("         Gradient evaluations: %d" % grad_calls[0])
@@ -957,14 +957,14 @@ def fmin_cg(f, x0, fprime=None, args=(), gtol=1e-5, norm=Inf, epsilon=_epsilon,
         warnflag = 1
         if disp:
             print("Warning: Maximum number of iterations has been exceeded")
-            print("         Current function value: %f" % fval)
+            print("         Current function value: %s" % fval)
             print("         Iterations: %d" % k)
             print("         Function evaluations: %d" % func_calls[0])
             print("         Gradient evaluations: %d" % grad_calls[0])
     else:
         if disp:
             print("Optimization terminated successfully.")
-            print("         Current function value: %f" % fval)
+            print("         Current function value: %s" % fval)
             print("         Iterations: %d" % k)
             print("         Function evaluations: %d" % func_calls[0])
             print("         Gradient evaluations: %d" % grad_calls[0])
@@ -1146,7 +1146,7 @@ def fmin_ncg(f, x0, fprime, fhess_p=None, fhess=None, args=(), avextol=1e-5,
         warnflag = 1
         if disp:
             print("Warning: Maximum number of iterations has been exceeded")
-            print("         Current function value: %f" % fval)
+            print("         Current function value: %s" % fval)
             print("         Iterations: %d" % k)
             print("         Function evaluations: %d" % fcalls[0])
             print("         Gradient evaluations: %d" % gcalls[0])
@@ -1155,7 +1155,7 @@ def fmin_ncg(f, x0, fprime, fhess_p=None, fhess=None, args=(), avextol=1e-5,
         warnflag = 0
         if disp:
             print("Optimization terminated successfully.")
-            print("         Current function value: %f" % fval)
+            print("         Current function value: %s" % fval)
             print("         Iterations: %d" % k)
             print("         Function evaluations: %d" % fcalls[0])
             print("         Gradient evaluations: %d" % gcalls[0])
@@ -1890,7 +1890,7 @@ def fmin_powell(func, x0, args=(), xtol=1e-4, ftol=1e-4, maxiter=None,
     else:
         if disp:
             print("Optimization terminated successfully.")
-            print("         Current function value: %f" % fval)
+            print("         Current function value: %s" % fval)
             print("         Iterations: %d" % iter)
             print("         Function evaluations: %d" % fcalls[0])
 

@@ -676,7 +676,7 @@ Notes::
                 print("Warning: Optimization terminated with signal interrupt.")
         elif msg and disp:
             print("Optimization terminated successfully.")
-            print("         Current function value: %f" % self.bestEnergy)
+            print("         Current function value: %s" % self.bestEnergy)
             print("         Iterations: %d" % self.generations)
             print("         Function evaluations: %d" % self._fcalls[0])
 

@@ -95,7 +95,7 @@ if __name__ == '__main__':
     # use monitor to retrieve results information
     iterations = len(stepmon)
     cost = stepmon.y[-1]
-    print("Generation %d has best Chi-Squared: %f" % (iterations, cost))
+    print("Generation %d has best Chi-Squared: %s" % (iterations, cost))
 
     # use pretty print for polynomials
     print(poly1d(solution))

@@ -65,7 +65,7 @@ def main():
     print(poly1d(Chebyshev16))
    #print("actual coefficients vs computed:")
    #for actual,computed in zip(Chebyshev16, solution):
-   #    print("%f %f" % (actual, computed))
+   #    print("%s %s" % (actual, computed))
 
     plot_solution(solution, Chebyshev16)
 

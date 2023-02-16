@@ -842,7 +842,7 @@ Notes:
     else:
         if disp:
             print("Optimization terminated successfully.")
-            print("         Current function value: %f" % fval)
+            print("         Current function value: %s" % fval)
             print("         Iterations: %d" % iterations)
             print("         Function evaluations: %d" % fcalls)
 
