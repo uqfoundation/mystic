@@ -87,7 +87,7 @@ Installation
 
     $ pip install mystic
 
-To include optional scientific python support, with ``scipy``, install::
+To include optional scientific Python support, with ``scipy``, install::
 
     $ pip install mystic[math]
 
@@ -158,7 +158,7 @@ Instructions on building a new model are in ``mystic.models.abstract_model``.
 model instance and a cost function instance on-the-fly. For more
 information, see ``mystic.forward_model``.  It is, however, not necessary
 to use base classes or the model builder in building your own model or
-cost function, as any standard python function can be used as long as it
+cost function, as any standard Python function can be used as long as it
 meets the basic ``AbstractFunction`` interface of ``cost = f(x)``.
 
 All ``mystic`` solvers are highly configurable, and provide a robust set of
@@ -170,9 +170,9 @@ for the solver API, and each of the individual solvers for their minimal
 functional interface.
 
 ``mystic`` enables solvers to use parallel computing whenever the user provides
-a replacement for the (serial) python ``map`` function.  ``mystic`` includes a
+a replacement for the (serial) Python ``map`` function.  ``mystic`` includes a
 sample ``map`` in ``mystic.python_map`` that mirrors the behavior of the
-built-in python ``map``, and a ``pool`` in ``mystic.pools`` that provides ``map``
+built-in Python ``map``, and a ``pool`` in ``mystic.pools`` that provides ``map``
 functions using the ``pathos`` (i.e. ``multiprocessing``) interface. ``mystic``
 solvers are designed to utilize distributed and parallel tools provided by
 the ``pathos`` package. For more information, see ``mystic.abstract_map_solver``,
