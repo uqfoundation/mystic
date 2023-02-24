@@ -324,7 +324,7 @@ Further Inputs:
         if list_or_tuple_or_ndarray(variables):
             vars = get_variables(mystring,'_')
             indices = [int(v.strip('_')) for v in vars]
-            for i in range(len(vars)):
+            for i in reversed(range(len(vars))):
                 mystring = mystring.replace(vars[i],variables[indices[i]])
         return mystring
 
@@ -518,7 +518,7 @@ Further Inputs:
         if list_or_tuple_or_ndarray(variables):
             vars = get_variables(mystring,'_')
             indices = [int(v.strip('_')) for v in vars]
-            for i in range(len(vars)):
+            for i in reversed(range(len(vars))):
                 mystring = mystring.replace(vars[i],variables[indices[i]])
         return mystring
 
@@ -807,7 +807,7 @@ Further Inputs:
         if list_or_tuple_or_ndarray(variables):
             vars = get_variables(mystring,'_')
             indices = [int(v.strip('_')) for v in vars]
-            for i in range(len(vars)):
+            for i in reversed(range(len(vars))):
                 mystring = mystring.replace(vars[i],variables[indices[i]])
         return mystring
 
