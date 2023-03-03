@@ -11,10 +11,11 @@
 
 __all__ = ['with_penalty','with_constraint','as_penalty','as_constraint',
            'with_mean','with_variance','with_std','with_spread','normalized',
-           'issolution','solve','discrete','integers','near_integers',
-           'unique','has_unique','impose_unique','bounded','impose_bounds',
-           'impose_as','impose_at','impose_measure','impose_position',
-           'impose_weight','and_','or_','not_','vectorize','boundsconstrain']
+           'issolution','solve','discrete','integers','rounded','precision',
+           'near_integers','unique','has_unique','impose_unique','bounded',
+           'impose_bounds','impose_as','impose_at','impose_measure',
+           'impose_position','impose_weight','and_','or_','not_','vectorize',
+           'boundsconstrain']
 
 from mystic.math.measures import *
 from mystic.math import almostEqual
@@ -833,6 +834,119 @@ The function's input will be mapped to the ints, where:
             return f(xtype(xp), *args, **kwds)
         func.index = _index
         func.type = _type
+        return func
+    return dec
+
+
+def rounded(digits=None, index=None):
+    """rounded inputs for the given function
+
+The function's input will be mapped to the given precision, where:
+  - digits is an int that sets the rounding precision (can be negative)
+  - if index tuple provided, only round at the given indices
+
+>>> @rounded()
+... def identity(x):
+...     return x
+
+>>> identity([0.123, 1.789, 4.000])
+[0.0, 2.0, 4.0]
+
+>>> @rounded(digits=1, index=(0,3,4))
+... def squared(x):
+....    return [i**2 for i in x]
+
+>>> squared([123.45, 123.45, 4.01, 4.01, 0.012, 0.012])
+[15227.560000000001, 15239.9025, 16.080099999999998, 16.0, 0.0, 0.000144]
+
+>>> @rounded(digits=-1, index=(0,3,4))
+... def square(x):
+....    return [i**2 for i in x]
+
+>>> square([123.45, 123.45, 4.01, 4.01, 0.012, 0.012])
+[14400.0, 15239.9025, 16.080099999999998, 0.0, 0.0, 0.000144]"""
+    digits = [digits or 0]
+    if isinstance(index, int): index = (index,)
+    index = [index]
+
+    def _index(alist=None):
+        index[0] = alist
+
+    def _digits(aint=None):
+        digits[0] = aint or 0
+
+    def dec(f):
+        def func(x,*args,**kwds):
+            if isinstance(x, ndarray): xtype = asarray
+            else: xtype = type(x)
+            xp = round(x, digits[0])
+            if index[0] is None:
+                mask = ones(xp.size, dtype=bool)
+            else:
+                mask = zeros(xp.size, dtype=bool)
+                try: mask[sorted(index[0], key=abs)] = True
+                except IndexError: pass
+            xp = choose(mask, (x,xp)).astype(float)
+            return f(xtype(xp), *args, **kwds)
+        func.index = _index
+        func.digits = _digits
+        return func
+    return dec
+
+
+def precision(digits=None, index=None):
+    """rounded outputs for the given function
+
+The function's output will be mapped to the given precision, where:
+  - digits is an int that sets the rounding precision (can be negative)
+  - if index tuple provided, only round at the given indices
+
+>>> @precision()
+... def identity(x):
+...     return x
+
+>>> identity([0.123, 1.789, 4.000])
+[0.0, 2.0, 4.0]
+
+>>> @precision(digits=1, index=(0,3,4))
+... def squared(x):
+....    return [i**2 for i in x]
+
+>>> squared([123.45, 123.45, 4.01, 4.01, 0.012, 0.012])
+[15239.9, 15239.9025, 16.080099999999998, 16.1, 0.0, 0.000144]
+
+>>> @precision(digits=-1, index=(0,3,4))
+... def square(x):
+....    return [i**2 for i in x]
+
+>>> square([123.45, 123.45, 4.01, 4.01, 0.012, 0.012])
+[15240.0, 15239.9025, 16.080099999999998, 20.0, 0.0, 0.000144]"""
+    digits = [digits or 0]
+    if isinstance(index, int): index = (index,)
+    index = [index]
+
+    def _index(alist=None):
+        index[0] = alist
+
+    def _digits(aint=None):
+        digits[0] = aint or 0
+
+    def dec(f):
+        def func(x,*args,**kwds):
+            fx = f(x, *args, **kwds)
+            if isinstance(fx, ndarray): xtype = asarray
+            else: xtype = type(fx)
+            y = round(fx, digits[0])
+            if index[0] is None:
+                mask = ones(y.size, dtype=bool)
+            else:
+                mask = zeros(y.size, dtype=bool)
+                try: mask[sorted(index[0], key=abs)] = True
+                except IndexError: pass
+            y = choose(mask, (fx,y))#.astype(float)
+            return xtype(y)
+        func.index = _index
+        func.digits = _digits
         return func
     return dec
 
