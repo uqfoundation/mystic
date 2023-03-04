@@ -14,6 +14,8 @@ References:
     1. Numerical Algorithms Group, "NAG Library", Oxford UK, Mark 24,
        2013. http://www.nag.co.uk/numeric/CL/nagdoc_cl24/pdf/E05/e05jbc.pdf
 """
+__all__ = ['Peaks', 'peaks']
+
 from .abstract_model import AbstractFunction
 
 from math import exp

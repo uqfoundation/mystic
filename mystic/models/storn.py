@@ -29,6 +29,9 @@ References:
        Journal of Optimization Theory and Applications 34: 11-39, 1981.
     6. Zimmermann, W. "Operations Research" Oldenbourg Munchen, Wien, 1990.
 """
+__all__ = ['Corana', 'Griewangk', 'Zimmermann', 'corana', 'griewangk',
+           'zimmermann']
+
 from .abstract_model import AbstractFunction
 
 from numpy import asarray

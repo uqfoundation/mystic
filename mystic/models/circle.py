@@ -12,6 +12,9 @@
 References:
     None
 """
+__all__ = ['Circle', 'gencircle', 'gendata', 'circle', 'dense_circle',
+           'sparse_circle', 'minimal_circle']
+
 #FIXME: cost function seems to apply penalty when r=R0... it should not
 from .abstract_model import AbstractModel
 
@@ -39,31 +42,73 @@ setting packing = None will constrain all points to the circle's radius"""
 
     def forward(self,coeffs,npts=None):
         """generate a 2D array of points contained within a circle
-built from a list of coefficients
-(x,y,r) = coeffs
 
-default npts = packing * floor( pi*radius^2 )"""
+    Args:
+        coeffs (list[float]): (x, y, and radius) defining a circle
+        npts (int, default=None): number of points to generate
+
+    Returns:
+        a 2D array of points contained within the defined circle
+
+    Notes:
+        default ``npts`` is ``packing * floor(pi * radius**2)``
+        """
         if not npts:
             # generate # of points based on packing and given radius
             npts = self.__packing__ * floor(pi*(coeffs[-1])**2)
         return gendata(coeffs,npts)
 
     def ForwardFactory(self,coeffs):
-        """generates a circle instance from a list of coefficients
-(x,y,r) = coeffs"""
+        """generate a circle instance from a sequence of coefficients
+
+    Args:
+        coeffs (list[float]): (x, y, and radius) defining a circle
+
+    Returns:
+        a function returning a 2D array of points contained within the circle
+        """
         x,y,r = coeffs
         def forward_circle(npts=None):
-            """generate a 2D array representation of a circle
-with (x,y,r) = (%s,%s,%s)""" % (x,y,r)
+            """generate a 2D array of points within the defined circle
+
+    Args:
+        npts (int, default=None): number of points to generate
+
+    Returns:
+        a 2D array of points contained within the circle (x,y,r) = (%s,%s,%s)
+
+    Notes:
+        default ``npts`` is ``packing * floor(pi * radius**2)``
+            """ % (x,y,r)
             return self.forward((x,y,r),npts)
         return forward_circle
 
     def CostFactory(self,target,npts=None):
-        """generates a cost function instance from list of coefficients & number of evaluation points
-(x,y,r) = target coeffs"""
+        """generate a cost function from target coefficients
+
+    Args:
+        target (list[float]): (x, y, and radius) defining the target circle
+        npts (int, default=None): number of points to generate
+
+    Returns:
+        a function returning cost of minimum enclosing circle for npts
+
+    Notes:
+        default ``npts`` is ``packing * floor(pi * radius**2)``
+        """
         datapts = self.forward(target,npts)
         def cost(params):
-            """cost function for minimum enclosing circle for a 2D set of points"""
+            """cost of minimum enclosing circle for a 2D set of points
+
+    Args:
+        params (list[float]): (x, y, and radius) defining a circle
+
+    Returns:
+        a float representing radius and number of points outside the circle
+
+    Notes:
+        fit to points generated on the circle defined by (x,y,r) = (%s,%s,%s)
+            """ % (target[0], target[1], target[2])
             x,y,r = params
             if r<0:
                 return -999. * r
@@ -79,9 +124,23 @@ with (x,y,r) = (%s,%s,%s)""" % (x,y,r)
         return self.__cost__
 
     def CostFactory2(self,datapts):
-        """generates a cost function instance from a 2D array of datapoints"""
+        """generate a cost function from a 2D array of data points
+
+    Args:
+        datapts (array[float,float]): (x,y) location of points in target circle
+
+    Returns:
+        a function returning cost of minimum enclosing circle for datapts
+        """
         def cost(params):
-            """cost function for minimum enclosing circle for a 2D set of points"""
+            """cost of minimum enclosing circle for a 2D set of points
+
+    Args:
+        params (list[float]): (x, y, and radius) defining a circle
+
+    Returns:
+        a float representing radius and number of points outside the circle
+            """
             x,y,r = params
             if r<0:
                 return -999. * r
@@ -106,7 +165,7 @@ minimal_circle = Circle(packing=0.2)
 
 
 # helper functions
-def gencircle(coeffs,interval=0.02):
+def gencircle(coeffs, interval=0.02):
     """generate a 2D array representation of a circle of given coeffs
 coeffs = (x,y,r)"""
     x,y,r = coeffs
@@ -114,7 +173,7 @@ coeffs = (x,y,r)"""
     xy = array(list(zip(r*cos(theta)+x, r*sin(theta)+y)))
     return xy
 
-def gendata(coeffs,npts=20):
+def gendata(coeffs, npts=20):
     """Generate a 2D dataset of npts enclosed in circle of given coeffs,
 where coeffs = (x,y,r).
 

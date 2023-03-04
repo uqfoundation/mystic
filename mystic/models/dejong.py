@@ -21,6 +21,9 @@ References:
        Simulated Reannealing: A Comparison" J. of Mathematical and Computer
        Modeling 16(11), 87-100, 1992.
 """
+__all__ = ['Sphere', 'Rosenbrock', 'Step', 'Quartic', 'Shekel', 'sphere',
+           'rosen', 'step', 'quartic', 'shekel', 'rosen0der', 'rosen1dir']
+
 from .abstract_model import AbstractFunction
 
 from numpy import sum as numpysum

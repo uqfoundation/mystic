@@ -12,6 +12,8 @@ Lorentzian peak model
 References:
     None
 """
+__all__ = ['Lorentzian', 'lorentzian', 'gendata', 'histogram']
+
 from .abstract_model import AbstractModel
 
 from numpy import sum as numpysum
@@ -49,7 +51,7 @@ with (a1,a2,a3,A0,E0,G0,n) = (%s,%s,%s,%s,%s,%s,%s)""" % (a1,a2,a3,A0,E0,G0,n)
 # prepared instances
 lorentzian = Lorentzian()
 
-def gendata(params,xmin,xmax,npts=4000):
+def gendata(params, xmin, xmax, npts=4000):
     """Generate a lorentzian dataset of npts between [min,max] from given params"""
     F = lorentzian.ForwardFactory
     def gensample(F, xmin, xmax):
@@ -69,7 +71,7 @@ def gendata(params,xmin,xmax,npts=4000):
 
 # probably shouldn't be in here...
 from numpy import histogram as numpyhisto
-def histogram(data,binwidth, xmin,xmax):
+def histogram(data, binwidth, xmin, xmax):
     """generate bin-centered histogram of provided data
 return bins of given binwidth (and histogram) generated between [xmin,xmax]"""
     bins = arange(xmin,xmax, binwidth)

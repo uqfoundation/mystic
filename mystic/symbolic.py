@@ -641,6 +641,7 @@ Further Inputs:
     permute -- if True, return all permutations [False]
     warn -- if True, don't suppress warnings [False]
     verbose -- if True, print debug information [False]
+
 """
     ### undocumented ###
    #rand -- random number generator [default: random.random]

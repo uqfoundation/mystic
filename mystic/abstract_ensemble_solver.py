@@ -608,22 +608,22 @@ note::
 
 Args:
     callback (func, default=None): function to call after each iteration. The
-        interface is ``callback(xk)``, with xk the current parameter vector.
+        interface is ``callback(xk)``, with ``xk`` the current parameter vector.
     disp (bool, default=False): if True, print convergence messages.
-
-Additional Args:
-    EvaluationMonitor: a monitor instance to capture each evaluation of cost.
-    StepMonitor: a monitor instance to capture each iteration's best results.
-    penalty: a function of the form: y' = penalty(xk), with y = cost(xk) + y',
-        where xk is the current parameter vector.
-    constraints: a function of the form: xk' = constraints(xk), where xk is
-        the current parameter vector.
-    step (bool, default=False): if True, enable Step within the ensemble.
+    EvaluationMonitor (monitor, default=None): a monitor instance to capture
+        each evaluation of cost.
+    StepMonitor (monitor, default=None): a monitor instance to capture each
+        iteration's best results.
+    penalty (penalty, default=None): function of the form: ``y' = penalty(xk)``,
+        with ``y = cost(xk) + y'`` and ``xk`` is the current parameter vector.
+    constraints (constraint, default=None): function of the form:
+        ``xk' = constraints(xk)``, where ``xk`` is the current parameter vector.
+    step (bool, default=False): if True, enable ``Step`` within the ensemble.
 
 Note:
-   The additional args are 'sticky', in that once they are given, they remain
-   set until they are explicitly changed. Conversely, the args are not sticky,
-   and are thus set for a one-time use.
+    ``callback`` and ``disp`` are 'sticky', in that once they are given, they
+    remain set until they are explicitly changed. Conversely, the other inputs
+    are not sticky, and are thus set for a one-time use.
         """
         #allow for inputs that don't conform to AbstractSolver interface
         #NOTE: not sticky: callback, disp

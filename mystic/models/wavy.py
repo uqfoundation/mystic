@@ -13,6 +13,8 @@ a 'reducing' function to provide scalar return values.
 References:
     None
 """
+__all__ = ['Wavy1', 'Wavy2', 'wavy1', 'wavy2']
+
 from .abstract_model import AbstractFunction
 
 from numpy import absolute as abs

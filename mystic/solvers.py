@@ -62,6 +62,7 @@ or the API documentation found here:
     - ``mystic.abstract_solver``          [the solver API definition]
     - ``mystic.abstract_map_solver``      [the parallel solver API]
     - ``mystic.abstract_ensemble_solver`` [the ensemble solver API]
+
 """
 # global optimizers
 from mystic.differential_evolution import DifferentialEvolutionSolver

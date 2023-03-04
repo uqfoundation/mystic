@@ -12,6 +12,8 @@ Base classes for mystic's provided models::
     AbstractModel      -- generates f(x,p) for given coefficients p
 
 """
+__all__ = ['AbstractFunction', 'AbstractModel']
+
 from numpy import sum as numpysum
 from mystic.forward_model import CostFactory as CF
 

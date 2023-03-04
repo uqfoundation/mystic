@@ -19,6 +19,13 @@ References:
     3. Storn, R. "Constrained Optimization" Dr. Dobb's Journal, May,
        119-123, 1995.
 """
+__all__ = ['Polynomial', 'Chebyshev', 'poly', 'chebyshev2', 'chebyshev4',
+           'chebyshev6', 'chrbyshev8', 'chebyshev16', 'chebyshev2cost',
+           'chebyshev4cost', 'chebyshev6cost', 'chrbyshev8cost',
+           'chebyshev16cost', 'chebyshev2coeffs', 'chebyshev4coeffs',
+           'chebyshev6coeffs', 'chrbyshev8coeffs', 'chebyshev16coeffs',
+           'chebyshevcostfactory']
+
 from .abstract_model import AbstractModel
 
 from numpy import sum as numpysum

@@ -770,7 +770,7 @@ Notes:
   # return u  #XXX: does this need to be normalized?
 
   def sampled_minimum(self, f, npts=10000, map=None):
-    """use sampling to calculate ess_minimum for a given function
+    """use sampling to calculate minimum for the support for a given function
 
 Args:
     f (func): a function that takes a list and returns a number
@@ -779,7 +779,7 @@ Args:
     map (func, default=builtins.map): the mapping function
 
 Returns:
-    the sampled ess_minimum, a float
+    the sampled ``ess_minimum``, a float
 
 Notes:
     - the function ``f`` should take a list of ``positions`` (for example,
@@ -791,7 +791,7 @@ Notes:
     return _minimum_given_samples(f, pts, map)
 
   def sampled_ptp(self, f, npts=10000, map=None):
-    """use sampling to calculate ess_|maximum - minimum| for a given function
+    """use sampling to calculate spread for the support for a given function
 
 Args:
     f (func): a function that takes a list and returns a number
@@ -800,7 +800,7 @@ Args:
     map (func, default=builtins.map): the mapping function
 
 Returns:
-    the sampled |ess_maximum - ess_minimum|, a float
+    the sampled ``|ess_maximum - ess_minimum|``, a float
 
 Notes:
     - the function ``f`` should take a list of ``positions`` (for example,
@@ -854,7 +854,7 @@ Notes:
     return _variance_given_samples(f, pts, map)
 
   def sampled_maximum(self, f, npts=10000, map=None):
-    """use sampling to calculate ess_maximum for a given function
+    """use sampling to calculate maximum for the support for a given function
 
 Args:
     f (func): a function that takes a list and returns a number
@@ -863,7 +863,7 @@ Args:
     map (func, default=builtins.map): the mapping function
 
 Returns:
-    the ess_maximum, a float
+    the ``ess_maximum``, a float
 
 Notes:
     - the function ``f`` should take a list of ``positions`` (for example,

@@ -8,7 +8,7 @@
 This module contains the base class for mystic samplers, and describes
 the mystic sampler interface.
 """
-__all__  = ['AbstractSampler']
+__all__ = ['AbstractSampler']
 
 """
 # utility functions
@@ -25,11 +25,11 @@ _step_without_restart: _sample(reset=False)
 
 # options
 _restart_if_solved(solved): (* = 'all' if all else 'solved')
-  . all: if all stop, _restart_*_then_step
-  . True: if best stop, _restart_*_then_step
-  . any: if any stop, _restart_*_then_step 
-  . False: if none stop, _restart_*_then_step
-  . None: _step_without_restart
+. all: if all stop, _restart_*_then_step
+. True: if best stop, _restart_*_then_step
+. any: if any stop, _restart_*_then_step 
+. False: if none stop, _restart_*_then_step
+. None: _step_without_restart
 """
 
 class AbstractSampler(object): # derived class per sampling algorithm

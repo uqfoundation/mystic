@@ -13,6 +13,8 @@ References:
     1. "Data Reduction and Error Analysis for the Physical Sciences",
        Bevington & Robinson, Second Edition, McGraw-Hill, New York (1992).
 """
+__all__ = ['BevingtonDecay', 'decay', 'data', 'cost']
+
 from .abstract_model import AbstractModel
 
 from numpy import array, asarray

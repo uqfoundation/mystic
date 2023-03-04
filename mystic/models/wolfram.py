@@ -17,6 +17,8 @@ References:
        Collection on Constrained Optimization", Wolfram Research, USA, 2008.
        http://reference.wolfram.com/language/guide/Optimization.html
 """
+__all__ = ['fOsc3D', 'NMinimize51', 'fosc3d', 'nmin51']
+
 from .abstract_model import AbstractFunction
 
 from math import sin, exp

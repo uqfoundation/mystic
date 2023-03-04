@@ -30,6 +30,11 @@ References:
 #   8. Dixon, L.C.W. and Szego, G.P. "The Optimization Problem: An
 #      Introduction", in "Toward Global Optimization II", North Holland,
 #      New York, 1978.
+__all__ = ['Schwefel', 'HyperEllipsoid', 'Rastrigin', 'DifferentPowers',
+           'Ackley', 'Michalewicz', 'Michalewicz', 'Branins', 'Easom',
+           'GoldsteinPrice', 'schwefel', 'ellipsoid', 'rastrigin', 'powers',
+           'ackley', 'michal', 'branins', 'easom', 'goldstein']
+
 from .abstract_model import AbstractFunction
 
 from math import sin, cos, sqrt, pi, exp

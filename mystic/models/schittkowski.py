@@ -18,6 +18,8 @@ References:
        nonlinear programming problem", Ph.D. dissertation, The University
        of Texas, Austin, TX, 1969.
 """
+__all__ = ['Paviani', 'paviani']
+
 from .abstract_model import AbstractFunction
 
 from math import sin, cos, sqrt, pi, exp, log

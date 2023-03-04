@@ -14,6 +14,8 @@ References:
     1. Venkataraman, P. "Applied Optimization with MATLAB Programming",
        John Wiley and Sons, Hoboken NJ, 2nd Edition, 2009.
 """
+__all__ = ['Sinc', 'venkat91']
+
 from .abstract_model import AbstractFunction
 
 from math import sin
