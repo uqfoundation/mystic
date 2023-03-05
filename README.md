@@ -34,24 +34,23 @@ a large selection of constraints, including probabistic and dimensionally
 reducing constraints. By providing a robust interface designed to
 enable the user to easily configure and control solvers, ``mystic``
 greatly reduces the barrier to solving hard optimization problems.
-``mystic`` can convert systems of equalities and inequalities to
-constraints with methods in ``mystic.symbolic``, and includes
-statistical constraints in ``mystic.constraints`` and other modules.
 
 Sampling, interpolation, and statistics in ``mystic`` are all designed
 to seamlessly couple with constrained optimization to facilitate
 scientific machine learning, uncertainty quantification, adaptive
 sampling, nonlinear interpolation, and artificial intelligence.
+``mystic`` can convert systems of equalities and inequalities to
+hard or soft constraints using methods in ``mystic.symbolic``.
 With ``mystic.constraints.vectorize``, constraints can be converted
 to kernel transforms for use in machine learning. Similarly, ``mystic``
 provides tools for accurately producing emulators on an irregular grid
 using ``mystic.math.interpolate``, which includes methods for solving
 for gradients and Hessians. ``mystic.samplers`` use optimizers to
 drive adaptive sampling toward the first and second order critical points
-of the response surface, yielding highly-informative training data sets.
-``mystic.math.discrete`` can be used to describe constrained discrete
-probability measures, which then can be used in constrained statistical
-optimization and learning.
+of the response surface, yielding highly-informative training data sets
+and ensuring emulator accuracy. ``mystic.math.discrete`` defines
+constrained discrete probability measures, which can be used in
+constrained statistical optimization and learning.
 
 ``mystic`` is in active development, so any user feedback, bug reports, comments,
 or suggestions are highly appreciated.  A list of issues is located at https://github.com/uqfoundation/mystic/issues, with a legacy list maintained at https://uqfoundation.github.io/project/mystic/query.
