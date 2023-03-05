@@ -40,7 +40,7 @@ except ImportError:
 setup_kwds = dict(
     name='mystic',
     version=__version__,
-    description='highly-constrained non-convex optimization and uncertainty quantification',
+    description='constrained nonlinear optimization for scientific machine learning and UQ',
     long_description = README.strip(),
     author = __author__,
     author_email = AUTHOR_EMAIL,

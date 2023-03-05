@@ -28,21 +28,22 @@ def linear_symbolic(A=None, b=None, G=None, h=None, variables=None):
     """convert linear equality and inequality constraints from matrices to a 
 symbolic string of the form required by mystic's constraint parser.
 
-Inputs:
-    A -- (ndarray) matrix of coefficients of linear equality constraints
-    b -- (ndarray) vector of solutions of linear equality constraints
-    G -- (ndarray) matrix of coefficients of linear inequality constraints
-    h -- (ndarray) vector of solutions of linear inequality constraints
-    variables -- (list[str]) list of variable names
+Args:
+    A (ndarray, default=None): matrix of coefficients of equality constraints
+    b (ndarray, default=None): vector of solutions of equality constraints
+    G (ndarray, default=None): matrix of coefficients of inequality constraints
+    h (ndarray, default=None): vector of solutions of inequality constraints
+    variables (list[str], default=None): list of variable names
 
-    NOTE: if variables=None, then variables = ['x0', 'x1', ...];
-          if variables='y', then variables = ['y0', 'y1', ...];
-          otherwise use the explicit list of variables provided.
+Notes:
+    if ``variables=None``, then ``variables = ['x0', 'x1', ...]``;
+    if ``variables='y'``, then ``variables = ['y0', 'y1', ...]``;
+    otherwise use the explicit list of variables provided.
 
-    NOTE: Must provide A and b; G and h; or A, b, G, and h;
-          where Ax = b and Gx <= h. 
+    Must provide ``A, b``, ``G, h``, or ``A, b, G, h``;
+    where ``Ax = b`` and ``Gx <= h``. 
 
-    For example:
+Examples:
     >>> A = [[3., 4., 5.],
     ...      [1., 6., -9.]]
     >>> b = [0., 0.]
@@ -126,16 +127,17 @@ Inputs:
 def symbolic_bounds(min, max, variables=None):
     """convert min,max to symbolic string for use in mystic's constraint parser
 
-Inputs:
-    min -- (list[float]) list of lower bounds
-    max -- (list[float]) list of upper bounds
-    variables -- (list[str]) list of variable names
+Args:
+    min (list[float]): list of lower bounds
+    max (list[float]): list of upper bounds
+    variables (list[str], default=None): list of variable names
 
-    NOTE: if variables=None, then variables = ['x0', 'x1', ...];
-          if variables='y', then variables = ['y0', 'y1', ...];
-          otherwise use the explicit list of variables provided.
+Notes:
+    if ``variables=None``, then ``variables = ['x0', 'x1', ...]``;
+    if ``variables='y'``, then ``variables = ['y0', 'y1', ...]``;
+    otherwise use the explicit list of variables provided.
 
-    For example:
+Examples:
     >>> eqn = symbolic_bounds(min=[-10,None], max=[10,69], variables='y')
     >>> print(eqn)
     y0 >= -10.0
@@ -202,9 +204,9 @@ def _flip(cmp, bounds=False): # to invert sign if dividing by negative value
 def flip(equation, bounds=False):
     """flip the inequality in the equation (i.e. '<' to '>'), if one exists
 
-Inputs:
-    equation -- an equation string; can be an equality or inequality
-    bounds -- if True, ensure set boundaries are respected (i.e. '<' to '>=')
+Args:
+    equation (str): an equation string; can be an equality or inequality
+    bounds (bool, default=False): maintain set boundaries (i.e. '<' to '>=')
 """
     cmp = comparator(equation)
     return _flip(cmp, bounds).join(equation.split(cmp)) if cmp else equation
@@ -215,19 +217,17 @@ Inputs:
 def condense(*equations, **kwds):
     """condense tuples of equations to the simplest representation
 
-Inputs:
-    equations -- tuples of inequalities or equalities
+Args:
+    equations (tuple[str]): tuples of inequalities or equalities
+    verbose (bool, default=False): if True, print diagnostic information
 
-    For example:
+Examples:
     >>> condense(('C <= 0', 'B <= 0'), ('C <= 0', 'B >= 0'))
     [('C <= 0',)]
     >>> condense(('C <= 0', 'B <= 0'), ('C >= 0', 'B <= 0'))
     [('B <= 0',)]
     >>> condense(('C <= 0', 'B <= 0'), ('C >= 0', 'B >= 0'))
     [('C <= 0', 'B <= 0'), ('C >= 0', 'B >= 0')]
-
-Additional Inputs:
-    verbose -- if True, print diagnostic information. Default is False.
 """
     verbose = kwds['verbose'] if 'verbose' in kwds else False
     result, miss = [],[]
@@ -331,11 +331,11 @@ def _noparen(variable):
 def flat(equation, subs=None):
     """flatten equation by replacing expressions in parenthesis with a marker
 
-Inputs:
-    equation -- a symbolic equation string, with no more than one line, and
-        following standard python syntax.
-    subs -- a dict of {marker: sub-string} of replacements made, where marker
-        will be of the form '$0$', '$1$', etc.
+Args:
+    equation (str): a symbolic equation string, with no more than one line,
+        and following standard python syntax.
+    subs (dict, default=None): dict of ``{marker: sub-string}`` of replacements
+        made, where marker will be of the form ``'$0$'``, ``'$1$'``, etc.
     """
     eqn = _enclosed(equation)
     for i,e in enumerate(eqn):
@@ -359,12 +359,13 @@ def _denominator(equation):
 def denominator(equation, variables=None):
     """find denominators containing the given variables in an equation
 
-Inputs:
-    equation -- a symbolic equation string, with no more than one line.
+Args:
+    equation (str): a symbolic equation string, with no more than one line.
         Equation can be an equality or inequality, and must follow standard
         python syntax (with the math and numpy modules already imported).
-    variables -- a variable base string (e.g. 'x' = 'x0','x1',...), or
-        a list of variable name strings (e.g. ['x','y','z0']). Default is 'x'.
+    variables (str, defaut=None): base string (e.g. ``'x'`` = 'x0','x1',...),
+        or a list of variable name strings (e.g. ``['x','y','z0']``).
+        Default is ``'x'``.
     """
     if variables is None: variables = 'x'
     # deal with the lhs and rhs separately
@@ -422,16 +423,14 @@ def _solve_zeros(equation, variables=None, implicit=True):
 def equals(before, after, vals=None, **kwds):
     """check if equations before and after are equal at the given vals
 
-Inputs:
-    before -- an equation string
-    after -- an equation string
-    vals -- a dict with variable names as keys and floats as values
-
-Additional Inputs:
-    variables -- a list of variable names
-    locals -- a dict with variable names as keys and 'fixed' values
-    error -- if False, ZeroDivisionError evaluates as None
-    variants -- a list of ints to use as variants for fractional powers
+Args:
+    before (str): an equation string
+    after (str): an equation string
+    vals (dict, default=None): dict with variable names as keys and float values
+    variables (list[str], default='x'): a list of variable names
+    locals (dict, default={}): dict with variable names as keys and fixed values
+    error (bool, default=True): if False, ZeroDivisionError evaluates as None
+    variants (list[int], default=None): list of variants for fractional powers
 """ #verbose -- print debug messages
     errors = kwds['error'] if 'error' in kwds else True#XXX: default of False?
     variants = kwds['variants'] if 'variants' in kwds else None
@@ -560,17 +559,15 @@ def absval(constraints, **kwds):
 Returns a system of equations where 'abs' has been replaced with the
 equivalent conditional algebraic expressions.
 
-Inputs:
-    constraints -- a string of symbolic constraints, with one constraint
+Args:
+    constraints (str): a string of symbolic constraints, with one constraint
         equation per line. Standard python syntax should be followed (with
         the math and numpy modules already imported).
-
-Additional Inputs:
-    all -- boolean to return all simplifications due to absolute values.
+    all (bool, default=False): return all simplifications due to absolute values
         If all is True, return all possible simplifications due to absolute
-        value being used in one or more of the equations. The default is
-        False, returning only one possible simplification.
-    verbose -- if True, print debug information [False]
+        value being used in one or more of the equations. If False, return
+        only one possible simplification.
+    verbose (bool, default=False): if True, print debug information.
 """
     import random
     import itertools as it
@@ -591,7 +588,7 @@ def _simplify(constraints, variables='x', target=None, **kwds):
 
 Returns a system of equations where a single variable has been isolated on
 the left-hand side of each constraints equation, thus all constraints are
-of the form "x_i = f(x)".
+of the form ``x_i = f(x)``.
 
 Inputs:
     constraints -- a string of symbolic constraints, with one constraint
@@ -613,12 +610,12 @@ Inputs:
         x0 >= -x1 + 2*x2
 
 Additional Inputs:
-    variables -- desired variable name. Default is 'x'. A list of variable
+    variables -- desired variable name. Default is ``'x'``. A list of variable
         name strings is also accepted for when desired variable names
         don't have the same base, and can include variables that are not
         found in the constraints equation string.
     target -- list providing the order for which the variables will be solved.
-        If there are "N" constraint equations, the first "N" variables given
+        If there are ``N`` constraint equations, the first ``N`` variables given
         will be selected as the dependent variables. By default, increasing
         order is used.
 
@@ -832,7 +829,7 @@ Inputs:
         'x0 + x1 - 42'
 
 Additional Inputs:
-    markers -- desired variable name. Default is '$'. A list of variable
+    markers -- desired variable name. Default is ``'$'``. A list of variable
         name strings is also accepted for when desired variable names
         don't have the same base.
 
@@ -899,7 +896,7 @@ Inputs:
         ['x1', 'x2', 'x3', 'x4'] 
 
 Additional Inputs:
-    variables -- desired variable name. Default is 'x'. A list of variable
+    variables -- desired variable name. Default is ``'x'``. A list of variable
         name strings is also accepted for when desired variable names
         don't have the same base, and can include variables that are not
         found in the constraints equation string.
@@ -953,8 +950,8 @@ Inputs:
 
 Additional Inputs:
     nvars -- number of variables. Includes variables not explicitly
-        given by the constraint equations (e.g. 'x2' in the example above).
-    variables -- desired variable name. Default is 'x'. A list of variable
+        given by the constraint equations (e.g. ``x2`` in the example above).
+    variables -- desired variable name. Default is ``'x'``. A list of variable
         name strings is also accepted for when desired variable names
         don't have the same base, and can include variables that are not
         found in the constraints equation string.
@@ -1049,8 +1046,8 @@ Inputs:
 
 Additional Inputs:
     nvars -- number of variables. Includes variables not explicitly
-        given by the constraint equations (e.g. 'x2' in the example above).
-    variables -- desired variable name. Default is 'x'. A list of variable
+        given by the constraint equations (e.g. ``x2`` in the example above).
+    variables -- desired variable name. Default is ``'x'``. A list of variable
         name strings is also accepted for when desired variable names
         don't have the same base, and can include variables that are not
         found in the constraints equation string.
@@ -1196,8 +1193,8 @@ Inputs:
 
 Additional Inputs:
     nvars -- number of variables. Includes variables not explicitly
-        given by the constraint equations (e.g. 'x2' in the example above).
-    variables -- desired variable name. Default is 'x'. A list of variable
+        given by the constraint equations (e.g. ``x2`` in the example above).
+    variables -- desired variable name. Default is ``'x'``. A list of variable
         name strings is also accepted for when desired variable names
         don't have the same base, and can include variables that are not
         found in the constraints equation string.
@@ -1284,8 +1281,8 @@ Inputs:
 
 Additional Inputs:
     nvars -- number of variables. Includes variables not explicitly
-        given by the constraint equations (e.g. 'x2' in the example above).
-    variables -- desired variable name. Default is 'x'. A list of variable
+        given by the constraint equations (e.g. ``x2`` in the example above).
+    variables -- desired variable name. Default is ``'x'``. A list of variable
         name strings is also accepted for when desired variable names
         don't have the same base, and can include variables that are not
         found in the constraints equation string.
@@ -1449,7 +1446,7 @@ Warning:
     simply applies conditions in the given order. This constraint generator
     assumes that a single variable has been isolated on the left-hand side
     of each constraints equation, thus all constraints are of the form
-    "x_i = f(x)". This solver picks speed over robustness, and relies on
+    ``x_i = f(x)``. This solver picks speed over robustness, and relies on
     the user to formulate the constraints so that they do not conflict.
 
 Examples:

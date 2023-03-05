@@ -1,6 +1,6 @@
 mystic
 ======
-highly-constrained non-convex optimization and uncertainty quantification
+constrained nonlinear optimization for scientific machine learning and UQ
 
 About Mystic
 ------------
@@ -26,14 +26,32 @@ to configure and launch an optimization job. For more details, see
 3rd party solver into the ``mystic`` framework.
 
 Optimization algorithms in ``mystic`` can accept parameter constraints,
-either in the form of penaties (which "penalize" regions of solution
-space that violate the constraints), or as constraints (which "constrain" 
-the solver to only search in regions of solution space where the
-constraints are respected), or both. ``mystic`` provides a large 
-selection of constraints, including probabistic and dimensionally
+as "soft constraints" (i.e. ``penalties``, which "penalize" regions of
+solution space that violate the constraints), or as "hard constraints"
+(i.e. ``constraints``, which constrain the solver to only search in regions
+of space where the constraints are respected), or both. ``mystic`` provides
+a large selection of constraints, including probabistic and dimensionally
 reducing constraints. By providing a robust interface designed to
 enable the user to easily configure and control solvers, ``mystic``
 greatly reduces the barrier to solving hard optimization problems.
+``mystic`` can convert systems of equalities and inequalities to
+constraints with methods in ``mystic.symbolic``, and includes
+statistical constraints in ``mystic.constraints`` and other modules.
+
+Sampling, interpolation, and statistics in ``mystic`` are all designed
+to seamlessly couple with constrained optimization to facilitate
+scientific machine learning, uncertainty quantification, adaptive
+sampling, nonlinear interpolation, and artificial intelligence.
+With ``mystic.constraints.vectorize``, constraints can be converted
+to kernel transforms for use in machine learning. Similarly, ``mystic``
+provides tools for accurately producing emulators on an irregular grid
+using ``mystic.math.interpolate``, which includes methods for solving
+for gradients and Hessians. ``mystic.samplers`` use optimizers to
+drive adaptive sampling toward the first and second order critical points
+of the response surface, yielding highly-informative training data sets.
+``mystic.math.discrete`` can be used to describe constrained discrete
+probability measures, which then can be used in constrained statistical
+optimization and learning.
 
 ``mystic`` is in active development, so any user feedback, bug reports, comments,
 or suggestions are highly appreciated.  A list of issues is located at https://github.com/uqfoundation/mystic/issues, with a legacy list maintained at https://uqfoundation.github.io/project/mystic/query.
@@ -185,7 +203,7 @@ Important classes and functions are found here:
 * ``mystic.termination``              [solver termination conditions]
 * ``mystic.strategy``                 [solver population mutation strategies]
 * ``mystic.monitors``                 [optimization monitors]
-* ``mystic.symbolic``                 [symbolic math in constaints]
+* ``mystic.symbolic``                 [symbolic math in constraints]
 * ``mystic.constraints``              [constraints functions]
 * ``mystic.penalty``                  [penalty functions]
 * ``mystic.collapse``                 [checks for dimensional collapse]
