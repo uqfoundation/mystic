@@ -224,8 +224,10 @@ Args:
 Examples:
     >>> condense(('C <= 0', 'B <= 0'), ('C <= 0', 'B >= 0'))
     [('C <= 0',)]
+
     >>> condense(('C <= 0', 'B <= 0'), ('C >= 0', 'B <= 0'))
     [('B <= 0',)]
+
     >>> condense(('C <= 0', 'B <= 0'), ('C >= 0', 'B >= 0'))
     [('C <= 0', 'B <= 0'), ('C >= 0', 'B >= 0')]
 """
@@ -362,7 +364,7 @@ def denominator(equation, variables=None):
 Args:
     equation (str): a symbolic equation string, with no more than one line.
         Equation can be an equality or inequality, and must follow standard
-        python syntax (with the math and numpy modules already imported).
+        python syntax (the ``math`` and ``numpy`` modules are already imported).
     variables (str, defaut=None): base string (e.g. ``'x'`` = 'x0','x1',...),
         or a list of variable name strings (e.g. ``['x','y','z0']``).
         Default is ``'x'``.
@@ -561,8 +563,8 @@ equivalent conditional algebraic expressions.
 
 Args:
     constraints (str): a string of symbolic constraints, with one constraint
-        equation per line. Standard python syntax should be followed (with
-        the math and numpy modules already imported).
+        equation per line. Standard python syntax should be followed (the
+        ``math`` and ``numpy`` modules are already imported).
     all (bool, default=False): return all simplifications due to absolute values
         If all is True, return all possible simplifications due to absolute
         value being used in one or more of the equations. If False, return
@@ -590,55 +592,55 @@ Returns a system of equations where a single variable has been isolated on
 the left-hand side of each constraints equation, thus all constraints are
 of the form ``x_i = f(x)``.
 
-Inputs:
-    constraints -- a string of symbolic constraints, with one constraint
-        equation per line. Standard python syntax should be followed (with
-        the math and numpy modules already imported).
-
-    For example:
-        >>> constraints = '''
-        ...     x0 - x2 <= 2.
-        ...     x2 = x3*2.'''
-        >>> print(simplify(constraints))
-        x0 <= x2 + 2.0
-        x2 = 2.0*x3
-        >>> constraints = '''
-        ...     x0 - x1 - 1.0 = mean([x0,x1])   
-        ...     mean([x0,x1,x2]) >= x2'''
-        >>> print(simplify(constraints))
-        x0 = 3.0*x1 + 2.0
-        x0 >= -x1 + 2*x2
-
-Additional Inputs:
-    variables -- desired variable name. Default is ``'x'``. A list of variable
+Args:
+    constraints (str): a string of symbolic constraints, with one constraint
+        equation per line. Standard python syntax should be followed (the
+        ``math`` and ``numpy`` modules are already imported).
+    variables (str, default='x'): desired variable name. A list of variable
         name strings is also accepted for when desired variable names
         don't have the same base, and can include variables that are not
         found in the constraints equation string.
-    target -- list providing the order for which the variables will be solved.
-        If there are ``N`` constraint equations, the first ``N`` variables given
-        will be selected as the dependent variables. By default, increasing
-        order is used.
-
-Further Inputs:
-    locals -- a dictionary of additional variables used in the symbolic
+    target (list[str], default=None): list providing the order for which the
+        variables will be solved. If there are N constraint equations, the
+        first N variables given will be selected as the dependent variables.
+        By default, increasing order is used.
+    locals (dict, default={}): additional variables used in the symbolic
         constraints equations, and their desired values.
-    cycle -- boolean to cycle the order for which the variables are solved.
+    cycle (bool, default=False): cycle the order for which variables are solved.
         If cycle is True, there should be more variety on the left-hand side
         of the simplified equations. By default, the variables do not cycle.
-    all -- boolean to return all simplifications due to negative values.
+    all (bool, default=False): return all simplifications due to negatives.
         When dividing by a possibly negative variable, an inequality may flip,
         thus creating alternate simplifications. If all is True, return all
         possible simplifications due to negative values in an inequalty.
         The default is False, returning only one possible simplification.
-    simplest -- if True, simplify all but polynomials order >= 3 [False]
-    rational -- if True, recast floats as rationals during solve [False]
-    sequence -- if True, solve sequentially and not as a matrix [False]
-    implicit -- if True, solve implicitly (with sin, cos, ...) [False]
-    check -- if False, skip minimal testing (divide_by_zero, ...) [True]
-    permute -- if True, return all permutations [False]
-    warn -- if True, don't suppress warnings [False]
-    verbose -- if True, print debug information [False]
+    simplest (bool, default=False): simplify all but polynomials order >= 3
+    rational (bool, default=False): recast floats as rationals during solve
+    sequence (bool, default=False): solve sequentially and not as a matrix
+    implicit (bool, default=False): solve implicitly (with sin, cos, ...)
+    check (bool, default=True): perform validity testing (divide_by_zero, ...)
+    permute (bool, default=False): return all permutations (*expensive*)
+    warn (bool, default=False): if True, don't suppress warnings
+    verbose (bool, default=False): print debug information
 
+Notes:
+    By default, the top-level namespace of ``numpy`` and ``math`` are
+    imported into ``locals``.
+
+Examples:
+    >>> constraints = '''
+    ...     x0 - x2 <= 2.
+    ...     x2 = x3*2.'''
+    >>> print(simplify(constraints))
+    x0 <= x2 + 2.0
+    x2 = 2.0*x3
+
+    >>> constraints = '''
+    ...     x0 - x1 - 1.0 = mean([x0,x1])   
+    ...     mean([x0,x1,x2]) >= x2'''
+    >>> print(simplify(constraints))
+    x0 = 3.0*x1 + 2.0
+    x0 >= -x1 + 2*x2
 """
     ### undocumented ###
    #rand -- random number generator [default: random.random]
@@ -812,32 +814,29 @@ def replace_variables(constraints, variables=None, markers='$'):
     """replace variables in constraints string with a marker.
 Returns a modified constraints string.
 
-Inputs:
-    constraints -- a string of symbolic constraints, with one constraint
+Args:
+    constraints (str): a string of symbolic constraints, with one constraint
         equation per line. Constraints can be equality and/or inequality
-        constraints. Standard python syntax should be followed (with the
-        math and numpy modules already imported).
-    variables -- list of variable name strings. The variable names will
-        be replaced in the order that they are provided, where if the
-        default marker "$i" is used, the first variable will be replaced
-        with "$0", the second with "$1", and so on.
-
-    For example:
-        >>> variables = ['spam', 'eggs']
-        >>> constraints = '''spam + eggs - 42'''
-        >>> print(replace_variables(constraints, variables, 'x'))
-        'x0 + x1 - 42'
-
-Additional Inputs:
-    markers -- desired variable name. Default is ``'$'``. A list of variable
+        constraints. Standard python syntax should be followed (the ``math``
+        and ``numpy`` modules are already imported).
+    variables (list[str], default=None): list of variable name strings.
+        The variable names will be replaced in the order that they are
+        provided. If the default marker ``"$i"`` is used, the first variable
+        will be replaced with ``"$0"``, the second with ``"$1"``, and so on.
+    markers (str, default='$'): desired variable name. A list of variable
         name strings is also accepted for when desired variable names
         don't have the same base.
 
-    For example:
-        >>> variables = ['x1','x2','x3']
-        >>> constraints = "min(x1*x2) - sin(x3)"
-        >>> print(replace_variables(constraints, variables, ['x','y','z']))
-        'min(x*y) - sin(z)'
+Examples:
+    >>> variables = ['spam', 'eggs']
+    >>> constraints = '''spam + eggs - 42'''
+    >>> print(replace_variables(constraints, variables, 'x'))
+    'x0 + x1 - 42'
+
+    >>> variables = ['x1','x2','x3']
+    >>> constraints = "min(x1*x2) - sin(x3)"
+    >>> print(replace_variables(constraints, variables, ['x','y','z']))
+    'min(x*y) - sin(z)'
 """
     if variables is None: variables = []
     elif isinstance(variables, str): variables = list((variables,))
@@ -882,32 +881,29 @@ Additional Inputs:
 def get_variables(constraints, variables='x'):
     """extract a list of the string variable names from constraints string
 
-Inputs:
-    constraints -- a string of symbolic constraints, with one constraint
+Args:
+    constraints (str): a string of symbolic constraints, with one constraint
         equation per line. Constraints can be equality and/or inequality
-        constraints. Standard python syntax should be followed (with the
-        math and numpy modules already imported).
-
-    For example:
-        >>> constraints = '''
-        ...     x1 + x2 = x3*4
-        ...     x3 = x2*x4'''
-        >>> get_variables(constraints)
-        ['x1', 'x2', 'x3', 'x4'] 
-
-Additional Inputs:
-    variables -- desired variable name. Default is ``'x'``. A list of variable
+        constraints. Standard python syntax should be followed (the ``math``
+        and ``numpy`` modules are already imported).
+    variables (str, default='x'): desired variable name. A list of variable
         name strings is also accepted for when desired variable names
         don't have the same base, and can include variables that are not
         found in the constraints equation string.
 
-    For example:
-        >>> constraints = '''              
-        ...     y = min(u,v) - z*sin(x)
-        ...     z = x**2 + 1.0 
-        ...     u = v*z'''
-        >>> get_variables(constraints, list('pqrstuvwxyz'))
-        ['u', 'v', 'x', 'y', 'z']
+Examples:
+    >>> constraints = '''
+    ...     x1 + x2 = x3*4
+    ...     x3 = x2*x4'''
+    >>> get_variables(constraints)
+    ['x1', 'x2', 'x3', 'x4'] 
+
+    >>> constraints = '''              
+    ...     y = min(u,v) - z*sin(x)
+    ...     z = x**2 + 1.0 
+    ...     u = v*z'''
+    >>> get_variables(constraints, list('pqrstuvwxyz'))
+    ['u', 'v', 'x', 'y', 'z']
 """
     if list_or_tuple_or_ndarray(variables):
         equations = replace_variables(constraints,variables,'_')
@@ -935,27 +931,25 @@ def penalty_parser(constraints, variables='x', nvars=None):
     """parse symbolic constraints into penalty constraints.
 Returns a tuple of inequality constraints and a tuple of equality constraints.
 
-Inputs:
+Args:
     constraints -- a string of symbolic constraints, with one constraint
         equation per line. Constraints can be equality and/or inequality
-        constraints. Standard python syntax should be followed (with the
-        math and numpy modules already imported).
-
-    For example:
-        >>> constraints = '''
-        ...     x2 = x0/2.
-        ...     x0 >= 0.'''
-        >>> penalty_parser(constraints, nvars=3)
-        (('-(x[0] - (0.))',), ('x[2] - (x[0]/2.)',))
-
-Additional Inputs:
-    nvars -- number of variables. Includes variables not explicitly
-        given by the constraint equations (e.g. ``x2`` in the example above).
-    variables -- desired variable name. Default is ``'x'``. A list of variable
+        constraints. Standard python syntax should be followed (the ``math``
+        and ``numpy`` modules are already imported).
+    variables (str, default='x'): desired variable name. A list of variable
         name strings is also accepted for when desired variable names
         don't have the same base, and can include variables that are not
         found in the constraints equation string.
-    """
+    nvars (int, default=None): number of variables. Includes variables not
+        explicitly stated in the constraints (e.g. ``x1`` in the example below).
+
+Examples:
+    >>> constraints = '''
+    ...     x2 = x0/2.
+    ...     x0 >= 0.'''
+    >>> penalty_parser(constraints, nvars=3)
+    (('-(x[0] - (0.))',), ('x[2] - (x[0]/2.)',))
+"""
    #from mystic.tools import src
    #ndim = len(get_variables(src(func), variables))
     if list_or_tuple_or_ndarray(variables):
@@ -1031,26 +1025,24 @@ def constraints_parser(constraints, variables='x', nvars=None):
     """parse symbolic constraints into a tuple of constraints solver equations.
 The left-hand side of each constraint must be simplified to support assignment.
 
-Inputs:
-    constraints -- a string of symbolic constraints, with one constraint
+Args:
+    constraints (str): a string of symbolic constraints, with one constraint
         equation per line. Constraints can be equality and/or inequality
-        constraints. Standard python syntax should be followed (with the
-        math and numpy modules already imported).
-
-    For example:
-        >>> constraints = '''
-        ...     x2 = x0/2.
-        ...     x0 >= 0.'''
-        >>> constraints_parser(constraints, nvars=3)
-        ('x[2] = x[0]/2.', 'x[0] = max(0., x[0])')
-
-Additional Inputs:
-    nvars -- number of variables. Includes variables not explicitly
-        given by the constraint equations (e.g. ``x2`` in the example above).
-    variables -- desired variable name. Default is ``'x'``. A list of variable
+        constraints. Standard python syntax should be followed (the ``math``
+        and ``numpy`` modules are already imported).
+    variables (str, default='x'): desired variable name. A list of variable
         name strings is also accepted for when desired variable names
         don't have the same base, and can include variables that are not
         found in the constraints equation string.
+    nvars (int, default=None): number of variables. Includes variables not
+        explicitly stated in the constraints (e.g. ``x1`` in the example below).
+
+Examples:
+    >>> constraints = '''
+    ...     x2 = x0/2.
+    ...     x0 >= 0.'''
+    >>> constraints_parser(constraints, nvars=3)
+    ('x[2] = x[0]/2.', 'x[0] = max(0., x[0])')
     """
    #from mystic.tools import src
    #ndim = len(get_variables(src(func), variables))
@@ -1168,41 +1160,43 @@ Additional Inputs:
 def generate_conditions(constraints, variables='x', nvars=None, locals=None):
     """generate penalty condition functions from a set of constraint strings
 
-Inputs:
-    constraints -- a string of symbolic constraints, with one constraint
+Args:
+    constraints (str): a string of symbolic constraints, with one constraint
         equation per line. Constraints can be equality and/or inequality
-        constraints. Standard python syntax should be followed (with the
-        math and numpy modules already imported).
-
-    NOTE: Alternately, constraints may be a tuple of strings of symbolic
-          constraints. Will return a tuple of penalty condition functions.
-
-    For example:
-        >>> constraints = '''
-        ...     x0**2 = 2.5*x3 - 5.0
-        ...     exp(x2/x0) >= 7.0'''
-        >>> ineqf,eqf = generate_conditions(constraints, nvars=4)
-        >>> print(ineqf[0].__doc__)
-        '-(exp(x[2]/x[0]) - (7.0))'
-        >>> ineqf[0]([1,0,1,0])
-        4.2817181715409554
-        >>> print(eqf[0].__doc__)
-        'x[0]**2 - (2.5*x[3] - 5.0)'
-        >>> eqf[0]([1,0,1,0])
-        6.0
-
-Additional Inputs:
-    nvars -- number of variables. Includes variables not explicitly
-        given by the constraint equations (e.g. ``x2`` in the example above).
-    variables -- desired variable name. Default is ``'x'``. A list of variable
+        constraints. Standard python syntax should be followed (the ``math``
+        and ``numpy`` modules are already imported).
+    variables (str, default='x'): desired variable name. A list of variable
         name strings is also accepted for when desired variable names
         don't have the same base, and can include variables that are not
         found in the constraints equation string.
-    locals -- a dictionary of additional variables used in the symbolic
-        constraints equations, and their desired values.  Default is
-        {'tol': 1e-15, 'rel': 1e-15}, where 'tol' and 'rel' are the absolute
-        and relative difference from the extremal value in a given inequality.
-        For more details, see `mystic.math.tolerance`.
+    nvars (int, default=None): number of variables. Includes variables not
+        explicitly stated in the constraints (e.g. ``x1`` in the example below).
+    locals (dict, default=None): additional variables used in the symbolic
+        constraints equations, and their desired values. Default is
+        ``{'tol': 1e-15, 'rel': 1e-15}``, where ``'tol'`` and ``'rel'`` are
+        the absolute and relative difference from the extremal value in a
+        given inequality. For more details, see ``mystic.math.tolerance``.
+
+Notes:
+    Alternately, ``constraints`` may be a tuple of strings of symbolic
+    constraints. Will return a tuple of penalty condition functions.
+
+    By default, the top-level namespace of ``numpy`` and ``math`` are
+    imported into ``locals``.
+
+Examples:
+    >>> constraints = '''
+    ...     x0**2 = 2.5*x3 - 5.0
+    ...     exp(x2/x0) >= 7.0'''
+    >>> ineqf,eqf = generate_conditions(constraints, nvars=4)
+    >>> print(ineqf[0].__doc__)
+    '-(exp(x[2]/x[0]) - (7.0))'
+    >>> ineqf[0]([1,0,1,0])
+    4.2817181715409554
+    >>> print(eqf[0].__doc__)
+    'x[0]**2 - (2.5*x[3] - 5.0)'
+    >>> eqf[0]([1,0,1,0])
+    6.0
 """
     if not isinstance(constraints, str):
         return tuple(generate_conditions(constraint, variables, nvars, locals) for constraint in constraints)
@@ -1255,42 +1249,44 @@ del {container}_{name}""".format(**fdict)
 def generate_solvers(constraints, variables='x', nvars=None, locals=None):
     """generate constraints solver functions from a set of constraint strings
 
-Inputs:
-    constraints -- a string of symbolic constraints, with one constraint
+Args:
+    constraints (str): a string of symbolic constraints, with one constraint
         equation per line. Constraints can be equality and/or inequality
-        constraints. Standard python syntax should be followed (with the
-        math and numpy modules already imported). The left-hand side of
+        constraints. Standard python syntax should be followed (the ``math``
+        and ``numpy`` modules are already imported). The left-hand side of
         each equation must be simplified to support assignment.
-
-    NOTE: Alternately, constraints may be a tuple of strings of symbolic
-          constraints. Will return a tuple of constraint solver functions.
-
-    For example:
-        >>> constraints = '''
-        ...     x2 = x0/2.
-        ...     x0 >= 0.'''
-        >>> solv = generate_solvers(constraints, nvars=3)
-        >>> print(solv[0].__doc__)
-        'x[2] = x[0]/2.'
-        >>> solv[0]([1,2,3])
-        [1, 2, 0.5]
-        >>> print(solv[1].__doc__)
-        'x[0] = max(0., x[0])'
-        >>> solv[1]([-1,2,3])
-        [0.0, 2, 3]
-
-Additional Inputs:
-    nvars -- number of variables. Includes variables not explicitly
-        given by the constraint equations (e.g. ``x2`` in the example above).
-    variables -- desired variable name. Default is ``'x'``. A list of variable
+    variables (str, default='x'): desired variable name. A list of variable
         name strings is also accepted for when desired variable names
         don't have the same base, and can include variables that are not
         found in the constraints equation string.
-    locals -- a dictionary of additional variables used in the symbolic
-        constraints equations, and their desired values.  Default is
-        {'tol': 1e-15, 'rel': 1e-15}, where 'tol' and 'rel' are the absolute
-        and relative difference from the extremal value in a given inequality.
-        For more details, see `mystic.math.tolerance`.
+    nvars (int, default=None): number of variables. Includes variables not
+        explicitly stated in the constraints (e.g. ``x1`` in the example below).
+    locals (dict, default=None): additional variables used in the symbolic
+        constraints equations, and their desired values. Default is
+        ``{'tol': 1e-15, 'rel': 1e-15}``, where ``'tol'`` and ``'rel'`` are
+        the absolute and relative difference from the extremal value in a
+        given inequality. For more details, see ``mystic.math.tolerance``.
+
+Notes:
+    Alternately, ``constraints`` may be a tuple of strings of symbolic
+    constraints. Will return a tuple of constraint solver functions.
+
+    By default, the top-level namespace of ``numpy`` and ``math`` are
+    imported into ``locals``.
+
+Examples:
+    >>> constraints = '''
+    ...     x2 = x0/2.
+    ...     x0 >= 0.'''
+    >>> solv = generate_solvers(constraints, nvars=3)
+    >>> print(solv[0].__doc__)
+    'x[2] = x[0]/2.'
+    >>> solv[0]([1,2,3])
+    [1, 2, 0.5]
+    >>> print(solv[1].__doc__)
+    'x[0] = max(0., x[0])'
+    >>> solv[1]([-1,2,3])
+    [0.0, 2, 3]
 """
     if not isinstance(constraints, str):
         return tuple(generate_solvers(constraint, variables, nvars, locals) for constraint in constraints)

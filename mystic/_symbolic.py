@@ -28,32 +28,31 @@ equations. Returns a dictionary with keys: 'dependent', 'independent', and
 'unconstrained', and with values that enumerate the variables that match
 each variable type.
 
-Inputs:
-    constraints -- a string of symbolic constraints, with one constraint
+Args:
+    constraints (str): a string of symbolic constraints, with one constraint
         equation per line. Constraints must be equality constraints only.
-        Standard python syntax should be followed (with the math and numpy
-        modules already imported).
-
-    For example:
-        >>> constraints = '''
-        ...     x0 = x4**2
-        ...     x2 = x3 + x4'''
-        >>> _classify_variables(constraints, nvars=5)
-        {'dependent':['x0','x2'], 'independent':['x3','x4'], 'unconstrained':['x1']}
-        >>> constraints = '''
-        ...     x0 = x4**2
-        ...     x4 - x3 = 0.
-        ...     x4 - x0 = x2'''
-        >>> _classify_variables(constraints, nvars=5)
-        {'dependent': ['x0','x2','x4'], 'independent': ['x3'], 'unconstrained': ['x1']}
-
-Additional Inputs:
-    nvars -- number of variables. Includes variables not explicitly
-        given by the constraint equations (e.g. 'x1' in the example above).
-    variables -- desired variable name. Default is 'x'. A list of variable
+        Standard python syntax should be followed (the ``math`` and ``numpy``
+        modules are already imported).
+    variables (str, default='x'): desired variable name. A list of variable
         name strings is also accepted for when desired variable names
         don't have the same base, and can include variables that are not
         found in the constraints equation string.
+    nvars (int, default=None): number of variables. Includes variables not
+        explicitly stated in the constraints (e.g. ``x1`` in the example below).
+
+Examples:
+    >>> constraints = '''
+    ...     x0 = x4**2
+    ...     x2 = x3 + x4'''
+    >>> _classify_variables(constraints, nvars=5)
+    {'dependent':['x0','x2'], 'independent':['x3','x4'], 'unconstrained':['x1']}
+
+    >>> constraints = '''
+    ...     x0 = x4**2
+    ...     x4 - x3 = 0.
+    ...     x4 - x0 = x2'''
+    >>> _classify_variables(constraints, nvars=5)
+    {'dependent': ['x0','x2','x4'], 'independent': ['x3'], 'unconstrained': ['x1']}
 """
     if ">" in constraints or "<" in constraints:
         raise NotImplementedError("cannot classify inequalities") 
@@ -144,37 +143,36 @@ of sympy-specific input: (code for variable declaration, left side of equation
 string, right side of equation string, list of variables, and the number of
 sympy equations).
 
-Inputs:
-    constraints -- a string of symbolic constraints, with one constraint
+Args:
+    constraints (str): a string of symbolic constraints, with one constraint
         equation per line. Constraints must be equality constraints only.
-        Standard python syntax should be followed (with the math and numpy
-        modules already imported).
-
-    For example:
-        >>> constraints = '''
-        ...     x0 = x4**2
-        ...     x4 - x3 = 0.
-        ...     x4 - x0 = x2'''
-        >>> code, lhs, rhs, vars, neqn = _prepare_sympy(constraints, nvars=5)
-        >>> print(code)
-        x0=Symbol('x0')
-        x1=Symbol('x1')
-        x2=Symbol('x2')
-        x3=Symbol('x3')
-        x4=Symbol('x4')
-        rand = Symbol('rand')
-        >>> print("%s %s" % (lhs, rhs))
-        ['x0 ', 'x4 - x3 ', 'x4 - x0 '] [' x4**2', ' 0.', ' x2']
-        >>> print("%s in %s eqns" % (vars, neqn))
-        x0,x1,x2,x3,x4, in 3 eqns
-
-Additional Inputs:
-    nvars -- number of variables. Includes variables not explicitly
-        given by the constraint equations (e.g. 'x1' in the example above).
-    variables -- desired variable name. Default is 'x'. A list of variable
+        Standard python syntax should be followed (the ``math`` and ``numpy``
+        modules are already imported).
+    variables (str, default='x'): desired variable name. A list of variable
         name strings is also accepted for when desired variable names
         don't have the same base, and can include variables that are not
         found in the constraints equation string.
+    nvars (int, default=None): number of variables. Includes variables not
+        explicitly stated in the constraints (e.g. ``x1`` in the example below).
+
+Examples:
+    >>> constraints = '''
+    ...     x0 = x4**2
+    ...     x4 - x3 = 0.
+    ...     x4 - x0 = x2'''
+    >>> code, lhs, rhs, vars, neqn = _prepare_sympy(constraints, nvars=5)
+    >>> print(code)
+    x0=Symbol('x0')
+    x1=Symbol('x1')
+    x2=Symbol('x2')
+    x3=Symbol('x3')
+    x4=Symbol('x4')
+    rand = Symbol('rand')
+    >>> print("%s %s" % (lhs, rhs))
+    ['x0 ', 'x4 - x3 ', 'x4 - x0 '] [' x4**2', ' 0.', ' x2']
+    >>> print("%s in %s eqns" % (vars, neqn))
+    x0,x1,x2,x3,x4, in 3 eqns
+
 """
     if ">" in constraints or "<" in constraints:
         raise NotImplementedError("cannot simplify inequalities") 
@@ -233,41 +231,36 @@ Additional Inputs:
 def _solve_single(constraint, variables='x', target=None, **kwds):
     """Solve a symbolic constraints equation for a single variable.
 
-Inputs:
-    constraint -- a string of symbolic constraints. Only a single constraint
+Args:
+    constraint (str): a string of symbolic constraints. Only a single constraint
         equation should be provided, and must be an equality constraint. 
-        Standard python syntax should be followed (with the math and numpy
-        modules already imported).
-
-    For example:
-        >>> equation = "x1 - 3. = x0*x2"
-        >>> print(_solve_single(equation))
-        x0 = -(3.0 - x1)/x2
-
-Additional Inputs:
-    variables -- desired variable name. Default is 'x'. A list of variable
+        Standard python syntax should be followed (the ``math`` and ``numpy``
+        modules are already imported).
+    variables (str, default='x'): desired variable name. A list of variable
         name strings is also accepted for when desired variable names
         don't have the same base, and can include variables that are not
         found in the constraints equation string.
-    target -- list providing the order for which the variables will be solved.
-        By default, increasing order is used.
-
-    For example:
-        >>> equation = "x1 - 3. = x0*x2"
-        >>> print(_solve_single(equation, target='x1'))
-        x1 = 3.0 + x0*x2
-
-Further Inputs:
-    locals -- a dictionary of additional variables used in the symbolic
+    target (list[str], default=None): list providing the order for which the
+        variables will be solved. By default, increasing order is used.
+    locals (dict, default={}): additional variables used in the symbolic
         constraints equations, and their desired values.
-    simplest -- if True, simplify all but polynomials order >= 3 [False]
-    rational -- if True, recast floats as rationals during solve [False]
-    sequence -- if True, solve sequentially and not as a matrix [False]
-    implicit -- if True, solve implicitly (with sin, cos, ...) [False]
-    check -- if False, skip minimal testing (divide_by_zero, ...) [True]
-    permute -- if True, return all permutations [False]
-    warn -- if True, don't suppress warnings [True]
-    verbose -- if True, print debug information [False]
+    simplest (bool, default=False): simplify all but polynomials order >= 3
+    rational (bool, default=False): recast floats as rationals during solve
+    sequence (bool, default=False): solve sequentially and not as a matrix
+    implicit (bool, default=False): solve implicitly (with sin, cos, ...)
+    check (bool, default=True): perform validity testing (divide_by_zero, ...)
+    permute (bool, default=False): return all permutations (*expensive*)
+    warn (bool, default=True): if True, don't suppress warnings
+    verbose (bool, default=False): print debug information
+
+Examples:
+    >>> equation = "x1 - 3. = x0*x2"
+    >>> print(_solve_single(equation))
+    x0 = -(3.0 - x1)/x2
+
+    >>> equation = "x1 - 3. = x0*x2"
+    >>> print(_solve_single(equation, target='x1'))
+    x1 = 3.0 + x0*x2
 """ #XXX: an very similar version of this code is found in _solve_linear XXX#
     # for now, we abort on multi-line equations or inequalities
     if len(constraint.replace('==','=').split('=')) != 2:
@@ -425,49 +418,44 @@ Further Inputs:
 def _solve_linear(constraints, variables='x', target=None, **kwds):
     """Solve a system of symbolic linear constraints equations.
 
-Inputs:
-    constraints -- a string of symbolic constraints, with one constraint
+Args:
+    constraints (str): a string of symbolic constraints, with one constraint
         equation per line. Constraints must be equality constraints only.
-        Standard python syntax should be followed (with the math and numpy
-        modules already imported).
-
-    For example:
-        >>> constraints = '''
-        ...     x0 - x2 = 2.
-        ...     x2 = x3*2.'''
-        >>> print(_solve_linear(constraints))
-        x2 = 2.0*x3
-        x0 = 2.0 + 2.0*x3
-
-Additional Inputs:
-    variables -- desired variable name. Default is 'x'. A list of variable
+        Standard python syntax should be followed (the ``math`` and ``numpy``
+        modules are already imported).
+    variables (str, default='x'): desired variable name. A list of variable
         name strings is also accepted for when desired variable names
         don't have the same base, and can include variables that are not
         found in the constraints equation string.
-    target -- list providing the order for which the variables will be solved.
-        If there are "N" constraint equations, the first "N" variables given
-        will be selected as the dependent variables. By default, increasing
-        order is used.
-
-    For example:
-        >>> constraints = '''
-        ...     x0 - x2 = 2.
-        ...     x2 = x3*2.'''
-        >>> print(_solve_linear(constraints, target=['x3','x2']))
-        x3 = -1.0 + 0.5*x0
-        x2 = -2.0 + x0
-
-Further Inputs:
-    locals -- a dictionary of additional variables used in the symbolic
+    target (list[str], default=None): list providing the order for which the
+        variables will be solved. If there are N constraint equations, the
+        first N variables given will be selected as the dependent variables.
+        By default, increasing order is used.
+    locals (dict, default={}): additional variables used in the symbolic
         constraints equations, and their desired values.
-    simplest -- if True, simplify all but polynomials order >= 3 [False]
-    rational -- if True, recast floats as rationals during solve [False]
-    sequence -- if True, solve sequentially and not as a matrix [False]
-    implicit -- if True, solve implicitly (with sin, cos, ...) [False]
-    check -- if False, skip minimal testing (divide_by_zero, ...) [True]
-    permute -- if True, return all permutations [False]
-    warn -- if True, don't suppress warnings [True]
-    verbose -- if True, print debug information [False]
+    simplest (bool, default=False): simplify all but polynomials order >= 3
+    rational (bool, default=False): recast floats as rationals during solve
+    sequence (bool, default=False): solve sequentially and not as a matrix
+    implicit (bool, default=False): solve implicitly (with sin, cos, ...)
+    check (bool, default=True): perform validity testing (divide_by_zero, ...)
+    permute (bool, default=False): return all permutations (*expensive*)
+    warn (bool, default=True): if True, don't suppress warnings
+    verbose (bool, default=False): print debug information
+
+Examples:
+    >>> constraints = '''
+    ...     x0 - x2 = 2.
+    ...     x2 = x3*2.'''
+    >>> print(_solve_linear(constraints))
+    x2 = 2.0*x3
+    x0 = 2.0 + 2.0*x3
+
+    >>> constraints = '''
+    ...     x0 - x2 = 2.
+    ...     x2 = x3*2.'''
+    >>> print(_solve_linear(constraints, target=['x3','x2']))
+    x3 = -1.0 + 0.5*x0
+    x2 = -2.0 + x0
 """
     nvars = None
     permute = False # if True, return all permutations
@@ -639,55 +627,51 @@ Further Inputs:
 def solve(constraints, variables='x', target=None, **kwds):
     """Solve a system of symbolic constraints equations.
 
-Inputs:
-    constraints -- a string of symbolic constraints, with one constraint
+Args:
+    constraints (str): a string of symbolic constraints, with one constraint
         equation per line. Constraints must be equality constraints only.
-        Standard python syntax should be followed (with the math and numpy
-        modules already imported).
-
-    For example:
-        >>> constraints = '''
-        ...     x0 - x2 = 2.
-        ...     x2 = x3*2.'''
-        >>> print(solve(constraints))
-        x2 = 2.0*x3
-        x0 = 2.0 + 2.0*x3
-        >>> constraints = '''
-        ...     spread([x0,x1]) - 1.0 = mean([x0,x1])   
-        ...     mean([x0,x1,x2]) = x2'''
-        >>> print(solve(constraints))
-        x0 = -0.5 + 0.5*x2
-        x1 = 0.5 + 1.5*x2
-
-Additional Inputs:
-    variables -- desired variable name. Default is 'x'. A list of variable
+        Standard python syntax should be followed (the ``math`` and ``numpy``
+        modules are already imported).
+    variables (str, default='x'): desired variable name. A list of variable
         name strings is also accepted for when desired variable names
         don't have the same base, and can include variables that are not
         found in the constraints equation string.
-    target -- list providing the order for which the variables will be solved.
-        If there are "N" constraint equations, the first "N" variables given
-        will be selected as the dependent variables. By default, increasing
-        order is used.
-
-    For example:
-        >>> constraints = '''
-        ...     x0 - x2 = 2.
-        ...     x2 = x3*2.'''
-        >>> print(solve(constraints, target=['x3','x2']))
-        x3 = -1.0 + 0.5*x0
-        x2 = -2.0 + x0
-
-Further Inputs:
-    locals -- a dictionary of additional variables used in the symbolic
+    target (list[str], default=None): list providing the order for which the
+        variables will be solved. If there are N constraint equations, the
+        first N variables given will be selected as the dependent variables.
+        By default, increasing order is used.
+    locals (dict, default={}): additional variables used in the symbolic
         constraints equations, and their desired values.
-    simplest -- if True, simplify all but polynomials order >= 3 [False]
-    rational -- if True, recast floats as rationals during solve [False]
-    sequence -- if True, solve sequentially and not as a matrix [False]
-    implicit -- if True, solve implicitly (with sin, cos, ...) [False]
-    check -- if False, skip minimal testing (divide_by_zero, ...) [True]
-    permute -- if True, return all permutations [False]
-    warn -- if True, don't suppress warnings [False]
-    verbose -- if True, print debug information [False]
+    simplest (bool, default=False): simplify all but polynomials order >= 3
+    rational (bool, default=False): recast floats as rationals during solve
+    sequence (bool, default=False): solve sequentially and not as a matrix
+    implicit (bool, default=False): solve implicitly (with sin, cos, ...)
+    check (bool, default=True): perform validity testing (divide_by_zero, ...)
+    permute (bool, default=False): return all permutations (*expensive*)
+    warn (bool, default=False): if True, don't suppress warnings
+    verbose (bool, default=False): print debug information
+
+Examples:
+    >>> constraints = '''
+    ...     x0 - x2 = 2.
+    ...     x2 = x3*2.'''
+    >>> print(solve(constraints))
+    x2 = 2.0*x3
+    x0 = 2.0 + 2.0*x3
+
+    >>> constraints = '''
+    ...     spread([x0,x1]) - 1.0 = mean([x0,x1])   
+    ...     mean([x0,x1,x2]) = x2'''
+    >>> print(solve(constraints))
+    x0 = -0.5 + 0.5*x2
+    x1 = 0.5 + 1.5*x2
+
+    >>> constraints = '''
+    ...     x0 - x2 = 2.
+    ...     x2 = x3*2.'''
+    >>> print(solve(constraints, target=['x3','x2']))
+    x3 = -1.0 + 0.5*x0
+    x2 = -2.0 + x0
 """
     kwds['warn'] = kwds.get('warn', False)
     try:
@@ -715,52 +699,48 @@ def _solve_nonlinear(constraints, variables='x', target=None, **kwds):
     """Build a constraints function given a string of nonlinear constraints.
 Returns a constraints function. 
 
-Inputs:
-    constraints -- a string of symbolic constraints, with one constraint
+Args:
+    constraints (str): a string of symbolic constraints, with one constraint
         equation per line. Constraints must be equality constraints only.
-        Standard python syntax should be followed (with the math and numpy
-        modules already imported).
-
-    For example:
-        >>> constraints = '''x1 = x3*3. + x0*x2'''
-        >>> print(_solve_nonlinear(constraints))
-        x0 = (x1 - 3.0*x3)/x2
-        >>> constraints = '''
-        ...     spread([x0,x1]) - 1.0 = mean([x0,x1])   
-        ...     mean([x0,x1,x2]) = x2'''
-        >>> print(_solve_nonlinear(constraints))
-        x0 = -0.5 + 0.5*x2
-        x1 = 0.5 + 1.5*x2
-
-Additional Inputs:
-    variables -- desired variable name. Default is 'x'. A list of variable
+        Standard python syntax should be followed (the ``math`` and ``numpy``
+        modules are already imported).
+    variables (str, default='x'): desired variable name. A list of variable
         name strings is also accepted for when desired variable names
         don't have the same base, and can include variables that are not
         found in the constraints equation string.
-    target -- list providing the order for which the variables will be solved.
-        If there are "N" constraint equations, the first "N" variables given
-        will be selected as the dependent variables. By default, increasing
-        order is used.
-
-    For example:
-        >>> constraints = '''
-        ...     spread([x0,x1]) - 1.0 = mean([x0,x1])   
-        ...     mean([x0,x1,x2]) = x2'''
-        >>> print(_solve_nonlinear(constraints, target=['x1']))
-        x1 = -0.833333333333333 + 0.166666666666667*x2
-        x0 = -0.5 + 0.5*x2
-
-Further Inputs:
-    locals -- a dictionary of additional variables used in the symbolic
+    target (list[str], default=None): list providing the order for which the
+        variables will be solved. If there are N constraint equations, the
+        first N variables given will be selected as the dependent variables.
+        By default, increasing order is used.
+    locals (dict, default={}): additional variables used in the symbolic
         constraints equations, and their desired values.
-    simplest -- if True, simplify all but polynomials order >= 3 [False]
-    rational -- if True, recast floats as rationals during solve [False]
-    sequence -- if True, solve sequentially and not as a matrix [False]
-    implicit -- if True, solve implicitly (with sin, cos, ...) [False]
-    check -- if False, skip minimal testing (divide_by_zero, ...) [True]
-    permute -- if True, return all permutations [False]
-    warn -- if True, don't suppress warnings [True]
-    verbose -- if True, print debug information [False]
+    simplest (bool, default=False): simplify all but polynomials order >= 3
+    rational (bool, default=False): recast floats as rationals during solve
+    sequence (bool, default=False): solve sequentially and not as a matrix
+    implicit (bool, default=False): solve implicitly (with sin, cos, ...)
+    check (bool, default=True): perform validity testing (divide_by_zero, ...)
+    permute (bool, default=False): return all permutations (*expensive*)
+    warn (bool, default=True): if True, don't suppress warnings
+    verbose (bool, default=False): print debug information
+
+Examples:
+    >>> constraints = '''x1 = x3*3. + x0*x2'''
+    >>> print(_solve_nonlinear(constraints))
+    x0 = (x1 - 3.0*x3)/x2
+
+    >>> constraints = '''
+    ...     spread([x0,x1]) - 1.0 = mean([x0,x1])   
+    ...     mean([x0,x1,x2]) = x2'''
+    >>> print(_solve_nonlinear(constraints))
+    x0 = -0.5 + 0.5*x2
+    x1 = 0.5 + 1.5*x2
+
+    >>> constraints = '''
+    ...     spread([x0,x1]) - 1.0 = mean([x0,x1])   
+    ...     mean([x0,x1,x2]) = x2'''
+    >>> print(_solve_nonlinear(constraints, target=['x1']))
+    x1 = -0.833333333333333 + 0.166666666666667*x2
+    x0 = -0.5 + 0.5*x2
 """
     nvars = None
     permute = False # if True, return all permutations

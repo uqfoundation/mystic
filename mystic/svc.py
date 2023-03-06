@@ -9,6 +9,7 @@
 """
 Simple utility functions for SV-classifications
 """
+__all__ = ['KernelMatrix', 'WeightVector', 'SupportVectors', 'Bias']
 
 from numpy import multiply, asarray, dot, transpose, sum
 

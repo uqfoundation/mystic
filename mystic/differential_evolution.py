@@ -193,9 +193,9 @@ All important class members are inherited from AbstractSolver.
     def UpdateGenealogyRecords(self, id, newchild):
         """create an in-memory log of the genealogy of the population
 
-Input::
-    - id: (int) the index of the candidate in the population matrix
-    - newchild: (list[float]) a new trialSolution
+Args:
+    id (int): the index of the candidate in the population matrix
+    newchild (list[float]): a new trialSolution
         """
         self.genealogy[id].append(newchild)
         return
@@ -203,11 +203,12 @@ Input::
     def SetConstraints(self, constraints):
         """apply a constraints function to the optimization
 
-input::
-    - a constraints function of the form: xk' = constraints(xk),
-      where xk is the current parameter vector. Ideally, this function
+Args:
+    constraints (function): function of the form: ``xk' = constraints(xk)``,
+      where ``xk`` is the current parameter vector. Ideally, this function
       is constructed so the parameter vector it passes to the cost function
-      will satisfy the desired (i.e. encoded) constraints."""
+      will satisfy the desired (i.e. encoded) constraints.
+        """
         if not constraints:
             self._constraints = lambda x: x
         elif not isinstance(constraints, _Callable):
@@ -219,10 +220,11 @@ input::
     def _decorate_objective(self, cost, ExtraArgs=None):
         """decorate the cost function with bounds, penalties, monitors, etc
 
-input::
-    - cost is the objective function, of the form y = cost(x, *ExtraArgs),
-      where x is a candidate solution, and ExtraArgs is the tuple of positional
-      arguments required to evaluate the objective."""
+Args:
+    cost (function): objective function of the form ``y = cost(x, *ExtraArgs)``,
+      where ``x`` is a candidate solution, and ``ExtraArgs`` is the tuple of
+      positional arguments required to evaluate the objective.
+        """
         #print("@%r %r %r" % (cost, ExtraArgs, max))
         evalmon = self._evalmon
         raw = cost
@@ -246,16 +248,16 @@ input::
     def _Step(self, cost=None, ExtraArgs=None, **kwds):
         """perform a single optimization iteration
 
-input::
-    - cost is the objective function, of the form y = cost(x, *ExtraArgs),
-      where x is a candidate solution, and ExtraArgs is the tuple of positional
-      arguments required to evaluate the objective.
+Args:
+    cost (function): objective function of the form ``y = cost(x, *ExtraArgs)``,
+      where ``x`` is a candidate solution, and ``ExtraArgs`` is the tuple of
+      positional arguments required to evaluate the objective.
 
-note::
-    ExtraArgs needs to be a *tuple* of extra arguments.
+Notes:
+    ``ExtraArgs`` needs to be a *tuple* of extra arguments.
 
-    This method accepts additional args that are specific for the current
-    solver, as detailed in the `_process_inputs` method.
+    This method accepts additional ``kwds`` that are specific for the current
+    solver, as detailed in the ``_process_inputs`` method.
         """
         # process and activate input settings
         settings = self._process_inputs(kwds)
@@ -329,7 +331,7 @@ note::
         """process and activate input settings
 
 Args:
-    callback (func, default=None): function to call after each iteration. The
+    callback (function, default=None): function called after each iteration. The
         interface is ``callback(xk)``, with ``xk`` the current parameter vector.
     disp (bool, default=False): if True, print convergence messages.
     EvaluationMonitor (monitor, default=None): a monitor instance to capture
@@ -347,7 +349,7 @@ Args:
     ScalingFactor (float, default=0.8): multiplier for mutations on the trial
         solution.
 
-Note:
+Notes:
     ``callback`` and ``disp`` are 'sticky', in that once they are given, they
     remain set until they are explicitly changed. Conversely, the other inputs
     are not sticky, and are thus set for a one-time use.
@@ -378,7 +380,7 @@ Uses a differential evolution algorithm to find the minimum of a function of
 one or more variables.
 
 Args:
-    cost (func, default=None): the function to be minimized: ``y = cost(x)``.
+    cost (function, default=None): function to be minimized: ``y = cost(x)``.
     termination (termination, default=None): termination conditions.
     ExtraArgs (tuple, default=None): extra arguments for cost.
     strategy (strategy, default=Best1Bin): the mutation strategy for generating        new trial solutions.
@@ -386,9 +388,9 @@ Args:
         mutations.
     ScalingFactor (float, default=0.8): multiplier for mutations on the trial
         solution.
-    sigint_callback (func, default=None): callback function for signal handler.
-    callback (func, default=None): function to call after each iteration. The
-        interface is ``callback(xk)``, with xk the current parameter vector.
+    sigint_callback (function, default=None): signal handler callback function.
+    callback (function, default=None): function called after each iteration. The
+        interface is ``callback(xk)``, with ``xk`` the current parameter vector.
     disp (bool, default=False): if True, print convergence messages.
 
 Returns:
@@ -411,12 +413,11 @@ Alternate implementation:
     """
     def __init__(self, dim, NP=4):
         """
-Takes two initial inputs: 
-    dim  -- dimensionality of the problem
-    NP   -- size of the trial solution population. [requires: NP >= 4]
-
-All important class members are inherited from AbstractSolver.
+Args: 
+    dim (int): dimensionality of the problem
+    NP (int, default=4): size of the trial solution population, with ``NP >= 4``
         """
+        #All important class members are inherited from AbstractSolver.
         NP = max(NP, dim, 4) #XXX: raise Error if npop <= 4?
         super(DifferentialEvolutionSolver2, self).__init__(dim, npop=NP)
         self.genealogy     = [ [] for j in range(NP)]
@@ -430,9 +431,9 @@ All important class members are inherited from AbstractSolver.
     def UpdateGenealogyRecords(self, id, newchild):
         """create an in-memory log of the genealogy of the population
 
-Input::
-    - id: (int) the index of the candidate in the population matrix
-    - newchild: (list[float]) a new trialSolution
+Args:
+    id (int): the index of the candidate in the population matrix
+    newchild (list[float]): a new trialSolution
         """
         self.genealogy[id].append(newchild)
         return
@@ -440,11 +441,12 @@ Input::
     def SetConstraints(self, constraints):
         """apply a constraints function to the optimization
 
-input::
-    - a constraints function of the form: xk' = constraints(xk),
-      where xk is the current parameter vector. Ideally, this function
+Args:
+    constraints (function): function of the form: ``xk' = constraints(xk)``,
+      where ``xk`` is the current parameter vector. Ideally, this function
       is constructed so the parameter vector it passes to the cost function
-      will satisfy the desired (i.e. encoded) constraints."""
+      will satisfy the desired (i.e. encoded) constraints.
+        """
         if not constraints:
             self._constraints = lambda x: x
         elif not isinstance(constraints, _Callable):
@@ -456,10 +458,11 @@ input::
     def _decorate_objective(self, cost, ExtraArgs=None):
         """decorate the cost function with bounds, penalties, monitors, etc
 
-input::
-    - cost is the objective function, of the form y = cost(x, *ExtraArgs),
-      where x is a candidate solution, and ExtraArgs is the tuple of positional
-      arguments required to evaluate the objective."""
+Args:
+    cost (function): objective function of the form ``y = cost(x, *ExtraArgs)``,
+      where ``x`` is a candidate solution, and ``ExtraArgs`` is the tuple of
+      positional arguments required to evaluate the objective.
+        """
         #print("@%r %r %r" % (cost, ExtraArgs, max))
         raw = cost
         if ExtraArgs is None: ExtraArgs = ()
@@ -488,12 +491,12 @@ input::
     def _Step(self, cost=None, ExtraArgs=None, **kwds):
         """perform a single optimization iteration
 
-input::
-    - cost is the objective function, of the form y = cost(x, *ExtraArgs),
-      where x is a candidate solution, and ExtraArgs is the tuple of positional
-      arguments required to evaluate the objective.
+Args:
+    cost (function): objective function of the form ``y = cost(x, *ExtraArgs)``,
+      where ``x`` is a candidate solution, and ``ExtraArgs`` is the tuple of
+      positional arguments required to evaluate the objective.
 
-note::
+Notes:
     ExtraArgs needs to be a *tuple* of extra arguments.
 
     This method accepts additional args that are specific for the current
@@ -577,7 +580,7 @@ note::
         """process and activate input settings
 
 Args:
-    callback (func, default=None): function to call after each iteration. The
+    callback (function, default=None): function called after each iteration. The
         interface is ``callback(xk)``, with ``xk`` the current parameter vector.
     disp (bool, default=False): if True, print convergence messages.
     EvaluationMonitor (monitor, default=None): a monitor instance to capture
@@ -595,7 +598,7 @@ Args:
     ScalingFactor (float, default=0.8): multiplier for mutations on the trial
         solution.
 
-Note:
+Notes:
     ``callback`` and ``disp`` are 'sticky', in that once they are given, they
     remain set until they are explicitly changed. Conversely, the other inputs
     are not sticky, and are thus set for a one-time use.
@@ -627,7 +630,7 @@ one or more variables. This implementation holds the current generation
 invariant until the end of each iteration.
 
 Args:
-    cost (func, default=None): the function to be minimized: ``y = cost(x)``.
+    cost (function, default=None): function to be minimized: ``y = cost(x)``.
     termination (termination, default=None): termination conditions.
     ExtraArgs (tuple, default=None): extra arguments for cost.
     strategy (strategy, default=Best1Bin): the mutation strategy for generating        new trial solutions.
@@ -635,9 +638,9 @@ Args:
         mutations.
     ScalingFactor (float, default=0.8): multiplier for mutations on the trial
         solution.
-    sigint_callback (func, default=None): callback function for signal handler.
-    callback (func, default=None): function to call after each iteration. The
-        interface is ``callback(xk)``, with xk the current parameter vector.
+    sigint_callback (function, default=None): signal handler callback function.
+    callback (function, default=None): function called after each iteration. The
+        interface is ``callback(xk)``, with ``xk`` the current parameter vector.
     disp (bool, default=False): if True, print convergence messages.
 
 Returns:
@@ -657,7 +660,7 @@ Uses Storn & Prices's differential evolution algorithm to find the minimum of a
 function of one or more variables. Mimics a ``scipy.optimize`` style interface.
 
 Args:
-    cost (func): the function or method to be minimized: ``y = cost(x)``.
+    cost (function): the function or method to be minimized: ``y = cost(x)``.
     x0 (ndarray): the initial guess parameter vector ``x`` if desired start
         is a single point, otherwise takes a list of (min,max) bounds that
         define a region from which random initial points are drawn.
@@ -675,22 +678,22 @@ Args:
     full_output (bool, default=False): True if fval and warnflag are desired.
     disp (bool, default=True): if True, print convergence messages.
     retall (bool, default=False): True if allvecs is desired.
-    callback (func, default=None): function to call after each iteration. The
-        interface is ``callback(xk)``, with xk the current parameter vector.
+    callback (function, default=None): function called after each iteration. The
+        interface is ``callback(xk)``, with ``xk`` the current parameter vector.
     handler (bool, default=False): if True, enable handling interrupt signals.
     id (int, default=None): the ``id`` of the solver used in logging.
     strategy (strategy, default=None): override the default mutation strategy.
     itermon (monitor, default=None): override the default GenerationMonitor.
     evalmon (monitor, default=None): override the default EvaluationMonitor.
-    constraints (func, default=None): a function ``xk' = constraints(xk)``,
-        where xk is the current parameter vector, and xk' is a parameter
+    constraints (function, default=None): function ``xk' = constraints(xk)``,
+        where ``xk`` is the current parameter vector, and ``xk'`` is a parameter
         vector that satisfies the encoded constraints.
-    penalty (func, default=None): a function ``y = penalty(xk)``, where xk is
-        the current parameter vector, and ``y' == 0`` when the encoded
+    penalty (function, default=None): function ``y = penalty(xk)``, where ``xk``
+        is the current parameter vector, and ``y' == 0`` when the encoded
         constraints are satisfied (and ``y' > 0`` otherwise).
     tightrange (bool, default=None): impose bounds and constraints concurrently.
     cliprange (bool, default=None): bounding constraints clip exterior values.
-    map (func, default=None): a (parallel) map instance ``y = map(f, x)``.
+    map (function, default=None): a (parallel) map instance ``y = map(f, x)``.
 
 Returns:
     ``(xopt, {fopt, iter, funcalls, warnflag}, {allvecs})``
@@ -722,7 +725,7 @@ Uses a differential evolution algorithm to find the minimum of a function of
 one or more variables. Mimics a ``scipy.optimize`` style interface.
 
 Args:
-    cost (func): the function or method to be minimized: ``y = cost(x)``.
+    cost (function): the function or method to be minimized: ``y = cost(x)``.
     x0 (ndarray): the initial guess parameter vector ``x`` if desired start
         is a single point, otherwise takes a list of (min,max) bounds that
         define a region from which random initial points are drawn.
@@ -740,22 +743,22 @@ Args:
     full_output (bool, default=False): True if fval and warnflag are desired.
     disp (bool, default=True): if True, print convergence messages.
     retall (bool, default=False): True if allvecs is desired.
-    callback (func, default=None): function to call after each iteration. The
-        interface is ``callback(xk)``, with xk the current parameter vector.
+    callback (function, default=None): function called after each iteration. The
+        interface is ``callback(xk)``, with ``xk`` the current parameter vector.
     handler (bool, default=False): if True, enable handling interrupt signals.
     id (int, default=None): the ``id`` of the solver used in logging.
     strategy (strategy, default=None): override the default mutation strategy.
     itermon (monitor, default=None): override the default GenerationMonitor.
     evalmon (monitor, default=None): override the default EvaluationMonitor.
-    constraints (func, default=None): a function ``xk' = constraints(xk)``,
-        where xk is the current parameter vector, and xk' is a parameter
+    constraints (function, default=None): function ``xk' = constraints(xk)``,
+        where ``xk`` is the current parameter vector, and ``xk'`` is a parameter
         vector that satisfies the encoded constraints.
-    penalty (func, default=None): a function ``y = penalty(xk)``, where xk is
-        the current parameter vector, and ``y' == 0`` when the encoded
+    penalty (function, default=None): function ``y = penalty(xk)``, where ``xk``
+        is the current parameter vector, and ``y' == 0`` when the encoded
         constraints are satisfied (and ``y' > 0`` otherwise).
     tightrange (bool, default=None): impose bounds and constraints concurrently.
     cliprange (bool, default=None): bounding constraints clip exterior values.
-    map (func, default=None): a (parallel) map instance ``y = map(f, x)``.
+    map (function, default=None): a (parallel) map instance ``y = map(f, x)``.
 
 Returns:
     ``(xopt, {fopt, iter, funcalls, warnflag}, {allvecs})``
