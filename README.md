@@ -78,6 +78,7 @@ To get up and running quickly, ``mystic`` also provides infrastructure to:
 
 Current Release
 [![Downloads](https://static.pepy.tech/personalized-badge/mystic?period=total&units=international_system&left_color=grey&right_color=blue&left_text=pypi%20downloads)](https://pepy.tech/project/mystic)
+[![Conda Downloads](https://img.shields.io/conda/dn/conda-forge/mystic?color=blue&label=conda%20downloads)](https://anaconda.org/conda-forge/mystic)
 [![Stack Overflow](https://img.shields.io/badge/stackoverflow-get%20help-black.svg)](https://stackoverflow.com/questions/tagged/mystic)
 ---------------
 The latest released version of ``mystic`` is available from:
