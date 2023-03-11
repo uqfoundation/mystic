@@ -1,6 +1,6 @@
 mystic
 ======
-constrained nonlinear optimization for scientific machine learning and UQ
+constrained nonlinear optimization for scientific machine learning, UQ, and AI
 
 About Mystic
 ------------
@@ -153,8 +153,7 @@ are detailed elsewhere in the documentation.  See https://github.com/uqfoundatio
 cases for configuration and launching of optimization jobs using one of the
 sample models provided in ``mystic.models``. Many of the included examples
 are standard optimization test problems. The use of constraints and penalties
-are detailed in https://github.com/uqfoundation/mystic/tree/master/examples2
- while more advanced features leveraging ensemble solvers, machine learning,
+are detailed in https://github.com/uqfoundation/mystic/tree/master/examples2 while more advanced features leveraging ensemble solvers, machine learning,
 uncertainty quantification, and dimensional collapse are found in https://github.com/uqfoundation/mystic/tree/master/examples3. The scripts in https://github.com/uqfoundation/mystic/tree/master/examples4 demonstrate leveraging ``pathos``
 for parallel computing, as well as demonstrate some auto-partitioning schemes.
 ``mystic`` has the ability to work in product measure space, and the scripts in

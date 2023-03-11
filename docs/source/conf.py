@@ -238,7 +238,7 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
     (master_doc, 'mystic', 'mystic Documentation',
-     author, 'mystic', 'Constrained nonlinear optimization for scientific machine learning and UQ.',
+     author, 'mystic', 'Constrained nonlinear optimization for scientific machine learning, UQ, and AI.',
      'Miscellaneous'),
 ]
 
