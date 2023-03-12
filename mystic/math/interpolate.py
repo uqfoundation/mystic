@@ -17,29 +17,29 @@ Rbf = _rbf.Rbf
 def extrapolate(x, z=None, method=None, mins=None, maxs=None, **kwds):
     '''extrapolate a bounding-box for the given points
 
-    Input:
-      x: an array of shape (npts, dim) or (npts,)
-      z: an array of shape (npts,)
-      method: a function f(x) to generate new points; if None, use f(x) = nan
-      mins: a list of floats defining minima of the bounding box, or None
-      maxs: a list of floats defining maxima of the bounding box, or None
-      all: if True, include the initial (x,z) points in the return
+    Args:
+      x (ndarray): an input array of shape ``(npts, dim)`` or ``(npts,)``
+      z (ndarray, default=None): an output array of shape ``(npts,)``
+      method (function, default=None): evaluate as ``z = f(x)`` for new ``x``
+      mins (list[float], default=None): list of the minima of the bounding box
+      maxs (list[float], default=None): list of the maxima of the bounding box
+      all (bool, default=True): include initial ``(x,z)`` points in the return
 
-    Output:
-      a tuple of (x,z) containing the requested boundbox points
+    Returns:
+      a tuple of ``(x,z)`` containing the requested boundbox points
 
-    NOTE:
-      if z is None, return a tuple (x,) with the requested boundbox points.
-
-    NOTE:
-      if mins is None, then use the minima found in x. Similarly for maxs.
-
-    NOTE:
-      method can take a function, None, a boolean, or a string. If method is
-      True, interpolate a cost function using interpf with method='thin_plate'
-      (or 'rbf' if scipy is not found). If method is False, return the original
-      input. Alternately, method can be any one of ('rbf','linear','cubic',
-      'nearest','inverse','gaussian','multiquadric','quintic','thin_plate').
+    Notes:
+      - if ``z`` is None, return the tuple ``(x,)`` at the requested boundbox
+        points.
+      - if ``mins`` is None, then use the minima found in ``x``. Similarly for
+        ``maxs``.
+      - ``method`` can take a function, None, a bool, or a string. If ``method``
+        is True, interpolate a cost function using ``interpf`` with
+        ``method='thin_plate'`` (or ``'rbf'`` if ``scipy`` is not found).
+        If ``method`` is False, return the original input. Alternately,
+        ``method`` can be any one of ``('rbf', 'linear', 'cubic', 'nearest',
+        'inverse', 'gaussian', 'multiquadric', 'quintic', 'thin_plate')``.
+        If ``method`` is None, return ``nan`` upon new input.
     '''
     kwds.setdefault('all', True)
     import numpy as np
@@ -70,19 +70,19 @@ def extrapolate(x, z=None, method=None, mins=None, maxs=None, **kwds):
 def _boundbox(monitor, fx=None, mins=None, maxs=None, **kwds):
     '''produce a bounding-box to facilitate interpolation at the given points
 
-    Input:
-      monitor: a mystic monitor instance
-      fx: a function f(x) to evaluate at new points; if None, use f(x) = nan
-      mins: a list of floats defining minima of the bounding box, or None
-      maxs: a list of floats defining maxima of the bounding box, or None
-      all: if True, include the initial monitor points in the return
+    Args:
+      monitor (monitor): a mystic monitor instance of existing points
+      fx (function, default=None): evaluate as ``z = f(x)`` for new ``x``
+      mins (list[float], default=None): list of the minima of the bounding box
+      maxs (list[float], default=None): list of the maxima of the bounding box
+      all (bool, default=True): include initial ``monitor`` points in the return
 
-    Output:
+    Returns:
       a mystic monitor instance containing the requested boundbox points
 
-    NOTE:
-      if mins is None, then use the minima found in the monitor instance.
-      Similarly for maxs.
+    Notes:
+      - if ``mins`` is None, then use the minima found in the ``monitor``.
+        Similarly for ``maxs``.
     '''
     all = kwds['all'] if 'all' in kwds else False
 
@@ -121,15 +121,25 @@ def _boundbox(monitor, fx=None, mins=None, maxs=None, **kwds):
 def _sort(x, y=None, param=0):
     '''sort x (and y, if provided) by the given parameter
 
-    For example:
+    Args:
+      x (ndarray): an array of shape ``(npts, nparam)``
+      y (ndarray, default=None): an array of shape ``(npts,)``
+      param (int, default=0): index of ``nparam`` upon which to sort
+
+    Returns:
+      sorted ``x``, or tuple of sorted ``(x,y)`` if ``y`` is provided
+
+    Examples:
       >>> _sort([[1,5,9],[7,8,3],[4,2,6]], param=0)
       array([[1, 5, 9],
              [4, 2, 6],
              [7, 8, 3]])
+
       >>> _sort([[1,5,9],[7,8,3],[4,2,6]], param=1)
       array([[4, 2, 6],
              [1, 5, 9],
              [7, 8, 3]])
+
       >>> _sort([[1,5,9],[7,8,3],[4,2,6]], [4,3,2])
       (array([[1, 5, 9],
              [4, 2, 6],
@@ -145,7 +155,15 @@ def _sort(x, y=None, param=0):
 
 
 def _isin(i, x):
-    '''check if i is in x, where i is an iterable'''
+    '''check if i is in iterable x
+
+    Args:
+      i (ndarray): an array of shape ``(npts,)``, or a scalar value
+      x (ndarray): an array of shape ``(npts, nparam)`` or higher dimension
+
+    Returns:
+      True, if ``x`` contains ``i``
+    '''
     import numpy as np
     x = np.asarray(x) #XXX: doesn't verify that i is iterable
     if x.ndim == 1: #FIXME: expects i not nessarily an iterable
@@ -154,15 +172,15 @@ def _isin(i, x):
 
 
 def _to_objective(function):
-    '''convert f(*xargs, **kwds) to f(x, *args, **kwds) where xargs=x+args
+    '''convert ``f(*xargs, **kwds)`` to ``f(x, *args, **kwds)``, where ``xargs = x + args``
 
-    Input:
-      objective: a function of the form f(*xargs, **kwds)
+    Args:
+      function (function): a function of the form ``f(*xargs, **kwds)``
 
-    Output:
-      a function of the form f(x, *args, **kwds)
+    Returns:
+      a function of the form ``f(x, *args, **kwds)``
 
-    For example:
+    Examples:
       >>> @_to_objective
       ... def cost(x,y,z):
       ...   return x+y+z
@@ -178,16 +196,16 @@ def _to_objective(function):
 
 
 def _to_function(objective, ndim=None):
-    '''convert f(x, *args, **kwds) to f(*xargs, **kwds) where xargs=x+args
+    '''convert ``f(x, *args, **kwds)`` to ``f(*xargs, **kwds)``, where ``xargs = x + args``
 
-    Input:
-      objective: a function of the form f(x, *args, **kwds)
-      ndim: an int, if provided, is the length of x in f(x, *args, **kwds)
+    Args:
+      objective (function): a function of the form ``f(x, *args, **kwds)``
+      ndim (int, default=None): the length of ``x`` in ``f(x, *args, **kwds)``
 
-    Output:
-      a function of the form f(*xargs, **kwds)
+    Returns:
+      a function of the form ``f(*xargs, **kwds)``
 
-    For example:
+    Examples:
       >>> @_to_function
       ... def model(x):
       ...   return sum(x)
@@ -207,18 +225,39 @@ def _to_function(objective, ndim=None):
 
 
 def _array(x): #XXX: remove?
-    '''convert lists or values to numpy arrays''' 
+    '''convert lists or values to numpy arrays
+
+    Args:
+      x (list): a list of values (or a scalar value)
+
+    Returns:
+      ``x`` cast as a ``numpy`` array (or ``numpy`` scalar)
+    ''' 
     import numpy as np
     return np.asarray(x)
 
 
 def _nonarray(x): #XXX: move to tools?
-    '''convert arrays (or lists of arrays) to values or (lists of values)''' 
+    '''convert arrays (or lists of arrays) to values or (lists of values)
+
+    Args:
+      x (ndarray): an array of values (or a ``numpy`` scalar)
+
+    Returns:
+      ``x`` cast as a list (or a scalar value)
+    ''' 
     return x.tolist() if hasattr(x, 'dtype') else ([i.tolist() for i in x] if hasattr(x, '__len__') else x)
 
 
 def _to_nonarray(f): #XXX: move to tools?
-    '''return a function where the return does not contain numpy arrays'''
+    '''return a function where the return does not contain numpy arrays
+
+    Args:
+      f (function): a callable that returns an array (or scalar)
+
+    Returns:
+      a function with the return value of ``f`` cast as a list (or scalar)
+    '''
     def func(*args, **kwds):
         return _nonarray(f(*args, **kwds))
     #func.__name__ = f.__name__ #XXX: do name-mangling?
@@ -227,7 +266,14 @@ def _to_nonarray(f): #XXX: move to tools?
 
 
 def _to_array(f): #XXX: move to tools?
-    '''return a function where the return is a numpy array'''
+    '''return a function where the return is a numpy array
+
+    Args:
+      f (function): a callable that returns a list (or scalar)
+
+    Returns:
+      a function with the return value of ``f`` cast as an array (or scalar)
+    '''
     def func(*args, **kwds):
         return _array(f(*args, **kwds))
     return func
@@ -236,14 +282,17 @@ def _to_array(f): #XXX: move to tools?
 def _unique(x, z=None, sort=False, index=False): #XXX: move to tools?
     '''return the unique values of x, and corresponding z (if provided)
 
-    Input:
-      x: an array of shape (npts, dim) or (npts,)
-      z: an array of shape (npts,)
-      sort: boolean, if True, return arrays sorted on x [default=True]
-      index: boolean, if True, also return an index array that recovers x
+    Args:
+      x (ndarray): an input array of shape ``(npts, dim)`` or ``(npts,)``
+      z (ndarray, default=None): an ouput array of shape ``(npts,)``
+      sort (bool, default=False): if True, return arrays sorted on ``x``
+      index (bool, default=False): also return an index array to recover ``x``
 
-    Output:
-      unique (potentially sorted) x, and z (if provided) and/or index
+    Returns:
+      an array of the unique elements of ``x``, or a tuple ``(x, z)`` if ``z``
+      is provided. If ``index`` is True, also return an array of indicies that
+      can be used to recover the original ``x`` array. If ``sort`` is True,
+      the returned arrays will be sorted on ``x``.
     ''' # avoid LinAlgError when interpolating
     import numpy as np
     x,i,v = np.unique(x, return_index=True, return_inverse=True, axis=0)
@@ -264,12 +313,12 @@ def _unique(x, z=None, sort=False, index=False): #XXX: move to tools?
 def sort_axes(*axes, **kwds):
     '''sort axes along the selected primary axis
 
-    Input:
-      axes: a tuple of arrays of points along each axis
-      axis: an integer corresponding to the axis upon which to sort
+    Args:
+      axes (tuple[ndarray]): a tuple of arrays of points along each axis
+      axis (int, default=0): index of the axis upon which to sort
 
-    Output:
-      a tuple of arrays sorted with regard to the selected axis
+    Returns:
+      a tuple of arrays sorted with respect to the selected axis
     ''' #NOTE: last entry might be 'values' (i.e. f(x))
     import numpy as np
     #XXX: add an option (or new function) for monotonic increasing?
@@ -283,16 +332,16 @@ def sort_axes(*axes, **kwds):
 def axes(mins, maxs, npts=None):
     '''generate a tuple of arrays defining axes on a grid, given bounds
 
-    Input:
-      mins: a tuple of lower bounds for coordinates on the grid
-      maxs: a tuple of upper bounds for coordinates on the grid
-      npts: a tuple of grid shape, or integer number or points on grid
+    Args:
+      mins (tuple[float]): lower bounds for coordinates on the grid
+      maxs (tuple[float]): upper bounds for coordinates on the grid
+      npts (tuple[int]): number of grid points per axis, or integer if equal
 
-    Output:
+    Returns:
       a tuple of arrays defining the axes of the coordinate grid
 
-    NOTE:
-      If npts is not provided, a default of 50 points in each direction is used.
+    Notes:
+      If ``npts`` is None, a default of 50 points in each direction is used.
     ''' #NOTE: ensures all axes will be ordered (monotonically increasing)
     import numpy as np
     if not hasattr(mins, '__len__'):
@@ -306,20 +355,28 @@ def axes(mins, maxs, npts=None):
 
 
 def _swapvals(x, i):
-    '''swap values from column 0 with column i'''
+    '''swap values from column 0 in ``x`` with column i
+
+    Args:
+      x (ndarray): an array of shape ``(npts, ndim)``
+      i (int): index of column to swap with column 0
+
+    Returns:
+      an array where the indicated columns have been swapped
+    '''
     x = np.asarray(x).T
     x[[0,i]] = x[[i,0]]
     return x.T
 
 
 def _axes(x):
-    '''convert measured data 'x' to a tuple of 'axes'
+    '''convert array of measured points ``x`` to a tuple of coordinate axes
 
-    Input:
-      x: an array of shape (npts, dim) or (npts,)
+    Args:
+      x (ndarray): an array of shape ``(npts, dim)`` or ``(npts,)``
 
-    Output:
-      a tuple of arrays (x0, ..., xm), where m = dim-1 and len(xi) = npts
+    Returns:
+      tuple of arrays ``(x0, ..., xm)`` with ``m = dim-1`` and length ``npts``
     '''
     import numpy as np
     x = np.asarray(x)
@@ -331,59 +388,60 @@ def _axes(x):
 def grid(*axes):
     '''generate tuple of (irregular) coordinate grids, given coordinate axes
 
-    Input:
-      axes: a tuple of arrays defining the axes of the coordinate grid
+    Args:
+      axes (tuple[ndarray]): arrays defining the axes of the coordinate grid
 
-    Output:
-      the resulting coordinate grid
+    Returns:
+      a tuple of ndarrays representing the resulting coordinate grid
     '''
     import numpy as np #FIXME: fails large len(axes)
     return tuple(np.meshgrid(*axes, indexing='ij'))
 
 
 def _noisy(x, scale=1e-8): #XXX: move to tools?
-    '''add random gaussian noise of the given scale, or None if scale=None
+    '''add random gaussian noise of the given scale, or None if ``scale=None``
 
-    Input:
-      x: an array of shape (npts, dim) or (npts,)
+    Args:
+      x (ndarray): an array of shape ``(npts, dim)`` or ``(npts,)``
+      scale (float, default=1e-8): amplitude of the additive gaussian noise
 
-    Output:
-      an array of shape (npts, dim) or (npts,), where noise has been added
+    Returns:
+      array of shape ``(npts, dim)`` or ``(npts,)``, where noise has been added
     '''
     import numpy as np
     return x if not scale else x + np.random.normal(scale=scale, size=x.shape)
 
 
 def interpolate(x, z, xgrid, method=None, extrap=False, arrays=True, **kwds):
-    '''interpolate to find z = f(x) sampled at points defined by xgrid
+    '''interpolate to find ``z = f(x)`` sampled at points defined by ``xgrid``
 
-    Input:
-      x: an array of shape (npts, dim) or (npts,)
-      z: an array of shape (npts,)
-      xgrid: (irregular) coordinate grid on which to sample z = f(x)
-      method: string for kind of interpolator
-      extrap: if True, extrapolate a bounding box (can reduce # of nans)
-      arrays: if True, z = f(x) is a numpy array; otherwise don't return arrays
+    Args:
+      x (ndarray): an input array of shape ``(npts, dim)`` or ``(npts,)``
+      z (ndarray): an output array of shape ``(npts,)``
+      xgrid (ndarray): irregular coordinate grid on which to sample ``z = f(x)``
+      method (str, default=None): string name of the kind of interpolator
+      extrap (bool, default=False): if True, extrapolate a bounding box
+      arrays (bool, default=True): return ``z = f(x)`` as a numpy array
 
-    Output:
-      interpolated points on a grid, where z = f(x) has been sampled on xgrid
+    Returns:
+      interpolated points, where ``z = f(x)`` is sampled on ``xgrid``
 
-    NOTE:
-      if scipy is not installed, will use np.interp for 1D (non-rbf),
-      or mystic's rbf otherwise. default method is 'nearest' for
-      1D and 'linear' otherwise. method can be one of ('rbf','linear','cubic',
-      'nearest','inverse','gaussian','multiquadric','quintic','thin_plate').
-
-    NOTE:
-      if extrap is True, extrapolate using interpf with method='thin_plate'
-      (or 'rbf' if scipy is not found). Alternately, any one of ('rbf',
-      'linear','cubic','nearest','inverse','gaussian','multiquadric',
-      'quintic','thin_plate') can be used. If extrap is a cost function
-      z = f(x), then directly use it in the extrapolation.
-
-    NOTE:
-      additional keyword arguments (epsilon, smooth, norm) are avaiable for use
-      with a Rbf interpolator. See mystic.math.interpolate.Rbf for more details.
+    Notes:
+      - if ``scipy`` is not installed, will use ``numpy.interp`` for 1D
+        (non-rbf), or ``rbf`` from ``mystic`` otherwise. Default method is
+        ``'nearest'`` for 1D, and is ``'linear'`` otherwise. ``method`` can
+        be one of ``('rbf', 'linear', 'cubic', 'nearest', 'inverse',
+        'gaussian', 'multiquadric', 'quintic', 'thin_plate')``.
+      - if ``extrap`` is True, extrapolate using ``interpf`` with 
+        ``method='thin_plate'`` (or ``'rbf'`` if ``scipy`` is not installed).
+        Alternately, any one of ``('rbf', 'linear', 'cubic', 'nearest',
+        'inverse', 'gaussian', 'multiquadric', 'quintic', 'thin_plate')`` can
+        be used. If ``extrap`` is a cost function ``z = f(x)``, then directly
+        use it in the extrapolation. Using extrapolation can reduce the number
+        of ``nan``.
+      - additional keyword arguments ``(epsilon, smooth, norm)`` are avaiable
+        for use with a Rbf interpolator. See ``mystic.math.interpolate.Rbf``
+        for more details.
     '''
     if arrays:
         _f, _fx = _to_array, _array
@@ -420,34 +478,34 @@ def interpolate(x, z, xgrid, method=None, extrap=False, arrays=True, **kwds):
 
 
 def _interpf(x, z, method=None, extrap=False, arrays=False, **kwds):
-    '''interpolate to find f, where z = f(*x)
+    '''interpolate to produce function ``f``, where ``z = f(*x)``
 
-    Input:
-      x: an array of shape (npts, dim) or (npts,)
-      z: an array of shape (npts,)
-      method: string for kind of interpolator
-      extrap: if True, extrapolate a bounding box (can reduce # of nans)
-      arrays: if True, z = f(*x) is a numpy array; otherwise don't use arrays
+    Args:
+      x (ndarray): an input array of shape ``(npts, dim)`` or ``(npts,)``
+      z (ndarray): an output array of shape ``(npts,)``
+      method (str, default=None): string name of the kind of interpolator
+      extrap (bool, default=False): if True, extrapolate a bounding box
+      arrays (bool, default=False): return ``z = f(*x)`` as a numpy array
 
-    Output:
-      interpolated function f, where z = f(*x)
+    Returns:
+      interpolated function ``f``, where ``z = f(*x)``
 
-    NOTE:
-      if scipy is not installed, will use np.interp for 1D (non-rbf),
-      or mystic's rbf otherwise. default method is 'nearest' for
-      1D and 'linear' otherwise. method can be one of ('rbf','linear','cubic',
-      'nearest','inverse','gaussian','multiquadric','quintic','thin_plate').
-
-    NOTE:
-      if extrap is True, extrapolate using interpf with method='thin_plate'
-      (or 'rbf' if scipy is not found). Alternately, any one of ('rbf',
-      'linear','cubic','nearest','inverse','gaussian','multiquadric',
-      'quintic','thin_plate') can be used. If extrap is a cost function
-      z = f(x), then directly use it in the extrapolation.
-
-    NOTE:
-      additional keyword arguments (epsilon, smooth, norm) are avaiable for use
-      with a Rbf interpolator. See mystic.math.interpolate.Rbf for more details.
+    Notes:
+      - if ``scipy`` is not installed, will use ``numpy.interp`` for 1D
+        (non-rbf), or ``rbf`` from ``mystic`` otherwise. Default method is
+        ``'nearest'`` for 1D, and is ``'linear'`` otherwise. ``method`` can
+        be one of ``('rbf', 'linear', 'cubic', 'nearest', 'inverse',
+        'gaussian', 'multiquadric', 'quintic', 'thin_plate')``.
+      - if ``extrap`` is True, extrapolate using ``interpf`` with 
+        ``method='thin_plate'`` (or ``'rbf'`` if ``scipy`` is not installed).
+        Alternately, any one of ``('rbf', 'linear', 'cubic', 'nearest',
+        'inverse', 'gaussian', 'multiquadric', 'quintic', 'thin_plate')`` can
+        be used. If ``extrap`` is a cost function ``z = f(x)``, then directly
+        use it in the extrapolation. Using extrapolation can reduce the number
+        of ``nan``.
+      - additional keyword arguments ``(epsilon, smooth, norm)`` are avaiable
+        for use with a Rbf interpolator. See ``mystic.math.interpolate.Rbf``
+        for more details.
     ''' #XXX: return f(*x) or f(x)?
     if arrays:
         _f, _fx = _to_array, _array
@@ -491,9 +549,12 @@ def _interpf(x, z, method=None, extrap=False, arrays=False, **kwds):
 def _getaxis(z, axis):
     """get the selected axis of the multi-valued array
 
-    Inputs:
-      z: an array of shape (npts, N)
-      axis: int, the desired index the multi-valued array [0,N]
+    Args:
+      z (ndarray): an array of shape ``(npts, N)``
+      axis (int): index of the desired column of the multi-valued array ``z``
+
+    Returns:
+      array of shape ``(npts,)`` corresponding to the selected column of ``z``
     """
     if len(z) and not hasattr(z[0], '__len__'):
         msg = "cannot get axis=%s for single-valued array" % axis
@@ -513,37 +574,38 @@ def _getaxis(z, axis):
 
 
 def interpf(x, z, method=None, extrap=False, arrays=False, **kwds):
-    '''interpolate (x,z) to generate f, where z=f(*x)
+    '''interpolate ``(x,z)`` to generate ``f``, where ``z = f(*x)``
 
-    Input:
-      x: an array of shape (npts, dim) or (npts,)
-      z: an array of shape (npts, N)
-      method: string for kind of interpolator
-      extrap: if True, extrapolate a bounding box (can reduce # of nans)
-      arrays: if True, z = f(*x) is a numpy array; otherwise don't use arrays
-      axis: int in [0,N], the axis of z to interpolate (all, by default)
-      axmap: map instance, to execute each axis in parallel (None, by default)
+    Args:
+      x (ndarray): an input array of shape ``(npts, dim)`` or ``(npts,)``
+      z (ndarray): an output array of shape ``(npts, N)``
+      method (str, default=None): string name of the kind of interpolator
+      extrap (bool, default=False): if True, extrapolate a bounding box
+      arrays (bool, default=False): return ``z = f(*x)`` as a numpy array
+      axis (int, default=None): index of ``z`` upon which to interpolate
+      axmap: (map, default=None): map instance to execute each axis in parallel
 
-    Output:
-      interpolated function f, where z=f(*x)
+    Returns:
+      interpolated function ``f``, where ``z = f(*x)``
 
-    NOTE:
-      if scipy is not installed, will use np.interp for 1D (non-rbf),
-      or mystic's rbf otherwise. default method is 'nearest' for
-      1D and 'linear' otherwise. method can be one of ('rbf','linear','cubic',
-      'nearest','inverse','gaussian','multiquadric','quintic','thin_plate').
-
-    NOTE:
-      if extrap is True, extrapolate using interpf with method='thin_plate'
-      (or 'rbf' if scipy is not found). Alternately, any one of ('rbf',
-      'linear','cubic','nearest','inverse','gaussian','multiquadric',
-      'quintic','thin_plate') can be used. If extrap is a cost function
-      z = f(x), then directly use it in the extrapolation.
-
-    NOTE:
-      additional keyword arguments (epsilon, smooth, norm) are avaiable
-      for use with a Rbf interpolator. See mystic.math.interpolate.Rbf
-      for more details.
+    Notes:
+      - if ``axis`` is None, then interpolate using all indicies of ``z``
+      - if ``axmap`` is None, then use the (sequential) map from ``builtins``
+      - if ``scipy`` is not installed, will use ``numpy.interp`` for 1D
+        (non-rbf), or ``rbf`` from ``mystic`` otherwise. Default method is
+        ``'nearest'`` for 1D, and is ``'linear'`` otherwise. ``method`` can
+        be one of ``('rbf', 'linear', 'cubic', 'nearest', 'inverse',
+        'gaussian', 'multiquadric', 'quintic', 'thin_plate')``.
+      - if ``extrap`` is True, extrapolate using ``interpf`` with 
+        ``method='thin_plate'`` (or ``'rbf'`` if ``scipy`` is not installed).
+        Alternately, any one of ``('rbf', 'linear', 'cubic', 'nearest',
+        'inverse', 'gaussian', 'multiquadric', 'quintic', 'thin_plate')`` can
+        be used. If ``extrap`` is a cost function ``z = f(x)``, then directly
+        use it in the extrapolation. Using extrapolation can reduce the number
+        of ``nan``.
+      - additional keyword arguments ``(epsilon, smooth, norm)`` are avaiable
+        for use with a Rbf interpolator. See ``mystic.math.interpolate.Rbf``
+        for more details.
     '''
     axis = kwds.get('axis', None)
     _map = kwds.get('axmap', kwds.get('map', map)) # backward compatibility
@@ -589,17 +651,18 @@ def interpf(x, z, method=None, extrap=False, arrays=False, **kwds):
 
 
 def _gradient(x, grid):
-    '''find gradient of f(x), sampled on the coordinate grid defined by x
+    '''find gradient of ``f(x)`` sampled on the coordinate grid defined by ``x``
 
-    Input:
-      x: an array of shape (npts, dim) or (npts,)
-      grid: (irregular) coordinate grid of z = f(x), with axes = _axes(x)
+    Args:
+      x (ndarray): an array of shape ``(npts, dim)`` or ``(npts,)``
+      grid (ndarray): irregular coordinate grid generated from ``z = f(x)``
 
-    Output:
-      list of length dim (or array in 1D), gradient of the points on grid
+    Returns:
+      list of length ``dim`` for the gradient of the points on grid
 
-    NOTE:
-      output will be of the form (dim,)+grid.shape
+    Notes:
+      - output will be of the form ``(dim,) + grid.shape``.
+      - gradient on the grid calculated using tuple generated with ``_axes(x)``
     ''' #XXX: can unique be used in this function?
     import numpy as np
     err = np.seterr(all='ignore') # silence warnings (division by nan)
@@ -609,29 +672,29 @@ def _gradient(x, grid):
 
 
 def _fprime(x, fx, method=None, extrap=False, **kwds):
-    '''find gradient of fx at x, where fx is a function z=fx(x)
+    '''find gradient of ``fx`` at ``x``, with ``fx`` a function ``z = fx(x)``
 
-    Input:
-      x: an array of shape (npts, dim) or (npts,)
-      fx: a function, z = fx(x)
-      method: string for kind of gradient method
-      extrap: if True, extrapolate a bounding box (can reduce # of nans)
-      new: if True, include the extrapolated points in the output
+    Args:
+      x (ndarray): an array of shape ``(npts, dim)`` or ``(npts,)``
+      fx (function): a function of form ``z = fx(x)``
+      method (str, default=None): string name of the kind of gradient method
+      extrap (bool, default=False): if True, extrapolate a bounding box
+      new (bool, default=False): include the extrapolated points in the output
 
-    Output:
-      array of dimensions x.shape, gradient of the points at (x,fx)
+    Returns:
+      array of dimensions ``x.shape``, gradient of the points at ``(x,fx)``
 
-    NOTE:
-      if method is 'approx' (the default) use mystic's approx_fprime,
-      which uses a local gradient approximation; other choices are
-      'symbolic', which uses mpmath.diff if installed.
-
-    NOTE:
-      if extrap is True, extrapolate using interpf with method='thin_plate'
-      (or 'rbf' if scipy is not found). Alternately, any one of ('rbf',
-      'linear','cubic','nearest','inverse','gaussian','multiquadric',
-      'quintic','thin_plate') can be used. If extrap is a cost function
-      z = f(x), then directly use it in the extrapolation.
+    Notes:
+      - if method is ``'approx'`` (the default), use ``approx_fprime`` from
+        ``mystic``, which uses a local gradient approximation; other choices
+        are ``'symbolic'``, which uses ``mpmath.diff`` if installed.
+      - if ``extrap`` is True, extrapolate using ``interpf`` with 
+        ``method='thin_plate'`` (or ``'rbf'`` if ``scipy`` is not installed).
+        Alternately, any one of ``('rbf', 'linear', 'cubic', 'nearest',
+        'inverse', 'gaussian', 'multiquadric', 'quintic', 'thin_plate')`` can
+        be used. If ``extrap`` is a cost function ``z = f(x)``, then directly
+        use it in the extrapolation. Using extrapolation can reduce the number
+        of ``nan``.
     '''
     slc = slice(None,None) if kwds.get('new', False) else slice(None,len(x))
     import numpy as np
@@ -661,36 +724,35 @@ def _fprime(x, fx, method=None, extrap=False, **kwds):
 
 #XXX: take f(*x) or f(x)?
 def gradient(x, fx, method=None, approx=True, extrap=False, **kwds):
-    '''find gradient of fx at x, where fx is a function z=fx(*x) or an array z
+    '''find gradient of ``fx`` at ``x``, with ``fx`` a function ``z = fx(*x)`` or an array ``z``
 
-    Input:
-      x: an array of shape (npts, dim) or (npts,)
-      fx: an array of shape (npts,) **or** a function, z = fx(*x)
-      method: string for kind of interpolator
-      approx: if True, use local approximation method
-      extrap: if True, extrapolate a bounding box (can reduce # of nans)
-      new: if True, include the extrapolated points in the output
+    Args:
+      x (ndarray): an array of shape ``(npts, dim)`` or ``(npts,)``
+      fx (ndarray): array of shape ``(npts,)`` **or** function ``z = f(*x)``
+      method (str, default=None): string name of the kind of gradient method
+      approx (bool, default=True): if True, use local approximation method
+      extrap (bool, default=False): if True, extrapolate a bounding box
+      new (bool, default=False): include the extrapolated points in the output
 
-    Output:
-      array of dimensions x.shape, gradient of the points at (x,fx)
+    Returns:
+      array of dimensions ``x.shape``, gradient of the points at ``(x,fx)``
 
-    NOTE:
-      if approx is True, use mystic's approx_fprime, which uses a local
-      gradient approximation; otherwise use numpy's gradient method which
-      performs a more memory-intensive calcuation on a grid.
-
-    NOTE:
-      if scipy is not installed, will use np.interp for 1D (non-rbf),
-      or mystic's rbf otherwise. default method is 'nearest' for
-      1D and 'linear' otherwise. method can be one of ('rbf','linear','cubic',
-      'nearest','inverse','gaussian','multiquadric','quintic','thin_plate').
-
-    NOTE:
-      if extrap is True, extrapolate using interpf with method='thin_plate'
-      (or 'rbf' if scipy is not found). Alternately, any one of ('rbf',
-      'linear','cubic','nearest','inverse','gaussian','multiquadric',
-      'quintic','thin_plate') can be used. If extrap is a cost function
-      z = f(x), then directly use it in the extrapolation.
+    Notes:
+      - if ``approx`` is True, use ``approx_fprime`` from ``mystic``, which
+        uses a local gradient approximation; otherwise use ``gradient`` from
+        ``numpy``, which performs a memory-intensive calculation on a grid.
+      - if ``scipy`` is not installed, will use ``numpy.interp`` for 1D
+        (non-rbf), or ``rbf`` from ``mystic`` otherwise. Default method is
+        ``'nearest'`` for 1D, and is ``'linear'`` otherwise. ``method`` can
+        be one of ``('rbf', 'linear', 'cubic', 'nearest', 'inverse',
+        'gaussian', 'multiquadric', 'quintic', 'thin_plate')``.
+      - if ``extrap`` is True, extrapolate using ``interpf`` with 
+        ``method='thin_plate'`` (or ``'rbf'`` if ``scipy`` is not installed).
+        Alternately, any one of ``('rbf', 'linear', 'cubic', 'nearest',
+        'inverse', 'gaussian', 'multiquadric', 'quintic', 'thin_plate')`` can
+        be used. If ``extrap`` is a cost function ``z = f(x)``, then directly
+        use it in the extrapolation. Using extrapolation can reduce the number
+        of ``nan``.
     ''' #NOTE: uses 'unique' in all cases
     #XXX: nice to have a test for smoothness, worth exploring?
     slc = slice(None,None) if kwds.get('new', False) else slice(None,len(x))

@@ -932,7 +932,7 @@ def penalty_parser(constraints, variables='x', nvars=None):
 Returns a tuple of inequality constraints and a tuple of equality constraints.
 
 Args:
-    constraints -- a string of symbolic constraints, with one constraint
+    constraints (str): a string of symbolic constraints, with one constraint
         equation per line. Constraints can be equality and/or inequality
         constraints. Standard python syntax should be followed (the ``math``
         and ``numpy`` modules are already imported).

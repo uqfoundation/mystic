@@ -98,8 +98,8 @@ Null objects always and reliably "do nothing." """
     def __getitem__(self, y): return self
     def __setitem__(self, i, y): return
     def min(self): return self
+    def info(self, message): return
 # comply with monitor interface (are these the best responses?)
-Null.info = Null()
 Null.k = None
 Null.x = Null._x = ()
 Null.y = Null._y = ()
