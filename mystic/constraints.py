@@ -35,7 +35,7 @@ def vectorize(constraint, axis=1):
         sklearn.preprocessing.FunctionTransformer(func=transform).
         Input to the tranform is a 2D numpy array of shape (samples, features).
 
-    For example:
+    Examples:
         >>> from mystic.constraints import (impose_bounds, integers,
         ...                                 with_mean, and_)
         >>> cons = and_(impose_bounds([(0,5),(7,10)])(lambda x:x),
@@ -93,7 +93,7 @@ def with_penalty(ptype, *args, **kwds):
 condition f(x) is satisfied when f(x) == 0.0 for equality constraints
 and f(x) <= 0.0 for inequality constraints. ptype is a mystic.penalty type.
 
-    For example:
+Examples:
     >>> @with_penalty(quadratic_equality, kwds={'target':5.0})
     ... def penalty(x, target):
     ...   return mean(x) - target
@@ -120,7 +120,7 @@ def with_constraint(ctype, *args, **kwds): #XXX: is this *at all* useful?
 transformation f(x) is a mapping between x and x', where x' = f(x).
 ctype is a mystic.coupler type [inner, outer, inner_proxy, outer_proxy].
 
-    For example:
+Examples:
     >>> @with_constraint(inner, kwds={'target':5.0})
     ... def constraint(x, target):
     ...   return impose_mean(target, x)
@@ -163,7 +163,7 @@ A constraints function takes an iterable x as input, returning a modified x.
 This function is an "outer" coupling of "impose_mean" onto another constraints
 function c(x), such that:  x' = impose_mean(target, c(x)).
 
-    For example:
+Examples:
     >>> @with_mean(5.0)
     ... def constraint(x):
     ...   x[-1] = x[0]
@@ -197,7 +197,7 @@ A constraints function takes an iterable x as input, returning a modified x.
 This function is an "outer" coupling of "impose_variance" onto another
 constraints function c(x), such that:  x' = impose_variance(target, c(x)).
 
-    For example:
+Examples:
     >>> @with_variance(1.0)
     ... def constraint(x):
     ...   x[-1] = x[0]
@@ -231,7 +231,7 @@ A constraints function takes an iterable x as input, returning a modified x.
 This function is an "outer" coupling of "impose_std" onto another
 constraints function c(x), such that:  x' = impose_std(target, c(x)).
 
-    For example:
+Examples:
     >>> @with_std(1.0)
     ... def constraint(x):
     ...   x[-1] = x[0]
@@ -256,7 +256,7 @@ A constraints function takes an iterable x as input, returning a modified x.
 This function is an "outer" coupling of "impose_spread" onto another constraints
 function c(x), such that:  x' = impose_spread(target, c(x)).
 
-    For example:
+Examples:
     >>> @with_spread(10.0)
     ... def constraint(x):
     ...   return [i**2 for i in x]
@@ -290,7 +290,7 @@ A constraints function takes an iterable x as input, returning a modified x.
 This function is an "outer" coupling of "normalize" onto another constraints
 function c(x), such that:  x' = normalize(c(x), mass).
 
-    For example:
+Examples:
     >>> @normalized()
     ... def constraint(x):
     ...   return x
@@ -318,7 +318,7 @@ Input:
     guess -- list of parameter values proposed to solve the constraints
     tol -- residual error magnitude for which constraints are considered solved
 
-    For example:
+Examples:
     >>> @normalized()
     ... def constraint(x):
     ...   return x
@@ -327,7 +327,7 @@ Input:
     [0.5, 0.5]
     >>> issolution(constraint, [.5,.5])
     True
-    >>> 
+
     >>> from mystic.penalty import quadratic_inequality
     >>> @quadratic_inequality(lambda x: x[0] - x[1] + 10)
     ... def penalty(x):
@@ -692,19 +692,21 @@ def discrete(samples, index=None):
 
 The function's input will be mapped to the given discrete set
 
->>> @discrete([1.0, 2.0])
-... def identity(x):
-...     return x
+Examples:
+    >>> @discrete([1.0, 2.0])
+    ... def identity(x):
+    ...     return x
+    ...
+    >>> identity([0.123, 1.789, 4.000])
+    [1.0, 2.0, 2.0]
 
->>> identity([0.123, 1.789, 4.000])
-[1.0, 2.0, 2.0]
-
->>> @discrete([1,3,5,7], index=(0,3))
-... def squared(x):
-....    return [i**2 for i in x]
-
->>> squared([0,2,4,6,8,10])
-[1, 4, 16, 25, 64, 100]"""
+    >>> @discrete([1,3,5,7], index=(0,3))
+    ... def squared(x):
+    ...     return [i**2 for i in x]
+    ...
+    >>> squared([0,2,4,6,8,10])
+    [1, 4, 16, 25, 64, 100]
+    """
     samples = [asarray(samples)]
     samples[0].sort()
     if isinstance(index, int): index = (index,)
@@ -789,19 +791,21 @@ The function's input will be mapped to the ints, where:
   - if ints is True, return results as ints; otherwise, use floats
   - if index tuple provided, only round at the given indices
 
->>> @integers()
-... def identity(x):
-...     return x
+Examples:
+  >>> @integers()
+  ... def identity(x):
+  ...     return x
+  ...
+  >>> identity([0.123, 1.789, 4.000])
+  [0, 2, 4]
 
->>> identity([0.123, 1.789, 4.000])
-[0, 2, 4]
-
->>> @integers(ints=float, index=(0,3,4))
-... def squared(x):
-....    return [i**2 for i in x]
-
->>> squared([0.12, 0.12, 4.01, 4.01, 8, 8])
-[0.0, 0.0144, 16.080099999999998, 16.0, 64.0, 64.0]"""
+  >>> @integers(ints=float, index=(0,3,4))
+  ... def squared(x):
+  ...     return [i**2 for i in x]
+  ...
+  >>> squared([0.12, 0.12, 4.01, 4.01, 8, 8])
+  [0.0, 0.0144, 16.080099999999998, 16.0, 64.0, 64.0]
+    """
     #HACK: allow ints=False or ints=int
     _ints = [(int if ints else float) if isinstance(ints, bool) else ints]
     if isinstance(index, int): index = (index,)
@@ -845,26 +849,28 @@ The function's input will be mapped to the given precision, where:
   - digits is an int that sets the rounding precision (can be negative)
   - if index tuple provided, only round at the given indices
 
->>> @rounded()
-... def identity(x):
-...     return x
+Examples:
+  >>> @rounded()
+  ... def identity(x):
+  ...     return x
+  ...
+  >>> identity([0.123, 1.789, 4.000])
+  [0.0, 2.0, 4.0]
 
->>> identity([0.123, 1.789, 4.000])
-[0.0, 2.0, 4.0]
+  >>> @rounded(digits=1, index=(0,3,4))
+  ... def squared(x):
+  ...     return [i**2 for i in x]
+  ...
+  >>> squared([123.45, 123.45, 4.01, 4.01, 0.012, 0.012])
+  [15227.560000000001, 15239.9025, 16.080099999999998, 16.0, 0.0, 0.000144]
 
->>> @rounded(digits=1, index=(0,3,4))
-... def squared(x):
-....    return [i**2 for i in x]
-
->>> squared([123.45, 123.45, 4.01, 4.01, 0.012, 0.012])
-[15227.560000000001, 15239.9025, 16.080099999999998, 16.0, 0.0, 0.000144]
-
->>> @rounded(digits=-1, index=(0,3,4))
-... def square(x):
-....    return [i**2 for i in x]
-
->>> square([123.45, 123.45, 4.01, 4.01, 0.012, 0.012])
-[14400.0, 15239.9025, 16.080099999999998, 0.0, 0.0, 0.000144]"""
+  >>> @rounded(digits=-1, index=(0,3,4))
+  ... def square(x):
+  ...     return [i**2 for i in x]
+  ...
+  >>> square([123.45, 123.45, 4.01, 4.01, 0.012, 0.012])
+  [14400.0, 15239.9025, 16.080099999999998, 0.0, 0.0, 0.000144]
+    """
     digits = [digits or 0]
     if isinstance(index, int): index = (index,)
     index = [index]
@@ -901,26 +907,28 @@ The function's output will be mapped to the given precision, where:
   - digits is an int that sets the rounding precision (can be negative)
   - if index tuple provided, only round at the given indices
 
->>> @precision()
-... def identity(x):
-...     return x
+Examples:
+  >>> @precision()
+  ... def identity(x):
+  ...     return x
+  ...
+  >>> identity([0.123, 1.789, 4.000])
+  [0.0, 2.0, 4.0]
 
->>> identity([0.123, 1.789, 4.000])
-[0.0, 2.0, 4.0]
+  >>> @precision(digits=1, index=(0,3,4))
+  ... def squared(x):
+  ...     return [i**2 for i in x]
+  ...
+  >>> squared([123.45, 123.45, 4.01, 4.01, 0.012, 0.012])
+  [15239.9, 15239.9025, 16.080099999999998, 16.1, 0.0, 0.000144]
 
->>> @precision(digits=1, index=(0,3,4))
-... def squared(x):
-....    return [i**2 for i in x]
-
->>> squared([123.45, 123.45, 4.01, 4.01, 0.012, 0.012])
-[15239.9, 15239.9025, 16.080099999999998, 16.1, 0.0, 0.000144]
-
->>> @precision(digits=-1, index=(0,3,4))
-... def square(x):
-....    return [i**2 for i in x]
-
->>> square([123.45, 123.45, 4.01, 4.01, 0.012, 0.012])
-[15240.0, 15239.9025, 16.080099999999998, 20.0, 0.0, 0.000144]"""
+  >>> @precision(digits=-1, index=(0,3,4))
+  ... def square(x):
+  ...     return [i**2 for i in x]
+  ...
+  >>> square([123.45, 123.45, 4.01, 4.01, 0.012, 0.012])
+  [15240.0, 15239.9025, 16.080099999999998, 20.0, 0.0, 0.000144]
+    """
     digits = [digits or 0]
     if isinstance(index, int): index = (index,)
     index = [index]
@@ -961,30 +969,38 @@ def unique(seq, full=None):
     range(min(seq),max(seq)). If full is a sequence (list or set), then
     unique values are selected from the given sequence. 
 
-    For example:
-    >>> unique([1,2,3,1,2,4], range(11))
-    [1, 2, 3, 9, 8, 4]
-    >>> unique([1,2,3,1,2,9], range(11))
-    [1, 2, 3, 8, 5, 9]
-    >>> try:
-    ...     unique([1,2,3,1,2,13], range(11))
-    ... except ValueError:
-    ...     pass
-    ...
-    >>>
-    >>> unique([1,2,3,1,2,4], {'min':0, 'max':11})
-    [1, 2, 3, 4.175187820357143, 2.5407265707465716, 4]
-    >>> unique([1,2,3,1,2,4], {'min':0, 'max':11, 'type':int})
-    [1, 2, 3, 6, 8, 4]
-    >>> unique([1,2,3,1,2,4], float)
-    [1, 2, 3, 1.012375036824941, 3.9821250727509905, 4]
-    >>> unique([1,2,3,1,2,10], int)
-    [1, 2, 3, 9, 6, 10]
-    >>> try:
-    ...     unique([1,2,3,1,2,4], int)
-    ... except ValueError:
-    ...     pass
-    ...
+    Examples:
+      >>> unique([1,2,3,1,2,4], range(11))
+      [1, 2, 3, 9, 8, 4]
+
+      >>> unique([1,2,3,1,2,9], range(11))
+      [1, 2, 3, 8, 5, 9]
+
+      >>> try:
+      ...     unique([1,2,3,1,2,13], range(11))
+      ...     raise Exception
+      ... except ValueError:
+      ...     pass
+      ...
+
+      >>> unique([1,2,3,1,2,4], {'min':0, 'max':11})
+      [1, 2, 3, 4.175187820357143, 2.5407265707465716, 4]
+
+      >>> unique([1,2,3,1,2,4], {'min':0, 'max':11, 'type':int})
+      [1, 2, 3, 6, 8, 4]
+
+      >>> unique([1,2,3,1,2,4], float)
+      [1, 2, 3, 1.012375036824941, 3.9821250727509905, 4]
+
+      >>> unique([1,2,3,1,2,10], int)
+      [1, 2, 3, 9, 6, 10]
+
+      >>> try:
+      ...     unique([1,2,3,1,2,4], int)
+      ...     raise Exception
+      ... except ValueError:
+      ...     pass
+      ...
     """
     unique = set()
     # replace all duplicates with 'None'
@@ -1052,21 +1068,21 @@ def unique(seq, full=None):
 def impose_unique(seq=None):
     """ensure all values are unique and found in the given set
 
-    For example:
-    >>> @impose_unique(range(11))
-    ... def doit(x):
-    ...     return x
-    ... 
-    >>> doit([1,2,3,1,2,4])
-    [1, 2, 3, 9, 8, 4]
-    >>> doit([1,2,3,1,2,10])
-    [1, 2, 3, 8, 5, 10]
-    >>> try:
-    ...     doit([1,2,3,1,2,13])
-    ... except ValueError:
-    ...     print("Bad Input")
-    ...
-    Bad Input
+    Examples:
+      >>> @impose_unique(range(11))
+      ... def doit(x):
+      ...     return x
+      ... 
+      >>> doit([1,2,3,1,2,4])
+      [1, 2, 3, 9, 8, 4]
+      >>> doit([1,2,3,1,2,10])
+      [1, 2, 3, 8, 5, 10]
+      >>> try:
+      ...     doit([1,2,3,1,2,13])
+      ...     raise Exception
+      ... except ValueError:
+      ...     pass
+      ...
 """
     def dec(f):
         def func(x,*args,**kwds):
@@ -1079,28 +1095,27 @@ from numpy.random import uniform, choice
 def bounded(seq, bounds, index=None, clip=True, nearest=True):
     """bound a sequence by bounds = [min,max]
 
-    For example:
-    >>> sequence = [0.123, 1.244, -4.755, 10.731, 6.207]
-    >>> 
-    >>> bounded(sequence, (0,5))
-    array([0.123, 1.244, 0.   , 5.   , 5.   ])
-    >>> 
-    >>> bounded(sequence, (0,5), index=(0,2,4))
-    array([ 0.123,  1.244,  0.   , 10.731,  5.   ])
-    >>> 
-    >>> bounded(sequence, (0,5), clip=False)
-    array([0.123     , 1.244     , 3.46621839, 1.44469038, 4.88937466])
-    >>> 
-    >>> bounds = [(0,5),(7,10)]
-    >>> my.constraints.bounded(sequence, bounds)
-    array([ 0.123,  1.244,  0.   , 10.   ,  7.   ])
-    >>> my.constraints.bounded(sequence, bounds, nearest=False)
-    array([ 0.123,  1.244,  7.   , 10.   ,  5.   ])
-    >>> my.constraints.bounded(sequence, bounds, nearest=False, clip=False) 
-    array([0.123     , 1.244     , 0.37617154, 8.79013111, 7.40864242])
-    >>> my.constraints.bounded(sequence, bounds, clip=False)
-    array([0.123     , 1.244     , 2.38186577, 7.41374049, 9.14662911])
-    >>> 
+    Examples:
+      >>> sequence = [0.123, 1.244, -4.755, 10.731, 6.207]
+      >>> 
+      >>> bounded(sequence, (0,5))
+      array([0.123, 1.244, 0.   , 5.   , 5.   ])
+      >>> 
+      >>> bounded(sequence, (0,5), index=(0,2,4))
+      array([ 0.123,  1.244,  0.   , 10.731,  5.   ])
+      >>> 
+      >>> bounded(sequence, (0,5), clip=False)
+      array([0.123     , 1.244     , 3.46621839, 1.44469038, 4.88937466])
+      >>> 
+      >>> bounds = [(0,5),(7,10)]
+      >>> my.constraints.bounded(sequence, bounds)
+      array([ 0.123,  1.244,  0.   , 10.   ,  7.   ])
+      >>> my.constraints.bounded(sequence, bounds, nearest=False)
+      array([ 0.123,  1.244,  7.   , 10.   ,  5.   ])
+      >>> my.constraints.bounded(sequence, bounds, nearest=False, clip=False) 
+      array([0.123     , 1.244     , 0.37617154, 8.79013111, 7.40864242])
+      >>> my.constraints.bounded(sequence, bounds, clip=False)
+      array([0.123     , 1.244     , 2.38186577, 7.41374049, 9.14662911])
 """
     seq = array(seq) #XXX: asarray?
     if bounds is None or not bounds: return seq
@@ -1136,59 +1151,59 @@ def bounded(seq, bounds, index=None, clip=True, nearest=True):
 def impose_bounds(bounds, index=None, clip=True, nearest=True):
     """generate a function where bounds=[min,max] on a sequence are imposed
 
-    For example:
-    >>> sequence = [0.123, 1.244, -4.755, 10.731, 6.207]
-    >>> 
-    >>> @impose_bounds((0,5))       
-    ... def simple(x):
-    ...   return x
-    ... 
-    >>> simple(sequence)
-    [0.123, 1.244, 0.0, 5.0, 5.0]
-    >>> 
-    >>> @impose_bounds((0,5), index=(0,2,4))
-    ... def double(x):
-    ...   return [i*2 for i in x]
-    ... 
-    >>> double(sequence)
-    [0.246, 2.488, 0.0, 21.462, 10.0]
-    >>> 
-    >>> @impose_bounds((0,5), index=(0,2,4), clip=False)
-    ... def square(x):
-    ...   return [i*i for i in x]
-    ... 
-    >>> square(sequence)
-    [0.015129, 1.547536, 14.675791119810688, 115.154361, 1.399551896073788]
-    >>> 
-    >>> @impose_bounds([(0,5),(7,10)])
-    ... def simple(x):
-    ...   return x
-    ... 
-    >>> simple(sequence)
-    [0.123, 1.244, 0.0, 10.0, 7.0]
-    >>> 
-    >>> @impose_bounds([(0,5),(7,10)], nearest=False)
-    ... def simple(x):
-    ...   return x
-    ... 
-    >>> simple(sequence)
-    [0.123, 1.244, 0.0, 5.0, 5.0]
-    >>> simple(sequence)
-    [0.123, 1.244, 7.0, 10.0, 5.0]
-    >>> 
-    >>> @impose_bounds({0:(0,5), 2:(0,5), 4:[(0,5),(7,10)]})
-    ... def simple(x):
-    ...   return x
-    ... 
-    >>> simple(sequence)
-    [0.123, 1.244, 0.0, 10.731, 7.0]
-    >>>
-    >>> @impose_bounds({0:(0,5), 2:(0,5), 4:[(0,5),(7,10)]}, index=(0,2)) 
-    ... def simple(x):
-    ...   return x
-    ... 
-    >>> simple(sequence)
-    [0.123, 1.244, 0.0, 10.731, 6.207]
+    Examples:
+      >>> sequence = [0.123, 1.244, -4.755, 10.731, 6.207]
+      >>> 
+      >>> @impose_bounds((0,5))       
+      ... def simple(x):
+      ...   return x
+      ... 
+      >>> simple(sequence)
+      [0.123, 1.244, 0.0, 5.0, 5.0]
+      >>> 
+      >>> @impose_bounds((0,5), index=(0,2,4))
+      ... def double(x):
+      ...   return [i*2 for i in x]
+      ... 
+      >>> double(sequence)
+      [0.246, 2.488, 0.0, 21.462, 10.0]
+      >>> 
+      >>> @impose_bounds((0,5), index=(0,2,4), clip=False)
+      ... def square(x):
+      ...   return [i*i for i in x]
+      ... 
+      >>> square(sequence)
+      [0.015129, 1.547536, 14.675791119810688, 115.154361, 1.399551896073788]
+      >>> 
+      >>> @impose_bounds([(0,5),(7,10)])
+      ... def simple(x):
+      ...   return x
+      ... 
+      >>> simple(sequence)
+      [0.123, 1.244, 0.0, 10.0, 7.0]
+      >>> 
+      >>> @impose_bounds([(0,5),(7,10)], nearest=False)
+      ... def simple(x):
+      ...   return x
+      ... 
+      >>> simple(sequence)
+      [0.123, 1.244, 0.0, 5.0, 5.0]
+      >>> simple(sequence)
+      [0.123, 1.244, 7.0, 10.0, 5.0]
+      >>> 
+      >>> @impose_bounds({0:(0,5), 2:(0,5), 4:[(0,5),(7,10)]})
+      ... def simple(x):
+      ...   return x
+      ... 
+      >>> simple(sequence)
+      [0.123, 1.244, 0.0, 10.731, 7.0]
+      >>>
+      >>> @impose_bounds({0:(0,5), 2:(0,5), 4:[(0,5),(7,10)]}, index=(0,2)) 
+      ... def simple(x):
+      ...   return x
+      ... 
+      >>> simple(sequence)
+      [0.123, 1.244, 0.0, 10.731, 6.207]
     """
     ### bounds is a dict, index filters the dict
     ### keys of bounds are the index, if index=None apply to all
@@ -1320,7 +1335,7 @@ where the mask will be applied to the input array.
 operations within a single mask are unordered. If a specific ordering of
 operations is required, apply multiple masks in the desired order.
 
-For example,
+Examples:
     >>> @_impose_as({0:1, 2:(3,10)})
     ... def same(x):
     ...     return x
@@ -1331,7 +1346,7 @@ For example,
     [-2, -2, -3]
     >>> same([-1,-2,-3,-4])
     [-2, -2, 6, -4]
-    >>> 
+
     >>> @_impose_as({1:2})
     ... @_impose_as({0:1})
     ... def doit(x):
@@ -1357,7 +1372,7 @@ applied to the input, before the decorated function is called.
 
 The offset is applied to the second member of the tuple, and can accumulate.
 
-For example,
+Examples:
     >>> @impose_as([(0,1),(3,1),(4,5),(5,6),(5,7)])
     ... def same(x):
     ...   return x
@@ -1368,7 +1383,7 @@ For example,
     [0, 0, 0, 0]
     >>> same([-1,-2,-3,-4,-5,-6,-7])
     [-1, -1, -3, -1, -5, -5, -5]
-    >>> 
+
     >>> @impose_as([(0,1),(3,1),(4,5),(5,6),(5,7)], 10)
     ... def doit(x):
     ...   return x
@@ -1416,7 +1431,7 @@ def impose_at(index, target=0.0):
 index should be a set of indices to be fixed at the target. The target
 can either be a single value (e.g. float), or a list of values.
 
-For example,
+Examples:
     >>> @impose_at([1,3,4,5,7], -99)
     ... def same(x):
     ...   return x
@@ -1427,7 +1442,7 @@ For example,
     [1, -99, 1, -99]
     >>> same([1,1])
     [1, -99]
-    >>> 
+
     >>> @impose_at([1,3,4,5,7], [0,2,4,6])
     ... def doit(x):
     ...   return x
@@ -1499,7 +1514,7 @@ noweight is a dict of collapses, or a tuple of dicts of collapses.
 a noweight collapse is a dict of {measure: {indices}), where the
 indices are where the measure will be constrained to have zero weight
 
-For example,
+Examples:
     >>> pos = {0: {(0,1)}, 1:{(0,2)}}
     >>> wts = {0: {1}, 1: {1, 2}}
     >>> npts = (3,3)
@@ -1528,7 +1543,6 @@ For example,
     ... 
     >>> both([1./3, 1./3, 1./3, 1., 2., 3., 1./3, 1./3, 1./3, 1., 2., 3.])
     [0.66666666666666663, 0.0, 0.33333333333333331, 1.3333333333333335, 1.3333333333333335, 3.3333333333333335, 1.0, 0.0, 0.0, 2.0, 3.0, 2.0]
-    >>> 
     """
     # takes a dict of collapses, or a tuple of dicts of collapses
     if type(tracking) is dict: tracking = (tracking,)
@@ -1567,7 +1581,7 @@ pairs of indices are where the positions will be constrained to have the
 same value, and the weight from the second index in the pair will be removed
 and added to the weight of the first index
 
-For example,
+Examples:
     >>> pos = {0: {(0,1)}, 1:{(0,2)}}
     >>> npts = (3,3)
     >>> 
@@ -1579,7 +1593,6 @@ For example,
     [0.5, 0.0, 0.5, 2.0, 2.0, 6.0, 0.5, 0.5, 0.0, 5.0, 3.0, 5.0]
     >>> same([1./3, 1./3, 1./3, 1., 2., 3., 1./3, 1./3, 1./3, 1., 2., 3.])
     [0.6666666666666666, 0.0, 0.3333333333333333, 1.3333333333333335, 1.3333333333333335, 3.3333333333333335, 0.6666666666666666, 0.3333333333333333, 0.0, 1.6666666666666667, 2.666666666666667, 1.6666666666666667]
-    >>> 
     """
     return impose_measure(npts, tracking, {})
 
@@ -1593,7 +1606,7 @@ noweight is a dict of collapses, or a tuple of dicts of collapses.
 a noweight collapse is a dict of {measure: {indices}), where the
 indices are where the measure will be constrained to have zero weight
 
-For example,
+Examples:
     >>> wts = {0: {1}, 1: {1, 2}}
     >>> npts = (3,3)
     >>> 
@@ -1605,7 +1618,6 @@ For example,
     [0.5, 0.0, 0.5, 2.0, 4.0, 6.0, 1.0, 0.0, 0.0, 4.0, 2.0, 0.0]
     >>> doit([1./3, 1./3, 1./3, 1., 2., 3., 1./3, 1./3, 1./3, 1., 2., 3.])
     [0.5, 0.0, 0.5, 1.0, 2.0, 3.0, 1.0, 0.0, 0.0, 2.0, 3.0, 4.0]
-    >>> 
     """
     return impose_measure(npts, {}, noweight)
 

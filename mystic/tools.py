@@ -265,7 +265,7 @@ def flatten_array(sequence, maxlev=999, lev=0):
 def flatten(sequence, maxlev=999, to_expand=list_or_tuple, lev=0):
     """flatten a sequence; returns original sequence type
 
-For example:
+Examples:
     >>> A = [1,2,3,[4,5,6],7,[8,[9]]]
     >>> 
     >>> # Flatten.
@@ -283,7 +283,6 @@ For example:
     >>> # Flatten zero levels deep (i.e. don't flatten).
     >>> flatten(A,0)
     [1, 2, 3, [4, 5, 6], 7, [8, [9]]]
-
     """
     for item in sequence:
         if lev < maxlev and to_expand(item):
@@ -454,33 +453,34 @@ Examples:
 def reduced(reducer=None, arraylike=False):
     """apply a reducer function to reduce output to a single value
 
-For example:
+Examples:
     >>> @reduced(lambda x,y: x)
     ... def first(x):
     ...   return x
     ... 
     >>> first([1,2,3])
     1
-    >>> 
+
     >>> @reduced(min)
     ... def minimum(x):
     ...   return x
     ... 
     >>> minimum([3,2,1])
     1
+
     >>> @reduced(lambda x,y: x+y)
     ... def add(x):
     ...   return x
     ... 
     >>> add([1,2,3])
     6
+
     >>> @reduced(sum, arraylike=True)
     ... def added(x):
     ...   return x
     ... 
     >>> added([1,2,3])
     6
-
     """
     if reducer is None:
         reducer = lambda x: x
@@ -508,7 +508,7 @@ def insert_missing(x, missing=None):
 missing should be a dictionary of positional index and a value (e.g. {0:1.0}),
 where keys must be integers, and values can be any object (typically a float).
 
-For example:
+Examples:
     >>> insert_missing([1,2,4], missing={0:10, 3:-1})
     [10, 1, 2, -1, 4]
     """
@@ -552,14 +552,14 @@ where the mask will be applied to the input array.  Hence, instead of masking
 the inputs, the function is "masked".  Conceptually, f(mask(x)) ==> f'(x),
 instead of f(mask(x)) ==> f(x').
 
-For example:
+Examples:
     >>> @masked({0:10,3:-1})
     ... def same(x):
     ...     return x
     ...
     >>> same([1,2,3])
     [10, 1, 2, -1, 3]
-    >>> 
+
     >>> @masked({0:10,3:-1})
     ... def foo(x):
             w,x,y,z = x # requires a lenth-4 sequence
@@ -587,7 +587,7 @@ where keys must be integers, and values can be any object (typically a float).
 functions are expected to take a single argument, a n-dimensional list or array,
 where the mask will be applied to the input array.
 
-For example:
+Examples:
     >>> @partial({0:10,3:-1})
     ... def same(x):
     ...     return x
@@ -624,7 +624,7 @@ where the mask will be applied to the input array.
 operations within a single mask are unordered. If a specific ordering of
 operations is required, apply multiple masks in the desired order.
 
-For example:
+Examples:
     >>> @synchronized({0:1,3:-1})
     ... def same(x):
     ...     return x
@@ -687,14 +687,14 @@ def suppress(x, tol=1e-8, clip=True):
 def suppressed(tol=1e-8, exit=False, clip=True):
     """generate a function, where values less than tol are suppressed
 
-For example:
+Examples:
     >>> @suppressed(1e-8)
     ... def square(x):
     ...     return [i**2 for i in x]
     ... 
     >>> square([1e-8, 2e-8, 1e-9])
     [1.00000000e-16, 4.00000000e-16, 0.00000000e+00]
-    >>> 
+
     >>> from mystic.math.measures import normalize
     >>> @suppressed(1e-8, exit=True, clip=False)
     ... def norm(x):
@@ -748,7 +748,7 @@ def wrap_cf(CF, REG=None, cfmult=1.0, regmult=0.0):
 def chain(*decorators):
     """chain together decorators into a single decorator
 
-For example:
+Examples:
     >>> wm = with_mean(5.0)
     >>> wv = with_variance(5.0)
     >>> 
@@ -770,9 +770,10 @@ For example:
 def connected(pairs):
     """generate dict of connected members of a set of tuples (pairs)
 
-For example:
+Examples:
     >>> connected({(0,3),(4,2),(3,1),(4,5),(2,6)})
     {0: set([1, 3]), 4: set([2, 5, 6])}
+
     >>> connected({(0,3),(3,1),(4,5),(2,6)})
     {0: set([1, 3]), 2: set([6]), 4: set([5])}}
 """
@@ -793,7 +794,7 @@ For example:
 def unpair(pairs):
     '''convert a 1D array of N pairs to two 1D arrays of N values
 
-For example:
+Examples:
     >>> unpair([(a0,b0),(a1,b1),(a2,b2)])
     [a0,a1,a2],[b0,b1,b2]
     '''

@@ -1699,11 +1699,13 @@ Inputs:
     weights -- a list of sample weights
     index -- a list of desired support indices (weights will be non-zero)
 
-For example:
+Examples:
     >>> impose_support([0,1],[1,2,3,4,5],[.2,.2,.2,.2,.2])
     ([2.5, 3.5, 4.5, 5.5, 6.5], [0.5, 0.5, 0.0, 0.0, 0.0])
+
     >>> impose_support([0,1,2,3],[1,2,3,4,5],[.2,.2,.2,.2,.2])
     ([1.5, 2.5, 3.5, 4.5, 5.5], [0.25, 0.25, 0.25, 0.25, 0.0])
+
     >>> impose_support([4],[1,2,3,4,5],[.2,.2,.2,.2,.2])
     ([-1.0, 0.0, 1.0, 2.0, 3.0], [0.0, 0.0, 0.0, 0.0, 1.0])
 
@@ -1729,9 +1731,10 @@ Inputs:
     index -- a list of indices where weight is to be zero
     nullable -- if False, avoid null weights by reweighting non-index weights
 
-For example:
+Examples:
     >>> impose_unweighted([0,1,2],[1,2,3,4,5],[.2,.2,.2,.2,.2])
     ([-0.5, 0.5, 1.5, 2.5, 3.5], [0.0, 0.0, 0.0, 0.5, 0.5])
+
     >>> impose_unweighted([3,4],[1,2,3,4,5],[.2,.2,.2,.2,.2])
     ([2.0, 3.0, 4.0, 5.0, 6.0], [0.33333333333333331, 0.33333333333333331, 0.33333333333333331, 0.0, 0.0])
 
@@ -1760,9 +1763,10 @@ Inputs:
     weights -- a list of sample weights
     pairs -- set of tuples of indices (i,j) where collapse occurs
 
-For example:
+Examples:
     >>> impose_collapse({(0,1),(0,2)},[1,2,3,4,5],[.2,.2,.2,.2,.2])
     ([1.5999999999999996, 1.5999999999999996, 1.5999999999999996, 4.5999999999999996, 5.5999999999999996], [0.6000000000000001, 0.0, 0.0, 0.2, 0.2])
+
     >>> impose_collapse({(0,1),(3,4)},[1,2,3,4,5],[.2,.2,.2,.2,.2])
     ([1.3999999999999999, 1.3999999999999999, 3.3999999999999999, 4.4000000000000004, 4.4000000000000004], [0.4, 0.0, 0.2, 0.4, 0.0])
 
@@ -1850,10 +1854,10 @@ into a list of product measure sample points
 Inputs:
     samples -- a list of sample points for N discrete measures
 
-For example:
-  >>> _pack([[1,2,3], [4,5], [6,7]])
-  [(1,4,6), (2,4,6), (3,4,6), (1,5,6), (2,5,6), (3,5,6), \
-   (1,4,7), (2,4,7), (3,4,7), (1,5,7), (2,5,7), (3,5,7)]
+Examples:
+    >>> _pack([[1,2,3], [4,5], [6,7]])
+    [(1,4,6), (2,4,6), (3,4,6), (1,5,6), (2,5,6), (3,5,6), \
+     (1,4,7), (2,4,7), (3,4,7), (1,5,7), (2,5,7), (3,5,7)]
 """
  #from numpy import product, array, ones
  #ndim = len(samples)
@@ -1897,11 +1901,11 @@ Inputs:
     samples -- a list of sample points for a product measure
     npts -- a tuple of dimensions of the target discrete measure
 
-For example:
-  >>> _unpack( [(1,4,6), (2,4,6), (3,4,6), (1,5,6), (2,5,6), (3,5,6), \
-  ...           (1,4,7), (2,4,7), (3,4,7), (1,5,7), (2,5,7), (3,5,7)], (3,2,2) \
-  ...        )
-  [[1,2,3], [4,5], [6,7]]
+Examples:
+    >>> _unpack([(1,4,6), (2,4,6), (3,4,6), (1,5,6), (2,5,6), (3,5,6), \
+    ...          (1,4,7), (2,4,7), (3,4,7), (1,5,7), (2,5,7), (3,5,7)], (3,2,2)\
+    ...        )
+    [[1,2,3], [4,5], [6,7]]
 """
 # from numpy import product, array
 # ndim = len(npts)
@@ -1934,7 +1938,7 @@ converts a nested parameter list into flat parameter list
 Inputs:
     params -- a nested list of weights or positions
 
-For example:
+Examples:
     >>> par = [['x','x','x'], ['y','y'], ['z']]
     >>> _flat(par)
     ['x','x','x','y','y','z']
@@ -1951,7 +1955,7 @@ Inputs:
     params -- a flat list of weights or positions
     npts -- a tuple describing the shape of the target list
 
-For example:
+Examples:
     >>> nx = 3;  ny = 2;  nz = 1
     >>> par = ['x']*nx + ['y']*ny + ['z']*nz
     >>> _nested(par, (nx,ny,nz))
@@ -1974,7 +1978,7 @@ Inputs:
     params -- a flat list of weights and positions (formatted as noted below)
     npts -- a tuple describing the shape of the target lists
 
-For example:
+Examples:
     >>> nx = 3;  ny = 2;  nz = 1
     >>> par = ['wx']*nx + ['x']*nx + ['wy']*ny + ['y']*ny + ['wz']*nz + ['z']*nz
     >>> weights, positions = _nested_split(par, (nx,ny,nz))
@@ -2004,7 +2008,7 @@ Inputs:
     params -- a flat list of weights and positions (formatted as noted below)
     npts -- a tuple describing the shape of the target lists
 
-For example:
+Examples:
     >>> nx = 3;  ny = 2;  nz = 1
     >>> par = ['wx']*nx + ['x']*nx + ['wy']*ny + ['y']*ny + ['wz']*nz + ['z']*nz
     >>> weights, positions = split_param(par, (nx,ny,nz))

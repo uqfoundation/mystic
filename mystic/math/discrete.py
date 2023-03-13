@@ -1435,7 +1435,7 @@ def _mimic(samples, weights):
 positions and a list of N weights. The resulting product measure will
 mimic the original product measure's statistics, but be larger in size.
 
-For example:
+Examples:
     >>> smp = [[-6,3,6],[-2,4],[1]]
     >>> wts = [[.4,.2,.4],[.5,.5],[1.]]
     >>> c = compose(samples, weights)

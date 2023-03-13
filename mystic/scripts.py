@@ -699,12 +699,13 @@ def _parse_tol(tol, select=None):
 tol specifies the max distance from the plotted surface to plotted data
 select contains the dimension specifications on which to plot
 
-For example,
+Examples:
     >>> selected, masked = _parse_tol(".05, .1, .1, .5", [0,3])
     >>> selected
     (.05, .5)
     >>> masked
     (.1, .1)
+
     >>> selected, masked = _parse_tol(".1")
     >>> selected
     .1
@@ -731,7 +732,7 @@ select contains the dimension specifications on which to plot
 axes holds the indices of the parameters selected to plot
 mask is a dictionary of the parameter indices and fixed values
 
-For example,
+Examples:
     >>> select, axes, mask = _parse_input("-1:10:.1, 0.0, 5.0, -50:50:.5")
     >>> select
     [0, 3]

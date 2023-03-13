@@ -24,7 +24,7 @@ class Bounds(object):
         - xub: upper bound
         - n: repeat
 
-    For example:
+    Examples:
         >>> b = Bounds(7, 8, n=2)
         >>> b.xlb, b.xub
         (7, 8)
@@ -34,7 +34,7 @@ class Bounds(object):
         [7, 7]
         >>> b.upper
         [8, 8]
-        >>> 
+
         >>> c = Bounds((0,1),(3,4), n=2)
         >>> c()
         [(0, 3), (0, 3), (1, 4), (1, 4)]
@@ -139,7 +139,7 @@ class MeasureBounds(Bounds):
         - xub: upper bound
         - n: repeat
 
-    For example:
+    Examples:
         >>> b = MeasureBounds(7, 8, n=2)
         >>> b.wlb, b.wub
         (0, 1)
@@ -151,7 +151,7 @@ class MeasureBounds(Bounds):
         [0, 0, 7, 7]
         >>> b.upper
         [1, 1, 8, 8]
-        >>> 
+
         >>> c = MeasureBounds((0,1),(4,5), n=1, wlb=(0,1), wub=(2,3))
         >>> c.lower
         [0, 0, 1, 1]
@@ -159,7 +159,7 @@ class MeasureBounds(Bounds):
         [2, 4, 3, 5]
         >>> c()
         [(0, 2), (0, 4), (1, 3), (1, 5)]
-        >>> 
+
         >>> c = MeasureBounds((0,1),(4,5), n=2)
         >>> c()
         [(0, 1), (0, 1), (0, 4), (0, 4), (0, 1), (0, 1), (1, 5), (1, 5)]

@@ -67,10 +67,11 @@ Terminates when the given condition is satisfied."""
 Takes a termination condition:
     arg    -- termination condition
 
-Usage:
+Example:
     >>> from mystic.termination import When, VTR
     >>> term = When( VTR() )
-    >>> term(solver)  # where solver is a mystic.solver instance"""
+    >>> term(solver)  # where solver is a mystic.solver instance
+    """
     if isinstance(arg, tuple) and len(arg) == 1: arg = arg[0] # for pickling
     #XXX: need better filter on inputs
     if getattr(arg, '__module__', None) != self.__module__:
@@ -112,10 +113,11 @@ Terminates when all given conditions are satisfied."""
 Takes one or more termination conditions:
     args   -- tuple of termination conditions
 
-Usage:
+Example:
     >>> from mystic.termination import And, VTR, ChangeOverGeneration
     >>> term = And( VTR(), ChangeOverGeneration() )
-    >>> term(solver)  # where solver is a mystic.solver instance"""
+    >>> term(solver)  # where solver is a mystic.solver instance
+    """
     if isinstance(args, tuple) and len(args) == 1: args = args[0] # for pickling
     #XXX: need better filter on inputs
     if not getattr(args, '__len__', None): args = [args]
@@ -135,10 +137,11 @@ Terminates when any of the given conditions are satisfied."""
 Takes one or more termination conditions:
     args   -- tuple of termination conditions
 
-Usage:
+Example:
     >>> from mystic.termination import Or, VTR, ChangeOverGeneration
     >>> term = Or( VTR(), ChangeOverGeneration() )
-    >>> term(solver)  # where solver is a mystic.solver instance"""
+    >>> term(solver)  # where solver is a mystic.solver instance
+    """
     if isinstance(args, tuple) and len(args) == 1: args = args[0] # for pickling
     #XXX: need better filter on inputs
     if not getattr(args, '__len__', None): args = [args]

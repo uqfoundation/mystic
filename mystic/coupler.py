@@ -23,7 +23,7 @@ def outer(outer=lambda x:x, args=None, kwds=None):
 This is a useful function for nesting one constraint in another constraint.
 A constraints function takes an iterable x as input, returning a modified x.
 
-    For example:
+Examples:
     >>> def squared(x):
     ...   return x**2             
     ... 
@@ -54,7 +54,7 @@ A constraints function takes an iterable x as input, returning a modified x.
 The "inner" coupler is utilized by mystic.solvers to bind constraints to a cost
 function; thus the constraints are imposed every cost function evaluation.
 
-    For example:
+Examples:
     >>> def squared(x):
     ...   return x**2             
     ... 
@@ -141,7 +141,7 @@ This is useful, for example, in penalizing a cost function where the constraints
 are violated; thus, the satisfying the constraints will be preferred at every
 cost function evaluation.
 
-    For example:
+Examples:
     >>> def squared(x):
     ...   return x**2             
     ... 

@@ -782,20 +782,21 @@ def gradient(x, fx, method=None, approx=True, extrap=False, **kwds):
 
 # SEE: https://stackoverflow.com/questions/31206443
 def _hessian(x, grid):
-    '''find hessian of f(x), sampled on the coordinate grid defined by x
+    '''find hessian of ``f(x)``, sampled on the coordinate grid defined by ``x``
 
-    Input:
-      x: an array of shape (npts, dim) or (npts,)
-      grid: (irregular) coordinate grid of z = f(x), with axes = _axes(x)
+    Args:
+      x (ndarray): an array of shape ``(npts, dim)`` or ``(npts,)``
+      grid (ndarray): irregular coordinate grid generated from ``z = f(x)``
 
-    Output:
-      array of shape indicated in NOTE, hessian of the points on grid
+    Returns:
+      array of shape indicated in Notes, the hessian of the points on grid
 
-    NOTE:
-      output will be of the form (dim,dim)+grid.shape, where output hess[i,j]
-      corresponds to the second derivative z_{i,j} with i,j in range(dim).
-      For a 1D array x, output will be a 1D array of the same length.
-      The hessian is calculated using finite differences.
+    Notes:
+      - Output will be of the form ``(dim,dim) + grid.shape``, where the output
+        ``hess[i,j]`` corresponds to the second derivative ``z_{i,j}`` with
+        ``i,j`` in ``range(dim)``. For a 1D array ``x``, the output will be a
+        1D array of the same length. The hessian is calculated using finite
+        differences.
     ''' #XXX: can unique be used in this function?
     import numpy as np
     x =  np.asarray(x)
@@ -812,48 +813,44 @@ def _hessian(x, grid):
 
 #XXX: take f(*x) or f(x)?
 def hessian(x, fx, method=None, approx=True, extrap=False, **kwds):
-    '''find hessian of fx at x, where fx is a function z=fx(*x) or an array z
+    '''find hessian of ``fx`` at ``x``, with ``fx`` a function ``z = fx(*x)`` or an array ``z``
 
-    Input:
-      x: an array of shape (npts, dim) or (npts,)
-      fx: an array of shape (npts,) **or** a function, z = fx(*x)
-      method: string for kind of interpolator
-      approx: if True, use local approximation method
-      extrap: if True, extrapolate a bounding box (can reduce # of nans)
-      new: if True, include the extrapolated points in the output
+    Args:
+      x (ndarray): an array of shape ``(npts, dim)`` or ``(npts,)``
+      fx (ndarray): array of shape ``(npts,)`` **or** function ``z = f(*x)``
+      method (str, default=None): string name of the kind of interpolator
+      approx (bool, default=True): if True, use local approximation method
+      extrap (bool, default=False): if True, extrapolate a bounding box
+      new (bool, default=False): include the extrapolated points in the output
 
-    Output:
-      array of shape indicated in NOTE, hessian of the points at (x,fx)
+    Returns:
+      array of shape indicated in Notes, the hessian of the points at ``(x,fx)``
 
-    NOTE:
-      output will be of the form x.shape+(dim,), where hess[:,i,j]
-      corresponds to the second derivative z_{i,j} with i,j in range(dim).
-      For a 1D array x, output will be a 1D array of the same length.
-      
-    NOTE:
-      if approx is True, first use interpolation to build gradient functions
-      in each direction, then use mystic's approx_fprime, which uses a local
-      gradient approximation; otherwise use numpy's gradient method which
-      performs a more memory-intensive calcuation on a grid.
-
-    NOTE:
-      if scipy is not installed, will use np.interp for 1D (non-rbf),
-      or mystic's rbf otherwise. default method is 'nearest' for
-      1D and 'linear' otherwise. method can be one of ('rbf','linear','cubic',
-      'nearest','inverse','gaussian','multiquadric','quintic','thin_plate').
-
-    NOTE:
-      method string can provide either one or two methods (i.e. 'rbf
-      or 'rbf, cubic'), where if two methods are provided, the first
-      will be used to interpolate f(x) and the second will be used to
-      interpolate the gradient of f(x).
-
-    NOTE:
-      if extrap is True, extrapolate using interpf with method='thin_plate'
-      (or 'rbf' if scipy is not found). Alternately, any one of ('rbf',
-      'linear','cubic','nearest','inverse','gaussian','multiquadric',
-      'quintic','thin_plate') can be used. If extrap is a cost function
-      z = f(x), then directly use it in the extrapolation.
+    Notes:
+      - output will be of the form ``x.shape + (dim,)``, where ``hess[:,i,j]``
+        corresponds to the second derivative ``z_{i,j}`` with ``i,j`` in
+        ``range(dim)``. For a 1D array ``x``, output will be a 1D array of
+        the same length.
+      - if ``approx`` is True, first use interpolation to build gradient
+        functions in each direction, then use ``approx_fprime`` from ``mystic``,
+        which uses a local gradient approximation; otherwise use ``gradient``
+        from ``numpy``, which performs a memory-intensive calcuation on a grid.
+      - if ``scipy`` is not installed, will use ``numpy.interp`` for 1D
+        (non-rbf), or ``rbf`` from ``mystic`` otherwise. Default method is
+        ``'nearest'`` for 1D, and is ``'linear'`` otherwise. ``method`` can
+        be one of ``('rbf', 'linear', 'cubic', 'nearest', 'inverse',
+        'gaussian', 'multiquadric', 'quintic', 'thin_plate')``.
+      - method string can provide either one or two methods (i.e. ``'rbf'``
+        or ``'rbf, cubic'``), where if two methods are provided, the first
+        will be used to interpolate ``f(x)`` and the second will be used to
+        interpolate the gradient of ``f(x)``.
+      - if ``extrap`` is True, extrapolate using ``interpf`` with 
+        ``method='thin_plate'`` (or ``'rbf'`` if ``scipy`` is not installed).
+        Alternately, any one of ``('rbf', 'linear', 'cubic', 'nearest',
+        'inverse', 'gaussian', 'multiquadric', 'quintic', 'thin_plate')`` can
+        be used. If ``extrap`` is a cost function ``z = f(x)``, then directly
+        use it in the extrapolation. Using extrapolation can reduce the number
+        of ``nan``.
     ''' #NOTE: uses 'unique' in all cases
     slc = slice(None,None) if kwds.get('new', False) else slice(None,len(x))
     import numpy as np
@@ -892,37 +889,36 @@ def hessian(x, fx, method=None, approx=True, extrap=False, **kwds):
 
 
 def hessian_diagonal(x, fx, method=None, approx=True, extrap=False, **kwds):
-    '''find hessian diagonal of fx at x, with fx a function z=fx(*x) or array z
+    '''find hessian diagonal of ``fx`` at ``x``, with ``fx`` a function ``z = fx(*x)`` or an array ``z``
 
-    Input:
-      x: an array of shape (npts, dim) or (npts,)
-      fx: an array of shape (npts,) **or** a function, z = fx(*x)
-      method: string for kind of interpolator
-      approx: if True, use local approximation method
-      extrap: if True, extrapolate a bounding box (can reduce # of nans)
-      new: if True, include the extrapolated points in the output
+    Args:
+      x (ndarray): an array of shape ``(npts, dim)`` or ``(npts,)``
+      fx (ndarray): array of shape ``(npts,)`` **or** function ``z = f(*x)``
+      method (str, default=None): string name of the kind of interpolator
+      approx (bool, default=True): if True, use local approximation method
+      extrap (bool, default=False): if True, extrapolate a bounding box
+      new (bool, default=False): include the extrapolated points in the output
 
-    Output:
-      array of dimensions x.shape, hessian diagonal of the points at (x,fx)
+    Returns:
+      array of dimensions ``x.shape``, the hessian diagonal of the points at ``(x,fx)``
 
-    NOTE:
-      if approx is True, first use interpolation to build gradient functions
-      in each direction, then use mystic's approx_fprime, which uses a local
-      gradient approximation; otherwise use numpy's gradient method which
-      performs a more memory-intensive calcuation on a grid.
-
-    NOTE:
-      if scipy is not installed, will use np.interp for 1D (non-rbf),
-      or mystic's rbf otherwise. default method is 'nearest' for
-      1D and 'linear' otherwise. method can be one of ('rbf','linear','cubic',
-      'nearest','inverse','gaussian','multiquadric','quintic','thin_plate').
-
-    NOTE:
-      if extrap is True, extrapolate using interpf with method='thin_plate'
-      (or 'rbf' if scipy is not found). Alternately, any one of ('rbf',
-      'linear','cubic','nearest','inverse','gaussian','multiquadric',
-      'quintic','thin_plate') can be used. If extrap is a cost function
-      z = f(x), then directly use it in the extrapolation.
+    Notes:
+      - if ``approx`` is True, first use interpolation to build gradient
+        functions in each direction, then use ``approx_fprime`` from ``mystic``,
+        which uses a local gradient approximation; otherwise use ``gradient``
+        from ``numpy``, which performs a memory-intensive calcuation on a grid.
+      - if ``scipy`` is not installed, will use ``numpy.interp`` for 1D
+        (non-rbf), or ``rbf`` from ``mystic`` otherwise. Default method is
+        ``'nearest'`` for 1D, and is ``'linear'`` otherwise. ``method`` can
+        be one of ``('rbf', 'linear', 'cubic', 'nearest', 'inverse',
+        'gaussian', 'multiquadric', 'quintic', 'thin_plate')``.
+      - if ``extrap`` is True, extrapolate using ``interpf`` with 
+        ``method='thin_plate'`` (or ``'rbf'`` if ``scipy`` is not installed).
+        Alternately, any one of ``('rbf', 'linear', 'cubic', 'nearest',
+        'inverse', 'gaussian', 'multiquadric', 'quintic', 'thin_plate')`` can
+        be used. If ``extrap`` is a cost function ``z = f(x)``, then directly
+        use it in the extrapolation. Using extrapolation can reduce the number
+        of ``nan``.
     '''
     hess = hessian(x, fx, method, extrap=extrap, **kwds)
     if hess.ndim != 3: # (i.e. is 1 or 2)

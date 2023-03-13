@@ -50,30 +50,30 @@ def generate_mask(cx=None, cy=None):
     returns a masking function for (x,y) data or monitors, where
     list[bool] = mask(x,y), with True where constraints are satisfied
 
-    For example:
-    >>> mon = Monitor()
-    >>> mon([0.0,0.5,1.0],2)
-    >>> mon([2.0,3.0,4.0],3)
-    >>> mon([4.0,5.0,6.0],4)
-    >>> mon([5.0,5.5,6.5],6)
-    >>> 
-    >>> @impose_bounds((0,5))
-    ... def inputs(x):
-    ...   return x
-    ... 
-    >>> generate_mask(inputs)(mon)
-    [True, True, False, False]
-    >>> generate_mask(y=inputs)(mon)
-    [True, True, True, False]
-    >>>
-    >>> @integers()
-    ... def identity(x):
-    ...   return x
-    ... 
-    >>> generate_mask(identity)(mon)
-    [False, True, True, False]
-    >>> generate_mask(y=identity)(mon)
-    [True, True, True, True]
+    Examples:
+      >>> mon = Monitor()
+      >>> mon([0.0,0.5,1.0],2)
+      >>> mon([2.0,3.0,4.0],3)
+      >>> mon([4.0,5.0,6.0],4)
+      >>> mon([5.0,5.5,6.5],6)
+      >>> 
+      >>> @impose_bounds((0,5))
+      ... def inputs(x):
+      ...   return x
+      ... 
+      >>> generate_mask(inputs)(mon)
+      [True, True, False, False]
+      >>> generate_mask(y=inputs)(mon)
+      [True, True, True, False]
+      >>>
+      >>> @integers()
+      ... def identity(x):
+      ...   return x
+      ... 
+      >>> generate_mask(identity)(mon)
+      [False, True, True, False]
+      >>> generate_mask(y=identity)(mon)
+      [True, True, True, True]
     """
     def func(x, z=None):
         _x = getattr(x, '_x', x)
@@ -98,32 +98,32 @@ def generate_filter(mask):
     returns a function that filters (x,y) or a monitor, based on the given mask
     x',y' = filter(x,y), where filter removes values where mask is False
 
-    For example:
-    >>> mon = Monitor()
-    >>> mon([0.0,0.5,1.0],2)
-    >>> mon([2.0,3.0,4.0],3)
-    >>> mon([4.0,5.0,6.0],4)
-    >>> mon([5.0,5.5,6.5],6)
-    >>> 
-    >>> @impose_bounds((0,5))
-    ... def inputs(x):
-    ...   return x
-    ... 
-    >>> m = generate_filter(generate_mask(inputs))(mon)
-    >>> m._x
-    [[0.0, 0.5, 1.0], [2.0, 3.0, 4.0]]
-    >>> m._y
-    [2, 3]
-    >>>
-    >>> @integers()
-    ... def identity(x):
-    ...   return x
-    ... 
-    >>> m = generate_filter(generate_mask(identity))(mon)
-    >>> m._x
-    [[2.0, 3.0, 4.0], [4.0, 5.0, 6.0]]
-    >>> m._y
-    [3, 4]
+    Examples:
+      >>> mon = Monitor()
+      >>> mon([0.0,0.5,1.0],2)
+      >>> mon([2.0,3.0,4.0],3)
+      >>> mon([4.0,5.0,6.0],4)
+      >>> mon([5.0,5.5,6.5],6)
+      >>> 
+      >>> @impose_bounds((0,5))
+      ... def inputs(x):
+      ...   return x
+      ... 
+      >>> m = generate_filter(generate_mask(inputs))(mon)
+      >>> m._x
+      [[0.0, 0.5, 1.0], [2.0, 3.0, 4.0]]
+      >>> m._y
+      [2, 3]
+      >>>
+      >>> @integers()
+      ... def identity(x):
+      ...   return x
+      ... 
+      >>> m = generate_filter(generate_mask(identity))(mon)
+      >>> m._x
+      [[2.0, 3.0, 4.0], [4.0, 5.0, 6.0]]
+      >>> m._y
+      [3, 4]
     """
     def func(x, z=None):
         if not hasattr(mask, '__call__'):
