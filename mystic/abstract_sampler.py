@@ -10,27 +10,6 @@ the mystic sampler interface.
 """
 __all__ = ['AbstractSampler']
 
-"""
-# utility functions
-_reset_sampler: reset all
-_reset_solved: reset all solved
-_sample(reset): reset all/stop/none, then step
-
-# use cases to manage evals/iters
-_restart_all_without_step: _reset_sampler
-_restart_solved_without_step: _reset_solved
-_restart_all_then_step: _sample(reset=True)
-_restart_solved_then_step: _sample(reset=None)
-_step_without_restart: _sample(reset=False)
-
-# options
-_restart_if_solved(solved): (* = 'all' if all else 'solved')
-. all: if all stop, _restart_*_then_step
-. True: if best stop, _restart_*_then_step
-. any: if any stop, _restart_*_then_step 
-. False: if none stop, _restart_*_then_step
-. None: _step_without_restart
-"""
 
 class AbstractSampler(object): # derived class per sampling algorithm
     """
@@ -38,16 +17,14 @@ AbstractSampler base class for optimizer-directed samplers
     """
     def __init__(self, bounds, model, npts=None, **kwds):
         """
-        Inputs:
-         bounds -- list[tuples]: (lower,upper) bound for each model input
-         model -- function: y = model(x), where x is an input parameter vector
-         npts -- int: number of points to sample the model
-
-        NOTE:
-          additional keywords (evalmon, stepmon, maxiter, maxfun, dist,
-          saveiter, state, termination, constraints, penalty, reducer,
-          solver, tightrange, cliprange) are available for use.
-          See mystic.ensemble for more details.
+Args:
+  bounds (list[tuples]): (lower,upper) bound for each model input
+  model (function): ``y = model(x)``, where ``x`` is an input parameter vector
+  npts (int, default=None): number of points to sample the model
+  **kwds (dict, default={}): keywords for the underlying ensemble of solvers;
+    ``(evalmon, stepmon, maxiter, maxfun, dist, saveiter, state, termination,
+    constraints, penalty, reducer, solver, tightrange, cliprange)`` are
+    available for use. See ``mystic.ensemble`` for more details.
         """
         self._bounds = bounds
         self._model = model #FIXME: if None, interpolate
@@ -136,8 +113,12 @@ AbstractSampler base class for optimizer-directed samplers
     def _sample(self, reset=False):#, **kwds):
         """collect a sample for each member in the ensemble
 
-        Inputs:
-         reset: if True, reset all before sampling; if None, reset terminated
+Args:
+  reset (bool, default=False): reset all solvers before sampling; alternately,
+    if ``reset`` is None, then only reset the terminated solvers
+
+Returns:
+  None
         """
         #NOTE: sample(reset_all) is like _sample(reset), with None <=> False
         s = self._sampler
@@ -171,21 +152,24 @@ AbstractSampler base class for optimizer-directed samplers
     def sample(self, if_terminated=None, reset_all=True):#, **kwds):
         """sample npts using vectorized solvers
 
-        Input:
-         if_terminated: the amount of termination [all,True,any,False,None]
-         reset_all: action to take when if_terminated is met [True,False,None]
+Args:
+  if_terminated (bool, default=None): the amount of termination; must be one
+    of ``{all, True, any, False, None}``
+  reset_all (bool, default=True): action to take when ``if_terminated`` is met;
+    must be one of ``{True, False, None}``
 
-        Note:
-         When if_terminated is all, reset if all solvers are terminated.
-         When if_terminated is any, reset if any solvers are terminated.
-         When if_terminated is True, reset if the best solver is terminated.
-         When if_terminated is False, reset if no solvers are terminated.
-         When if_terminated is None, reset regardless of termination [default].
+Returns:
+  None
 
-        Note:
-         If reset_all is True, reset all solvers if if_terminated is satisfied.
-         If reset_all is False, similarly reset only the terminated solvers.
-         If reset_all is None, never reset.
+Notes:
+  - When ``if_terminated`` is None, reset regardless of termination.
+  - When ``if_terminated`` is True, reset if the best solver is terminated.
+  - When ``if_terminated`` is False, reset if no solvers are terminated.
+  - When ``if_terminated`` is all, reset if all solvers are terminated.
+  - When ``if_terminated`` is any, reset if any solvers are terminated.
+  - If ``reset_all`` is None, never reset.
+  - If ``reset_all`` is True, reset all solvers if ``if_terminated`` is met.
+  - If ``reset_all`` is False, similarly reset only the terminated solvers.
         """
         if type(reset_all) is bool:
             s = self._sampler
@@ -206,27 +190,32 @@ AbstractSampler base class for optimizer-directed samplers
 
 
     def sample_until(self, iters=None, evals=None, terminated=None, **kwds):
-        """sample until one of the three given conditions is met:
-        (iters() >= iters) or (evals() >= evals) or (# terminated > terminated)
+        """sample until one of the stop conditions are met
 
-        Input:
-         iters -- int: maximum number of iterations [default = inf]
-         evals -- int: maximum number of evaluations [default = inf]
-         terminated -- int: maximum number of stopped solvers [default = inf]
+Possible stop conditions are:
+  - solver iterations ``iters()`` equals or exceeds ``iters``
+  - solver evaluations ``evals()`` equals or exceeds ``evals``
+  - number of terminated solvers equals or exceeds ``terminated``
 
-        Additional Input:
-         if_terminated: the amount of termination [all,True,any,False,None]
-         reset_all: action to take when if_terminated is met [True,False,None]
+Args:
+  iters (int, default=inf): maximum number of iterations
+  evals (int, default=inf): maximum number of evaluations
+  terminated (int, default=inf): maximum number of terminated solvers
+  if_terminated (bool, default=None): the amount of termination; must be one
+    of ``{all, True, any, False, None}``
+  reset_all (bool, default=True): action to take when ``if_terminated`` is met;
+    must be one of ``{True, False, None}``
 
-        Note:
-         The default sampler configuration is to always reset (reset_all=True).
-         If termination != None, the default is never reset (reset_all=None).
-         A limit has to be provided for either iters, evals, or termination.
-
-        Note:
-         terminated - {all: all, True: best, any: 1, False: 0, None: inf, N: N}
-         if_terminated - {all: all, True: best, any: 1, False: 0, None: always}
-         reset_all - {True: reset all, False: reset solved, None: never reset}
+Notes:
+  - The default sampler configuration is to always reset (``reset_all=True``)
+  - If ``termination != None``, the default is never reset (``reset_all=None``)
+  - A limit for at least one of ``(iters, evals, termination)`` must be set.
+  - ``terminated`` may also be one of ``{all, True, any, False, None}``, where
+    ``{all: 'all', True: 'best', any: '1', False: '0', None: 'inf', N: 'N'}``
+  - ``if_terminated`` may be one of ``{all, True, any, False, None}``, where
+    ``{all: 'all', True: 'best', any: '1', False: '0', None: 'always'}``
+  - ``reset_all`` may be one of ``{True, False, None}``, where ``{True: 'reset
+    all', False: 'reset solved', None: 'never reset'}``
         """
         from numpy import inf, all as all_, any as any_
         if evals is None:
@@ -273,10 +262,10 @@ AbstractSampler base class for optimizer-directed samplers
 
 
     def evals(self, all=False): #XXX: None?
-        """get the number of function evaluations
+        """get the total number of function evaluations
 
-        Input:
-          all -- bool: if True, get evals from the entire ensemble
+Args:
+  all (bool, default=False): report the ``evals`` for each ensemble member
         """
         if all:
             return self._evals
@@ -284,10 +273,10 @@ AbstractSampler base class for optimizer-directed samplers
 
 
     def iters(self, all=False): #XXX: None?
-        """get the number of solver iterations
+        """get the total number of solver iterations
 
-        Input:
-          all -- bool: if True, get iters from the entire ensemble
+Args:
+  all (bool, default=False): report the ``iters`` for each ensemble member
         """
         if all:
             return self._iters
@@ -295,14 +284,16 @@ AbstractSampler base class for optimizer-directed samplers
 
 
     def terminated(self, *args, **kwds): #FIXME: confusing wrt if_terminated?
-        """
-        Input:
-         all, disp, info
+        """check if termination conditions have been met
 
-        Note:
-         all - {True: show all, False: best terminated, None: all terminated}
-         disp - {True: show details, False: show less, 'verbose': show more}
-         info - {True: return info string, False: return bool}
+Args:
+  disp (bool, default=False): print termination statistics and/or warnings
+  info (bool, default=False): return termination message (instead of boolean)
+  all (bool, default=None): get results for all solvers, else get the 'best'
+
+Notes:
+  - ``disp`` expects a bool, but can also take ``'verbose'`` for more verbosity 
+  - ``all``, by default (i.e. None), will show only the terminated solvers
         """
         _all = kwds.get('all', None)
         if _all not in (True, False, None):
@@ -312,3 +303,26 @@ AbstractSampler base class for optimizer-directed samplers
         return self._sampler.Terminated(*args, **kwds)
 
 
+"""
+### Notes ###
+
+# utility functions
+_reset_sampler: reset all
+_reset_solved: reset all solved
+_sample(reset): reset all/stop/none, then step
+
+# use cases to manage evals/iters
+_restart_all_without_step: _reset_sampler
+_restart_solved_without_step: _reset_solved
+_restart_all_then_step: _sample(reset=True)
+_restart_solved_then_step: _sample(reset=None)
+_step_without_restart: _sample(reset=False)
+
+# options
+_restart_if_solved(solved): (* = 'all' if all else 'solved')
+. all: if all stop, _restart_*_then_step
+. True: if best stop, _restart_*_then_step
+. any: if any stop, _restart_*_then_step 
+. False: if none stop, _restart_*_then_step
+. None: _step_without_restart
+"""

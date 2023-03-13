@@ -338,7 +338,7 @@ additional input::
 note::
     SetStrictRanges(None) will remove strict range constraints
 
-notes::
+note::
     By default, the bounds are coupled to the other constraints with a coupler
     (e.g. ``mystic.coupler.outer``), and not applied concurrently (i.e. with
     ``mystic.constraints.and_``). Using a coupler favors speed over robustness,
@@ -972,10 +972,10 @@ Args:
     constraints (constraint, default=None): function of the form:
         ``xk' = constraints(xk)``, where ``xk`` is the current parameter vector.
 
-Note:
-    ``callback`` and ``disp`` are 'sticky', in that once they are given, they
-    remain set until they are explicitly changed. Conversely, the other inputs
-    are not sticky, and are thus set for a one-time use.
+Notes:
+    - ``callback`` and ``disp`` are 'sticky', in that once they are given, they
+      remain set until they are explicitly changed. Conversely, the other inputs
+      are not sticky, and are thus set for a one-time use.
         """
         #allow for inputs that don't conform to AbstractSolver interface
         #NOTE: not sticky: callback, disp
@@ -1013,16 +1013,14 @@ Returns:
     None
 
 Notes:
-    To run the solver until termination, call ``Solve()``. Alternately, use
-    ``Terminated()`` as the stop condition in a while loop over ``Step``.
-
-    If the algorithm does not meet the given termination conditions after
-    the call to ``Step``, the solver may be left in an "out-of-sync" state.
-    When abandoning an non-terminated solver, one should call ``Finalize()``
-    to make sure the solver is fully returned to a "synchronized" state.
-
-    This method accepts additional args that are specific for the current
-    solver, as detailed in the `_process_inputs` method.
+    - To run the solver until termination, call ``Solve()``. Alternately, use
+      ``Terminated()`` as the stop condition in a while loop over ``Step``.
+    - If the algorithm does not meet the given termination conditions after
+      the call to ``Step``, the solver may be left in an "out-of-sync" state.
+      When abandoning an non-terminated solver, one should call ``Finalize()``
+      to make sure the solver is fully returned to a "synchronized" state.
+    - This method accepts additional args that are specific for the current
+      solver, as detailed in the ``_process_inputs`` method.
         """
         if 'disp' in kwds:
             disp = bool(kwds['disp'])#; del kwds['disp']

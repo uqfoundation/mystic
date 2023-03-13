@@ -14,15 +14,15 @@ from mystic.math import almostEqual
 from math import pi, cos, tanh
 import random
 
-def ballistic_limit(h,a):
+def ballistic_limit(h, a):
   """calculate ballistic limit
 
-  Inputs:
-    - h = thickness
-    - a = obliquity
+  Parameters:
+    h (float): thickness
+    a (float): obliquity
 
-  Outputs:
-    - v_bl = velocity (ballistic limit)
+  Returns:
+    velocity at the ballistic limit
 """
  #assumes h,a have been scaled:
  #h = x[0] * 25.4 * 1e-3
@@ -35,11 +35,11 @@ def ballistic_limit(h,a):
 def marc_surr(x):
   """calculate perforation area using a tanh-based model surrogate
 
-  Inputs:
-    - x = [thickness, obliquity, speed]
+  Parameters:
+    x (list[float]): an iterable of [thickness, obliquity, speed]
 
-  Outputs:
-    - A = perforation area
+  Returns:
+    perforation area
 """
 # h = thickness = [60,105]
 # a = obliquity = [0,30]

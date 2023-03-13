@@ -620,10 +620,10 @@ Args:
         ``xk' = constraints(xk)``, where ``xk`` is the current parameter vector.
     step (bool, default=False): if True, enable ``Step`` within the ensemble.
 
-Note:
-    ``callback`` and ``disp`` are 'sticky', in that once they are given, they
-    remain set until they are explicitly changed. Conversely, the other inputs
-    are not sticky, and are thus set for a one-time use.
+Notes:
+    - ``callback`` and ``disp`` are 'sticky', in that once they are given, they
+      remain set until they are explicitly changed. Conversely, the other inputs
+      are not sticky, and are thus set for a one-time use.
         """
         #allow for inputs that don't conform to AbstractSolver interface
         #NOTE: not sticky: callback, disp
@@ -647,12 +647,12 @@ Args:
 Returns:
     None
 
-Note:
-    Optimizer settings for ensemble solvers include the `step` keyword,
-    which enables the Step menthod within the ensemble. By default, ensemble
-    solvers run to completion (i.e. Solve), for efficiency. Using `Step`
-    enables the ensemble to communicate state between members of the ensemble
-    at each iteration.
+Notes:
+    - Optimizer settings for ensemble solvers include the ``step`` keyword,
+      which causes the ``Step`` method to be used. By default, ensemble
+      solvers run to completion (i.e. ``Solve``), for efficiency. Using ``Step``
+      enables the ensemble to communicate state between members of the ensemble
+      at each iteration, which may slow execution.
         """
         #FIXME: 'step' is undocumented (in Solve)
         #NOTE: if Step once, will ensure always uses step=True, unless...

@@ -53,20 +53,20 @@ class Searcher(object):
                        seeker=None, traj=False, disp=False, repeat=0):
         """searcher, which searches for all minima of a response surface
 
-        Input:
-          npts - number of solvers in the ensemble
-          retry - max consectutive retries w/o a cache 'miss'
-          tol - rounding precision for the minima comparator
-          memtol - rounding precision for memoization
-          memsize - maximum size of cache to hold in memory
-          map - map used for spawning solvers in the ensemble
-          archive - the sampled point archive(s)
-          cache - the trajectory cache(s)
-          sprayer - the mystic.ensemble instance
-          seeker - the mystic.solvers instance
-          traj - if True, save the parameter trajectories
-          disp - if True, be verbose
-          repeat - number of times to repeat the search
+    Input:
+      npts - number of solvers in the ensemble
+      retry - max consectutive retries w/o a cache 'miss'
+      tol - rounding precision for the minima comparator
+      memtol - rounding precision for memoization
+      memsize - maximum size of cache to hold in memory
+      map - map used for spawning solvers in the ensemble
+      archive - the sampled point archive(s)
+      cache - the trajectory cache(s)
+      sprayer - the mystic.ensemble instance
+      seeker - the mystic.solvers instance
+      traj - if True, save the parameter trajectories
+      disp - if True, be verbose
+      repeat - number of times to repeat the search
         """
         #XXX: better not to use klepto as default? just dict and false cache?
         from klepto.archives import dict_archive as _archive
@@ -207,18 +207,18 @@ class Searcher(object):
     def Search(self, model, bounds, stop=None, traj=None, disp=None, **kwds):
         """use an ensemble of optimizers to search for all minima
 
-        Inputs:
-          model - function z=f(x) to be used as the objective of the Searcher
-          bounds - tuple of floats (min,max), bounds on the search region
-          stop - termination condition
-          traj - klepto.archive to store sampled points
-          disp - if True, be verbose
-          monitor - mystic.monitor instance to store parameter trajectories
-          evalmon - mystic.monitor instance to store parameter evaluations
-          penalty - mystic.penalty instance of the form y' = k*p(x)
-          constraints - mystic.constraints instance of the form x' = c(x)
-          tightrange - if True, apply bounds concurrent with other constraints
-          cliprange - if True, bounding constraints will clip exterior values
+    Input:
+      model - function z=f(x) to be used as the objective of the Searcher
+      bounds - tuple of floats (min,max), bounds on the search region
+      stop - termination condition
+      traj - klepto.archive to store sampled points
+      disp - if True, be verbose
+      monitor - mystic.monitor instance to store parameter trajectories
+      evalmon - mystic.monitor instance to store parameter evaluations
+      penalty - mystic.penalty instance of the form y' = k*p(x)
+      constraints - mystic.constraints instance of the form x' = c(x)
+      tightrange - if True, apply bounds concurrent with other constraints
+      cliprange - if True, bounding constraints will clip exterior values
         """
         self.traj = self.traj if traj is None else traj
         self.disp = self.disp if disp is None else disp
@@ -246,9 +246,9 @@ class Searcher(object):
     def Reset(self, cache=None, inv=None):
         """clear the trajectory cache of sampled points
 
-        Input:
-          cache - the trajectory cache(s)
-          inv - if True, reset the cache for the inverse of the objective
+    Input:
+      cache - the trajectory cache(s)
+      inv - if True, reset the cache for the inverse of the objective
         """
         if cache is None: self.cache.clear() #XXX: clear the archive?
         self.cache = self.cache if cache is None else cache
@@ -258,12 +258,12 @@ class Searcher(object):
     def Values(self, unique=False, all=False):
         """return the sequence of stored response surface outputs
 
-        Input:
-          unique: if True, only return unique values
-          all: if True, return all sampled values (not just trajectory values)
+    Input:
+      unique: if True, only return unique values
+      all: if True, return all sampled values (not just trajectory values)
 
-        Output:
-          a list of stored response surface outputs
+    Returns:
+      a list of stored response surface outputs
         """
         archive = self.archive if all else self.cache
         vals = archive.values()
@@ -273,12 +273,12 @@ class Searcher(object):
     def Coordinates(self, unique=False, all=False):
         """return the sequence of stored model parameter input values
 
-        Input:
-          unique: if True, only return unique values
-          all: if True, return all sampled inputs (not just trajectory inputs)
+    Input:
+      unique: if True, only return unique values
+      all: if True, return all sampled inputs (not just trajectory inputs)
 
-        Output:
-          a list of parameter trajectories
+    Returns:
+      a list of parameter trajectories
         """
         archive = self.archive if all else self.cache
         keys = archive.keys()
@@ -288,11 +288,11 @@ class Searcher(object):
     def Minima(self, tol=None): #XXX: unique?
         """return a dict of (coordinates,values) of all discovered minima
 
-        Input:
-          tol: tolerance within which to consider a point a minima
+    Input:
+      tol: tolerance within which to consider a point a minima
 
-        Output:
-          a dict of (coordinates,values) of all discovered minima
+    Returns:
+      a dict of (coordinates,values) of all discovered minima
         """
         if tol is None: tol=self.tol
         data = self.cache

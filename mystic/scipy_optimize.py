@@ -374,10 +374,10 @@ Args:
     adaptive (bool, default=False): adapt algorithm parameters to the
         dimensionality of the initial parameter vector ``x``.
 
-Note:
-    ``callback`` and ``disp`` are 'sticky', in that once they are given, they
-    remain set until they are explicitly changed. Conversely, the other inputs
-    are not sticky, and are thus set for a one-time use.
+Notes:
+    - ``callback`` and ``disp`` are 'sticky', in that once they are given, they
+      remain set until they are explicitly changed. Conversely, the other inputs
+      are not sticky, and are thus set for a one-time use.
         """
         #allow for inputs that don't conform to AbstractSolver interface
         #NOTE: not sticky: callback, disp
@@ -472,7 +472,7 @@ Notes:
     - fopt (*float*): value of cost function at minimum: ``fopt = cost(xopt)``
     - iter (*int*): number of iterations
     - funcalls (*int*): number of function calls
-    - warnflag (*int*): warning flag:
+    - warnflag (*int*): warning flag
         - ``1 : Maximum number of function evaluations``
         - ``2 : Maximum number of iterations``
     - allvecs (*list*): a list of solutions at each iteration
@@ -755,10 +755,10 @@ Args:
     xtol (float, default=1e-4): line-search error tolerance.
     imax (float, default=500): line-search maximum iterations.
 
-Note:
-    ``callback`` and ``disp`` are 'sticky', in that once they are given, they
-    remain set until they are explicitly changed. Conversely, the other inputs
-    are not sticky, and are thus set for a one-time use.
+Notes:
+    - ``callback`` and ``disp`` are 'sticky', in that once they are given, they
+      remain set until they are explicitly changed. Conversely, the other inputs
+      are not sticky, and are thus set for a one-time use.
         """
         #allow for inputs that don't conform to AbstractSolver interface
         #NOTE: not sticky: callback, disp
@@ -865,7 +865,7 @@ Notes:
     - fopt (*float*): value of cost function at minimum: ``fopt = cost(xopt)``
     - iter (*int*): number of iterations
     - funcalls (*int*): number of function calls
-    - warnflag (*int*): warning flag:
+    - warnflag (*int*): warning flag
         - ``1 : Maximum number of function evaluations``
         - ``2 : Maximum number of iterations``
     - direc (*tuple*): the current direction set

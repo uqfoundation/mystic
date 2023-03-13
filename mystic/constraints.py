@@ -21,19 +21,22 @@ from mystic.math.measures import *
 from mystic.math import almostEqual
 
 def vectorize(constraint, axis=1):
-    """vectorize a constraint for 2D input, `x' = k(x)` where `x` is 2D
+    """vectorize a 1D constraint function ``x' = c(x)`` for 2D input and output
 
-    Input:
-        constraint -- a mystic constraint, c, where `x' = c(x)`, `x` is a list
-        axis -- axis to apply constraints to, must be 0 or 1 (default is 1)
+    Args:
+        constraint (function): a function ``c``, where ``x' = c(x)`` with ``x``
+          and ``x'`` lists of the same length
+        axis (int, default=1): index of the axis of ``x`` to apply constraints;
+          must be either 0 or 1
 
-    Output:
-        transform -- a transform function, k, where `x' = k(x)`, `x` is 2D array
+    Returns:
+        a function ``k``, where ``x' = k(x)`` with ``x`` and ``x'`` 2D arrays
+          of the same shape
 
     Notes:
-        Produces a constraints function that is of the form required by
-        sklearn.preprocessing.FunctionTransformer(func=transform).
-        Input to the tranform is a 2D numpy array of shape (samples, features).
+        - Produces a ``transform`` function that is of the form required by
+          ``sklearn.preprocessing.FunctionTransformer(func=transform)``, and
+          takes a ``numpy`` array of shape ``(samples, features)`` as input.
 
     Examples:
         >>> from mystic.constraints import (impose_bounds, integers,
