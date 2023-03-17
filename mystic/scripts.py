@@ -163,9 +163,12 @@ def _support_to_logfile(support, logfile=None): #.py -> .txt
     if not hasattr(ids, '__len__'): #XXX: ids is not 'processed'
         ids = [ids]*len(cost)
     id = max(set(ids)) or 0
+    if not isinstance(id, int): id = 0
     m = [LoggingMonitor(filename=logfile) for i in range(id + 1)]
     if ids is None or isinstance(ids, int):
         [m[ids or 0](p,c,id=ids) for (p,c) in zip(params,cost)]
+    elif id == 0: #NOTE: ids could be non-int
+        [m[0](p,c,id=i) for (p,c,i) in zip(params,cost,ids)]
     else: #NOTE: m[None] -> m[0]
         [m[i or 0](p,c,id=i) for (p,c,i) in zip(params,cost,ids)]
     return
@@ -202,8 +205,12 @@ def _archive_to_logfile(archive, logfile=None, type=None, iter=False):
         params = list(list(k) for k in params)
         step = [i[-1] if len(i) == 2 else None for i in step]
         id = max(set(step)) or 0
+        if not isinstance(id, int): id = 0
         m = [LoggingMonitor(filename=logfile) for i in range(id + 1)]
-        [m[i or 0](p,c,id=i) for (p,c,i) in zip(params,cost,step)]
+        if id == 0: #NOTE: ids could be non-int
+            [m[i or 0](p,c,id=i) for (p,c,i) in zip(params,cost,step)]
+        else:
+            [m[i or 0](p,c,id=i) for (p,c,i) in zip(params,cost,step)]
     else:
         params = list(list(k) for k in source.keys())
         step = [None]*len(cost)
@@ -651,7 +658,9 @@ if provided, ids are the list of 'run ids' to select
         param = np.array(param).reshape(len(param),-1).T.tolist()
 
     # split (i,id) into iteration and id
-    multinode = len(step[0]) - 1 if step else 0 #XXX: no step info, so give up
+    if step: #XXX: ignore non-intger ids
+        multinode = len(step[0]) - 1 if isinstance(step[0][-1], int) else 0
+    else: multinode = 0 #XXX: no step info, so give up
     if multinode: id = [(i[1] or 0) for i in step]
     else: id = [0 for i in step] #FIXME: hardwired to 0
 
@@ -1660,7 +1669,9 @@ Notes:
     del locals
 
     # split (i,id) into iteration and id
-    multinode = len(step[0]) - 1  if step else 0 #XXX: no step info, so give up
+    if step: #XXX: ignore non-intger ids
+      multinode = len(step[0]) - 1 if isinstance(step[0][-1], int) else 0
+    else: multinode = 0 #XXX: no step info, so give up
     iter = [i[0] for i in step]
     if multinode:
       id = [i[1] for i in step]
@@ -1952,7 +1963,9 @@ Notes:
     del locals
 
     # split (i,id) into iteration and id
-    multinode = len(step[0]) - 1  if step else 0 #XXX: no step info, so give up
+    if step: #XXX: ignore non-intger ids
+      multinode = len(step[0]) - 1 if isinstance(step[0][-1], int) else 0
+    else: multinode = 0 #XXX: no step info, so give up
     iter = [i[0] for i in step]
     if multinode:
       id = [i[1] for i in step]

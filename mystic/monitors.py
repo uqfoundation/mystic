@@ -395,8 +395,8 @@ input parameters 'x' every 'xinterval'.
             else:
                 who = ' best'
                 y = " %s" % self._ik(self._y[-1][best], k)
-            msg = "Generation %d has%s %s:%s" % (self._step-1,who,self.label,y)
-            if id is not None: msg = "[id: %d] " % (id) + msg
+            msg = "Generation %s has%s %s:%s" % (self._step-1,who,self.label,y)
+            if id is not None: msg = "[id: %s] " % (id) + msg
             print(msg)
         if self._xinterval is not numpy.inf and \
            int((self._step-1) % self._xinterval) == 0:
@@ -409,8 +409,8 @@ input parameters 'x' every 'xinterval'.
             else:
                 who = ' best'
                 x = "\n %s" % self._x[-1][best]
-            msg = "Generation %d has%s fit parameters:%s" % (self._step-1,who,x)
-            if id is not None: msg = "[id: %d] " % (id) + msg
+            msg = "Generation %s has%s fit parameters:%s" % (self._step-1,who,x)
+            if id is not None: msg = "[id: %s] " % (id) + msg
             print(msg)
         return
     pass
@@ -521,8 +521,8 @@ print every 'yinterval'.
             else:
                 who = ' best'
                 y = " %s" % self._ik(self._y[-1][best], k)
-            msg = "Generation %d has%s %s:%s" % (self._step-1,who,self.label,y)
-            if id is not None: msg = "[id: %d] " % (id) + msg
+            msg = "Generation %s has%s %s:%s" % (self._step-1,who,self.label,y)
+            if id is not None: msg = "[id: %s] " % (id) + msg
             print(msg)
         if self._vxinterval is not numpy.inf and \
            int((self._step-1) % self._vxinterval) == 0:
@@ -535,8 +535,8 @@ print every 'yinterval'.
             else:
                 who = ' best'
                 x = "\n %s" % self._x[-1][best]
-            msg = "Generation %d has%s fit parameters:%s" % (self._step-1,who,x)
-            if id is not None: msg = "[id: %d] " % (id) + msg
+            msg = "Generation %s has%s fit parameters:%s" % (self._step-1,who,x)
+            if id is not None: msg = "[id: %s] " % (id) + msg
             print(msg)
         return
     def __reduce__(self):
