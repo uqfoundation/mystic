@@ -83,7 +83,15 @@ from mystic.scipy_optimize import fmin, fmin_powell
 
 # load a solver from a restart file
 def LoadSolver(filename=None, **kwds):
-    """load solver state from a restart file"""
+    """load solver state from a restart file
+
+Args:
+    filename (str, default=None): path of solver restart file
+    **kwds (dict, default={}): solver state overrides
+
+Returns:
+    solver instance
+    """
     if filename is None:
         filename = kwds['_state'] if '_state' in kwds else None
     #XXX: only allow a list override keys (lookup values from self)

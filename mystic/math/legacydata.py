@@ -8,18 +8,24 @@
 """
 data structures for legacy data observations of lipschitz functions
 """
+__all__ = ['NULLSLOPE', '_fails', 'datapoint', 'dataset', 'lipschitzcone',
+           'point', 'save_dataset', 'load_dataset']
+
 from numpy import inf, asarray
 NULLSLOPE = inf
 
 def _fails(filter, data=None):
   """filter a data array for failures using a boolean filter
 
-  Inputs:
-    filter -- a list of booleans (same size as data)
-    data -- a list of data points
+Args:
+  filter (list): a list of booleans (same size as data) to filter the data
+  data (list, default=None): a list of data points
 
-  Notes:
-    if data=None, return the pairs of indices where data fails
+Returns:
+  filtered list of data points
+
+Notes:
+  - if ``data`` is None, return the pairs of indices where data fails
   """
   from numpy import where, asarray
   failures = asarray(where(filter == False)).T
@@ -32,11 +38,11 @@ def _fails(filter, data=None):
 class lipschitzcone(list):
   """ Lipschitz double cone around a data point, with vertex and slope
 
- queries:
+ queries::
   vertex -- coordinates of lipschitz cone vertex
   slopes -- lipschitz slopes for the cone (should be same dimension as 'vertex')
 
- methods:
+ methods::
   contains -- return True if a given point is within the cone
   distance -- sum of lipschitz-weighted distance between a point and the vertex
 """
@@ -73,12 +79,12 @@ class lipschitzcone(list):
 class point(object):
   """ n-d data point with position and value but no id (i.e. 'raw')
 
- queries:
+ queries::
   p.value   --  returns value
   p.position  --  returns position
   p.rms  --  returns the square root of sum of squared position
 
- settings:
+ settings::
   p.value = v1  --  set the value
   p.position = (x1, x2, ..., xn)  --  set the position
 """
@@ -143,15 +149,15 @@ class point(object):
 class datapoint(object):
   """ n-d data point with position and value 
 
- queries:
+ queries::
   p.value   --  returns value
   p.position  --  returns position
 
- settings:
+ settings::
   p.value = v1  --  set the value
   p.position = (x1, x2, ..., xn)  --  set the position
 
- notes:
+ notes::
   a datapoint can have an assigned id and cone;
   also has utilities for comparison against other
   datapoints (intended for use in a dataset)
@@ -265,7 +271,7 @@ class dataset(list):  #FIXME: should just accept datapoints
   """ a collection of data points
   s = dataset([point1, point2, ..., pointN])
 
- queries:
+ queries::
   s.values  --  returns list of values
   s.coords  --  returns list of positions
   s.ids  --  returns list of ids
@@ -273,10 +279,10 @@ class dataset(list):  #FIXME: should just accept datapoints
   s.npts  --  returns the number of points
   s.lipschitz  --  returns list of lipschitz constants
 
- settings:
+ settings::
   s.lipschitz = [s1, s2, ..., sn]  --  sets lipschitz constants
 
- methods:
+ methods::
   short  -- check for shortness with respect to given data (or self)
   valid  -- check for validity with respect to given model
   update  -- update the positions and values in the dataset 
@@ -289,7 +295,7 @@ class dataset(list):  #FIXME: should just accept datapoints
   has_point  -- return True where dataset points are in query
   has_datapoint  -- return True where dataset entries are in query
 
- notes:
+ notes::
   - datapoints should not be edited; except possibly for id
   - assumes that s.n = len(s.coords) == len(s.values)
   - all datapoints in a dataset should have the same cone.slopes
@@ -517,8 +523,11 @@ Notes:
   def filter(self, mask): #XXX: assumes len(mask) = len(self); mask[i] is bool
     """return dataset entries where mask array is True 
 
-Inputs:
-    mask -- a boolean array of the same length as dataset
+Args:
+    mask (ndarray[bool]): a boolean array of the same length as dataset
+
+Returns:
+    the filtered dataset
 """
     from numpy import array, where
     _self = array(self)
@@ -597,10 +606,17 @@ Inputs:
 #######################################################
 
 def load_dataset(filename, filter=None):
-  """ read dataset from selected file
+  """read dataset from selected file
 
-  filename -- string name of dataset file
-  filter -- tuple of points to select ('False' to ignore filter stored in file)
+Args:
+  filename (str): filepath of dataset file
+  filter (tuple, default=None): points to select
+
+Returns:
+  the stored ``mystic.math.legacydata.dataset``
+
+Notes:
+  - if `filter`` is False, ignore the filter stored in ``filename``
 """
   from os.path import split, splitext
   name = splitext(split(filename)[-1])[0]  # default name is filename
@@ -647,10 +663,14 @@ def load_dataset(filename, filter=None):
 def save_dataset(data, filename='dataset.txt', filter=None, new=True):
   """ save dataset to selected file
 
-  data -- data set
-  filename -- string name of dataset file
-  filter -- tuple, filter to apply to dataset upon reading
-  new -- boolean, False if appending to existing file
+Args:
+  data (dataset): a ``mystic.math.legacydata.dataset``
+  filename (str, default='dataset.txt'): filepath of dataset file
+  filter (tuple, default=None): filter to apply to dataset upon reading
+  new (bool, default=True): if False, append to existing file
+
+Returns:
+  None
 """
   import datetime
   if new: ind = 'w'

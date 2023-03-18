@@ -532,16 +532,18 @@ note::
     def _Step(self, cost=None, ExtraArgs=None, **kwds):
         """perform a single optimization iteration
 
-input::
-    - cost is the objective function, of the form y = cost(x, *ExtraArgs),
-      where x is a candidate solution, and ExtraArgs is the tuple of positional
-      arguments required to evaluate the objective.
+Args:
+    cost (func, default=None): objective, of form ``y = cost(x, *ExtraArgs)``,
+      where ``x`` is a candidate solution vector
+    ExtraArgs (tuple, default=None): tuple of positional arguments required to
+      evaluate the objective
 
-note::
-    ExtraArgs needs to be a *tuple* of extra arguments.
+Returns:
+    None
 
-    This method accepts additional args that are specific for the current
-    solver, as detailed in the `_process_inputs` method.
+Notes:
+    - This method accepts additional ``kwds`` that are specific for the current
+      solver, as detailed in the ``_process_inputs`` method.
         """
         # process and activate input settings
         kwds['step'] = True  #XXX: once Step is taken, step=True thereafter

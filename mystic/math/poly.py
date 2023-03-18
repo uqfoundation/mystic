@@ -8,15 +8,31 @@
 """
 tools for polynomial functions
 """
-from numpy import asarray
-from numpy import poly1d as npoly1d
+#__all__ = ['polyeval', 'poly1d']
 
 def polyeval(coeffs, x):
-    """takes list of coefficients & evaluation points, returns f(x)
-thus, [a3, a2, a1, a0] yields  a3 x^3 + a2 x^2 + a1 x^1 + a0"""
+    """evaluate the polynomial defined by coeffs at evaluation points, x
+
+thus, ``[a3, a2, a1, a0]`` yields ``a3 x^3 + a2 x^2 + a1 x^1 + a0``
+
+Args:
+    coeffs (list[float]): polynomial coefficients
+    x (array[float]): array of points to evaluate the polynomial
+
+Returns:
+    array of evaluations of the polynomial
+
+Examples:
+    >>> x = numpy.array([1, 2, 3, 4, 5])
+    >>> polyeval([1, 0, 0], x)
+    array([ 1,  4,  9, 16, 25])
+    >>> polyeval([0, 1, -1], x)
+    array([0, 1, 2, 3, 4])
+    """
     # The effect is this:
     #    return reduce(lambda x1, x2: x1 * x + x2, coeffs, 0)
     # However, the for loop used below is faster by about 50%.
+#   from numpy import asarray
 #   x = asarray(x) #FIXME: converting to numpy.array slows by 10x
     val = 0*x
     for c in coeffs:
@@ -24,8 +40,8 @@ thus, [a3, a2, a1, a0] yields  a3 x^3 + a2 x^2 + a1 x^1 + a0"""
     return val
 
 def poly1d(coeff):
-    """generates a 1-D polynomial instance from a list of coefficients
-using numpy.poly1d(coeffs)"""
+    """generate a 1-D polynomial instance from a list of coefficients"""
+    from numpy import poly1d as npoly1d
     return npoly1d(coeff)
 
 

@@ -221,9 +221,13 @@ Args:
         """decorate the cost function with bounds, penalties, monitors, etc
 
 Args:
-    cost (function): objective function of the form ``y = cost(x, *ExtraArgs)``,
-      where ``x`` is a candidate solution, and ``ExtraArgs`` is the tuple of
-      positional arguments required to evaluate the objective.
+    cost (func): objective, of form ``y = cost(x, *ExtraArgs)``, where ``x``
+      is a candidate solution vector
+    ExtraArgs (tuple, default=None): tuple of positional arguments required to
+      evaluate the objective
+
+Returns:
+    decorated objective function
         """
         #print("@%r %r %r" % (cost, ExtraArgs, max))
         evalmon = self._evalmon
@@ -249,15 +253,17 @@ Args:
         """perform a single optimization iteration
 
 Args:
-    cost (function): objective function of the form ``y = cost(x, *ExtraArgs)``,
-      where ``x`` is a candidate solution, and ``ExtraArgs`` is the tuple of
-      positional arguments required to evaluate the objective.
+    cost (func, default=None): objective, of form ``y = cost(x, *ExtraArgs)``,
+      where ``x`` is a candidate solution vector
+    ExtraArgs (tuple, default=None): tuple of positional arguments required to
+      evaluate the objective
+
+Returns:
+    None
 
 Notes:
-    ``ExtraArgs`` needs to be a *tuple* of extra arguments.
-
-    This method accepts additional ``kwds`` that are specific for the current
-    solver, as detailed in the ``_process_inputs`` method.
+    - This method accepts additional ``kwds`` that are specific for the current
+      solver, as detailed in the ``_process_inputs`` method.
         """
         # process and activate input settings
         settings = self._process_inputs(kwds)
@@ -459,9 +465,13 @@ Args:
         """decorate the cost function with bounds, penalties, monitors, etc
 
 Args:
-    cost (function): objective function of the form ``y = cost(x, *ExtraArgs)``,
-      where ``x`` is a candidate solution, and ``ExtraArgs`` is the tuple of
-      positional arguments required to evaluate the objective.
+    cost (func): objective, of form ``y = cost(x, *ExtraArgs)``, where ``x``
+      is a candidate solution vector
+    ExtraArgs (tuple, default=None): tuple of positional arguments required to
+      evaluate the objective
+
+Returns:
+    decorated objective function
         """
         #print("@%r %r %r" % (cost, ExtraArgs, max))
         raw = cost
@@ -492,15 +502,17 @@ Args:
         """perform a single optimization iteration
 
 Args:
-    cost (function): objective function of the form ``y = cost(x, *ExtraArgs)``,
-      where ``x`` is a candidate solution, and ``ExtraArgs`` is the tuple of
-      positional arguments required to evaluate the objective.
+    cost (func, default=None): objective, of form ``y = cost(x, *ExtraArgs)``,
+      where ``x`` is a candidate solution vector
+    ExtraArgs (tuple, default=None): tuple of positional arguments required to
+      evaluate the objective
+
+Returns:
+    None
 
 Notes:
-    ExtraArgs needs to be a *tuple* of extra arguments.
-
-    This method accepts additional args that are specific for the current
-    solver, as detailed in the `_process_inputs` method.
+    - This method accepts additional ``kwds`` that are specific for the current
+      solver, as detailed in the ``_process_inputs`` method.
         """
         # process and activate input settings
         settings = self._process_inputs(kwds)

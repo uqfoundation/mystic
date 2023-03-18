@@ -617,12 +617,15 @@ input::
     def _SetEvaluationLimits(self, iterscale=None, evalscale=None):
         """set the evaluation limits
 
-input::
-    - iterscale and evalscale are integers used to set the maximum iteration
+Args:
+    iterscale (int, default=10): scale factor for iteration upper limit
+    evalscale (int, default=1000): scale factor for evaluation upper limit
+
+Notes:
+    - ``iterscale`` and ``evalscale`` are used to set the maximum iteration
       and evaluation limits, respectively. The new limit is defined as
-      limit = (nDim * nPop * scale) + count, where count is the number
-      of existing iterations or evaluations, respectively. The default for
-      iterscale is 10, while the default for evalscale is 1000.
+      ``limit = (nDim * nPop * scale) + count``, where ``count`` is the number
+      of existing iterations or evaluations, respectively.
         """
         if iterscale is None: iterscale = 10
         if evalscale is None: evalscale = 1000
@@ -842,10 +845,15 @@ note::
     def _decorate_objective(self, cost, ExtraArgs=None):
         """decorate the cost function with bounds, penalties, monitors, etc
 
-input::
-    - cost is the objective function, of the form y = cost(x, *ExtraArgs),
-      where x is a candidate solution, and ExtraArgs is the tuple of positional
-      arguments required to evaluate the objective."""
+Args:
+    cost (func): objective, of form ``y = cost(x, *ExtraArgs)``, where ``x``
+      is a candidate solution vector
+    ExtraArgs (tuple, default=None): tuple of positional arguments required to
+      evaluate the objective
+
+Returns:
+    decorated objective function
+        """
         #print("@%r %r %r" % (cost, ExtraArgs, max))
         evalmon = self._evalmon
         raw = cost
@@ -889,10 +897,18 @@ input::
     def _Step(self, cost=None, ExtraArgs=None, **kwds):
         """perform a single optimization iteration
 
-input::
-    - cost is the objective function, of the form y = cost(x, *ExtraArgs),
-      where x is a candidate solution, and ExtraArgs is the tuple of positional
-      arguments required to evaluate the objective.
+Args:
+    cost (func, default=None): objective, of form ``y = cost(x, *ExtraArgs)``,
+      where ``x`` is a candidate solution vector
+    ExtraArgs (tuple, default=None): tuple of positional arguments required to
+      evaluate the objective
+
+Returns:
+    None
+
+Notes:
+    - This method accepts additional ``kwds`` that are specific for the current
+      solver, as detailed in the ``_process_inputs`` method.
 
 *** this method must be overwritten ***"""
         raise NotImplementedError("an optimization algorithm was not provided")

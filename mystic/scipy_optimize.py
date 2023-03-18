@@ -124,8 +124,9 @@ The size of the simplex is dim+1.
     def _setSimplexWithinRangeBoundary(self, radius=None):
         """ensure that initial simplex is set within bounds
 
-Input::
-    - radius: size of the initial simplex [default=0.05]"""
+Args:
+    radius (float, default=0.05): size of the initial simplex
+        """
         x0 = self.population[0]
         #code modified from park-1.2/park/simplex.py (version 1257)
         if self._useStrictRange:
@@ -167,12 +168,15 @@ Input::
     def _SetEvaluationLimits(self, iterscale=200, evalscale=200):
         """set the evaluation limits
 
-input::
-    - iterscale and evalscale are integers used to set the maximum iteration
+Args:
+    iterscale (int, default=200): scale factor for iteration upper limit
+    evalscale (int, default=200): scale factor for evaluation upper limit
+
+Notes:
+    - ``iterscale`` and ``evalscale`` are used to set the maximum iteration
       and evaluation limits, respectively. The new limit is defined as
-      limit = (nDim * nPop * scale) + count, where count is the number
-      of existing iterations or evaluations, respectively. The default for
-      iterscale is 200, and the default for evalscale is also 200.
+      ``limit = (nDim * nPop * scale) + count``, where ``count`` is the number
+      of existing iterations or evaluations, respectively.
         """
         super(NelderMeadSimplexSolver, self)._SetEvaluationLimits(iterscale,evalscale)
         return
@@ -180,10 +184,15 @@ input::
     def _decorate_objective(self, cost, ExtraArgs=None):
         """decorate the cost function with bounds, penalties, monitors, etc
 
-input::
-    - cost is the objective function, of the form y = cost(x, *ExtraArgs),
-      where x is a candidate solution, and ExtraArgs is the tuple of positional
-      arguments required to evaluate the objective."""
+Args:
+    cost (func): objective, of form ``y = cost(x, *ExtraArgs)``, where ``x``
+      is a candidate solution vector
+    ExtraArgs (tuple, default=None): tuple of positional arguments required to
+      evaluate the objective
+
+Returns:
+    decorated objective function
+        """
         #print("@%r %r %r" % (cost, ExtraArgs, max))
         evalmon = self._evalmon
         raw = cost
@@ -214,16 +223,18 @@ input::
     def _Step(self, cost=None, ExtraArgs=None, **kwds):
         """perform a single optimization iteration
 
-input::
-    - cost is the objective function, of the form y = cost(x, *ExtraArgs),
-      where x is a candidate solution, and ExtraArgs is the tuple of positional
-      arguments required to evaluate the objective.
+Args:
+    cost (func, default=None): objective, of form ``y = cost(x, *ExtraArgs)``,
+      where ``x`` is a candidate solution vector
+    ExtraArgs (tuple, default=None): tuple of positional arguments required to
+      evaluate the objective
 
-note::
-    ExtraArgs needs to be a *tuple* of extra arguments.
+Returns:
+    None
 
-    This method accepts additional args that are specific for the current
-    solver, as detailed in the `_process_inputs` method.
+Notes:
+    - This method accepts additional ``kwds`` that are specific for the current
+      solver, as detailed in the ``_process_inputs`` method.
         """
         # process and activate input settings
         settings = self._process_inputs(kwds)
@@ -581,12 +592,15 @@ Takes one initial input:
     def _SetEvaluationLimits(self, iterscale=1000, evalscale=1000):
         """set the evaluation limits
 
-input::
-    - iterscale and evalscale are integers used to set the maximum iteration
+Args:
+    iterscale (int, default=1000): scale factor for iteration upper limit
+    evalscale (int, default=1000): scale factor for evaluation upper limit
+
+Notes:
+    - ``iterscale`` and ``evalscale`` are used to set the maximum iteration
       and evaluation limits, respectively. The new limit is defined as
-      limit = (nDim * nPop * scale) + count, where count is the number
-      of existing iterations or evaluations, respectively. The default for
-      iterscale is 1000, and the default for evalscale is also 1000.
+      ``limit = (nDim * nPop * scale) + count``, where ``count`` is the number
+      of existing iterations or evaluations, respectively.
         """
         super(PowellDirectionalSolver, self)._SetEvaluationLimits(iterscale,evalscale)
         return
@@ -594,16 +608,18 @@ input::
     def _Step(self, cost=None, ExtraArgs=None, **kwds):
         """perform a single optimization iteration
 
-input::
-    - cost is the objective function, of the form y = cost(x, *ExtraArgs),
-      where x is a candidate solution, and ExtraArgs is the tuple of positional
-      arguments required to evaluate the objective.
+Args:
+    cost (func, default=None): objective, of form ``y = cost(x, *ExtraArgs)``,
+      where ``x`` is a candidate solution vector
+    ExtraArgs (tuple, default=None): tuple of positional arguments required to
+      evaluate the objective
 
-note::
-    ExtraArgs needs to be a *tuple* of extra arguments.
+Returns:
+    None
 
-    This method accepts additional args that are specific for the current
-    solver, as detailed in the `_process_inputs` method.
+Notes:
+    - This method accepts additional ``kwds`` that are specific for the current
+      solver, as detailed in the ``_process_inputs`` method.
         """
         # process and activate input settings
         settings = self._process_inputs(kwds)
