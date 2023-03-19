@@ -462,12 +462,16 @@ input::
         return x0
 
     def SetInitialPoints(self, x0, radius=0.05):
-        """Set Initial Points with Guess (x0)
+        """Set Initial Points with Guess (``x0``)
 
-input::
-    - x0: must be a sequence of length self.nDim
-    - radius: generate random points within [-radius*x0, radius*x0]
-        for i!=0 when a simplex-type initial guess in required"""
+Args:
+    x0 (list[float]): a sequence of length ``self.nDim``
+    radius (float): generate random points within ``[-radius*x0, radius*x0]``
+        for ``i!=0`` when a simplex-type initial guess is required
+
+Returns:
+    None
+        """
         x0 = asfarray(x0)
         rank = len(x0.shape)
         if rank == 0:
@@ -496,9 +500,16 @@ input::
     def SetRandomInitialPoints(self, min=None, max=None):
         """Generate Random Initial Points within given Bounds
 
-input::
-    - min, max: must be a sequence of length self.nDim
-    - each min[i] should be <= the corresponding max[i]"""
+Args:
+    min (list[float], default=None): lower bounds, list of length ``self.nDim``
+    max (list[float], default=None): upper bounds, list of length ``self.nDim``
+
+Returns:
+    None
+
+Notes:
+    - each ``min[i]`` must be less than or equal to the corresponding ``max[i]``
+        """
         if min is None: min = self._defaultMin
         if max is None: max = self._defaultMax
        #if numpy.any(( asarray(min) > asarray(max) ),0):
@@ -517,12 +528,17 @@ input::
     def SetMultinormalInitialPoints(self, mean, var=None):
         """Generate Initial Points from Multivariate Normal.
 
-input::
-    - mean must be a sequence of length self.nDim
-    - var can be...
-        None: -> it becomes the identity
-        scalar: -> var becomes scalar * I
-        matrix: -> the variance matrix. must be the right size!
+Args:
+    mean (list[float]): mean values, list of length ``self.nDim``
+    var (ndarray[float,float], default=None): covariance matrix
+
+Returns:
+    None
+
+Notes:
+    - ``var`` must be symmetric, positive-semidefinite, and length ``self.nDim``
+    - if ``var`` is None, then ``var`` becomes the Identity matrix, ``I``
+    - if ``var`` is a scalar, then ``var`` is set to ``var * I``
         """
         from mystic.tools import random_state
         rng = random_state(module='numpy.random')
@@ -543,9 +559,15 @@ input::
     def SetSampledInitialPoints(self, dist=None):
         """Generate Random Initial Points from Distribution (dist)
 
-input::
-    - dist: a mystic.math.Distribution instance
-"""
+Args:
+    dist (Distribution, default=None): a mystic.math.Distribution instance
+
+Returns:
+    None
+
+Notes:
+    - if ``dist`` is None, use a uniform distribution in the interval ``[0, 1)``
+        """
         from mystic.math import Distribution
         _dist = Distribution()
         if dist is None:
@@ -738,9 +760,17 @@ note::
     def Collapsed(self, disp=False, info=False):
         """check if the solver meets the given collapse conditions
 
-Input::
-    - disp: if True, print details about the solver state at collapse
-    - info: if True, return collapsed state (instead of boolean)"""
+Args:
+    disp (bool, default=False): print details about the solver state at collapse
+    info (bool, default=False): return collapsed state (instead of boolean)
+
+Returns:
+    information about the state of the solver collapse (see Notes)
+
+Notes:
+    - if ``info`` is False, return a bool regarding the collapse
+    - if ``info`` is True, return an informative string about the collapse
+        """
         stop = getattr(self, '__stop__', self.Terminated(info=True))
         import mystic.collapse as ct
         collapses = ct.collapsed(stop) or dict()
@@ -811,13 +841,18 @@ input::
 
     def Collapse(self, disp=False):
         """if solver has terminated by collapse, apply the collapse
-        (unless both collapse and "stop" are simultaneously satisfied)
 
-input::
-    - disp: if True, print details about the solver state at collapse
+Args:
+    disp (bool, default=False): print details about the solver state at collapse
 
-note::
-    updates the solver's termination conditions and constraints
+Returns:
+    a dict of ``{info: collapse}``, where ``info`` is collapse termination info
+
+Notes:
+    - updates the solver's termination conditions and constraints
+    - collapse must be triggered by calling this method, unless both the
+      "collapse" termination and a "stop" termination are simultaneously
+      satisfied.
         """
        #XXX: return True for "collapse and continue" and False otherwise?
         collapses = self.__get_collapses(disp)

@@ -171,16 +171,24 @@ Important class members::
     def SetNestedSolver(self, solver):
         """set the nested solver
 
-input::
-    - solver: a mystic solver instance (e.g. NelderMeadSimplexSolver(3) )"""
+Args:
+    solver (solver): a solver instance (e.g. ``NelderMeadSimplexSolver(3)``)
+
+Returns:
+    None
+        """
         self._solver = solver
         return
 
     def __get_solver_instance(self, reset=False):
         """ensure the solver is a solver instance
 
-input::
-    - reset: if reset is True, reset the monitor instances"""
+Args:
+    reset (bool, default=False): reset the monitor instances
+
+Returns:
+    a nested solver instance
+        """
         solver = self._solver
 
         # if a configured solver is not given, then build one of the given type
@@ -220,12 +228,15 @@ input::
         return solver
 
     def SetInitialPoints(self, x0, radius=0.05):
-        """Set Initial Points with Guess (x0)
+        """Set Initial Points with Guess (``x0``)
 
-input::
-    - x0: must be a sequence of length self.nDim
-    - radius: generate random points within [-radius*x0, radius*x0]
-        for i!=0 when a simplex-type initial guess in required
+Args:
+    x0 (list[float]): a sequence of length ``self.nDim``
+    radius (float): generate random points within ``[-radius*x0, radius*x0]``
+        for ``i!=0`` when a simplex-type initial guess is required
+
+Returns:
+    None
 
 *** this method must be overwritten ***"""
         raise NotImplementedError("must be overwritten...")
@@ -233,9 +244,15 @@ input::
     def SetRandomInitialPoints(self, min=None, max=None):
         """Generate Random Initial Points within given Bounds
 
-input::
-    - min, max: must be a sequence of length self.nDim
-    - each min[i] should be <= the corresponding max[i]
+Args:
+    min (list[float], default=None): lower bounds, list of length ``self.nDim``
+    max (list[float], default=None): upper bounds, list of length ``self.nDim``
+
+Returns:
+    None
+
+Notes:
+    - each ``min[i]`` must be less than or equal to the corresponding ``max[i]``
 
 *** this method must be overwritten ***"""
         raise NotImplementedError("must be overwritten...")
@@ -243,12 +260,17 @@ input::
     def SetMultinormalInitialPoints(self, mean, var=None):
         """Generate Initial Points from Multivariate Normal.
 
-input::
-    - mean must be a sequence of length self.nDim
-    - var can be...
-        None: -> it becomes the identity
-        scalar: -> var becomes scalar * I
-        matrix: -> the variance matrix. must be the right size!
+Args:
+    mean (list[float]): mean values, list of length ``self.nDim``
+    var (ndarray[float,float], default=None): covariance matrix
+
+Returns:
+    None
+
+Notes:
+    - ``var`` must be symmetric, positive-semidefinite, and length ``self.nDim``
+    - if ``var`` is None, then ``var`` becomes the Identity matrix, ``I``
+    - if ``var`` is a scalar, then ``var`` is set to ``var * I``
 
 *** this method must be overwritten ***"""
         raise NotImplementedError("must be overwritten...")
@@ -256,8 +278,14 @@ input::
     def SetSampledInitialPoints(self, dist=None):
         """Generate Random Initial Points from Distribution (dist)
 
-input::
-    - dist: a mystic.math.Distribution instance
+Args:
+    dist (Distribution, default=None): a mystic.math.Distribution instance
+
+Returns:
+    None
+
+Notes:
+    - if ``dist`` is None, use a uniform distribution in the interval ``[0, 1)``
 
 *** this method must be overwritten ***"""
         raise NotImplementedError("must be overwritten...")
@@ -349,10 +377,14 @@ Inputs:
         return getattr(self._bestSolver, 'id', None)
 
     def __init_allSolvers(self, reset=False):
-        """populate NestedSolver state to allSolvers
+        """populate ``NestedSolver`` state to ``allSolvers``
 
-input::
-    - reset: if reset is True, reset the monitor instances"""
+Args:
+    reset (bool, default=False): reset the monitor instances
+
+Returns:
+    returns a list of solver instances
+        """
         # get the nested solver instance
         solver = self._AbstractEnsembleSolver__get_solver_instance(reset)
 
@@ -439,10 +471,23 @@ input::
     def Collapsed(self, disp=False, info=False, all=None):
         """check if the solver meets the given collapse conditions
 
-Input::
-    - disp = if True, print details about the solver state at collapse
-    - info = if True, return collapsed state (instead of boolean)
-    - all = if True, get results for all solvers; if False, only check 'best'
+Args:
+    disp (bool, default=False): print details about the solver state at collapse
+    info (bool, default=False): return collapsed state (instead of boolean)
+    all (bool, default=None): check results for all solvers
+
+Returns:
+    information about the state of the solver collapse (see Notes)
+
+Notes:
+    - ``all`` can be one of ``{True, False, all, any}``
+    - if ``all`` is True, check if all solvers have collapsed
+    - if ``all`` is any (or None), check if any solver has collapsed
+    - if ``all`` is all, check if all solvers have the same collapse
+    - if ``all`` is False, check if the 'best' solver collapsed
+    - if ``info`` is False, return a bool regarding the collapse
+    - if ``info`` is True, return an informative string about the collapse,
+      or a list of strings (depending on the value of ``all``)
 """ #FIXME: how handle collapse of base solver, mask of base solver...?
         _all = __builtins__['all']
         if all is None: all = any #FIXME: what should default be???
@@ -519,13 +564,20 @@ Input::
 
     def Collapse(self, disp=False): #FIXME #TODO
         """if solver has terminated by collapse, apply the collapse
-        (unless both collapse and "stop" are simultaneously satisfied)
 
-input::
-    - disp: if True, print details about the solver state at collapse
+Args:
+    disp (bool, default=False): print details about the solver state at collapse
 
-note::
-    updates the solver's termination conditions and constraints
+Returns:
+    a dict of ``{info: collapse}``, where ``info`` is collapse termination info
+
+Notes:
+    - collapse must be triggered by calling this method, unless both the
+      "collapse" termination and a "stop" termination are simultaneously
+      satisfied.
+
+NOTE:
+   NotImplemented -- is currently hard-wired to return ``False``
         """
         return False
 
