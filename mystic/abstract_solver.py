@@ -666,14 +666,18 @@ Notes:
     def Terminated(self, disp=False, info=False, termination=None, **kwds):
         """check if the solver meets the given termination conditions
 
-Input::
-    - disp = if True, print termination statistics and/or warnings
-    - info = if True, return termination message (instead of boolean)
-    - termination = termination conditions to check against
+Args:
+    disp (bool, default=False): print termination statistics and/or warnings
+    info (bool, default=False): return termination message (instead of boolean)
+    termination (termination, default=None): termination conditions to check
 
-Notes::
-    If no termination conditions are given, the solver's stored
-    termination conditions will be used.
+Returns:
+    information about the state of the solver termination (see Notes)
+
+Notes:
+    - if ``info`` is False, return a bool regarding the termination
+    - if ``info`` is True, return an informative string about the termination
+    - if ``termination`` is None, the solver's stored termination is be used
         """
         if termination is None:
             termination = self._termination
@@ -745,7 +749,7 @@ note::
         args = () if args is None else args
         # quick validation check (so doesn't screw up internals)
         if not isvalid(cost, [0]*self.nDim, *args):
-            try: name = cost.__name__
+            try: call = cost.__call__
             except AttributeError: # raise new error for non-callables
                 cost(*args)
             validate(cost, None, *args)
@@ -945,7 +949,8 @@ Notes:
     - This method accepts additional ``kwds`` that are specific for the current
       solver, as detailed in the ``_process_inputs`` method.
 
-*** this method must be overwritten ***"""
+NOTE:
+    *** this method must be overwritten ***"""
         raise NotImplementedError("an optimization algorithm was not provided")
 
     def SaveSolver(self, filename=None, **kwds):
@@ -1105,7 +1110,7 @@ Notes:
 Args:
     cost (func): the function to be minimized: ``y = cost(x)``.
     ExtraArgs (tuple): tuple of extra arguments for ``cost``.
-    settings (dict): optimizer settings (produced by _process_inputs)
+    settings (dict): optimizer settings (produced by ``_process_inputs``)
 
 Returns:
     None

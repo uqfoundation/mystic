@@ -238,7 +238,8 @@ Args:
 Returns:
     None
 
-*** this method must be overwritten ***"""
+NOTE:
+    *** this method must be overwritten ***"""
         raise NotImplementedError("must be overwritten...")
     
     def SetRandomInitialPoints(self, min=None, max=None):
@@ -254,7 +255,8 @@ Returns:
 Notes:
     - each ``min[i]`` must be less than or equal to the corresponding ``max[i]``
 
-*** this method must be overwritten ***"""
+NOTE:
+    *** this method must be overwritten ***"""
         raise NotImplementedError("must be overwritten...")
 
     def SetMultinormalInitialPoints(self, mean, var=None):
@@ -272,7 +274,8 @@ Notes:
     - if ``var`` is None, then ``var`` becomes the Identity matrix, ``I``
     - if ``var`` is a scalar, then ``var`` is set to ``var * I``
 
-*** this method must be overwritten ***"""
+NOTE:
+    *** this method must be overwritten ***"""
         raise NotImplementedError("must be overwritten...")
 
     def SetSampledInitialPoints(self, dist=None):
@@ -287,21 +290,31 @@ Returns:
 Notes:
     - if ``dist`` is None, use a uniform distribution in the interval ``[0, 1)``
 
-*** this method must be overwritten ***"""
+NOTE:
+    *** this method must be overwritten ***"""
         raise NotImplementedError("must be overwritten...")
 
     def Terminated(self, disp=False, info=False, termination=None, all=None):
         """check if the solver meets the given termination conditions
 
-Input::
-    - disp = if True, print termination statistics and/or warnings
-    - info = if True, return termination message (instead of boolean)
-    - termination = termination conditions to check against
-    - all = if True, get results for all solvers; if False, only check 'best'
+Args:
+    disp (bool, default=False): print termination statistics and/or warnings
+    info (bool, default=False): return termination message (instead of boolean)
+    termination (termination, default=None): termination conditions to check
+    all (bool, default=None): check results for all solvers
 
-Notes::
-    If no termination conditions are given, the solver's stored
-    termination conditions will be used.
+Returns:
+    information about the state of the solver termination (see Notes)
+
+Notes:
+    - ``all`` can be one of ``{True, False, None}``
+    - if ``all`` is True, return a list checking termination for each solver
+    - if ``all`` is None, check whether all solvers have terminated
+    - if ``all`` is False, check if the 'best' solver terminated
+    - if ``info`` is False, return a bool regarding the termination
+    - if ``info`` is True, return an informative string about the termination,
+      or a list of strings (depending on the value of ``all``)
+    - if ``termination`` is None, the solver's stored termination is be used
         """
         if disp in ['verbose', 'all']: verbose = True
         else: verbose = False
@@ -365,7 +378,8 @@ Inputs:
     def _InitialPoints(self):
         """Generate a grid of starting points for the ensemble of optimizers
 
-*** this method must be overwritten ***"""
+NOTE:
+    *** this method must be overwritten ***"""
         raise NotImplementedError("a sampling algorithm was not provided")
 
     def _is_new(self):
@@ -577,7 +591,7 @@ Notes:
       satisfied.
 
 NOTE:
-   NotImplemented -- is currently hard-wired to return ``False``
+   *** this method is not implemented and returns False ***
         """
         return False
 
