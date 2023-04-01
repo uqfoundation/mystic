@@ -29,7 +29,7 @@ except ImportError:
 
 # generate a sampled dataset for the model
 truth = WrapModel("surrogate", cost, nx=3, ny=None, cached=False)
-data = truth.sample(bounds, pts=[2, 1, 1], map=p)
+data = truth.sample(bounds, pts=[2, 1, 1], map=pmap)
 
 # shutdown mapper
 if pmap is not None:
