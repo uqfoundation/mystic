@@ -21,7 +21,7 @@ from mystic.constraints import as_constraint
 from mystic.penalty import quadratic_inequality
 
 def penalty1(x): # <= 0.0
-    from numpy import product
+    from numpy import prod as product
     return -product(x) + 0.75
 
 def penalty2(x): # <= 0.0

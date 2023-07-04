@@ -31,7 +31,7 @@ Returns:
   """
   from mystic.tools import factor
   allfactors = list(factor(n))
-  from numpy import product
+  from numpy import prod as product
   cand = [1] + [product(allfactors[:i+1]) for i in range(len(allfactors))]
  #return cand[-1], n/cand[-1]
   best = [cand[len(cand)//2], n//cand[len(cand)//2]]

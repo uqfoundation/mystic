@@ -91,7 +91,7 @@ Returns:
 
 def _npts(*x):
   """get len(product measure), given lengths of each underlying measure"""
-  from numpy import product
+  from numpy import prod as product
   return product(x)
 
 def _get_xy(points):

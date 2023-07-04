@@ -1816,7 +1816,7 @@ Inputs:
     zsum -- use counterbalance when mass = 0.0
     zmass -- member scaling when mass = 0.0
 """
-  from numpy import product
+  from numpy import prod as product
   weights = asarray(list(weights)) #XXX: faster to use x = array(x, copy=True) ?
   w = float(product(weights))
   n = len(weights)
@@ -1859,7 +1859,7 @@ Examples:
     [(1,4,6), (2,4,6), (3,4,6), (1,5,6), (2,5,6), (3,5,6), \
      (1,4,7), (2,4,7), (3,4,7), (1,5,7), (2,5,7), (3,5,7)]
 """
- #from numpy import product, array, ones
+ #from numpy import prod as product, array, ones
  #ndim = len(samples)
  #npts = [len(s) for s in samples]
  #z = []
@@ -1871,7 +1871,7 @@ Examples:
  #for i in range(len(z[0])):
  #  zT.append( tuple([y.pop(0) for y in z]) )
  #return zT
-# from numpy import product, array, ones
+# from numpy import prod as product, array, ones
 # ndim = len(samples)
 # npts = [len(s) for s in samples]
 # z = ones((ndim, product(npts)))  # z.T of what's needed
@@ -1907,7 +1907,7 @@ Examples:
     ...        )
     [[1,2,3], [4,5], [6,7]]
 """
-# from numpy import product, array
+# from numpy import prod as product, array
 # ndim = len(npts)
 # z = []
 # for i in range(ndim):

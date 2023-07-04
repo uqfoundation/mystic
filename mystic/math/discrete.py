@@ -455,7 +455,7 @@ Notes:
     return
 
   def __n(self):
-    from numpy import product
+    from numpy import prod as product
     return product(self.pts)
 
   def support_index(self, tol=0):
@@ -484,7 +484,7 @@ Returns:
 
   def __weights(self):
     from mystic.math.measures import _pack
-    from numpy import product
+    from numpy import prod as product
     weights = _pack(self.wts)
     _weights = []
     for wts in weights:
