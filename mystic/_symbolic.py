@@ -339,6 +339,7 @@ Examples:
     # default is _locals with numpy and math imported
     # numpy throws an 'AttributeError', but math passes error to sympy
     code = """from numpy import *; from math import *;""" # prefer math
+    code += """from builtins import *;""" # don't overload builtins
     code += """from numpy import mean as average;""" # use np.mean not average
     code += """from numpy import var as variance;""" # look like mystic.math
     code += """from numpy import ptp as spread;"""   # look like mystic.math
@@ -529,6 +530,7 @@ Examples:
     # default is _locals with numpy and math imported
     # numpy throws an 'AttributeError', but math passes error to sympy
     code = """from numpy import *; from math import *;""" # prefer math
+    code += """from builtins import *;""" # don't overload builtins
     code += """from numpy import mean as average;""" # use np.mean not average
     code += """from numpy import var as variance;""" # look like mystic.math
     code += """from numpy import ptp as spread;"""   # look like mystic.math

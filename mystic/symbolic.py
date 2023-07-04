@@ -654,6 +654,7 @@ Examples:
     # default is _locals with numpy and math imported
     # numpy throws an 'AttributeError', but math passes error to sympy
     code = """from numpy import *; from math import *;""" # prefer math
+    code += """from builtins import *;""" # don't overload builtins
     code += """from numpy import mean as average;""" # use np.mean not average
     code += """from numpy import var as variance;""" # look like mystic.math
     code += """from numpy import ptp as spread;"""   # look like mystic.math
@@ -1214,6 +1215,7 @@ Examples:
     # default is globals with numpy and math imported
     globals = {}
     code = """from math import *; from numpy import *;"""
+    code += """from builtins import *;""" # don't overload builtins
     code += """from numpy import mean as average;""" # use np.mean not average
    #code += """from mystic.math.measures import spread, variance, mean;"""
     code += """from mystic.math import tolerance as _tol;"""
@@ -1304,6 +1306,7 @@ Examples:
     # default is globals with numpy and math imported
     globals = {}
     code = """from math import *; from numpy import *;"""
+    code += """from builtins import *;""" # don't overload builtins
     code += """from numpy import mean as average;""" # use np.mean not average
     code += """from mystic.math.measures import spread, variance, mean;"""
     code += """from mystic.math.measures import impose_spread, impose_mean;"""
