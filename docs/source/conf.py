@@ -160,7 +160,7 @@ html_theme_options = {
     'extra_nav_links': {'Module Index': 'py-modindex.html'},
 #   'show_related': True,
 #   'globaltoc_collapse': True,
-#   'globaltoc_maxdepth': 2,
+    'globaltoc_maxdepth': 4,
     'show_powered_by': False
 }
 
