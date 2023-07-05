@@ -139,6 +139,7 @@ on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
 #
 if not on_rtd:
     html_theme = 'alabaster' #'bizstyle'
+    html_css_files = ['css/custom.css',]
    #import sphinx_rtd_theme
    #html_theme = 'sphinx_rtd_theme'
    #html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
@@ -158,6 +159,8 @@ html_theme_options = {
     'gratipay_user': False,  # username
     'extra_nav_links': {'Module Index': 'py-modindex.html'},
 #   'show_related': True,
+    'globaltoc_collapse': True,
+    'globaltoc_maxdepth': 3,
     'show_powered_by': False
 }
 
@@ -178,12 +181,11 @@ html_sidebars = {
         'donate.html',
         'searchbox.html',
 #       'navigation.html',
-        'localtoc.html', # display the toctree
+#       'localtoc.html', # display the toctree
+        'globaltoc.html', # collapse the toctree
         'relations.html', # needs 'show_related':True option to display
     ]
 }
-#FIXME: donate / UQFoundation (home/github)
-
 
 # -- Options for HTMLHelp output ------------------------------------------
 

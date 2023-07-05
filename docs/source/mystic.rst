@@ -44,6 +44,8 @@ cache module
 ..  :exclude-members: +lru_cache, lfu_cache, mru_cache, rr_cache, inf_cache, no_cache
 
 .. toctree::
+    :hidden:
+    :titlesonly:
     :maxdepth: 2
     :caption: Contents:
 
@@ -116,6 +118,8 @@ math module
 ..  :exclude-members: +approx_equal, dirac_measure, paramtrans
 
 .. toctree::
+    :hidden:
+    :titlesonly:
     :maxdepth: 2
     :caption: Contents:
 
@@ -134,6 +138,8 @@ models module
 ..  :exclude-members: +
 
 .. toctree::
+    :hidden:
+    :titlesonly:
     :maxdepth: 2
     :caption: Contents:
 
