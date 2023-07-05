@@ -159,8 +159,8 @@ html_theme_options = {
     'gratipay_user': False,  # username
     'extra_nav_links': {'Module Index': 'py-modindex.html'},
 #   'show_related': True,
-    'globaltoc_collapse': True,
-    'globaltoc_maxdepth': 3,
+#   'globaltoc_collapse': True,
+#   'globaltoc_maxdepth': 2,
     'show_powered_by': False
 }
 
@@ -174,15 +174,17 @@ html_static_path = ['_static']
 #
 # This is required for the alabaster theme
 # refs: http://alabaster.readthedocs.io/en/latest/installation.html#sidebars
-#if html_theme == 'alabaster':
+if on_rtd:
+    toc_style = 'localtoc.html', # display the toctree
+else:
+    toc_style = 'globaltoc.html', # collapse the toctree
 html_sidebars = {
     '**': [
         'about.html',
         'donate.html',
         'searchbox.html',
 #       'navigation.html',
-#       'localtoc.html', # display the toctree
-        'globaltoc.html', # collapse the toctree
+        toc_style, # defined above
         'relations.html', # needs 'show_related':True option to display
     ]
 }

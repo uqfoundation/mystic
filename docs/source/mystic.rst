@@ -40,16 +40,14 @@ bounds module
 cache module
 ------------
 
-.. automodule:: mystic.cache
-..  :exclude-members: +lru_cache, lfu_cache, mru_cache, rr_cache, inf_cache, no_cache
-
 .. toctree::
-    :hidden:
     :titlesonly:
     :maxdepth: 2
-    :caption: Contents:
 
     cache
+
+.. automodule:: mystic.cache
+..  :exclude-members: +lru_cache, lfu_cache, mru_cache, rr_cache, inf_cache, no_cache
 
 collapse module
 ---------------
@@ -114,16 +112,14 @@ mask module
 math module
 -----------
 
-.. automodule:: mystic.math 
-..  :exclude-members: +approx_equal, dirac_measure, paramtrans
-
 .. toctree::
-    :hidden:
     :titlesonly:
     :maxdepth: 2
-    :caption: Contents:
 
     math
+
+.. automodule:: mystic.math 
+..  :exclude-members: +approx_equal, dirac_measure, paramtrans
 
 metropolis module
 -----------------
@@ -134,16 +130,14 @@ metropolis module
 models module
 -------------
 
-.. automodule:: mystic.models
-..  :exclude-members: +
-
 .. toctree::
-    :hidden:
     :titlesonly:
     :maxdepth: 2
-    :caption: Contents:
 
     models
+
+.. automodule:: mystic.models
+..  :exclude-members: +
 
 monitors module
 ---------------

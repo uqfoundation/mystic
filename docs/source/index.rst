@@ -3,18 +3,16 @@
 mystic package documentation
 ============================
 
-.. automodule:: mystic
-..  :exclude-members: +
-
 .. toctree::
     :hidden:
-    :titlesonly:
     :maxdepth: 2
-    :caption: Contents:
 
     self
     mystic
     scripts
+
+.. automodule:: mystic
+..  :exclude-members: +
 
 Indices and tables
 ==================
