@@ -23,9 +23,9 @@ Args:
   npts (int, default=None): number of points to sample the model
   **kwds (dict, default={}): keywords for the underlying ensemble of solvers;
     ``(evalmon, stepmon, maxiter, maxfun, dist, saveiter, state, termination,
-    constraints, penalty, reducer, solver, tightrange, cliprange)`` are
-    available for use. See ``mystic.ensemble`` for more details.
-        """
+    constraints, penalty, reducer, solver, id, map, tightrange, cliprange)``
+    are available for use. See ``mystic.ensemble`` for more details.
+        """ #FIXME: added 'id' and 'map'
         self._bounds = bounds
         self._model = model #FIXME: if None, interpolate
         self._npts = npts
@@ -47,6 +47,7 @@ Args:
         # apply additional kwds
         solver = self._kwds['solver']
         if solver is not None: s.SetNestedSolver(solver)
+        s.id = self._kwds['id']
         s.SetDistribution(self._kwds['dist'])
         s.SetEvaluationLimits(self._kwds['maxiter'], self._kwds['maxfun'])
         s.SetSaveFrequency(self._kwds['saveiter'], self._kwds['state'])
@@ -56,6 +57,7 @@ Args:
         s.SetPenalty(self._kwds['penalty'])
         s.SetReducer(self._kwds['reducer'], arraylike=True)
         s.SetGenerationMonitor(self._kwds['stepmon']) #XXX: use self._stepmon?
+        s.SetMapper(self._kwds['map']) #TODO: close/join/clear after Solve?
 
         # pass a copy of the monitor to all instances
         import copy
