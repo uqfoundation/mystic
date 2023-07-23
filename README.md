@@ -128,15 +128,15 @@ Requirements
 * ``numpy``, **>=1.0**
 * ``sympy``, **>=0.6.7**
 * ``mpmath``, **>=0.19**
-* ``dill``, **>=0.3.6**
-* ``klepto``, **>=0.2.3**
+* ``dill``, **>=0.3.7**
+* ``klepto``, **>=0.2.4**
 
 Optional requirements:
 
 * ``matplotlib``, **>=0.91**
 * ``scipy``, **>=0.6.0**
-* ``pathos``, **>=0.3.0**
-* ``pyina``, **>=0.2.7**
+* ``pathos``, **>=0.3.1**
+* ``pyina``, **>=0.2.8**
 
 
 More Information
