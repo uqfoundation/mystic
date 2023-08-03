@@ -57,7 +57,9 @@ Args:
         s.SetPenalty(self._kwds['penalty'])
         s.SetReducer(self._kwds['reducer'], arraylike=True)
         s.SetGenerationMonitor(self._kwds['stepmon']) #XXX: use self._stepmon?
-        s.SetMapper(self._kwds['map']) #TODO: close/join/clear after Solve?
+        mapper = self._kwds['map']
+        if mapper is not None: s.SetMapper(mapper)
+        #TODO: close/join/clear after Solve?
 
         # pass a copy of the monitor to all instances
         import copy
