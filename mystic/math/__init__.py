@@ -65,19 +65,48 @@ input::
 note::
     this method only accepts numpy.random methods with the keyword 'size',
     and only accepts random_state objects built with module='numpy.random'
+
+note::
+    generator may be a method object or a string of 'module.object';
+    similarly, rng may be a random_state object or a string of 'module'
         """ #XXX: generate Distribution from list of Distributions?
         from mystic.tools import random_state
         rng = kwds.pop('rng', random_state(module='numpy.random'))
-        if generator is None: generator = rng.random
+        if isinstance(rng, str): rng = random_state(module=rng)
+        mod = 'numpy.random'
+        if generator is None:
+            generator = rng.random
+            mod = rng.__name__
+        elif isinstance(generator, str):
+            from importlib import import_module
+            if '.' in generator:
+                mod,generator = generator.rsplit('.', 1) 
+                mod = import_module(mod)
+            else:
+                mod = rng
+            generator = getattr(mod, generator)
+            mod = mod.__name__
         if getattr(generator, 'rvs', False): 
             d = generator(*args, **kwds)
             self.rvs = lambda size=None: d.rvs(size=size, random_state=rng)
+            name = getattr(generator, 'name', None) #XXX: also try __name__?
+            mod = 'scipy.stats' #XXX: assumed due to 'd.rvs'
         else:
             d = getattr(rng, generator.__name__)
             self.rvs = lambda size=None: d(size=size, *args, **kwds)
+            name = generator.__name__
+            mod = rng.__name__
+        name = "'{0}.{1}'".format(mod, name) if name else ""
+        sig = ', '.join(str(i) for i in args) + ', '.join("{0}={1}".format(i,j) for i,j in kwds.items())
+        if name and sig: name += ", "
+        sig = (sig + ")") if sig else ")"
+        #sig = ", rng='{0}')".format(rng.__name__)
+        self.repr = lambda cls: ("{0}({1}".format(cls, name) + sig)
         return
     def __call__(self, size=None):
         """generate a sample of given size (tuple) from the distribution"""
         return self.rvs(size)
+    def __repr__(self):
+        return self.repr(self.__class__.__name__)
 
 # end of file
