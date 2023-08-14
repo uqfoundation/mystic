@@ -130,7 +130,7 @@ note::
             d = getattr(rng, generator.__name__)
             self.rvs = lambda size=None: d(size=size, *args, **kwds)
             name = generator.__name__
-            mod = rng.__name__
+            mod = getattr(rng, '__name__', 'numpy.random') #XXX: bad default?
         name = "'{0}.{1}'".format(mod, name) if name else ""
         sig = ', '.join(str(i) for i in args) 
         kwd = ', '.join("{0}={1}".format(i,j) for i,j in kwds.items())
