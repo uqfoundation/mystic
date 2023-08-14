@@ -26,6 +26,7 @@ def sample(model, bounds, pts=None, **kwds):
         ny: int, number of model outputs, len(y) [default: None]
         axis: int, index of output on which to search [default: None]
         axmap: map instance, to execute each axis in parallel [default: None]
+        archive: the archive (str name or archive instance) [default: None]
 
     Returns:
         the mystic.math.legacydata.dataset of sampled data
@@ -52,7 +53,11 @@ def sample(model, bounds, pts=None, **kwds):
         npts is negative, then use solver-directed sampling.
 
     NOTE:
-        given the model is cached, a klepto.dir_archive is created by default
+        if the model does not have an associated cached archive, sampling
+        will create an archive used for the current sampling (and will not
+        be attached to the model as a cached archive); a klepto.dir_archive
+        will be created using the name of the model, unless an archive is
+        otherwise specified using the archive keyword.
     """
     from mystic.samplers import LatticeSampler
     searcher = kwds.pop('sampler', LatticeSampler)
@@ -72,9 +77,14 @@ def sample(model, bounds, pts=None, **kwds):
     axmap = kwds.pop('axmap', None) #NOTE: was _ThreadPool.map w/ join
     if pmap is None: pmap = map
     if axmap is None: axmap = map
+    name = kwds.pop('archive', None) # allow override? (elif below)
     if not hasattr(model, '__cache__') or not hasattr(model, '__inverse__'):
         import mystic.cache as mc
-        name = getattr(model, '__name__', None) #XXX: do better?
+        if name is None: name = getattr(model, '__name__', None)
+        model = mc.cached(archive=name, multivalued=mvl)(model)
+    elif name is not None:
+        model = getattr(model, '__orig__', model)
+        import mystic.cache as mc
         model = mc.cached(archive=name, multivalued=mvl)(model)
     cache = model.__cache__
     imodel = model.__inverse__
@@ -125,7 +135,6 @@ def sample(model, bounds, pts=None, **kwds):
     import dataset as ds
     return ds.from_archive(cache(), axis=None)
 
-
 def _init_axis(model):
     """ensure axis is a keyword for the model
 
@@ -164,18 +173,24 @@ class OUQModel(object): #NOTE: effectively, this is WrapModel
 
     Additional Input:
         cached: bool, if True, use a mystic.cache [default: False]
-        """
+
+    NOTE:
+        if cached is True, the default is to create a klepto.dir_archive
+        using the name of the model; alternately, an archive can be specified
+        by passing an archive instance (or string name) to the cached keyword.
+        """ #FIXME: allow cached to take archive (instance or possibly name)
         #HACK: ok=True enables __init__ to be called (for super-like usage)
         if not kwds.pop('ok', False) or not hasattr(self, '__name__'):
             msg = 'use a derived class (e.g. WrapModel)'
             raise NotImplementedError(msg)
         self.__init_name()
         #FIXME: make sure model has 'axis' kwd here
-        if kwds.pop('cached', False):
-            self.__kwds__['cached'] = True
-            self.__init_cache()
-        else:
+        cached = kwds.pop('cached', False)
+        if cached is False:
             self.__kwds__['cached'] = False
+        else:
+            self.__kwds__['cached'] = cached
+            self.__init_cache()
         if not hasattr(self, '__func__'):
             self.__init_func()
         return
@@ -184,10 +199,12 @@ class OUQModel(object): #NOTE: effectively, this is WrapModel
         """ensure model has a mystic.cache"""
         model = self.__model__
         mvl = getattr(self, 'ny', getattr(model, 'ny', getattr(model, '__axis__', None))) is not None # True if multivalued
+        archive = self.__kwds__.get('cached', True)
         name = getattr(model, '__name__', None) #XXX: do better?
         if not hasattr(model, '__cache__') or not hasattr(model, '__inverse__'):
             import mystic.cache as mc
-            model = mc.cached(archive=name, multivalued=mvl)(model)
+            if archive is True: archive = name
+            model = mc.cached(archive=archive, multivalued=mvl)(model)
         self.__model__ = model
         if name is not None:
             self.__model__.__name__ = name
@@ -244,6 +261,7 @@ class OUQModel(object): #NOTE: effectively, this is WrapModel
         map: map instance, to search for min/max in parallel [default: None]
         axis: int, index of output on which to search [default: 0]
         axmap: map instance, to execute each axis in parallel [default: None]
+        archive: the archive (str name or archive instance) [default: None]
         multivalued: bool, True if output is multivalued [default: False]
 
     Returns:
@@ -271,7 +289,11 @@ class OUQModel(object): #NOTE: effectively, this is WrapModel
         npts is negative, then use solver-directed sampling.
 
     NOTE:
-        given the model is cached, a klepto.dir_archive is created by default
+        if the model does not have an associated cached archive, sampling
+        will create an archive used for the current sampling (and will not
+        be attached to the model as a cached archive); a klepto.dir_archive
+        will be created using the name of the model, unless an archive is
+        otherwise specified using the archive keyword.
         """
         model = self.__model__
         ax = getattr(self, '__axis__', getattr(model, '__axis__', None))
@@ -282,7 +304,9 @@ class OUQModel(object): #NOTE: effectively, this is WrapModel
         mvl = kwds.pop('multivalued', mvl) # allow override?
         kwds['axis'] = axis if mvl else None #XXX: allow multiaxis search?
         kwds['ny'] = ny if mvl else None
+        #FIXME: anything needed to modify/prepare if kwds['archive'] ????
         return sample(model, bounds, pts=pts, **kwds)
+
 
     #XXX: np.sum, np.max ?
     def distance(self, data, axis=None, **kwds):
@@ -336,6 +360,11 @@ class NoisyModel(OUQModel):
         zmu: output distribution mean value [default: 0]
         zsigma: output distribution standard deviation [default: 0]
         zseed: outut random seed [default: '!', do not reseed the RNG]
+
+    NOTE:
+        if cached is True, the default is to create a klepto.dir_archive
+        using the name of the model; alternately, an archive can be specified
+        by passing an archive instance (or string name) to the cached keyword.
         """
         # get state defined in model
         if model is None:
@@ -401,6 +430,11 @@ class WrapModel(OUQModel):
 
     NOTE:
         any additional keyword arguments will be passed to 'model'
+
+    NOTE:
+        if cached is True, the default is to create a klepto.dir_archive
+        using the name of the model; alternately, an archive can be specified
+        by passing an archive instance (or string name) to the cached keyword.
         """
         # get state defined in model
         if model is None:
@@ -446,6 +480,11 @@ class SuccessModel(OUQModel):
         uid: bool, if True, append a random integer in [0, 1e16] to __name__
         cached: bool, if True, use a mystic.cache [default: False]
         cutoff: float, defines success, where success is model(x) >= cutoff
+
+    NOTE:
+        if cached is True, the default is to create a klepto.dir_archive
+        using the name of the model; alternately, an archive can be specified
+        by passing an archive instance (or string name) to the cached keyword.
         """
         if model is None:
             msg = 'a callable model, y = model(x), is required'
@@ -501,6 +540,11 @@ class InterpModel(OUQModel):
 
     NOTE:
         any additional keyword arguments will be passed to the interpolator
+
+    NOTE:
+        if cached is True, the default is to create a klepto.dir_archive
+        using the name of the model; alternately, an archive can be specified
+        by passing an archive instance (or string name) to the cached keyword.
         """
         if data is None:
             msg = 'a mystic legacydata.dataset (or callable model) is required'
@@ -537,6 +581,11 @@ class InterpModel(OUQModel):
 
     NOTE:
         if data is a model, interpolator will use model's cached archive
+
+    NOTE:
+        if cached is True, the default is to create a klepto.dir_archive
+        using the name of the model; alternately, an archive can be specified
+        by passing an archive instance (or string name) to the cached keyword.
         """
         self.__kwds__.update(kwds)
         cached = self.__kwds__.pop('cached', False)
@@ -556,14 +605,14 @@ class InterpModel(OUQModel):
         self.__model__ = _init_axis(terp.model)
         self.__model__.__name__ = self.__name__
         self.__kwds__['data'] = archive
-        if cached: #FIXME: clear the archive??? generate new uid name?
-            self.__kwds__['cached'] = True
+        if cached is False:
+            self.__kwds__['cached'] = False
+        else: #FIXME: clear the archive??? generate new uid name?
+            self.__kwds__['cached'] = cached
             self._OUQModel__init_cache()
             if hasattr(self.__model__, '__cache__'):
                 c = self.__model__.__cache__()
                 c.clear()
-        else:
-            self.__kwds__['cached'] = False
         return
 
     def __call__(self, x, axis=None):
@@ -602,6 +651,11 @@ class LearnedModel(OUQModel):
 
     NOTE:
         any additional keyword arguments will be passed to the estimator
+
+    NOTE:
+        if cached is True, the default is to create a klepto.dir_archive
+        using the name of the model; alternately, an archive can be specified
+        by passing an archive instance (or string name) to the cached keyword.
         """
         if data is None:
             msg = 'a mystic legacydata.dataset (or callable model) is required'
@@ -638,6 +692,11 @@ class LearnedModel(OUQModel):
 
     NOTE:
         if data is a model, estimator will use model's cached archive
+
+    NOTE:
+        if cached is True, the default is to create a klepto.dir_archive
+        using the name of the model; alternately, an archive can be specified
+        by passing an archive instance (or string name) to the cached keyword.
         """
         self.__kwds__.update(kwds)
         self.__kwds__.update(kwds)
@@ -658,14 +717,14 @@ class LearnedModel(OUQModel):
         self.__model__ = _init_axis(estm.model)
         self.__model__.__name__ = self.__name__
         self.__kwds__['data'] = archive
-        if cached: #FIXME: clear the archive??? generate new uid name?
-            self.__kwds__['cached'] = True
+        if cached is False:
+            self.__kwds__['cached'] = False
+        else: #FIXME: clear the archive??? generate new uid name?
+            self.__kwds__['cached'] = cached
             self._OUQModel__init_cache()
             if hasattr(self.__model__, '__cache__'):
                 c = self.__model__.__cache__()
                 c.clear()
-        else:
-            self.__kwds__['cached'] = False
         return
 
     def __call__(self, x, axis=None):
@@ -709,6 +768,11 @@ class ErrorModel(OUQModel):
 
     NOTE:
         the default metric is pointwise distance (y - y')**2
+
+    NOTE:
+        if cached is True, the default is to create a klepto.dir_archive
+        using the name of the model; alternately, an archive can be specified
+        by passing an archive instance (or string name) to the cached keyword.
         """
         if model is None or surrogate is None:
             msg = 'a callable model, and a callable surrogate, are required'

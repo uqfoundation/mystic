@@ -85,6 +85,8 @@ def cached(**kwds):
         # produce objective function that caches multi-valued output
         model.__cache__ = lambda : inner.__cache__()
         model.__doc__ = objective.__doc__
+        # retain the original objective function
+        model.__orig__ = objective
 
         # produce model inverse with shared cache
         imodel = lambda *args, **kwds: -model(*args, **kwds)

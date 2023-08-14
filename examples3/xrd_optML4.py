@@ -10,15 +10,15 @@
 optimization of 4-input cost function using online learning of a surrogate
 """
 import os
-import shutil
 from mystic.solvers import diffev2
 from mystic.math.legacydata import dataset, datapoint
+from mystic.cache.archive import file_archive, read as create_db
 from ouq_models import WrapModel, InterpModel
 from emulators import cost4 as cost, x4 as target, bounds4 as bounds
 
-# remove any prior cached results
-if os.path.exists("surrogate"):
-    shutil.rmtree("surrogate")
+# remove any prior cached evaluations of truth (i.e. an 'expensive' model)
+if os.path.exists("truth.db"):
+    os.remove("truth.db")
 
 try: # parallel maps
     from pathos.maps import Map
@@ -27,15 +27,16 @@ try: # parallel maps
 except ImportError:
     pmap = None
 
-# generate a sampled dataset for the model
-truth = WrapModel("surrogate", cost, nx=4, ny=None, cached=False)
+# generate a dataset by sampling truth
+archive = create_db('truth.db', type=file_archive)
+truth = WrapModel("truth", cost, nx=4, ny=None, cached=archive)
 data = truth.sample(bounds, pts=[2, 1, 1, 1], map=pmap)
 
 # shutdown mapper
 if pmap is not None:
     pmap.close(); pmap.join(); pmap.clear()
 
-# create surrogate model
+# create an inexpensive surrogate for truth
 surrogate = InterpModel("surrogate", nx=4, ny=None, data=truth, smooth=0.0,
                         noise=0.0, method="thin_plate", extrap=False)
 
@@ -47,15 +48,15 @@ while error > 1e-3:
     # fit surrogate to data in database
     surrogate.fit(data=data)
 
-    # find minimum/maximum of surrogate
+    # find the minimum of the surrogate
     results = diffev2(lambda x: sign * surrogate(x), bounds, npop=20,
                       bounds=bounds, gtol=500, full_output=True)
 
-    # get minimum/maximum of actual expensive model
+    # evaluate truth at the same input as the surrogate minimum
     xnew = results[0].tolist()
     ynew = truth(xnew)
 
-    # compute error which is actual model value - surrogate model value
+    # compute difference in value of truth and surrogate at candidate minimum
     ysur = results[1]
     error = abs(ynew - ysur)
 
@@ -65,7 +66,7 @@ while error > 1e-3:
     print("error", ynew - ysur, error)
     print("data", len(data))
 
-    # add latest point evaluated with actual expensive model to database
+    # add most recent candidate mimumim evaluated with truth to database
     pt = datapoint(xnew, value=ynew)
     data.append(pt)
 
