@@ -3,9 +3,6 @@ language: python
 
 matrix:
     include:
-        - python: '3.7'
-          env:
-
         - python: '3.8'
           env:
 
@@ -28,9 +25,6 @@ matrix:
             - CYTHON="true" # numpy source build
             - DILL="master"
             - KLEPTO="master"
-
-        - python: 'pypy3.7-7.3.9'
-          env:
 
         - python: 'pypy3.8-7.3.9' # at 7.3.11
           env:
