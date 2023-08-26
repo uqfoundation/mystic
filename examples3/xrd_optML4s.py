@@ -20,6 +20,10 @@ from emulators import cost4 as cost, x4 as target, bounds4 as bounds
 if os.path.exists("truth.db"):
     os.remove("truth.db")
 
+# remove any prior cached evaluations of surrogate
+if os.path.exists("surrogate.db"):
+    os.remove("surrogate.db")
+
 try: # parallel maps
     from pathos.maps import Map
     from pathos.pools import ProcessPool, ThreadPool, SerialPool
@@ -41,23 +45,27 @@ surrogate = InterpModel("surrogate", nx=4, ny=None, data=truth, smooth=0.0,
                         noise=0.0, method="thin_plate", extrap=False)
 
 # iterate until error (of candidate minimum) < 1e-3
+N = 4
+import numpy as np
 error = float("inf")
 sign = 1.0
 while error > 1e-3:
 
-    # fit the surrogate to data in truth database
+    # fit a new surrogate to data in truth database
+    candidates = get_db('surrogate.db', type=file_archive)
+    candidates.clear()
     surrogate.fit(data=data)
 
     # find the minimum of the surrogate
-    results = diffev2(lambda x: sign * surrogate(x), bounds, npop=20,
-                      bounds=bounds, gtol=500, full_output=True)
+    surr = surrogate.sample(bounds, pts='-.%s' % N, archive=candidates)
+    idx = np.argmin(surr.values)
 
     # evaluate truth at the same input as the surrogate minimum
-    xnew = results[0].tolist()
+    xnew = surr.coords[idx]
     ynew = truth(xnew)
 
     # compute absolute error between truth and surrogate at candidate minimum
-    ysur = results[1]
+    ysur = surr.values[idx]
     error = abs(ynew - ysur)
     print("truth: %s @ %s" % (ynew, xnew))
     print("candidate: %s; error: %s" % (ysur, error))

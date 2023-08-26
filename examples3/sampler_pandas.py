@@ -11,7 +11,7 @@ from mystic.models import rosen
 # generate a sampled dataset for the model
 model = WrapModel('rosen', rosen, cached=True)
 bounds = [(0,10),(0,10)]
-data = model.sample(bounds, pts=-8)
+data = model.sample(bounds, pts='8')
 
 # plot the model and sampled data
 import mystic as my

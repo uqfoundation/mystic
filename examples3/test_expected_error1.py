@@ -62,7 +62,7 @@ if __name__ == '__main__':
     true = dict(mu=.01, sigma=0., zmu=-.01, zsigma=0.)
     truth = NoisyModel('truth', model=toy, nx=nx, ny=ny, **true)
     #print('sampling truth...')
-    data = truth.sample([(0,1),(1,10)]+[(0,10)]*(nx-2), pts=-16)
+    data = truth.sample([(0,1),(1,10)]+[(0,10)]*(nx-2), pts='16')
     Ns = 25 #XXX: number of samples, when model has randomness
 
     try: # parallel maps
