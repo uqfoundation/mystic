@@ -361,7 +361,7 @@ if __name__ == '__main__':
 
     # generate some 'truth' data, using solver-directed sampling
     bounds = [(0,10)]*nx
-    data = golden.sample(bounds, pts=-4)
+    data = golden.sample(bounds, pts='4')
 
     # build an estimator instance 
     import mystic.monitors as mm

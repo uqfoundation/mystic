@@ -12,7 +12,7 @@ optimization of 3-input cost function using online learning of a surrogate
 import os
 from mystic.solvers import diffev2
 from mystic.math.legacydata import dataset, datapoint
-from mystic.cache.archive import file_archive, read as create_db
+from mystic.cache.archive import file_archive, read as get_db
 from ouq_models import WrapModel, InterpModel
 from emulators import cost3 as cost, x3 as target, bounds3 as bounds
 
@@ -28,7 +28,7 @@ except ImportError:
     pmap = None
 
 # generate a dataset by sampling truth
-archive = create_db('truth.db', type=file_archive)
+archive = get_db('truth.db', type=file_archive)
 truth = WrapModel("truth", cost, nx=3, ny=None, cached=archive)
 data = truth.sample(bounds, pts=[2, 1, 1], map=pmap)
 
@@ -40,12 +40,12 @@ if pmap is not None:
 surrogate = InterpModel("surrogate", nx=3, ny=None, data=truth, smooth=0.0,
                         noise=0.0, method="thin_plate", extrap=False)
 
-# iterate until error < 1e-3
+# iterate until error (of candidate minimum) < 1e-3
 error = float("inf")
 sign = 1.0
 while error > 1e-3:
 
-    # fit surrogate to data in database
+    # fit the surrogate to data in truth database
     surrogate.fit(data=data)
 
     # find the minimum of the surrogate
@@ -56,15 +56,12 @@ while error > 1e-3:
     xnew = results[0].tolist()
     ynew = truth(xnew)
 
-    # compute difference in value of truth and surrogate at candidate minimum
+    # compute absolute error between truth and surrogate at candidate minimum
     ysur = results[1]
     error = abs(ynew - ysur)
-
-    # print statements
-    print("truth", xnew, ynew)
-    print("surrogate", xnew, ysur)
-    print("error", ynew - ysur, error)
-    print("data", len(data))
+    print("truth: %s @ %s" % (ynew, xnew))
+    print("candidate: %s; error: %s" % (ysur, error))
+    print("evaluations of truth: %s" % len(data))
 
     # add most recent candidate mimumim evaluated with truth to database
     pt = datapoint(xnew, value=ynew)

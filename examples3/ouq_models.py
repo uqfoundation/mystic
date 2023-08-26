@@ -46,11 +46,15 @@ def sample(model, bounds, pts=None, **kwds):
         the amplitude of the noise (typically, N ~ 0.05).
 
     NOTE:
-        if pts is negative (i.e. pts=-4), use solver-directed sampling.
+        if pts is a string (i.e. pts='4'), use solver-directed sampling.
         initial points are chosen by the sampler, then solvers run
         until converged. a LatticeSampler also accepts a list of pts,
-        indicating the number of bins on each axis; if the product of
-        npts is negative, then use solver-directed sampling.
+        indicating the number of bins on each axis; again, if pts is a
+        string (i.e. pts='[2,2,1]'), then use solver-directed sampling.
+        if the string for pts begins with a '.', then only return the
+        termini of the solver trajectories (i.e. pts='.4'). if the string
+        begins with a '-' (i.e. pts='-4'), then only search for minima,
+        or if the string begins with a '+', then only search for maxima.
 
     NOTE:
         if the model does not have an associated cached archive, sampling
@@ -88,14 +92,89 @@ def sample(model, bounds, pts=None, **kwds):
         model = mc.cached(archive=name, multivalued=mvl)(model)
     cache = model.__cache__
     imodel = model.__inverse__
-    if hasattr(pts, '__len__'):
-        import numpy as np
-        pts, _pts = np.prod(pts), [abs(i) for i in pts]
+    from mystic.math.legacydata import dataset
+    # specification of first-order and second-order solve, or sampling
+    deriv = False
+    traj = mins = maxs = True
+
+    if isinstance(pts, str):
+        # special case starting values
+        if pts[0] == '-': # mins only
+            maxs = False
+            pts = pts[1:]
+        elif pts[0] == '+': # maxs only
+            mins = False
+            pts = pts[1:]
+        if pts[0] == '.': # termini only
+            traj = False
+            pts = pts[1:]
+        # check for second-order search
+        if ':' in pts: # include 2nd-order
+            pts,deriv = pts.split(':', 1)
+            # handle special cases
+            if not deriv: deriv = None # 2 * pts
+        # handle special cases
+        if not pts: pts = None
+        pts = [pts] if deriv is False else [pts,deriv]
+
+        # convert to non-string
+        for i,s in enumerate(pts):
+            if s is None: # non-strings
+                continue
+            try: # strings of ints
+                pts[i] = int(s)
+                if pts[i] < 0: # negative solvers should error
+                    pts[i] = 'invalid value for number of solvers: %s' % s
+                else:
+                    pts[i] *= -1 #NOTE: legacy: solver should be negative
+            except ValueError:
+                from string import ascii_letters # no letters or decimals
+                if set(ascii_letters+'.').intersection(s): #XXX: screen more?
+                    pts[i]='invalid specification in number of solvers: %s' % s
+                    continue
+                try:
+                    pts[i] = eval(s, {}, {})
+                    import numpy as np
+                    if np.min(pts[i]) < 0: # must be a sequence or int
+                        pts[i] = 'invalid value in number of solvers: %s' % s
+                    else:
+                        pts[i][0] *= -1 #NOTE: legacy: solver should be negative
+                except:
+                    pts[i]='invalid specification of number of solvers: %s' % s
     else:
-        _pts = None
+        pts = [pts]
+
+    #NOTE: by here, pts[i] is either an int, list, or None
+    for i,pt in enumerate(pts):
+        if isinstance(pt, str):
+            raise ValueError(pt)
+        if hasattr(pt, '__len__'):
+            import numpy as np
+            neg = np.min(pt) < 0
+            pt, _pt = np.prod(pt), [abs(p) for p in pt]
+            if neg: pt = -abs(pt)
+        else:
+            _pt = None
+        pts[i] = (pt,_pt)
+
+    #NOTE: by here, pts[i] is a tuple of (int or None, list or None)
+    if deriv is False:
+        _deriv = False
+    else:
+        deriv, _deriv = pts[1]
+    pts, _pts = pts[0]
+
+    # handle special cases (i.e. the defaults)
     if pts is None: pts = -1
+    if deriv is None: deriv = pts*2
+
+    if deriv is not False:
+        msg = '1st-order: %s and non-zero 2nd-order: %s' % (-pts, -deriv)
+        raise NotImplementedError(msg)
+
     if pts == 0: # don't sample, just grab the archive
-        pass
+        if not traj:
+            dset = dataset() # = []
     elif pts > 0: # sample pts without optimizing
         pts = pts if _pts is None else _pts
         def doit(axis=None):
@@ -105,9 +184,12 @@ def sample(model, bounds, pts=None, **kwds):
             return s
         if mvl and axis is None:
             # as we don't optimize, we really don't need axis...?
-            doit(axis=0)
+            dset = [doit(axis=0)]
         else:
-            doit(axis)
+            dset = [doit(axis)]
+        # build a dataset of the samples #FIXME: check format when ny != None
+        if not traj:
+            dset = dataset().load([list(i) for i in dset[0]._sampler._all_bestSolution], dset[0]._sampler._all_bestEnergy)
     else: # search for minima until terminated
         pts = -pts if _pts is None else _pts
         def lower(axis=None):
@@ -122,16 +204,41 @@ def sample(model, bounds, pts=None, **kwds):
             return si
         def _apply(f, arg):
             return f(arg)
-        fs = lower, upper
+        # search for mins, maxs, or both
+        if mins is False:
+            fs = upper,
+        elif maxs is False:
+            fs = lower,
+        else:
+            fs = lower, upper
         def doit(axis=None):
             return list(pmap(_apply, fs, [axis]*len(fs)))
+        from itertools import chain #NOTE: flattens a list of lists
         if mvl and axis is None:
-            if ny:
-                list(axmap(doit, range(ny)))
+            if ny: #XXX: is the format correct? (i.e. flattened list)
+                dset = list(chain.from_iterable(axmap(doit, range(ny))))
             else: #XXX: default to 0, warn, or error?
-                doit(axis=0)
+                dset = doit(axis=0)
         else:
-            doit(axis)
+            dset = doit(axis)
+        # build a dataset of the termini #FIXME: check format when ny != None
+        if not traj:
+            if mins is False:
+                dset = dataset().load(
+                    chain.from_iterable([[list(i) for i in s._sampler._all_bestSolution] for s in dset]), 
+                    chain.from_iterable([[-i for i in s._sampler._all_bestEnergy] for s in dset])
+                )
+            elif maxs is False:
+                dset = dataset().load(
+                    chain.from_iterable([[list(i) for i in s._sampler._all_bestSolution] for s in dset]), 
+                    chain.from_iterable([s._sampler._all_bestEnergy for s in dset])
+                )
+            else:
+                dset = dataset().load(
+                    chain.from_iterable([[list(i) for i in s._sampler._all_bestSolution] for s in dset[0::2]] + [[list(i) for i in s._sampler._all_bestSolution] for s in dset[1::2]]), 
+                    chain.from_iterable([s._sampler._all_bestEnergy for s in dset[0::2]] + [[-i for i in s._sampler._all_bestEnergy] for s in dset[1::2]])
+                )
+    if not traj: return dset #TODO: check format (vs below) when ny != None
     import dataset as ds
     return ds.from_archive(cache(), axis=None)
 
@@ -282,11 +389,15 @@ class OUQModel(object): #NOTE: effectively, this is WrapModel
         the amplitude of the noise (typically, N ~ 0.05).
 
     NOTE:
-        if pts is negative (i.e. pts=-4), use solver-directed sampling.
+        if pts is a string (i.e. pts='4'), use solver-directed sampling.
         initial points are chosen by the sampler, then solvers run
         until converged. a LatticeSampler also accepts a list of pts,
-        indicating the number of bins on each axis; if the product of
-        npts is negative, then use solver-directed sampling.
+        indicating the number of bins on each axis; again, if pts is a
+        string (i.e. pts='[2,2,1]'), then use solver-directed sampling.
+        if the string for pts begins with a '.', then only return the
+        termini of the solver trajectories (i.e. pts='.4'). if the string
+        begins with a '-' (i.e. pts='-4'), then only search for minima,
+        or if the string begins with a '+', then only search for maxima.
 
     NOTE:
         if the model does not have an associated cached archive, sampling

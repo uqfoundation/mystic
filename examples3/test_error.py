@@ -69,7 +69,7 @@ if __name__ == '__main__':
     print('max error: %s' % np.max(error, axis=-1))
 
     # calculate model error for 'golden'
-    data = golden.sample(bounds, pts=-4, map=pmap, axmap=smap)
+    data = golden.sample(bounds, pts='4', map=pmap, axmap=smap)
     #print('truth: %s' % str(golden([1,2,3,4,5])))
     estimate = dict(nx=nx, ny=ny, data=golden, noise=0, smooth=0)
     surrogate = InterpModel('surrogate', method='thin_plate', **estimate)
@@ -82,7 +82,7 @@ if __name__ == '__main__':
     #'''
     # sample more data, refit, and recalculate error
     print('resampling and refitting surrogate')
-    data = golden.sample(bounds, pts=-4, map=pmap, axmap=smap)
+    data = golden.sample(bounds, pts='4', map=pmap, axmap=smap)
     surrogate.fit()
     print('estimate: %s' % str(surrogate([1,2,3,4,5])))
     print('error: %s' % str(misfit([1,2,3,4,5])))
