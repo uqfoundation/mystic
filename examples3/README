@@ -8,7 +8,8 @@ Naming convention:
   - `3D` denotes use of 3-D toy model in surrogate.py
   - `5D` denotes use of 5-D toy model in toys.py
   - `GP` denotes use of sklearn GP regression instead of RBF interpolation
-  - `ML` denotes use of sklearn MLP regression instead of RBF interpolation
+  - `NN` denotes use of sklearn MLP regression instead of RBF interpolation
+  - 'ML' denotes use of iterative surrogate-assisted optimization
   - `c0mean` denotes a (backpropagation) calculation of mean value of an input
   - `collapse` denotes use of dimensional collapse detectors
   - `mean` denotes a calculation of mean value of an output
