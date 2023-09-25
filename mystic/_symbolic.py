@@ -326,8 +326,9 @@ Examples:
     locals = kwds['locals'] if 'locals' in kwds else None
     if locals is None: locals = {}
     try:
-        import imp
-        imp.find_module('sympy')
+        import importlib
+        if not importlib.util.find_spec('sympy'):
+            raise ImportError("No module named 'sympy'")
         code = """from sympy import Eq, Symbol;"""
         code += """from sympy import solve as symsol;"""
         code = compile(code, '<string>', 'exec')
@@ -517,8 +518,9 @@ Examples:
     if locals is None: locals = {}
     # if sympy not installed, return original constraints
     try:
-        import imp
-        imp.find_module('sympy')
+        import importlib
+        if not importlib.util.find_spec('sympy'):
+            raise ImportError("No module named 'sympy'")
         code = """from sympy import Eq, Symbol;"""
         code += """from sympy import solve as symsol;"""
         code = compile(code, '<string>', 'exec')

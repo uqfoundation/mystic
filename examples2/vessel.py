@@ -25,8 +25,9 @@ bounds = [(0,1e6)]*4
 xs = [0.72759093, 0.35964857, 37.69901188, 240.0]
 ys = 5804.3762083
 
-from mystic.symbolic import generate_constraint, generate_solvers, simplify
-from mystic.symbolic import generate_penalty, generate_conditions
+from mystic.symbolic import (generate_constraint, generate_solvers,
+                             generate_penalty, generate_conditions,
+                             simplify, symbolic_bounds)
 
 equations = """
 -x0 + 0.0193*x2 <= 0.0
@@ -34,6 +35,7 @@ equations = """
 -pi*x2**2*x3 - (4/3.)*pi*x2**3 + 1296000.0 <= 0.0
 x3 - 240.0 <= 0.0
 """
+equations += symbolic_bounds(*zip(*bounds))
 cf = generate_constraint(generate_solvers(simplify(equations)))
 pf = generate_penalty(generate_conditions(equations), k=1e12)
 

@@ -38,8 +38,6 @@ solver = as_constraint(penalty)
 
 
 if __name__ == '__main__':
-    bounds = bounds(len(xs))
-
     from mystic.solvers import diffev2
     from mystic.math import almostEqual
 

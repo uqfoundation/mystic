@@ -24,13 +24,8 @@ is used. Otherwise, use mystic's n-dimensional Monte Carlo integrator."""
   # Try to use scipy if possible for problems whose dimension is 1, 2, or 3
   # Otherwise, use n-dimensional Monte Carlo integrator
   if len(lb) <= 3:
-    scipy = True
-    try: 
-      import imp
-      imp.find_module('scipy')
-    except ImportError:
-      scipy = False
-    if scipy:
+    import importlib
+    if importlib.util.find_spec('scipy'):
       expectation = _scipy_integrate(f, lb, ub)
     else:
       expectation = monte_carlo_integrate(f, lb, ub)

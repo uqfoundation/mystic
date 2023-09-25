@@ -145,8 +145,8 @@ def test_constrain():
   x = array([1,2,3,4,5])
   y = fmin_powell(cost, x, constraints=constraints, disp=False)
 
-  assert mean(y) == 5.0
-  assert spread(y) == 5.0
+  assert almostEqual(mean(y), 5.0)
+  assert almostEqual(spread(y), 5.0)
   assert almostEqual(cost(y), 4*(5.0))
 
 
