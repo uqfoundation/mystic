@@ -550,7 +550,8 @@ NOTE:
         for c in constraints:
             try:
                 ci = c(x[-1][:])
-            except ZeroDivisionError as e:
+            except ZeroDivisionError as exc:
+                e = exc
                 ci = x[-1][:] #XXX: do something else?
             x.append(ci.tolist() if hasattr(ci, 'tolist') else ci)
         if all(xi == x[-1] for xi in x[1:]) and e is None:
@@ -561,7 +562,8 @@ NOTE:
             e = None
             try:
                 ci = next(_constraints)(x[-1][:])
-            except ZeroDivisionError as e:
+            except ZeroDivisionError as exc:
+                e = exc
                 ci = x[-1][:] #XXX: do something else?
             x.append(ci.tolist() if hasattr(ci, 'tolist') else ci)
             if all(xi == x[-1] for xi in x[-n:]) and e is None:
@@ -615,7 +617,8 @@ NOTE:
         for c in constraints:
             try:
                 ci = c(x[0][:])
-            except ZeroDivisionError as e:
+            except ZeroDivisionError as exc:
+                e = exc
                 ci = x[0][:] #XXX: do something else?
             x.append(ci.tolist() if hasattr(ci, 'tolist') else ci)
             if x[-1] == x[0] and e is None:
@@ -626,7 +629,8 @@ NOTE:
             e = None
             try:
                 ci = next(_constraints)(x[-n][:])
-            except ZeroDivisionError as e:
+            except ZeroDivisionError as exc:
+                e = exc
                 ci = x[-n][:] #XXX: do something else?
             x.append(ci.tolist() if hasattr(ci, 'tolist') else ci)
             if x[-1] == x[-(n+1)] and e is None:
