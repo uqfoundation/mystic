@@ -34,26 +34,28 @@ xs ~ [3.12388714, 3.06913834, 3.01426760, 2.95755412, 1.46603517,
       0.36802963, 0.36346912, 0.35912472, 0.35493945, 0.35095372]
 ys ~ -0.74732020
 """
+bounds = bounds(len(xs))
 
-from mystic.symbolic import generate_constraint, generate_solvers, simplify
-from mystic.symbolic import generate_penalty, generate_conditions
+from mystic.constraints import and_
+from mystic.symbolic import (generate_constraint, generate_solvers,
+                             generate_penalty, generate_conditions,
+                             simplify, symbolic_bounds)
 
 equations = """
 -prod([x0, x1, x2]) + 0.75 <= 0.0
 sum([x0, x1, x2]) - 7.5*3 <= 0.0
 """
-cf = generate_constraint(generate_solvers(simplify(equations)))
+equations += symbolic_bounds(*zip(*bounds))
+cf = generate_constraint(generate_solvers(simplify(equations)), join=and_)
 pf = generate_penalty(generate_conditions(equations))
 
 
 
 if __name__ == '__main__':
-    bounds = bounds(len(xs))
-
     from mystic.solvers import diffev2
     from mystic.math import almostEqual
 
-    result = diffev2(objective, x0=bounds, bounds=bounds, constraints=cf, penalty=pf, npop=40, disp=False, full_output=True, gtol=200)
+    result = diffev2(objective, x0=bounds, bounds=bounds, constraints=cf, penalty=pf, npop=80, disp=False, full_output=True, gtol=100)
 
     assert almostEqual(result[0], xs, rel=1e-1)
     assert almostEqual(result[1], ys, rel=1e-1)

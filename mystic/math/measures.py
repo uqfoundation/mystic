@@ -283,11 +283,13 @@ Returns:
     the weighted mean for a list of sample points
 """
   if weights is None:
-    weights = [1.0/float(len(samples))] * len(samples)
-  # get weighted sum
-  ssum = sum(i*j for i,j in zip(samples, weights))
-  # normalize by sum of the weights
-  wts = float(sum(weights))
+    ssum = sum(samples)/len(samples)
+    wts = 1.0
+  else:
+    # get weighted sum
+    ssum = sum(i*j for i,j in zip(samples, weights))
+    # normalize by sum of the weights
+    wts = float(sum(weights))
   if wts:
     ssum = ssum / wts
     return 0.0 if abs(ssum) <= tol else ssum
@@ -333,8 +335,6 @@ Returns:
 """
   if order == 0: return 1.0 #XXX: error if order < 0
   if order == 1: return 0.0
-  if weights is None:
-    weights = [1.0/float(len(samples))] * len(samples)
  #if _mean is None:
   _mean = mean(samples, weights)
   mom = [(s - _mean)**order for s in samples] #XXX: abs(s - _mean) ???
@@ -1380,6 +1380,9 @@ def impose_reweighted_mean(m, samples, weights=None, solver=None):
     ndim = len(samples)
     if weights is None:
         weights = [1.0/ndim] * ndim
+        norm = 1.0
+    else:
+        norm = sum(weights)
     if solver is None or solver == 'fmin':
         from mystic.solvers import fmin as solver
     elif solver == 'fmin_powell':
@@ -1388,7 +1391,6 @@ def impose_reweighted_mean(m, samples, weights=None, solver=None):
         from mystic.solvers import diffev as solver
     elif solver == 'diffev2':
         from mystic.solvers import diffev2 as solver
-    norm = sum(weights)
 
     inequality = ""; equality = ""; equality2 = ""
     for i in range(ndim):
@@ -1420,9 +1422,13 @@ def impose_reweighted_mean(m, samples, weights=None, solver=None):
 
 def impose_reweighted_variance(v, samples, weights=None, solver=None):
     """impose a variance on a list of points by reweighting weights"""
+    m = mean(samples, weights)
     ndim = len(samples)
     if weights is None:
         weights = [1.0/ndim] * ndim
+        norm = 1.0
+    else:
+        norm = sum(weights)
     if solver is None or solver == 'fmin':
         from mystic.solvers import fmin as solver
     elif solver == 'fmin_powell':
@@ -1431,8 +1437,6 @@ def impose_reweighted_variance(v, samples, weights=None, solver=None):
         from mystic.solvers import diffev as solver
     elif solver == 'diffev2':
         from mystic.solvers import diffev2 as solver
-    norm = sum(weights)
-    m = mean(samples, weights)
 
     inequality = ""
     equality = ""; equality2 = ""; equality3 = ""

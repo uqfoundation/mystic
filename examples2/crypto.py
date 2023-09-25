@@ -66,6 +66,8 @@ bounds[4] = (20,20)  # E
 bounds[8] = (25,25)  # I
 bounds[14] = (10,10) # O
 bounds[20] = (1,1)   # U
+from mystic.symbolic import symbolic_bounds
+equations += symbolic_bounds(*zip(*bounds), variables=var)
 
 from mystic.constraints import unique, near_integers, has_unique
 
@@ -87,6 +89,11 @@ def constraint(x):
     x = unique(x, list(range(1,nletters+1)))
     return x
 
+from mystic.constraints import and_, discrete, impose_unique
+candidates = list(range(1,nletters+1))
+constraint = and_(discrete(candidates)(lambda x:round(x).astype(int)), impose_unique(candidates)(lambda x:x))
+
+
 
 if __name__ == '__main__':
 
@@ -95,12 +102,12 @@ if __name__ == '__main__':
     from mystic.monitors import Monitor, VerboseMonitor
     mon = VerboseMonitor(10)#,10)
 
-    result = diffev2(objective, x0=bounds, bounds=bounds, penalty=pf, constraints=constraint, npop=52, ftol=1e-8, gtol=1000, disp=True, full_output=True, cross=0.1, scale=0.9, itermon=mon)
+    result = diffev2(objective, x0=bounds, bounds=bounds, penalty=pf, constraints=constraint, npop=130, ftol=1e-8, gtol=1000, disp=True, full_output=True, cross=0.1, scale=1.0, itermon=mon)
    # FIXME: solves at 0%... but w/ vowels fixed 80%?
-   #result = diffev2(objective, x0=bounds, bounds=bounds, penalty=pf, constraints=constraint, npop=52, ftol=1e-8, gtol=2000, disp=True, full_output=True, cross=0.1, scale=0.9, itermon=mon)
-   #result = diffev2(objective, x0=bounds, bounds=bounds, penalty=pf, constraints=constraint, npop=130, ftol=1e-8, gtol=1000, disp=True, full_output=True, cross=0.1, scale=0.9, itermon=mon)
-   #result = diffev2(objective, x0=bounds, bounds=bounds, penalty=pf, constraints=constraint, npop=260, ftol=1e-8, gtol=500, disp=True, full_output=True, cross=0.1, scale=0.9, itermon=mon)
-   #result = diffev2(objective, x0=bounds, bounds=bounds, penalty=pf, constraints=constraint, npop=520, ftol=1e-8, gtol=100, disp=True, full_output=True, cross=0.1, scale=0.9, itermon=mon)
+   #result = diffev2(objective, x0=bounds, bounds=bounds, penalty=pf, constraints=constraint, npop=52, ftol=1e-8, gtol=2000, disp=True, full_output=True, cross=0.1, scale=1.0, itermon=mon)
+   #result = diffev2(objective, x0=bounds, bounds=bounds, penalty=pf, constraints=constraint, npop=130, ftol=1e-8, gtol=1000, disp=True, full_output=True, cross=0.1, scale=1.0, itermon=mon)
+   #result = diffev2(objective, x0=bounds, bounds=bounds, penalty=pf, constraints=constraint, npop=260, ftol=1e-8, gtol=500, disp=True, full_output=True, cross=0.1, scale=1.0, itermon=mon)
+   #result = diffev2(objective, x0=bounds, bounds=bounds, penalty=pf, constraints=constraint, npop=520, ftol=1e-8, gtol=100, disp=True, full_output=True, cross=0.1, scale=1.0, itermon=mon)
 
     print(result[0])
     assert almostEqual(result[0], xs, tol=1e-8)

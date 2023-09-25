@@ -23,7 +23,7 @@ for i in (x,y,z,w):
     assert sum(isnan(mo.impose_moment(5.0, i, order=3))) == 0
 
 assert sum(isnan(mo.impose_moment(5.0, x, order=3, skew=False))) == len(x)
-assert sum(isnan(mo.impose_moment(5.0, y, order=3, skew=False))) == 0 #XXX?
+assert sum(isnan(mo.impose_moment(5.0, y, order=3, skew=False))) == len(y)
 assert sum(isnan(mo.impose_moment(5.0, z, order=3, skew=False))) == 0
 assert sum(isnan(mo.impose_moment(5.0, w, order=3, skew=False))) == 0
 
