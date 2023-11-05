@@ -733,10 +733,11 @@ Examples:
         variants = (100000,-200000,100100,-200,110,-20,11,-2,1) #HACK
         kwds['variants'] = list(variants)
         for sign in signs:
-            if equals(before,after,next(testvals),**kwds):
-                new = [after]
-            else:
-                new = [after.replace(cmp,flip(cmp))] #XXX: or flip(cmp,True)?
+            try:
+                eq = equals(before,after,next(testvals),**kwds)
+            except (ValueError, TypeError):
+                eq = True #XXX: if complex, don't flip... or compare square?
+            new = [after] if eq else [after.replace(cmp,flip(cmp))] #(cmp,True)?
             new.extend(z.replace('=',i) for (z,i) in zip(zro,sign))
             results.append(new)
 
@@ -753,9 +754,9 @@ Examples:
     eqns = []
     used = []
     for eqn in constraints.strip().split(NL):
-        # get least used, as they are likely to be simpler
+        # get least used (prefers no pow), as they are likely to be simpler
         vars = get_variables(eqn, variables)
-        vars.sort(key=eqn.count) #XXX: better to sort by count(var+'**')?
+        vars.sort(key=lambda x: (eqn.count(x), eqn.count(x+'**')))
         vars = target[:] if target else vars
         if cycle: vars = [var for var in vars if var not in used] + used
         while vars:
