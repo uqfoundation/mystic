@@ -11,7 +11,7 @@ optimization of 4-input cost function using online learning of a surrogate
 """
 import os
 from mystic.solvers import diffev2
-from mystic.math.legacydata import dataset, datapoint
+from mystic.math.legacydata import datapoint
 from mystic.cache.archive import file_archive, read as get_db
 from ouq_models import WrapModel, InterpModel
 from emulators import cost4 as cost, x4 as target, bounds4 as bounds
@@ -48,7 +48,6 @@ surrogate = InterpModel("surrogate", nx=4, ny=None, data=truth, smooth=0.0,
 N = 4
 import numpy as np
 error = float("inf")
-sign = 1.0
 while error > 1e-3:
 
     # fit a new surrogate to data in truth database
