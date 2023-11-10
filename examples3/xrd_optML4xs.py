@@ -10,7 +10,6 @@
 optimization of 4-input cost function using online learning of a surrogate
 """
 import os
-from mystic.math.legacydata import dataset, datapoint
 from mystic.samplers import LatticeSampler
 from ouq_models import WrapModel, InterpModel
 from emulators import cost4 as cost, x4 as target, bounds4 as bounds
@@ -46,11 +45,12 @@ if pmap is not None:
 surrogate = InterpModel("surrogate", nx=4, ny=None, data=truth, smooth=0.0,
                         noise=0.0, method="thin_plate", extrap=False)
 
-# iterate until mean error (of candidate minima) < 1e-3
+# iterate until error (of candidate minimum) < 1e-3
 N = 4
 import numpy as np
-error = np.array([float('inf')])
-while error[:N].mean() > 1e-3:
+error = np.array([float('inf')]); idx = 0
+#while error[:N].mean() > 1e-3:
+while error[idx] > 1e-3:
 
     # fit a new surrogate to data in truth database
     get_db('surrogate').clear()
@@ -63,16 +63,18 @@ while error[:N].mean() > 1e-3:
     ytrue = list(map(truth, surr.coords))
 
     # compute absolute error between truth and surrogate at candidate extrema
+    idx = np.argmin(ytrue)
     error = abs(np.array(ytrue) - surr.values)
-    print("error@mins: %s" % error[:N])
-    print("error@maxs: %s" % error[-N:])
-    print("stop: %s; ave: %s; max: %s" % (error[:N].mean(), error.mean(), error.max()))
+    #print("error@mins: %s" % error[:N])
+    #print("error@maxs: %s" % error[-N:])
+    print("ave: %s; max: %s" % (error.mean(), error.max()))
+    print("ave mins: %s; at min: %s" % (error[:N].mean(), error[idx]))
+    print("evaluations of truth: %s" % len(data))
 
     # add most recent candidate extrema to truth database
     data.load(surr.coords, ytrue)
 
 # get minimum of last batch of results
-idx = np.argmin(ytrue)
 xnew = surr.coords[idx]
 ynew = ytrue[idx]
 

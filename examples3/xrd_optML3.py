@@ -11,7 +11,7 @@ optimization of 3-input cost function using online learning of a surrogate
 """
 import os
 from mystic.solvers import diffev2
-from mystic.math.legacydata import dataset, datapoint
+from mystic.math.legacydata import datapoint
 from mystic.cache.archive import file_archive, read as get_db
 from ouq_models import WrapModel, InterpModel
 from emulators import cost3 as cost, x3 as target, bounds3 as bounds
@@ -42,14 +42,13 @@ surrogate = InterpModel("surrogate", nx=3, ny=None, data=truth, smooth=0.0,
 
 # iterate until error (of candidate minimum) < 1e-3
 error = float("inf")
-sign = 1.0
 while error > 1e-3:
 
     # fit the surrogate to data in truth database
     surrogate.fit(data=data)
 
     # find the minimum of the surrogate
-    results = diffev2(lambda x: sign * surrogate(x), bounds, npop=20,
+    results = diffev2(lambda x: surrogate(x), bounds, npop=20,
                       bounds=bounds, gtol=500, full_output=True)
 
     # evaluate truth at the same input as the surrogate minimum
