@@ -449,7 +449,7 @@ Args:
         try:
             after, before = eval(after,{},locals_), eval(before,{},locals_)
             break
-        except (ValueError,TypeError) as error:
+        except (ValueError, TypeError) as error:
             if (error.args[0].startswith('negative number') and \
                error.args[0].endswith('raised to a fractional power')) or \
                (error.args[0].find('not supported') and \
@@ -472,6 +472,7 @@ Args:
     else: #END HACK
         try:
             after, before = eval(after,{},locals_), eval(before,{},locals_)
+        #XXX: also catch TypeError here for complex numbers?
         except ZeroDivisionError as error:
             if errors: raise error
             try:

@@ -553,6 +553,12 @@ NOTE:
             except ZeroDivisionError as exc:
                 e = exc
                 ci = x[-1][:] #XXX: do something else?
+            except (TypeError, ValueError) as exc:
+                if (exc.args[0].find('not supported') and \
+                    exc.args[0].rfind("'complex'")):
+                    e = exc
+                    ci = x[-1][:] #XXX: do something else?
+                else: raise exc
             x.append(ci.tolist() if hasattr(ci, 'tolist') else ci)
         if all(xi == x[-1] for xi in x[1:]) and e is None:
             return x[-1] if onexit is None else onexit(x[-1][:])
@@ -565,6 +571,12 @@ NOTE:
             except ZeroDivisionError as exc:
                 e = exc
                 ci = x[-1][:] #XXX: do something else?
+            except (TypeError, ValueError) as exc:
+                if (exc.args[0].find('not supported') and \
+                    exc.args[0].rfind("'complex'")):
+                    e = exc
+                    ci = x[-1][:] #XXX: do something else?
+                else: raise exc
             x.append(ci.tolist() if hasattr(ci, 'tolist') else ci)
             if all(xi == x[-1] for xi in x[-n:]) and e is None:
                 return x[-1] if onexit is None else onexit(x[-1][:])
@@ -620,6 +632,12 @@ NOTE:
             except ZeroDivisionError as exc:
                 e = exc
                 ci = x[0][:] #XXX: do something else?
+            except (TypeError, ValueError) as exc:
+                if (exc.args[0].find('not supported') and \
+                    exc.args[0].rfind("'complex'")):
+                    e = exc
+                    ci = x[-1][:] #XXX: do something else?
+                else: raise exc
             x.append(ci.tolist() if hasattr(ci, 'tolist') else ci)
             if x[-1] == x[0] and e is None:
                 return x[-1] if onexit is None else onexit(x[-1][:])
@@ -632,6 +650,12 @@ NOTE:
             except ZeroDivisionError as exc:
                 e = exc
                 ci = x[-n][:] #XXX: do something else?
+            except (TypeError, ValueError) as exc:
+                if (exc.args[0].find('not supported') and \
+                    exc.args[0].rfind("'complex'")):
+                    e = exc
+                    ci = x[-1][:] #XXX: do something else?
+                else: raise exc
             x.append(ci.tolist() if hasattr(ci, 'tolist') else ci)
             if x[-1] == x[-(n+1)] and e is None:
                 return x[-1] if onexit is None else onexit(x[-1][:])
@@ -681,6 +705,11 @@ NOTE:
                     return x[:] if onexit is None else onexit(x[:])
             except ZeroDivisionError as e:
                 pass #XXX: do something else?
+            except (TypeError, ValueError) as exc:
+                if (exc.args[0].find('not supported') and \
+                    exc.args[0].rfind("'complex'")):
+                    pass #XXX: do something else?
+                else: raise exc
             x = [(i+rnd.randint(-1,1))*rnd.random() for i in x]
         # give up #XXX: or fail with Error?
         return x[:] if onfail is None else onfail(x[:])
