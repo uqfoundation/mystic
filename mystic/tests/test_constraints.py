@@ -242,6 +242,30 @@ def test_discrete():
   assert all(discrete_squared(asarray([0, 3, 6])) == asarray([1.0, 3.0, 7.0])**2)
 
 
+def test_sorting():
+
+  x = [1.0, -3.5, -5.5, 7.0, 9.0]
+  negative = lambda x: [-i for i in x]
+  assert sorting()(negative)(x) == negative(sorted(x))
+  assert sorting(outer=True)(negative)(x) == sorted(negative(x))
+  assert sorting(ascending=False)(negative)(x) == negative(sorted(x, reverse=True))
+  assert sorting(ascending=False, outer=True)(negative)(x) == sorted(negative(x), reverse=True)
+
+  assert sorting()(sum)(x) == sum(x)
+  assert sorting(outer=True)(sum)(x) == sum(x)
+  assert sorting(ascending=False)(sum)(x) == sum(x)
+  assert sorting(ascending=False, outer=True)(sum)(x) == sum(x)
+
+  assert monotonic()(negative)(x) == monotonic(ascending=False, outer=True)(negative)(x)
+  assert monotonic(outer=True)(negative)(x) == monotonic(ascending=False)(negative)(x)
+
+  from numpy import maximum as max, minimum as min
+  assert monotonic()(sum)(x) == sum(max.accumulate(x))
+  assert monotonic(outer=True)(sum)(x) == sum(x)
+  assert monotonic(ascending=False)(sum)(x) == sum(min.accumulate(x))
+  assert monotonic(ascending=False, outer=True)(sum)(x) == sum(x)
+
+
 if __name__ == '__main__':
   test_penalize()
   test_solve()
@@ -254,6 +278,7 @@ if __name__ == '__main__':
   test_constrained_solve()
   test_with_constraint()
   test_discrete()
+  test_sorting()
 
 
 # EOF

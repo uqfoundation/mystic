@@ -15,7 +15,7 @@ __all__ = ['with_penalty','with_constraint','as_penalty','as_constraint',
            'near_integers','unique','has_unique','impose_unique','bounded',
            'impose_bounds','impose_as','impose_at','impose_measure',
            'impose_position','impose_weight','and_','or_','not_','vectorize',
-           'boundsconstrain']
+           'boundsconstrain','monotonic','sorting']
 
 from mystic.math.measures import *
 from mystic.math import almostEqual
@@ -1144,13 +1144,16 @@ def bounded(seq, bounds, index=None, clip=True, nearest=True):
       array([0.123     , 1.244     , 3.46621839, 1.44469038, 4.88937466])
       >>> 
       >>> bounds = [(0,5),(7,10)]
-      >>> my.constraints.bounded(sequence, bounds)
+      >>> bounded(sequence, bounds)
       array([ 0.123,  1.244,  0.   , 10.   ,  7.   ])
-      >>> my.constraints.bounded(sequence, bounds, nearest=False)
+      >>>
+      >>> bounded(sequence, bounds, nearest=False)
       array([ 0.123,  1.244,  7.   , 10.   ,  5.   ])
-      >>> my.constraints.bounded(sequence, bounds, nearest=False, clip=False) 
+      >>>
+      >>> bounded(sequence, bounds, nearest=False, clip=False) 
       array([0.123     , 1.244     , 0.37617154, 8.79013111, 7.40864242])
-      >>> my.constraints.bounded(sequence, bounds, clip=False)
+      >>>
+      >>> bounded(sequence, bounds, clip=False)
       array([0.123     , 1.244     , 2.38186577, 7.41374049, 9.14662911])
 """
     seq = array(seq) #XXX: asarray?
@@ -1289,6 +1292,102 @@ def impose_bounds(bounds, index=None, clip=True, nearest=True):
         func.clip = _clip
         func.nearest = _near
         func.__bounds__ = bounds
+        func.__wrapped__ = f
+        func.__doc__ = f.__doc__
+        return func
+    return dec
+
+
+from numpy import maximum, minimum
+def monotonic(ascending=True, outer=False):
+    """impose monotonicty on the given function
+
+The function will become monotonic, where:
+  - ascending is bool, increasing with index if True and decreasing if False
+  - outer is bool, applied to the outputs if True and to the inputs if False
+
+Examples:
+  >>> @monotonic(outer=True)
+  ... def negative(x):
+  ...     return [-i for i in x]
+  ... 
+  >>> negative([5.34, -.121, -4.11, 9.01, 11.3, -16.4])
+  [-5.34, 0.121, 4.11, 4.11, 4.11, 16.4]
+  >>> 
+  >>> @monotonic()
+  ... def negative(x):
+  ...     return [-i for i in x]
+  ... 
+  >>> negative([5.34, -.121, -4.11, 9.01, 11.3, -16.4])
+  [-5.34, -5.34, -5.34, -9.01, -11.3, -11.3]
+  >>> 
+  >>> @monotonic(outer=True)
+  ... def squared(x):
+  ...     return [i*i for i in x]
+  ... 
+  >>> squared([5.34, -.121, -4.11, 9.01, 11.3, -16.4])
+  [28.5156, 28.5156, 28.5156, 81.1801, 127.69000000000001, 268.96]
+  >>> 
+  >>> @monotonic()
+  ... def squared(x):
+  ...     return [i*i for i in x]
+  ... 
+  >>> squared([5.34, -.121, -4.11, 9.01, 11.3, -16.4])
+  [28.5156, 28.5156, 28.5156, 81.1801, 127.69000000000001, 127.69000000000001]
+    """
+    def _mono(x, ascending=True):
+        if not hasattr(x, '__len__'): return x
+        if isinstance(x, ndarray): xtype = asarray
+        else: xtype = type(x)
+        fun = maximum.accumulate if ascending else minimum.accumulate
+        return xtype(fun(x))
+
+    def dec(f):
+        def func(x, *args, **kwds):
+            if outer:
+                return _mono(f(x, *args, **kwds), ascending=ascending)
+            return f(_mono(x, ascending=ascending), *args, **kwds)
+        func.monotonic = _mono
+        func.__wrapped__ = f
+        func.__doc__ = f.__doc__
+        return func
+    return dec
+
+
+def sorting(ascending=True, outer=False):
+    """impose sorting on the given function
+
+The function will use sorting, where:
+  - ascending is bool, increasing with index if True and decreasing if False
+  - outer is bool, applied to the outputs if True and to the inputs if False
+
+Examples:
+  >>> @sorting(outer=True)
+  ... def squared(x):
+  ...     return [i*i for i in x]
+  ... 
+  >>> squared([5.34, -.121, -4.11, 9.01, 11.3, -16.4])
+  [0.014641, 16.892100000000003, 28.5156, 81.1801, 127.69000000000001, 268.96]
+  >>> 
+  >>> @sorting()
+  ... def squared(x):
+  ...     return [i*i for i in x]
+  ... 
+  >>> squared([5.34, -.121, -4.11, 9.01, 11.3, -16.4])
+  [268.96, 16.892100000000003, 0.014641, 28.5156, 81.1801, 127.69000000000001]
+    """
+    def _sort(x, ascending=True):
+        if not hasattr(x, '__len__'): return x
+        if isinstance(x, ndarray): xtype = asarray
+        else: xtype = type(x)
+        return xtype(sorted(x, reverse=(not ascending)))
+
+    def dec(f):
+        def func(x, *args, **kwds):
+            if outer:
+                return _sort(f(x, *args, **kwds), ascending=ascending)
+            return f(_sort(x, ascending=ascending), *args, **kwds)
+        func.sorting = _sort
         func.__wrapped__ = f
         func.__doc__ = f.__doc__
         return func

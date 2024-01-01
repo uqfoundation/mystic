@@ -10,7 +10,10 @@
 optimization of 4-input cost function using online learning of a surrogate
 """
 import os
-from mystic.solvers import diffev2
+from mystic.samplers import SparsitySampler
+from mystic.monitors import LoggingMonitor
+from mystic.solvers import PowellDirectionalSolver
+from mystic.termination import NormalizedChangeOverGeneration as NCOG
 from mystic.math.legacydata import datapoint
 from mystic.cache.archive import file_archive, read as get_db
 from ouq_models import WrapModel, InterpModel
@@ -46,6 +49,9 @@ surrogate = InterpModel("surrogate", nx=4, ny=None, data=truth, smooth=0.0,
 
 # iterate until error (of candidate minimum) < 1e-3
 N = 4
+import mystic._counter as it
+counter = it.Counter()
+tracker = LoggingMonitor(1, filename='error.txt', label='error')
 import numpy as np
 error = float("inf")
 while error > 1e-3:
@@ -56,7 +62,12 @@ while error > 1e-3:
     surrogate.fit(data=data)
 
     # find the minimum of the surrogate
-    surr = surrogate.sample(bounds, pts='-.%s' % N, archive=candidates)
+    surr = surrogate.sample(bounds, pts='-.%s' % N, archive=candidates,
+                            maxiter=8000, maxfun=1e6, id=counter.count(N),
+                            stepmon=LoggingMonitor(1, label='output'),
+                            solver=PowellDirectionalSolver,
+                            termination=NCOG(1e-6, 10),
+                            sampler=SparsitySampler)
     idx = np.argmin(surr.values)
 
     # evaluate truth at the same input as the surrogate minimum
@@ -69,8 +80,9 @@ while error > 1e-3:
     print("truth: %s @ %s" % (ynew, xnew))
     print("candidate: %s; error: %s" % (ysur, error))
     print("evaluations of truth: %s" % len(data))
+    tracker(xnew, error)
 
-    # add most recent candidate mimumim evaluated with truth to database
+    # add most recent candidate minimum evaluated with truth to database
     pt = datapoint(xnew, value=ynew)
     data.append(pt)
 

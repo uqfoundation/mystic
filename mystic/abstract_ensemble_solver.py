@@ -409,7 +409,7 @@ Returns:
         for i,op in enumerate(self._allSolvers):
             if op is None: #XXX: don't reset existing solvers?
                 op = _copy(solver)
-                op.id = i
+                op.id = i + at
                 self._allSolvers[i] = op
         return self._allSolvers
 
