@@ -3,7 +3,7 @@
 # Author: Mike McKerns (mmckerns @caltech and @uqfoundation)
 # Author: Lan Huong Nguyen (lanhuong @stanford)
 # Copyright (c) 2012-2015 California Institute of Technology.
-# Copyright (c) 2016-2023 The Uncertainty Quantification Foundation.
+# Copyright (c) 2016-2024 The Uncertainty Quantification Foundation.
 # License: 3-clause BSD.  The full license text is available at:
 #  - https://github.com/uqfoundation/mystic/blob/master/LICENSE
 

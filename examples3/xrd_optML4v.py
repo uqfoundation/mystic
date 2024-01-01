@@ -10,7 +10,10 @@
 optimization of 4-input cost function using online learning of a surrogate
 """
 import os
-from mystic.samplers import LatticeSampler
+from mystic.samplers import SparsitySampler
+from mystic.monitors import LoggingMonitor
+from mystic.solvers import PowellDirectionalSolver
+from mystic.termination import NormalizedChangeOverGeneration as NCOG
 from ouq_models import WrapModel, InterpModel
 from emulators import cost4 as cost, x4 as target, bounds4 as bounds
 #from mystic.cache.archive import file_archive, read as get_db
@@ -42,6 +45,9 @@ surrogate = InterpModel("surrogate", nx=4, ny=None, data=truth, smooth=0.0,
 
 # iterate until error (of candidate minimum) < 1e-3
 N = 4
+import mystic._counter as it
+counter = it.Counter()
+tracker = LoggingMonitor(1, filename='error.txt', label='error')
 import numpy as np
 error = np.array([float('inf')]); idx = 0
 #while error[:N].mean() > 1e-3:
@@ -51,17 +57,14 @@ while error[idx] > 1e-3:
     surrogate.fit(data=data)
 
     # find the first-order critical points of the surrogate
-    surr_ = lambda x: surrogate(x, axis=None)
-    s = LatticeSampler(bounds, surr_, npts=N)
+    s = SparsitySampler(bounds, lambda x: surrogate(x, axis=None), npts=N,
+                        maxiter=8000, maxfun=1e6, id=counter.count(N),
+                        stepmon=LoggingMonitor(1, label='output'),
+                        solver=PowellDirectionalSolver,
+                        termination=NCOG(1e-6, 10))
     s.sample_until(terminated=all)
     xdata = [list(i) for i in s._sampler._all_bestSolution]
     ysurr = s._sampler._all_bestEnergy
-
-    _surr = lambda x: -surrogate(x, axis=None)
-    s_ = LatticeSampler(bounds, _surr, npts=N)
-    s_.sample_until(terminated=all)
-    xdata = xdata + [list(i) for i in s_._sampler._all_bestSolution]
-    ysurr = ysurr + [-i for i in s_._sampler._all_bestEnergy]
 
     # evaluate truth at the same input as the surrogate critical points
     ytrue = list(map(truth, xdata))
@@ -69,11 +72,11 @@ while error[idx] > 1e-3:
     # compute absolute error between truth and surrogate at candidate extrema
     idx = np.argmin(ytrue)
     error = abs(np.array(ytrue) - ysurr)
-    #print("error@mins: %s" % error[:N])
-    #print("error@maxs: %s" % error[-N:])
-    print("ave: %s; max: %s" % (error.mean(), error.max()))
-    print("ave mins: %s; at min: %s" % (error[:N].mean(), error[idx]))
+    print("truth: %s @ %s" % (ytrue[idx], xdata[idx]))
+    print("candidate: %s; error: %s" % (ysurr[idx], error[idx]))
+    print("error ave: %s; error max: %s" % (error.mean(), error.max()))
     print("evaluations of truth: %s" % len(data))
+    tracker(xdata[idx], error[idx])
 
     # add most recent candidate extrema to truth database
     data.load(xdata, ytrue)
