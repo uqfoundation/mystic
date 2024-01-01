@@ -75,7 +75,7 @@ while error > 1e-3:
     print("candidate: %s; error: %s" % (ysur, error))
     print("evaluations of truth: %s" % len(data))
 
-    # add most recent candidate mimumim evaluated with truth to database
+    # add most recent candidate minimum evaluated with truth to database
     pt = datapoint(xnew, value=ynew)
     data.append(pt)
 
