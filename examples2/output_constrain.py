@@ -4,7 +4,7 @@
 # https://stackoverflow.com/a/71197490/2379433
 #
 # Author: Mike McKerns (mmckerns @uqfoundation)
-# Copyright (c) 2022-2023 The Uncertainty Quantification Foundation.
+# Copyright (c) 2022-2024 The Uncertainty Quantification Foundation.
 # License: 3-clause BSD.  The full license text is available at:
 #  - https://github.com/uqfoundation/mystic/blob/master/LICENSE
 """
