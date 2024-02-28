@@ -19,15 +19,17 @@ def _random_samples(lb, ub, npts=10000):
 generate npts random samples between given lb & ub
 
 Inputs:
-    lower bounds  --  a list of the lower bounds
-    upper bounds  --  a list of the upper bounds
-    npts  --  number of sample points [default = 10000]
+    lb -- a list of the lower bounds
+    ub -- a list of the upper bounds
+    npts -- number of sample points [default = 10000]
 """
   from mystic.tools import random_state
   dim = len(lb)
   pts = random_state(module='numpy.random').rand(dim,npts)
-  for i in range(dim):
-    pts[i] = (pts[i] * abs(ub[i] - lb[i])) + lb[i]
+  for i in range(dim): #XXX: use array operations?
+    lbi = lb[i]
+    ubi = ub[i]
+    pts[i] = (pts[i] * abs(ubi - lbi)) + lbi
   return pts  #XXX: returns a numpy.array
  #return [list(i) for i in pts]
 
@@ -37,11 +39,11 @@ def random_samples(lb, ub, npts=10000, dist=None, clip=False):
 generate npts samples from the given distribution between given lb & ub
 
 Inputs:
-    dist  --  a mystic.tools.Distribution instance (or list of Distributions)
-    lower bounds  --  a list of the lower bounds
-    upper bounds  --  a list of the upper bounds
-    npts  --  number of sample points [default = 10000]
-    clip  --  if True, clip at bounds, else resample [default = False]
+    lb -- a list of the lower bounds
+    ub -- a list of the upper bounds
+    npts -- number of sample points [default = 10000]
+    dist -- a mystic.tools.Distribution instance (or list of Distributions)
+    clip -- if True, clip at bounds, else resample [default = False]
 """
   if dist is None:
     return _random_samples(lb,ub, npts)

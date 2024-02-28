@@ -132,28 +132,28 @@ class Rbf(object):
     """
 
     def _euclidean_norm(self, x1, x2):
-        return np.sqrt(((x1 - x2)**2).sum(axis=0))
+        return np.sqrt(np.square(x1 - x2).sum(axis=0))
 
     def _h_multiquadric(self, r):
-        return np.sqrt((1.0/self.epsilon*r)**2 + 1)
+        return np.sqrt(np.square(1.0/self.epsilon*r) + 1)
 
     def _h_inverse_multiquadric(self, r):
-        return 1.0/np.sqrt((1.0/self.epsilon*r)**2 + 1)
+        return 1.0/np.sqrt(np.square(1.0/self.epsilon*r) + 1)
 
     def _h_gaussian(self, r):
-        return np.exp(-(1.0/self.epsilon*r)**2)
+        return np.exp(-np.square(1.0/self.epsilon*r))
 
     def _h_linear(self, r):
         return r
 
     def _h_cubic(self, r):
-        return r**3
+        return np.power(r, 3)
 
     def _h_quintic(self, r):
-        return r**5
+        return np.power(r, 5)
 
     def _h_thin_plate(self, r):
-        return xlogy(r**2, r)
+        return xlogy(np.square(r), r)
 
     # Setup self._function and do smoke test on initial r
     def _init_function(self, r):
