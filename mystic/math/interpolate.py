@@ -468,7 +468,14 @@ def interpolate(x, z, xgrid, method=None, extrap=False, arrays=True, **kwds):
         si = _rbf
     if kind == 0: # 'rbf' -> Rbf
         import numpy as np
-        rbf = si.Rbf(*np.vstack((x.T, z)), function=function, **kwds)
+        if function in ('thin_plate', 'gaussian'):
+            rbf = np.vstack((x.T, z))
+            try: #XXX: don't try, just use _rbf?
+                rbf = si.Rbf(*rbf, function=function, **kwds)
+            except np.linalg.LinAlgError:
+                rbf = _rbf.Rbf(*rbf, function=function, **kwds)
+        else:
+            rbf = si.Rbf(*np.vstack((x.T, z)), function=function, **kwds)
         return _fx(rbf(*xgrid))
     # method = 'linear' -> LinearNDInterpolator
     # method = 'nearest' -> NearestNDInterpolator
@@ -534,6 +541,13 @@ def _interpf(x, z, method=None, extrap=False, arrays=False, **kwds):
         si = _rbf
     if kind == 0: # 'rbf'
         import numpy as np
+        if function in ('thin_plate', 'gaussian'):
+            rbf = np.vstack((x.T, z))
+            try: #XXX: don't try, just use _rbf?
+                rbf = si.Rbf(*rbf, function=function, **kwds)
+            except np.linalg.LinAlgError:
+                rbf = _rbf.Rbf(*rbf, function=function, **kwds)
+            return _f(rbf)
         return _f(si.Rbf(*np.vstack((x.T, z)), function=function, **kwds))
     elif x.ndim == 1: 
         return _f(si.interp1d(x, z, fill_value='extrapolate', bounds_error=False, kind=method))
