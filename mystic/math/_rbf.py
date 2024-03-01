@@ -217,7 +217,8 @@ class Rbf(object):
             ximin = np.amin(self.xi, axis=1)
             edges = ximax-ximin
             edges = edges[np.nonzero(edges)]
-            self.epsilon = np.power(np.prod(edges)/self.N, 1.0/edges.size)
+            power = 1.0/edges.size if edges.size else np.inf
+            self.epsilon = np.power(np.prod(edges)/self.N, power)
         self.smooth = kwargs.pop('smooth', 0.0)
 
         self.function = kwargs.pop('function', 'multiquadric')
@@ -228,6 +229,8 @@ class Rbf(object):
         for item, value in kwargs.items():
             setattr(self, item, value)
 
+        # if self.A.size == 1 and self.A.flat[0] == 0. and smooth == 0.
+        #  produces singular matrix if function returns 0 at r == 0
         self.nodes = np.linalg.solve(self.A, self.di)
 
     @property

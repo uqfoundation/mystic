@@ -442,6 +442,7 @@ def interpolate(x, z, xgrid, method=None, extrap=False, arrays=True, **kwds):
       - additional keyword arguments ``(epsilon, smooth, norm)`` are avaiable
         for use with a Rbf interpolator. See ``mystic.math.interpolate.Rbf``
         for more details.
+      - if initialization produces a singlular matrix, try non-zero ``smooth``.
     '''
     if arrays:
         _f, _fx = _to_array, _array
@@ -468,14 +469,12 @@ def interpolate(x, z, xgrid, method=None, extrap=False, arrays=True, **kwds):
         si = _rbf
     if kind == 0: # 'rbf' -> Rbf
         import numpy as np
-        if function in ('thin_plate', 'gaussian'):
-            rbf = np.vstack((x.T, z))
-            try: #XXX: don't try, just use _rbf?
-                rbf = si.Rbf(*rbf, function=function, **kwds)
-            except np.linalg.LinAlgError:
-                rbf = _rbf.Rbf(*rbf, function=function, **kwds)
-        else:
-            rbf = si.Rbf(*np.vstack((x.T, z)), function=function, **kwds)
+        rbf = np.vstack((x.T, z))
+        try: #XXX: don't try, just use _rbf?
+            rbf = si.Rbf(*rbf, function=function, **kwds)
+        except (np.linalg.LinAlgError, ZeroDivisionError) as e:
+            if si is _rbf: raise e
+            rbf = _rbf.Rbf(*rbf, function=function, **kwds)
         return _fx(rbf(*xgrid))
     # method = 'linear' -> LinearNDInterpolator
     # method = 'nearest' -> NearestNDInterpolator
@@ -513,6 +512,7 @@ def _interpf(x, z, method=None, extrap=False, arrays=False, **kwds):
       - additional keyword arguments ``(epsilon, smooth, norm)`` are avaiable
         for use with a Rbf interpolator. See ``mystic.math.interpolate.Rbf``
         for more details.
+      - if initialization produces a singlular matrix, try non-zero ``smooth``.
     ''' #XXX: return f(*x) or f(x)?
     if arrays:
         _f, _fx = _to_array, _array
@@ -541,14 +541,13 @@ def _interpf(x, z, method=None, extrap=False, arrays=False, **kwds):
         si = _rbf
     if kind == 0: # 'rbf'
         import numpy as np
-        if function in ('thin_plate', 'gaussian'):
-            rbf = np.vstack((x.T, z))
-            try: #XXX: don't try, just use _rbf?
-                rbf = si.Rbf(*rbf, function=function, **kwds)
-            except np.linalg.LinAlgError:
-                rbf = _rbf.Rbf(*rbf, function=function, **kwds)
-            return _f(rbf)
-        return _f(si.Rbf(*np.vstack((x.T, z)), function=function, **kwds))
+        rbf = np.vstack((x.T, z))
+        try: #XXX: don't try, just use _rbf?
+            rbf = si.Rbf(*rbf, function=function, **kwds)
+        except (np.linalg.LinAlgError, ZeroDivisionError) as e:
+            if si is _rbf: raise e
+            rbf = _rbf.Rbf(*rbf, function=function, **kwds)
+        return _f(rbf)
     elif x.ndim == 1: 
         return _f(si.interp1d(x, z, fill_value='extrapolate', bounds_error=False, kind=method))
     elif kind == 1: # 'linear'
@@ -620,6 +619,7 @@ def interpf(x, z, method=None, extrap=False, arrays=False, **kwds):
       - additional keyword arguments ``(epsilon, smooth, norm)`` are avaiable
         for use with a Rbf interpolator. See ``mystic.math.interpolate.Rbf``
         for more details.
+      - if initialization produces a singlular matrix, try non-zero ``smooth``.
     '''
     axis = kwds.get('axis', None)
     _map = kwds.get('axmap', kwds.get('map', map)) # backward compatibility
