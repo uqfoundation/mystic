@@ -650,7 +650,8 @@ class InterpModel(OUQModel):
         cached: bool, if True, use a mystic.cache [default: False]
 
     NOTE:
-        any additional keyword arguments will be passed to the interpolator
+        any additional keyword arguments will be passed to the interpolator;
+        if a singular matrix is produced, try non-zero smooth or noise.
 
     NOTE:
         if cached is True, the default is to create a klepto.dir_archive
@@ -688,7 +689,8 @@ class InterpModel(OUQModel):
         cached: bool, if True, use a mystic.cache [default: False]
 
     NOTE:
-        any additional keyword arguments will be passed to the interpolator
+        any additional keyword arguments will be passed to the interpolator;
+        if a singular matrix is produced, try non-zero smooth or noise.
 
     NOTE:
         if data is a model, interpolator will use model's cached archive

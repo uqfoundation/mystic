@@ -54,7 +54,8 @@ class Interpolator(object):
         NOTE:
           additional keyword arguments (epsilon, smooth, norm) are avaiable
           for use with a Rbf interpolator. See mystic.math.interpolate.Rbf
-          for more details.
+          for more details. if initialization produces a singlular matrix,
+          try non-zero smooth.
         """
         # basic configuration
         self.maxpts = kwds.pop('maxpts', None)  # N = 1000
@@ -142,7 +143,8 @@ class Interpolator(object):
         NOTE:
           additional keyword arguments (epsilon, smooth, norm) are avaiable
           for use with a Rbf interpolator. See mystic.math.interpolate.Rbf
-          for more details.
+          for more details. if initialization produces a singlular matrix,
+          try non-zero smooth.
         """
         import warnings
         from mystic.math.interpolate import interpf
@@ -177,7 +179,8 @@ class Interpolator(object):
         NOTE:
           additional keyword arguments (epsilon, smooth, norm) are avaiable
           for use with a Rbf interpolator. See mystic.math.interpolate.Rbf
-          for more details.
+          for more details. if initialization produces a singlular matrix,
+          try non-zero smooth.
         """
         maxpts = kwds.pop('maxpts', self.maxpts)
         noise = kwds.pop('noise', self.noise)
@@ -258,7 +261,8 @@ def interpolate(monitor, method=None, **kwds):
     NOTE:
       additional keyword arguments (epsilon, smooth, norm) are avaiable
       for use with a Rbf interpolator. See mystic.math.interpolate.Rbf
-      for more details.
+      for more details. if initialization produces a singlular matrix,
+      try non-zero smooth.
     '''
     d = Interpolator(monitor, method=method, **kwds)
     d.Interpolate()
