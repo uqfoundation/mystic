@@ -995,7 +995,16 @@ Examples:
     return dec
 
 
-from random import randrange, shuffle
+from random import shuffle, Random
+# subclass to get '_randbelow_without_getrandbits' behavior for randrange
+class _Random(Random):
+    def _randbelow(self, n):
+        from random import random as _random
+        return n * _random()
+
+randrange = _Random().randrange
+del _Random, Random
+
 def unique(seq, full=None):
     """replace the duplicate values with unique values in 'full'
 
@@ -1038,16 +1047,16 @@ def unique(seq, full=None):
       ...     pass
       ...
     """
-    unique = set()
-    # replace all duplicates with 'None'
-    seq = [x if x not in unique and not unique.add(x) else None for x in seq]
-    lseq = len(seq)
     # check type if full not specified
     if full is None:
-        if all([isinstance(x, int) for x in unique]): full = int
+        if all([isinstance(x, int) for x in seq]): full = int
         else: full = float
         ok = True
     else: ok = False
+    # replace all duplicates with 'None'
+    unique = set()
+    seq = [x if x not in unique and not unique.add(x) else None for x in seq]
+    lseq = len(seq)
     # check all unique show up in 'full'
     if full in (int,float): # specified type, not range
         ok = ok or full==float or all([isinstance(x, int) for x in unique])
