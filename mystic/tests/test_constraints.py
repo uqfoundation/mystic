@@ -266,6 +266,68 @@ def test_sorting():
   assert monotonic(ascending=False, outer=True)(sum)(x) == sum(x)
 
 
+def test_unique():
+  x = [1, 2, 3, 1, 2, 10]
+  y = unique(x)
+  z = set(y).difference(x)
+  assert all(y.count(i) == 1 for i in y)
+  assert all(min(x) <= i < max(x) for i in z)
+  assert all(isinstance(i, int) for i in z)
+  y = unique(x, float)
+  z = set(y).difference(x)
+  assert all(y.count(i) == 1 for i in y)
+  assert all(min(x) <= i < max(x) for i in z)
+  assert all(isinstance(i, float) for i in z)
+  y = unique(x, range(11))
+  z = set(y).difference(x)
+  assert all(y.count(i) == 1 for i in y)
+  assert all(0 <= i < 11 for i in z)
+  assert all(isinstance(i, int) for i in z)
+  y = unique(x, {'min':0, 'max':11})
+  z = set(y).difference(x)
+  assert all(y.count(i) == 1 for i in y)
+  assert all(min(x) <= i < max(x) for i in z)
+  assert all(isinstance(i, float) for i in z)
+  y = unique(x, {'min':0, 'max':11, 'type':int})
+  z = set(y).difference(x)
+  assert all(y.count(i) == 1 for i in y)
+  assert all(min(x) <= i < max(x) for i in z)
+  assert all(isinstance(i, int) for i in z)
+  x = [1, 2, 3, 1.0, 2, 10]
+  y = unique(x, int)
+  z = set(y).difference(x)
+  assert all(y.count(i) == 1 for i in y)
+  assert all(min(x) <= i < max(x) for i in z)
+  assert all(isinstance(i, int) for i in z)
+  y = unique(x)
+  z = set(y).difference(x)
+  assert all(y.count(i) == 1 for i in y)
+  assert all(min(x) <= i < max(x) for i in z)
+  assert all(isinstance(i, float) for i in z)
+  x = [1, 2, 3, 1.5, 2, 10]
+  try:
+      unique(x, int)
+      assert False
+  except ValueError:
+      assert True
+  y = unique(x)
+  z = set(y).difference(x)
+  assert all(y.count(i) == 1 for i in y)
+  assert all(min(x) <= i < max(x) for i in z)
+  assert all(isinstance(i, float) for i in z)
+  x = [1, 2, 3, 1, 2, 13]
+  try:
+      unique(x, range(11))
+      assert False
+  except ValueError:
+      assert True
+  try:
+      unique([1,2,3,1,2,4], int)
+      assert False
+  except ValueError:
+      assert True
+
+
 if __name__ == '__main__':
   test_penalize()
   test_solve()
@@ -279,6 +341,7 @@ if __name__ == '__main__':
   test_with_constraint()
   test_discrete()
   test_sorting()
+  test_unique()
 
 
 # EOF

@@ -995,7 +995,55 @@ Examples:
     return dec
 
 
-from random import randrange, shuffle
+from random import shuffle, Random
+# subclass to get '_randbelow_without_getrandbits' behavior for randrange
+class _Random(Random):
+    def _randbelow(self, n):
+        from random import random as _random
+        return n * _random()
+
+    def randrange(self, start, stop=None, step=1, _int=int):
+        """Choose a random item from range(start, stop[, step]).
+        """ #NOTE: from python3.8/random.py^
+        # doing adequate error checking.
+
+        istart = _int(start)
+        if istart != start:
+            raise ValueError("non-integer arg 1 for randrange()")
+        if stop is None:
+            if istart > 0:
+                return self._randbelow(istart)
+            raise ValueError("empty range for randrange()")
+
+        # stop argument supplied.
+        istop = _int(stop)
+        if istop != stop:
+            raise ValueError("non-integer stop for randrange()")
+        width = istop - istart
+        if step == 1 and width > 0:
+            return istart + self._randbelow(width)
+        if step == 1:
+            raise ValueError("empty range for randrange() (%d, %d, %d)" % (istart, istop, width))
+
+        # Non-unit step argument supplied.
+        istep = _int(step)
+        if istep != step:
+            raise ValueError("non-integer step for randrange()")
+        if istep > 0:
+            n = (width + istep - 1) // istep
+        elif istep < 0:
+            n = (width + istep + 1) // istep
+        else:
+            raise ValueError("zero step for randrange()")
+
+        if n <= 0:
+            raise ValueError("empty range for randrange()")
+
+        return istart + istep*self._randbelow(n)
+
+randrange = _Random().randrange
+del _Random, Random
+
 def unique(seq, full=None):
     """replace the duplicate values with unique values in 'full'
 
@@ -1038,16 +1086,16 @@ def unique(seq, full=None):
       ...     pass
       ...
     """
-    unique = set()
-    # replace all duplicates with 'None'
-    seq = [x if x not in unique and not unique.add(x) else None for x in seq]
-    lseq = len(seq)
     # check type if full not specified
     if full is None:
-        if all([isinstance(x, int) for x in unique]): full = int
+        if all([isinstance(x, int) for x in seq]): full = int
         else: full = float
         ok = True
     else: ok = False
+    # replace all duplicates with 'None'
+    unique = set()
+    seq = [x if x not in unique and not unique.add(x) else None for x in seq]
+    lseq = len(seq)
     # check all unique show up in 'full'
     if full in (int,float): # specified type, not range
         ok = ok or full==float or all([isinstance(x, int) for x in unique])
