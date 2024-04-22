@@ -402,6 +402,35 @@ or number of function calls is > evaluations:
     _EvaluationLimits.__doc__ = doc
     return _EvaluationLimits
 
+# process_time -- CPU execution time (process-wide)
+# perf_counter -- wall time since starting __main__ (system-wide)
+# time -- time since Epoch (global)
+def TimeLimits(seconds=86400, system=None): #NOTE: 24 hours
+    """elapsed time is > seconds, using an independent global counter:
+(to guarantee monotonicity, use system=True for a system-wide counter,
+ or system=False for a counter based on current-process execution time)
+
+``time >= seconds``
+"""
+    doc = "TimeLimits with %s" % {'seconds':seconds, 'system':system}
+    import time
+    if system is None: timer = time.time
+    elif system: timer = time.perf_counter
+    else: timer = time.process_time
+    start = [timer()]
+    def _reset():
+        start[0] = timer()
+    delta = [getattr(seconds, 'total_seconds', seconds.__abs__)()]
+    if delta[0] is None: delta[0] = Inf
+    def _TimeLimits(inst, info=False):
+        if info: info = lambda x:x
+        else: info = bool
+        if (timer() - start[0]) >= delta[0]: return info(doc)
+        return info(null)
+    _TimeLimits.__doc__ = doc
+    _TimeLimits.reset = _reset
+    return _TimeLimits
+
 def SolverInterrupt(): #XXX: enable = True ?
     """handler is enabled and interrupt is given:
 

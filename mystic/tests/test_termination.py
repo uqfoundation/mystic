@@ -8,15 +8,17 @@
 #  - https://github.com/uqfoundation/mystic/blob/master/LICENSE
 """test termination conditions. (defaults listed below)
 
-VTR(tolerance = 0.005)
-ChangeOverGeneration(tolerance = 1e-6, generations = 30)
-NormalizedChangeOverGeneration(tolerance = 1e-4, generations = 10)
+VTR(tolerance=0.005)
+ChangeOverGeneration(tolerance=1e-6, generations=30)
+NormalizedChangeOverGeneration(tolerance=1e-4, generations=10)
 CandidateRelativeTolerance(xtol=1e-4, ftol=1e-4)
-SolutionImprovement(tolerance = 1e-5)
-NormalizedCostTarget(fval = None, tolerance = 1e-6, generations = 30)
-VTRChangeOverGeneration(ftol = 0.005, gtol = 1e-6, generations = 30)
+SolutionImprovement(tolerance=1e-5)
+NormalizedCostTarget(fval=None, tolerance=1e-6, generations=30)
+VTRChangeOverGeneration(ftol=0.005, gtol=1e-6, generations=30)
 PopulationSpread(tolerance=1e-6)
 GradientNormTolerance(tolerance=1e-5, norm=Inf)
+EvaluationLimits(generations=None, evaluations=None)
+TimeLimits(seconds=86400, system=None)
 """
 from mystic.termination import *
 from numpy import inf
@@ -85,7 +87,15 @@ def test_terminators(test, func=lambda x:x[0], info=False, verbose=False, disp=F
   res = test(PopulationSpread(inf), func, info)
   if disp: print("PS(inf):%s" % res)
   else: assert bool(res) in (True, False)
- #print("GNT():%s" % test(GradientNormTolerance(), func, info))
+  res = test(GradientNormTolerance(), func, info)
+  if disp: print("GNT():%s" % res)
+  else: assert bool(res) in (True, False)
+  res = test(EvaluationLimits(), func, info)
+  if disp: print("LIM():%s" % res)
+  else: assert bool(res) in (True, False)
+  res = test(TimeLimits(), func, info)
+  if disp: print("TIME():%s" % res)
+  else: assert bool(res) in (True, False)
   return
 
 def verbosity(solver):
