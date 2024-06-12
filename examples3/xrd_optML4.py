@@ -45,8 +45,13 @@ surrogate = InterpModel("surrogate", nx=4, ny=None, data=truth, smooth=0.0,
 import mystic._counter as it
 counter = it.Counter()
 tracker = LoggingMonitor(1, filename='error.txt', label='error')
-error = float("inf")
-while error > 1e-3:
+from mystic.abstract_solver import AbstractSolver
+from mystic.termination import VTR
+loop = AbstractSolver(4) # nx
+loop.SetTermination(VTR(1e-3)) #XXX: VTRCOG, TimeLimits, etc?
+loop.SetEvaluationLimits(maxiter=500)
+loop.SetGenerationMonitor(tracker)
+while not loop.Terminated():
 
     # fit the surrogate to data in truth database
     surrogate.fit(data=data)
@@ -67,14 +72,22 @@ while error > 1e-3:
     print("truth: %s @ %s" % (ynew, xnew))
     print("candidate: %s; error: %s" % (ysur, error))
     print("evaluations of truth: %s" % len(data))
-    tracker(xnew, error)
+
+    # save to tracker if less than current best
+    if len(tracker) and tracker.y[-1] < error:
+        tracker(*tracker[-1])
+    else: tracker(xnew, error)
 
     # add most recent candidate minimum evaluated with truth to database
     pt = datapoint(xnew, value=ynew)
     data.append(pt)
 
+# get the results at the best parameters from the truth database
+xbest = tracker[-1][0]
+ybest = archive[tuple(xbest)]
+    
 # print the best parameters
-print(f"Best solution is {xnew} with Rwp {ynew}")
+print(f"Best solution is {xbest} with Rwp {ybest}")
 print(f"Reference solution: {target}")
-ratios = [x / y for x, y in zip(target, xnew)]
+ratios = [x / y for x, y in zip(target, xbest)]
 print(f"Ratios of best to reference solution: {ratios}")

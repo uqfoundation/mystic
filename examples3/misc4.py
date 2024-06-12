@@ -32,7 +32,7 @@ kwds = dict(npts=500, ipts=4, itol=1e-8, iter=5)
 
 from mystic.math.discrete import product_measure
 from mystic.math import almostEqual as almost
-from mystic.constraints import and_, integers
+from mystic.constraints import and_, integers, sorting
 from mystic.coupler import outer, additive
 from emulators import cost4, x4, bounds4, error4, wR
 from mystic import suppressed
@@ -44,6 +44,8 @@ wub = (1,1,1,1)
 # number of Dirac masses to use for each parameter
 npts = (2,2,2,2) #NOTE: rv = (w0,w0,x0,x0,w1,w1,x1,x1,w2,w2,x2,x2,w3,w3,x3,x3)
 index = (2,3,6,7,10,11,14,15)  #NOTE: rv[index] -> x0,x0,x1,x1,x2,x2,x3,x3
+ordered = lambda constraint: sorting(index=(0,1))(sorting(index=(4,5))(sorting(index=(8,9))(sorting(index=(12,13))(constraint))))
+
 # moments and uncertainty in first parameter
 a_ave = x4[0]
 a_var = .5 * error4[0]**2
@@ -79,6 +81,17 @@ def flatten(npts):
             c = product_measure().load(rv, npts)
             c = f(c)
             return c.flatten()
+        return func
+    return dec
+
+
+def unflatten(npts):
+    'convert a "flattened" constraint to a moment constraint'
+    def dec(f):
+        def func(c):
+            rv = c.flatten()
+            rv = f(rv)
+            return product_measure().load(rv, npts)
         return func
     return dec
 
@@ -176,10 +189,10 @@ is_cons = lambda c: bool(additive(is_con3)(additive(is_con2)(additive(is_con1)(i
 
 ## position-based constraints ##
 # impose constraints sequentially (faster, but assumes are decoupled)
-scons = flatten(npts)(outer(momcon3)(outer(momcon2)(outer(momcon1)(outer(momcon0)(normcon)))))
+scons = flatten(npts)(outer(momcon3)(outer(momcon2)(outer(momcon1)(outer(momcon0)(unflatten(npts)(ordered(flatten(npts)(normcon))))))))
 
 # impose constraints concurrently (slower, but safer)
-ccons = and_(flatten(npts)(normcon), flatten(npts)(momcon0), flatten(npts)(momcon1), flatten(npts)(momcon2), flatten(npts)(momcon3))
+ccons = and_(ordered(flatten(npts)(normcon)), flatten(npts)(momcon0), flatten(npts)(momcon1), flatten(npts)(momcon2), flatten(npts)(momcon3))
 
 # check parameters (instead of measures)
 iscon = check(npts)(is_cons)

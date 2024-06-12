@@ -32,7 +32,7 @@ kwds = dict(npts=500, ipts=None, itol=1e-8, iter=5)
 
 from mystic.math.discrete import product_measure
 from mystic.math import almostEqual as almost
-from mystic.constraints import and_, integers
+from mystic.constraints import and_, integers, sorting
 from mystic.coupler import outer, additive
 
 # lower and upper bound for parameters and weights
@@ -43,6 +43,8 @@ wub = (1,1,1,1,1)
 # number of Dirac masses to use for each parameter
 npts = (2,1,1,1,1) #NOTE: rv = (w0,w0,x0,x0,w1,x1,w2,x2,w3,x3,w4,x4)
 index = (5,)       #NOTE: rv[5] -> x1
+ordered = lambda constraint: sorting(index=(0,1))(constraint)
+
 # moments and uncertainty in first parameter
 a_ave = 5e-1
 a_var = 5e-3
@@ -76,6 +78,17 @@ def unflatten(npts):
     def dec(f):
         def func(c):
             return product_measure().load(f(c.flatten()), npts)
+        return func
+    return dec
+
+
+def unflatten(npts):
+    'convert a "flattened" constraint to a moment constraint'
+    def dec(f):
+        def func(c):
+            rv = c.flatten()
+            rv = f(rv)
+            return product_measure().load(rv, npts)
         return func
     return dec
 
@@ -220,12 +233,12 @@ is_cons = constrained(a_ave, a_var, a_ave_err, a_var_err)
 ## index-based constraints ##
 # impose constraints sequentially (faster, but assumes are decoupled)
 #scons = outer(integer_indices)(flatten(npts)(outer(momcons)(normcon)))
-scons = flatten(npts)(outer(momcons)(normcon))
+scons = flatten(npts)(outer(momcons)(unflatten(npts)(ordered(flatten(npts)(normcon)))))
 #scons = flatten(npts)(outer(momcon1)(outer(momcon0)(normcon)))
 
 # impose constraints concurrently (slower, but safer)
 #ccons = and_(flatten(npts)(normcon), flatten(npts)(momcons), integer_indices)
-ccons = and_(flatten(npts)(normcon), flatten(npts)(momcons))
+ccons = and_(ordered(flatten(npts)(normcon)), flatten(npts)(momcons))
 #ccons = and_(flatten(npts)(normcon), flatten(npts)(momcon0), flatten(npts)(momcon1))
 
 # check parameters (instead of measures)
