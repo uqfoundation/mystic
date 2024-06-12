@@ -1347,42 +1347,56 @@ def impose_bounds(bounds, index=None, clip=True, nearest=True):
 
 
 from numpy import maximum, minimum
-def monotonic(ascending=True, outer=False):
-    """impose monotonicty on the given function
+from operator import itemgetter
+def monotonic(ascending=True, outer=False, index=None):
+    """impose monotonicity on the given function
 
 The function will become monotonic, where:
   - ascending is bool, increasing with index if True and decreasing if False
   - outer is bool, applied to the outputs if True and to the inputs if False
+  - if index is given, only apply at the given sequence defined by index
 
 Examples:
   >>> @monotonic(outer=True)
   ... def negative(x):
   ...     return [-i for i in x]
-  ... 
+  ...
   >>> negative([5.34, -.121, -4.11, 9.01, 11.3, -16.4])
   [-5.34, 0.121, 4.11, 4.11, 4.11, 16.4]
   >>> 
   >>> @monotonic()
   ... def negative(x):
   ...     return [-i for i in x]
-  ... 
+  ...
   >>> negative([5.34, -.121, -4.11, 9.01, 11.3, -16.4])
   [-5.34, -5.34, -5.34, -9.01, -11.3, -11.3]
   >>> 
   >>> @monotonic(outer=True)
   ... def squared(x):
   ...     return [i*i for i in x]
-  ... 
+  ...
   >>> squared([5.34, -.121, -4.11, 9.01, 11.3, -16.4])
   [28.5156, 28.5156, 28.5156, 81.1801, 127.69000000000001, 268.96]
   >>> 
   >>> @monotonic()
   ... def squared(x):
   ...     return [i*i for i in x]
-  ... 
+  ...
   >>> squared([5.34, -.121, -4.11, 9.01, 11.3, -16.4])
   [28.5156, 28.5156, 28.5156, 81.1801, 127.69000000000001, 127.69000000000001]
+  >>>
+  >>> @monotonic(index=(0,1))
+  ... def squared(x):
+  ...   return [i*i for i in x]
+  ...
+  >>> squared([5.34, -.121, -4.11, 9.01, 11.3, -16.4])
+  [28.5156, 28.5156, 16.892100000000003, 81.1801, 127.69000000000001, 268.96]
     """
+    index = [index]
+
+    def _index(alist=None):
+        index[0] = alist
+
     def _mono(x, ascending=True):
         if not hasattr(x, '__len__'): return x
         if isinstance(x, ndarray): xtype = asarray
@@ -1390,52 +1404,100 @@ Examples:
         fun = maximum.accumulate if ascending else minimum.accumulate
         return xtype(fun(x))
 
+    def _imono(x, ascending=True):
+        idx = index[0]
+        if idx is None: return _mono(x, ascending=ascending)
+        if not hasattr(idx, '__len__') or len(idx)==1: return x
+        if not hasattr(x, '__len__') or len(x)==1: return x
+        idx = sorted(itemgetter(*idx)(range(len(x))))
+        for i,j in zip(idx,_mono(itemgetter(*idx)(x), ascending=ascending)):
+            x[i] = j
+        return x
+
     def dec(f):
         def func(x, *args, **kwds):
             if outer:
-                return _mono(f(x, *args, **kwds), ascending=ascending)
-            return f(_mono(x, ascending=ascending), *args, **kwds)
-        func.monotonic = _mono
+                return _imono(f(x, *args, **kwds), ascending=ascending)
+            if index[0] is not None:
+                try:
+                    x = x.copy() #NOTE: assume shouldn't modify x
+                except AttributeError:
+                    import copy
+                    x = copy.copy(x) #XXX: inefficient
+            return f(_imono(x, ascending=ascending), *args, **kwds)
+        func.index = _index
+        func.monotonic = _imono
         func.__wrapped__ = f
         func.__doc__ = f.__doc__
         return func
     return dec
 
 
-def sorting(ascending=True, outer=False):
+def sorting(ascending=True, outer=False, index=None):
     """impose sorting on the given function
 
 The function will use sorting, where:
   - ascending is bool, increasing with index if True and decreasing if False
   - outer is bool, applied to the outputs if True and to the inputs if False
+  - if index is given, only apply at the given sequence defined by index
 
 Examples:
   >>> @sorting(outer=True)
   ... def squared(x):
   ...     return [i*i for i in x]
-  ... 
+  ...
   >>> squared([5.34, -.121, -4.11, 9.01, 11.3, -16.4])
   [0.014641, 16.892100000000003, 28.5156, 81.1801, 127.69000000000001, 268.96]
   >>> 
   >>> @sorting()
   ... def squared(x):
   ...     return [i*i for i in x]
-  ... 
+  ...
   >>> squared([5.34, -.121, -4.11, 9.01, 11.3, -16.4])
   [268.96, 16.892100000000003, 0.014641, 28.5156, 81.1801, 127.69000000000001]
+  >>>
+  >>> @sorting(index=(0,1,2))
+  ... def squared(x):
+  ...   return [i*i for i in x]
+  ...
+  >>> squared([5.34, -.121, -4.11, 9.01, 11.3, -16.4])
+  [16.892100000000003, 0.014641, 28.5156, 81.1801, 127.69000000000001, 268.96]
     """
+    if isinstance(index, int): index = (index,)
+    index = [index]
+
+    def _index(alist=None):
+        index[0] = alist
+
     def _sort(x, ascending=True):
         if not hasattr(x, '__len__'): return x
         if isinstance(x, ndarray): xtype = asarray
         else: xtype = type(x)
         return xtype(sorted(x, reverse=(not ascending)))
 
+    def _isort(x, ascending=True):
+        idx = index[0]
+        if idx is None: return _sort(x, ascending=ascending)
+        if not hasattr(idx, '__len__') or len(idx)==1: return x
+        if not hasattr(x, '__len__') or len(x)==1: return x
+        idx = sorted(itemgetter(*idx)(range(len(x))))
+        for i,j in zip(idx,_sort(itemgetter(*idx)(x), ascending=ascending)):
+            x[i] = j
+        return x
+
     def dec(f):
         def func(x, *args, **kwds):
             if outer:
-                return _sort(f(x, *args, **kwds), ascending=ascending)
-            return f(_sort(x, ascending=ascending), *args, **kwds)
-        func.sorting = _sort
+                return _isort(f(x, *args, **kwds), ascending=ascending)
+            if index[0] is not None:
+                try:
+                    x = x.copy() #NOTE: assume shouldn't modify x
+                except AttributeError:
+                    import copy
+                    x = copy.copy(x) #XXX: inefficient
+            return f(_isort(x, ascending=ascending), *args, **kwds)
+        func.index = _index
+        func.sorting = _isort
         func.__wrapped__ = f
         func.__doc__ = f.__doc__
         return func
@@ -1522,7 +1584,7 @@ Examples:
     >>> @_impose_as({0:1, 2:(3,10)})
     ... def same(x):
     ...     return x
-    ... 
+    ...
     >>> same([0,1,2,3,4,5])
     [1, 1, 13, 3, 4, 5]
     >>> same([-1,-2,-3])
@@ -1534,7 +1596,7 @@ Examples:
     ... @_impose_as({0:1})
     ... def doit(x):
     ...     return [i+1 for i in x]
-    ... 
+    ...
     >>> doit([0,1,2,3,4,5])
     [3, 3, 3, 4, 5, 6]
     >>> doit([-1,-2,-3])
@@ -1559,7 +1621,7 @@ Examples:
     >>> @impose_as([(0,1),(3,1),(4,5),(5,6),(5,7)])
     ... def same(x):
     ...   return x
-    ... 
+    ...
     >>> same([9,8,7,6,5,4,3,2,1])
     [9, 9, 7, 9, 5, 5, 5, 5, 1]
     >>> same([0,1,0,1])
@@ -1570,7 +1632,7 @@ Examples:
     >>> @impose_as([(0,1),(3,1),(4,5),(5,6),(5,7)], 10)
     ... def doit(x):
     ...   return x
-    ... 
+    ...
     >>> doit([9,8,7,6,5,4,3,2,1])
     [9, 19, 7, 9, 5, 15, 25, 25, 1]
     >>> doit([0,1,0,1])
@@ -1618,7 +1680,7 @@ Examples:
     >>> @impose_at([1,3,4,5,7], -99)
     ... def same(x):
     ...   return x
-    ... 
+    ...
     >>> same([1,1,1,1,1,1,1])
     [1, -99, 1, -99, -99, -99, 1]
     >>> same([1,1,1,1])
@@ -1629,7 +1691,7 @@ Examples:
     >>> @impose_at([1,3,4,5,7], [0,2,4,6])
     ... def doit(x):
     ...   return x
-    ... 
+    ...
     >>> doit([1,1,1,1,1,1,1])
     [1, 0, 1, 2, 4, 6, 1]
     >>> doit([1,1,1,1])
@@ -1662,7 +1724,7 @@ Examples:
 ... @impose_at(_fixed, 0.0)
 ... def constrain(x):
 ...   return x
-... 
+...
 >>> 
 """
 #NOTE: and for product_measures... (less decorators the better/faster)
@@ -1705,7 +1767,7 @@ Examples:
     >>> @impose_measure(npts, pos)
     ... def same(x):
     ...   return x
-    ... 
+    ...
     >>> same([.5, 0., .5, 2., 4., 6., .25, .5, .25, 6., 4., 2.])
     [0.5, 0.0, 0.5, 2.0, 2.0, 6.0, 0.5, 0.5, 0.0, 5.0, 3.0, 5.0]
     >>> same([1./3, 1./3, 1./3, 1., 2., 3., 1./3, 1./3, 1./3, 1., 2., 3.])
@@ -1714,7 +1776,7 @@ Examples:
     >>> @impose_measure(npts, {}, wts)
     ... def doit(x):
     ...   return x
-    ... 
+    ...
     >>> doit([.5, 0., .5, 2., 4., 6., .25, .5, .25, 6., 4., 2.])
     [0.5, 0.0, 0.5, 2.0, 4.0, 6.0, 1.0, 0.0, 0.0, 4.0, 2.0, 0.0]
     >>> doit([1./3, 1./3, 1./3, 1., 2., 3., 1./3, 1./3, 1./3, 1., 2., 3.])
@@ -1723,7 +1785,7 @@ Examples:
     >>> @impose_measure(npts, pos, wts)
     ... def both(x):
     ...   return x
-    ... 
+    ...
     >>> both([1./3, 1./3, 1./3, 1., 2., 3., 1./3, 1./3, 1./3, 1., 2., 3.])
     [0.66666666666666663, 0.0, 0.33333333333333331, 1.3333333333333335, 1.3333333333333335, 3.3333333333333335, 1.0, 0.0, 0.0, 2.0, 3.0, 2.0]
     """
@@ -1771,7 +1833,7 @@ Examples:
     >>> @impose_position(npts, pos)
     ... def same(x):
     ...   return x
-    ... 
+    ...
     >>> same([.5, 0., .5, 2., 4., 6., .25, .5, .25, 6., 4., 2.])
     [0.5, 0.0, 0.5, 2.0, 2.0, 6.0, 0.5, 0.5, 0.0, 5.0, 3.0, 5.0]
     >>> same([1./3, 1./3, 1./3, 1., 2., 3., 1./3, 1./3, 1./3, 1., 2., 3.])
@@ -1796,7 +1858,7 @@ Examples:
     >>> @impose_weight(npts, wts)
     ... def doit(x):
     ...   return x
-    ... 
+    ...
     >>> doit([.5, 0., .5, 2., 4., 6., .25, .5, .25, 6., 4., 2.])
     [0.5, 0.0, 0.5, 2.0, 4.0, 6.0, 1.0, 0.0, 0.0, 4.0, 2.0, 0.0]
     >>> doit([1./3, 1./3, 1./3, 1., 2., 3., 1./3, 1./3, 1./3, 1., 2., 3.])

@@ -6,8 +6,8 @@
 #  - https://github.com/uqfoundation/mystic/blob/master/LICENSE
 
 try:
-  import multiprocess as mp
-  p = mp.Pool()
+  from pathos.pools import ProcessPool
+  p = ProcessPool()
   pmap = p.map
 except ImportError:
   pmap = None
@@ -21,6 +21,7 @@ def inside(x):
   return mm.sphere(x) < 1
 lb,ub = [0,0,0],[1,1,1]
 kwd = dict(tol=None, rel=.05)
+_kwd = dict(tol=.05, rel=None)
 
 # lb,ub must be iterable
 miss,hits = ms.sample(inside, lb, ub)
@@ -45,6 +46,31 @@ assert my.math.approx_equal(mi.integrated_variance(mm.sphere, lb, ub), ans, **kw
 assert my.math.approx_equal(ms.sampled_variance(mm.sphere, lb[:1], ub[:1]) * 3, ans, **kwd)
 if pmap:
   a = ms.sampled_variance(mm.sphere, lb, ub, map=pmap)
+  assert my.math.approx_equal(a, ans, **kwd)
+
+ans = ms.sampled_minimum(mm.sphere, lb, ub, npts=50000)
+assert my.math.approx_equal(mm.sphere(my.solvers.fmin(mm.sphere, x0=[.5,.5,.5], bounds=list(zip(lb, ub)), disp=False)), ans, **_kwd)
+assert my.math.approx_equal(ms.sampled_minimum(mm.sphere, lb[:1], ub[:1]) * 3, ans, **_kwd)
+if pmap:
+  a = ms.sampled_minimum(mm.sphere, lb, ub, npts=50000, map=pmap)
+  assert my.math.approx_equal(a, ans, **_kwd)
+
+ans = ms.sampled_maximum(mm.sphere, lb[:2], ub[:2], npts=50000)
+assert my.math.approx_equal(ms.sampled_maximum(mm.sphere, lb[:1], ub[:1]) * 2, ans, **_kwd)
+if pmap:
+  a = ms.sampled_maximum(mm.sphere, lb[:2], ub[:2], npts=50000, map=pmap)
+  assert my.math.approx_equal(a, ans, **_kwd)
+
+ans = ms.sampled_ptp(mm.sphere, lb[:2], ub[:2], npts=50000)
+assert my.math.approx_equal(ms.sampled_ptp(mm.sphere, lb[:1], ub[:1]) * 2, ans, **_kwd)
+if pmap:
+  a = ms.sampled_ptp(mm.sphere, lb[:2], ub[:2], npts=50000, map=pmap)
+  assert my.math.approx_equal(a, ans, **_kwd)
+
+ans = ms.sampled_probneg(mm.sphere, lb, ub)
+assert my.math.approx_equal(ms.sampled_probneg(mm.sphere, lb[:1], ub[:1]), ans, **kwd)
+if pmap:
+  a = ms.sampled_probneg(mm.sphere, lb, ub, map=pmap)
   assert my.math.approx_equal(a, ans, **kwd)
 
 ans = ms.sampled_pof(inside, lb, ub)
