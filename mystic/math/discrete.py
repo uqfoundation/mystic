@@ -874,6 +874,27 @@ Notes:
     pts = self.sampled_support(npts)
     return _maximum_given_samples(f, pts, map)
 
+  def sampled_probneg(self, f, npts=10000, map=None):
+    """use sampling to calculate probability of negativity for a given function
+
+Args:
+    f (func): a function that takes a list and returns a number
+    npts (int, default=10000): the number of point masses sampled from the
+        underlying discrete measures
+    map (func, default=builtins.map): the mapping function
+
+Returns:
+    the probability that ``f < 0``, a float in ``[0.0,1.0]``
+
+Notes:
+    - the function ``f`` should take a list of ``positions`` (for example,
+      ``scenario.positions`` or ``product_measure.positions``) and return a
+      single value (e.g. 0.0)
+"""
+    from mystic.math.samples import _probneg_given_samples
+    pts = self.sampled_support(npts)
+    return _probneg_given_samples(f, pts, map)
+
   def sampled_pof(self, f, npts=10000, map=None):
     """use sampling to calculate probability of failure for a given function
 

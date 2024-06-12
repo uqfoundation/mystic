@@ -259,6 +259,11 @@ def test_sorting():
   assert monotonic()(negative)(x) == monotonic(ascending=False, outer=True)(negative)(x)
   assert monotonic(outer=True)(negative)(x) == monotonic(ascending=False)(negative)(x)
 
+  assert sorting(index=0)(negative)(x) == sorting(index=[0])(negative)(x)
+  assert sorting(index=(0,1,2))(negative)(x) == sorting(index=(-4,-5,2))(negative)(x)
+  assert monotonic(index=0)(negative)(x) == monotonic(index=[0])(negative)(x)
+  assert monotonic(index=(0,1,2))(negative)(x) == monotonic(index=(-4,-5,2))(negative)(x)
+
   from numpy import maximum as max, minimum as min
   assert monotonic()(sum)(x) == sum(max.accumulate(x))
   assert monotonic(outer=True)(sum)(x) == sum(x)
