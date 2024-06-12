@@ -11,6 +11,7 @@ optimization of 4-input cost function using online learning of a surrogate
 """
 import os
 from mystic.samplers import LatticeSampler
+from mystic.monitors import LoggingMonitor
 from ouq_models import WrapModel, InterpModel
 from emulators import cost4 as cost, x4 as target, bounds4 as bounds
 #from mystic.cache.archive import file_archive, read as get_db
@@ -43,9 +44,14 @@ surrogate = InterpModel("surrogate", nx=4, ny=None, data=truth, smooth=0.0,
 # iterate until error (of candidate minimum) < 1e-3
 N = 4
 import numpy as np
-error = np.array([float('inf')]); idx = 0
-#while error[:N].mean() > 1e-3:
-while error[idx] > 1e-3:
+tracker = LoggingMonitor(1, filename='error.txt', label='error')
+from mystic.abstract_solver import AbstractSolver
+from mystic.termination import VTR
+loop = AbstractSolver(4) # nx
+loop.SetTermination(VTR(1e-3)) #XXX: VTRCOG, TimeLimits, etc?
+loop.SetEvaluationLimits(maxiter=500)
+loop.SetGenerationMonitor(tracker)
+while not loop.Terminated():
 
     # fit the surrogate to data in truth database
     surrogate.fit(data=data)
@@ -75,15 +81,21 @@ while error[idx] > 1e-3:
     print("ave mins: %s; at min: %s" % (error[:N].mean(), error[idx]))
     print("evaluations of truth: %s" % len(data))
 
+    # save to tracker if less than current best
+    if len(tracker) and tracker.y[-1] < error[idx]:
+        tracker(*tracker[-1])
+    else: tracker(xdata[idx], error[idx])
+
     # add most recent candidate extrema to truth database
     data.load(xdata, ytrue)
 
-# get minimum of last batch of results
-xnew = xdata[idx]
-ynew = ytrue[idx]
+# get the results at the best parameters from the truth database
+xbest = tracker[-1][0]
+#ybest = archive[tuple(xbest)]
+ybest = data[data.coords.index(xbest)].value
 
 # print the best parameters
-print(f"Best solution is {xnew} with Rwp {ynew}")
+print(f"Best solution is {xbest} with Rwp {ybest}")
 print(f"Reference solution: {target}")
-ratios = [x / y for x, y in zip(target, xnew)]
+ratios = [x / y for x, y in zip(target, xbest)]
 print(f"Ratios of best to reference solution: {ratios}")

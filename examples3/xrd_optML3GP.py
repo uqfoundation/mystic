@@ -11,6 +11,7 @@ optimization of 3-input cost function using online learning of a surrogate
 """
 import os
 from mystic.solvers import diffev2
+from mystic.monitors import LoggingMonitor
 from mystic.math.legacydata import datapoint
 from mystic.cache.archive import file_archive, read as get_db
 from ouq_models import WrapModel, LearnedModel
@@ -54,8 +55,14 @@ mlkw = dict(estimator=best.estimator, transform=best.transform)
 surrogate = LearnedModel('surrogate', nx=3, ny=None, data=truth, **mlkw)
 
 # iterate until error (of candidate minimum) < 1e-3
-error = float("inf")
-while error > 1e-3:
+tracker = LoggingMonitor(1, filename='error.txt', label='error')
+from mystic.abstract_solver import AbstractSolver
+from mystic.termination import VTR
+loop = AbstractSolver(3) # nx
+loop.SetTermination(VTR(1e-3)) #XXX: VTRCOG, TimeLimits, etc?
+loop.SetEvaluationLimits(maxiter=500)
+loop.SetGenerationMonitor(tracker)
+while not loop.Terminated():
 
     # fit the surrogate to data in truth database
     surrogate.fit(data=data)
@@ -75,12 +82,21 @@ while error > 1e-3:
     print("candidate: %s; error: %s" % (ysur, error))
     print("evaluations of truth: %s" % len(data))
 
+    # save to tracker if less than current best
+    if len(tracker) and tracker.y[-1] < error:
+        tracker(*tracker[-1])
+    else: tracker(xnew, error)
+
     # add most recent candidate minimum evaluated with truth to database
     pt = datapoint(xnew, value=ynew)
     data.append(pt)
 
+# get the results at the best parameters from the truth database
+xbest = tracker[-1][0]
+ybest = archive[tuple(xbest)]
+
 # print the best parameters
-print(f"Best solution is {xnew} with beta {ynew}")
+print(f"Best solution is {xbest} with beta {ybest}")
 print(f"Reference solution: {target}")
-ratios = [x / y for x, y in zip(target, xnew)]
+ratios = [x / y for x, y in zip(target, xbest)]
 print(f"Ratios of best to reference solution: {ratios}")

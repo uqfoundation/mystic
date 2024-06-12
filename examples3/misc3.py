@@ -32,7 +32,7 @@ kwds = dict(npts=500, ipts=4, itol=1e-8, iter=5)
 
 from mystic.math.discrete import product_measure
 from mystic.math import almostEqual as almost
-from mystic.constraints import and_, integers
+from mystic.constraints import and_, integers, sorting
 from mystic.coupler import outer, additive
 from emulators import cost3, x3, bounds3, error3, a_beta, a_beta_error
 from mystic import suppressed
@@ -44,6 +44,8 @@ wub = (1,1,1)
 # number of Dirac masses to use for each parameter
 npts = (2,2,2) #NOTE: rv = (w0,w0,x0,x0,w1,w1,x1,x1,w2,w2,x2,x2)
 index = (2,3,6,7,10,11)  #NOTE: rv[index] -> x0,x0,x1,x1,x2,x2
+ordered = lambda constraint: sorting(index=(0,1))(sorting(index=(4,5))(sorting(index=(8,9))(constraint)))
+
 # moments and uncertainty in first parameter
 a_ave = x3[0]
 a_var = .5 * error3[0]**2
@@ -83,6 +85,17 @@ def unflatten(npts):
     def dec(f):
         def func(c):
             return product_measure().load(f(c.flatten()), npts)
+        return func
+    return dec
+
+
+def unflatten(npts):
+    'convert a "flattened" constraint to a moment constraint'
+    def dec(f):
+        def func(c):
+            rv = c.flatten()
+            rv = f(rv)
+            return product_measure().load(rv, npts)
         return func
     return dec
 
@@ -237,7 +250,7 @@ is_cons = lambda c: bool(additive(is_ocon)(additive(is_con2)(additive(is_con1)(i
 
 ## position-based constraints ##
 # impose constraints sequentially (faster, but assumes are decoupled)
-_scons = outer(momcon2)(outer(momcon1)(outer(momcon0)(normcon)))
+_scons = outer(momcon2)(outer(momcon1)(outer(momcon0)(unflatten(npts)(ordered(flatten(npts)(normcon))))))
 scons = flatten(npts)(constrain_expected(model, ave=o_ave, var=o_var, ave_err=o_ave_err, var_err=o_var_err, bounds=bnd, constraints=_scons, maxiter=50))
 #scons = flatten(npts)(outer(constrain_expected(model, ave=o_ave, var=o_var, ave_err=o_ave_err, var_err=o_var_err, bounds=bnd))(_scons))
 
@@ -245,7 +258,7 @@ scons = flatten(npts)(constrain_expected(model, ave=o_ave, var=o_var, ave_err=o_
 #_ccons = unflatten(npts)(and_(flatten(npts)(normcon), flatten(npts)(momcon0), flatten(npts)(momcon1), flatten(npts)(momcon2))) #FIXME: broadcasting error
 #ccons = flatten(npts)(constrain_expected(model, ave=o_ave, var=o_var, ave_err=o_ave_err, var_err=o_var_err, bounds=bnd, constraints=_ccons, maxiter=50))
 _ccons = flatten(npts)(constrain_expected(model, ave=o_ave, var=o_var, ave_err=o_ave_err, var_err=o_var_err, bounds=bnd, maxiter=1000, debug=False))
-ccons = and_(flatten(npts)(normcon), flatten(npts)(momcon0), flatten(npts)(momcon1), flatten(npts)(momcon2), _ccons)
+ccons = and_(ordered(flatten(npts)(normcon)), flatten(npts)(momcon0), flatten(npts)(momcon1), flatten(npts)(momcon2), _ccons)
 
 # check parameters (instead of measures)
 iscon = check(npts)(is_cons)
