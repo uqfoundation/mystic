@@ -19,6 +19,9 @@ import mystic.models as mm
 def inside(x):
   import mystic.models as mm
   return mm.sphere(x) < 1
+def positive(x):
+  import mystic.models as mm
+  return mm.sphere(x) >= 0
 lb,ub = [0,0,0],[1,1,1]
 kwd = dict(tol=None, rel=.05)
 _kwd = dict(tol=.05, rel=None)
@@ -67,10 +70,10 @@ if pmap:
   a = ms.sampled_ptp(mm.sphere, lb[:2], ub[:2], npts=50000, map=pmap)
   assert my.math.approx_equal(a, ans, **_kwd)
 
-ans = ms.sampled_probneg(mm.sphere, lb, ub)
-assert my.math.approx_equal(ms.sampled_probneg(mm.sphere, lb[:1], ub[:1]), ans, **kwd)
+ans = ms.sampled_pof(positive, lb, ub)
+assert my.math.approx_equal(ms.sampled_pof(positive, lb[:1], ub[:1]), ans, **kwd)
 if pmap:
-  a = ms.sampled_probneg(mm.sphere, lb, ub, map=pmap)
+  a = ms.sampled_pof(positive, lb, ub, map=pmap)
   assert my.math.approx_equal(a, ans, **kwd)
 
 ans = ms.sampled_pof(inside, lb, ub)
@@ -94,6 +97,12 @@ assert my.math.approx_equal(ms._expectation_given_samples(mm.sphere, _pts) * 3, 
 if pmap:
   assert my.math.approx_equal(ms._expectation_given_samples(mm.sphere, pts), ms._expectation_given_samples(mm.sphere, pts, map=pmap), **kwd)
 
+ans = ms.sampled_variance(mm.sphere, lb, ub)
+assert my.math.approx_equal(ms._variance_given_samples(mm.sphere, pts), ans, **kwd)
+assert my.math.approx_equal(ms._variance_given_samples(mm.sphere, _pts) * 3, ans, **kwd)
+if pmap:
+  assert my.math.approx_equal(ms._variance_given_samples(mm.sphere, pts), ms._variance_given_samples(mm.sphere, pts, map=pmap), **kwd)
+
 assert 2.0 < ms._maximum_given_samples(mm.sphere, pts) < 3.5
 assert 0.9 < ms._maximum_given_samples(mm.sphere, _pts) < 1.1
 if pmap:
@@ -103,6 +112,11 @@ assert ms._maximum_given_samples(mm.sphere, pts) - ms._minimum_given_samples(mm.
 assert ms._maximum_given_samples(mm.sphere, _pts) - ms._minimum_given_samples(mm.sphere, _pts) == ms._ptp_given_samples(mm.sphere, _pts)
 if pmap:
   assert my.math.approx_equal(ms._ptp_given_samples(mm.sphere, pts), ms._ptp_given_samples(mm.sphere, pts, map=pmap), **kwd)
+
+assert 0.47 <= ms._pof_given_samples(inside, pts) < 0.48
+assert 0.00 <= ms._pof_given_samples(inside, _pts) < 0.01
+if pmap:
+  assert my.math.approx_equal(ms._pof_given_samples(positive, pts), ms._pof_given_samples(positive, pts, map=pmap), **kwd)
 
 assert my.math.approx_equal(ms.sampled_prob(pts, lb, ub), 1, **kwd)
 assert my.math.approx_equal(ms.sampled_prob(_pts, lb[:1], ub[:1]), 1, **kwd)
