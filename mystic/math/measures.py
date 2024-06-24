@@ -18,20 +18,20 @@ from mystic.math import almostEqual
 from mystic.math.distance import Lnorm
 
 __all__ = ['weighted_select','spread','norm','maximum','ess_maximum',\
-          'minimum','ess_minimum','ptp','ess_ptp','expectation',\
-          'expected_variance','expected_std','_expected_moment','mean',\
-          'support_index','support','moment','standard_moment','variance',\
-          'std','skewness','kurtosis','impose_mean','impose_variance',\
-          'impose_std','impose_moment','impose_spread','impose_expectation',\
-          '_impose_expected_moment','impose_expected_variance',\
-          'impose_expected_std','impose_expected_mean_and_variance',\
-          'impose_weight_norm','normalize','impose_reweighted_mean',\
-          'impose_reweighted_variance','impose_reweighted_std','_sort',\
-          'median','mad','impose_median','impose_mad','_k','tmean',\
-          'tvariance','tstd','impose_tmean','impose_tvariance','impose_tstd',\
-          'impose_support','impose_unweighted','impose_collapse',\
-          'impose_sum','impose_product','_pack','_unpack','_flat',\
-          '_nested','_nested_split','split_param']
+           'minimum','ess_minimum','ptp','ess_ptp','expectation',\
+           'expected_variance','expected_std','_expected_moment','mean',\
+           'support_index','support','moment','standard_moment','variance',\
+           'std','skewness','kurtosis','impose_mean','impose_variance',
+           'impose_std','impose_moment','impose_spread','impose_expectation',\
+           '_impose_expected_moment','impose_expected_variance',\
+           'impose_expected_std','impose_expected_mean_and_variance',\
+           'impose_weight_norm','normalize','impose_reweighted_mean',\
+           'impose_reweighted_variance','impose_reweighted_std','_sort',\
+           'median','mad','impose_median','impose_mad','_k','tmean',\
+           'tvariance','tstd','impose_tmean','impose_tvariance','impose_tstd',\
+           'impose_support','impose_unweighted','impose_collapse',\
+           'impose_sum','impose_product','_pack','_unpack','_flat','_nested',\
+           '_nested_split','split_param']
 
 def weighted_select(samples, weights, mass=1.0):
   """randomly select a sample from weighted set of samples
@@ -154,7 +154,7 @@ Returns:
 def ptp(f, samples):
   """calculate the spread of function for the given list of points
 
-``minimum(f,x) = max(f(x)) - min(f(x))``
+``ptp(f,x) = max(f(x)) - min(f(x))``
 
 Args:
     f (func): a function that takes a list and returns a number
@@ -169,7 +169,7 @@ Returns:
 def ess_ptp(f, samples, weights=None, tol=0.):
   """calculate the spread of function for support on the given list of points
 
-``ess_minimum(f,x,w) = max(f(support(x,w))) - min(f(support(x,w)))``
+``ess_ptp(f,x,w) = max(f(support(x,w))) - min(f(support(x,w)))``
 
 Args:
     f (func): a function that takes a list and returns a number
@@ -203,6 +203,7 @@ Returns:
   # to prevent function evaluation if weight is "too small":
   # skip evaluation of f(x) if the corresponding weight <= tol
   #weights = normalize(weights, mass=1.0) #FIXME: below is atol, should be rtol?
+  from numpy import sum
   if not sum(abs(w) > tol for w in weights):
       yw = ((0.0,0.0),)
   else: #XXX: parallel map?
@@ -233,6 +234,7 @@ Returns:
     y = [f(x) for x in samples] #XXX: parallel map?
     return moment(y, weights, order) #XXX: tol?
   # skip evaluation of f(x) if the corresponding weight <= tol
+  from numpy import sum
   if not sum(abs(w) > tol for w in weights):
       yw = ((0.0,0.0),)
   else: #XXX: parallel map?
@@ -1343,6 +1345,7 @@ Notes: if mass='l1', will use L1-norm; if mass='l2' will use L2-norm; etc.
   weights = asarray(list(weights)) #XXX: faster to use x = array(x, copy=True) ?
 
   if fixed:
+    from numpy import sum
     w = sum(abs(weights))
   else:
     mass = int(min(200, mass)) # x**200 is ~ x**inf
@@ -1359,6 +1362,7 @@ Notes: if mass='l1', will use L1-norm; if mass='l2' will use L2-norm; etc.
     w = weights / w #FIXME: not "mean-preserving"
     if not fixed: return list(w) # <- scaled so sum(abs(x)) = 1
     #REMAINING ARE fixed mean
+    from numpy import sum
     m = sum(w)
     w = mass * w
     if not m:  #XXX: do similar to zsum (i.e. shift) when sum(weights)==0 ?

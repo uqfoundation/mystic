@@ -52,3 +52,46 @@ class MeanValue(BaseOUQ):
             return c[idx].mean #FIXME: set model,samples in constraints
         return NotImplemented #FIXME: set model,samples in constraints
 
+
+class Negativity(BaseOUQ):
+
+    def objective(self, rv, axis=None, iter=True):
+        """calculate expected negativity for model, under uncertainty
+
+    Input:
+        rv: list of input parameters
+        axis: int, the index of output to calculate (all, by default)
+        iter: bool, if True, calculate per axis, else calculate for all axes
+
+    Returns:
+        the expected negativity for the specified axis (or all axes)
+
+    NOTE:
+        respects constraints on input parameters and product measure
+
+    NOTE:
+        for product_measure, use sampled_pof(func) if samples, else pof(func)
+        where func = lambda x: model(x) >= 0
+        """
+        # check constraints
+        c = product_measure().load(rv, self.npts)
+        if not self.cvalid(c) or not self.xvalid(rv):
+            if axis is None and self.axes is not None:
+                return (self._invalid,) * (self.axes or 1) #XXX:?
+            return self._invalid
+        # get expected negativity
+        if iter and axis is None and self.axes is not None:
+            model = (lambda x: (self.model(x,axis=i) >= 0) for i in range(self.axes))
+            if self.samples is None:
+                return tuple(c.pof(m) for m in model)
+            # else use sampled support
+            return tuple(c.sampled_pof(m, self.samples, map=self.map) for m in model)
+        # else, get expected negativity for the given axis
+        if axis is None:
+            model = lambda x: (self.model(x) >= 0)
+        else:
+            model = lambda x: (self.model(x, axis=axis) >= 0)
+        if self.samples is None:
+            return c.pof(model)
+        return c.sampled_pof(model, self.samples, map=self.map)
+

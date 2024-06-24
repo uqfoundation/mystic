@@ -177,21 +177,6 @@ Inputs:
   return _ptp_given_samples(f, pts, map)
 
 
-def sampled_probneg(f, lb, ub, npts=10000, map=None):
-  """
-use random sampling to calculate probability of negativity for a function
-
-Inputs:
-    f -- a function that takes a list and returns a number
-    lb -- a list of lower bounds
-    ub -- a list of upper bounds
-    npts -- the number of points to sample [Default is npts=10000]
-    map -- the mapping function [Default is builtins.map]
-"""
-  pts = _random_samples(lb, ub, npts)
-  return _probneg_given_samples(f, pts, map)
-
-
 def sampled_minimum(f, lb, ub, npts=10000, map=None):
   """
 use random sampling to calculate the minimum of a function
@@ -313,41 +298,6 @@ Inputs:
     from builtins import map
   from numpy import transpose, ptp, atleast_2d
   return ptp(list(map(f, atleast_2d(transpose(pts)).tolist())))
-
-
-def _probneg_given_samples(f, pts, map=None):
-  """
-use given sample pts to calculate probability of negativity for function f
-
-Inputs:
-    f -- a function that returns a single value, given a list of inputs
-    pts -- a list of sample points
-    map -- the mapping function [Default is builtins.map]
-"""
-  if map is None:
-    from builtins import map
-  from numpy import transpose, clip, count_nonzero, atleast_2d
-  results = list(map(f, atleast_2d(transpose(pts)).tolist()))
-  results = clip(results, None, 0) # negative-only
-  pneg = float(count_nonzero(results)) / float(results.size)
-  return pneg
-
-
-def _negativity_given_samples(f, pts, map=None):
-  """
-use given sample pts to calculate negativity of function f
-
-Inputs:
-    f -- a function that returns a single value, given a list of inputs
-    pts -- a list of sample points
-    map -- the mapping function [Default is builtins.map]
-"""
-  if map is None:
-    from builtins import map
-  from numpy import transpose, clip, atleast_2d
-  results = list(map(f, atleast_2d(transpose(pts)).tolist()))
-  neg = -clip(results, None, 0).sum() or 0.0
-  return neg
 
 
 def sampled_pts(pts, lb, ub, map=None):

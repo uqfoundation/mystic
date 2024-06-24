@@ -672,6 +672,47 @@ class ExpectedValue(BaseOUQ):
         return c.sampled_expect(model, self.samples, map=self.map)
 
 
+class Variance(BaseOUQ):
+
+    def objective(self, rv, axis=None):
+        """calculate expected variance of model, under uncertainty
+
+    Input:
+        rv: list of input parameters
+        axis: int, the index of output to calculate (all, by default)
+
+    Returns:
+        the expected variance for the specified axis
+
+    NOTE:
+        respects constraints on input parameters and product measure
+
+    NOTE:
+        for product_measure, use sampled_variance if samples, else expect_var
+        """
+        # check constraints
+        c = product_measure().load(rv, self.npts)
+        if not self.cvalid(c) or not self.xvalid(rv):
+            if axis is None and self.axes is not None:
+                return (self._invalid,) * (self.axes or 1) #XXX:?
+            return self._invalid
+        # get expected variance
+        if axis is None and self.axes is not None:
+            model = (lambda x: self.model(x, axis=i) for i in range(self.axes))
+            if self.samples is None:
+                return tuple(c.expect_var(m) for m in model)
+            # else use sampled support
+            return tuple(c.sampled_variance(m, self.samples, map=self.map) for m in model)
+        # else, get expected variance for the given axis
+        if axis is None:
+            model = lambda x: self.model(x)
+        else:
+            model = lambda x: self.model(x, axis=axis)
+        if self.samples is None:
+            return c.expect_var(model)
+        return c.sampled_variance(model, self.samples, map=self.map)
+
+
 class MaximumValue(BaseOUQ):
 
     def objective(self, rv, axis=None):

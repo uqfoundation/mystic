@@ -358,6 +358,11 @@ def test_min_max():
   assert c.sampled_minimum(f, 100) == -1
   assert c.sampled_maximum(f, 100) == 15
   assert c.sampled_ptp(f, 100) == 16
+
+  # negativity (round due to float precision)
+  positive = lambda x: f(x) >= 0
+  assert almostEqual(c.pof(positive), 0.1, tol=1e-2)
+  assert almostEqual(c.sampled_pof(positive, 10000), 0.1, tol=1e-2)
   return
 
 
