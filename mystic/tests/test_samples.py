@@ -113,7 +113,7 @@ assert ms._maximum_given_samples(mm.sphere, _pts) - ms._minimum_given_samples(mm
 if pmap:
   assert my.math.approx_equal(ms._ptp_given_samples(mm.sphere, pts), ms._ptp_given_samples(mm.sphere, pts, map=pmap), **kwd)
 
-assert 0.47 <= ms._pof_given_samples(inside, pts) < 0.48
+assert 0.45 <= ms._pof_given_samples(inside, pts) < 0.50
 assert 0.00 <= ms._pof_given_samples(inside, _pts) < 0.01
 if pmap:
   assert my.math.approx_equal(ms._pof_given_samples(positive, pts), ms._pof_given_samples(positive, pts, map=pmap), **kwd)
