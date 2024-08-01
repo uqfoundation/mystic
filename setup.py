@@ -99,7 +99,7 @@ klepto_version = 'klepto>=0.2.5'
 pathos_version = 'pathos>=0.3.2'
 pyina_version = 'pyina>=0.2.9'
 cython_version = 'cython>=0.29.30' #XXX: required to build numpy from source
-numpy_version = 'numpy>=1.0'
+numpy_version = 'numpy>=1.0, <2.0.0b1'
 sympy_version = 'sympy>=0.6.7'#, <0.7.4'
 scipy_version = 'scipy>=0.6.0'
 mpmath_version = 'mpmath>=0.19'
