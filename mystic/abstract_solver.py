@@ -167,7 +167,7 @@ Important class members::
 
     def __evaluations(self):
         """get the number of function calls"""
-        return self._fcalls[0]
+        return self._fcalls[0] #len(self._evalmon) or self._fcalls[0]
 
     def __generations(self):
         """get the number of iterations"""
