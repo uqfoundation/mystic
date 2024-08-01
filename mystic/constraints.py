@@ -720,7 +720,7 @@ NOTE:
     return cf
 
 
-from numpy import asfarray, asarray, choose, zeros, ones, ndarray
+from numpy import asarray, choose, zeros, ones, ndarray
 from numpy import shape, broadcast, empty, atleast_1d
 #from random import sample, choice
 def discrete(samples, index=None):
@@ -1208,7 +1208,7 @@ def bounded(seq, bounds, index=None, clip=True, nearest=True):
     if bounds is None or not bounds: return seq
     if isinstance(index, int): index = (index,)
     if not hasattr(bounds[0], '__len__'): bounds = (bounds,)
-    bounds = asfarray(bounds).T  # is [(min,min,...),(max,max,...)]
+    bounds = asarray(bounds, dtype='float64').T # [(min,min,...),(max,max,...)]
     # convert None to -inf or inf
     bounds[0][isnan(bounds[0])] = -inf
     bounds[1][isnan(bounds[1])] = inf

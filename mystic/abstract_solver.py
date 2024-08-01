@@ -74,7 +74,7 @@ __all__ = ['AbstractSolver']
 
 import random
 import numpy
-from numpy import inf, shape, asarray, absolute, asfarray, seterr
+from numpy import inf, shape, asarray, absolute, seterr
 from mystic.tools import wrap_function, wrap_nested, wrap_reducer
 from mystic.tools import wrap_bounds, wrap_penalty, reduced
 from klepto import isvalid, validate
@@ -472,7 +472,7 @@ Args:
 Returns:
     None
         """
-        x0 = asfarray(x0)
+        x0 = asarray(x0, dtype='float64')
         rank = len(x0.shape)
         if rank == 0:
             x0.shape = (1,)
@@ -482,7 +482,7 @@ Returns:
         if len(x0) != self.nDim:
             raise ValueError("Initial guess must be length %s" % self.nDim)
 
-        radius = asfarray(radius) # may be scalar or a nDim array
+        radius = asarray(radius, dtype='float64') # maybe scalar or a nDim array
         _rank = len(radius.shape)
 
         if _rank and len(radius) != self.nDim:

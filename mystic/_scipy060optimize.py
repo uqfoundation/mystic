@@ -21,7 +21,7 @@
 
 import numpy
 from numpy import atleast_1d, eye, mgrid, argmin, zeros, shape, empty, \
-     squeeze, isscalar, vectorize, asarray, absolute, sqrt, Inf, asfarray, isinf
+     squeeze, isscalar, vectorize, asarray, absolute, sqrt, inf, isinf
 from mystic import linesearch
 from collections.abc import Callable as _Callable
 
@@ -47,9 +47,9 @@ __version__="0.7"
 _epsilon = sqrt(numpy.finfo(float).eps)
 
 def vecnorm(x, ord=2):
-    if ord == Inf:
+    if ord == inf:
         return numpy.amax(abs(x))
-    elif ord == -Inf:
+    elif ord == -inf:
         return numpy.amin(abs(x))
     else:
         return numpy.sum(abs(x)**ord,axis=0)**(1.0/ord)
@@ -169,7 +169,7 @@ def fmin(func, x0, args=(), xtol=1e-4, ftol=1e-4, maxiter=None, maxfun=None,
       of one or more variables.
       """
     fcalls, func = wrap_function(func, args)
-    x0 = asfarray(x0).flatten()
+    x0 = asarray(x0, dtype='float64').flatten()
     N = len(x0)
     rank = len(x0.shape)
     if not -1 < rank < 2:
@@ -626,7 +626,7 @@ def approx_fhess_p(x0,p,fprime,epsilon,*args):
     f1 = fprime(*((x0,)+args))
     return (f2 - f1)/epsilon
 
-def fmin_bfgs(f, x0, fprime=None, args=(), gtol=1e-5, norm=Inf,
+def fmin_bfgs(f, x0, fprime=None, args=(), gtol=1e-5, norm=inf,
               epsilon=_epsilon, maxiter=None, full_output=0, disp=1,
               retall=0, callback=None):
     """Minimize a function using the BFGS algorithm.
@@ -642,7 +642,7 @@ def fmin_bfgs(f, x0, fprime=None, args=(), gtol=1e-5, norm=Inf,
       gtol : number
         gradient norm must be less than gtol before succesful termination
       norm : number
-        order of norm (Inf is max, -Inf is min)
+        order of norm (inf is max, -inf is min)
       epsilon : number
         if fprime is approximated use this value for
                  the step size (can be scalar or vector)
@@ -812,7 +812,7 @@ def fmin_bfgs(f, x0, fprime=None, args=(), gtol=1e-5, norm=Inf,
 
     return retlist
 
-def fmin_cg(f, x0, fprime=None, args=(), gtol=1e-5, norm=Inf, epsilon=_epsilon,
+def fmin_cg(f, x0, fprime=None, args=(), gtol=1e-5, norm=inf, epsilon=_epsilon,
               maxiter=None, full_output=0, disp=1, retall=0, callback=None):
     """Minimize a function with nonlinear conjugate gradient algorithm.
 

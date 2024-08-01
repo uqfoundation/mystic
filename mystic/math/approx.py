@@ -100,7 +100,7 @@ def almostEqual(x, y, tol=1e-18, rel=1e-7):
     -------
     y : bool
         Returns True if the two arrays are equal within the given
-        tolerance; False otherwise. If either array contains NaN, then
+        tolerance; False otherwise. If either array contains nan, then
         False is returned.
 
     Notes

@@ -88,7 +88,7 @@ from mystic.tools import wrap_function, unpair, wrap_nested
 from mystic.tools import wrap_bounds, wrap_penalty, reduced
 
 import numpy
-from numpy import eye, zeros, shape, asarray, absolute, asfarray
+from numpy import eye, zeros, shape, asarray, absolute
 from numpy import clip, squeeze
 
 abs = absolute
@@ -262,8 +262,8 @@ Notes:
         if not len(self._stepmon): # do generation = 0
             init = True
             x0 = self.population[0]
-            x0 = asfarray(x0).flatten()
-            x0 = asfarray(constraints(x0))
+            x0 = asarray(x0, dtype='float64').flatten()
+            x0 = asarray(constraints(x0), dtype='float64')
             #####XXX: this blows away __init__, so replace __init__ with this?
             N = len(x0)
             rank = len(x0.shape)
@@ -301,7 +301,7 @@ Notes:
             one2np1 = range(1,N+1)
 
             # apply constraints  #XXX: is this the only appropriate place???
-            sim[0] = asfarray(constraints(sim[0]))
+            sim[0] = asarray(constraints(sim[0]), dtype='float64')
 
             xbar = numpy.add.reduce(sim[:-1],0) / N
             xr = (1+rho)*xbar - rho*sim[-1]
@@ -646,8 +646,8 @@ Notes:
 
         if not len(self._stepmon): # do generation = 0
             init = True
-            x = asfarray(x).flatten()
-            x = asfarray(constraints(x))
+            x = asarray(x, dtype='float64').flatten()
+            x = asarray(constraints(x), dtype='float64')
             N = len(x) #XXX: this should be equal to self.nDim
             rank = len(x.shape)
             if not -1 < rank < 2:
@@ -680,7 +680,7 @@ Notes:
                     bigind = i
 
                 # apply constraints
-                x = asfarray(constraints(x)) #XXX: use self._map?
+                x = asarray(constraints(x), dtype='float64') #XXX: self._map?
             # decouple from 'best' energy
             self.energy_history = self.energy_history + [fval]
 
@@ -702,7 +702,7 @@ Notes:
                     direc[bigind] = direc[-1]
                     direc[-1] = direc1
 
-           #        x = asfarray(constraints(x))
+           #        x = asarray(constraints(x), dtype='float64')
 
             self._direc = direc
             self.population[0] = x   # bestSolution
@@ -726,7 +726,7 @@ Notes:
                     bigind = i
 
                 # apply constraints
-                x = asfarray(constraints(x)) #XXX: use self._map?
+                x = asarray(constraints(x), dtype='float64') #XXX: self._map?
 
             # decouple from 'best' energy
             self.energy_history = self.energy_history + [fval]

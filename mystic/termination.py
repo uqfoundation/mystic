@@ -12,9 +12,10 @@ Factories that provide termination conditions for a mystic.solver
 """
 
 import numpy
+np = numpy
 abs = numpy.absolute
-inf = Inf = numpy.Inf
-nan = NaN = numpy.NaN
+inf = numpy.inf
+nan = numpy.nan
 null = ""
 _type = type #NOTE: save builtin type
 import mystic.collapse as ct #XXX: avoid if move Collapse* to collapse
@@ -355,7 +356,7 @@ def PopulationSpread(tolerance=1e-6):
     _PopulationSpread.__doc__ = doc
     return _PopulationSpread
 
-def GradientNormTolerance(tolerance=1e-5, norm=Inf): 
+def GradientNormTolerance(tolerance=1e-5, norm=inf): 
     """gradient norm is < tolerance, given user-supplied norm:
 
 ``sum( abs(gradient)**norm )**(1.0/norm) <= tolerance``
@@ -389,8 +390,8 @@ or number of function calls is > evaluations:
                                         'evaluations':evaluations}
     maxfun = [evaluations]
     maxiter = [generations]
-    if maxfun[0] is None: maxfun[0] = Inf 
-    if maxiter[0] is None: maxiter[0] = Inf
+    if maxfun[0] is None: maxfun[0] = inf 
+    if maxiter[0] is None: maxiter[0] = inf
     def _EvaluationLimits(inst, info=False):
         if info: info = lambda x:x
         else: info = bool
@@ -421,7 +422,7 @@ def TimeLimits(seconds=86400, system=None): #NOTE: 24 hours
     def _reset():
         start[0] = timer()
     delta = [getattr(seconds, 'total_seconds', seconds.__abs__)()]
-    if delta[0] is None: delta[0] = Inf
+    if delta[0] is None: delta[0] = inf
     def _TimeLimits(inst, info=False):
         if info: info = lambda x:x
         else: info = bool
