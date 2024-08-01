@@ -147,7 +147,7 @@ from mystic.tools import wrap_bounds, wrap_penalty, reduced
 from mystic.abstract_solver import AbstractSolver
 from mystic.abstract_map_solver import AbstractMapSolver
 
-from numpy import asfarray, ravel
+from numpy import asfarray, ravel, isinf
 from collections.abc import Callable as _Callable
 
 class DifferentialEvolutionSolver(AbstractSolver):
@@ -557,12 +557,18 @@ Notes:
        #trialEnergy = map(self._penalty, self.trialSolution)#,**self._mapconfig)
         # calculate cost
         trialEnergy = self._map(cost, self.trialSolution, **self._mapconfig)
-        self._fcalls[0] += len(self.trialSolution) #FIXME: manually increment
 
         # each trialEnergy should be a scalar
         if isiterable(trialEnergy[0]) and len(trialEnergy[0]) == 1:
             trialEnergy = ravel(trialEnergy)
             # for len(trialEnergy) > 1, will throw ValueError below
+
+        #FIXME: manually adjusts fcalls due to use of map
+        fcalls = len(self._evalmon)
+        if fcalls: # leverage the evalmon
+            self._fcalls[0] = fcalls
+        else: # use trialEnergy, removing 'skipped' evaluations
+            self._fcalls[0] += len(trialEnergy) - isinf(trialEnergy).sum()
 
         for candidate in range(self.nPop):
             if trialEnergy[candidate] < self.popEnergy[candidate]:
