@@ -30,7 +30,10 @@ import numpy
 try:
     getlimits = numpy.lib.getlimits
 except AttributeError:
-    getlimits = numpy.core.getlimits
+    try:
+        getlimits = numpy._core.getlimits
+    except AttributeError:
+        getlimits = numpy.core.getlimits
 
 TYPE_DOUBLE =  getlimits.finfo(getlimits.numeric.double)
 TINY = TYPE_DOUBLE.tiny

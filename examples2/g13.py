@@ -16,7 +16,7 @@
 #  - https://github.com/uqfoundation/mystic/blob/master/LICENSE
 
 def objective(x):
-    from numpy import exp, product
+    from numpy import exp, prod as product
     return exp(product(x))
 
 bounds = [(-2.3,2.3)]*2 + [(-3.2,3.2)]*3

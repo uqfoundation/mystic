@@ -16,7 +16,7 @@
 #  - https://github.com/uqfoundation/mystic/blob/master/LICENSE
 
 def objective(x):
-    from numpy import abs, sum, cos, product, sqrt
+    from numpy import abs, sum, cos, prod as product, sqrt
     sum_jx = 0.0
     for j in range(len(x)): sum_jx = sum_jx + (j+1) * x[j]**2
     return -abs((sum(cos(x)**4) - 2.*product(cos(x)**2))/sqrt(sum_jx))
