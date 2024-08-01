@@ -9,6 +9,7 @@
 
 import mystic.monitors as _m
 inf = _m.numpy.inf
+np = _m.numpy
 
 ##### parameter collapse detectors #####
 def collapse_at(stepmon, target=None, tolerance=0.005, \
@@ -38,7 +39,7 @@ def collapse_at(stepmon, target=None, tolerance=0.005, \
     tolerance = np.asarray(tolerance)
     tolerance.shape = (-1,1)
     params = _m._solutions(stepmon, generations)
-    if target is None: params = params.ptp(axis=0) <= tolerance
+    if target is None: params = np.ptp(params, axis=0) <= tolerance
     else: params = abs(params - target).max(axis=0) <= tolerance
     # get tuple of indices of where collapsed
     params = np.where(params)[-1]
@@ -84,7 +85,7 @@ def collapse_as(stepmon, offset=False, tolerance=0.005, \
     from mystic.tools import pairwise
     distances, pairs = pairwise(distances, True)
     if offset: # tracking at a distance
-        distances = distances.ptp(axis=0) <= tolerance
+        distances = np.ptp(distances, axis=0) <= tolerance
     else: # tracking with the same position
         distances = distances.max(axis=0) <= tolerance
     # get the (index1,index2) pairs where the collapse occurs

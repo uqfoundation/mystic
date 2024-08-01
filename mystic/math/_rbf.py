@@ -199,7 +199,7 @@ class Rbf(object):
         return a0
 
     def __init__(self, *args, **kwargs):
-        self.xi = np.asarray([np.asarray(a, dtype=np.float_).flatten()
+        self.xi = np.asarray([np.asarray(a, dtype=np.float64).flatten()
                            for a in args[:-1]])
         self.N = self.xi.shape[-1]
         self.di = np.asarray(args[-1]).flatten()
@@ -254,6 +254,6 @@ class Rbf(object):
         if not all([x.shape == y.shape for x in args for y in args]):
             raise ValueError("Array lengths must be equal")
         shp = args[0].shape
-        xa = np.asarray([a.flatten() for a in args], dtype=np.float_)
+        xa = np.asarray([a.flatten() for a in args], dtype=np.float64)
         r = self._call_norm(xa, self.xi)
         return np.dot(self._function(r), self.nodes).reshape(shp)

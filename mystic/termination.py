@@ -12,6 +12,7 @@ Factories that provide termination conditions for a mystic.solver
 """
 
 import numpy
+np = numpy
 abs = numpy.absolute
 inf = numpy.inf
 nan = numpy.nan
