@@ -147,7 +147,7 @@ from mystic.tools import wrap_bounds, wrap_penalty, reduced
 from mystic.abstract_solver import AbstractSolver
 from mystic.abstract_map_solver import AbstractMapSolver
 
-from numpy import asfarray, ravel, isinf
+from numpy import asarray, ravel, isinf
 from collections.abc import Callable as _Callable
 
 class DifferentialEvolutionSolver(AbstractSolver):
@@ -280,7 +280,7 @@ Notes:
         if not len(self._stepmon): # do generation = 0
             init = True
             strategy = None
-            self.population[0] = asfarray(self.population[0])
+            self.population[0] = asarray(self.population[0], dtype='float64')
             # decouple bestSolution from population and bestEnergy from popEnergy
             bs = self.population[0]
             self.bestSolution = bs.copy() if hasattr(bs, 'copy') else bs[:]
@@ -529,7 +529,7 @@ Notes:
         if not len(self._stepmon): # do generation = 0
             init = True
             strategy = None
-            self.population[0] = asfarray(self.population[0])
+            self.population[0] = asarray(self.population[0], dtype='float64')
             # decouple bestSolution from population and bestEnergy from popEnergy
             bs = self.population[0]
             self.bestSolution = bs.copy() if hasattr(bs, 'copy') else bs[:]

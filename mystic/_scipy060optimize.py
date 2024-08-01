@@ -21,7 +21,7 @@
 
 import numpy
 from numpy import atleast_1d, eye, mgrid, argmin, zeros, shape, empty, \
-     squeeze, isscalar, vectorize, asarray, absolute, sqrt, Inf, asfarray, isinf
+     squeeze, isscalar, vectorize, asarray, absolute, sqrt, Inf, isinf
 from mystic import linesearch
 from collections.abc import Callable as _Callable
 
@@ -169,7 +169,7 @@ def fmin(func, x0, args=(), xtol=1e-4, ftol=1e-4, maxiter=None, maxfun=None,
       of one or more variables.
       """
     fcalls, func = wrap_function(func, args)
-    x0 = asfarray(x0).flatten()
+    x0 = asarray(x0, dtype='float64').flatten()
     N = len(x0)
     rank = len(x0.shape)
     if not -1 < rank < 2:
