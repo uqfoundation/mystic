@@ -1077,7 +1077,7 @@ Notes:
       For finer control, provide an array[float] the same length as ``params``.
 """
     #FIXME: should be able to:
-    # - apply a constraint as a region of NaN -- apply when 'xx,yy=x[ij],y[ij]'
+    # - apply a constraint as a region of nan -- apply when 'xx,yy=x[ij],y[ij]'
     # - apply a penalty by shifting the surface (plot w/alpha?) -- as above
     # - build an appropriately-sized default grid (from logfile info)
     # - move all mulit-id param/cost reading into read_history

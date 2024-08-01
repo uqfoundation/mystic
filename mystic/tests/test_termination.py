@@ -16,7 +16,7 @@ SolutionImprovement(tolerance=1e-5)
 NormalizedCostTarget(fval=None, tolerance=1e-6, generations=30)
 VTRChangeOverGeneration(ftol=0.005, gtol=1e-6, generations=30)
 PopulationSpread(tolerance=1e-6)
-GradientNormTolerance(tolerance=1e-5, norm=Inf)
+GradientNormTolerance(tolerance=1e-5, norm=inf)
 EvaluationLimits(generations=None, evaluations=None)
 TimeLimits(seconds=86400, system=None)
 """
@@ -190,7 +190,7 @@ if __name__ == "__main__":
 while test05-test06 returns a ndarray for population, popEnergy, bestSolution;
 test07-test08 throw a RuntimeError "Too many iterations" due to "bracket()".
   For x:inf, test01-test02 have 1e+20 in energy_history, popEnergy, bestEnergy;
-while test03-test04 have inf; test05-test06 have Inf in popEnergy;
+while test03-test04 have inf; test05-test06 have inf in popEnergy;
 while test07-test08 have array(inf) for energy_history, popEnergy,
 and inf for bestEnergy, and energy_history, popEnergy, population is list
 of ndarrays, while bestSolution is an ndarray.
