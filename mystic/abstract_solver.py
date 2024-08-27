@@ -717,7 +717,13 @@ Notes:
         """set the termination conditions
 
 input::
-    - termination = termination conditions to check against"""
+    - termination = termination conditions to check against
+
+note::
+    terminates a solver due to 'termination' or the inherent EvaluationLimits
+
+note::
+    SetTermination(None) sets termination to the inherent EvaluationLimits"""
         #XXX: validate that termination is a 'condition' ?
         self._termination = termination
         self._collapse = False
@@ -726,6 +732,8 @@ input::
             stop = state(termination)
             stop = stop.keys()
             self._collapse = any(key.startswith('Collapse') for key in stop)
+        else:
+            self._termination = AbstractSolver(self.nDim)._termination
         return
 
     def SetObjective(self, cost, ExtraArgs=None):  # callback=None/False ?
