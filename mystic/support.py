@@ -346,7 +346,7 @@ Notes:
             cost = kwds.get('cost', False)
             legend = kwds.get('legend', False)
 
-            if isinstance(out, bool): _out, out = out, None
+            if repr(out) in ('True', 'False'): _out, out = out, None
 
             # process "commandline" arguments
             cmdargs = ''
@@ -463,8 +463,9 @@ Notes:
         id = None # i.e. 'all' **or** use id=0, which should be 'best' energy ?
 
     # ensure all terms of select have a ":"
+    from numbers import Integral
     for i in range(plots):
-        if isinstance(select[i], int): select[i] = str(select[i])
+        if isinstance(select[i], Integral): select[i] = str(select[i])
         if select[i] == '-1': select[i] = 'len(params)-1:len(params)'
         elif not select[i].count(':'):
             select[i] += ':' + str(int(select[i])+1)
@@ -476,7 +477,7 @@ Notes:
         cost = cost[:step]
 
     # take only the selected 'id'
-    if ids and not isinstance(ids[0], int):
+    if ids and not isinstance(ids[0], Integral):
         ids = [0]*len(ids)
     if id != None: #XXX: use mystic.scripts._get_history? 
         from numpy import where, array
@@ -646,7 +647,7 @@ Notes:
             scale = kwds.get('scale', None)
             flat = kwds.get('flat', False)
 
-            if isinstance(out, bool): _out, out = out, None
+            if repr(out) in ('True', 'False'): _out, out = out, None
 
             # process "commandline" arguments
             cmdargs = ''
@@ -775,15 +776,16 @@ Notes:
     for bound in bounds:
         if not isinstance(bound, tuple):
             raise TypeError("bounds should be tuples of (lower_bound,upper_bound)")
+    from numbers import Integral
     for i in range(len(xyz)):
-        if isinstance(xyz[i], int):
+        if isinstance(xyz[i], Integral):
             xyz[i] = (xyz[i],)
         elif not isinstance(xyz[i], tuple):
             raise TypeError("xyz should be tuples of (param1,param2,param3,...)")
 
     # ensure all terms of select are strings that have a ":"
     for i in range(len(select)):
-        if isinstance(select[i], int): select[i] = str(select[i])
+        if isinstance(select[i], Integral): select[i] = str(select[i])
         if select[i] == '-1': select[i] = 'len(x)-1:len(x)'
         elif not select[i].count(':'):
             select[i] += ':' + str(int(select[i])+1)
@@ -976,7 +978,7 @@ Warning:
             scale = kwds.get('scale', None)
             flat = kwds.get('flat', False)
 
-            if isinstance(out, bool): _out, out = out, None
+            if repr(out) in ('True', 'False'): _out, out = out, None
 
             # process "commandline" arguments
             cmdargs = ''
@@ -1111,20 +1113,21 @@ Warning:
     for bound in bounds:
         if not isinstance(bound, tuple):
             raise TypeError("bounds should be tuples of (lower_bound,upper_bound)")
+    from numbers import Integral
     for i in range(len(xyz)):
-        if isinstance(xyz[i], int):
+        if isinstance(xyz[i], Integral):
             xyz[i] = (xyz[i],)
         elif not isinstance(xyz[i], tuple):
             raise TypeError("xyz should be tuples of (param1,param2,param3,...)")
     for i in range(len(wxyz)):
-        if isinstance(wxyz[i], int):
+        if isinstance(wxyz[i], Integral):
             wxyz[i] = (wxyz[i],)
         elif not isinstance(wxyz[i], tuple):
             raise TypeError("wxyz should be tuples of (param1,param2,param3,...)")
 
     # ensure all terms of select are strings of ints
     for i in range(len(select)):
-        if isinstance(select[i], int): select[i] = str(select[i])
+        if isinstance(select[i], Integral): select[i] = str(select[i])
         if select[i].count(':'):
             raise ValueError("iters should be ints")
        #if select[i] == '-1': select[i] = 'len(x)-1:len(x)'
@@ -1344,7 +1347,7 @@ Notes:
             vertical = kwds.get('vertical', False)
             flat = kwds.get('flat', False)
 
-            if isinstance(out, bool): _out, out = out, None
+            if repr(out) in ('True', 'False'): _out, out = out, None
 
             # process "commandline" arguments
             cmdargs = ''
@@ -1562,8 +1565,9 @@ Notes:
             raise TypeError("bounds should be tuples of (lower_bound,upper_bound)")
 
     # ensure all terms of select are strings that have a ":"
+    from numbers import Integral
     for i in range(len(select)):
-        if isinstance(select[i], int): select[i] = str(select[i])
+        if isinstance(select[i], Integral): select[i] = str(select[i])
         if select[i] == '-1': select[i] = 'len(x)-1:len(x)'
         elif not select[i].count(':'):
             select[i] += ':' + str(int(select[i])+1)

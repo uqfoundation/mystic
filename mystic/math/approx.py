@@ -56,7 +56,7 @@ Examples:
     >>> approx_equal(1.234, 1.235)
     False
     """
-    if not (type(x) is type(y) is float):
+    if not (type(x) is type(y) is float): #XXX: include numpy floats?
         # Skip checking for __approx_equal__ in the common case of two floats.
         methodname = '__approx_equal__'
         # Allow the objects to specify what they consider "approximately equal",

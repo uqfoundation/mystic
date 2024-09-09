@@ -72,7 +72,8 @@ def sample(model, bounds, pts=None, **kwds):
     mvl = ny is not None # True if multivalued
     axis = axis if mvl else None #XXX: allow multi-axis search?
     dist = kwds.pop('dist', None)
-    if isinstance(dist, (int, float)): # noise N(0, sig); sig = dist*(ub+lb)
+    from numbers import Integral
+    if isinstance(dist, (float, Integral)): # noise N(0,sig); sig = dist*(ub+lb)
         import numpy as np
         from mystic.math import Distribution
         sig = [dist * (ub+lb) for (lb,ub) in bounds] #FIXME: allow None and inf
@@ -503,8 +504,9 @@ class NoisyModel(OUQModel):
             if not bool(kwds.get('sigma', 1)) \
                and not bool(kwds.get('zsigma', 0)):
                 return False
-            if isinstance(kwds.get('seed', '!'), int) \
-               and isinstance(kwds.get('zseed', '!'), int):
+            from numbers import Integral
+            if isinstance(kwds.get('seed', '!'), Integral) \
+               and isinstance(kwds.get('zseed', '!'), Integral):
                 return False
             return True
         self.rnd = has_randomness(**kwd)

@@ -136,13 +136,14 @@ def distance(data, function=None, hausdorff=True, **kwds):
         function = interpolate(data, **kwds)
     import mystic.math.distance as md #FIXME: simplify axis vs fax
     from mystic.math.interpolate import _to_objective
+    from numbers import Integral
     fax = getattr(function, '__axis__', None) # axis for tuple-valued function
     if axis is None:
         if len(data.values) and type(data.values[0]) in (tuple,list):
             if type(fax) is list: # multi-value func, multi-value data
                 import numpy as np
                 return np.array([md.graphical_distance(_to_objective(j), _getitem(data, i), hausdorff=hausdorff) for i,j in enumerate(fax)])
-            elif type(fax) is int: # single-value func, multi-value data
+            elif isinstance(fax, Integral):# single-value func, multi-value data
                 return md.graphical_distance(_to_objective(function), _getitem(data, fax), hausdorff=hausdorff)
             else: # single-value func, multi-value data
                 msg = "axis required for multi-valued dataset.values"
@@ -157,7 +158,7 @@ def distance(data, function=None, hausdorff=True, **kwds):
         if len(data.values) and type(data.values[0]) in (tuple,list):
             if type(fax) is list: # multi-value func, multi-value data
                 return md.graphical_distance(_to_objective(fax[axis]), _getitem(data, axis), hausdorff=hausdorff)
-            elif type(fax) is int and fax != axis: # single-value func, multi-value data
+            elif isinstance(fax, Integral) and fax != axis: # single-value func, multi-value data
                 msg = "inconsistent axis for multi-valued dataset.values"
                 raise ValueError(msg)
             else: # single-value func, multi-value data
@@ -165,7 +166,7 @@ def distance(data, function=None, hausdorff=True, **kwds):
         else:
             if type(fax) is list: # multi-value func, singe-value data
                 return md.graphical_distance(_to_objective(fax[axis]), data, hausdorff=hausdorff)
-            elif type(fax) is int:
+            elif isinstance(fax, Integral):
                 if fax == axis: # single-value func, singe-value data
                     return md.graphical_distance(_to_objective(function), data, hausdorff=hausdorff)
                 msg = "inconsistent axis for multi-valued function"
