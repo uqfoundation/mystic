@@ -390,7 +390,8 @@ NOTE: The default solver is 'diffev', with npop=min(40, ndim*5). The default
     selected points between the upper and lower bounds.
     """
     npts = 8
-    if type(guess) is int: npts, guess = guess, None
+    from numbers import Integral
+    if isinstance(guess, Integral): npts, guess = guess, None
 
     ndim = 1 #XXX: better, increase in while loop catching IndexError ?
     if nvars is not None: ndim = nvars
@@ -745,7 +746,8 @@ Examples:
     """
     samples = [asarray(samples)]
     samples[0].sort()
-    if isinstance(index, int): index = (index,)
+    from numbers import Integral
+    if isinstance(index, Integral): index = (index,)
     index = [index]
 
     #XXX: refactor to use points_factory(samples)
@@ -843,15 +845,16 @@ Examples:
   [0.0, 0.0144, 16.080099999999998, 16.0, 64.0, 64.0]
     """
     #HACK: allow ints=False or ints=int
-    _ints = [(int if ints else float) if isinstance(ints, bool) else ints]
-    if isinstance(index, int): index = (index,)
+    _ints = [(int if ints else float) if (repr(ints) in ('True', 'False')) else ints]
+    from numbers import Integral
+    if isinstance(index, Integral): index = (index,)
     index = [index]
 
     def _index(alist=None):
         index[0] = alist
 
     def _type(ints=None):
-        _ints[0] = (int if ints else float) if isinstance(ints, bool) else ints
+        _ints[0] = (int if ints else float) if (repr(ints) in ('True', 'False')) else ints
 
     def dec(f):
         def func(x,*args,**kwds):
@@ -908,7 +911,8 @@ Examples:
   [14400.0, 15239.9025, 16.080099999999998, 0.0, 0.0, 0.000144]
     """
     digits = [digits or 0]
-    if isinstance(index, int): index = (index,)
+    from numbers import Integral
+    if isinstance(index, Integral): index = (index,)
     index = [index]
 
     def _index(alist=None):
@@ -966,7 +970,8 @@ Examples:
   [15240.0, 15239.9025, 16.080099999999998, 20.0, 0.0, 0.000144]
     """
     digits = [digits or 0]
-    if isinstance(index, int): index = (index,)
+    from numbers import Integral
+    if isinstance(index, Integral): index = (index,)
     index = [index]
 
     def _index(alist=None):
@@ -1085,10 +1090,11 @@ def unique(seq, full=None):
       ... except ValueError:
       ...     pass
       ...
-    """
+    """ #FIXME: does not handle full is numpy.dtype (i.e. int64, float64)
     # check type if full not specified
     if full is None:
-        if all([isinstance(x, int) for x in seq]): full = int
+        from numbers import Integral
+        if all([isinstance(x, Integral) for x in seq]): full = int
         else: full = float
         ok = True
     else: ok = False
@@ -1098,7 +1104,8 @@ def unique(seq, full=None):
     lseq = len(seq)
     # check all unique show up in 'full'
     if full in (int,float): # specified type, not range
-        ok = ok or full==float or all([isinstance(x, int) for x in unique])
+        from numbers import Integral
+        ok = ok or full==float or all([isinstance(x, Integral) for x in unique])
         msg = "not all items are of type='%s'" % full.__name__
         _min = min(unique)
         _max = max(unique)
@@ -1206,7 +1213,8 @@ def bounded(seq, bounds, index=None, clip=True, nearest=True):
 """
     seq = array(seq) #XXX: asarray?
     if bounds is None or not bounds: return seq
-    if isinstance(index, int): index = (index,)
+    from numbers import Integral
+    if isinstance(index, Integral): index = (index,)
     if not hasattr(bounds[0], '__len__'): bounds = (bounds,)
     bounds = asarray(bounds, dtype='float64').T # [(min,min,...),(max,max,...)]
     # convert None to -inf or inf
@@ -1295,7 +1303,8 @@ def impose_bounds(bounds, index=None, clip=True, nearest=True):
     ### bounds is a dict, index filters the dict
     ### keys of bounds are the index, if index=None apply to all
     ### *but* if bounds is given as list (of tuples), apply to seleted index
-    if isinstance(index, int): index = (index,)
+    from numbers import Integral
+    if isinstance(index, Integral): index = (index,)
     # bounds are list, index is tuple => {i:bounds} for each i in index
     if type(bounds) is not dict:
         if index is not None:
@@ -1463,7 +1472,8 @@ Examples:
   >>> squared([5.34, -.121, -4.11, 9.01, 11.3, -16.4])
   [16.892100000000003, 0.014641, 28.5156, 81.1801, 127.69000000000001, 268.96]
     """
-    if isinstance(index, int): index = (index,)
+    from numbers import Integral
+    if isinstance(index, Integral): index = (index,)
     index = [index]
 
     def _index(alist=None):
@@ -1604,7 +1614,8 @@ Examples:
     >>> doit([-1,-2,-3,-4])
     [-2, -2, -2, -3]
     """
-    offset = lambda i: (i if isinstance(i, int) else (i[0], lambda x:(x+i[1])))
+    from numbers import Integral
+    offset = lambda i: (i if isinstance(i, Integral) else (i[0], lambda x:(x+i[1])))
     return synchronized(dict((i,offset(j)) for (i,j) in mask.items()))
 
 

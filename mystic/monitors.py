@@ -172,7 +172,8 @@ example usage...
 
     def __getitem__(self, y):
         """x.__getitem__(y) <==> x[y]"""
-        if type(y) is int:
+        from numbers import Integral
+        if isinstance(y, Integral):
             return self.x[y],self.y[y]
         import copy
         m = copy.deepcopy(self)
@@ -205,7 +206,8 @@ example usage...
                 pass #XXX: CustomMonitor may fail...
         else:
             raise TypeError("'%s' is not a monitor instance" % y)
-        if type(i) is int:
+        from numbers import Integral
+        if isinstance(i, Integral):
             self._x[i:i+1] = y._x
             self._y[i:i+1] = y._y
             self._id[i:i+1] = y._id

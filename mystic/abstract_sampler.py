@@ -175,7 +175,7 @@ Notes:
   - If ``reset_all`` is True, reset all solvers if ``if_terminated`` is met.
   - If ``reset_all`` is False, similarly reset only the terminated solvers.
         """
-        if type(reset_all) is bool:
+        if repr(reset_all) in ('True','False'):
             s = self._sampler
             if if_terminated is None: # reset regardless
                 return self._sample(reset=(True if reset_all else None))#, **kwds)

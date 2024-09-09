@@ -167,7 +167,8 @@ def _process_ids(ids, n=None): #NOTE: n only needed when ids is single value
   """
   if ids is None:
     return [(i,) for i in range(n)] if n else None
-  if isinstance(ids, int):
+  from numbers import Integral
+  if isinstance(ids, Integral):
     return [(i,ids) for i in range(n)] if n else ids
   if not len(ids):
     return [(i,) for i in range(n)] if n else []

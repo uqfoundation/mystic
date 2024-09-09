@@ -156,10 +156,11 @@ class Plotter(object):
         ax = figure.axes[0] if figure.axes else plt.axes(**kwds)
         ax.autoscale(tight=True)
 
+        from numbers import Integral
         zdim = len(self.z[0]) if hasattr(self.z[0], '__len__') else 0
         if zdim == 0:
             pass
-        elif type(axis) is not int and zdim != 1:
+        elif (not isinstance(axis, Integral)) and (zdim != 1):
             msg = "axis should be an int in the range 0 to %s" % (zdim-1)
             raise ValueError(msg)
         x, z = self._downsample(maxpts)

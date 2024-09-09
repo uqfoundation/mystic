@@ -163,9 +163,10 @@ def _support_to_logfile(support, logfile=None): #.py -> .txt
     if not hasattr(ids, '__len__'): #XXX: ids is not 'processed'
         ids = [ids]*len(cost)
     id = max(set(ids)) or 0
-    if not isinstance(id, int): id = 0
+    from numbers import Integral
+    if not isinstance(id, Integral): id = 0
     m = [LoggingMonitor(filename=logfile) for i in range(id + 1)]
-    if ids is None or isinstance(ids, int):
+    if ids is None or isinstance(ids, Integral):
         [m[ids or 0](p,c,id=ids) for (p,c) in zip(params,cost)]
     elif id == 0: #NOTE: ids could be non-int
         [m[0](p,c,id=i) for (p,c,i) in zip(params,cost,ids)]
@@ -205,7 +206,8 @@ def _archive_to_logfile(archive, logfile=None, type=None, iter=False):
         params = list(list(k) for k in params)
         step = [i[-1] if len(i) == 2 else None for i in step]
         id = max(set(step)) or 0
-        if not isinstance(id, int): id = 0
+        from numbers import Integral
+        if not isinstance(id, Integral): id = 0
         m = [LoggingMonitor(filename=logfile) for i in range(id + 1)]
         if id == 0: #NOTE: ids could be non-int
             [m[i or 0](p,c,id=i) for (p,c,i) in zip(params,cost,step)]
@@ -659,7 +661,8 @@ if provided, ids are the list of 'run ids' to select
 
     # split (i,id) into iteration and id
     if step: #XXX: ignore non-intger ids
-        multinode = len(step[0]) - 1 if isinstance(step[0][-1], int) else 0
+        from numbers import Integral
+        multinode = len(step[0]) - 1 if isinstance(step[0][-1], Integral) else 0
     else: multinode = 0 #XXX: no step info, so give up
     if multinode: id = [(i[1] or 0) for i in step]
     else: id = [0 for i in step] #FIXME: hardwired to 0
@@ -1150,7 +1153,7 @@ Notes:
 
             if isinstance(reduce, _Callable): _reducer, reduce = reduce, None
             if isinstance(kernel, _Callable): _kernel, kernel = kernel, None
-            if isinstance(out, bool): _out, out = out, None
+            if repr(out) in ('True', 'False'): _out, out = out, None
 
         # special case: model passed as model instance
        #model.__doc__.split('using::')[1].split()[0].strip()
@@ -1545,7 +1548,7 @@ Notes:
             label = kwds.get('label', None)
             col = kwds.get('col', None)
 
-            if isinstance(out, bool): _out, out = out, None
+            if repr(out) in ('True', 'False'): _out, out = out, None
 
             # process "commandline" arguments
             cmdargs = ''
@@ -1670,7 +1673,8 @@ Notes:
 
     # split (i,id) into iteration and id
     if step: #XXX: ignore non-intger ids
-      multinode = len(step[0]) - 1 if isinstance(step[0][-1], int) else 0
+      from numbers import Integral
+      multinode = len(step[0]) - 1 if isinstance(step[0][-1], Integral) else 0
     else: multinode = 0 #XXX: no step info, so give up
     iter = [i[0] for i in step]
     if multinode:
@@ -1813,7 +1817,7 @@ Notes:
             nid = kwds.get('nid', None)
             param = kwds.get('param', None)
 
-            if isinstance(out, bool): _out, out = out, None
+            if repr(out) in ('True', 'False'): _out, out = out, None
 
             # process "commandline" arguments
             cmdargs = ''
@@ -1919,8 +1923,9 @@ Notes:
       select = [':']
 
     # ensure all terms of select have a ":"
+    from numbers import Integral
     for i in range(len(select)):
-      if isinstance(select[i], int): select[i] = str(select[i])
+      if isinstance(select[i], Integral): select[i] = str(select[i])
       if select[i] == '-1': select[i] = 'len(params)-1:len(params)'
       elif not select[i].count(':'):
         select[i] += ':' + str(int(select[i])+1)
@@ -1964,7 +1969,7 @@ Notes:
 
     # split (i,id) into iteration and id
     if step: #XXX: ignore non-intger ids
-      multinode = len(step[0]) - 1 if isinstance(step[0][-1], int) else 0
+      multinode = len(step[0]) - 1 if isinstance(step[0][-1], Integral) else 0
     else: multinode = 0 #XXX: no step info, so give up
     iter = [i[0] for i in step]
     if multinode:

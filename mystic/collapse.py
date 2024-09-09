@@ -108,6 +108,7 @@ def collapse_weight(stepmon, tolerance=0.005, generations=50, mask=None):
     mask format is dict of {measure: indices}, with alternate formatting
     available as a set of tuples of (measure,index).
     ''' #XXX: not mentioned, 'where' format also available
+    from numbers import Integral
     np = _m.numpy
     # reject bad masks
     if mask is None: pass
@@ -116,12 +117,12 @@ def collapse_weight(stepmon, tolerance=0.005, generations=50, mask=None):
             if not hasattr(i, '__len__') or len(i) != 2:
                 msg = "bad element '%s' in mask" % str(i)
                 raise ValueError(msg)
-            if type(i[0]) is not int or type(i[1]) is not int:
+            if not isinstance(i[0], Integral) or not isinstance(i[1], Integral):
                 msg = "bad element '%s' in mask" % str(i)
                 raise ValueError(msg)
     elif type(mask) is dict:
         for (i,j) in mask.items():
-            if type(j) is not set or type(i) is not int:
+            if type(j) is not set or not isinstance(i, Integral):
                 msg = "bad entry '%s:%s' in mask" % (str(i),str(j))
                 raise ValueError(msg)
             for k in j: # items in the set
@@ -166,13 +167,14 @@ def collapse_position(stepmon, tolerance=0.005, generations=50, mask=None):
     ''' #XXX: not mentioned, 'where' format also available
     np = _m.numpy
     # reject bad masks
+    from numbers import Integral
     if mask is None: pass
     elif type(mask) is set:
         for i in mask:
             if not hasattr(i, '__len__') or len(i) != 2:
                 msg = "bad element '%s' in mask" % str(i)
                 raise ValueError(msg)
-            if type(i[0]) is not int:
+            if not isinstance(i[0], Integral):
                 msg = "bad element '%s' in mask" % str(i)
                 raise ValueError(msg)
             if np.array(i[1], dtype=object).ndim != 1:
@@ -180,7 +182,7 @@ def collapse_position(stepmon, tolerance=0.005, generations=50, mask=None):
                 raise ValueError(msg)
     elif type(mask) is dict:
         for (i,j) in mask.items():
-            if type(j) is not set or type(i) is not int:
+            if type(j) is not set or not isinstance(i, Integral):
                 msg = "bad entry '%s:%s' in mask" % (str(i),str(j))
                 raise ValueError(msg)
             for k in j: # items in the set
@@ -253,13 +255,14 @@ def collapse_cost(stepmon, clip=False, limit=1.0, samples=50, mask=None):
     # collapse if cost of npts is more than limit from current min
     np = _m.numpy
     # reject bad masks
+    from numbers import Integral
     if mask is None: pass
     elif type(mask) is dict:
         for (i,j) in mask.items():
             if i is None and len(mask) != 1: # {None:..., 0:...}
                 msg = "%s is not a valid mask" % str(mask)
                 raise ValueError(msg)
-            elif (type(i) is not int and i is not None) or not hasattr(j, '__len__') or not len(j): # not({None:...} or {0:..., 1:...}) and not ([] or ())
+            elif (not isinstance(i, Integral) and i is not None) or not hasattr(j, '__len__') or not len(j): # not({None:...} or {0:..., 1:...}) and not ([] or ())
                 msg = "bad entry '%s:%s' in mask" % (str(i),str(j))
                 raise ValueError(msg)
             # j has length: [(1,2),...] or (1,2)
@@ -269,11 +272,11 @@ def collapse_cost(stepmon, clip=False, limit=1.0, samples=50, mask=None):
                         msg = "bad entry '%s:%s' in mask" % (str(i),str(j))
                         raise ValueError(msg)
                     for l in k:
-                        if type(l) not in (int, float): #XXX: numpy int/float?
+                        if not isinstance(l, (Integral, float)): #XXX: bool?
                             msg = "bad entry '%s:%s' in mask" % (str(i),str(j))
                             raise ValueError(msg)
                 else:
-                    if type(k) not in (int, float): #XXX: numpy int/float?
+                    if not isinstance(k, (Integral, float)): #XXX: bool?
                         msg = "bad entry '%s:%s' in mask" % (str(i),str(j))
                         raise ValueError(msg)
     #XXX: does not accept list or tuple, only accepts a dict
@@ -335,8 +338,9 @@ def collapse_cost(stepmon, clip=False, limit=1.0, samples=50, mask=None):
 def _split_mask(mask):
     '''separate a mask into a list of ints and list of tuples (pairs).
     mask should be composed of indices and pairs of indices'''
+    from numbers import Integral
     tuples = []
-    return [i for i in mask if type(i) is int or tuples.append(i)], tuples
+    return [i for i in mask if isinstance(i, Integral) or tuples.append(i)], tuples
 
 def _pair_selector(mask):
     '''generate a selector for a mask of tuples (pairs)'''

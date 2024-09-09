@@ -105,9 +105,11 @@ class Surface(object): #FIXME: should be subclass of Interpolator (?)
           None
         """
         from mystic.monitors import Monitor
-        if type(min) is bool: self._minmon = Monitor() if min else None
+        if repr(min) in ('True','False'):
+            self._minmon = Monitor() if min else None
         elif min is not None: self._minmon = min
-        if type(max) is bool: self._maxmon = Monitor() if max else None
+        if repr(max) in ('True','False'):
+            self._maxmon = Monitor() if max else None
         elif max is not None: self._maxmon = max
         return
 
@@ -123,9 +125,11 @@ class Surface(object): #FIXME: should be subclass of Interpolator (?)
           None
         """
         from klepto.archives import dict_archive as d
-        if type(min) is bool: self._minarch = d(cached=False) if min else None
+        if repr(min) in ('True','False'):
+            self._minarch = d(cached=False) if min else None
         elif min is not None: self._minarch = min
-        if type(max) is bool: self._maxarch = d(cached=False) if max else None
+        if repr(max) in ('True','False'):
+            self._maxarch = d(cached=False) if max else None
         elif max is not None: self._maxarch = max
         return
 

@@ -129,7 +129,8 @@ Important class members::
         self._npts            = npts
         nbins = kwds['nbins'] if 'nbins' in kwds else None
         self._nbins           = nbins
-        if isinstance(nbins, int):
+        from numbers import Integral
+        if isinstance(nbins, Integral):
             self._npts = nbins
         elif nbins is None:
             pass # nbins = [1]*dim

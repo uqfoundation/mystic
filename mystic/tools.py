@@ -845,7 +845,8 @@ def measure_indices(npts):
 
 def select_params(params, index):
     """get params for the given indices as a tuple of index,values"""
-    if isinstance(index, int): index = (index,)
+    from numbers import Integral
+    if isinstance(index, Integral): index = (index,)
     try: # was passed a solver instance
         params = params.bestSolution
     except AttributeError:

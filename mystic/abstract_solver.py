@@ -366,7 +366,7 @@ note::
         clip = kwds['clip'] if 'clip' in kwds else None
         if clip is None: # tight in (True, False, None)
             args = dict(symbolic=True) if tight else dict()
-        elif tight is False: # clip in (True, False)
+        elif repr(tight) == 'False': # clip in (True, False)
             raise ValueError('can not specify clip when tight is False')
         else: # tight in (True, None)
             args = dict(symbolic=False, clip=clip)
@@ -374,7 +374,7 @@ note::
         self._useTightRange = tight
         self._useClipRange = clip
 
-        if min is False or max is False:
+        if repr(min) == 'False' or repr(max) == 'False':
             self._useStrictRange = False
             self._strictbounds = self._boundsconstraints(**args)
             return self._update_objective()
