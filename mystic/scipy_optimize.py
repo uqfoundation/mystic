@@ -692,11 +692,14 @@ Notes:
             fx2 = squeeze(cost(x2))
 
             if (fx > fx2):
-                t = 2.0*(fx+fx2-2.0*fval)
-                temp = (fx-fval-delta)
-                t *= temp*temp
-                temp = fx-fx2
-                t -= delta*temp*temp
+                import warnings
+                with warnings.catch_warnings():
+                    warnings.filterwarnings('ignore', category=RuntimeWarning)
+                    t = 2.0*(fx+fx2-2.0*fval)
+                    temp = (fx-fval-delta)
+                    t *= temp*temp
+                    temp = fx-fx2
+                    t -= delta*temp*temp
                 if t < 0.0:
                     fval, x, direc1 = _linesearch_powell(cost, x, direc1, tol=xtol*100, maxiter=imax)
                     direc[bigind] = direc[-1]
