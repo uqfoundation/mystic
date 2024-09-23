@@ -22,7 +22,7 @@ matrix:
         - python: '3.12'
           env:
 
-        - python: '3.13'
+        - python: '3.13-dev'
           env:
             - CYTHON="true" # numpy source build
             - DILL="master"
