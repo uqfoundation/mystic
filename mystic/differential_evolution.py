@@ -688,7 +688,7 @@ Args:
         one for each parameter.
     ftol (float, default=5e-3): acceptable relative error in ``cost(xopt)``
         for convergence.
-    gtol (float, default=None): maximum iterations to run without improvement.
+    gtol (int, default=None): maximum iterations to run without improvement.
     maxiter (int, default=None): the maximum number of iterations to perform.
     maxfun (int, default=None): the maximum number of function evaluations.
     cross (float, default=0.9): the probability of cross-parameter mutations.
@@ -753,7 +753,7 @@ Args:
         one for each parameter.
     ftol (float, default=5e-3): acceptable relative error in ``cost(xopt)``
         for convergence.
-    gtol (float, default=None): maximum iterations to run without improvement.
+    gtol (int, default=None): maximum iterations to run without improvement.
     maxiter (int, default=None): the maximum number of iterations to perform.
     maxfun (int, default=None): the maximum number of function evaluations.
     cross (float, default=0.9): the probability of cross-parameter mutations.

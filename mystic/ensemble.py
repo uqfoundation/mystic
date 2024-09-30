@@ -166,7 +166,7 @@ Args:
         one for each parameter.
     ftol (float, default=1e-4): acceptable relative error in ``cost(xopt)``
         for convergence.
-    gtol (float, default=10): maximum iterations to run without improvement.
+    gtol (int, default=10): maximum iterations to run without improvement.
     maxiter (int, default=None): the maximum number of iterations to perform.
     maxfun (int, default=None): the maximum number of function evaluations.
     full_output (bool, default=False): True if fval and warnflag are desired.
@@ -296,7 +296,7 @@ Args:
         one for each parameter.
     ftol (float, default=1e-4): acceptable relative error in ``cost(xopt)``
         for convergence.
-    gtol (float, default=10): maximum iterations to run without improvement.
+    gtol (int, default=10): maximum iterations to run without improvement.
     maxiter (int, default=None): the maximum number of iterations to perform.
     maxfun (int, default=None): the maximum number of function evaluations.
     full_output (bool, default=False): True if fval and warnflag are desired.
@@ -426,7 +426,7 @@ Args:
         one for each parameter.
     ftol (float, default=1e-4): acceptable relative error in ``cost(xopt)``
         for convergence.
-    gtol (float, default=10): maximum iterations to run without improvement.
+    gtol (int, default=10): maximum iterations to run without improvement.
     rtol (float, default=None): minimum acceptable distance from other points.
     maxiter (int, default=None): the maximum number of iterations to perform.
     maxfun (int, default=None): the maximum number of function evaluations.
