@@ -208,9 +208,10 @@ def ChangeOverGeneration(tolerance=1e-6, generations=30):
         hist = inst.energy_history
         lg = len(hist)
         if not lg: return info(null)
-        if lg <= generations: return info(null)
-        if (hist[-generations]-hist[-1]) <= tolerance: return info(doc)
-        if (hist[-generations] == hist[-1]): return info(doc)
+        gens = 0 if generations is None else int(generations) #NOTE: floor
+        if lg <= gens: return info(null)
+        if (hist[-gens]-hist[-1]) <= tolerance: return info(doc)
+        if (hist[-gens] == hist[-1]): return info(doc)
         return info(null)
     _ChangeOverGeneration.__doc__ = doc
     return _ChangeOverGeneration
@@ -229,10 +230,11 @@ def NormalizedChangeOverGeneration(tolerance=1e-4, generations=10):
         hist = inst.energy_history
         lg = len(hist)
         if not lg: return info(null)
-        if lg <= generations: return info(null)
-        if (hist[-generations] == hist[-1]): return info(doc)
-        diff = tolerance*(abs(hist[-generations])+abs(hist[-1])) + eta
-        if 2.0*(hist[-generations]-hist[-1]) <= diff: return info(doc)
+        gens = 0 if generations is None else int(generations) #NOTE: floor
+        if lg <= gens: return info(null)
+        if (hist[-gens] == hist[-1]): return info(doc)
+        diff = tolerance*(abs(hist[-gens])+abs(hist[-1])) + eta
+        if 2.0*(hist[-gens]-hist[-1]) <= diff: return info(doc)
         return info(null)
     _NormalizedChangeOverGeneration.__doc__ = doc
     return _NormalizedChangeOverGeneration
@@ -302,13 +304,14 @@ def NormalizedCostTarget(fval=None, tolerance=1e-6, generations=30):
         hist = inst.energy_history
         lg = len(hist)
         if not lg: return info(null)
-        if generations and fval is None:
+        gens = 0 if generations is None else int(generations) #NOTE: floor
+        if gens and fval is None:
             #XXX: throws error when hist is shorter than generations ?
-            if lg > generations and ((hist[-generations]-hist[-1]) <= 0 or \
-                                     (hist[-generations] == hist[-1])):
+            if lg > gens and ((hist[-gens]-hist[-1]) <= 0 or \
+                                     (hist[-gens] == hist[-1])):
                 return info(doc)
             return info(null)
-        if not generations and fval is None: return info(doc)
+        if not gens and fval is None: return info(doc)
         if abs(hist[-1]-fval) <= abs(tolerance * fval): return info(doc)
         return info(null)
     _NormalizedCostTarget.__doc__ = doc
@@ -329,9 +332,10 @@ or cost of last iteration is < ftol from target:
         hist = inst.energy_history
         lg = len(hist)
         if not lg: return info(null)
+        gens = 0 if generations is None else int(generations) #NOTE: floor
         #XXX: throws error when hist is shorter than generations ?
-        if (lg > generations and ((hist[-generations]-hist[-1]) <= gtol or \
-                                  (hist[-generations] == hist[-1]))) or \
+        if (lg > gens and ((hist[-gens]-hist[-1]) <= gtol or \
+                                  (hist[-gens] == hist[-1]))) or \
            ( abs(hist[-1] - target) <= ftol ): return info(doc)
         return info(null)
     _VTRChangeOverGeneration.__doc__ = doc
