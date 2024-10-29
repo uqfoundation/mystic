@@ -22,7 +22,10 @@ matrix:
         - python: '3.12'
           env:
 
-        - python: '3.13-dev'
+        - python: '3.13'
+          env:
+
+        - python: '3.14-dev'
           env:
             - CYTHON="true" # numpy source build
             - DILL="master"
@@ -38,6 +41,7 @@ matrix:
           env:
 
     allow_failures:
+        - python: '3.14-dev' # CI missing
         - python: 'pypy3.10-7.3.17' # CI missing
     fast_finish: true
 
