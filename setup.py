@@ -146,9 +146,3 @@ except ImportError:
     print("    %s (optional)" % pathos_version)
     print("    %s (optional)" % pyina_version)
     print("***********************************************************\n")
-
-
-if __name__=='__main__':
-    pass
-
-# end of file
