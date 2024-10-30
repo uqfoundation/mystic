@@ -52,10 +52,13 @@ if __name__ == '__main__':
     tp = pre.PolynomialFeatures(degree=3)
     e = lin.LinearRegression()
 
-    # train and score, then test and score
-    xtrain_ = tp.fit_transform(ta.fit_transform(xtrain))
-    assert 1.0 == e.fit(xtrain_, target).score(xtrain_, target)
-    xtest_ = tp.fit_transform(ta.fit_transform(xtest))
-    assert 1 - e.score(xtest_, test) <= 1e-2
+    # build a pipeline, then train
+    from sklearn.pipeline import Pipeline
+    pipe = Pipeline([('ta', ta), ('tp', tp), ('e', e)])
+    pipe = pipe.fit(xtrain, target)
+
+    # get training score and test score
+    assert 1.0 == pipe.score(xtrain, target)
+    assert 1 - pipe.score(xtest, test) <= 1e-2
 
 # EOF
