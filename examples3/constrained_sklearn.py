@@ -30,10 +30,11 @@ def model(x):
   x0,x1,x2,x3 = x
   return a*x3**3 + b*x2**2 + c*x1 + d*x0
 
-# generate some sparse data
+# generate some sparse training data
 xtrain = np.random.uniform(0,100, size=(10,4))
 target = model(xtrain.T).T
-xtest = np.random.uniform(0,100, size=(10,4))
+# generate sparse test data outside the training region
+xtest = np.random.uniform(100,200, size=(10,4))
 test = model(xtest.T).T
 
 # define some model constraints
