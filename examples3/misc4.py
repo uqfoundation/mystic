@@ -30,12 +30,11 @@ param = dict(solver=DifferentialEvolutionSolver2,
 # kwds for sampling
 kwds = dict(npts=500, ipts=4, itol=1e-8, iter=5)
 
-from mystic.math.discrete import product_measure
-from mystic.math import almostEqual as almost
 from mystic.constraints import and_, integers, sorting
 from mystic.coupler import outer, additive
 from emulators import cost4, x4, bounds4, error4, wR
-from mystic import suppressed
+from ouq_misc import flatten, unflatten, normalize_moments, constrained, check,
+                     constrain_moments, constrain_expected, constrained_out
 
 # lower and upper bound for parameters and weights
 xlb, xub = zip(*bounds4)
@@ -73,98 +72,6 @@ o_ave_err = None
 o_var_err = None
 
 
-def flatten(npts):
-    'convert a moment constraint to a "flattened" constraint'
-    def dec(f):
-        #@suppressed(1e-3)
-        def func(rv):
-            c = product_measure().load(rv, npts)
-            c = f(c)
-            return c.flatten()
-        return func
-    return dec
-
-
-def unflatten(npts):
-    'convert a "flattened" constraint to a moment constraint'
-    def dec(f):
-        def func(c):
-            rv = c.flatten()
-            rv = f(rv)
-            return product_measure().load(rv, npts)
-        return func
-    return dec
-
-
-def normalize_moments(mass=1.0, tol=1e-18, rel=1e-7):
-    'normalize (using weights) on all measures'
-    def func(c):
-        for measure in c:
-            if not almost(float(measure.mass), mass, tol=tol, rel=rel):
-                measure.normalize()
-        return c
-    return func
-
-
-def constrain_moments(ave=None, var=None, ave_err=None, var_err=None, idx=0):
-    'impose mean and variance constraints on the selected measure'
-    if ave is None: ave = float('nan')
-    if var is None: var = float('nan')
-    if ave_err is None: ave_err = 0
-    if var_err is None: var_err = 0
-    def func(c):
-        E = float(c[idx].mean)
-        if E > (ave + ave_err) or E < (ave - ave_err):
-            c[idx].mean = ave
-        E = float(c[idx].var)
-        if E > (var + var_err) or E < (var - var_err):
-            c[idx].var = var
-        return c
-    return func
-
-
-@integers(ints=float, index=index)
-def integer_indices(rv):
-    'constrain parameters at given index(es) to be ints'
-    return rv
-
-
-def constrained_integers(index=()):
-    'check integer constraint is properly applied'
-    def func(rv):
-        return all(int(j) == j for i,j in enumerate(rv) if i in index)
-    return func
-
-
-def constrained(ave=None, var=None, ave_err=None, var_err=None, idx=0, debug=False):
-    'check mean and variance on the selected measure are properly constrained'
-    if ave is None: ave = float('nan')
-    if var is None: var = float('nan')
-    if ave_err is None: ave_err = 0
-    if var_err is None: var_err = 0
-    def func(c):
-        E = float(c[idx].mean)
-        if E > (ave + ave_err) or E < (ave - ave_err):
-            if debug: print("skipping mean: %s" % E)
-            return False
-        E = float(c[idx].var)
-        if E > (var + var_err) or E < (var - var_err):
-            if debug: print("skipping var: %s" % E)
-            return False
-        return True
-    return func
-
-
-def check(npts):
-    'convert a moment check to a "flattened" check'
-    def dec(f):
-        def func(rv):
-            c = product_measure().load(rv, npts)
-            return f(c)
-        return func
-    return dec
-
-
 # build a model representing 'truth' F(x)
 from ouq_models import WrapModel
 nx = 4; ny = None
@@ -174,6 +81,9 @@ model = WrapModel('model', cost4, **nargs)
 
 # set the bounds
 bnd = MeasureBounds(xlb, xub, n=npts, wlb=wlb, wub=wub)
+
+# constrain parameters at given index(es) to be ints
+integer_indices = integers(ints=float, index=index)(lambda rv: rv)
 
 ## moment-based constraints ##
 normcon = normalize_moments()

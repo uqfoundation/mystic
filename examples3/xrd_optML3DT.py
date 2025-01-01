@@ -17,9 +17,15 @@ from mystic.cache.archive import file_archive, read as get_db
 from ouq_models import WrapModel, LearnedModel
 from emulators import cost3 as cost, x3 as target, bounds3 as bounds
 
-# remove any prior cached evaluations of truth (i.e. an 'expensive' model)
-if os.path.exists("truth.db"):
-    os.remove("truth.db")
+# prepare truth (i.e. an 'expensive' model)
+nx = 3; ny = None
+archive = get_db('truth.db', type=file_archive)
+truth = WrapModel("truth", cost, nx=nx, ny=ny, cached=archive)
+
+# remove any prior cached evaluations of truth
+archive.clear(); archive.sync(clear=True)
+if os.path.exists("error.txt"): os.remove("error.txt")
+if os.path.exists("log.txt"): os.remove("log.txt")
 
 try: # parallel maps
     from pathos.maps import Map
@@ -29,8 +35,6 @@ except ImportError:
     pmap = None
 
 # generate a dataset by sampling truth
-archive = get_db('truth.db', type=file_archive)
-truth = WrapModel("truth", cost, nx=3, ny=None, cached=archive)
 data = truth.sample(bounds, pts=[2, 1, 1], map=pmap)
 
 # shutdown mapper
@@ -54,13 +58,13 @@ kwds = dict(estimator=DTRegressor(**args), transform=None)
 dtr = Estimator(**kwds)
 best = improve_score(dtr, MLData(data.coords, data.coords, data.values, data.values), tries=10, verbose=True)
 mlkw = dict(estimator=best.estimator, transform=best.transform)
-surrogate = LearnedModel('surrogate', nx=3, ny=None, data=truth, **mlkw)
+surrogate = LearnedModel('surrogate', nx=nx, ny=ny, data=truth, **mlkw)
 
 # iterate until error (of candidate minimum) < 1e-3
 tracker = LoggingMonitor(1, filename='error.txt', label='error')
 from mystic.abstract_solver import AbstractSolver
 from mystic.termination import VTR
-loop = AbstractSolver(3) # nx
+loop = AbstractSolver(nx)
 loop.SetTermination(VTR(1e-3)) #XXX: VTRCOG, TimeLimits, etc?
 loop.SetEvaluationLimits(maxiter=500)
 loop.SetGenerationMonitor(tracker)
@@ -76,6 +80,8 @@ while not loop.Terminated():
     # evaluate truth at the same input as the surrogate minimum
     xnew = results[0].tolist()
     ynew = truth(xnew)
+    # add most recent candidate minimum evaluated with truth to database
+    data.append(datapoint(xnew, value=ynew))
 
     # compute absolute error between truth and surrogate at candidate minimum
     ysur = results[1]
@@ -85,13 +91,10 @@ while not loop.Terminated():
     print("evaluations of truth: %s" % len(data))
 
     # save to tracker if less than current best
-    if len(tracker) and tracker.y[-1] < error:
+    ysave = error # track error when learning surrogate
+    if len(tracker) and tracker.y[-1] < ysave:
         tracker(*tracker[-1])
-    else: tracker(xnew, error)
-
-    # add most recent candidate minimum evaluated with truth to database
-    pt = datapoint(xnew, value=ynew)
-    data.append(pt)
+    else: tracker(xnew, ysave)
 
 # get the results at the best parameters from the truth database
 xbest = tracker[-1][0]

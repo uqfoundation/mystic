@@ -7,24 +7,24 @@
 #
 # adapted from XRD example at: https://spotlight.readthedocs.io/
 """
-optimization of 3-input cost function using online learning of a surrogate
+optimization of 4-input cost function using online learning of a surrogate
 """
 import os
 from mystic.solvers import diffev2
 from mystic.monitors import LoggingMonitor
 from mystic.math.legacydata import datapoint
 from mystic.cache.archive import file_archive, read as get_db
-from ouq_models import WrapModel, LearnedModel
-from emulators import cost3 as cost, x3 as target, bounds3 as bounds
+from ouq_models import WrapModel, InterpModel
+from emulators import cost4 as cost, x4 as target, bounds4 as bounds
 
 # prepare truth (i.e. an 'expensive' model)
-nx = 3; ny = None
+nx = 4; ny = None
 archive = get_db('truth.db', type=file_archive)
 truth = WrapModel("truth", cost, nx=nx, ny=ny, cached=archive)
 
 # remove any prior cached evaluations of truth
 archive.clear(); archive.sync(clear=True)
-if os.path.exists("error.txt"): os.remove("error.txt")
+if os.path.exists("truth.txt"): os.remove("truth.txt")
 if os.path.exists("log.txt"): os.remove("log.txt")
 
 try: # parallel maps
@@ -35,35 +35,24 @@ except ImportError:
     pmap = None
 
 # generate a dataset by sampling truth
-data = truth.sample(bounds, pts=[2, 1, 1], map=pmap)
+data = truth.sample(bounds, pts=[2, 1, 1, 1], map=pmap)
 
 # shutdown mapper
 if pmap is not None:
     pmap.close(); pmap.join(); pmap.clear()
 
 # create an inexpensive surrogate for truth
-args = dict(alpha=1e-10, optimizer=None, n_restarts_optimizer=0)
-#args['optimizer'] = 'fmin_l_bfgs_b'
-kargs = dict(length_scale=1.0, length_scale_bounds=(1e-05, 100000.0))
-wargs = dict(noise_level=1.0, noise_level_bounds=(1e-05, 100000.0))
-from sklearn.gaussian_process import GaussianProcessRegressor as GPRegressor
-from sklearn.gaussian_process.kernels import RBF, WhiteKernel
-from sklearn.preprocessing import StandardScaler
-from ml import Estimator, MLData, improve_score
-args['kernel'] = RBF(**kargs)#+ WhiteKernel(**wargs) #XXX: use if noisy
-kwds = dict(estimator=GPRegressor(**args), transform=StandardScaler())
-# iteratively improve estimator
-gpr = Estimator(**kwds)
-best = improve_score(gpr, MLData(data.coords, data.coords, data.values, data.values), tries=10, verbose=True)
-mlkw = dict(estimator=best.estimator, transform=best.transform)
-surrogate = LearnedModel('surrogate', nx=nx, ny=ny, data=truth, **mlkw)
+surrogate = InterpModel("surrogate", nx=nx, ny=ny, data=truth, smooth=0.0,
+                        noise=0.0, method="thin_plate", extrap=False)
 
-# iterate until error (of candidate minimum) < 1e-3
-tracker = LoggingMonitor(1, filename='error.txt', label='error')
+# iterate until change in truth <= 1e-3 for 5 iterations
+import mystic._counter as it
+counter = it.Counter()
+tracker = LoggingMonitor(1, filename='truth.txt', label='truth')
 from mystic.abstract_solver import AbstractSolver
-from mystic.termination import VTR
+from mystic.termination import ChangeOverGeneration as COG
 loop = AbstractSolver(nx)
-loop.SetTermination(VTR(1e-3)) #XXX: VTRCOG, TimeLimits, etc?
+loop.SetTermination(COG(1e-3, 5)) #XXX: VTRCOG, TimeLimits, etc?
 loop.SetEvaluationLimits(maxiter=500)
 loop.SetGenerationMonitor(tracker)
 while not loop.Terminated():
@@ -72,8 +61,10 @@ while not loop.Terminated():
     surrogate.fit(data=data)
 
     # find the minimum of the surrogate
-    results = diffev2(lambda x: surrogate(x), bounds, npop=20,
-                      bounds=bounds, gtol=500, full_output=True)
+    results = diffev2(lambda x: surrogate(x), bounds, npop=20, gtol=500,
+                      ftol=1e-6, maxiter=8000, maxfun=1e6, map=None,
+                      itermon=LoggingMonitor(1, label='output'), disp=False,
+                      bounds=bounds, full_output=True, id=counter.count())
 
     # evaluate truth at the same input as the surrogate minimum
     xnew = results[0].tolist()
@@ -89,7 +80,7 @@ while not loop.Terminated():
     print("evaluations of truth: %s" % len(data))
 
     # save to tracker if less than current best
-    ysave = error # track error when learning surrogate
+    ysave = ynew # track ynew when learning minimum
     if len(tracker) and tracker.y[-1] < ysave:
         tracker(*tracker[-1])
     else: tracker(xnew, ysave)
@@ -97,9 +88,9 @@ while not loop.Terminated():
 # get the results at the best parameters from the truth database
 xbest = tracker[-1][0]
 ybest = archive[tuple(xbest)]
-
+    
 # print the best parameters
-print(f"Best solution is {xbest} with beta {ybest}")
+print(f"Best solution is {xbest} with Rwp {ybest}")
 print(f"Reference solution: {target}")
 ratios = [x / y for x, y in zip(target, xbest)]
 print(f"Ratios of best to reference solution: {ratios}")
