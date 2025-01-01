@@ -26,7 +26,7 @@ truth = WrapModel('truth', cost, nx=nx, ny=ny, cached=False)#archive)
 # remove any prior cached evaluations of truth
 import shutil
 if os.path.exists("truth"): shutil.rmtree("truth")
-if os.path.exists("error.txt"): os.remove("error.txt")
+if os.path.exists("truth.txt"): os.remove("truth.txt")
 if os.path.exists("log.txt"): os.remove("log.txt")
 
 try: # parallel maps
@@ -47,16 +47,16 @@ if pmap is not None:
 surrogate = InterpModel("surrogate", nx=nx, ny=ny, data=truth, smooth=0.0,
                         noise=0.0, method="thin_plate", extrap=False)
 
-# iterate until error (of candidate minimum) < 1e-3
+# iterate until change in truth <= 1e-3 for 5 iterations
 N = 4
 import numpy as np
 import mystic._counter as it
 counter = it.Counter()
-tracker = LoggingMonitor(1, filename='error.txt', label='error')
+tracker = LoggingMonitor(1, filename='truth.txt', label='truth')
 from mystic.abstract_solver import AbstractSolver
-from mystic.termination import VTR
+from mystic.termination import ChangeOverGeneration as COG
 loop = AbstractSolver(nx)
-loop.SetTermination(VTR(1e-3)) #XXX: VTRCOG, TimeLimits, etc?
+loop.SetTermination(COG(1e-3, 5)) #XXX: VTRCOG, TimeLimits, etc?
 loop.SetEvaluationLimits(maxiter=500)
 loop.SetGenerationMonitor(tracker)
 while not loop.Terminated():
@@ -88,7 +88,7 @@ while not loop.Terminated():
     print("evaluations of truth: %s" % len(data))
 
     # save to tracker if less than current best
-    ysave = error # track error when learning surrogate
+    ysave = ytrue # track ytrue when learning minimum
     if len(tracker) and tracker.y[-1] < ysave[idx]:
         tracker(*tracker[-1])
     else: tracker(xdata[idx], ysave[idx])
