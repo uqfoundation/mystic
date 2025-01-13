@@ -205,7 +205,8 @@ Returns:
        #evalmon = Monitor()
        #maxiter = 1000
        #maxfun = 1e+6
-        solver = solver(self.nDim)
+        NP = getattr(solver, 'NP', None) #HACK: if solver has NP, use it
+        solver = solver(self.nDim) if NP is None else solver(self.nDim, NP)
         solver.SetRandomInitialPoints() #FIXME: set population; will override
         if self._useStrictRange: #XXX: always, settable, or sync'd ?
             solver.SetStrictRanges(min=self._strictMin, \
