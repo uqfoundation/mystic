@@ -46,7 +46,15 @@ Args:
 
         # apply additional kwds
         solver = self._kwds['solver']
-        if solver is not None: s.SetNestedSolver(solver)
+        if solver is not None:
+            if not hasattr(solver, 'nPop'):
+                #HACK: add NP attribute if NP provided
+                NP = self._kwds['NP']
+                solver.NP = NP
+            elif 'NP' in kwds:
+                msg = "cannot modify 'nPop' for configured solver"
+                raise NotImplementedError(msg)
+            s.SetNestedSolver(solver)
         s.id = self._kwds['id']
         s.SetDistribution(self._kwds['dist'])
         s.SetEvaluationLimits(self._kwds['maxiter'], self._kwds['maxfun'])
