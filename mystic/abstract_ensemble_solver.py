@@ -169,7 +169,7 @@ Important class members::
         """total number of iterations"""
         return sum(self._all_iters)
 
-    def SetNestedSolver(self, solver):
+    def SetNestedSolver(self, solver, **kwds):
         """set the nested solver
 
 Args:
@@ -179,6 +179,14 @@ Returns:
     None
         """
         self._solver = solver
+        #HACK: add NP attribute if NP provided
+        if 'NP' in kwds:
+            from mystic.abstract_solver import AbstractSolver
+            if AbstractSolver in getattr(solver, 'mro', lambda:())():
+                solver.NP = kwds['NP']
+            else:
+                msg = "solver got an unexpected keyword argument 'NP'"
+                raise TypeError(msg)
         return
 
     def __get_solver_instance(self, reset=False):
