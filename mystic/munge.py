@@ -115,7 +115,7 @@ def logfile_reader(filename, iter=False):
   contents = file.split("\n")
   # parse file contents to get (i,id), cost, and parameters
   step = []; cost = []; param = [];
-  locals_ = locals.copy()
+  locals_ = locals().copy()
   for line in contents[:-1]:
     if line.startswith(("#","inf =","nan =")): pass
     else:
