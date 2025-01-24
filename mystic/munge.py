@@ -107,7 +107,8 @@ def logfile_reader(filename, iter=False):
   If iter=True, returns tuple of (iter, params, energy), as defined above.
   If iter=False, returns tuple of (params, energy).
   """
-  from numpy import inf, nan
+  import numpy as np
+  inf, nan = np.inf, np.nan
   f = open(filename,"r")
   file = f.read()
   f.close()
