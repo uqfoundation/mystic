@@ -193,6 +193,10 @@ example usage...
             m._x = self._x[y]
             m._y = self._y[y]
             m._id = self._id[y]
+        # copy other internals
+        m.k = self.k
+        m.label = self.label
+        m._npts = self._npts
         return m
 
     def __setitem__(self, i, y):
@@ -415,6 +419,13 @@ input parameters 'x' every 'xinterval'.
             if id is not None: msg = "[id: %s] " % (id) + msg
             print(msg)
         return
+    def __getitem__(self, y):
+        """x.__getitem__(y) <==> x[y]"""
+        m = super(VerboseMonitor,self).__getitem__(y)
+        if hasattr(m, '_yinterval'): m._yinterval = self._yinterval
+        if hasattr(m, '_xinterval'): m._xinterval = self._xinterval
+        if hasattr(m, '_all'): m._all = self._all
+        return m
     pass
 
 class LoggingMonitor(Monitor):
@@ -491,6 +502,15 @@ Logs output 'y' and input parameters 'x' to a file every 'interval'.
     def __setstate__(self, state):
         self.__dict__.update(state)
         return
+    def __getitem__(self, y):
+        """x.__getitem__(y) <==> x[y]"""
+        m = super(LoggingMonitor,self).__getitem__(y)
+        if hasattr(m, '_yinterval'): m._yinterval = self._yinterval
+        if hasattr(m, '_xinterval'): m._xinterval = self._xinterval
+        if hasattr(m, '_all'): m._all = self._all
+        if hasattr(m, '_filename'): m._filename = self._filename
+        if hasattr(m, '_file'): m._file = self._file
+        return m
     pass
 
 class VerboseLoggingMonitor(LoggingMonitor):
@@ -556,6 +576,16 @@ print every 'yinterval'.
     def __setstate__(self, state):
         self.__dict__.update(state)
         return
+    def __getitem__(self, y):
+        """x.__getitem__(y) <==> x[y]"""
+        m = super(VerboseLoggingMonitor,self).__getitem__(y)
+        if hasattr(m, '_yinterval'): m._yinterval = self._yinterval
+        if hasattr(m, '_xinterval'): m._xinterval = self._xinterval
+        if hasattr(m, '_all'): m._all = self._all
+        if hasattr(m, '_filename'): m._filename = self._filename
+        if hasattr(m, '_file'): m._file = self._file
+        if hasattr(m, '_vyinterval'): m._vyinterval = self._vyinterval
+        if hasattr(m, '_vxinterval'): m._vxinterval = self._vxinterval
     pass
 
 def CustomMonitor(*args,**kwds):
