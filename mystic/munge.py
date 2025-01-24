@@ -115,13 +115,14 @@ def logfile_reader(filename, iter=False):
   contents = file.split("\n")
   # parse file contents to get (i,id), cost, and parameters
   step = []; cost = []; param = [];
+  locals_ = locals.copy()
   for line in contents[:-1]:
     if line.startswith(("#","inf =","nan =")): pass
     else:
       values = line.split("   ")
-      step.append(eval(values[0]))  #XXX: yields (i,id)
-      cost.append(eval(values[1]))
-      param.append(eval(values[2]))
+      step.append(eval(values[0], {}, locals_))  #XXX: yields (i,id)
+      cost.append(eval(values[1], {}, locals_))
+      param.append(eval(values[2], {}, locals_))
   return (step, param, cost) if iter else (param, cost)
 
 def read_trajectories(source, iter=False):
