@@ -30,8 +30,8 @@ param = dict(solver=DifferentialEvolutionSolver2,
 
 from mystic.constraints import and_, integers
 from mystic.coupler import outer, additive
-from ouq_misc import flatten, unflatten, normalize_moments, constrained, check,
-                     constrain_moments, constrain_expected, constrained_out
+from ouq_misc import (flatten, unflatten, normalize_moments, constrained, check,
+                      constrain_moments, constrain_expected, constrained_out)
 
 # lower and upper bound for parameters and weights
 xlb = (0,1,0,0,0)
