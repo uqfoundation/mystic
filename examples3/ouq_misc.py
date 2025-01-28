@@ -9,6 +9,7 @@ misc moment constraints
 """
 from mystic.math.discrete import product_measure
 from mystic.math import almostEqual as almost
+from mystic.bounds import Bounds
 #from mystic import suppressed
 
 def flatten(npts):

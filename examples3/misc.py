@@ -32,8 +32,8 @@ kwds = dict(npts=500, ipts=None, itol=1e-8, iter=5)
 
 from mystic.constraints import and_, integers, sorting
 from mystic.coupler import outer, additive
-from ouq_misc import flatten, unflatten, normalize_moments, constrained, check,
-                     constrain_moments, constrain_expected, constrained_out
+from ouq_misc import (flatten, unflatten, normalize_moments, constrained, check,
+                      constrain_moments, constrain_expected, constrained_out)
 
 # lower and upper bound for parameters and weights
 xlb = (0,1,0,0,0)

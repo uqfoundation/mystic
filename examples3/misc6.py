@@ -9,7 +9,7 @@ misc user-defined items (solver configuration, moment constraints)
 """
 from mystic.solvers import DifferentialEvolutionSolver2, LatticeSolver, NelderMeadSimplexSolver
 from mystic.termination import ChangeOverGeneration as COG
-from mystic.monitors import Monitor, VerboseMonitor, LoggingMonitor, VerboseLoggingMonitor
+from mystic.monitors import LoggingMonitor, VerboseLoggingMonitor
 from mystic.bounds import Bounds, MeasureBounds
 
 # kwds for solver #TODO: tune
@@ -33,8 +33,8 @@ kwds = dict(npts=500, ipts=None, itol=1e-8, iter=5)
 from mystic.constraints import and_, integers, sorting
 from mystic.coupler import outer, additive
 from emulators import cost6, x6, bounds6, error6, wR
-from ouq_misc import flatten, unflatten, normalize_moments, constrained, check,
-                     constrain_moments, constrain_expected, constrained_out
+from ouq_misc import (flatten, unflatten, normalize_moments, constrained, check,
+                      constrain_moments, constrain_expected, constrained_out)
 
 # lower and upper bound for parameters and weights
 xlb, xub = zip(*bounds6)

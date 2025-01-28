@@ -9,7 +9,7 @@ misc user-defined items (solver configuration, moment constraints)
 """
 from mystic.solvers import DifferentialEvolutionSolver2, LatticeSolver, NelderMeadSimplexSolver
 from mystic.termination import ChangeOverGeneration as COG
-from mystic.monitors import Monitor, VerboseMonitor, LoggingMonitor, VerboseLoggingMonitor
+from mystic.monitors import Monitor, VerboseLoggingMonitor
 from mystic.bounds import Bounds, MeasureBounds
 
 # kwds for solver #TODO: tune
@@ -22,7 +22,7 @@ param = dict(solver=DifferentialEvolutionSolver2,
              nested=None, # use SetNested
              map=None, # use SetMapper
              stepmon=VerboseLoggingMonitor(1,10, filename='log.txt'), # monitor
-             #evalmon=LoggingMonitor(1, 'eval.txt'),# monitor (re-init in solve)
+             #evalmon=Monitor(), # monitor config (re-initialized in solve)
              # kwds to pass directly to Solve(objective, **opt)
              opts=opts,
             )
@@ -33,8 +33,8 @@ kwds = dict(npts=500, ipts=4, itol=1e-8, iter=5)
 from mystic.constraints import and_, integers, sorting
 from mystic.coupler import outer, additive
 from emulators import cost3, x3, bounds3, error3, a_beta, a_beta_error
-from ouq_misc import flatten, unflatten, normalize_moments, constrained, check,
-                     constrain_moments, constrain_expected, constrained_out
+from ouq_misc import (flatten, unflatten, normalize_moments, constrained, check,
+                      constrain_moments, constrain_expected, constrained_out)
 
 # lower and upper bound for parameters and weights
 xlb, xub = zip(*bounds3)

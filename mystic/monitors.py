@@ -579,13 +579,9 @@ print every 'yinterval'.
     def __getitem__(self, y):
         """x.__getitem__(y) <==> x[y]"""
         m = super(VerboseLoggingMonitor,self).__getitem__(y)
-        if hasattr(m, '_yinterval'): m._yinterval = self._yinterval
-        if hasattr(m, '_xinterval'): m._xinterval = self._xinterval
-        if hasattr(m, '_all'): m._all = self._all
-        if hasattr(m, '_filename'): m._filename = self._filename
-        if hasattr(m, '_file'): m._file = self._file
         if hasattr(m, '_vyinterval'): m._vyinterval = self._vyinterval
         if hasattr(m, '_vxinterval'): m._vxinterval = self._vxinterval
+        return m
     pass
 
 def CustomMonitor(*args,**kwds):
