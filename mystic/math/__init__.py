@@ -59,6 +59,7 @@ generate a sampling distribution with interface dist(size=None)
 input::
     - generator: a 'distribution' method from scipy.stats or numpy.random
     - rng: a mystic.random_state object [default: random_state('numpy.random')]
+    - p: a list of float weights for each distribution, summing to 1.0
     - args: positional arguments for the distribtution object
     - kwds: keyword arguments for the distribution object
 
@@ -72,10 +73,10 @@ note::
 
 note::
     Distributions d1,d2 may be combined by adding data (i.e. d1(n) + d2(n)),
-    or by adding probabilitiies as Distribution(d1,d2); the former uses
+    or by combining probabilities as Distribution(d1,d2); the former uses
     the addition operator and produces a new unnormalized Distribution,
     while the latter produces a new Distribution which randomly chooses from
-    the Distributions provided
+    the Distributions provided based on the relative weights.
 
 note::
     a normalization factor can be incorporated through the multiplication
@@ -83,6 +84,7 @@ note::
         """ #XXX: generate Distribution from list of Distributions?
         self.norm = kwds.pop('norm', 1) + 0
         if isinstance(generator, Distribution):
+            self.weights = kwds.pop('p', None)
             if kwds:
                 msg = 'keyword arguments are invalid with {0} instance'.format(self.__class__.__name__)
                 raise TypeError(msg)
@@ -91,6 +93,9 @@ note::
                 self.rvs = generator.rvs
                 self.repr = generator.repr
                 self.norm *= generator.norm
+                if self.weights is not None:
+                    msg = "weights are not supported for a single distribution"
+                    raise ValueError(msg)
                 return
             # args can only support additional distribution instances
             for arg in args:
@@ -99,12 +104,26 @@ note::
             # use choice from multiple distributions
             import numpy as np
             generator = (generator,) + args
-            rep = lambda di: "{0}".format(di).split("(",1)[-1][:-1] if di._type == 'join' else "{0}".format(di)
+            if self.weights is not None:
+                if not hasattr(self.weights, '__len__'):
+                    msg = "'p' is not iterable"
+                    raise TypeError(msg)
+                if len(self.weights) != len(generator):
+                    msg = "length of 'p' must equal the number of distributions"
+                    raise ValueError(msg)
+                if sum(self.weights) != 1:
+                    msg = "weights do not sum to 1"
+                    raise ValueError(msg)
+            rep = lambda di: "{0}".format(di).split("(",1)[-1][:-1] if (di._type == 'join' and di.weights is None) else "{0}".format(di)
             sig = ', '.join(rep(i) for i in generator)
-            self.repr = lambda cls,fac: ("{0}({1}".format(cls, sig) + (')' if fac == 1 else ', norm={0})'.format(fac)))
-            self.rvs = lambda size=None: np.choose(np.random.choice(range(len(generator)), size=size), tuple(d(size) for d in generator))
+            self.repr = lambda cls,fac,prb: ("{0}({1}".format(cls, sig) + ('' if prb is None else ', p={0}'.format(prb)) + (')' if fac == 1 else ', norm={0})'.format(fac)))
+            self.rvs = lambda size=None: np.choose(np.random.choice(range(len(generator)), size=size, p=self.weights), tuple(d(size) for d in generator))
             self._type = 'join'
             return
+        self.weights = kwds.pop('p', None)
+        if self.weights is not None:
+            msg = "weights are not supported for a single distribution"
+            raise ValueError(msg)
         from mystic.tools import random_state
         rng = kwds.pop('rng', random_state(module='numpy.random'))
         if isinstance(rng, str): rng = random_state(module=rng)
@@ -139,14 +158,14 @@ note::
         sig = '{0}, {1}'.format(sig, kwd) if (sig and kwd) else (sig or kwd)
         if name and sig: name += ", "
         #sig = ", rng='{0}')".format(rng.__name__)
-        self.repr = lambda cls,fac: ("{0}({1}".format(cls, name) + sig + ('' if fac == 1 else ((', ' if (name or sig) else '') + 'norm={0}'.format(fac))) + ')')
+        self.repr = lambda cls,fac,prb: ("{0}({1}".format(cls, name) + sig + ('' if prb is None else ((', ' if (name or sig) else '') + 'p={0}'.format(prb))) + ('' if fac == 1 else ((', ' if (name or sig or prb) else '') + 'norm={0}'.format(fac))) + ')')
         self._type = 'base'
         return
     def __call__(self, size=None):
         """generate a sample of given size (tuple) from the distribution"""
         return self.norm * self.rvs(size)
     def __repr__(self):
-        return self.repr(self.__class__.__name__, self.norm)
+        return self.repr(self.__class__.__name__, self.norm, self.weights)
     def __add__(self, dist):
         if not isinstance(dist, Distribution):
             msg = "unsupported operand type(s) for +: '{0}' and '{1}'".format(self.__class__.__name__, type(dist))
@@ -157,17 +176,21 @@ note::
         second = "{0}".format(dist)
         if self._type == 'add': first = first.split("(",1)[-1][:-1]
         if dist._type == 'add': second = second.split("(",1)[-1][:-1]
-        new.repr = lambda cls,fac: ("{0}({1} + {2}".format(cls, first, second) + (')' if fac == 1 else ', norm={0})'.format(fac)))
+        new.repr = lambda cls,fac,prb: ("{0}({1} + {2}".format(cls, first, second) + ('' if prb is None else ', p={0}'.format(prb)) + (')' if fac == 1 else ', norm={0})'.format(fac)))
         new.rvs = lambda size=None: (self(size) + dist(size))
         new._type = 'add'
         new.norm = 1
+        new.weights = None
         return new
     def __mul__(self, norm):
+        if isinstance(norm, Distribution):
+            return Distribution(self, norm)
         new = Distribution()
         new.repr = self.repr
         new.rvs = self.rvs
         new._type = 'base'
         new.norm = self.norm * norm
+        new.weights = self.weights
         return new
     __rmul__ = __mul__
     def __truediv__(self, denom):
@@ -176,6 +199,7 @@ note::
         new.rvs = self.rvs
         new._type = 'base'
         new.norm = self.norm / denom
+        new.weights = self.weights
         return new
     def __floordiv__(self, denom):
         new = Distribution()
@@ -183,6 +207,7 @@ note::
         new.rvs = self.rvs
         new._type = 'base'
         new.norm = self.norm // denom
+        new.weights = self.weights
         return new
     """
     def __mul__(self, dist):
