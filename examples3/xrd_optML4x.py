@@ -35,7 +35,7 @@ except ImportError:
     pmap = None
 
 # generate a training dataset by sampling truth
-data = truth.sample(bounds, pts=[2, 1, 1, 1], pmap=map)#, archive=archive)
+data = truth.sample(bounds, pts=[2, 1, 1, 1], pmap=pmap)#, archive=archive)
 
 # shutdown mapper
 if pmap is not None:

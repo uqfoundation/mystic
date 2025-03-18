@@ -18,6 +18,7 @@ The set of solvers built on mystic's AbstractEnsembleSolver are::
    LatticeSolver -- start from center of N grid points
    BuckshotSolver -- start from N random points in parameter space
    SparsitySolver -- start from N points sampled in sparse regions of space
+   MixedSolver -- start from N points using a mixture of ensemble solvers
 
 
 Usage
@@ -31,7 +32,7 @@ All solvers included in this module provide the standard signal handling.
 For more information, see `mystic.mystic.abstract_solver`.
 """
 __all__ = ['LatticeSolver','BuckshotSolver','SparsitySolver', \
-           'lattice','buckshot','sparsity']
+           'MixedSolver', 'lattice','buckshot','sparsity']
 
 from mystic.tools import unpair
 
@@ -146,6 +147,65 @@ All important class members are inherited from AbstractEnsembleSolver.
         data = self._evalmon._x if self._evalmon else []
         data += self._stepmon._x if self._stepmon else []
         return fillpts(lower,upper,npts, data, self._rtol, self._dist)
+
+
+class MixedSolver(AbstractEnsembleSolver):
+    """
+parallel mapped optimization starting from N points sampled with mixed solvers
+    """
+    def __init__(self, dim, samp=8):
+        """
+Takes three initial inputs: 
+    dim   -- dimensionality of the problem
+    samp  -- dict of {ensemble solver: npts}
+
+All important class members are inherited from AbstractEnsembleSolver.
+        """
+        # get the names of the available solvers
+        types = [s.capitalize()+'Solver' for s in __all__ if not s.endswith('Solver')]
+        npts = None
+        # if samp is an int, randomly select samp from available solvers
+        if not hasattr(samp, '__len__'):
+            npts = samp
+            from numpy import random
+            samp = random.choice(range(len(types)), samp, replace=True).tolist()
+            samp = [(t,(samp.count(i),)) for i,t in enumerate(types) if samp.count(i)]
+        elif isinstance(samp, dict): # convert dict to list of tuples
+            samp = list(samp.items())
+        else: samp = list(samp)
+        # get tuple of (__name__, args)
+        for i,(name,args) in enumerate(samp): #XXX: what if dim in args?
+            name = getattr(name,'__name__',name) + ('' if name in types else 'Solver')
+            name = name[:1].upper() + name[1:]
+            if not hasattr(args,'__len__'): args = (args,)
+            if name == 'LatticeSolver' and not hasattr(args[0], '__len__') and len(args) > 1: args = (args,) #NOTE: handles args=[2,1,1]
+            samp[i] = (name,args) #XXX: does not catch pts <= 0
+        if npts is None:
+            from mystic import ensemble #XXX: THIS file
+            npts = sum([getattr(ensemble, name)(dim, *args)._npts for name,args in samp if hasattr(ensemble, name)])
+        super(MixedSolver, self).__init__(dim, npts=npts)
+        from mystic.termination import NormalizedChangeOverGeneration
+        convergence_tol = 1e-4
+        self._termination = NormalizedChangeOverGeneration(convergence_tol)
+        self._samp = samp #XXX: should user provide a list of solver instances?
+        #XXX: can solver state be correctly captured without self._samp?
+
+    def _InitialPoints(self):
+        """Generate a grid of starting points for the ensemble of optimizers"""
+        from mystic import ensemble #XXX: THIS file
+        from mystic.monitors import Monitor
+        data = Monitor()
+        for name,args in self._samp:
+            solver = getattr(ensemble, name)(self.nDim, *args)
+            solver._strictMax = self._strictMax
+            solver._strictMin = self._strictMin
+            solver._dist = self._dist
+            if self._evalmon: solver._evalmon = self._evalmon.copy()
+            if self._stepmon: solver._stepmon = self._stepmon.copy()
+            solver.SetEvaluationMonitor(data) # sparsity uses data in monitors
+            data._x += solver._InitialPoints()
+            data._y = [None]*len(data._x)
+        return data._x
 
 
 def lattice(cost,ndim,nbins=8,args=(),bounds=None,ftol=1e-4,maxiter=None, \

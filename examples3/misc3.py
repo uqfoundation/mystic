@@ -7,7 +7,7 @@
 """
 misc user-defined items (solver configuration, moment constraints)
 """
-from mystic.solvers import DifferentialEvolutionSolver2, LatticeSolver, NelderMeadSimplexSolver
+from mystic.solvers import DifferentialEvolutionSolver2, NelderMeadSimplexSolver
 from mystic.termination import ChangeOverGeneration as COG
 from mystic.monitors import Monitor, VerboseLoggingMonitor
 from mystic.bounds import Bounds, MeasureBounds
