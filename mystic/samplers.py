@@ -7,7 +7,7 @@
 """
 samplers: optimizer-guided directed sampling
 """
-__all__  = ['LatticeSampler','BuckshotSampler','SparsitySampler']
+__all__  = ['LatticeSampler','BuckshotSampler','SparsitySampler','MixedSampler']
 
 from mystic.abstract_sampler import AbstractSampler
 
@@ -45,4 +45,14 @@ optimizer-directed sampling starting at N points sampled in sparse reigons
         """initialize the ensemble solver"""
         from mystic.ensemble import SparsitySolver
         return SparsitySolver(len(self._bounds), npts=self._npts, rtol=self._rtol)
+
+
+class MixedSampler(AbstractSampler):
+    """
+optimizer-directed sampling using N points from a mixture of ensemble solvers
+    """
+    def _init_solver(self):
+        """initialize the ensemble solver"""
+        from mystic.ensemble import MixedSolver
+        return MixedSolver(len(self._bounds), samp=self._npts)
 

@@ -73,12 +73,10 @@ if __name__ == '__main__':
     bounds = ndim * [(-9.5,9.5)] # griewangk
 
     # the ensemble solvers
-    from mystic.solvers import BuckshotSolver, LatticeSolver, SparsitySolver
+    from mystic.solvers import BuckshotSolver as sprayer
     # the local solvers
-    from mystic.solvers import PowellDirectionalSolver
+    from mystic.solvers import PowellDirectionalSolver as seeker
 
-    sprayer = BuckshotSolver
-    seeker = PowellDirectionalSolver
     npts = 25    # number of solvers
     retry = 1    # max consectutive iteration retries without a cache 'miss'
     repeat = 0   # number of times to repeat the search
