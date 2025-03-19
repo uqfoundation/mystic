@@ -27,41 +27,41 @@ import torch.optim as optim
 
 
 class LinearRegression(nn.Module):
-    def __init__(self, n_in, n_h=100, n_layers=1, dropout=0.0):
+    def __init__(self, n_nx, n_ny=None, n_h=100, n_layers=1, dropout=0.0):
         super().__init__()
-        self.n_in = n_in
+        self.n_nx = n_nx
+        self.n_ny = n_ny
+        _n_ny = 1 if n_ny is None else n_ny
         self.layers = nn.ModuleList()
-        self.layers.append(nn.Linear(n_in, n_h))
+        self.layers.append(nn.Linear(n_nx, n_h))
         self.layers.append(nn.Dropout(dropout))
         self.layers.append(nn.ReLU())
         for _ in range(n_layers):
             self.layers.append(nn.Linear(n_h, n_h))
             self.layers.append(nn.Dropout(dropout))
             self.layers.append(nn.ReLU())
-        self.layers.append(nn.Linear(n_h, 1))
+        self.layers.append(nn.Linear(n_h, _n_ny))
 
-    def forward(self, x):
-        y = x.view(-1, self.n_in)
+    def forward(self, X):
+        X = X.to(torch.float32)
+        y = X.view(-1, self.n_nx)
         for _, layer in enumerate(self.layers):
             y = layer(y)
-        return y
+        if self.n_ny is None:
+            y = y.reshape(-1)
+        else: y = y.reshape(self.n_ny, -1)
+        return y.to(torch.float64)
 
 
 if __name__=='__main__':
-    # convert training and test data to the format used by torch
-    from constrained_sklearn import *
-    target = target.reshape(target.shape[0], -1).astype(np.float32)
-    xtrain = xtrain.astype(np.float32)
-    test = test.reshape(test.shape[0], -1).astype(np.float32)
-    xtest = xtest.astype(np.float32)
-
     # build a kernel-transformed regressor
+    from constrained_sklearn import *
     ta = pre.FunctionTransformer(func=vectorize(cf, axis=1))
     tp = pre.PolynomialFeatures(degree=3)
-    n_in = tp.fit_transform(ta.fit_transform(xtrain)).shape[1]
+    n_nx = tp.fit_transform(ta.fit_transform(xtrain)).shape[1]
     lr_policy = LRScheduler(StepLR, step_size=15, gamma=0.5)
     e = NeuralNetRegressor(LinearRegression, criterion=torch.nn.MSELoss,
-                           module__n_in=n_in, module__n_h=300,
+                           train_split=None, module__n_nx=n_nx, module__n_h=300,
                            module__n_layers=3, module__dropout=0.2,
                            optimizer=torch.optim.Adam, optimizer__lr=.005,
                            max_epochs=200, callbacks=[lr_policy],
