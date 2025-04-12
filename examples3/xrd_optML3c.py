@@ -14,8 +14,26 @@ from mystic.solvers import diffev2
 from mystic.monitors import LoggingMonitor
 from mystic.math.legacydata import datapoint
 from mystic.cache.archive import file_archive, read as get_db
-from ouq_models import WrapModel, LearnedModel
+from ouq_models import WrapModel, InterpModel
 from emulators import cost3 as cost, x3 as target, bounds3 as bounds
+
+# create a volume penalty and inequality constraints
+def volume(x):
+    from functools import reduce
+    return reduce(lambda x,y:x*y, x)
+
+# penalize if volume(x) > 50.0
+from mystic.constraints import with_penalty, and_
+from mystic.penalty import linear_inequality
+penalty = with_penalty(linear_inequality)(lambda x: volume(x) - 50.0)
+
+# constrain x0 < x1 < x2
+equations = """
+x2 < x1
+x0 < x2
+"""
+from mystic.symbolic import simplify, generate_constraint, generate_solvers
+constraint = generate_constraint(generate_solvers(simplify(equations)))
 
 # prepare truth (i.e. an 'expensive' model)
 nx = 3; ny = None
@@ -35,42 +53,24 @@ except ImportError:
     pmap = None
 
 # generate a dataset by sampling truth
-data = truth.sample(bounds, pts=[2, 1, 1], map=pmap)
+kwds = dict(constraints=constraint)#, penalty=penalty)
+data = truth.sample(bounds, pts=[2, 1, 1], map=pmap, **kwds)
 
 # shutdown mapper
 if pmap is not None:
     pmap.close(); pmap.join(); pmap.clear()
 
 # create an inexpensive surrogate for truth
-import torch
-from torch.optim.lr_scheduler import StepLR
-from skorch.callbacks.lr_scheduler import LRScheduler
-from sklearn.preprocessing import StandardScaler
-from constrained_skorch import LinearRegression, NetRegressor
-lr_policy = LRScheduler(StepLR, step_size=15, gamma=0.5)
-estimator = NetRegressor(LinearRegression, criterion=torch.nn.MSELoss,
-                         train_split=None,
-                         module__n_nx=nx, module__n_h=300,
-                         module__n_layers=4, module__dropout=0.2,
-                         optimizer=torch.optim.Adam, optimizer__lr=.005,
-                         max_epochs=200, callbacks=[lr_policy],
-                         device='cpu', batch_size=64, verbose=0)
-
-from ml import Estimator, MLData, improve_score
-kwds = dict(estimator=estimator, transform=StandardScaler())
-# iteratively improve estimator
-mlp = Estimator(**kwds)
-best = improve_score(mlp, MLData(data.coords, data.coords, data.values, data.values), tries=10, verbose=True)
-mlkw = dict(estimator=best.estimator, transform=best.transform)
-surrogate = LearnedModel('surrogate', nx=nx, ny=ny, data=truth, **mlkw)
+surrogate = InterpModel("surrogate", nx=nx, ny=ny, data=truth, smooth=0.0,
+                        noise=0.0, method="thin_plate", extrap=False)
 
 # iterate until error (of candidate minimum) < 1e-3
 tracker = LoggingMonitor(1, filename='error.txt', label='error')
 from mystic.abstract_solver import AbstractSolver
 from mystic.termination import VTR
 loop = AbstractSolver(nx)
-loop.SetTermination(VTR(1e-2)) #XXX: VTRCOG, TimeLimits, etc?
-loop.SetEvaluationLimits(maxiter=100)
+loop.SetTermination(VTR(1e-3)) #XXX: VTRCOG, TimeLimits, etc?
+loop.SetEvaluationLimits(maxiter=500)
 loop.SetGenerationMonitor(tracker)
 while not loop.Terminated():
 
@@ -79,6 +79,7 @@ while not loop.Terminated():
 
     # find the minimum of the surrogate
     results = diffev2(lambda x: surrogate(x), bounds, npop=20,
+                      constraints=constraint,
                       bounds=bounds, gtol=500, full_output=True)
 
     # evaluate truth at the same input as the surrogate minimum
@@ -89,13 +90,15 @@ while not loop.Terminated():
 
     # compute absolute error between truth and surrogate at candidate minimum
     ysur = results[1]
+    ypen = penalty(xnew)
     error = abs(ynew - ysur)
     print("truth: %s @ %s" % (ynew, xnew))
     print("candidate: %s; error: %s" % (ysur, error))
+    print("penalty: %s" % ypen)
     print("evaluations of truth: %s" % len(data))
 
     # save to tracker if less than current best
-    ysave = error # track error when learning surrogate
+    ysave = error + ypen # track error when learning surrogate
     if len(tracker) and tracker.y[-1] < ysave:
         tracker(*tracker[-1])
     else: tracker(xnew, ysave)

@@ -173,6 +173,17 @@ def sample(model, bounds, pts=None, **kwds):
         msg = '1st-order: %s and non-zero 2nd-order: %s' % (-pts, -deriv)
         raise NotImplementedError(msg)
 
+    get_evals = False
+    if traj: #HACK: workaround dict_archive doesn't cache
+        archive = cache()
+        from klepto._archives import dict_archive
+        if type(archive) is dict_archive:
+            from mystic.monitors import Null, Monitor
+            mon = kwds.get('evalmon', None)
+            if isinstance(mon, (type(None), Null)):
+                kwds['evalmon'] = Monitor()
+            get_evals = True
+
     if pts == 0: # don't sample, just grab the archive
         if not traj:
             dset = dataset() # = []
@@ -183,14 +194,50 @@ def sample(model, bounds, pts=None, **kwds):
             s = searcher(bounds, _model, npts=pts, dist=dist, **kwds)
             s.sample()
             return s
+        def dont(axis=None):
+            _model = lambda x: model(x, axis=axis)
+            s = searcher(bounds, _model, npts=pts, dist=dist, **kwds)
+            s._sampler._penalty = lambda x: [] #XXX: removes the penalty
+            s._sampler._bootstrap_objective()
+            return s
         if mvl and axis is None:
-            # as we don't optimize, we really don't need axis...?
-            dset = [doit(axis=0)]
+            if ny and get_evals:
+                dset = [dont(axis)] #HACK: dict_archive
+                traj = False #XXX: causes to circumvent solver below
+            else:
+                dset = [doit(axis=0)]
         else:
             dset = [doit(axis)]
         # build a dataset of the samples #FIXME: check format when ny != None
         if not traj:
-            dset = dataset().load([list(i) for i in dset[0]._sampler._all_bestSolution], dset[0]._sampler._all_bestEnergy)
+            _ID_ = dset[0]._sampler.id or 0
+            if ny and get_evals and mvl and axis is None: #HACK: dict_archive
+                _X_ = dset[0]._sampler._InitialPoints()
+                _F_ = dset[0]._sampler._cost[0] or dset[0]._sampler._cost[1]
+                dset = dataset().load(
+                    [list(i) for i in _X_],
+                    [_F_(i) for i in _X_],
+                    [i for i,j in enumerate(_X_, _ID_)] #XXX: ? for ordering?
+                )
+            else:
+                _X_ = dset[0]._sampler._all_bestSolution
+                _F_ = dset[0]._sampler._all_bestEnergy
+                dset = dataset().load(
+                    [list(i) for i in _X_],
+                    _F_,
+                    [i for i,j in enumerate(_X_, _ID_)] #XXX: ? for ordering?
+                )
+            del _X_,_ID_,_F_
+        elif get_evals: #HACK: dict_archive
+            _ID_ = dset[0]._sampler.id or 0
+            traj = False
+            from itertools import chain
+            dset = dataset().load(
+                chain.from_iterable([i._evalmon.x for i in dset[0]._sampler._allSolvers]),
+                chain.from_iterable([i._evalmon.y for i in dset[0]._sampler._allSolvers]),
+                [i for i,j in enumerate(dset[0]._sampler._allSolvers, _ID_)] #XXX: ? for ordering?
+            )
+            del _ID_
     else: # search for minima until terminated
         pts = -pts if _pts is None else _pts
         def lower(axis=None):
@@ -239,9 +286,29 @@ def sample(model, bounds, pts=None, **kwds):
                     chain.from_iterable([[list(i) for i in s._sampler._all_bestSolution] for s in dset[0::2]] + [[list(i) for i in s._sampler._all_bestSolution] for s in dset[1::2]]), 
                     chain.from_iterable([s._sampler._all_bestEnergy for s in dset[0::2]] + [[-i for i in s._sampler._all_bestEnergy] for s in dset[1::2]])
                 )
+        #HACK: dict_archive
+        elif get_evals:
+            traj = False
+            from itertools import chain
+            if mins is False:
+                dset = dataset().load(
+                    chain.from_iterable([list(chain.from_iterable([i._evalmon.x for i in s._sampler._allSolvers])) for s in dset]), 
+                    chain.from_iterable([list(chain.from_iterable([[-j for j in i._evalmon.y] for i in s._sampler._allSolvers])) for s in dset])
+                )
+            elif maxs is False:
+                dset = dataset().load(
+                    chain.from_iterable([list(chain.from_iterable([i._evalmon.x for i in s._sampler._allSolvers])) for s in dset]), 
+                    chain.from_iterable([list(chain.from_iterable([i._evalmon.y for i in s._sampler._allSolvers])) for s in dset])
+                )
+            else:
+                dset = dataset().load(
+                    chain.from_iterable([list(chain.from_iterable([i._evalmon.x for i in s._sampler._allSolvers])) for s in dset[0::2]] + [list(chain.from_iterable([i._evalmon.x for i in s._sampler._allSolvers])) for s in dset[1::2]]), 
+                    chain.from_iterable([list(chain.from_iterable([i._evalmon.y for i in s._sampler._allSolvers])) for s in dset[0::2]] + [list(chain.from_iterable([[-j for j in i._evalmon.y] for i in s._sampler._allSolvers])) for s in dset[1::2]])
+                )
     if not traj: return dset #TODO: check format (vs below) when ny != None
     import dataset as ds
     return ds.from_archive(cache(), axis=None)
+
 
 def _init_axis(model):
     """ensure axis is a keyword for the model
@@ -661,8 +728,10 @@ class InterpModel(OUQModel):
         by passing an archive instance (or string name) to the cached keyword.
         """
         if data is None:
-            msg = 'a mystic legacydata.dataset (or callable model) is required'
-            raise NotImplementedError(msg)
+            from mystic.math.legacydata import dataset
+            data = dataset()
+            #msg = 'a mystic legacydata.dataset (or callable model) is required'
+            #raise NotImplementedError(msg)
         if callable(data):
             data = _init_axis(data) #FIXME: class method?
         self.nx = kwds.pop('nx', None)
@@ -773,8 +842,10 @@ class LearnedModel(OUQModel):
         by passing an archive instance (or string name) to the cached keyword.
         """
         if data is None:
-            msg = 'a mystic legacydata.dataset (or callable model) is required'
-            raise NotImplementedError(msg)
+            from mystic.math.legacydata import dataset
+            data = dataset()
+            #msg = 'a mystic legacydata.dataset (or callable model) is required'
+            #raise NotImplementedError(msg)
         if callable(data):
             data = _init_axis(data) #FIXME: class method?
         self.nx = kwds.pop('nx', None)
@@ -813,7 +884,6 @@ class LearnedModel(OUQModel):
         using the name of the model; alternately, an archive can be specified
         by passing an archive instance (or string name) to the cached keyword.
         """
-        self.__kwds__.update(kwds)
         self.__kwds__.update(kwds)
         cached = self.__kwds__.pop('cached', False)
         archive = data = self.__kwds__.pop('data', None)

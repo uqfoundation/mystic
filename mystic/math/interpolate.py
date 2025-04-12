@@ -641,8 +641,8 @@ def interpf(x, z, method=None, extrap=False, arrays=False, **kwds):
                 fs = function.__axis__
                 if axis is None:
                     if hasattr(args[0], '__len__'):
-                        return tuple(zt(fi(*args)) for fi in fs)
-                    return tuple(fi(*args) for fi in fs)
+                        return tuple(zt(np.array(list(fi(*args) for fi in fs)).T.tolist()))
+                    return tuple(np.array(list(fi(*args) for fi in fs)).T.tolist())
                 return fs[axis](*args)
             def interpf_ax(i):
                 return interpf(x, z, axis=i, **_kwd)

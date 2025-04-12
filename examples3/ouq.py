@@ -271,6 +271,7 @@ class BaseOUQ(object): #XXX: redo with a "Solver" interface, like ensemble?
             penalty = linear_equality(lambda rv, ave: abs(ave - self._cost[axis]), kwds={'ave':self._ave[axis]}, k=kpen)(lambda rv: 0.)
             # stop at exact cost, however if noisy stop within variance
             ftol = 1e-16 if self.samples is None else self._var[axis]
+            ftol = self.kwds.get('ftol', ftol) #FIXME: doc user provided ftol
             from mystic.termination import VTR
             stop = VTR(ftol, self._ave[axis])
             # solve for expected value of objective (in measure space)
@@ -574,7 +575,7 @@ class BaseOUQ(object): #XXX: redo with a "Solver" interface, like ensemble?
         lb, ub = self.lb, self.ub
         solver = kwds.get('solver', DifferentialEvolutionSolver2)
         npop = kwds.get('npop', None)
-        if npop is not None:
+        if npop is not None or kwds.get('NP', None) is not None:
             solver = solver(len(lb),npop)
         else:
             solver = solver(len(lb))
