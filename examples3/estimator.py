@@ -191,8 +191,16 @@ class Estimator(object):
         learner = self._configure(kwds)
         axis = self.args.get('axis', None)
         # apply kwds to instantiate transform and estimator
-        if axis is None:
+        if axis is None: #TODO: is this code ever necessary?
             if len(z) and hasattr(z[0], '__len__'):
+                try:
+                    with warnings.catch_warnings(): #FIXME: enable warn=True
+                        warnings.filterwarnings('ignore')
+                        function = learner.train(x, z)
+                    function.__axis__ = axis
+                    return function
+                except ValueError: #XXX: 2d train is not possible
+                    pass
                 #zt = np.array if arrays else list
                 zt = list #XXX: is this ever desired to be an array?
                 # iterate over each axis, build a 'combined' learner
@@ -200,9 +208,10 @@ class Estimator(object):
                     axis = kwds.get('axis', None)
                     fs = function.__axis__
                     if axis is None:
+                        from numpy import array
                         if hasattr(args[0], '__len__'):
-                            return tuple(zt(fi(*args)) for fi in fs)
-                        return tuple(fi(*args) for fi in fs)
+                            return tuple(array(list(zt(fi(*args)) for fi in fs)).T.tolist()) #NOTE: T.squeeze()
+                        return tuple(array(list(fi(*args) for fi in fs)).T.tolist()) #NOTE: T.squeeze()
                     return fs[axis](*args)
                 def learn_ax(i):
                     import warnings
@@ -214,7 +223,7 @@ class Estimator(object):
                     func = Learner(estimator, transform)
                     with warnings.catch_warnings(): #FIXME: enable warn=True
                         warnings.filterwarnings('ignore')
-                        func = func.train(x, _getaxis(z, i))
+                        func = func.train(x, _getaxis(z, i)) #XXX TODO: z.T?
                     return func
                 function.__axis__ = list(_map(learn_ax, range(len(z[0]))))
                 return function
@@ -337,6 +346,11 @@ class Estimator(object):
         _objective = _to_objective(self.function)
         def objective(x, *args, **kwds):
             result = _objective(x, *args, **kwds)
+            import numpy as np
+            xdiff = self.x.ndim - np.ndim(x)
+            zdiff = self.z.ndim - np.ndim(result)
+            for i in range(0, zdiff - xdiff):
+                result = np.expand_dims(result, -1)
             return result.tolist() if hasattr(result, 'tolist') else result
         objective.__doc__ = _objective.__doc__
         return objective

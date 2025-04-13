@@ -302,6 +302,9 @@ class Surface(object): #FIXME: should be subclass of Interpolator (?)
         from mystic.math.interpolate import _to_objective
         _objective = _to_objective(function)
         def objective(x, *args, **kwds):
+            # interpf has f(*x.T); want model(x) so consistent with Learned 
+            import numpy as np
+            x = np.asarray(x).T
             result = _objective(x, *args, **kwds)
             return result.tolist() if hasattr(result, 'tolist') else result
         self.objective = objective
@@ -321,6 +324,9 @@ class Surface(object): #FIXME: should be subclass of Interpolator (?)
         from mystic.math.interpolate import _to_objective
         _objective = _to_objective(self.surrogate)
         def objective(x, *args, **kwds):
+            # interpf has f(*x.T); want model(x) so consistent with Learned 
+            import numpy as np
+            x = np.asarray(x).T
             result = _objective(x, *args, **kwds)
             return result.tolist() if hasattr(result, 'tolist') else result
         objective.__doc__ = self.objective.__doc__

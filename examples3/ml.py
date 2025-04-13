@@ -44,7 +44,17 @@ class Estimator(object): #XXX: use pipeline?
             import sklearn.preprocessing as pre
             transform = pre.FunctionTransformer() #XXX: or StandardScaler ?
         self.transform = transform
-        self.function = lambda *x: float(self.test(np.array(x).reshape(1,-1)).reshape(-1))
+        def function(*x):
+            x = np.atleast_2d(x)
+            n = x.shape[0]
+            x = self.test(x).reshape(n,-1).squeeze()
+            n = x.ndim
+            x = x.tolist()
+            #if n == 0: return x
+            #if n == 1: return tuple(x)
+            #if n == 2: return [tuple(i) for i in x]
+            return x #TODO: n-1th dimension should be tuples
+        self.function = function
     def __call__(self, *x):
         "f(*x) for x of xtest and predict on fitted estimator(transform(xtest))"
         import numpy as np

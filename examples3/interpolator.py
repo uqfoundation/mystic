@@ -150,7 +150,7 @@ class Interpolator(object):
         from mystic.math.interpolate import interpf
         with warnings.catch_warnings():
             warnings.filterwarnings('ignore')
-            f = interpf(x, z, **kwds)
+            f = interpf(x, z, **kwds) #FIXME: assumes Rbf(x,z), not Rbf(*X,z)
         return f
 
 
@@ -228,6 +228,10 @@ class Interpolator(object):
         from mystic.math.interpolate import _to_objective
         _objective = _to_objective(self.function)
         def objective(x, *args, **kwds):
+            if hasattr(x, '__len__'):
+                # interpf has f(*x.T); want model(x) so consistent with Learned 
+                import numpy as np
+                x = np.asarray(x).T
             result = _objective(x, *args, **kwds)
             return result.tolist() if hasattr(result, 'tolist') else result
         objective.__doc__ = _objective.__doc__

@@ -49,8 +49,18 @@ class LinearRegression(nn.Module):
             y = layer(y)
         if self.n_ny is None:
             y = y.reshape(-1)
-        else: y = y.reshape(self.n_ny, -1)
+        else: y = y.reshape(-1, self.n_ny)
         return y.to(torch.float64)
+
+
+class NetRegressor(NeuralNetRegressor):
+
+    def fit(self, X, y, **kwds):
+        return super().fit(np.asarray(X), np.asarray(y), **kwds)
+
+    def predict(self, X, **kwds):
+        return super().predict(np.asarray(X), **kwds)
+
 
 
 if __name__=='__main__':
@@ -60,12 +70,12 @@ if __name__=='__main__':
     tp = pre.PolynomialFeatures(degree=3)
     n_nx = tp.fit_transform(ta.fit_transform(xtrain)).shape[1]
     lr_policy = LRScheduler(StepLR, step_size=15, gamma=0.5)
-    e = NeuralNetRegressor(LinearRegression, criterion=torch.nn.MSELoss,
-                           train_split=None, module__n_nx=n_nx, module__n_h=300,
-                           module__n_layers=3, module__dropout=0.2,
-                           optimizer=torch.optim.Adam, optimizer__lr=.005,
-                           max_epochs=200, callbacks=[lr_policy],
-                           device='cpu', batch_size=64, verbose=0)
+    e = NetRegressor(LinearRegression, criterion=torch.nn.MSELoss,
+                     train_split=None, module__n_nx=n_nx, module__n_h=300,
+                     module__n_layers=3, module__dropout=0.2,
+                     optimizer=torch.optim.Adam, optimizer__lr=.005,
+                     max_epochs=200, callbacks=[lr_policy],
+                     device='cpu', batch_size=64, verbose=0)
 
     # build a pipeline, then train
     from sklearn.pipeline import Pipeline
