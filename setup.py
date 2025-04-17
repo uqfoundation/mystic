@@ -95,9 +95,9 @@ class BinaryDistribution(Distribution):
         return True
 
 # define dependencies
-dill_version = 'dill>=0.3.9'
-klepto_version = 'klepto>=0.2.6'
-pathos_version = 'pathos>=0.3.3'
+dill_version = 'dill>=0.4.0'
+klepto_version = 'klepto>=0.2.7'
+pathos_version = 'pathos>=0.3.4'
 pyina_version = 'pyina>=0.3.0'
 cython_version = 'cython>=0.29.30' #XXX: required to build numpy from source
 numpy_version = 'numpy>=1.0'
