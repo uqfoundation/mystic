@@ -9,8 +9,8 @@
 import os
 import sys
 # drop support for older python
-if sys.version_info < (3, 8):
-    unsupported = 'Versions of Python before 3.8 are not supported'
+if sys.version_info < (3, 9):
+    unsupported = 'Versions of Python before 3.9 are not supported'
     raise ValueError(unsupported)
 
 # get distribution meta info
@@ -55,14 +55,13 @@ setup_kwds = dict(
         'Source Code':'https://github.com/uqfoundation/mystic',
         'Bug Tracker':'https://github.com/uqfoundation/mystic/issues',
     },
-    python_requires = '>=3.8',
+    python_requires = '>=3.9',
     classifiers = [
         'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
         'Intended Audience :: Science/Research',
         'License :: OSI Approved :: BSD License',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
         'Programming Language :: Python :: 3.11',
@@ -98,7 +97,7 @@ class BinaryDistribution(Distribution):
 dill_version = 'dill>=0.4.0'
 klepto_version = 'klepto>=0.2.7'
 pathos_version = 'pathos>=0.3.4'
-pyina_version = 'pyina>=0.3.0'
+pyina_version = 'pyina>=0.3.1'
 cython_version = 'cython>=0.29.30' #XXX: required to build numpy from source
 numpy_version = 'numpy>=1.0'
 sympy_version = 'sympy>=0.6.7'#, <0.7.4'
