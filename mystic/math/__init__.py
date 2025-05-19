@@ -26,16 +26,17 @@ These mathematical tools are provided::
 
     polyeval     -- fast evaluation of an n-dimensional polynomial
     poly1d       -- generate a 1d polynomial instance
-    gridpts      -- generate a set of regularly spaced points
-    fillpts      -- generate a set of space-filling points
+    gridpts      -- generate a grid of points given the grid axes
+    binnedpts    -- generate a set of regularly spaced points
     samplepts    -- generate a set of randomly sampled points 
+    fillpts      -- generate a set of space-filling points
     tolerance    -- absolute difference plus relative difference
     almostEqual  -- test if equal within some absolute or relative tolerance
     Distribution -- generate a sampling distribution instance
 """
 # functions and tools
 from .poly import polyeval, poly1d
-from .grid import gridpts, samplepts, fillpts
+from .grid import gridpts, binnedpts, samplepts, fillpts
 from .approx import almostEqual, tolerance
 
 
@@ -45,7 +46,7 @@ from . import discrete as dirac_measure
 from . import distance as paramtrans
 
 __all__ = ['Distribution','polyeval','poly1d','gridpts','samplepts', \
-           'fillpts','almostEqual','tolerance']
+           'binnedpts','fillpts','almostEqual','tolerance']
 
 # distribution object
 class Distribution(object):

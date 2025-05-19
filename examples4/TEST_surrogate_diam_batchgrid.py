@@ -6,8 +6,7 @@
 # License: 3-clause BSD.  The full license text is available at:
 #  - https://github.com/uqfoundation/mystic/blob/master/LICENSE
 
-from mystic.math.grid import gridpts
-
+from mystic.math.grid import binnedpts
 
 #######################################################################
 # scaling and mpi info; also optimizer configuration parameters
@@ -96,15 +95,8 @@ def local_optimize(cost,x0,lb,ub):
 # make a pseudo-global optimizer from a steepest descent optimizer
 #######################################################################
 def optimize(cost,lower,upper):
-  # generate arrays of points defining a grid in parameter space
-  grid_dimensions = len(lower)
-  bins = []
-  for i in range(grid_dimensions):
-    step = abs(upper[i] - lower[i])/nbins[i]
-    bins.append( [lower[i] + (j+0.5)*step for j in range(nbins[i])] )
-
   # build a grid of starting points
-  initial_values = gridpts(bins)
+  initial_values = binnedpts(lower, upper, nbins)
 
   # run optimizer for each grid point
   lb = [lower for i in range(len(initial_values))]

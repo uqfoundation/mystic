@@ -59,10 +59,6 @@ All important class members are inherited from AbstractEnsembleSolver.
     def _InitialPoints(self):
         """Generate a grid of starting points for the ensemble of optimizers"""
         nbins = self._nbins or self._npts
-        from numbers import Integral
-        if isinstance(nbins, Integral):
-            from mystic.math.grid import randomly_bin
-            nbins = randomly_bin(nbins, self.nDim, ones=True, exact=True)
         if len(self._strictMax): upper = list(self._strictMax)
         else:
             upper = list(self._defaultMax)
@@ -70,16 +66,9 @@ All important class members are inherited from AbstractEnsembleSolver.
         else:
             lower = list(self._defaultMin)
 
-        # generate arrays of points defining a grid in parameter space
-        grid_dimensions = self.nDim
-        bins = []
-        for i in range(grid_dimensions):
-            step = 1. * abs(upper[i] - lower[i])/nbins[i]
-            bins.append( [lower[i] + (j+0.5)*step for j in range(nbins[i])] )
-
         # build a grid of starting points
-        from mystic.math import gridpts
-        return gridpts(bins, self._dist)
+        from mystic.math import binnedpts
+        return binnedpts(lower, upper, nbins, self._dist)
 
 
 class BuckshotSolver(AbstractEnsembleSolver):
@@ -111,7 +100,7 @@ All important class members are inherited from AbstractEnsembleSolver.
 
         # build a grid of starting points
         from mystic.math import samplepts
-        return samplepts(lower,upper,npts, self._dist)
+        return samplepts(lower, upper, npts, self._dist)
 
 
 class SparsitySolver(AbstractEnsembleSolver):
@@ -146,7 +135,7 @@ All important class members are inherited from AbstractEnsembleSolver.
         from mystic.math import fillpts
         data = self._evalmon._x if self._evalmon else []
         data += self._stepmon._x if self._stepmon else []
-        return fillpts(lower,upper,npts, data, self._rtol, self._dist)
+        return fillpts(lower, upper, npts, data, self._rtol, self._dist)
 
 
 class MixedSolver(AbstractEnsembleSolver):

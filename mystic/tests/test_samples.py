@@ -130,3 +130,15 @@ if pmap:
   p.close()
   p.join()
 
+
+import numpy as np
+_pts = np.clip(pts.T, lb, ub).T
+assert not any((((_pts.T == lb) + (_pts.T == ub)).T).sum(-1))
+
+_pts = ms._bounded_samples(lb, ub, pts.T)
+assert not any((((_pts.T == lb) + (_pts.T == ub)).T).sum(-1))
+
+from mystic.math import Distribution
+dist = Distribution('numpy.random.normal', 0, 1)
+_pts = ms._bounded_samples(lb, ub, pts.T, dist=dist, clip=False)
+assert not any((((_pts.T == lb) + (_pts.T == ub)).T).sum(-1))

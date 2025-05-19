@@ -69,17 +69,10 @@ def optimize(cost,lower,upper,nbins):
   from pathos.pools import ProcessPool as Pool
   random_seed(123)
 
-  # generate arrays of points defining a grid in parameter space
-  grid_dimensions = len(lower)
-  bins = []
-  for i in range(grid_dimensions):
-    step = abs(upper[i] - lower[i])/nbins[i]
-    bins.append( [lower[i] + (j+0.5)*step for j in range(nbins[i])] )
-
   # build a grid of starting points
   from pool_helper import local_optimize
-  from mystic.math.grid import gridpts
-  initial_values = gridpts(bins)
+  from mystic.math.grid import binnedpts
+  initial_values = binnedpts(lower, upper, nbins)
 
   # run optimizer for each grid point
   lb = [lower for i in range(len(initial_values))]
