@@ -9,17 +9,45 @@
 tools for generating points on a grid
 """
 
+def binnedpts(lb, ub, nbins, dist=None, clip=False): # bounded gridpts
+    """
+takes lower and upper bounds (e.g. lb = [1,3], ub = [2,4])
+and a list of number of bins on each axis (e.g. nbins = [2,2])
+produces a list of points on a grid g = [[1,3],[1,4],[2,3],[2,4]]
+
+Inputs:
+    lb  --  a list of the lower bounds
+    ub  --  a list of the upper bounds
+    nbins  --  a list of number of grid points per axis
+    dist  --  a mystic.math.Distribution instance (or list of Distributions)
+    clip  --  if True, clip at bounds, else resample [default = False]
+
+Notes: if clip is None, do not clip or resample (may exceed bounds)
+    """
+    from numbers import Integral
+    if isinstance(nbins, Integral):
+        nbins = randomly_bin(nbins, len(lb), ones=True, exact=True)
+    # generate arrays of points defining a grid in parameter space
+    bins = []
+    for i,nbin in enumerate(nbins):
+        step = 1. * abs(ub[i] - lb[i])/nbin
+        bins.append( [lb[i] + (j+0.5)*step for j in range(nbin)] )
+    bins = gridpts(bins)
+    from mystic.math.samples import _bounded_samples
+    bins = _bounded_samples(lb, ub, bins, dist, clip)
+    return bins.T.tolist()
+
+
 def gridpts(q, dist=None):
     """
 takes a list of lists of arbitrary length q = [[1,2],[3,4]]
-and produces a list of gridpoints g = [[1,3],[1,4],[2,3],[2,4]]
+produces a list of points on a grid g = [[1,3],[1,4],[2,3],[2,4]]
 
 Inputs:
-    q  --  a list of lists of integers denoting grid points
+    q  --  a list of lists of integers denoting grid points per axis
     dist  --  a mystic.math.Distribution instance (or list of Distributions)
 
-Notes:
-    if a mystic.math.Distribution is provided, use it to inject randomness
+Notes: if a mystic.math.Distribution is provided, use it to inject randomness
     """
     w = [[] for i in range(len(q[-1]))]
     for j in range(len(q)-1,-1,-1):
@@ -39,7 +67,7 @@ Notes:
     return pts.tolist()
 
 
-def samplepts(lb,ub,npts,dist=None):
+def samplepts(lb, ub, npts, dist=None, clip=False):
     """
 takes lower and upper bounds (e.g. lb = [0,3], ub = [2,4])
 produces a list of sample points s = [[1,3],[1,4],[2,3],[2,4]]
@@ -49,16 +77,19 @@ Inputs:
     ub  --  a list of the upper bounds
     npts  --  number of sample points
     dist  --  a mystic.math.Distribution instance (or list of Distributions)
+    clip  --  if True, clip at bounds, else resample [default = False]
+
+Notes: if clip is None, do not clip or resample (may exceed bounds)
     """
     from mystic.math.samples import random_samples
-    q = random_samples(lb,ub,npts,dist)
+    q = random_samples(lb, ub, npts, dist, clip)
     return q.T.tolist()
    #q = [list(i) for i in q]
    #q = zip(*q)
    #return [list(i) for i in q]
 
 
-def fillpts(lb,ub,npts,data=None,rtol=None,dist=None):
+def fillpts(lb, ub, npts, data=None, rtol=None, dist=None, clip=False):
     """
 takes lower and upper bounds (e.g. lb = [0,3], ub = [2,4])
 finds npts that are at least rtol away from legacy data
@@ -71,8 +102,10 @@ Inputs:
     data  --  a list of legacy sample points
     rtol  --  target radial distance from each point
     dist  --  a mystic.math.Distribution instance (or list of Distributions)
+    clip  --  if True, clip at bounds, else resample [default = False]
 
 Notes: if rtol is None, use max rtol; if rtol < 0, use quick-n-dirty method
+Notes: if clip is None, do not clip or resample (may exceed bounds)
     """
     bounds = list(zip(lb,ub))
     from mystic.math.distance import euclidean as metric
@@ -109,16 +142,11 @@ Notes: if rtol is None, use max rtol; if rtol < 0, use quick-n-dirty method
         res = solver(holes, x0=bounds, bounds=bounds, **kwds)
         #res,cost = res[0],res[1]
         pts.append(res.ravel().tolist())
-    pts = pts[-npts:]
+    pts = pts[-npts:] if npts else pts[:0]
     # inject some randomness #XXX: what are alternatives? some sampling?
-    if dist is None: return pts
-    if not len(pts): return pts
-    if hasattr(dist, '__len__'): #FIXME: isiterable
-      import numpy as np
-      pts += np.array(tuple(di(len(pts)) for di in dist)).T
-    else:
-      pts += dist((len(pts),len(pts[0])))
-    return pts.tolist()
+    from mystic.math.samples import _bounded_samples
+    pts = _bounded_samples(lb, ub, pts, dist, clip)
+    return pts.T.tolist()
 
 
 def randomly_bin(N, ndim=None, ones=True, exact=True):
@@ -172,15 +200,8 @@ if __name__ == '__main__':
   lower = [0, 3, 6]
   upper = [2, 5, 8]
 
-  # generate arrays of points defining a grid in parameter space
-  grid_dimensions = len(lower)
-  bins = []
-  for i in range(grid_dimensions):  #XXX: different nbins for each direction?
-    step = abs(upper[i] - lower[i])//nbins  #XXX: // or / ?
-    bins.append( [lower[i] + (j+0.5)*step for j in range(nbins)] )
-
   # build a grid of starting points
-  initial_values = gridpts(bins)
+  initial_values = binnedpts(lower, upper, nbins)
   print("grid: %s" % initial_values)
 
   npts = 10
@@ -188,7 +209,7 @@ if __name__ == '__main__':
   upper = [2.0, 5.0, 8.0]
 
   # generate a set of random starting points
-  initial_values = samplepts(lower,upper,npts)
+  initial_values = samplepts(lower, upper, npts)
   print("scatter: %s" % initial_values)
 
   npts = 8
@@ -196,7 +217,7 @@ if __name__ == '__main__':
   upper = [6.0, 6.0, 6.0]
 
   # generate a set of space-filling points
-  initial_values = fillpts(lower,upper,npts,[[3,3,3]])
+  initial_values = fillpts(lower, upper, npts, [[3,3,3]])
   print("filled: %s" % initial_values)
 
 

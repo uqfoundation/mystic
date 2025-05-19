@@ -14,6 +14,48 @@ tools related to sampling
 # everything else is from samples.py
 
 # SAMPLING #
+def _bounded_samples(lb, ub, samples, dist=None, clip=False):
+  """
+ensure randomness from distribution yields samples bounded by given lb & ub
+
+Inputs:
+    lb -- a list of the lower bounds (e.g. lb = [0,3])
+    ub -- a list of the upper bounds (e.g. ub = [2,4])
+    samples -- a list of sample points (e.g. [[1,3],[0,4],[2,3],[2,4]])
+    dist -- a mystic.tools.Distribution instance (or list of Distributions)
+    clip -- if True, clip at bounds, else resample [default = False]
+
+Notes: if clip is None, do not clip or resample (may exceed bounds)
+"""
+  import numpy as np
+  samples = np.asarray(samples).T
+  if dist is None:
+    return samples
+  npts = samples.T.shape[0]
+  if not npts: return samples
+  if hasattr(dist, '__len__'): #FIXME: isiterable
+    pts = np.array(tuple(di(npts) for di in dist)).T + samples.T
+  else:
+    pts = dist((npts,len(lb))) + samples.T # transpose of desired shape
+    dist = (dist,)*len(lb)
+  if clip is None: return pts.T
+  pts = np.clip(pts, lb, ub).T
+  if clip: return pts  #XXX: returns a numpy.array
+  bad = ((pts.T == lb) + (pts.T == ub)).T
+  new = bad.sum(-1)
+  _n, n = 1, 1000
+  while any(new):
+    if _n == n: #XXX: slows the while loop...
+      raise RuntimeError('bounds could not be applied in %s iterations' % n)
+    for i,inew in enumerate(new): #XXX: slows... but enables iterable dist
+      if inew: pts[i][bad[i]] = dist[i](inew) + samples[i][bad[i]]
+    pts = np.clip(pts.T, lb, ub).T
+    bad = ((pts.T == lb) + (pts.T == ub)).T
+    new = bad.sum(-1)
+    _n += 1
+  return pts
+
+
 def _random_samples(lb, ub, npts=10000):
   """
 generate npts random samples between given lb & ub
@@ -44,30 +86,14 @@ Inputs:
     npts -- number of sample points [default = 10000]
     dist -- a mystic.tools.Distribution instance (or list of Distributions)
     clip -- if True, clip at bounds, else resample [default = False]
+
+Notes: if clip is None, do not clip or resample (may exceed bounds)
 """
   if dist is None:
     return _random_samples(lb,ub, npts)
   import numpy as np
-  if hasattr(dist, '__len__'): #FIXME: isiterable
-    pts = np.array(tuple(di(npts) for di in dist)).T
-  else:
-    pts = dist((npts,len(lb))) # transpose of desired shape
-    dist = (dist,)*len(lb)
-  pts = np.clip(pts, lb, ub).T
-  if clip: return pts  #XXX: returns a numpy.array
-  bad = ((pts.T == lb) + (pts.T == ub)).T
-  new = bad.sum(-1)
-  _n, n = 1, 1000 #FIXME: fixed number of max tries
-  while any(new):
-    if _n == n: #XXX: slows the while loop...
-      raise RuntimeError('bounds could not be applied in %s iterations' % n)
-    for i,inew in enumerate(new): #XXX: slows... but enables iterable dist
-      if inew: pts[i][bad[i]] = dist[i](inew)
-    pts = np.clip(pts.T, lb, ub).T
-    bad = ((pts.T == lb) + (pts.T == ub)).T
-    new = bad.sum(-1)
-    _n += 1
-  return pts  #XXX: returns a numpy.array
+  pts = np.zeros((npts,len(lb)))
+  return _bounded_samples(lb, ub, pts, dist=dist, clip=clip)
 
 
 def sample(f, lb, ub, npts=10000, map=None):
