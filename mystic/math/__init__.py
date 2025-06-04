@@ -30,13 +30,14 @@ These mathematical tools are provided::
     binnedpts    -- generate a set of regularly spaced points
     samplepts    -- generate a set of randomly sampled points 
     fillpts      -- generate a set of space-filling points
+    errorpts     -- generate a set of error-attracted points
     tolerance    -- absolute difference plus relative difference
     almostEqual  -- test if equal within some absolute or relative tolerance
     Distribution -- generate a sampling distribution instance
 """
 # functions and tools
 from .poly import polyeval, poly1d
-from .grid import gridpts, binnedpts, samplepts, fillpts
+from .grid import gridpts, binnedpts, samplepts, fillpts, errorpts
 from .approx import almostEqual, tolerance
 
 
@@ -46,7 +47,7 @@ from . import discrete as dirac_measure
 from . import distance as paramtrans
 
 __all__ = ['Distribution','polyeval','poly1d','gridpts','samplepts', \
-           'binnedpts','fillpts','almostEqual','tolerance']
+           'binnedpts','fillpts','errorpts','almostEqual','tolerance']
 
 # distribution object
 class Distribution(object):

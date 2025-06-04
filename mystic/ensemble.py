@@ -18,8 +18,10 @@ The set of solvers built on mystic's AbstractEnsembleSolver are::
    LatticeSolver -- start from center of N grid points
    BuckshotSolver -- start from N random points in parameter space
    SparsitySolver -- start from N points sampled in sparse regions of space
+   MisfitSolver -- start from N points near the largest misfit to legacy data
    MixedSolver -- start from N points using a mixture of ensemble solvers
 
+parallel mapped optimization starting from N points sampled near largest error
 
 Usage
 =====
@@ -31,8 +33,8 @@ or an example of using LatticeSolver.
 All solvers included in this module provide the standard signal handling.
 For more information, see `mystic.mystic.abstract_solver`.
 """
-__all__ = ['LatticeSolver','BuckshotSolver','SparsitySolver', \
-           'MixedSolver', 'lattice','buckshot','sparsity']
+__all__ = ['LatticeSolver','BuckshotSolver','SparsitySolver','MisfitSolver', \
+           'MixedSolver', 'lattice','buckshot','sparsity','misfit']
 
 from mystic.tools import unpair
 
@@ -45,7 +47,7 @@ parallel mapped optimization starting from the centers of N grid points
     """
     def __init__(self, dim, nbins=8):
         """
-Takes two initial inputs: 
+Takes two initial inputs:
     dim   -- dimensionality of the problem
     nbins -- tuple of number of bins in each dimension
 
@@ -58,6 +60,7 @@ All important class members are inherited from AbstractEnsembleSolver.
 
     def _InitialPoints(self):
         """Generate a grid of starting points for the ensemble of optimizers"""
+        #XXX: depends on SetStrictRange & SetDistribution
         nbins = self._nbins or self._npts
         if len(self._strictMax): upper = list(self._strictMax)
         else:
@@ -77,7 +80,7 @@ parallel mapped optimization starting from N uniform randomly sampled points
     """
     def __init__(self, dim, npts=8):
         """
-Takes two initial inputs: 
+Takes two initial inputs:
     dim   -- dimensionality of the problem
     npts  -- number of parallel solver instances
 
@@ -90,6 +93,7 @@ All important class members are inherited from AbstractEnsembleSolver.
 
     def _InitialPoints(self):
         """Generate a grid of starting points for the ensemble of optimizers"""
+        #XXX: depends on SetStrictRange & SetDistribution
         npts = self._npts
         if len(self._strictMax): upper = list(self._strictMax)
         else:
@@ -109,20 +113,22 @@ parallel mapped optimization starting from N points sampled from sparse regions
     """
     def __init__(self, dim, npts=8, rtol=None):
         """
-Takes three initial inputs: 
+Takes three initial inputs:
     dim   -- dimensionality of the problem
     npts  -- number of parallel solver instances
     rtol  -- size of radial tolerance for sparsity
 
 All important class members are inherited from AbstractEnsembleSolver.
         """
-        super(SparsitySolver, self).__init__(dim, npts=npts, rtol=rtol)
+        super(SparsitySolver, self).__init__(dim, npts=npts)
         from mystic.termination import NormalizedChangeOverGeneration
         convergence_tol = 1e-4
         self._termination = NormalizedChangeOverGeneration(convergence_tol)
+        self._rtol = rtol
 
     def _InitialPoints(self): #XXX: user can provide legacy data?
         """Generate a grid of starting points for the ensemble of optimizers"""
+        #XXX: depends on SetStrictRange & SetDistribution & Set*Monitor
         npts = self._npts
         if len(self._strictMax): upper = list(self._strictMax)
         else:
@@ -135,7 +141,59 @@ All important class members are inherited from AbstractEnsembleSolver.
         from mystic.math import fillpts
         data = self._evalmon._x if self._evalmon else []
         data += self._stepmon._x if self._stepmon else []
+        #print('fillpts: %s' % data)
         return fillpts(lower, upper, npts, data, self._rtol, self._dist)
+
+
+class MisfitSolver(AbstractEnsembleSolver):
+    """
+parallel mapped optimization starting from N points sampled near largest misfit
+    """
+    def __init__(self, dim, npts=8, mtol=None, func=None):
+        """
+Takes four initial inputs:
+    dim   -- dimensionality of the problem
+    npts  -- number of parallel solver instances
+    mtol  -- iteration tolerance solving for maximum error
+    func  -- function approximating the cost function
+
+All important class members are inherited from AbstractEnsembleSolver.
+        """
+        super(MisfitSolver, self).__init__(dim, npts=npts)
+        from mystic.termination import NormalizedChangeOverGeneration
+        convergence_tol = 1e-4
+        self._termination = NormalizedChangeOverGeneration(convergence_tol)
+        self._mtol = mtol
+        self._model = func
+
+    def _InitialPoints(self): #XXX: user can provide legacy data and error?
+        """Generate a grid of starting points for the ensemble of optimizers"""
+        #XXX: depends on SetStrictRange & SetDistribution & Set*Monitor & SetObjective
+        npts = self._npts
+        if len(self._strictMax): upper = list(self._strictMax)
+        else:
+            upper = list(self._defaultMax)
+        if len(self._strictMin): lower = list(self._strictMin)
+        else:
+            lower = list(self._defaultMin)
+
+        # build a grid of starting points
+        from mystic.math import errorpts
+        data = self._evalmon._x if self._evalmon else []
+        data += self._stepmon._x if self._stepmon else []
+        #print('errorpts: %s' % data)
+        if self._model is None and self._cost[1] is None:
+            yval = None
+        else: # yval = | model(data) - vals |
+            model = self._model or self._cost[1]
+            vals = self._evalmon._y if self._evalmon else []
+            vals += self._stepmon._y if self._stepmon else []
+            yval = list(map(model, data)) #FIXME: write to the evalmon
+            from mystic.math.distance import euclidean as metric
+            yval = metric(vals, yval, pair=True, dmin=2, axis=0)
+            #print('vals: %s' % vals)
+        #print('yval: %s' % yval)
+        return errorpts(lower, upper, npts, data, yval, self._mtol, self._dist)
 
 
 class MixedSolver(AbstractEnsembleSolver):
@@ -144,7 +202,7 @@ parallel mapped optimization starting from N points sampled with mixed solvers
     """
     def __init__(self, dim, samp=8):
         """
-Takes three initial inputs: 
+Takes two initial inputs:
     dim   -- dimensionality of the problem
     samp  -- dict of {ensemble solver: npts}
 
@@ -183,17 +241,20 @@ All important class members are inherited from AbstractEnsembleSolver.
         """Generate a grid of starting points for the ensemble of optimizers"""
         from mystic import ensemble #XXX: THIS file
         from mystic.monitors import Monitor
+        from copy import deepcopy
         data = Monitor()
         for name,args in self._samp:
             solver = getattr(ensemble, name)(self.nDim, *args)
             solver._strictMax = self._strictMax
             solver._strictMin = self._strictMin
             solver._dist = self._dist
-            if self._evalmon: solver._evalmon = self._evalmon.copy()
-            if self._stepmon: solver._stepmon = self._stepmon.copy()
-            solver.SetEvaluationMonitor(data) # sparsity uses data in monitors
+            if self._evalmon: solver._evalmon = deepcopy(self._evalmon)
+            if self._stepmon: solver._stepmon = deepcopy(self._stepmon)
+            #solver.SetEvaluationMonitor(deepcopy(data))  # use prior loop data
+            solver._cost = self._cost #XXX: SetObjective? # copy unlinks evalmon
             data._x += solver._InitialPoints()
-            data._y = [None]*len(data._x)
+            data._y = [float('inf')]*len(data._x) #FIXME: ????? nan?
+        #print('data: %s' % data._x)
         return data._x
 
 
@@ -535,6 +596,139 @@ Notes:
     rtol = kwds['rtol'] if 'rtol' in kwds else None #NOTE: 'data' set w/monitors
 
     solver = SparsitySolver(ndim,npts,rtol)
+    solver.SetNestedSolver(_solver) #XXX: skip settings for configured solver?
+    solver.SetEvaluationLimits(maxiter,maxfun)
+    solver.SetEvaluationMonitor(evalmon)
+    solver.SetGenerationMonitor(stepmon)
+    if 'id' in kwds:
+        solver.id = int(kwds['id'])
+    if 'dist' in kwds:
+        solver.SetDistribution(kwds['dist'])
+    if 'penalty' in kwds:
+        solver.SetPenalty(kwds['penalty'])
+    if 'constraints' in kwds:
+        solver.SetConstraints(kwds['constraints'])
+    if bounds is not None:
+        minb,maxb = unpair(bounds)
+        tight = kwds['tightrange'] if 'tightrange' in kwds else None
+        clip = kwds['cliprange'] if 'cliprange' in kwds else None
+        solver.SetStrictRanges(minb,maxb,tight=tight,clip=clip)
+
+    _map = kwds['map'] if 'map' in kwds else None
+    if _map: solver.SetMapper(_map)
+
+    if handler: solver.enable_signal_handler()
+    solver.Solve(cost,termination=termination,disp=disp, \
+                 ExtraArgs=args,callback=callback)
+    solution = solver.Solution()
+
+    # code below here pushes output to scipy.optimize.fmin interface
+    msg = solver.Terminated(disp=False, info=True)
+
+    x = solver.bestSolution
+    fval = solver.bestEnergy
+    warnflag = 0
+    fcalls = solver.evaluations
+    all_fcalls = solver._total_evals
+    iterations = solver.generations
+    allvecs = solver._stepmon.x
+
+    if fcalls >= solver._maxfun: #XXX: check against total or individual?
+        warnflag = 1
+    elif iterations >= solver._maxiter: #XXX: check against total or individual?
+        warnflag = 2
+    else: pass
+
+    if full_output:
+        retlist = x, fval, iterations, fcalls, warnflag, all_fcalls
+        if retall:
+            retlist += (allvecs,)
+    else:
+        retlist = x
+        if retall:
+            retlist = (x, allvecs)
+
+    return retlist
+
+
+def misfit(cost,ndim,npts=8,args=(),bounds=None,ftol=1e-4,maxiter=None, \
+           maxfun=None,full_output=0,disp=1,retall=0,callback=None,**kwds):
+    """Minimize a function using the misfit ensemble solver.
+
+Uses a misfit ensemble algorithm to find the minimum of a function of one or
+more variables. Mimics the ``scipy.optimize.fmin`` interface. Starts *npts*
+solver instances near the maximum of an interpolated error surface, where
+error is the absolute difference between a given function and existing points.
+
+Args:
+    cost (func): the function or method to be minimized: ``y = cost(x)``.
+    ndim (int): dimensionality of the problem.
+    npts (int, default=8): number of solver instances.
+    args (tuple, default=()): extra arguments for cost.
+    bounds (list(tuple), default=None): list of pairs of bounds (min,max),
+        one for each parameter.
+    ftol (float, default=1e-4): acceptable relative error in ``cost(xopt)``
+        for convergence.
+    gtol (int, default=10): maximum iterations to run without improvement.
+    mtol (float, default=None): iteration tolerance solving for maximum error.
+    maxiter (int, default=None): the maximum number of iterations to perform.
+    maxfun (int, default=None): the maximum number of function evaluations.
+    full_output (bool, default=False): True if fval and warnflag are desired.
+    disp (bool, default=True): if True, print convergence messages.
+    retall (bool, default=False): True if allvecs is desired.
+    callback (func, default=None): function to call after each iteration. The
+        interface is ``callback(xk)``, with xk the current parameter vector.
+    solver (solver, default=None): override the default nested Solver instance.
+    handler (bool, default=False): if True, enable handling interrupt signals.
+    id (int, default=None): the ``id`` of the solver used in logging.
+    itermon (monitor, default=None): override the default GenerationMonitor.
+    evalmon (monitor, default=None): override the default EvaluationMonitor.
+    constraints (func, default=None): a function ``xk' = constraints(xk)``,
+        where xk is the current parameter vector, and xk' is a parameter
+        vector that satisfies the encoded constraints.
+    penalty (func, default=None): a function ``y = penalty(xk)``, where xk is
+        the current parameter vector, and ``y' == 0`` when the encoded
+        constraints are satisfied (and ``y' > 0`` otherwise).
+    tightrange (bool, default=None): impose bounds and constraints concurrently.
+    cliprange (bool, default=None): bounding constraints clip exterior values.
+    map (func, default=None): a (parallel) map instance ``y = map(f, x)``.
+    dist (mystic.math.Distribution, default=None): generate randomness in
+        ensemble starting position using the given distribution.
+    step (bool, default=False): if True, enable Step within the ensemble.
+
+Returns:
+    ``(xopt, {fopt, iter, funcalls, warnflag, allfuncalls}, {allvecs})``
+
+Notes:
+    - xopt (*ndarray*): the minimizer of the cost function
+    - fopt (*float*): value of cost function at minimum: ``fopt = cost(xopt)``
+    - iter (*int*): number of iterations
+    - funcalls (*int*): number of function calls
+    - warnflag (*int*): warning flag:
+        - ``1 : Maximum number of function evaluations``
+        - ``2 : Maximum number of iterations``
+    - allfuncalls (*int*): total function calls (for all solver instances)
+    - allvecs (*list*): a list of solutions at each iteration
+    """
+    handler = kwds['handler'] if 'handler' in kwds else False
+    from mystic.solvers import NelderMeadSimplexSolver as _solver
+    if 'solver' in kwds: _solver = kwds['solver']
+
+    from mystic.monitors import Monitor
+    stepmon = kwds['itermon'] if 'itermon' in kwds else Monitor()
+    evalmon = kwds['evalmon'] if 'evalmon' in kwds else Monitor()
+
+    gtol = 10 # termination generations (scipy: 2, default: 10)
+    if 'gtol' in kwds: gtol = kwds['gtol']
+    if gtol: #if number of generations is provided, use NCOG
+        from mystic.termination import NormalizedChangeOverGeneration
+        termination = NormalizedChangeOverGeneration(ftol,gtol)
+    else:
+        from mystic.termination import VTRChangeOverGeneration
+        termination = VTRChangeOverGeneration(ftol)
+    mtol = kwds['mtol'] if 'mtol' in kwds else None #NOTE: 'data' set w/monitors
+
+    solver = MisfitSolver(ndim,npts,mtol)
     solver.SetNestedSolver(_solver) #XXX: skip settings for configured solver?
     solver.SetEvaluationLimits(maxiter,maxfun)
     solver.SetEvaluationMonitor(evalmon)

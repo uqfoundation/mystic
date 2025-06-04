@@ -21,9 +21,10 @@ and in each derived optimizer.  Mystic's optimizers are::
     DifferentialEvolutionSolver  -- Differential Evolution algorithm
     DifferentialEvolutionSolver2 -- Price & Storn's Differential Evolution
     ** Pseudo-Global Optimizers **
-    SparsitySolver               -- N Solvers sampled where point density is low
     BuckshotSolver               -- Uniform Random Distribution of N Solvers
     LatticeSolver                -- Distribution of N Solvers on a Regular Grid
+    SparsitySolver               -- N Solvers Sampled where Point Density is Low
+    MisfitSolver                 -- N Solvers Sampled where Model Misfit is High
     MixedSolver                  -- Mixture of N Pseudo-Global Optimizers
     ** Local-Search Optimizers **
     NelderMeadSimplexSolver      -- Nelder-Mead Simplex algorithm
@@ -43,9 +44,10 @@ are provided::
     diffev      -- DifferentialEvolutionSolver
     diffev2     -- DifferentialEvolutionSolver2
     ** Pseudo-Global Optimizers **
-    sparsity    -- SparsitySolver
     buckshot    -- BuckshotSolver
     lattice     -- LatticeSolver
+    sparsity    -- SparsitySolver
+    misfit      -- MisfitSolver
     ** Local-Search Optimizers **
     fmin        -- NelderMeadSimplexSolver
     fmin_powell -- PowellDirectionalSolver
@@ -71,11 +73,12 @@ from mystic.differential_evolution import DifferentialEvolutionSolver2
 from mystic.differential_evolution import diffev, diffev2
 
 # pseudo-global optimizers
-from mystic.ensemble import SparsitySolver
 from mystic.ensemble import BuckshotSolver
 from mystic.ensemble import LatticeSolver
+from mystic.ensemble import SparsitySolver
+from mystic.ensemble import MisfitSolver
 from mystic.ensemble import MixedSolver
-from mystic.ensemble import sparsity, buckshot, lattice
+from mystic.ensemble import buckshot, lattice, sparsity, misfit
 
 # local-search optimizers
 from mystic.scipy_optimize import NelderMeadSimplexSolver
