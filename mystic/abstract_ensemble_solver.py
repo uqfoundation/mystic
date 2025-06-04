@@ -102,7 +102,6 @@ Additional inputs::
     npop     -- size of the trial solution population.      [default = 1]
     nbins    -- tuple of number of bins in each dimension.  [default = [1]*dim]
     npts     -- number of solver instances.                 [default = 1]
-    rtol     -- size of radial tolerance for sparsity.      [default = None]
 
 Important class members::
 
@@ -136,8 +135,6 @@ Important class members::
             pass # nbins = [1]*dim
         else:
             self._npts = reduce(lambda i,j:i*j, nbins) # nbins
-        rtol = kwds['rtol'] if 'rtol' in kwds else None
-        self._rtol            = rtol
         from mystic.solvers import NelderMeadSimplexSolver
         self._solver          = NelderMeadSimplexSolver
         self._bestSolver      = None # 'best' solver (after Solve)
@@ -631,8 +628,9 @@ Notes:
         else: verbose = False
 
         # generate starting points
-        if self._is_new(): iv = self._InitialPoints()
-        else: iv = [None] * len(self._allSolvers)
+        newpts = len(self._allSolvers)
+        if self._is_new(): iv = self._InitialPoints()#[-newpts:]
+        else: iv = [None] * newpts
         op = self._AbstractEnsembleSolver__init_allSolvers()
         vb = [verbose if not s.Terminated() else False for s in self._allSolvers]
         cb = [echo] * len(op) #XXX: remove?
@@ -754,8 +752,9 @@ Notes:
         else: verbose = False
 
         # generate starting points
-        if self._is_new(): iv = self._InitialPoints()
-        else: iv = [None] * len(self._allSolvers)
+        newpts = len(self._allSolvers)
+        if self._is_new(): iv = self._InitialPoints()#[-newpts:]
+        else: iv = [None] * newpts
         op = self._AbstractEnsembleSolver__init_allSolvers()
         vb = [verbose] * len(op)
         cb = [echo] * len(op) #XXX: remove?

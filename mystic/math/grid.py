@@ -146,7 +146,96 @@ Notes: if clip is None, do not clip or resample (may exceed bounds)
     # inject some randomness #XXX: what are alternatives? some sampling?
     from mystic.math.samples import _bounded_samples
     pts = _bounded_samples(lb, ub, pts, dist, clip)
+    #print(pts.T)
     return pts.T.tolist()
+
+
+def errorpts(lb, ub, npts, data=None, error=None, mtol=None, dist=None, clip=False):
+    """
+takes lower and upper bounds (e.g. lb = [0,3], ub = [2,4])
+sample npts near maxima of surface interpolated from {data:error}
+produces a list of sample points s = [[1,3],[1,4],[2,3],[2,4]]
+
+Inputs:
+    lb  --  a list of the lower bounds
+    ub  --  a list of the upper bounds
+    npts  --  number of sample points
+    data  --  a list of legacy sample points
+    error  --  a list of legacy sample error values (must be non-negative)
+    mtol  --  iteration tolerance solving for maximum error
+    dist  --  a mystic.math.Distribution instance (or list of Distributions)
+    clip  --  if True, clip at bounds, else resample [default = False]
+
+Notes: if mtol is None, defaults to mtol=0.1 (must be non-negative)
+Notes: if clip is None, do not clip or resample (may exceed bounds)
+    """ #NOTE: error cannot be multi-valued
+    #XXX: should draw be exposed or fixed? should default to str?
+    #XXX: should dist not default to None? (or have a rtol?)
+    npop = 8 #FIXME: change default, or expose this to the user???
+    draw = 'diffev'
+    # draw  --  if False, use npts largest error values, else use weighted draw
+    # if draw is a mystic.solver, interpolate error and solve for npts maxima
+    #
+    import numpy as np
+    if data is None: data = []
+    if error is None: error = np.ones(len(data)) #XXX: does this make sense?
+    if len(data) != len(error):
+        msg = "'data' and 'error' must have the same length"
+        raise ValueError(msg)
+    data = np.asarray(data)
+    error = np.asarray(error)
+    if mtol is None: mtol = 10 #NOTE: default is 0.1
+    else: mtol = int(100 * mtol)
+    if not len(error): # randomly select points (all error is the same)
+        return fillpts(lb,ub,npts,dist=dist)
+    if error.min() < 0:
+        msg = "all 'error' must be non-negative"
+        raise ValueError(msg)
+    elif not error.sum(): error[:] = 1
+    else: #NOTE: if contains 'nan', 'p' in random choice will fail
+        eix = np.isinf(error)
+        if eix.sum(): # only retain where inf
+            error[eix] = 1; error[~eix] = 0
+    if len(error) == 1: # select points away from data (error is the same)
+        return fillpts(lb,ub,npts,data=data,dist=dist)
+    # argsort npts based on maximum values
+    idx = np.argsort(error)[::-1][:npts]
+    pts = max(npts - len(idx), 0)
+    if draw is True:
+        # replace with a weighted draw expanded over maximum values
+        idx = np.array([np.random.choice(idx[:i+1], size=1, p=error[idx[:i+1]]/error[idx[:i+1]].sum()) for i in range(len(idx))]).flatten()
+    # sample remaining npts using simple weighted draw
+    idx = np.concatenate((idx, np.random.choice(len(error), size=pts, p=error/error.sum())))
+    result = data[idx].tolist()
+    if draw:
+        ## generate error model from sample points and values
+        from mystic.math.interpolate import interpf, _to_objective
+        error = interpf(data, error, 'thin_plate') #XXX requires len(error) > 1
+        error = _to_objective(error)
+        bounds = list(zip(lb,ub))
+        kwds = dict(bounds=bounds,disp=0,xtol=1e-8,ftol=1e-8,gtol=None)
+        kwds.update(dict(npop=npop,maxiter=mtol)) #NOTE: expose to user
+        # get solver
+        from mystic import solvers, ensemble
+        swap = dict(BuckshotSolver='buckshot', LatticeSolver='lattice',
+                    SparsitySolver='sparsity', #MixedSolver='mixed',
+                    DifferentialEvolutionSolver='diffev',
+                    DifferentialEvolutionSolver2='diffev2',
+                    NelderMeadSimplexSolver='fmin',
+                    PowellDirectionalSolver='fmin_powell')
+        draw = getattr(draw, '__name__', draw) # object to name
+        draw = swap.get(draw, draw) # one-liner or True
+        solver = getattr(solvers, draw, None) if type(draw) is type('') else None
+        # if solver then optimize
+        if solver is not None:
+            if draw in dir(ensemble):
+                result = [len(bounds)]*len(result)
+            result = np.array([solver(lambda x: -error(x),x0,**kwds) for x0 in result]).tolist()
+    # inject some randomness #XXX: what are alternatives? some sampling?
+    from mystic.math.samples import _bounded_samples
+    result = _bounded_samples(lb, ub, result, dist, clip)
+    #print(result.T)
+    return result.T.tolist()
 
 
 def randomly_bin(N, ndim=None, ones=True, exact=True):
@@ -213,12 +302,23 @@ if __name__ == '__main__':
   print("scatter: %s" % initial_values)
 
   npts = 8
-  lower = [0.0, 0.0, 0.0] 
+  lower = [0.0, 0.0, 0.0]
   upper = [6.0, 6.0, 6.0]
+  data = [[3,3,3]]
 
   # generate a set of space-filling points
-  initial_values = fillpts(lower, upper, npts, [[3,3,3]])
+  initial_values = fillpts(lower, upper, npts, data)
   print("filled: %s" % initial_values)
+
+  npts = 6
+  lower = [0.0, 0.0, 0.0] 
+  upper = [4.0, 4.0, 4.0]
+  data = [[0,0,0],[2,2,2],[4,4,4]]
+  error = [0, 1, 2]
+
+  # generate a set of space-filling points
+  initial_values = errorpts(lower, upper, npts, data, error)
+  print("errors: %s" % initial_values)
 
 
 # EOF

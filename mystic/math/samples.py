@@ -39,9 +39,10 @@ Notes: if clip is None, do not clip or resample (may exceed bounds)
     pts = dist((npts,len(lb))) + samples.T # transpose of desired shape
     dist = (dist,)*len(lb)
   if clip is None: return pts.T
+  bad = ((pts == lb) + (pts == ub)).T #NOTE: these points are ok
   pts = np.clip(pts, lb, ub).T
   if clip: return pts  #XXX: returns a numpy.array
-  bad = ((pts.T == lb) + (pts.T == ub)).T
+  bad = ((pts.T == lb) + (pts.T == ub)).T != bad
   new = bad.sum(-1)
   _n, n = 1, 1000
   while any(new):
@@ -49,8 +50,9 @@ Notes: if clip is None, do not clip or resample (may exceed bounds)
       raise RuntimeError('bounds could not be applied in %s iterations' % n)
     for i,inew in enumerate(new): #XXX: slows... but enables iterable dist
       if inew: pts[i][bad[i]] = dist[i](inew) + samples[i][bad[i]]
+    bad = ((pts.T == lb) + (pts.T == ub)).T #NOTE: these points are ok
     pts = np.clip(pts.T, lb, ub).T
-    bad = ((pts.T == lb) + (pts.T == ub)).T
+    bad = ((pts.T == lb) + (pts.T == ub)).T != bad
     new = bad.sum(-1)
     _n += 1
   return pts

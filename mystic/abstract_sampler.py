@@ -38,11 +38,11 @@ Args:
         self._kwds = defaultdict(lambda :None)
         self._kwds.update(kwds)
 
-        s = self._init_solver()
         kwd = dict(tight=self._kwds['tightrange'], clip=self._kwds['cliprange'])
-        s.SetStrictRanges(*zip(*bounds), **kwd)
-        #s.SetObjective(memo) #model) #XXX: ExtraArgs: axis ???
-        s.SetObjective(model) #FIXME: ensure cached model
+        s = self._init_solver(**kwd)
+        #s.SetStrictRanges(*zip(*bounds), **kwd)
+        #s.SetObjective(model) #FIXME: ensure cached model
+        ##s.SetObjective(memo) #model) #XXX: ExtraArgs: axis ???
 
         # apply additional kwds
         solver = self._kwds['solver']
@@ -76,10 +76,13 @@ Args:
         return
 
 
-    def _init_solver(self):
+    def _init_solver(self, **kwd):
         """initialize the ensemble solver"""
         from mystic.abstract_ensemble_solver import AbstractEnsembleSolver
-        return AbstractEnsembleSolver(len(self._bounds), npts=self._npts)
+        s = AbstractEnsembleSolver(len(self._bounds), npts=self._npts)
+        s.SetStrictRanges(*zip(*self._bounds), **kwd)
+        s.SetObjective(self._model)
+        return s
 
 
     def _reset_sampler(self):
