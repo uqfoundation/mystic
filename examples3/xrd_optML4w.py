@@ -68,7 +68,7 @@ from mystic.cache.function import write as surrogatedb
 while not loop.Terminated():
 
     # fit the surrogate to data in truth database
-    surrogate.fit(data=data)
+    surrogate.fit(data=data, noise=1e-8)
     #[evalmon(xi,surrogate(xi)) for xi in xdata] # save latest data to monitor
     # save surrogate to archive
     surrogatedb(surrogate, 'function')
