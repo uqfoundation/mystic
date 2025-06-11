@@ -427,8 +427,8 @@ NOTE: The default solver is 'diffev', with npop=min(40, ndim*5). The default
         from mystic.solvers import SparsitySolver as TheSolver
         solver = TheSolver(ndim, max(8, npts)) #XXX: needs better default?
         ensemble = True
-    elif solver == 'misfit':
-        from mystic.solvers import MisfitSolver as TheSolver
+    elif solver == 'residual':
+        from mystic.solvers import ResidualSolver as TheSolver
         solver = TheSolver(ndim, max(8, npts)) #XXX: needs better default?
         ensemble = True
     

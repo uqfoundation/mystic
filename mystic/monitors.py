@@ -152,7 +152,7 @@ example usage...
 
     def __call__(self, x, y, id=None, **kwds):#, best=0):
         self._x.append(listify(x)) #XXX: listify?
-        _type = iter if hasattr(y, '__len__') else None
+        _type = iter if (hasattr(y, '__len__') and getattr(y, 'ndim', 1)) else None
         self._y.append(listify(self._k(y, _type))) #XXX: listify?
         self._id.append(id)
        #if not self._all and list_or_tuple_or_ndarray(x):

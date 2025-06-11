@@ -21,13 +21,14 @@ from emulators import cost4 as cost, x4 as target, bounds4 as bounds
 # prepare truth (i.e. an 'expensive' model)
 nx = 4; ny = None
 #archive = get_db('truth.db', type=file_archive)
-truth = WrapModel('truth', cost, nx=nx, ny=ny, cached=False)#archive)
+truth = WrapModel('truth', cost, nx=nx, ny=ny, rnd=False, cached=False)#archive)
 
 # remove any prior cached evaluations of truth
 import shutil
 if os.path.exists("truth"): shutil.rmtree("truth")
 if os.path.exists("error.txt"): os.remove("error.txt")
 if os.path.exists("log.txt"): os.remove("log.txt")
+if os.path.exists("function"): shutil.rmtree("function")
 
 try: # parallel maps
     from pathos.maps import Map
@@ -45,7 +46,7 @@ if pmap is not None:
 
 # create an inexpensive surrogate for truth
 surrogate = InterpModel("surrogate", nx=nx, ny=ny, data=truth, smooth=0.0,
-                        noise=0.0, method="thin_plate", extrap=False)
+                        noise=0.0, method="thin_plate", rnd=False, extrap=False)
 
 # iterate until error (of candidate minimum) < 1e-3
 N = 4
@@ -63,11 +64,14 @@ loop.SetTermination(VTR(1e-3)) #XXX: VTRCOG, TimeLimits, etc?
 loop.SetEvaluationLimits(maxiter=500)
 loop.SetEvaluationMonitor(evalmon)
 loop.SetGenerationMonitor(tracker)
+from mystic.cache.function import write as surrogatedb
 while not loop.Terminated():
 
     # fit the surrogate to data in truth database
     surrogate.fit(data=data)
     #[evalmon(xi,surrogate(xi)) for xi in xdata] # save latest data to monitor
+    # save surrogate to archive
+    surrogatedb(surrogate, 'function')
 
     # find the first-order critical points of the surrogate
     mon = Monitor(); mon.prepend(evalmon) # fill with data in db
@@ -77,6 +81,8 @@ while not loop.Terminated():
                         solver=PowellDirectionalSolver, evalmon=mon,
                         termination=NCOG(1e-6, 10))
     s.sample_until(terminated=all)
+
+    # get surrogate at critical points
     xdata = [list(i) for i in s._sampler._all_bestSolution]
     ysurr = s._sampler._all_bestEnergy
 

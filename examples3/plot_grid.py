@@ -1,3 +1,9 @@
+#!/usr/bin/env python
+#
+# Author: Mike McKerns (mmckerns @caltech and @uqfoundation)
+# Copyright (c) 2025 The Uncertainty Quantification Foundation.
+# License: 3-clause BSD.  The full license text is available at:
+#  - https://github.com/uqfoundation/mystic/blob/master/LICENSE
 import numpy as np
 from mystic.tools import random_seed
 random_seed(17)

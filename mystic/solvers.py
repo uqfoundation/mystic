@@ -24,7 +24,7 @@ and in each derived optimizer.  Mystic's optimizers are::
     BuckshotSolver               -- Uniform Random Distribution of N Solvers
     LatticeSolver                -- Distribution of N Solvers on a Regular Grid
     SparsitySolver               -- N Solvers Sampled where Point Density is Low
-    MisfitSolver                 -- N Solvers Sampled where Model Misfit is High
+    ResidualSolver               -- N Solvers Sampled where Model Misfit is High
     MixedSolver                  -- Mixture of N Pseudo-Global Optimizers
     ** Local-Search Optimizers **
     NelderMeadSimplexSolver      -- Nelder-Mead Simplex algorithm
@@ -47,7 +47,7 @@ are provided::
     buckshot    -- BuckshotSolver
     lattice     -- LatticeSolver
     sparsity    -- SparsitySolver
-    misfit      -- MisfitSolver
+    residual    -- ResidualSolver
     ** Local-Search Optimizers **
     fmin        -- NelderMeadSimplexSolver
     fmin_powell -- PowellDirectionalSolver
@@ -76,9 +76,9 @@ from mystic.differential_evolution import diffev, diffev2
 from mystic.ensemble import BuckshotSolver
 from mystic.ensemble import LatticeSolver
 from mystic.ensemble import SparsitySolver
-from mystic.ensemble import MisfitSolver
+from mystic.ensemble import ResidualSolver
 from mystic.ensemble import MixedSolver
-from mystic.ensemble import buckshot, lattice, sparsity, misfit
+from mystic.ensemble import buckshot, lattice, sparsity, residual
 
 # local-search optimizers
 from mystic.scipy_optimize import NelderMeadSimplexSolver

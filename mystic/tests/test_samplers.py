@@ -8,7 +8,7 @@
 from mystic.solvers import PowellDirectionalSolver
 from mystic.termination import NormalizedChangeOverGeneration as NCOG
 from mystic.samplers import (SparsitySampler, BuckshotSampler, LatticeSampler,
-                             MisfitSampler, MixedSampler)
+                             ResidualSampler, MixedSampler)
 from mystic.models import sphere as model
 from mystic.math import almostEqual
 x0 = [0,0,0,0]
@@ -18,7 +18,7 @@ N = 8
 
 
 for sampler in (SparsitySampler, BuckshotSampler, LatticeSampler,
-                MisfitSampler, MixedSampler):
+                ResidualSampler, MixedSampler):
     s = sampler(bounds, model, npts=N, id=0, maxiter=8000, maxfun=1e6,
                 solver=PowellDirectionalSolver, termination=NCOG(1e-6, 10))
     s.sample_until(terminated=all)

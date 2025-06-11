@@ -8,7 +8,7 @@
 samplers: optimizer-guided directed sampling
 """
 __all__  = ['LatticeSampler','BuckshotSampler','SparsitySampler',\
-            'MisfitSampler','MixedSampler']
+            'ResidualSampler','MixedSampler']
 
 from mystic.abstract_sampler import AbstractSampler
 
@@ -57,19 +57,19 @@ optimizer-directed sampling starting at N points sampled in sparse reigons
         return s
 
 
-class MisfitSampler(AbstractSampler):
+class ResidualSampler(AbstractSampler):
     """
 optimizer-directed sampling starting at N points sampled near largest misfit
     """
     def __init__(self, bounds, model, npts=None, **kwds):
         self._mtol = kwds.pop('mtol', None)
-        super(MisfitSampler, self).__init__(bounds, model, npts, **kwds)
+        super(ResidualSampler, self).__init__(bounds, model, npts, **kwds)
         return
     __init__.__doc__ = AbstractSampler.__init__.__doc__
     def _init_solver(self, **kwd):
         """initialize the ensemble solver"""
-        from mystic.ensemble import MisfitSolver
-        s = MisfitSolver(len(self._bounds), npts=self._npts, mtol=self._mtol, func=self._model) #FIXME: TEST (mon?)
+        from mystic.ensemble import ResidualSolver
+        s = ResidualSolver(len(self._bounds), npts=self._npts, mtol=self._mtol, func=self._model) #FIXME: TEST (mon?)
         s.SetStrictRanges(*zip(*self._bounds), **kwd)
         s.SetObjective(self._model)
         return s
