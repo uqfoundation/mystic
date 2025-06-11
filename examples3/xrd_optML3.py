@@ -20,7 +20,7 @@ from emulators import cost3 as cost, x3 as target, bounds3 as bounds
 # prepare truth (i.e. an 'expensive' model)
 nx = 3; ny = None
 archive = get_db('truth.db', type=file_archive)
-truth = WrapModel("truth", cost, nx=nx, ny=ny, cached=archive)
+truth = WrapModel("truth", cost, nx=nx, ny=ny, rnd=False, cached=archive)
 
 # remove any prior cached evaluations of truth
 archive.clear(); archive.sync(clear=True)
@@ -43,7 +43,7 @@ if pmap is not None:
 
 # create an inexpensive surrogate for truth
 surrogate = InterpModel("surrogate", nx=nx, ny=ny, data=truth, smooth=0.0,
-                        noise=0.0, method="thin_plate", extrap=False)
+                        noise=0.0, method="thin_plate", rnd=False, extrap=False)
 
 # iterate until error (of candidate minimum) < 1e-3
 tracker = LoggingMonitor(1, filename='error.txt', label='error')

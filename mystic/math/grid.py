@@ -171,8 +171,9 @@ Notes: if clip is None, do not clip or resample (may exceed bounds)
     """ #NOTE: error cannot be multi-valued
     #XXX: should draw be exposed or fixed? should default to str?
     #XXX: should dist not default to None? (or have a rtol?)
-    npop = 8 #FIXME: change default, or expose this to the user???
-    draw = 'diffev'
+    smooth = 0 #XXX: expose this to the user?
+    npop = 8 #FIXME: change default? expose this to the user?
+    draw = 'diffev' if npop else 'fmin'
     # draw  --  if False, use npts largest error values, else use weighted draw
     # if draw is a mystic.solver, interpolate error and solve for npts maxima
     #
@@ -184,6 +185,7 @@ Notes: if clip is None, do not clip or resample (may exceed bounds)
         raise ValueError(msg)
     data = np.asarray(data)
     error = np.asarray(error)
+    #print(error)
     if mtol is None: mtol = 10 #NOTE: default is 0.1
     else: mtol = int(100 * mtol)
     if not len(error): # randomly select points (all error is the same)
@@ -208,9 +210,9 @@ Notes: if clip is None, do not clip or resample (may exceed bounds)
     idx = np.concatenate((idx, np.random.choice(len(error), size=pts, p=error/error.sum())))
     result = data[idx].tolist()
     if draw:
-        ## generate error model from sample points and values
+        # generate error model from sample points and values #XXX: len(error)>1
         from mystic.math.interpolate import interpf, _to_objective
-        error = interpf(data, error, 'thin_plate') #XXX requires len(error) > 1
+        error = interpf(data, error, 'thin_plate', smooth=smooth)
         error = _to_objective(error)
         bounds = list(zip(lb,ub))
         kwds = dict(bounds=bounds,disp=0,xtol=1e-8,ftol=1e-8,gtol=None)

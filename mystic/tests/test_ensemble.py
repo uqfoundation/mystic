@@ -26,7 +26,7 @@ def init_data():
     mon._y = (list(map(rosen, mon._x)) + np.random.normal(0,.05, size=ini)).tolist()
     return mon
 
-solvers = ['MisfitSolver', 'SparsitySolver', 'BuckshotSolver', 'LatticeSolver']
+solvers = ['ResidualSolver', 'SparsitySolver', 'BuckshotSolver', 'LatticeSolver']
 for solver in solvers:
     samp = {solver: (npts,)}
     solver = eval(solver)(ndim, *samp[solver])

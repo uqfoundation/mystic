@@ -14,7 +14,7 @@ from mystic.solvers import PowellDirectionalSolver, NelderMeadSimplexSolver, \
                            DifferentialEvolutionSolver, \
                            DifferentialEvolutionSolver2, \
                            LatticeSolver, BuckshotSolver, SparsitySolver, \
-                           MisfitSolver, MixedSolver
+                           ResidualSolver, MixedSolver
 
 almostEqual = my.math.almostEqual
 rosen = mm.rosen
@@ -71,9 +71,9 @@ test_constrained(DifferentialEvolutionSolver2, tight=None, clip=None)
 #test_constrained(SparsitySolver, tight=True, clip=None) #npts=8?
 #test_constrained(SparsitySolver, tight=True, clip=True)
 #test_constrained(SparsitySolver, tight=None, clip=None)
-#test_constrained(MisfitSolver, tight=True, clip=None) #npts=8?
-#test_constrained(MisfitSolver, tight=True, clip=True)
-#test_constrained(MisfitSolver, tight=None, clip=None)
+#test_constrained(ResidualSolver, tight=True, clip=None) #npts=8?
+#test_constrained(ResidualSolver, tight=True, clip=True)
+#test_constrained(ResidualSolver, tight=None, clip=None)
 #test_constrained(MixedSolver, tight=True, clip=None) #samp=8?
 #test_constrained(MixedSolver, tight=True, clip=True)
 #test_constrained(MixedSolver, tight=None, clip=None)

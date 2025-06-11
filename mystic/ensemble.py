@@ -18,7 +18,7 @@ The set of solvers built on mystic's AbstractEnsembleSolver are::
    LatticeSolver -- start from center of N grid points
    BuckshotSolver -- start from N random points in parameter space
    SparsitySolver -- start from N points sampled in sparse regions of space
-   MisfitSolver -- start from N points near the largest misfit to legacy data
+   ResidualSolver -- start from N points near the largest misfit to legacy data
    MixedSolver -- start from N points using a mixture of ensemble solvers
 
 parallel mapped optimization starting from N points sampled near largest error
@@ -33,8 +33,8 @@ or an example of using LatticeSolver.
 All solvers included in this module provide the standard signal handling.
 For more information, see `mystic.mystic.abstract_solver`.
 """
-__all__ = ['LatticeSolver','BuckshotSolver','SparsitySolver','MisfitSolver', \
-           'MixedSolver', 'lattice','buckshot','sparsity','misfit']
+__all__ = ['LatticeSolver','BuckshotSolver','SparsitySolver','ResidualSolver', \
+           'MixedSolver', 'lattice','buckshot','sparsity','residual']
 
 from mystic.tools import unpair
 
@@ -145,7 +145,7 @@ All important class members are inherited from AbstractEnsembleSolver.
         return fillpts(lower, upper, npts, data, self._rtol, self._dist)
 
 
-class MisfitSolver(AbstractEnsembleSolver):
+class ResidualSolver(AbstractEnsembleSolver):
     """
 parallel mapped optimization starting from N points sampled near largest misfit
     """
@@ -159,7 +159,7 @@ Takes four initial inputs:
 
 All important class members are inherited from AbstractEnsembleSolver.
         """
-        super(MisfitSolver, self).__init__(dim, npts=npts)
+        super(ResidualSolver, self).__init__(dim, npts=npts)
         from mystic.termination import NormalizedChangeOverGeneration
         convergence_tol = 1e-4
         self._termination = NormalizedChangeOverGeneration(convergence_tol)
@@ -651,11 +651,11 @@ Notes:
     return retlist
 
 
-def misfit(cost,ndim,npts=8,args=(),bounds=None,ftol=1e-4,maxiter=None, \
-           maxfun=None,full_output=0,disp=1,retall=0,callback=None,**kwds):
-    """Minimize a function using the misfit ensemble solver.
+def residual(cost,ndim,npts=8,args=(),bounds=None,ftol=1e-4,maxiter=None, \
+             maxfun=None,full_output=0,disp=1,retall=0,callback=None,**kwds):
+    """Minimize a function using the residual ensemble solver.
 
-Uses a misfit ensemble algorithm to find the minimum of a function of one or
+Uses a residual ensemble algorithm to find the minimum of a function of one or
 more variables. Mimics the ``scipy.optimize.fmin`` interface. Starts *npts*
 solver instances near the maximum of an interpolated error surface, where
 error is the absolute difference between a given function and existing points.
@@ -728,7 +728,7 @@ Notes:
         termination = VTRChangeOverGeneration(ftol)
     mtol = kwds['mtol'] if 'mtol' in kwds else None #NOTE: 'data' set w/monitors
 
-    solver = MisfitSolver(ndim,npts,mtol)
+    solver = ResidualSolver(ndim,npts,mtol)
     solver.SetNestedSolver(_solver) #XXX: skip settings for configured solver?
     solver.SetEvaluationLimits(maxiter,maxfun)
     solver.SetEvaluationMonitor(evalmon)

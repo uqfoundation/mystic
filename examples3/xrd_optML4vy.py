@@ -21,7 +21,7 @@ from emulators import cost4 as cost, x4 as target, bounds4 as bounds
 # prepare truth (i.e. an 'expensive' model)
 nx = 4; ny = None
 #archive = get_db('truth.db', type=file_archive)
-truth = WrapModel('truth', cost, nx=nx, ny=ny, cached=False)#archive)
+truth = WrapModel('truth', cost, nx=nx, ny=ny, rnd=False, cached=False)#archive)
 
 # remove any prior cached evaluations of truth
 import shutil
@@ -45,7 +45,7 @@ if pmap is not None:
 
 # create an inexpensive surrogate for truth
 surrogate = InterpModel("surrogate", nx=nx, ny=ny, data=truth, smooth=0.0,
-                        noise=0.0, method="thin_plate", extrap=False)
+                        noise=0.0, method="thin_plate", rnd=False, extrap=False)
 
 # iterate until change in truth <= 1e-3 for 5 iterations
 N = 4

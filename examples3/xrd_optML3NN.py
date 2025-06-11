@@ -20,7 +20,7 @@ from emulators import cost3 as cost, x3 as target, bounds3 as bounds
 # prepare truth (i.e. an 'expensive' model)
 nx = 3; ny = None
 archive = get_db('truth.db', type=file_archive)
-truth = WrapModel("truth", cost, nx=nx, ny=ny, cached=archive)
+truth = WrapModel("truth", cost, nx=nx, ny=ny, rnd=False, cached=archive)
 
 # remove any prior cached evaluations of truth
 archive.clear(); archive.sync(clear=True)
@@ -50,7 +50,7 @@ kwds = dict(estimator=MLPRegressor(**args), transform=StandardScaler())
 # iteratively improve estimator
 mlp = Estimator(**kwds)
 best = improve_score(mlp, MLData(data.coords, data.coords, data.values, data.values), tries=10, verbose=True)
-mlkw = dict(estimator=best.estimator, transform=best.transform)
+mlkw = dict(estimator=best.estimator, transform=best.transform, rnd=False)
 surrogate = LearnedModel('surrogate', nx=nx, ny=ny, data=truth, **mlkw)
 
 # iterate until error (of candidate minimum) < 1e-3

@@ -8,15 +8,15 @@
 """
 Example:
     - Solve 8th-order Chebyshev polynomial coefficients with Powell's method.
-    - Uses MisfitSolver to provide 'pseudo-global' optimization
+    - Uses ResidualSolver to provide 'pseudo-global' optimization
     - Plot of fitting to Chebyshev polynomial.
 
 Demonstrates:
     - standard models
     - minimal solver interface
 """
-# the Misfit solver
-from mystic.solvers import MisfitSolver
+# the Residual solver
+from mystic.solvers import ResidualSolver
 
 # Powell's Directonal solver
 from mystic.solvers import PowellDirectionalSolver
@@ -89,8 +89,8 @@ if __name__ == '__main__':
     # configure monitor
     stepmon = VerboseMonitor(1)
 
-    # use misfit-Powell to solve 8th-order Chebyshev coefficients
-    solver = MisfitSolver(ndim, npts, mtol=mtol)
+    # use residual-Powell to solve 8th-order Chebyshev coefficients
+    solver = ResidualSolver(ndim, npts, mtol=mtol)
     solver.SetNestedSolver(PowellDirectionalSolver)
     solver.SetMapper(Pool().map)
     solver.SetGenerationMonitor(stepmon)
