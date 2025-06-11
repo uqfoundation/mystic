@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+n!/usr/bin/env python
 #
 # Author: Mike McKerns (mmckerns @caltech and @uqfoundation)
 # Copyright (c) 2022-2025 The Uncertainty Quantification Foundation.
@@ -56,7 +56,7 @@ loop.SetGenerationMonitor(tracker)
 while not loop.Terminated():
 
     # fit the surrogate to data in truth database
-    surrogate.fit(data=data)
+    surrogate.fit(data=data, noise=1e-8)
 
     # find the minimum of the surrogate
     results = diffev2(lambda x: surrogate(x), bounds, npop=20,

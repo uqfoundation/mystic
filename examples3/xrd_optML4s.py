@@ -68,7 +68,7 @@ while not loop.Terminated():
     # fit a new surrogate to data in truth database
     candidates = get_db('surrogate.db', type=file_archive)
     candidates.clear()
-    surrogate.fit(data=data)
+    surrogate.fit(data=data, noise=1e-8)
 
     # find the minimum of the surrogate
     surr = surrogate.sample(bounds, pts='-.%s' % N, archive=candidates,

@@ -62,7 +62,7 @@ while not loop.Terminated():
 
     # fit a new surrogate to data in truth database
     get_db('surrogate').clear()
-    surrogate.fit(data=data)
+    surrogate.fit(data=data, noise=1e-8)
 
     # find the first-order critical points of the surrogate
     surr = surrogate.sample(bounds, pts='.%s' % N)

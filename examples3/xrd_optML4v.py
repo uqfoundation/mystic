@@ -62,7 +62,7 @@ loop.SetGenerationMonitor(tracker)
 while not loop.Terminated():
 
     # fit the surrogate to data in truth database
-    surrogate.fit(data=data)
+    surrogate.fit(data=data, noise=1e-8)
 
     # find the first-order critical points of the surrogate
     s = SparsitySampler(bounds, lambda x: surrogate(x, axis=None), npts=N,
