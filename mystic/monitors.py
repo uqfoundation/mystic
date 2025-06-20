@@ -66,7 +66,7 @@ __all__ = ['Null', 'Monitor', 'VerboseMonitor', 'LoggingMonitor',
 
 import os
 import sys
-import numpy
+import numpy; np = numpy
 from functools import reduce
 from mystic.tools import list_or_tuple_or_ndarray
 from mystic.tools import listify, _kdiv, _divide, _idivide, \
