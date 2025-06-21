@@ -250,6 +250,7 @@ def is_zero_d_ndarray(x):
 
 def listify(x):
     "recursively convert all members of a sequence to a list"
+    if hasattr(x, 'tolist'): return x.tolist()
     if not isiterable(x): return x
     if x is iter(x): return listify(list(x))
     try: # e.g. if array(1)
