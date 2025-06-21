@@ -14,6 +14,7 @@ from mystic.samplers import SparsitySampler
 from mystic.monitors import LoggingMonitor
 from mystic.solvers import PowellDirectionalSolver
 from mystic.termination import NormalizedChangeOverGeneration as NCOG
+from mystic.tools import listify as tolist
 from ouq_models import WrapModel, InterpModel
 from emulators import cost4 as cost, x4 as target, bounds4 as bounds
 #from mystic.cache.archive import file_archive, read as get_db
@@ -71,7 +72,7 @@ while not loop.Terminated():
                         solver=PowellDirectionalSolver,
                         termination=NCOG(1e-6, 10))
     s.sample_until(terminated=all)
-    xdata = [list(i) for i in s._sampler._all_bestSolution]
+    xdata = tolist(s._sampler._all_bestSolution)
     ysurr = s._sampler._all_bestEnergy
 
     # evaluate truth at the same input as the surrogate critical points

@@ -12,6 +12,7 @@ optimization of 4-input cost function using online learning of a surrogate
 import os
 from mystic.samplers import LatticeSampler
 from mystic.monitors import LoggingMonitor
+from mystic.tools import listify as tolist
 from ouq_models import WrapModel, InterpModel
 from emulators import cost4 as cost, x4 as target, bounds4 as bounds
 #from mystic.cache.archive import file_archive, read as get_db
@@ -64,13 +65,13 @@ while not loop.Terminated():
     surr_ = lambda x: surrogate(x, axis=None)
     s = LatticeSampler(bounds, surr_, npts=N)
     s.sample_until(terminated=all)
-    xdata = [list(i) for i in s._sampler._all_bestSolution]
+    xdata = tolist(s._sampler._all_bestSolution)
     ysurr = s._sampler._all_bestEnergy
 
     _surr = lambda x: -surrogate(x, axis=None)
     s_ = LatticeSampler(bounds, _surr, npts=N)
     s_.sample_until(terminated=all)
-    xdata = xdata + [list(i) for i in s_._sampler._all_bestSolution]
+    xdata = xdata + tolist(s_._sampler._all_bestSolution)
     ysurr = ysurr + [-i for i in s_._sampler._all_bestEnergy]
 
     # evaluate truth at the same input as the surrogate critical points
