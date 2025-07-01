@@ -139,6 +139,7 @@ Important class members::
         self._solver          = NelderMeadSimplexSolver
         self._bestSolver      = None # 'best' solver (after Solve)
         self._allSolvers      = [None for j in range(self._npts)]
+        self._init_solution   = [None for j in range(self._npts)]
         self._step            = False
         return
 
@@ -200,6 +201,10 @@ Returns:
         # if a configured solver is not given, then build one of the given type
         from mystic.abstract_solver import AbstractSolver
         if isinstance(solver, AbstractSolver): # is a configured solver instance
+            if reset: #TODO: test impact on sampler
+                solver._init_solution = [None] #XXX: ???
+                solver.SetEvaluationMonitor(solver._evalmon[:0], new=True)
+                solver.SetGenerationMonitor(solver._stepmon[:0], new=True)
             return solver
         if not hasattr(solver, "Solve"):       # is an Error...
             raise TypeError("%s is not a valid solver" % solver)
@@ -219,6 +224,7 @@ Returns:
                                    tight=self._useTightRange, \
                                    clip=self._useClipRange)
         if reset:
+            solver._init_solution = [None] #XXX: ???
             solver.SetEvaluationMonitor(self._evalmon[:0], new=True)
             solver.SetGenerationMonitor(self._stepmon[:0], new=True)
         else:
@@ -629,8 +635,9 @@ Notes:
 
         # generate starting points
         newpts = len(self._allSolvers)
-        if self._is_new(): iv = self._InitialPoints()#[-newpts:]
-        else: iv = [None] * newpts
+        if self._is_new(): #NOTE: None when new/reset, else has been called
+            iv = self._InitialPoints() if None in self._init_solution else self._init_solution
+        else: iv = [None] * newpts #NOTE: None will skip SetInitialPoints
         op = self._AbstractEnsembleSolver__init_allSolvers()
         vb = [verbose if not s.Terminated() else False for s in self._allSolvers]
         cb = [echo] * len(op) #XXX: remove?
@@ -677,6 +684,9 @@ Notes:
 
         # update state from bestSolver
         self._AbstractEnsembleSolver__update_state()
+
+        # update initial solution from allSolvers
+        self._init_solution = [s._init_solution[0] for s in self._allSolvers]
         return
 
     def _process_inputs(self, kwds):
@@ -753,8 +763,9 @@ Notes:
 
         # generate starting points
         newpts = len(self._allSolvers)
-        if self._is_new(): iv = self._InitialPoints()#[-newpts:]
-        else: iv = [None] * newpts
+        if self._is_new(): #NOTE: None when new/reset, else has been called
+            iv = self._InitialPoints() if None in self._init_solution else self._init_solution
+        else: iv = [None] * newpts #NOTE: None will skip SetInitialPoints
         op = self._AbstractEnsembleSolver__init_allSolvers()
         vb = [verbose] * len(op)
         cb = [echo] * len(op) #XXX: remove?
@@ -799,6 +810,8 @@ Notes:
         del results
         # update state from bestSolver
         self._AbstractEnsembleSolver__update_state()
+        # update initial solution from allSolvers
+        self._init_solution = [s._init_solution[0] for s in self._allSolvers]
 
         # log any termination messages
         msg = self.Terminated(disp=disp, info=True)

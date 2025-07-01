@@ -96,8 +96,9 @@ Args:
         s._bestEnergy = None
         s._bestSolution = None
         s._fcalls = [0] #XXX:?
-        s._allSolvers = [None]*s._npts
+        s._allSolvers = [None] * s._npts
         s._bestSolver = None
+        s._init_solution = [None] * s._npts
         s.SetGenerationMonitor(s._stepmon[:0], new=True) #XXX:?
         s.SetEvaluationMonitor(s._evalmon[:0], new=True) #XXX:?
         s._live = False
@@ -112,8 +113,8 @@ Args:
         #XXX: add this method as internal method for ensemble solver?
         from copy import copy as _copy
         solver = s._AbstractEnsembleSolver__get_solver_instance(reset=True)
-        #solver.SetEvaluationMonitor(solver._evalmon[:0], new=True)
-        #solver.SetGenerationMonitor(solver._stepmon[:0], new=True)
+        #FIXME: potentially do _InitialPoints, but only where Terminated
+        #TODO: test impact of resetting monitor (behavior was reset=False)
         [s._allSolvers.__setitem__(i, _copy(solver)) for i,j in enumerate(s.Terminated(all=True)) if j is True]
         s._bestSolver = None
         s._AbstractEnsembleSolver__update_state()
@@ -172,14 +173,14 @@ Returns:
   None
 
 Notes:
-  - When ``if_terminated`` is None, reset regardless of termination.
-  - When ``if_terminated`` is True, reset if the best solver is terminated.
-  - When ``if_terminated`` is False, reset if no solvers are terminated.
   - When ``if_terminated`` is all, reset if all solvers are terminated.
+  - When ``if_terminated`` is True, reset if the best solver is terminated.
   - When ``if_terminated`` is any, reset if any solvers are terminated.
-  - If ``reset_all`` is None, never reset.
+  - When ``if_terminated`` is False, reset if no solvers are terminated.
+  - When ``if_terminated`` is None, always reset, unless ``reset_all`` is None.
   - If ``reset_all`` is True, reset all solvers if ``if_terminated`` is met.
   - If ``reset_all`` is False, similarly reset only the terminated solvers.
+  - If ``reset_all`` is None, never reset (thus ignores ``if_terminated``).
         """
         if repr(reset_all) in ('True','False'):
             s = self._sampler
@@ -199,34 +200,8 @@ Notes:
         return self._sample(reset=False)#, **kwds)
 
 
-    def sample_until(self, iters=None, evals=None, terminated=None, **kwds):
-        """sample until one of the stop conditions are met
-
-Possible stop conditions are:
-  - solver iterations ``iters()`` equals or exceeds ``iters``
-  - solver evaluations ``evals()`` equals or exceeds ``evals``
-  - number of terminated solvers equals or exceeds ``terminated``
-
-Args:
-  iters (int, default=inf): maximum number of iterations
-  evals (int, default=inf): maximum number of evaluations
-  terminated (int, default=inf): maximum number of terminated solvers
-  if_terminated (bool, default=None): the amount of termination; must be one
-    of ``{all, True, any, False, None}``
-  reset_all (bool, default=True): action to take when ``if_terminated`` is met;
-    must be one of ``{True, False, None}``
-
-Notes:
-  - The default sampler configuration is to always reset (``reset_all=True``)
-  - If ``termination != None``, the default is never reset (``reset_all=None``)
-  - A limit for at least one of ``(iters, evals, termination)`` must be set.
-  - ``terminated`` may also be one of ``{all, True, any, False, None}``, where
-    ``{all: 'all', True: 'best', any: '1', False: '0', None: 'inf', N: 'N'}``
-  - ``if_terminated`` may be one of ``{all, True, any, False, None}``, where
-    ``{all: 'all', True: 'best', any: '1', False: '0', None: 'always'}``
-  - ``reset_all`` may be one of ``{True, False, None}``, where ``{True: 'reset
-    all', False: 'reset solved', None: 'never reset'}``
-        """
+    def _sample_until(self, iters=None, evals=None, terminated=None, **kwds):
+        """sample until one of the stop conditions are met"""
         from numpy import inf, all as all_, any as any_
         if evals is None:
             evals = inf
@@ -254,17 +229,61 @@ Notes:
         elif if_stop is any or if_stop is any_:
             quit = 1
         elif if_stop is True: # best
-            quit = True
+            quit = int(True)
         elif if_stop is False:
             quit = 0
         elif if_stop is None:
             quit = 0 #XXX: -1 ?
         reset = kwds.pop('reset_all', True)
         # require iters or evals if: (term > npts) OR (reset!=None & quit<term)
-        if iters is inf and evals is inf and (terminated > self._npts or
-            (reset is not None and quit < terminated)):
-            msg = 'either iters = %s or evals = %s must be less than inf' % (iters,evals)
-            raise ValueError(msg)
+        if iters is inf and evals is inf:
+            msg = ', evals or iters must be < inf'
+            if terminated > self._npts:
+                msg = ('if terminated > %s' % self._npts) + msg
+                raise ValueError(msg)
+            elif (reset is not None and quit < terminated):
+                msg = ('if terminated > %s, reset_all = %s' % (quit,reset)) + msg
+                raise ValueError(msg)
+        return (iters, evals, terminated, if_stop, reset)
+
+    def sample_until(self, iters=None, evals=None, terminated=None, **kwds):
+        """sample until one of the stop conditions are met
+
+Args:
+  iters (int, default=inf): maximum number of iterations
+  evals (int, default=inf): maximum number of evaluations
+  terminated (int, default=inf): maximum number of terminated solvers
+  if_terminated (bool, default=None): the amount of termination; must be one
+    of ``{all, True, any, False, None}``
+  reset_all (bool, default=True): action to take when ``if_terminated`` is met;
+    must be one of ``{True, False, None}``
+
+Notes:
+  Possible stop conditions are:
+  - solver iterations ``iters()`` equals or exceeds ``iters``
+  - solver evaluations ``evals()`` equals or exceeds ``evals``
+  - number of terminated solvers equals or exceeds ``terminated``
+
+Notes:
+  When sampling stops, the reset conditions are:
+  - ``if_terminated` equals or exceeds the number of terminated solvers
+  - ``reset_all` indicates which solvers to reset
+
+Notes:
+  - At least one of ``(iters, evals, termination)`` must be less than 'inf'.
+  - ``terminated`` may also be one of ``{all, True, any, False, None}``, where
+    ``{all: 'all', True: 'best', any: '1', False: '0', None: 'inf', N: 'N'}``
+  - ``if_terminated`` may be one of ``{all, True, any, False, None}``, where
+    ``{all: 'all', True: 'best', any: '1', False: '0', None: 'always'}``
+  - ``reset_all`` may be one of ``{True, False, None}``, where ``{True: 'reset
+    all', False: 'reset solved', None: 'never reset'}``
+
+Notes: ### ??? ??? ###
+  - The default sampler configuration is to always reset (``reset_all=True``)
+  - If ``termination != None``, the default is never reset (``reset_all=None``)
+        """
+        args = self._sample_until(iters, evals, terminated, **kwds)
+        (iters, evals, terminated, if_stop, reset) = args
         ###stop = self.terminated(**kwds)
         while self.iters() < iters and self.evals() < evals and (not self.terminated(all=False) if (terminated is True) else (sum(self.terminated(all=True)) < terminated)): #FIXME: sometimes limiting iters stops very late
             stop = self.sample(if_stop, reset)#, **kwds)
