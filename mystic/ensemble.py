@@ -71,7 +71,11 @@ All important class members are inherited from AbstractEnsembleSolver.
 
         # build a grid of starting points
         from mystic.math import binnedpts
-        return binnedpts(lower, upper, nbins, self._dist)
+        solution = binnedpts(lower, upper, nbins, self._dist)
+        self._init_solution = solution
+        #for i,j in enumerate(solution): #NOTE: loop enables partial reset
+        #    if self._init_solution[i] is None: self._init_solution[i] = j
+        return self._init_solution
 
 
 class BuckshotSolver(AbstractEnsembleSolver):
@@ -104,7 +108,11 @@ All important class members are inherited from AbstractEnsembleSolver.
 
         # build a grid of starting points
         from mystic.math import samplepts
-        return samplepts(lower, upper, npts, self._dist)
+        solution = samplepts(lower, upper, npts, self._dist)
+        self._init_solution = solution
+        #for i,j in enumerate(solution): #NOTE: loop enables partial reset
+        #    if self._init_solution[i] is None: self._init_solution[i] = j
+        return self._init_solution
 
 
 class SparsitySolver(AbstractEnsembleSolver):
@@ -142,7 +150,11 @@ All important class members are inherited from AbstractEnsembleSolver.
         data = self._evalmon._x if self._evalmon else []
         data += self._stepmon._x if self._stepmon else []
         #print('fillpts: %s' % data)
-        return fillpts(lower, upper, npts, data, self._rtol, self._dist)
+        solution = fillpts(lower, upper, npts, data, self._rtol, self._dist)
+        self._init_solution = solution
+        #for i,j in enumerate(solution): #NOTE: loop enables partial reset
+        #    if self._init_solution[i] is None: self._init_solution[i] = j
+        return self._init_solution
 
 
 class ResidualSolver(AbstractEnsembleSolver):
@@ -193,7 +205,11 @@ All important class members are inherited from AbstractEnsembleSolver.
             yval = metric(vals, yval, pair=True, dmin=2, axis=0)
             #print('vals: %s' % vals)
         #print('yval: %s' % yval)
-        return errorpts(lower, upper, npts, data, yval, self._mtol, self._dist)
+        solution = errorpts(lower, upper, npts, data, yval, self._mtol, self._dist)
+        self._init_solution = solution
+        #for i,j in enumerate(solution): #NOTE: loop enables partial reset
+        #    if self._init_solution[i] is None: self._init_solution[i] = j
+        return self._init_solution
 
 
 class MixedSolver(AbstractEnsembleSolver):
@@ -255,7 +271,11 @@ All important class members are inherited from AbstractEnsembleSolver.
             data._x += solver._InitialPoints()
             data._y = [float('inf')]*len(data._x) #FIXME: ????? nan?
         #print('data: %s' % data._x)
-        return data._x
+        solution = data._x
+        self._init_solution = solution
+        #for i,j in enumerate(solution): #NOTE: loop enables partial reset
+        #    if self._init_solution[i] is None: self._init_solution[i] = j
+        return self._init_solution
 
 
 def lattice(cost,ndim,nbins=8,args=(),bounds=None,ftol=1e-4,maxiter=None, \

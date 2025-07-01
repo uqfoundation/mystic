@@ -118,6 +118,7 @@ Important class members::
         self.popEnergy	      = [self._init_popEnergy] * NP
         self.population	      = [[0.0 for i in range(dim)] for j in range(NP)]
         self.trialSolution    = [0.0] * dim
+        self._init_solution   = [None]
         self._map_solver      = False
         self._bestEnergy      = None
         self._bestSolution    = None
@@ -496,6 +497,7 @@ Returns:
         self.SetRandomInitialPoints(min,max)
         #stick initial values in population[i], i=0
         self.population[0][:] = x0.tolist()
+        self._init_solution = [self.population[0].copy()]
     
     def SetRandomInitialPoints(self, min=None, max=None):
         """Generate Random Initial Points within given Bounds
@@ -524,6 +526,7 @@ Notes:
         for i in range(len(self.population)):
             for j in range(self.nDim):
                 self.population[i][j] = random.uniform(min[j],max[j])
+        self._init_solution = [self.population[0].copy()]
 
     def SetMultinormalInitialPoints(self, mean, var=None):
         """Generate Initial Points from Multivariate Normal.
@@ -554,6 +557,7 @@ Notes:
                 var = var * numpy.eye(self.nDim)
         for i in range(len(self.population)):
             self.population[i] = rng.multivariate_normal(mean, var).tolist()
+        self._init_solution = [self.population[0].copy()]
         return
 
     def SetSampledInitialPoints(self, dist=None):
@@ -576,6 +580,7 @@ Notes:
             dist = Distribution(dist) #XXX: or throw error?
         for i in range(self.nPop): #FIXME: accept a list of Distributions
             self.population[i] = dist(self.nDim)
+        self._init_solution = [self.population[0].copy()]
         return
 
     def enable_signal_handler(self):#, callback='*'):
