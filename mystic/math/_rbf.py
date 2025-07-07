@@ -87,20 +87,24 @@ class Rbf(object):
         The radial basis function, based on the radius, r, given by the norm
         (default is Euclidean distance); the default is 'multiquadric'::
 
-            'multiquadric': sqrt((r/self.epsilon)**2 + 1)
-            'inverse': 1.0/sqrt((r/self.epsilon)**2 + 1)
-            'gaussian': exp(-(r/self.epsilon)**2)
+            'multiquadric': sqrt((r/epsilon)**2 + 1)
+            'inverse_multiquadric': 1.0/sqrt((r/epsilon)**2 + 1)
+            'inverse_quadratic': 1.0/((r/epsilon)**2 + 1)
+            'gaussian': exp(-(r/epsilon)**2)
+            'hyperbolic_tangent': r * tanh(r/epsilon)
+            'bump': exp(-1.0/(1 - (r/epsilon)**2)) if r < epsilon else 0.0
             'linear': r
             'cubic': r**3
             'quintic': r**5
             'thin_plate': r**2 * log(r)
+            'quartic': r**4 * log(r)
 
         If callable, then it must take 2 arguments (self, r).  The epsilon
         parameter will be available as self.epsilon.  Other keyword
         arguments passed in will be available as well.
 
     epsilon : float, optional
-        Adjustable constant for gaussian or multiquadrics functions
+        Adjustable shape parameter for infinitely smooth functions
         - defaults to approximate average distance between nodes (which is
         a good start).
     smooth : float, optional
@@ -140,6 +144,12 @@ class Rbf(object):
     def _h_inverse_multiquadric(self, r):
         return 1.0/np.sqrt(np.square(1.0/self.epsilon*r) + 1)
 
+    def _h_inverse_quadratic(self, r):
+        return 1.0/(np.square(1.0/self.epsilon*r) + 1)
+
+    def _h_hyperbolic_tangent(self, r):
+        return r*np.tanh(1.0/self.epsilon*r)
+
     def _h_gaussian(self, r):
         return np.exp(-np.square(1.0/self.epsilon*r))
 
@@ -155,12 +165,25 @@ class Rbf(object):
     def _h_thin_plate(self, r):
         return xlogy(np.square(r), r)
 
+    def _h_quartic(self, r):
+        return xlogy(np.power(r, 4), r)
+
+    def _h_bump(self, r):
+        if r < self.epsilon:
+            return np.exp(-1.0/(1 - np.square(1.0/self.epsilon*r)))
+        return 0.0
+
     # Setup self._function and do smoke test on initial r
     def _init_function(self, r):
         if isinstance(self.function, str):
             self.function = self.function.lower()
             _mapped = {'inverse': 'inverse_multiquadric',
                        'inverse multiquadric': 'inverse_multiquadric',
+                       'inverse quadratic': 'inverse_quadratic',
+                       'hyperbolic tangent': 'hyperbolic_tangent',
+                       'hyperbolic': 'hyperbolic_tangent',
+                       'tanh': 'hyperbolic_tangent',
+                       'thin plate': 'thin_plate',
                        'thin-plate': 'thin_plate'}
             if self.function in _mapped:
                 self.function = _mapped[self.function]

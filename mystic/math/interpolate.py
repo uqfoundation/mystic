@@ -38,7 +38,8 @@ def extrapolate(x, z=None, method=None, mins=None, maxs=None, **kwds):
         ``method='thin_plate'`` (or ``'rbf'`` if ``scipy`` is not found).
         If ``method`` is False, return the original input. Alternately,
         ``method`` can be any one of ``('rbf', 'linear', 'cubic', 'nearest',
-        'inverse', 'gaussian', 'multiquadric', 'quintic', 'thin_plate')``.
+        'inverse', 'gaussian', 'multiquadric', 'quintic', 'thin_plate',
+        'bump', 'hyperbolic', 'quartic', 'inverse_quadratic')``.
         If ``method`` is None, return ``nan`` upon new input.
     '''
     kwds.setdefault('all', True)
@@ -431,11 +432,13 @@ def interpolate(x, z, xgrid, method=None, extrap=False, arrays=True, **kwds):
         (non-rbf), or ``rbf`` from ``mystic`` otherwise. Default method is
         ``'nearest'`` for 1D, and is ``'linear'`` otherwise. ``method`` can
         be one of ``('rbf', 'linear', 'cubic', 'nearest', 'inverse',
-        'gaussian', 'multiquadric', 'quintic', 'thin_plate')``.
+        'gaussian', 'multiquadric', 'quintic', 'thin_plate', 'bump',
+        'hyperbolic', 'quartic', 'inverse_quadratic')``.
       - if ``extrap`` is True, extrapolate using ``interpf`` with 
         ``method='thin_plate'`` (or ``'rbf'`` if ``scipy`` is not installed).
         Alternately, any one of ``('rbf', 'linear', 'cubic', 'nearest',
-        'inverse', 'gaussian', 'multiquadric', 'quintic', 'thin_plate')`` can
+        'inverse', 'gaussian', 'multiquadric', 'quintic', 'thin_plate',
+        'bump', 'hyperbolic', 'quartic', 'inverse_quadratic')`` can
         be used. If ``extrap`` is a cost function ``z = f(x)``, then directly
         use it in the extrapolation. Using extrapolation can reduce the number
         of ``nan``.
@@ -455,6 +458,7 @@ def interpolate(x, z, xgrid, method=None, extrap=False, arrays=True, **kwds):
     methods = dict(rbf=0, linear=1, nearest=2, cubic=3)
     functions = {0:'multiquadric', 1:'linear', 2:'nearest', 3:'cubic'}
     # also: ['thin_plate','inverse','gaussian','quintic']
+    # also: ['inverse_quadratic','bump','quartic','hyperbolic']
     kind = methods[method] if method in methods else None
     function = functions[kind] if (not kind is None) else method
     if kind is None: kind = 0 #XXX: or raise KeyError ?
@@ -501,11 +505,13 @@ def _interpf(x, z, method=None, extrap=False, arrays=False, **kwds):
         (non-rbf), or ``rbf`` from ``mystic`` otherwise. Default method is
         ``'nearest'`` for 1D, and is ``'linear'`` otherwise. ``method`` can
         be one of ``('rbf', 'linear', 'cubic', 'nearest', 'inverse',
-        'gaussian', 'multiquadric', 'quintic', 'thin_plate')``.
+        'gaussian', 'multiquadric', 'quintic', 'thin_plate', 'bump',
+        'hyperbolic', 'quartic', 'inverse_quadratic')``.
       - if ``extrap`` is True, extrapolate using ``interpf`` with 
         ``method='thin_plate'`` (or ``'rbf'`` if ``scipy`` is not installed).
         Alternately, any one of ``('rbf', 'linear', 'cubic', 'nearest',
-        'inverse', 'gaussian', 'multiquadric', 'quintic', 'thin_plate')`` can
+        'inverse', 'gaussian', 'multiquadric', 'quintic', 'thin_plate',
+        'bump', 'hyperbolic', 'quartic', 'inverse_quadratic')`` can
         be used. If ``extrap`` is a cost function ``z = f(x)``, then directly
         use it in the extrapolation. Using extrapolation can reduce the number
         of ``nan``.
@@ -527,6 +533,7 @@ def _interpf(x, z, method=None, extrap=False, arrays=False, **kwds):
     methods = dict(rbf=0, linear=1, nearest=2, cubic=3)
     functions = {0:'multiquadric', 1:'linear', 2:'nearest', 3:'cubic'}
     # also: ['thin_plate','inverse','gaussian','quintic']
+    # also: ['inverse_quadratic','bump','quartic','hyperbolic']
     kind = methods[method] if method in methods else None
     function = functions[kind] if (not kind is None) else method
     if kind is None: kind = 0 #XXX: or raise KeyError ?
@@ -608,11 +615,13 @@ def interpf(x, z, method=None, extrap=False, arrays=False, **kwds):
         (non-rbf), or ``rbf`` from ``mystic`` otherwise. Default method is
         ``'nearest'`` for 1D, and is ``'linear'`` otherwise. ``method`` can
         be one of ``('rbf', 'linear', 'cubic', 'nearest', 'inverse',
-        'gaussian', 'multiquadric', 'quintic', 'thin_plate')``.
+        'gaussian', 'multiquadric', 'quintic', 'thin_plate', 'bump',
+        'hyperbolic', 'quartic', 'inverse_quadratic')``.
       - if ``extrap`` is True, extrapolate using ``interpf`` with 
         ``method='thin_plate'`` (or ``'rbf'`` if ``scipy`` is not installed).
         Alternately, any one of ``('rbf', 'linear', 'cubic', 'nearest',
-        'inverse', 'gaussian', 'multiquadric', 'quintic', 'thin_plate')`` can
+        'inverse', 'gaussian', 'multiquadric', 'quintic', 'thin_plate',
+        'bump', 'hyperbolic', 'quartic', 'inverse_quadratic')`` can
         be used. If ``extrap`` is a cost function ``z = f(x)``, then directly
         use it in the extrapolation. Using extrapolation can reduce the number
         of ``nan``.
@@ -705,7 +714,8 @@ def _fprime(x, fx, method=None, extrap=False, **kwds):
       - if ``extrap`` is True, extrapolate using ``interpf`` with 
         ``method='thin_plate'`` (or ``'rbf'`` if ``scipy`` is not installed).
         Alternately, any one of ``('rbf', 'linear', 'cubic', 'nearest',
-        'inverse', 'gaussian', 'multiquadric', 'quintic', 'thin_plate')`` can
+        'inverse', 'gaussian', 'multiquadric', 'quintic', 'thin_plate',
+        'bump', 'hyperbolic', 'quartic', 'inverse_quadratic')`` can
         be used. If ``extrap`` is a cost function ``z = f(x)``, then directly
         use it in the extrapolation. Using extrapolation can reduce the number
         of ``nan``.
@@ -759,11 +769,13 @@ def gradient(x, fx, method=None, approx=True, extrap=False, **kwds):
         (non-rbf), or ``rbf`` from ``mystic`` otherwise. Default method is
         ``'nearest'`` for 1D, and is ``'linear'`` otherwise. ``method`` can
         be one of ``('rbf', 'linear', 'cubic', 'nearest', 'inverse',
-        'gaussian', 'multiquadric', 'quintic', 'thin_plate')``.
+        'gaussian', 'multiquadric', 'quintic', 'thin_plate', 'bump',
+        'hyperbolic', 'quartic', 'inverse_quadratic')``.
       - if ``extrap`` is True, extrapolate using ``interpf`` with 
         ``method='thin_plate'`` (or ``'rbf'`` if ``scipy`` is not installed).
         Alternately, any one of ``('rbf', 'linear', 'cubic', 'nearest',
-        'inverse', 'gaussian', 'multiquadric', 'quintic', 'thin_plate')`` can
+        'inverse', 'gaussian', 'multiquadric', 'quintic', 'thin_plate',
+        'bump', 'hyperbolic', 'quartic', 'inverse_quadratic')`` can
         be used. If ``extrap`` is a cost function ``z = f(x)``, then directly
         use it in the extrapolation. Using extrapolation can reduce the number
         of ``nan``.
@@ -853,7 +865,8 @@ def hessian(x, fx, method=None, approx=True, extrap=False, **kwds):
         (non-rbf), or ``rbf`` from ``mystic`` otherwise. Default method is
         ``'nearest'`` for 1D, and is ``'linear'`` otherwise. ``method`` can
         be one of ``('rbf', 'linear', 'cubic', 'nearest', 'inverse',
-        'gaussian', 'multiquadric', 'quintic', 'thin_plate')``.
+        'gaussian', 'multiquadric', 'quintic', 'thin_plate', 'bump',
+        'hyperbolic', 'quartic', 'inverse_quadratic')``.
       - method string can provide either one or two methods (i.e. ``'rbf'``
         or ``'rbf, cubic'``), where if two methods are provided, the first
         will be used to interpolate ``f(x)`` and the second will be used to
@@ -861,7 +874,8 @@ def hessian(x, fx, method=None, approx=True, extrap=False, **kwds):
       - if ``extrap`` is True, extrapolate using ``interpf`` with 
         ``method='thin_plate'`` (or ``'rbf'`` if ``scipy`` is not installed).
         Alternately, any one of ``('rbf', 'linear', 'cubic', 'nearest',
-        'inverse', 'gaussian', 'multiquadric', 'quintic', 'thin_plate')`` can
+        'inverse', 'gaussian', 'multiquadric', 'quintic', 'thin_plate',
+        'bump', 'hyperbolic', 'quartic', 'inverse_quadratic')`` can
         be used. If ``extrap`` is a cost function ``z = f(x)``, then directly
         use it in the extrapolation. Using extrapolation can reduce the number
         of ``nan``.
@@ -925,11 +939,13 @@ def hessian_diagonal(x, fx, method=None, approx=True, extrap=False, **kwds):
         (non-rbf), or ``rbf`` from ``mystic`` otherwise. Default method is
         ``'nearest'`` for 1D, and is ``'linear'`` otherwise. ``method`` can
         be one of ``('rbf', 'linear', 'cubic', 'nearest', 'inverse',
-        'gaussian', 'multiquadric', 'quintic', 'thin_plate')``.
+        'gaussian', 'multiquadric', 'quintic', 'thin_plate', 'bump',
+        'hyperbolic', 'quartic', 'inverse_quadratic')``.
       - if ``extrap`` is True, extrapolate using ``interpf`` with 
         ``method='thin_plate'`` (or ``'rbf'`` if ``scipy`` is not installed).
         Alternately, any one of ``('rbf', 'linear', 'cubic', 'nearest',
-        'inverse', 'gaussian', 'multiquadric', 'quintic', 'thin_plate')`` can
+        'inverse', 'gaussian', 'multiquadric', 'quintic', 'thin_plate',
+        'bump', 'hyperbolic', 'quartic', 'inverse_quadratic')`` can
         be used. If ``extrap`` is a cost function ``z = f(x)``, then directly
         use it in the extrapolation. Using extrapolation can reduce the number
         of ``nan``.

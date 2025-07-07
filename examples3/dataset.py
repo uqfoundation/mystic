@@ -48,7 +48,8 @@ def interpolate(data, step=None, **kwds):
       if scipy is not installed, will use np.interp for 1D (non-rbf),
       or mystic's rbf otherwise. default method is 'nearest' for
       1D and 'linear' otherwise. method can be one of ('rbf','linear',
-      'nearest','cubic','inverse','gaussian','quintic','thin_plate').
+      'nearest','cubic','inverse','gaussian','quintic','thin_plate',
+      'bump', 'hyperbolic', 'quartic', 'inverse_quadratic').
 
     NOTE:
       additional keyword arguments (epsilon, smooth, norm) are avaiable
@@ -100,7 +101,8 @@ def distance(data, function=None, hausdorff=True, **kwds):
       if scipy is not installed, will use np.interp for 1D (non-rbf),
       or mystic's rbf otherwise. default method is 'nearest' for
       1D and 'linear' otherwise. method can be one of ('rbf','linear',
-      'nearest','cubic','inverse','gaussian','quintic','thin_plate').
+      'nearest','cubic','inverse','gaussian','quintic','thin_plate',
+      'bump', 'hyperbolic', 'quartic', 'inverse_quadratic').
 
     NOTE:
       data and function may provide tuple-valued or single-valued output.

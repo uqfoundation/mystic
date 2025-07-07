@@ -38,7 +38,8 @@ class Plotter(object):
           if scipy is not installed, will use np.interp for 1D (non-rbf),
           or mystic's rbf otherwise. default method is 'nearest' for
           1D and 'linear' otherwise. method can be one of ('rbf','linear',
-          'nearest','cubic','inverse','gaussian','quintic','thin_plate').
+          'nearest','cubic','inverse','gaussian','quintic','thin_plate',
+          'bump', 'hyperbolic', 'quartic', 'inverse_quadratic').
         """
         self.x = getattr(x, '_x', x)  # params (x)
         self.z = x._y if z is None else z # cost (f(x))
@@ -273,7 +274,8 @@ def plot(monitor, function=None, **kwds):
       if scipy is not installed, will use np.interp for 1D (non-rbf),
       or mystic's rbf otherwise. default method is 'nearest' for
       1D and 'linear' otherwise. method can be one of ('rbf','linear',
-      'nearest','cubic','inverse','gaussian','quintic','thin_plate').
+      'nearest','cubic','inverse','gaussian','quintic','thin_plate',
+      'bump', 'hyperbolic', 'quartic', 'inverse_quadratic').
     '''
     p = Plotter(monitor, function=function, **kwds)
     p.Plot()

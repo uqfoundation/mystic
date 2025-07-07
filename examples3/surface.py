@@ -64,7 +64,8 @@ class Surface(object): #FIXME: should be subclass of Interpolator (?)
           if scipy is not installed, will use np.interp for 1D (non-rbf),
           or mystic's rbf otherwise. default method is 'nearest' for
           1D and 'linear' otherwise. method can be one of ('rbf','linear',
-          'nearest','cubic','inverse','gaussian','quintic','thin_plate').
+          'nearest','cubic','inverse','gaussian','quintic','thin_plate',
+          'bump', 'hyperbolic', 'quartic', 'inverse_quadratic').
         """
         # sampler configuration
         from mystic.search import Searcher
@@ -245,7 +246,8 @@ class Surface(object): #FIXME: should be subclass of Interpolator (?)
           if scipy is not installed, will use np.interp for 1D (non-rbf),
           or mystic's rbf otherwise. default method is 'nearest' for
           1D and 'linear' otherwise. method can be one of ('rbf','linear',
-          'nearest','cubic','inverse','gaussian','quintic','thin_plate').
+          'nearest','cubic','inverse','gaussian','quintic','thin_plate',
+          'bump', 'hyperbolic', 'quartic', 'inverse_quadratic').
         """
         from interpolator import Interpolator
         args = self.args.copy()
