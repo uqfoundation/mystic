@@ -22,6 +22,7 @@ __all__ = ['Paviani', 'paviani']
 
 from .abstract_model import AbstractFunction
 
+from functools import reduce
 from math import sin, cos, sqrt, pi, exp, log
 from numpy import inf
 

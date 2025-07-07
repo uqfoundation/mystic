@@ -18,15 +18,19 @@ y = cost(x.T)
 
 import mystic.math.interpolate as ip
 
-# functions which are 1 at r = 0 reproduce a single datapoint
+# functions which are non-zero at r = 0 reproduce a single datapoint
 fx = ip.Rbf(*np.vstack((x.T, y)), function='gaussian', smooth=0.0)
 assert (fx(*x.T) - y).sum() == 0.0
 fx = ip.Rbf(*np.vstack((x.T, y)), function='multiquadric', smooth=0.0)
 assert (fx(*x.T) - y).sum() == 0.0
 fx = ip.Rbf(*np.vstack((x.T, y)), function='inverse', smooth=0.0)
 assert (fx(*x.T) - y).sum() == 0.0
+fx = ip.Rbf(*np.vstack((x.T, y)), function='inverse_quadratic', smooth=0.0)
+assert (fx(*x.T) - y).sum() == 0.0
+fx = ip.Rbf(*np.vstack((x.T, y)), function='bump', smooth=0.0)
+assert (fx(*x.T) - y).sum() == 0.0
 
-# functions which are 0 at r = 0 are singular with a single datapoint
+# functions which are zero at r = 0 are singular with a single datapoint
 fx = ip.Rbf(*np.vstack((x.T, y)), function='linear', smooth=-1e-100)
 assert fx(*x.T).sum() == 0.0
 fx = ip.Rbf(*np.vstack((x.T, y)), function='cubic', smooth=-1e-100)
@@ -35,4 +39,7 @@ fx = ip.Rbf(*np.vstack((x.T, y)), function='quintic', smooth=-1e-100)
 assert fx(*x.T).sum() == 0.0
 fx = ip.Rbf(*np.vstack((x.T, y)), function='thin_plate', smooth=-1e-100)
 assert fx(*x.T).sum() == 0.0
-
+fx = ip.Rbf(*np.vstack((x.T, y)), function='quartic', smooth=-1e-100)
+assert fx(*x.T).sum() == 0.0
+fx = ip.Rbf(*np.vstack((x.T, y)), function='hyperbolic', smooth=-1e-100)
+assert fx(*x.T).sum() == 0.0
