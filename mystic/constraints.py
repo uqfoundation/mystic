@@ -15,7 +15,7 @@ __all__ = ['with_penalty','with_constraint','as_penalty','as_constraint',
            'near_integers','unique','has_unique','impose_unique','bounded',
            'impose_bounds','impose_as','impose_at','impose_measure',
            'impose_position','impose_weight','and_','or_','not_','vectorize',
-           'boundsconstrain','monotonic','sorting']
+           'boundsconstrain','monotonic','sorting','periodic']
 
 from mystic.math.measures import *
 from mystic.math import almostEqual
@@ -1514,6 +1514,61 @@ Examples:
         func.sorting = _isort
         func.__wrapped__ = f
         func.__doc__ = f.__doc__
+        return func
+    return dec
+
+
+def periodic(period=None, index=None):
+    """impose periodicity on the selected inputs for a given function
+
+The function's input will be mapped to a periodic space, where:
+  - if float period is provided, set the period; otherwise use 2*pi
+  - if index tuple is provided, only apply the period at the given indices
+
+Examples:
+  >>> @periodic()
+  ... def twopi(x):
+  ...     return x
+  ...
+  >>> import numpy as np
+  >>> twopi([0, np.pi, 2*np.pi, 3*np.pi, 4*np.pi])
+  [0.0, 3.141592653589793, 0.0, 3.141592653589793, 0.0]
+  >>>
+  >>> @periodic(np.pi, index=(0,3,4))
+  ... def onepi(x):
+  ...     return x
+  ...
+  >>> onepi([0, np.pi, 2*np.pi, 3*np.pi, 4*np.pi])
+  [0.0, 3.141592653589793, 6.283185307179586, 0.0, 0.0]
+    """
+    from numbers import Integral
+    if isinstance(index, Integral): index = (index,)
+    index = [index]
+    from numpy import asarray, ndarray, ones, zeros, choose, remainder, pi
+    if period is None: period = 2*pi
+    period = [period]
+
+    def _index(alist=None):
+        index[0] = alist
+
+    def _period(period=None):
+        period[0] = (2*pi if period is None else period)
+
+    def dec(f):
+        def func(x,*args,**kwds):
+            if isinstance(x, ndarray): xtype = asarray
+            else: xtype = type(x)
+            xp = remainder(x, period[0])
+            if index[0] is None:
+                mask = ones(xp.size, dtype=bool)
+            else:
+                mask = zeros(xp.size, dtype=bool)
+                try: mask[sorted(index[0], key=abs)] = True
+                except IndexError: pass
+            xp = choose(mask, (x,xp))
+            return f(xtype(xp), *args, **kwds)
+        func.index = _index
+        func.period = _period
         return func
     return dec
 
