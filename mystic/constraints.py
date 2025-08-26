@@ -815,7 +815,8 @@ Examples:
                 mask = ones(xp.size, dtype=bool)
             else:
                 mask = zeros(xp.size, dtype=bool)
-                try: mask[sorted(index[0], key=abs)] = True
+                idx = filter(lambda i:-xp.size<=i<=xp.size-1, index[0])
+                try: mask[sorted(idx, key=abs)] = True
                 except IndexError: pass
             xp = xtype(choose(mask, (x,xp)))
             return f(xp, *args, **kwds)
@@ -874,7 +875,8 @@ Examples:
                 mask = ones(xp.size, dtype=bool)
             else:
                 mask = zeros(xp.size, dtype=bool)
-                try: mask[sorted(index[0], key=abs)] = True
+                idx = filter(lambda i:-xp.size<=i<=xp.size-1, index[0])
+                try: mask[sorted(idx, key=abs)] = True
                 except IndexError: pass
             xp = choose(mask, (x,xp)).astype(_ints[0])
             ###############
@@ -934,7 +936,8 @@ Examples:
                 mask = ones(xp.size, dtype=bool)
             else:
                 mask = zeros(xp.size, dtype=bool)
-                try: mask[sorted(index[0], key=abs)] = True
+                idx = filter(lambda i:-xp.size<=i<=xp.size-1, index[0])
+                try: mask[sorted(idx, key=abs)] = True
                 except IndexError: pass
             xp = choose(mask, (x,xp)).astype(float)
             return f(xtype(xp), *args, **kwds)
@@ -994,7 +997,8 @@ Examples:
                 mask = ones(y.size, dtype=bool)
             else:
                 mask = zeros(y.size, dtype=bool)
-                try: mask[sorted(index[0], key=abs)] = True
+                idx = filter(lambda i:-y.size<=i<=y.size-1, index[0])
+                try: mask[sorted(idx, key=abs)] = True
                 except IndexError: pass
             y = choose(mask, (fx,y))#.astype(float)
             return xtype(y)
@@ -1563,7 +1567,8 @@ Examples:
                 mask = ones(xp.size, dtype=bool)
             else:
                 mask = zeros(xp.size, dtype=bool)
-                try: mask[sorted(index[0], key=abs)] = True
+                idx = filter(lambda i:-xp.size<=i<=xp.size-1, index[0])
+                try: mask[sorted(idx, key=abs)] = True
                 except IndexError: pass
             xp = choose(mask, (x,xp))
             return f(xtype(xp), *args, **kwds)
