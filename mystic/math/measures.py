@@ -1395,6 +1395,18 @@ def impose_reweighted_mean(m, samples, weights=None, solver=None):
         from mystic.solvers import diffev as solver
     elif solver == 'diffev2':
         from mystic.solvers import diffev2 as solver
+    elif getattr(solver, '__name__', solver) == 'buckshot':
+        from mystic.solvers import buckshot as solver
+        weights = ndim
+    elif getattr(solver, '__name__', solver) == 'lattice':
+        from mystic.solvers import lattice as solver
+        weights = ndim
+    elif getattr(solver, '__name__', solver) == 'sparsity':
+        from mystic.solvers import sparsity as solver
+        weights = ndim
+    elif getattr(solver, '__name__', solver) == 'residual':
+        from mystic.solvers import residual as solver
+        weights = ndim
 
     inequality = ""; equality = ""; equality2 = ""
     for i in range(ndim):
@@ -1441,6 +1453,18 @@ def impose_reweighted_variance(v, samples, weights=None, solver=None):
         from mystic.solvers import diffev as solver
     elif solver == 'diffev2':
         from mystic.solvers import diffev2 as solver
+    elif getattr(solver, '__name__', solver) == 'buckshot':
+        from mystic.solvers import buckshot as solver
+        weights = ndim
+    elif getattr(solver, '__name__', solver) == 'lattice':
+        from mystic.solvers import lattice as solver
+        weights = ndim
+    elif getattr(solver, '__name__', solver) == 'sparsity':
+        from mystic.solvers import sparsity as solver
+        weights = ndim
+    elif getattr(solver, '__name__', solver) == 'residual':
+        from mystic.solvers import residual as solver
+        weights = ndim
 
     inequality = ""
     equality = ""; equality2 = ""; equality3 = ""

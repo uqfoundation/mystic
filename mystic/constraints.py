@@ -403,31 +403,32 @@ NOTE: The default solver is 'diffev', with npop=min(40, ndim*5). The default
 
     #XXX: don't allow solver string as a short-cut?
     ensemble = False
-    if solver is None or solver == 'diffev':
+    if solver is None or getattr(solver, '__name__', solver) == 'diffev':
         from mystic.solvers import DifferentialEvolutionSolver as TheSolver
         solver = TheSolver(ndim, min(40, ndim*5))
-    elif solver == 'diffev2':
+    elif getattr(solver, '__name__', solver) == 'diffev2':
         from mystic.solvers import DifferentialEvolutionSolver2 as TheSolver
         solver = TheSolver(ndim, min(40, ndim*5))
-    elif solver == 'fmin_powell': #XXX: better as the default? (it's not random)
+    #XXX: fmin_powell better as the default? (it's not random)
+    elif getattr(solver, '__name__', solver) == 'fmin_powell':
         from mystic.solvers import PowellDirectionalSolver as TheSolver
         solver = TheSolver(ndim)
-    elif solver == 'fmin':
+    elif getattr(solver, '__name__', solver) == 'fmin':
         from mystic.solvers import NelderMeadSimplexSolver as TheSolver
         solver = TheSolver(ndim)
-    elif solver == 'buckshot':
+    elif getattr(solver, '__name__', solver) == 'buckshot':
         from mystic.solvers import BuckshotSolver as TheSolver
         solver = TheSolver(ndim, max(8, npts)) #XXX: needs better default?
         ensemble = True
-    elif solver == 'lattice':
+    elif getattr(solver, '__name__', solver) == 'lattice':
         from mystic.solvers import LatticeSolver as TheSolver
         solver = TheSolver(ndim, max(8, npts)) #XXX: needs better default?
         ensemble = True
-    elif solver == 'sparsity':
+    elif getattr(solver, '__name__', solver) == 'sparsity':
         from mystic.solvers import SparsitySolver as TheSolver
         solver = TheSolver(ndim, max(8, npts)) #XXX: needs better default?
         ensemble = True
-    elif solver == 'residual':
+    elif getattr(solver, '__name__', solver) == 'residual':
         from mystic.solvers import ResidualSolver as TheSolver
         solver = TheSolver(ndim, max(8, npts)) #XXX: needs better default?
         ensemble = True
