@@ -28,18 +28,24 @@ matrix:
             - DILL="master"
             - KLEPTO="master"
 
+        - python: '3.15-dev'
+          env:
+            - CYTHON="true" # numpy source build
+            - DILL="master"
+            - KLEPTO="master"
+
         - python: 'pypy3.9-7.3.15' # at 7.3.16
           env:
 
         - python: 'pypy3.10-7.3.19'
           env:
 
-        - python: 'pypy3.11-7.3.19'
+        - python: 'pypy3.11-7.3.20'
           env:
 
     allow_failures:
-        - python: '3.14-dev' # prerelease
-        - python: 'pypy3.11-7.3.19' # CI missing
+        - python: '3.15-dev' # prerelease; CI missing
+        - python: 'pypy3.11-7.3.20' # CI missing
     fast_finish: true
 
 cache:
