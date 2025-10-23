@@ -154,21 +154,25 @@ class DifferentialEvolutionSolver(AbstractSolver):
     """
 Differential Evolution optimization.
     """
-    
-    def __init__(self, dim, NP=4):
+    def __init__(self, dim, NP=4, **kwds):
         """
-Takes two initial inputs: 
-    dim  -- dimensionality of the problem
-    NP   -- size of the trial solution population. [requires: NP >= 4]
-
-All important class members are inherited from AbstractSolver.
+Args: 
+    dim (int): dimensionality of the problem
+    NP (int, default=4): size of the trial solution population, with ``NP >= 4``
+    strategy (strategy, default=Best1Bin): the mutation strategy for generating
+        new trial solutions
+    CrossProbability (float, default=0.9): the probability of cross-parameter
+        mutations
+    ScalingFactor (float, default=0.8): multiplier for mutations on the trial
+        solution
         """
+        # All important class members are inherited from AbstractSolver.
         NP = max(NP, dim, 4) #XXX: raise Error if npop <= 4?
         AbstractSolver.__init__(self,dim,npop=NP)
-        self.genealogy     = [ [] for j in range(NP)]
-        self.scale         = 0.8
-        self.probability   = 0.9
-        self.strategy      = 'Best1Bin'
+        self.genealogy = [ [] for j in range(NP)]
+        self.scale = kwds['ScalingFactor'] if 'ScalingFactor' in kwds else 0.8
+        self.probability = kwds['CrossProbability'] if 'CrossProbability' in kwds else 0.9
+        self.strategy = kwds['strategy'] if 'strategy' in kwds else 'Best1Bin'
         ftol = 5e-3
         from mystic.termination import VTRChangeOverGeneration
         self._termination = VTRChangeOverGeneration(ftol)
@@ -356,9 +360,9 @@ Args:
         solution.
 
 Notes:
-    ``callback`` and ``disp`` are 'sticky', in that once they are given, they
-    remain set until they are explicitly changed. Conversely, the other inputs
-    are not sticky, and are thus set for a one-time use.
+    - ``callback`` and ``disp`` are not 'sticky', in that they are set for a
+      one-time use. Conversely, the other inputs are sticky, in that they
+      remain set until they are explicitly changed.
         """
         #allow for inputs that don't conform to AbstractSolver interface
         #NOTE: not sticky: callback, disp
@@ -417,11 +421,17 @@ Alternate implementation:
     - both a current and a next generation are kept, while the current
       generation is invariant during the main DE logic
     """
-    def __init__(self, dim, NP=4):
+    def __init__(self, dim, NP=4, **kwds):
         """
 Args: 
     dim (int): dimensionality of the problem
     NP (int, default=4): size of the trial solution population, with ``NP >= 4``
+    strategy (strategy, default=Best1Bin): the mutation strategy for generating
+        new trial solutions
+    CrossProbability (float, default=0.9): the probability of cross-parameter
+        mutations
+    ScalingFactor (float, default=0.8): multiplier for mutations on the trial
+        solution
         """
         #All important class members are inherited from AbstractSolver.
         NP = max(NP, dim, 4) #XXX: raise Error if npop <= 4?
@@ -617,9 +627,9 @@ Args:
         solution.
 
 Notes:
-    ``callback`` and ``disp`` are 'sticky', in that once they are given, they
-    remain set until they are explicitly changed. Conversely, the other inputs
-    are not sticky, and are thus set for a one-time use.
+    - ``callback`` and ``disp`` are not 'sticky', in that they are set for a
+      one-time use. Conversely, the other inputs are sticky, in that they
+      remain set until they are explicitly changed.
         """
         #allow for inputs that don't conform to AbstractSolver interface
         #NOTE: not sticky: callback, disp

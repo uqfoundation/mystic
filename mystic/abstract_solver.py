@@ -1042,9 +1042,9 @@ Args:
         ``xk' = constraints(xk)``, where ``xk`` is the current parameter vector.
 
 Notes:
-    - ``callback`` and ``disp`` are 'sticky', in that once they are given, they
-      remain set until they are explicitly changed. Conversely, the other inputs
-      are not sticky, and are thus set for a one-time use.
+    - ``callback`` and ``disp`` are not 'sticky', in that they are set for a
+      one-time use. Conversely, the other inputs are sticky, in that they
+      remain set until they are explicitly changed.
         """
         #allow for inputs that don't conform to AbstractSolver interface
         #NOTE: not sticky: callback, disp

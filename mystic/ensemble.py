@@ -45,15 +45,18 @@ class LatticeSolver(AbstractEnsembleSolver):
     """
 parallel mapped optimization starting from the centers of N grid points
     """
-    def __init__(self, dim, nbins=8):
+    def __init__(self, dim, nbins=8, **kwds):
         """
-Takes two initial inputs:
+Takes one initial input:
     dim   -- dimensionality of the problem
+
+Additional inputs:
     nbins -- tuple of number of bins in each dimension
+    step  -- enable ``Step`` within the ensemble.        [default = False]
 
 All important class members are inherited from AbstractEnsembleSolver.
         """
-        super(LatticeSolver, self).__init__(dim, nbins=nbins)
+        super(LatticeSolver, self).__init__(dim, nbins=nbins, **kwds)
         from mystic.termination import NormalizedChangeOverGeneration
         convergence_tol = 1e-4
         self._termination = NormalizedChangeOverGeneration(convergence_tol)
@@ -82,15 +85,18 @@ class BuckshotSolver(AbstractEnsembleSolver):
     """
 parallel mapped optimization starting from N uniform randomly sampled points
     """
-    def __init__(self, dim, npts=8):
+    def __init__(self, dim, npts=8, **kwds):
         """
-Takes two initial inputs:
+Takes one initial input:
     dim   -- dimensionality of the problem
+
+Additional inputs:
     npts  -- number of parallel solver instances
+    step  -- enable ``Step`` within the ensemble.        [default = False]
 
 All important class members are inherited from AbstractEnsembleSolver.
         """
-        super(BuckshotSolver, self).__init__(dim, npts=npts)
+        super(BuckshotSolver, self).__init__(dim, npts=npts, **kwds)
         from mystic.termination import NormalizedChangeOverGeneration
         convergence_tol = 1e-4
         self._termination = NormalizedChangeOverGeneration(convergence_tol)
@@ -119,16 +125,19 @@ class SparsitySolver(AbstractEnsembleSolver):
     """
 parallel mapped optimization starting from N points sampled from sparse regions
     """
-    def __init__(self, dim, npts=8, rtol=None):
+    def __init__(self, dim, npts=8, rtol=None, **kwds):
         """
-Takes three initial inputs:
+Takes one initial input:
     dim   -- dimensionality of the problem
+
+Additional inputs:
     npts  -- number of parallel solver instances
     rtol  -- size of radial tolerance for sparsity
+    step  -- enable ``Step`` within the ensemble.        [default = False]
 
 All important class members are inherited from AbstractEnsembleSolver.
         """
-        super(SparsitySolver, self).__init__(dim, npts=npts)
+        super(SparsitySolver, self).__init__(dim, npts=npts, **kwds)
         from mystic.termination import NormalizedChangeOverGeneration
         convergence_tol = 1e-4
         self._termination = NormalizedChangeOverGeneration(convergence_tol)
@@ -161,17 +170,20 @@ class ResidualSolver(AbstractEnsembleSolver):
     """
 parallel mapped optimization starting from N points sampled near largest misfit
     """
-    def __init__(self, dim, npts=8, mtol=None, func=None):
+    def __init__(self, dim, npts=8, mtol=None, func=None, **kwds):
         """
-Takes four initial inputs:
+Takes one initial input:
     dim   -- dimensionality of the problem
+
+Additional inputs:
     npts  -- number of parallel solver instances
     mtol  -- iteration tolerance solving for maximum error
     func  -- function approximating the cost function
+    step  -- enable ``Step`` within the ensemble.        [default = False]
 
 All important class members are inherited from AbstractEnsembleSolver.
         """
-        super(ResidualSolver, self).__init__(dim, npts=npts)
+        super(ResidualSolver, self).__init__(dim, npts=npts, **kwds)
         from mystic.termination import NormalizedChangeOverGeneration
         convergence_tol = 1e-4
         self._termination = NormalizedChangeOverGeneration(convergence_tol)
@@ -216,11 +228,14 @@ class MixedSolver(AbstractEnsembleSolver):
     """
 parallel mapped optimization starting from N points sampled with mixed solvers
     """
-    def __init__(self, dim, samp=8):
+    def __init__(self, dim, samp=8, **kwds):
         """
-Takes two initial inputs:
+Takes one initial input:
     dim   -- dimensionality of the problem
+
+Additional inputs:
     samp  -- dict of {ensemble solver: npts}
+    step  -- enable ``Step`` within the ensemble.        [default = False]
 
 All important class members are inherited from AbstractEnsembleSolver.
         """
@@ -246,7 +261,7 @@ All important class members are inherited from AbstractEnsembleSolver.
         if npts is None:
             from mystic import ensemble #XXX: THIS file
             npts = sum([getattr(ensemble, name)(dim, *args)._npts for name,args in samp if hasattr(ensemble, name)])
-        super(MixedSolver, self).__init__(dim, npts=npts)
+        super(MixedSolver, self).__init__(dim, npts=npts, **kwds)
         from mystic.termination import NormalizedChangeOverGeneration
         convergence_tol = 1e-4
         self._termination = NormalizedChangeOverGeneration(convergence_tol)
