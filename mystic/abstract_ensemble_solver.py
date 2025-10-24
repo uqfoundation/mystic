@@ -90,7 +90,7 @@ AbstractEnsembleSolver base class for mystic optimizers that are called within
 a parallel map.  This allows pseudo-global coverage of parameter space using
 non-global optimizers.
     """
-
+    #step     -- enable ``Step`` within the ensemble.        [default = False]
     def __init__(self, dim, **kwds):
         """
 Takes one initial input::
@@ -102,7 +102,6 @@ Additional inputs::
     npop     -- size of the trial solution population.      [default = 1]
     nbins    -- tuple of number of bins in each dimension.  [default = [1]*dim]
     npts     -- number of solver instances.                 [default = 1]
-    step     -- enable ``Step`` within the ensemble.        [default = False]
 
 Important class members::
 

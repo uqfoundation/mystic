@@ -1025,6 +1025,30 @@ input::
         self._live = False
         return
 
+    def _preprocess_inputs(self, **kwds):
+        """prepares solver-specific inputs for _process_inputs
+
+Notes:
+    converts evalmon to EvaluationMonitor
+    converts stepmon and itermon to StepMonitor
+        """
+        if 'evalmon' in kwds:
+            if 'EvaluationMonitor' in kwds:
+                same = ('EvaluationMonitor','evalmon')
+                raise KeyError('cannot specify more than one of %s' % same)
+            kwds['EvaluationMonitor'] = kwds.pop('evalmon')
+        if 'itermon' in kwds:
+            if 'StepMoniton' in kwds:
+                same = ('StepMonitor','stepmon','itermon')
+                raise KeyError('cannot specify more than one of %s' % same)
+            kwds['StepMonitor'] = kwds.pop('itermon')
+        if 'stepmon' in kwds:
+            if 'StepMonitor' in kwds:
+                same = ('StepMonitor','stepmon','itermon')
+                raise KeyError('cannot specify more than one of %s' % same)
+            kwds['StepMonitor'] = kwds.pop('stepmon')
+        return kwds
+
     def _process_inputs(self, kwds):
         """process and activate input settings
 
@@ -1046,6 +1070,7 @@ Notes:
       one-time use. Conversely, the other inputs are sticky, in that they
       remain set until they are explicitly changed.
         """
+        kwds = self._preprocess_inputs(**kwds)
         #allow for inputs that don't conform to AbstractSolver interface
         #NOTE: not sticky: callback, disp
         #NOTE: sticky: EvaluationMonitor, StepMonitor, penalty, constraints

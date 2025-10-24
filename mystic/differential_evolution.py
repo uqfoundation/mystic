@@ -161,15 +161,14 @@ Args:
     NP (int, default=4): size of the trial solution population, with ``NP >= 4``
     strategy (strategy, default=Best1Bin): the mutation strategy for generating
         new trial solutions
-    CrossProbability (float, default=0.9): the probability of cross-parameter
-        mutations
-    ScalingFactor (float, default=0.8): multiplier for mutations on the trial
-        solution
+    cross (float, default=0.9): the probability of cross-parameter mutations
+    scale (float, default=0.8): multiplier for mutations on the trial solution
         """
         # All important class members are inherited from AbstractSolver.
         NP = max(NP, dim, 4) #XXX: raise Error if npop <= 4?
         AbstractSolver.__init__(self,dim,npop=NP)
         self.genealogy = [ [] for j in range(NP)]
+        kwds = self._preprocess_inputs(**kwds)
         self.scale = kwds['ScalingFactor'] if 'ScalingFactor' in kwds else 0.8
         self.probability = kwds['CrossProbability'] if 'CrossProbability' in kwds else 0.9
         self.strategy = kwds['strategy'] if 'strategy' in kwds else 'Best1Bin'
@@ -337,6 +336,28 @@ Notes:
         if init: self._termination(self) #XXX: at generation 0 or always?
         return #XXX: call Terminated ?
 
+    def _preprocess_inputs(self, **kwds):
+        """prepares solver-specific inputs for _process_inputs
+
+Notes:
+    converts evalmon to EvaluationMonitor
+    converts stepmon and itermon to StepMonitor
+    converts cross to CrossProbability
+    converts scale to ScalingFactor
+        """
+        kwds = super(DifferentialEvolutionSolver, self)._preprocess_inputs(**kwds)
+        if 'cross' in kwds:
+            if 'CrossProbability' in kwds:
+                same = ('CrossProbability','cross')
+                raise KeyError('cannot specify more than one of %s' % same)
+            kwds['CrossProbability'] = kwds.pop('cross')
+        if 'scale' in kwds:
+            if 'ScalingFactor' in kwds:
+                same = ('ScalingFactor','scale')
+                raise KeyError('cannot specify more than one of %s' % same)
+            kwds['ScalingFactor'] = kwds.pop('scale')
+        return kwds
+
     def _process_inputs(self, kwds):
         """process and activate input settings
 
@@ -428,18 +449,17 @@ Args:
     NP (int, default=4): size of the trial solution population, with ``NP >= 4``
     strategy (strategy, default=Best1Bin): the mutation strategy for generating
         new trial solutions
-    CrossProbability (float, default=0.9): the probability of cross-parameter
-        mutations
-    ScalingFactor (float, default=0.8): multiplier for mutations on the trial
-        solution
+    cross (float, default=0.9): the probability of cross-parameter mutations
+    scale (float, default=0.8): multiplier for mutations on the trial solution
         """
-        #All important class members are inherited from AbstractSolver.
+        # All important class members are inherited from AbstractSolver.
         NP = max(NP, dim, 4) #XXX: raise Error if npop <= 4?
         super(DifferentialEvolutionSolver2, self).__init__(dim, npop=NP)
         self.genealogy     = [ [] for j in range(NP)]
-        self.scale         = 0.8
-        self.probability   = 0.9
-        self.strategy      = 'Best1Bin'
+        kwds = self._preprocess_inputs(**kwds)
+        self.scale = kwds['ScalingFactor'] if 'ScalingFactor' in kwds else 0.8
+        self.probability = kwds['CrossProbability'] if 'CrossProbability' in kwds else 0.9
+        self.strategy = kwds['strategy'] if 'strategy' in kwds else 'Best1Bin'
         ftol = 5e-3
         from mystic.termination import VTRChangeOverGeneration
         self._termination = VTRChangeOverGeneration(ftol)
@@ -603,6 +623,28 @@ Notes:
         # initialize termination conditions, if needed
         if init: self._termination(self) #XXX: at generation 0 or always?
         return #XXX: call Terminated ?
+
+    def _preprocess_inputs(self, **kwds):
+        """prepares solver-specific inputs for _process_inputs
+
+Notes:
+    converts evalmon to EvaluationMonitor
+    converts stepmon and itermon to StepMonitor
+    converts cross to CrossProbability
+    converts scale to ScalingFactor
+        """
+        kwds = super(DifferentialEvolutionSolver2, self)._preprocess_inputs(**kwds)
+        if 'cross' in kwds:
+            if 'CrossProbability' in kwds:
+                same = ('CrossProbability','cross')
+                raise KeyError('cannot specify more than one of %s' % same)
+            kwds['CrossProbability'] = kwds.pop('cross')
+        if 'scale' in kwds:
+            if 'ScalingFactor' in kwds:
+                same = ('ScalingFactor','scale')
+                raise KeyError('cannot specify more than one of %s' % same)
+            kwds['ScalingFactor'] = kwds.pop('scale')
+        return kwds
 
     def _process_inputs(self, kwds):
         """process and activate input settings
