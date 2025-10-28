@@ -45,7 +45,6 @@ class LatticeSolver(AbstractEnsembleSolver):
     """
 parallel mapped optimization starting from the centers of N grid points
     """
-    #step  -- enable ``Step`` within the ensemble.        [default = False]
     def __init__(self, dim, nbins=8, **kwds):
         """
 Takes one initial input:
@@ -53,6 +52,7 @@ Takes one initial input:
 
 Additional inputs:
     nbins -- tuple of number of bins in each dimension
+    step  -- enable ``Step`` within the ensemble.        [default = False]
 
 All important class members are inherited from AbstractEnsembleSolver.
         """
@@ -85,7 +85,6 @@ class BuckshotSolver(AbstractEnsembleSolver):
     """
 parallel mapped optimization starting from N uniform randomly sampled points
     """
-    #step  -- enable ``Step`` within the ensemble.        [default = False]
     def __init__(self, dim, npts=8, **kwds):
         """
 Takes one initial input:
@@ -93,6 +92,7 @@ Takes one initial input:
 
 Additional inputs:
     npts  -- number of parallel solver instances
+    step  -- enable ``Step`` within the ensemble.        [default = False]
 
 All important class members are inherited from AbstractEnsembleSolver.
         """
@@ -125,7 +125,6 @@ class SparsitySolver(AbstractEnsembleSolver):
     """
 parallel mapped optimization starting from N points sampled from sparse regions
     """
-    #step  -- enable ``Step`` within the ensemble.        [default = False]
     def __init__(self, dim, npts=8, rtol=None, **kwds):
         """
 Takes one initial input:
@@ -134,6 +133,7 @@ Takes one initial input:
 Additional inputs:
     npts  -- number of parallel solver instances
     rtol  -- size of radial tolerance for sparsity
+    step  -- enable ``Step`` within the ensemble.        [default = False]
 
 All important class members are inherited from AbstractEnsembleSolver.
         """
@@ -170,7 +170,6 @@ class ResidualSolver(AbstractEnsembleSolver):
     """
 parallel mapped optimization starting from N points sampled near largest misfit
     """
-    #step  -- enable ``Step`` within the ensemble.        [default = False]
     def __init__(self, dim, npts=8, mtol=None, func=None, **kwds):
         """
 Takes one initial input:
@@ -180,6 +179,7 @@ Additional inputs:
     npts  -- number of parallel solver instances
     mtol  -- iteration tolerance solving for maximum error
     func  -- function approximating the cost function
+    step  -- enable ``Step`` within the ensemble.        [default = False]
 
 All important class members are inherited from AbstractEnsembleSolver.
         """
@@ -228,7 +228,6 @@ class MixedSolver(AbstractEnsembleSolver):
     """
 parallel mapped optimization starting from N points sampled with mixed solvers
     """
-    #step  -- enable ``Step`` within the ensemble.        [default = False]
     def __init__(self, dim, samp=8, **kwds):
         """
 Takes one initial input:
@@ -236,6 +235,7 @@ Takes one initial input:
 
 Additional inputs:
     samp  -- dict of {ensemble solver: npts}
+    step  -- enable ``Step`` within the ensemble.        [default = False]
 
 All important class members are inherited from AbstractEnsembleSolver.
         """

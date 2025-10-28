@@ -162,6 +162,12 @@ Important class members::
         self._live            = False 
         return
 
+    def _init_kwds(self):
+        kwds = self._process_inputs({})
+        del kwds['callback']
+        del kwds['disp']
+        return kwds
+        
     def Solution(self):
         """return the best solution"""
         return self.bestSolution

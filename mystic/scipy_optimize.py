@@ -570,11 +570,11 @@ class PowellDirectionalSolver(AbstractSolver):
 Powell Direction Search optimization,
 adapted from scipy.optimize.fmin_powell.
     """
+    #direc (tuple, default=None): the initial direction set
     def __init__(self, dim, **kwds):
         """
 Args:
     dim (int): dimensionality of the problem
-    direc (tuple, default=None): the initial direction set
     xtol (float, default=1e-4): line-search error tolerance
     imax (float, default=500): line-search maximum iterations
         """
@@ -584,7 +584,7 @@ Args:
         #                  [x1, fx, bigind, delta]
         self.__internals = [x1, fx,      0,   0.0]
         # the initial direction set
-        self._direc = kwds['direc'] if 'direc' in kwds else None
+        self._direc = None #kwds['direc'] if 'direc' in kwds else None
         # line-search maximum iterations
         self.imax = kwds['imax'] if 'imax' in kwds else 500
         # line-search error tolerance
@@ -796,9 +796,9 @@ Notes:
         settings.update({\
         'xtol':self.xtol,    #line-search error tolerance
         'imax':self.imax})   #line-search maximum iterations
-        direc=self._direc    #initial direction set
+        #'direc':self._direc})#initial direction set
         [settings.update({i:j}) for (i,j) in kwds.items() if i in settings]
-        self._direc = kwds['direc'] if 'direc' in kwds else direc
+        self._direc = kwds['direc'] if 'direc' in kwds else self._direc
         self.xtol = settings['xtol']
         self.imax = settings['imax']
         return settings

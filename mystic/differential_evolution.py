@@ -393,14 +393,14 @@ Notes:
         from mystic import strategy
         strategy = getattr(strategy,self.strategy,strategy.Best1Bin) #XXX: None?
         settings.update({\
-        'strategy': strategy})       #mutation strategy (see mystic.strategy)
-        probability=self.probability #potential for parameter cross-mutation
-        scale=self.scale             #multiplier for mutation impact
+        'strategy': strategy,        #mutation strategy (see mystic.strategy)
+        'cross': self.probability,   #potential for parameter cross-mutation
+        'scale': self.scale})        #multiplier for mutation impact
         [settings.update({i:j}) for (i,j) in getattr(kwds, 'iteritems', kwds.items)() if i in settings]
         word = 'CrossProbability'
-        self.probability = kwds[word] if word in kwds else probability
+        self.probability = kwds[word] if word in kwds else settings['cross']
         word = 'ScalingFactor'
-        self.scale = kwds[word] if word in kwds else scale
+        self.scale = kwds[word] if word in kwds else settings['scale']
         self.strategy = getattr(settings['strategy'],'__name__','Best1Bin')
         return settings
 
@@ -681,14 +681,14 @@ Notes:
         from mystic import strategy
         strategy = getattr(strategy,self.strategy,strategy.Best1Bin) #XXX: None?
         settings.update({\
-        'strategy': strategy})       #mutation strategy (see mystic.strategy)
-        probability=self.probability #potential for parameter cross-mutation
-        scale=self.scale             #multiplier for mutation impact
+        'strategy': strategy,        #mutation strategy (see mystic.strategy)
+        'cross': self.probability,   #potential for parameter cross-mutation
+        'scale': self.scale})        #multiplier for mutation impact
         [settings.update({i:j}) for (i,j) in getattr(kwds, 'iteritems', kwds.items)() if i in settings]
         word = 'CrossProbability'
-        self.probability = kwds[word] if word in kwds else probability
+        self.probability = kwds[word] if word in kwds else settings['cross']
         word = 'ScalingFactor'
-        self.scale = kwds[word] if word in kwds else scale
+        self.scale = kwds[word] if word in kwds else settings['scale']
         self.strategy = getattr(settings['strategy'],'__name__','Best1Bin')
         return settings
 
