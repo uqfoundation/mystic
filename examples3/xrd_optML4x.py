@@ -65,14 +65,14 @@ while not loop.Terminated():
     surr_ = lambda x: surrogate(x, axis=None)
     s = LatticeSampler(bounds, surr_, npts=N)
     s.sample_until(terminated=all)
-    xdata = tolist(s._sampler._all_bestSolution)
-    ysurr = s._sampler._all_bestEnergy
+    xdata = s.bestSolution(all=True)
+    ysurr = s.bestEnergy(all=True)
 
     _surr = lambda x: -surrogate(x, axis=None)
     s_ = LatticeSampler(bounds, _surr, npts=N)
     s_.sample_until(terminated=all)
-    xdata = xdata + tolist(s_._sampler._all_bestSolution)
-    ysurr = ysurr + [-i for i in s_._sampler._all_bestEnergy]
+    xdata = xdata + s_.bestSolution(all=True)
+    ysurr = ysurr + [-i for i in s_.bestEnergy(all=True)]
 
     # evaluate truth at the same input as the surrogate critical points
     ytrue = list(map(truth, xdata))

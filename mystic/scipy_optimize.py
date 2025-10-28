@@ -101,13 +101,13 @@ class NelderMeadSimplexSolver(AbstractSolver):
     """
 Nelder Mead Simplex optimization adapted from scipy.optimize.fmin.
     """
-    
-    def __init__(self, dim):
+    def __init__(self, dim, **kwds):
         """
-Takes one initial input: 
-    dim      -- dimensionality of the problem
-
-The size of the simplex is dim+1.
+Args:
+    dim (int): dimensionality of the problem (size of the simplex is dim+1)
+    radius (float, default=0.05): percentage change for initial simplex values
+    adaptive (bool, default=False): adapt algorithm parameters to the
+        dimensionality of the initial parameter vector ``x``
         """
         simplex = dim+1
         #XXX: cleaner to set npop=simplex, and use 'population' as simplex
@@ -115,8 +115,11 @@ The size of the simplex is dim+1.
         for i in range(dim):
             self.popEnergy.append(self._init_popEnergy)
             self.population.append([0.0 for i in range(dim)])
-        self.radius = 0.05 #percentage change for initial simplex values
-        self.adaptive = False #use adaptive algorithm parameters
+        # percentage change for initial simplex values
+        self.radius = kwds['radius'] if 'radius' in kwds else 0.05
+        # use adaptive algorithm parameters
+        self.adaptive = kwds['adaptive'] if 'adaptive' in kwds else False
+        # termination
         xtol, ftol = 1e-4, 1e-4
         from mystic.termination import CandidateRelativeTolerance as CRT
         self._termination = CRT(xtol,ftol)
@@ -386,9 +389,9 @@ Args:
         dimensionality of the initial parameter vector ``x``.
 
 Notes:
-    - ``callback`` and ``disp`` are 'sticky', in that once they are given, they
-      remain set until they are explicitly changed. Conversely, the other inputs
-      are not sticky, and are thus set for a one-time use.
+    - ``callback`` and ``disp`` are not 'sticky', in that they are set for a
+      one-time use. Conversely, the other inputs are sticky, in that they
+      remain set until they are explicitly changed.
         """
         #allow for inputs that don't conform to AbstractSolver interface
         #NOTE: not sticky: callback, disp
@@ -567,20 +570,26 @@ class PowellDirectionalSolver(AbstractSolver):
 Powell Direction Search optimization,
 adapted from scipy.optimize.fmin_powell.
     """
-    
-    def __init__(self, dim):
+    #direc (tuple, default=None): the initial direction set
+    def __init__(self, dim, **kwds):
         """
-Takes one initial input: 
-    dim      -- dimensionality of the problem
+Args:
+    dim (int): dimensionality of the problem
+    xtol (float, default=1e-4): line-search error tolerance
+    imax (float, default=500): line-search maximum iterations
         """
         AbstractSolver.__init__(self,dim)
-        self._direc = None # this is the easy way to return 'direc'...
         x1 = self.population[0]
         fx = self.popEnergy[0]
         #                  [x1, fx, bigind, delta]
         self.__internals = [x1, fx,      0,   0.0]
-        self.imax  = 500   #line-search maximum iterations
-        self.xtol  = 1e-4  #line-search error tolerance
+        # the initial direction set
+        self._direc = None #kwds['direc'] if 'direc' in kwds else None
+        # line-search maximum iterations
+        self.imax = kwds['imax'] if 'imax' in kwds else 500
+        # line-search error tolerance
+        self.xtol = kwds['xtol'] if 'xtol' in kwds else 1e-4
+        # termination
         ftol, gtol = 1e-4, 2
         from mystic.termination import NormalizedChangeOverGeneration as NCOG
         self._termination = NCOG(ftol,gtol)
@@ -775,9 +784,9 @@ Args:
     imax (float, default=500): line-search maximum iterations.
 
 Notes:
-    - ``callback`` and ``disp`` are 'sticky', in that once they are given, they
-      remain set until they are explicitly changed. Conversely, the other inputs
-      are not sticky, and are thus set for a one-time use.
+    - ``callback`` and ``disp`` are not 'sticky', in that they are set for a
+      one-time use. Conversely, the other inputs are sticky, in that they
+      remain set until they are explicitly changed.
         """
         #allow for inputs that don't conform to AbstractSolver interface
         #NOTE: not sticky: callback, disp
@@ -787,9 +796,9 @@ Notes:
         settings.update({\
         'xtol':self.xtol,    #line-search error tolerance
         'imax':self.imax})   #line-search maximum iterations
-        direc=self._direc    #initial direction set
+        #'direc':self._direc})#initial direction set
         [settings.update({i:j}) for (i,j) in kwds.items() if i in settings]
-        self._direc = kwds['direc'] if 'direc' in kwds else direc
+        self._direc = kwds['direc'] if 'direc' in kwds else self._direc
         self.xtol = settings['xtol']
         self.imax = settings['imax']
         return settings

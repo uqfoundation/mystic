@@ -154,21 +154,24 @@ class DifferentialEvolutionSolver(AbstractSolver):
     """
 Differential Evolution optimization.
     """
-    
-    def __init__(self, dim, NP=4):
+    def __init__(self, dim, NP=4, **kwds):
         """
-Takes two initial inputs: 
-    dim  -- dimensionality of the problem
-    NP   -- size of the trial solution population. [requires: NP >= 4]
-
-All important class members are inherited from AbstractSolver.
+Args: 
+    dim (int): dimensionality of the problem
+    NP (int, default=4): size of the trial solution population, with ``NP >= 4``
+    strategy (strategy, default=Best1Bin): the mutation strategy for generating
+        new trial solutions
+    cross (float, default=0.9): the probability of cross-parameter mutations
+    scale (float, default=0.8): multiplier for mutations on the trial solution
         """
+        # All important class members are inherited from AbstractSolver.
         NP = max(NP, dim, 4) #XXX: raise Error if npop <= 4?
         AbstractSolver.__init__(self,dim,npop=NP)
-        self.genealogy     = [ [] for j in range(NP)]
-        self.scale         = 0.8
-        self.probability   = 0.9
-        self.strategy      = 'Best1Bin'
+        self.genealogy = [ [] for j in range(NP)]
+        kwds = self._preprocess_inputs(**kwds)
+        self.scale = kwds['ScalingFactor'] if 'ScalingFactor' in kwds else 0.8
+        self.probability = kwds['CrossProbability'] if 'CrossProbability' in kwds else 0.9
+        self.strategy = kwds['strategy'] if 'strategy' in kwds else 'Best1Bin'
         ftol = 5e-3
         from mystic.termination import VTRChangeOverGeneration
         self._termination = VTRChangeOverGeneration(ftol)
@@ -333,6 +336,28 @@ Notes:
         if init: self._termination(self) #XXX: at generation 0 or always?
         return #XXX: call Terminated ?
 
+    def _preprocess_inputs(self, **kwds):
+        """prepares solver-specific inputs for _process_inputs
+
+Notes:
+    converts evalmon to EvaluationMonitor
+    converts stepmon and itermon to StepMonitor
+    converts cross to CrossProbability
+    converts scale to ScalingFactor
+        """
+        kwds = super(DifferentialEvolutionSolver, self)._preprocess_inputs(**kwds)
+        if 'cross' in kwds:
+            if 'CrossProbability' in kwds:
+                same = ('CrossProbability','cross')
+                raise KeyError('cannot specify more than one of %s' % same)
+            kwds['CrossProbability'] = kwds.pop('cross')
+        if 'scale' in kwds:
+            if 'ScalingFactor' in kwds:
+                same = ('ScalingFactor','scale')
+                raise KeyError('cannot specify more than one of %s' % same)
+            kwds['ScalingFactor'] = kwds.pop('scale')
+        return kwds
+
     def _process_inputs(self, kwds):
         """process and activate input settings
 
@@ -356,9 +381,9 @@ Args:
         solution.
 
 Notes:
-    ``callback`` and ``disp`` are 'sticky', in that once they are given, they
-    remain set until they are explicitly changed. Conversely, the other inputs
-    are not sticky, and are thus set for a one-time use.
+    - ``callback`` and ``disp`` are not 'sticky', in that they are set for a
+      one-time use. Conversely, the other inputs are sticky, in that they
+      remain set until they are explicitly changed.
         """
         #allow for inputs that don't conform to AbstractSolver interface
         #NOTE: not sticky: callback, disp
@@ -368,14 +393,14 @@ Notes:
         from mystic import strategy
         strategy = getattr(strategy,self.strategy,strategy.Best1Bin) #XXX: None?
         settings.update({\
-        'strategy': strategy})       #mutation strategy (see mystic.strategy)
-        probability=self.probability #potential for parameter cross-mutation
-        scale=self.scale             #multiplier for mutation impact
+        'strategy': strategy,        #mutation strategy (see mystic.strategy)
+        'cross': self.probability,   #potential for parameter cross-mutation
+        'scale': self.scale})        #multiplier for mutation impact
         [settings.update({i:j}) for (i,j) in getattr(kwds, 'iteritems', kwds.items)() if i in settings]
         word = 'CrossProbability'
-        self.probability = kwds[word] if word in kwds else probability
+        self.probability = kwds[word] if word in kwds else settings['cross']
         word = 'ScalingFactor'
-        self.scale = kwds[word] if word in kwds else scale
+        self.scale = kwds[word] if word in kwds else settings['scale']
         self.strategy = getattr(settings['strategy'],'__name__','Best1Bin')
         return settings
 
@@ -417,19 +442,24 @@ Alternate implementation:
     - both a current and a next generation are kept, while the current
       generation is invariant during the main DE logic
     """
-    def __init__(self, dim, NP=4):
+    def __init__(self, dim, NP=4, **kwds):
         """
 Args: 
     dim (int): dimensionality of the problem
     NP (int, default=4): size of the trial solution population, with ``NP >= 4``
+    strategy (strategy, default=Best1Bin): the mutation strategy for generating
+        new trial solutions
+    cross (float, default=0.9): the probability of cross-parameter mutations
+    scale (float, default=0.8): multiplier for mutations on the trial solution
         """
-        #All important class members are inherited from AbstractSolver.
+        # All important class members are inherited from AbstractSolver.
         NP = max(NP, dim, 4) #XXX: raise Error if npop <= 4?
         super(DifferentialEvolutionSolver2, self).__init__(dim, npop=NP)
         self.genealogy     = [ [] for j in range(NP)]
-        self.scale         = 0.8
-        self.probability   = 0.9
-        self.strategy      = 'Best1Bin'
+        kwds = self._preprocess_inputs(**kwds)
+        self.scale = kwds['ScalingFactor'] if 'ScalingFactor' in kwds else 0.8
+        self.probability = kwds['CrossProbability'] if 'CrossProbability' in kwds else 0.9
+        self.strategy = kwds['strategy'] if 'strategy' in kwds else 'Best1Bin'
         ftol = 5e-3
         from mystic.termination import VTRChangeOverGeneration
         self._termination = VTRChangeOverGeneration(ftol)
@@ -594,6 +624,28 @@ Notes:
         if init: self._termination(self) #XXX: at generation 0 or always?
         return #XXX: call Terminated ?
 
+    def _preprocess_inputs(self, **kwds):
+        """prepares solver-specific inputs for _process_inputs
+
+Notes:
+    converts evalmon to EvaluationMonitor
+    converts stepmon and itermon to StepMonitor
+    converts cross to CrossProbability
+    converts scale to ScalingFactor
+        """
+        kwds = super(DifferentialEvolutionSolver2, self)._preprocess_inputs(**kwds)
+        if 'cross' in kwds:
+            if 'CrossProbability' in kwds:
+                same = ('CrossProbability','cross')
+                raise KeyError('cannot specify more than one of %s' % same)
+            kwds['CrossProbability'] = kwds.pop('cross')
+        if 'scale' in kwds:
+            if 'ScalingFactor' in kwds:
+                same = ('ScalingFactor','scale')
+                raise KeyError('cannot specify more than one of %s' % same)
+            kwds['ScalingFactor'] = kwds.pop('scale')
+        return kwds
+
     def _process_inputs(self, kwds):
         """process and activate input settings
 
@@ -617,9 +669,9 @@ Args:
         solution.
 
 Notes:
-    ``callback`` and ``disp`` are 'sticky', in that once they are given, they
-    remain set until they are explicitly changed. Conversely, the other inputs
-    are not sticky, and are thus set for a one-time use.
+    - ``callback`` and ``disp`` are not 'sticky', in that they are set for a
+      one-time use. Conversely, the other inputs are sticky, in that they
+      remain set until they are explicitly changed.
         """
         #allow for inputs that don't conform to AbstractSolver interface
         #NOTE: not sticky: callback, disp
@@ -629,14 +681,14 @@ Notes:
         from mystic import strategy
         strategy = getattr(strategy,self.strategy,strategy.Best1Bin) #XXX: None?
         settings.update({\
-        'strategy': strategy})       #mutation strategy (see mystic.strategy)
-        probability=self.probability #potential for parameter cross-mutation
-        scale=self.scale             #multiplier for mutation impact
+        'strategy': strategy,        #mutation strategy (see mystic.strategy)
+        'cross': self.probability,   #potential for parameter cross-mutation
+        'scale': self.scale})        #multiplier for mutation impact
         [settings.update({i:j}) for (i,j) in getattr(kwds, 'iteritems', kwds.items)() if i in settings]
         word = 'CrossProbability'
-        self.probability = kwds[word] if word in kwds else probability
+        self.probability = kwds[word] if word in kwds else settings['cross']
         word = 'ScalingFactor'
-        self.scale = kwds[word] if word in kwds else scale
+        self.scale = kwds[word] if word in kwds else settings['scale']
         self.strategy = getattr(settings['strategy'],'__name__','Best1Bin')
         return settings
 

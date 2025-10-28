@@ -72,8 +72,8 @@ while not loop.Terminated():
                         solver=PowellDirectionalSolver,
                         termination=NCOG(1e-6, 10))
     s.sample_until(terminated=all)
-    xdata = tolist(s._sampler._all_bestSolution)
-    ysurr = s._sampler._all_bestEnergy
+    xdata = s.bestSolution(all=True)
+    ysurr = s.bestEnergy(all=True)
 
     # evaluate truth at the same input as the surrogate critical points
     ytrue = list(map(truth, xdata))

@@ -25,7 +25,7 @@ Examples:
 
     A typical call to a 'ensemble' solver will roughly follow this example:
 
-    >>> # the function to be minimized and the initial values
+    >>> # the function to be minimized and the bounds
     >>> from mystic.models import rosen
     >>> lb = [0.0, 0.0, 0.0]
     >>> ub = [2.0, 2.0, 2.0]
@@ -90,7 +90,6 @@ AbstractEnsembleSolver base class for mystic optimizers that are called within
 a parallel map.  This allows pseudo-global coverage of parameter space using
 non-global optimizers.
     """
-
     def __init__(self, dim, **kwds):
         """
 Takes one initial input::
@@ -102,6 +101,7 @@ Additional inputs::
     npop     -- size of the trial solution population.      [default = 1]
     nbins    -- tuple of number of bins in each dimension.  [default = [1]*dim]
     npts     -- number of solver instances.                 [default = 1]
+    step     -- sync the ensemble after every iteration.    [default = False]
 
 Important class members::
 
@@ -140,7 +140,7 @@ Important class members::
         self._bestSolver      = None # 'best' solver (after Solve)
         self._allSolvers      = [None for j in range(self._npts)]
         self._init_solution   = [None for j in range(self._npts)]
-        self._step            = False
+        self._step            = kwds['step'] if 'step' in kwds else False
         return
 
     def __all_evals(self):
@@ -175,6 +175,13 @@ Args:
 
 Returns:
     None
+
+Notes:
+    - if a solver class object is provided (i.e. not a solver instance), then
+      the a solver instance where number of dimensions and cost function is
+      transferred from the ensemble solver will be used.
+    - if a solver instance is provided, it is generally best practice to first        call solver.SetObjective (along with any other configuration choices)
+      explicitly before passing the instance to SetNestedSolver.
         """
         self._solver = solver
         #HACK: add NP attribute if NP provided
@@ -633,6 +640,9 @@ Notes:
         if disp in ['verbose', 'all']: verbose = True
         else: verbose = False
 
+        #XXX: HACK for configured NestedSolver
+        cost = self._bootstrap_objective(self._cost[1], ExtraArgs)
+
         # generate starting points
         newpts = len(self._allSolvers)
         if self._is_new(): #NOTE: None when new/reset, else has been called
@@ -657,6 +667,8 @@ Notes:
                                            clip=self._useClipRange)
             _term = (solver._live is False) and solver.Terminated()
             if _term is True: solver._live = True #XXX: HACK don't reset _fcalls
+            if solver._cost[1] is None: #XXX: HACK for configured NestedSolver
+                solver.SetObjective(cost, ExtraArgs=ExtraArgs)
             solver.Step(cost,ExtraArgs=ExtraArgs,disp=disp,callback=callback)
             if _term is True: solver._live = False
             sm = solver._stepmon
@@ -704,12 +716,12 @@ Args:
         with ``y = cost(xk) + y'`` and ``xk`` is the current parameter vector.
     constraints (constraint, default=None): function of the form:
         ``xk' = constraints(xk)``, where ``xk`` is the current parameter vector.
-    step (bool, default=False): if True, enable ``Step`` within the ensemble.
+    step (bool, default=False): sync the ensemble after every iteration.
 
 Notes:
-    - ``callback`` and ``disp`` are 'sticky', in that once they are given, they
-      remain set until they are explicitly changed. Conversely, the other inputs
-      are not sticky, and are thus set for a one-time use.
+    - ``callback`` and ``disp`` are not 'sticky', in that they are set for a
+      one-time use. Conversely, the other inputs are sticky, in that they
+      remain set until they are explicitly changed.
         """
         #allow for inputs that don't conform to AbstractSolver interface
         #NOTE: not sticky: callback, disp

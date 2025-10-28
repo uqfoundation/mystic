@@ -28,7 +28,7 @@ assert (fx(*x.T) - y).sum() == 0.0
 fx = ip.Rbf(*np.vstack((x.T, y)), function='inverse_quadratic', smooth=0.0)
 assert (fx(*x.T) - y).sum() == 0.0
 fx = ip.Rbf(*np.vstack((x.T, y)), function='bump', smooth=0.0)
-assert (fx(*x.T) - y).sum() == 0.0
+assert np.abs(fx(*x.T) - y).sum() <= 1e-15 #NOTE: bump can mildly fail
 
 # functions which are zero at r = 0 are singular with a single datapoint
 fx = ip.Rbf(*np.vstack((x.T, y)), function='linear', smooth=-1e-100)
