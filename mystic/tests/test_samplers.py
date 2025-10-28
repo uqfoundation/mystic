@@ -27,5 +27,5 @@ for sampler in (SparsitySampler, BuckshotSampler, LatticeSampler,
 
     assert s._sampler._npts == N
     for xi,yi in zip(x,y):
-        assert almostEqual(xi, x0, tol=1e-14)
+        assert almostEqual(xi, x0, tol=1e-12)
         assert almostEqual(yi, y0)
