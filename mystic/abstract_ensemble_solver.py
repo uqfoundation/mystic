@@ -25,7 +25,7 @@ Examples:
 
     A typical call to a 'ensemble' solver will roughly follow this example:
 
-    >>> # the function to be minimized and the initial values
+    >>> # the function to be minimized and the bounds
     >>> from mystic.models import rosen
     >>> lb = [0.0, 0.0, 0.0]
     >>> ub = [2.0, 2.0, 2.0]
@@ -101,7 +101,7 @@ Additional inputs::
     npop     -- size of the trial solution population.      [default = 1]
     nbins    -- tuple of number of bins in each dimension.  [default = [1]*dim]
     npts     -- number of solver instances.                 [default = 1]
-    step     -- enable ``Step`` within the ensemble.        [default = False]
+    step     -- sync the ensemble after every iteration.    [default = False]
 
 Important class members::
 
@@ -175,6 +175,13 @@ Args:
 
 Returns:
     None
+
+Notes:
+    - if a solver class object is provided (i.e. not a solver instance), then
+      the a solver instance where number of dimensions and cost function is
+      transferred from the ensemble solver will be used.
+    - if a solver instance is provided, it is generally best practice to first        call solver.SetObjective (along with any other configuration choices)
+      explicitly before passing the instance to SetNestedSolver.
         """
         self._solver = solver
         #HACK: add NP attribute if NP provided
@@ -709,7 +716,7 @@ Args:
         with ``y = cost(xk) + y'`` and ``xk`` is the current parameter vector.
     constraints (constraint, default=None): function of the form:
         ``xk' = constraints(xk)``, where ``xk`` is the current parameter vector.
-    step (bool, default=False): if True, enable ``Step`` within the ensemble.
+    step (bool, default=False): sync the ensemble after every iteration.
 
 Notes:
     - ``callback`` and ``disp`` are not 'sticky', in that they are set for a

@@ -7,6 +7,48 @@
 """
 This module contains the base class for mystic samplers, and describes
 the mystic sampler interface.
+
+Example usage:
+
+    >>> # the fuction to be sampled and the bounds
+    >>> from mystic.models import rosen
+    >>> lb = [0.0, 0.0, 0.0]
+    >>> ub = [2.0, 2.0, 2.0]
+    >>> bounds = list(zip(lb, ub))
+    >>>
+    >>> # instantiate and configure the nested solver
+    >>> from mystic.solvers import NelderMeadSimplexSolver
+    >>> solver = NelderMeadSimplexSolver(3)
+    >>>
+    >>> # instantiate and configure the sampler
+    >>> from mystic.samplers import SparsitySampler
+    >>> sampler = SparsitySampler(bounds, rosen, npts=4, solver=solver)
+    >>>
+    >>> # sample `npts` without the solver
+    >>> sampler.sample()
+    >>> sampler.evals(all=True)
+    [1, 1, 1, 1]
+    >>>
+    >>> # sample `npts` until all solvers terminate
+    >>> sampler.terminated(all=True)
+    [False, False, False, False]
+    >>> sampler.sample_until(terminated=all)
+    >>> sampler.evals(all=True)
+    [323, 120, 132, 138]
+    >>> sampler.terminated(all=True)
+    [True, True, True, True]
+    >>>
+    >>> # extract the results
+    >>> import numpy as np
+    >>> np.array(sampler.bestEnergy(all=True))
+    array([2.64786360e-10, 2.00199994e+03, 4.02369987e+02, 1.10040095e+00])
+    >>> np.array(sampler.bestSolution(all=True))
+    array([[1.00000555e+00, 1.00001074e+00, 1.00002251e+00],
+           [1.99999999e+00, 2.09709611e-08, 1.99999999e+00],
+           [1.45188568e+00, 1.99999999e+00, 2.00000000e+00],
+           [4.45889175e-01, 1.92620174e-01, 1.12598488e-08]])
+    >>> 
+
 """
 __all__ = ['AbstractSampler']
 
@@ -310,6 +352,47 @@ Args:
         if all:
             return self._iters
         return sum(self._iters)
+
+
+    def bestEnergy(self, all=False): #XXX: None?
+        """get the best sampled Energy
+
+Args:
+  all (bool, default=False): report the ``energy`` for each ensemble member
+        """
+        if all:
+            return self._sampler._all_bestEnergy
+        return self._sampler.bestEnergy
+
+
+    def bestSolution(self, all=False): #XXX: None?
+        """get the best sampled solution
+
+Args:
+  all (bool, default=False): report the ``solution`` for each ensemble member
+        """
+        from mystic.tools import listify as tolist
+        if all:
+            return tolist(self._sampler._all_bestSolution)
+        return tolist(self._sampler.bestSolution)
+
+
+    def initEnergy(self, map=None): #XXX: None?
+        """sample the model at the initial solution (without running the solver)
+
+Args:
+  all (map, default=None): map function instance
+        """
+        if map is None:
+            from builtins import map
+        return list(map(self._model, self._sampler._init_solution))
+
+
+    def initSolution(self):
+        """get the initial solution (without running the solver)
+        """
+        from mystic.tools import listify as tolist
+        return tolist(self._sampler._init_solution)
 
 
     def terminated(self, *args, **kwds): #FIXME: confusing wrt if_terminated?

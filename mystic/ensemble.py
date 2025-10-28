@@ -52,7 +52,7 @@ Takes one initial input:
 
 Additional inputs:
     nbins -- tuple of number of bins in each dimension
-    step  -- enable ``Step`` within the ensemble.        [default = False]
+    step  -- sync the ensemble after every iteration     [default = False]
 
 All important class members are inherited from AbstractEnsembleSolver.
         """
@@ -92,7 +92,7 @@ Takes one initial input:
 
 Additional inputs:
     npts  -- number of parallel solver instances
-    step  -- enable ``Step`` within the ensemble.        [default = False]
+    step  -- sync the ensemble after every iteration     [default = False]
 
 All important class members are inherited from AbstractEnsembleSolver.
         """
@@ -133,7 +133,7 @@ Takes one initial input:
 Additional inputs:
     npts  -- number of parallel solver instances
     rtol  -- size of radial tolerance for sparsity
-    step  -- enable ``Step`` within the ensemble.        [default = False]
+    step  -- sync the ensemble after every iteration     [default = False]
 
 All important class members are inherited from AbstractEnsembleSolver.
         """
@@ -179,7 +179,7 @@ Additional inputs:
     npts  -- number of parallel solver instances
     mtol  -- iteration tolerance solving for maximum error
     func  -- function approximating the cost function
-    step  -- enable ``Step`` within the ensemble.        [default = False]
+    step  -- sync the ensemble after every iteration     [default = False]
 
 All important class members are inherited from AbstractEnsembleSolver.
         """
@@ -235,7 +235,7 @@ Takes one initial input:
 
 Additional inputs:
     samp  -- dict of {ensemble solver: npts}
-    step  -- enable ``Step`` within the ensemble.        [default = False]
+    step  -- sync the ensemble after every iteration     [default = False]
 
 All important class members are inherited from AbstractEnsembleSolver.
         """
@@ -335,7 +335,7 @@ Args:
     map (func, default=None): a (parallel) map instance ``y = map(f, x)``.
     dist (mystic.math.Distribution, default=None): generate randomness in
         ensemble starting position using the given distribution.
-    step (bool, default=False): if True, enable Step within the ensemble.
+    step (bool, default=False): sync the ensemble after every iteration.
 
 Returns:
     ``(xopt, {fopt, iter, funcalls, warnflag, allfuncalls}, {allvecs})``
@@ -465,7 +465,7 @@ Args:
     map (func, default=None): a (parallel) map instance ``y = map(f, x)``.
     dist (mystic.math.Distribution, default=None): generate randomness in
         ensemble starting position using the given distribution.
-    step (bool, default=False): if True, enable Step within the ensemble.
+    step (bool, default=False): sync the ensemble after every iteration.
 
 Returns:
     ``(xopt, {fopt, iter, funcalls, warnflag, allfuncalls}, {allvecs})``
@@ -596,7 +596,7 @@ Args:
     map (func, default=None): a (parallel) map instance ``y = map(f, x)``.
     dist (mystic.math.Distribution, default=None): generate randomness in
         ensemble starting position using the given distribution.
-    step (bool, default=False): if True, enable Step within the ensemble.
+    step (bool, default=False): sync the ensemble after every iteration.
 
 Returns:
     ``(xopt, {fopt, iter, funcalls, warnflag, allfuncalls}, {allvecs})``
@@ -729,7 +729,7 @@ Args:
     map (func, default=None): a (parallel) map instance ``y = map(f, x)``.
     dist (mystic.math.Distribution, default=None): generate randomness in
         ensemble starting position using the given distribution.
-    step (bool, default=False): if True, enable Step within the ensemble.
+    step (bool, default=False): sync the ensemble after every iteration.
 
 Returns:
     ``(xopt, {fopt, iter, funcalls, warnflag, allfuncalls}, {allvecs})``

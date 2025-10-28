@@ -84,8 +84,8 @@ while not loop.Terminated():
     s.sample_until(terminated=all)
 
     # get surrogate at critical points
-    xdata = tolist(s._sampler._all_bestSolution)
-    ysurr = s._sampler._all_bestEnergy
+    xdata = s.bestSolution(all=True)
+    ysurr = s.bestEnergy(all=True)
 
     # evaluate truth at the same input as the surrogate critical points
     ytrue = list(map(truth, xdata))
