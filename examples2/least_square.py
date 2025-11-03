@@ -33,7 +33,8 @@ def objective(x):
     return sum([(F[i] - (sum([x[j] * t[i]**j for j in range(p + 1)])))
                                              for i in range(npts)])
 
-bounds = [(-100,100)]*(p+1)
+from mystic.bounds import Bounds
+bounds = Bounds(-100,100,n=(p+1))
 # with penalty='penalty' applied, solution is:
 xs = [-1e2, -1e2, 5.55811273, -1.52656038e-2, 1.07572965e-5]
 ys = -1046912.373722

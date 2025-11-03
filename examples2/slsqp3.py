@@ -35,7 +35,8 @@ eqn = '''
 '''
 cons = ms.generate_constraint(ms.generate_solvers(ms.simplify(eqn,target='x1')))
 pens = ms.generate_penalty(ms.generate_conditions(ieqn), k=1e3)
-bounds = [(0., None), (1., None)]
+from mystic.bounds import Bounds
+bounds = Bounds([0.,1.],[None,None])
 
 # get the objective
 def objective(x, sign=1):

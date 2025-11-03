@@ -51,8 +51,8 @@ surrogate = InterpModel("surrogate", nx=nx, ny=ny, data=truth, smooth=0.0,
 # iterate until error (of candidate minimum) < 1e-3
 N = 4
 import numpy as np
-import mystic._counter as it
-counter = it.Counter()
+from mystic import Counter
+counter = Counter()
 tracker = LoggingMonitor(1, filename='error.txt', label='error')
 from mystic.abstract_solver import AbstractSolver
 from mystic.termination import VTR

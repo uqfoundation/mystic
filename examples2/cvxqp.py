@@ -24,7 +24,8 @@ def objective(x):
 equations = """
 x0 + x1 - 1.0 == 0.0
 """
-bounds = [(0.0, None),(0.0, None)]
+from mystic.bounds import Bounds
+bounds = Bounds(0.0, None, n=2)
 
 # with penalty='penalty' applied, solution is:
 xs = [0.25, 0.75]

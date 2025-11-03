@@ -69,8 +69,9 @@ if __name__ == '__main__':
 
     # cost function
     from mystic.models import griewangk as model
+    from mystic.bounds import Bounds
     ndim = 2  # model dimensionality
-    bounds = ndim * [(-9.5,9.5)] # griewangk
+    bounds = Bounds(-9.5,9.5,n=ndim) # griewangk
 
     # the ensemble solvers
     from mystic.solvers import BuckshotSolver as sprayer

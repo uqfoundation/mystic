@@ -49,7 +49,8 @@ def objective(x):
 
 n = 10
 
-bounds = [(1,n)]*n
+from mystic.bounds import Bounds
+bounds = Bounds(1,n,n=n)
 # with penalty='penalty' applied, solution is:
 xs = [[3, 7, 4, 2, 9, 5, 8, 10, 1, 6],
       [3, 7, 4, 2, 8, 5, 10, 9, 1, 6],
@@ -116,7 +117,7 @@ if __name__ == '__main__':
     from mystic.monitors import Monitor, VerboseMonitor
     mon = VerboseMonitor(10)#,10)
 
-    result = diffev2(objective, x0=bounds, bounds=bounds, penalty=penalty, constraints=constraint, npop=50, ftol=1e-8, gtol=200, disp=True, full_output=True, cross=0.1, scale=0.9, itermon=mon)
+    result = diffev2(objective, x0=bounds, bounds=bounds, penalty=penalty, constraints=constraint, npop=100, ftol=1e-8, gtol=200, disp=True, full_output=True, cross=0.1, scale=0.9, itermon=mon)
 
     print(result[0])
     assert almostEqual(result[0], xs[0], tol=1e-8) \

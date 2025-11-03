@@ -19,7 +19,8 @@ def objective(x):
     x0,x1,x2,x3,x4,x5,x6,x7 = x
     return x0 + x1 + x2
 
-bounds = [(100,10000)] + [(1000,10000)]*2 + [(10,1000)]*5
+from mystic.bounds import Bounds
+bounds = Bounds([100,1000,10],[10000,10000,1000],n=(1,2,5))
 # with penalty='penalty' applied, solution is:
 xs = [579.3167, 1359.943, 5110.071, 182.0174, \
       295.5985, 217.9799, 286.4162,395.5979]

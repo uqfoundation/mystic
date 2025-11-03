@@ -579,8 +579,8 @@ Args:
     m (float): target expected mean
     f (func): a function that takes a list and returns a number
     npts (tuple(int)): a tuple of dimensions of the target product measure
-    bounds (tuple, default=None): tuple is ``(lower_bounds, upper_bounds)``
-    weights (list, default=None): a list of sample weights
+    bounds (bounds, default=None): a bounds instance
+    weights (list, default=None):  a list of sample weights
     tol (float, default=None): maximum allowable deviation from ``m``
     constraints (func, default=None): a function that takes a nested list of
         ``N x 1D`` discrete measure positions and weights, with the intended
@@ -601,9 +601,9 @@ Notes:
     This function does not preserve the mean, variance, or range, as there
     is no initial list of samples to draw the mean, variance, and etc from.
 
-    *bounds* is tuple with ``length(bounds) == 2``, composed of all the lower
-    bounds, then all the upper bounds, for each positional value (i.e. bounds
-    for the weights should not be included).
+    *bounds* can also be given as a tuple with ``length(bounds) == 2``,
+    composed of all the lower bounds, then all the upper bounds, for each
+    positional value (i.e. bounds for the weights should not be included).
 
 Examples:
     >>> # provide the dimensions and bounds
@@ -659,7 +659,11 @@ Examples:
       lower_bounds += [None]*n
       upper_bounds += [None]*n
   else: 
-    lower_bounds, upper_bounds = bounds
+    from mystic.bounds import Bounds
+    if isinstance(bounds, Bounds):
+        lower_bounds, upper_bounds = bounds.xlower, bounds.xupper
+    else:
+        lower_bounds, upper_bounds = bounds
 
   # construct and configure optimizer
   debug = kwds['debug'] if 'debug' in kwds else False
@@ -712,7 +716,7 @@ Args:
     m (float): target expected moment
     f (func): a function that takes a list and returns a number
     npts (tuple(int)): a tuple of dimensions of the target product measure
-    bounds (tuple, default=None): tuple is ``(lower_bounds, upper_bounds)``
+    bounds (bounds, default=None): a bounds instance
     weights (list, default=None):  a list of sample weights
     order (int, default=1): the degree, a positive integer
     tol (float, default=None): maximum allowable deviation from ``m``
@@ -735,9 +739,9 @@ Notes:
     This function does not preserve the mean, variance, or range, as there
     is no initial list of samples to draw the mean, variance, and etc from.
 
-    *bounds* is tuple with ``length(bounds) == 2``, composed of all the lower
-    bounds, then all the upper bounds, for each positional value (i.e. bounds
-    for the weights should not be included).
+    *bounds* can also be given as a tuple with ``length(bounds) == 2``,
+    composed of all the lower bounds, then all the upper bounds, for each
+    positional value (i.e. bounds for the weights should not be included).
 
 Examples:
     >>> # provide the dimensions and bounds
@@ -806,7 +810,11 @@ Examples:
       lower_bounds += [None]*n
       upper_bounds += [None]*n
   else:
-    lower_bounds, upper_bounds = bounds
+    from mystic.bounds import Bounds
+    if isinstance(bounds, Bounds):
+        lower_bounds, upper_bounds = bounds.xlower, bounds.xupper
+    else:
+        lower_bounds, upper_bounds = bounds
 
   if len(lower_bounds) == 1 and param[-1] > 1 \
      and not (param[1] >= -param[0] >= -param[1]):
@@ -865,7 +873,7 @@ Args:
     v (float): target expected variance
     f (func): a function that takes a list and returns a number
     npts (tuple(int)): a tuple of dimensions of the target product measure
-    bounds (tuple, default=None): tuple is ``(lower_bounds, upper_bounds)``
+    bounds (bounds, default=None): a bounds instance
     weights (list, default=None):  a list of sample weights
     tol (float, default=None): maximum allowable deviation from ``v``
     constraints (func, default=None): a function that takes a nested list of
@@ -887,9 +895,9 @@ Notes:
     This function does not preserve the mean, variance, or range, as there
     is no initial list of samples to draw the mean, variance, and etc from.
 
-    *bounds* is tuple with ``length(bounds) == 2``, composed of all the lower
-    bounds, then all the upper bounds, for each positional value (i.e. bounds
-    for the weights should not be included).
+    *bounds* can also be given as a tuple with ``length(bounds) == 2``,
+    composed of all the lower bounds, then all the upper bounds, for each
+    positional value (i.e. bounds for the weights should not be included).
 
 Examples:
     >>> # provide the dimensions and bounds
@@ -945,7 +953,11 @@ Examples:
       lower_bounds += [None]*n
       upper_bounds += [None]*n
   else:
-    lower_bounds, upper_bounds = bounds
+    from mystic.bounds import Bounds
+    if isinstance(bounds, Bounds):
+        lower_bounds, upper_bounds = bounds.xlower, bounds.xupper
+    else:
+        lower_bounds, upper_bounds = bounds
 
   if len(lower_bounds) == 1 and not (param[1] >= -param[0] >= -param[1]):
      msg = 'if size == 1, then variance == 0 (variance %s +/- %s)' % param
@@ -1002,7 +1014,7 @@ Args:
     s (float): target expected standard deviation
     f (func): a function that takes a list and returns a number
     npts (tuple(int)): a tuple of dimensions of the target product measure
-    bounds (tuple, default=None): tuple is ``(lower_bounds, upper_bounds)``
+    bounds (bounds, default=None): a bounds instance
     weights (list, default=None):  a list of sample weights
     tol (float, default=None): maximum allowable deviation from ``s``
     constraints (func, default=None): a function that takes a nested list of
@@ -1024,9 +1036,9 @@ Notes:
     This function does not preserve the mean, variance, or range, as there
     is no initial list of samples to draw the mean, variance, and etc from.
 
-    *bounds* is tuple with ``length(bounds) == 2``, composed of all the lower
-    bounds, then all the upper bounds, for each positional value (i.e. bounds
-    for the weights should not be included).
+    *bounds* can also be given as a tuple with ``length(bounds) == 2``,
+    composed of all the lower bounds, then all the upper bounds, for each
+    positional value (i.e. bounds for the weights should not be included).
 
 Examples:
     >>> # provide the dimensions and bounds
@@ -1082,7 +1094,11 @@ Examples:
       lower_bounds += [None]*n
       upper_bounds += [None]*n
   else:
-    lower_bounds, upper_bounds = bounds
+    from mystic.bounds import Bounds
+    if isinstance(bounds, Bounds):
+        lower_bounds, upper_bounds = bounds.xlower, bounds.xupper
+    else:
+        lower_bounds, upper_bounds = bounds
 
   if len(lower_bounds) == 1 and not (param[1] >= -param[0] >= -param[1]):
      msg = 'if size == 1, then std == 0 (std %s +/- %s)' % param
@@ -1152,7 +1168,7 @@ Args:
     param (tuple(float)): target parameters, ``(mean, variance)``
     f (func): a function that takes a list and returns a number
     npts (tuple(int)): a tuple of dimensions of the target product measure
-    bounds (tuple, default=None): tuple is ``(lower_bounds, upper_bounds)``
+    bounds (bounds, default=None): a bounds instance
     weights (list, default=None):  a list of sample weights
     tol (tuple(float), default=None): maximum allowed deviation from ``m,v``
     constraints (func, default=None): a function that takes a nested list of
@@ -1178,9 +1194,9 @@ Notes:
     This function does not preserve the mean, variance, or range, as there
     is no initial list of samples to draw the mean, variance, and etc from.
 
-    *bounds* is tuple with ``length(bounds) == 2``, composed of all the lower
-    bounds, then all the upper bounds, for each positional value (i.e. bounds
-    for the weights should not be included).
+    *bounds* can also be given as a tuple with ``length(bounds) == 2``,
+    composed of all the lower bounds, then all the upper bounds, for each
+    positional value (i.e. bounds for the weights should not be included).
 
 Examples:
     >>> # provide the dimensions and bounds
@@ -1261,7 +1277,11 @@ Examples:
       lower_bounds += [None]*n
       upper_bounds += [None]*n
   else:
-    lower_bounds, upper_bounds = bounds
+    from mystic.bounds import Bounds
+    if isinstance(bounds, Bounds):
+        lower_bounds, upper_bounds = bounds.xlower, bounds.xupper
+    else:
+        lower_bounds, upper_bounds = bounds
 
   if len(lower_bounds) == 1 and not (param[3] >= -param[1] >= -param[3]):
      msg = 'if size == 1, then variance == 0 (variance %s +/- %s)' % param[1::2]

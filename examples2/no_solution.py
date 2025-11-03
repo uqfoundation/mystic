@@ -32,7 +32,8 @@ def objective(x, a, b, c):
     (x - a[2])**2 + (y - b[2])**2 - c[2]**2)
   return eqns
 
-bounds = [(None,None),(None,None)] #unnecessary
+from mystic.bounds import Bounds
+bounds = Bounds(None,None,n=2) #unnecessary
 
 a = (0,2,0)
 b = (0,0,2)

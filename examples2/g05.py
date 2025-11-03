@@ -19,7 +19,8 @@ def objective(x):
     x0,x1,x2,x3 = x
     return 3*x0 + 1.e-6*x0**3 + 2*x1 + 2.e-6/3*x1**3
 
-bounds = [(0,1200)]*2 + [(-0.55,0.55)]*2
+from mystic.bounds import Bounds
+bounds = Bounds([0,-0.55],[1200,0.55], n=(2,2))
 # with penalty='penalty' applied, solution is:
 xs = [679.945794311, 1026.0666256385, 0.11887602615356, -0.3962337137961]
 ys = 5126.49810960

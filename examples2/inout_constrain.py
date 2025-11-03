@@ -32,7 +32,8 @@ def objective(x):
     return (1500 * x0) + (625 * x1) + (100 * x2)
 
 # define the bounds
-bounds = [(5,50),(5,100),(1,20)]
+from mystic.bounds import Bounds
+bounds = Bounds([5,5,1],[50,100,20])
 
 # define symbolic constraints
 eqns = '''

@@ -25,7 +25,8 @@
 def objective(x):
     return x[0] + 2*x[1]
 
-bounds = [(0,None)]*2
+from mystic.bounds import Bounds
+bounds = Bounds(0,None,n=2)
 
 # with penalty='penalty' applied, solution is:
 xs = [6., 0.]

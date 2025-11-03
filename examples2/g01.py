@@ -18,7 +18,8 @@
 def objective(x):
     return 5*sum(x[:4]) - 5*sum([xi**2 for xi in x[:4]]) - sum(x[4:])
 
-bounds = [(0,1)]*9 + [(0,100)]*3 + [(0,1)]
+from mystic.bounds import Bounds
+bounds = Bounds([0,0,0],[1,100,1], n=(9,3,1))
 # with penalty='penalty' applied, solution is:
 xs = [1.0]*9 + [3.0]*3 + [1.0]
 ys = -15.0

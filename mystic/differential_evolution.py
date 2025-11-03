@@ -732,12 +732,12 @@ function of one or more variables. Mimics a ``scipy.optimize`` style interface.
 Args:
     cost (function): the function or method to be minimized: ``y = cost(x)``.
     x0 (ndarray): the initial guess parameter vector ``x`` if desired start
-        is a single point, otherwise takes a list of (min,max) bounds that
-        define a region from which random initial points are drawn.
+        is a single point, otherwise takes bounds that define a region from
+        which random initial points are drawn.
     npop (int, default=4): size of the trial solution population.
     args (tuple, default=()): extra arguments for cost.
-    bounds (list(tuple), default=None): list of pairs of bounds (min,max),
-        one for each parameter.
+    bounds (bounds, default=None): the bounds for each parameter, given as
+        a mystic.bounds instance or a list of ``(lower, upper)`` tuples.
     ftol (float, default=5e-3): acceptable relative error in ``cost(xopt)``
         for convergence.
     gtol (int, default=None): maximum iterations to run without improvement.
@@ -797,12 +797,12 @@ one or more variables. Mimics a ``scipy.optimize`` style interface.
 Args:
     cost (function): the function or method to be minimized: ``y = cost(x)``.
     x0 (ndarray): the initial guess parameter vector ``x`` if desired start
-        is a single point, otherwise takes a list of (min,max) bounds that
-        define a region from which random initial points are drawn.
+        is a single point, otherwise takes bounds that define a region from
+        which random initial points are drawn.
     npop (int, default=4): size of the trial solution population.
     args (tuple, default=()): extra arguments for cost.
-    bounds (list(tuple), default=None): list of pairs of bounds (min,max),
-        one for each parameter.
+    bounds (bounds, default=None): the bounds for each parameter, given as
+        a mystic.bounds instance or a list of ``(lower, upper)`` tuples.
     ftol (float, default=5e-3): acceptable relative error in ``cost(xopt)``
         for convergence.
     gtol (int, default=None): maximum iterations to run without improvement.
@@ -874,13 +874,13 @@ Notes:
     if 'constraints' in kwds:
         solver.SetConstraints(kwds['constraints'])
     if bounds is not None:
-        minb,maxb = unpair(bounds)
+        minb,maxb = bounds.T if hasattr(bounds, 'T') else unpair(bounds)
         tight = kwds['tightrange'] if 'tightrange' in kwds else None
         clip = kwds['cliprange'] if 'cliprange' in kwds else None
         solver.SetStrictRanges(minb,maxb,tight=tight,clip=clip)
 
     try: #x0 passed as 1D array of (min,max) pairs
-        minb,maxb = unpair(x0)
+        minb,maxb = bounds.T if hasattr(bounds, 'T') else unpair(bounds)
         solver.SetRandomInitialPoints(minb,maxb)
     except: #x0 passed as 1D array of initial parameter values
         solver.SetInitialPoints(x0)

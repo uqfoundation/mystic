@@ -870,6 +870,8 @@ def _interval_invert(bounds, lb=None, ub=None):
     bounds is a list of tuples [(lo,hi),...],
     where lb and ub, if not given, are the extrema of bounds
     """
+    from mystic.bounds import Bounds
+    bounds = bounds() if isinstance(bounds, Bounds) else bounds
     if not len(bounds): return bounds
     import numpy
     bounds = numpy.asarray(bounds)
@@ -884,6 +886,9 @@ def _interval_intersection(bounds1, bounds2):
 
     bounds is a list of tuples [(lo,hi),...]
     """
+    from mystic.bounds import Bounds
+    bounds1 = bounds1() if isinstance(bounds1, Bounds) else bounds1
+    bounds2 = bounds2() if isinstance(bounds2, Bounds) else bounds2
     if not len(bounds2):
         return bounds1 if len(bounds1) else []
     if not len(bounds1): return bounds2
@@ -901,6 +906,9 @@ def _interval_union(bounds1, bounds2):
 
     bounds is a list of tuples [(lo,hi),...]
     """
+    from mystic.bounds import Bounds
+    bounds1 = bounds1() if isinstance(bounds1, Bounds) else bounds1
+    bounds2 = bounds2() if isinstance(bounds2, Bounds) else bounds2
     if not len(bounds2) or not len(bounds1): return []
     import numpy
     bounds1,bounds2 = numpy.asarray(bounds1),numpy.asarray(bounds2)

@@ -11,9 +11,10 @@ from mystic.samplers import (SparsitySampler, BuckshotSampler, LatticeSampler,
                              ResidualSampler, MixedSampler)
 from mystic.models import sphere as model
 from mystic.math import almostEqual
+from mystic.bounds import Bounds
+bounds = Bounds(-1,1,n=4)
 x0 = [0,0,0,0]
 y0 = 0
-bounds = [(-1,1)]*4
 N = 8
 
 

@@ -21,7 +21,8 @@ import numpy as np
 
 N = 10
 b = 5
-bounds = [(0,1)] * N
+from mystic.bounds import Bounds
+bounds = Bounds(0,1,n=N)
 
 def objective(x, w):
     s = 0

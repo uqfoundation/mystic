@@ -20,7 +20,8 @@ def objective(x):
     from math import sin, pi
     return -(sin(2*pi*x0)**3 * sin(2*pi*x1)) / (x0**3 * (x0 + x1))
 
-bounds = [(0,10)]*2
+from mystic.bounds import Bounds
+bounds = Bounds(0,10,n=2)
 # with penalty='penalty' applied, solution is:
 xs = [1.22797136, 4.24537337]
 ys = -0.09582504

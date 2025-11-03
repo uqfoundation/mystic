@@ -29,7 +29,8 @@ def objective(x, a, b, c):
           exp(-x0*x1) + 20*x2 + c]
   return eqns
 
-bounds = [(-10, 10),(-10, 10),(-10, 10)] # bound, or exp causes OverflowError
+from mystic.bounds import Bounds
+bounds = Bounds(-10,10,n=3) # bound, or exp causes OverflowError
 
 a = -0.5
 b = 1.06

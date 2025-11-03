@@ -47,7 +47,7 @@ def _cone_builder(slope, bounds, strict=True):
   """factory to create a cone primitive
 
   slope -- slope multiplier for cone on the X,Y,Z axes (for mesh construction)
-  bounds -- list of tuples of bounds for the plot; (lower,upper) for each axis
+  bounds -- bounds instance defining each axis of the plot
 """
   from mystic.math import almostEqual
   import numpy as np
@@ -113,7 +113,7 @@ def _plot_bowtie(ax, data, slope, bounds, color='0.75', axis=None, tol=0.0):
   ax -- matplotlib 'Axes3D' plot object
   data -- list of datapoints, where datapoints are 3-tuples (i.e. x,y,z)
   slope -- slope multiplier for cone on the X,Y,Z axes (for mesh construction)
-  bounds -- list of tuples of bounds for the plot; (lower,upper) for each axis
+  bounds -- bounds instance defining each axis of the plot
   color -- string name (or rbg value) of color to use for datapoints
   axis -- the axis of the cone
   tol -- distance between center of mass of the double cones and a cone vertex
@@ -149,7 +149,7 @@ def _plot_cones(ax, data, slope, bounds, color='0.75', axis=None, strict=True, t
   ax -- matplotlib 'Axes3D' plot object
   data -- list of datapoints, where datapoints are 3-tuples (i.e. x,y,z)
   slope -- slope multiplier for cone on the X,Y,Z axes (for mesh construction)
-  bounds -- list of tuples of bounds for the plot; (lower,upper) for each axis
+  bounds -- bounds instance defining each axis of the plot
   color -- string name (or rbg value) of color to use for datapoints
   axis -- the axis of the cone
   tol -- distance between center of mass of the double cones and a cone vertex
@@ -184,7 +184,7 @@ def _plot_data(ax, data, bounds, color='red', strict=True, **kwds):
 
   ax -- matplotlib 'Axes3D' plot object
   data -- list of datapoints, where datapoints are 3-tuples (i.e. x,y,z)
-  bounds -- list of tuples of bounds for the plot; (lower,upper) for each axis
+  bounds -- bounds instance defining each axis of the plot
   color -- string name (or rbg value) of color to use for datapoints
 """
   _2D = kwds.get('_2D', False)
@@ -212,7 +212,7 @@ def _clip_axes(ax, bounds):
   """ clip plots to be within given lower and upper bounds
 
   ax -- matplotlib 'Axes3D' plot object
-  bounds -- list of tuples of bounds for the plot; (lower,upper) for each axis
+  bounds -- bounds instance defining each axis of the plot
 """
   lb,ub = zip(*bounds)
   # plot only within [lb,ub]

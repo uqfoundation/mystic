@@ -27,7 +27,8 @@ equations = """
 -3*x0 + x1 - 6.0 <= 0.0
 x0 + 2*x1 - 4.0 <= 0.0
 """
-bounds = [(None, None),(-3.0, None)]
+from mystic.bounds import Bounds
+bounds = Bounds([None,-3.0],[None,None])
 
 # with penalty='penalty' applied, solution is:
 xs = [10.0, -3.0]

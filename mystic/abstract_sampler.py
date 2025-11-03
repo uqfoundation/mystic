@@ -60,7 +60,8 @@ AbstractSampler base class for optimizer-directed samplers
     def __init__(self, bounds, model, npts=None, **kwds):
         """
 Args:
-  bounds (list[tuples]): (lower,upper) bound for each model input
+  bounds (bounds, default=None): the bounds for each parameter, given as
+    a mystic.bounds instance or a list of ``(lower, upper)`` tuples.
   model (function): ``y = model(x)``, where ``x`` is an input parameter vector
   npts (int, default=None): number of points to sample the model
   **kwds (dict, default={}): keywords for the underlying ensemble of solvers;

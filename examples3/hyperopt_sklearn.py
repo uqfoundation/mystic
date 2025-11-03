@@ -19,7 +19,8 @@ def objective(x):
     return 1-estimator.score(X_test, y_test)
 
 
-bounds = [(0,10)]
+from mystic.bounds import Bounds
+bounds = Bounds(0,10)
 # for the given split, the solution is, roughly:
 xs = [0.01213213]
 ys =  0.08483955

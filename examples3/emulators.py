@@ -47,6 +47,7 @@ emulator #3:
   yielding a minimum at:
     wR = 0.13658616
 '''
+from mystic.bounds import Bounds
 import mystic.models as mm
 import numpy as np
 
@@ -63,8 +64,8 @@ a_beta = x4[-1]
 error6 = [0.02124893,0.028312204,0.10003452,0.011049773,1.0831603,2.0910518]
 error4 = [1e-4, 1e-4, 1e-4, 1e-4]
 error3 = error4[:-1]
-bounds6 = [(10,1000),(-1,10000),(-10000,10000),(-180,180),(-180,180),(-10,10)]
-bounds4 = [tuple(sorted((0.95 * i, 1.05 * i))) for i in x4]
+bounds6 = Bounds([10,-1,-10000,-180,-180,-10],[1000,10000,10000,180,180,10])
+bounds4 = Bounds(*zip(*[tuple(sorted((0.95 * i, 1.05 * i))) for i in x4]))
 bounds3 = bounds4[:-1]
 a_beta_error = error4[-1]
 

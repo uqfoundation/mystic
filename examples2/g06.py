@@ -19,7 +19,8 @@ def objective(x):
     x0,x1 = x
     return (x0 - 10)**3 + (x1 - 20)**3
 
-bounds = [(13,100),(0,100)]
+from mystic.bounds import Bounds
+bounds = Bounds([13,0],[100,100])
 # with penalty='penalty' applied, solution is:
 xs = [14.095, 0.84296079]
 ys = -6961.81387628

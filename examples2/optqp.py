@@ -22,7 +22,8 @@ def objective(x):
 equations = """
 x0**3 - x1 == 0.0
 """
-bounds = [(None, None),(1.0, None)]
+from mystic.bounds import Bounds
+bounds = Bounds([None,1.0],[None,None])
 
 # with penalty='penalty' applied, solution is:
 xs = [1,1]

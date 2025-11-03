@@ -88,13 +88,11 @@ def check(npts):
 #NOTE: model has single-value output
 def constrain_expected(model, ave=None, var=None, ave_err=None, var_err=None, bounds=None, **kwds):
     'impose mean and variance constraints on the measure'
-    from mystic.bounds import Bounds
     if ave is None: ave = float('nan')
     if var is None: var = float('nan'); kwds['k'] = 0
     if ave_err is None: ave_err = 0
     if var_err is None: var_err = 0
     if 'npop' not in kwds: kwds['npop'] = 20 #XXX: better default?
-    if isinstance(bounds, Bounds): bounds = (bounds.xlower,bounds.xupper)
     samples = None #kwds.pop('samples', None) #NOTE: int or None
     if samples is None:
         def func(c):

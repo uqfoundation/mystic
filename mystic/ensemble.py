@@ -307,8 +307,8 @@ Args:
     ndim (int): dimensionality of the problem.
     nbins (tuple(int), default=8): total bins, or # of bins in each dimension.
     args (tuple, default=()): extra arguments for cost.
-    bounds (list(tuple), default=None): list of pairs of bounds (min,max),
-        one for each parameter.
+    bounds (bounds, default=None): the bounds for each parameter, given as
+        a mystic.bounds instance or a list of ``(lower, upper)`` tuples.
     ftol (float, default=1e-4): acceptable relative error in ``cost(xopt)``
         for convergence.
     gtol (int, default=10): maximum iterations to run without improvement.
@@ -382,7 +382,7 @@ Notes:
     if 'constraints' in kwds:
         solver.SetConstraints(kwds['constraints'])
     if bounds is not None:
-        minb,maxb = unpair(bounds)
+        minb,maxb = bounds.T if hasattr(bounds, 'T') else unpair(bounds)
         tight = kwds['tightrange'] if 'tightrange' in kwds else None
         clip = kwds['cliprange'] if 'cliprange' in kwds else None
         solver.SetStrictRanges(minb,maxb,tight=tight,clip=clip)
@@ -437,8 +437,8 @@ Args:
     ndim (int): dimensionality of the problem.
     npts (int, default=8): number of solver instances.
     args (tuple, default=()): extra arguments for cost.
-    bounds (list(tuple), default=None): list of pairs of bounds (min,max),
-        one for each parameter.
+    bounds (bounds, default=None): the bounds for each parameter, given as
+        a mystic.bounds instance or a list of ``(lower, upper)`` tuples.
     ftol (float, default=1e-4): acceptable relative error in ``cost(xopt)``
         for convergence.
     gtol (int, default=10): maximum iterations to run without improvement.
@@ -512,7 +512,7 @@ Notes:
     if 'constraints' in kwds:
         solver.SetConstraints(kwds['constraints'])
     if bounds is not None:
-        minb,maxb = unpair(bounds)
+        minb,maxb = bounds.T if hasattr(bounds, 'T') else unpair(bounds)
         tight = kwds['tightrange'] if 'tightrange' in kwds else None
         clip = kwds['cliprange'] if 'cliprange' in kwds else None
         solver.SetStrictRanges(minb,maxb,tight=tight,clip=clip)
@@ -567,8 +567,8 @@ Args:
     ndim (int): dimensionality of the problem.
     npts (int, default=8): number of solver instances.
     args (tuple, default=()): extra arguments for cost.
-    bounds (list(tuple), default=None): list of pairs of bounds (min,max),
-        one for each parameter.
+    bounds (bounds, default=None): the bounds for each parameter, given as
+        a mystic.bounds instance or a list of ``(lower, upper)`` tuples.
     ftol (float, default=1e-4): acceptable relative error in ``cost(xopt)``
         for convergence.
     gtol (int, default=10): maximum iterations to run without improvement.
@@ -644,7 +644,7 @@ Notes:
     if 'constraints' in kwds:
         solver.SetConstraints(kwds['constraints'])
     if bounds is not None:
-        minb,maxb = unpair(bounds)
+        minb,maxb = bounds.T if hasattr(bounds, 'T') else unpair(bounds)
         tight = kwds['tightrange'] if 'tightrange' in kwds else None
         clip = kwds['cliprange'] if 'cliprange' in kwds else None
         solver.SetStrictRanges(minb,maxb,tight=tight,clip=clip)
@@ -700,8 +700,8 @@ Args:
     ndim (int): dimensionality of the problem.
     npts (int, default=8): number of solver instances.
     args (tuple, default=()): extra arguments for cost.
-    bounds (list(tuple), default=None): list of pairs of bounds (min,max),
-        one for each parameter.
+    bounds (bounds, default=None): the bounds for each parameter, given as
+        a mystic.bounds instance or a list of ``(lower, upper)`` tuples.
     ftol (float, default=1e-4): acceptable relative error in ``cost(xopt)``
         for convergence.
     gtol (int, default=10): maximum iterations to run without improvement.
@@ -777,7 +777,7 @@ Notes:
     if 'constraints' in kwds:
         solver.SetConstraints(kwds['constraints'])
     if bounds is not None:
-        minb,maxb = unpair(bounds)
+        minb,maxb = bounds.T if hasattr(bounds, 'T') else unpair(bounds)
         tight = kwds['tightrange'] if 'tightrange' in kwds else None
         clip = kwds['cliprange'] if 'cliprange' in kwds else None
         solver.SetStrictRanges(minb,maxb,tight=tight,clip=clip)

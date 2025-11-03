@@ -10,6 +10,7 @@ import mystic as my
 import mystic.symbolic as ms
 import mystic.constraints as mc
 import mystic.models as mm
+from mystic.bounds import Bounds
 from mystic.solvers import PowellDirectionalSolver, NelderMeadSimplexSolver, \
                            DifferentialEvolutionSolver, \
                            DifferentialEvolutionSolver2, \
@@ -18,7 +19,7 @@ from mystic.solvers import PowellDirectionalSolver, NelderMeadSimplexSolver, \
 
 almostEqual = my.math.almostEqual
 rosen = mm.rosen
-bounds = [(0.0001, 0.0002)]*3
+bounds = Bounds(0.0001, 0.0002, n=3)
 guess = [0.001,0.001,0.001]
 
 # generate the constraints
@@ -26,7 +27,7 @@ _eqn = 'x0 + x1 + x2 <= .0005'
 _cons = ms.generate_constraint(ms.generate_solvers(ms.simplify(_eqn)), join=mc.and_)
 
 # explicitly include bounds in constraints
-eqn_ = '\n'.join([_eqn, ms.symbolic_bounds(*zip(*bounds))])
+eqn_ = '\n'.join([_eqn, ms.symbolic_bounds(*zip(*bounds()))])
 cons_ = ms.generate_constraint(ms.generate_solvers(ms.simplify(eqn_)), join=mc.and_)
 
 
@@ -36,9 +37,9 @@ def test_constrained(TheSolver, tight, clip):
     if TheSolver in [PowellDirectionalSolver, NelderMeadSimplexSolver]:
         solver.SetInitialPoints(guess)
     elif TheSolver in [DifferentialEvolutionSolver, DifferentialEvolutionSolver2]:
-        solver.SetRandomInitialPoints(*zip(*bounds))
+        solver.SetRandomInitialPoints(*zip(*bounds()))
     else: pass
-    solver.SetStrictRanges(*zip(*bounds), tight=tight, clip=clip)
+    solver.SetStrictRanges(*zip(*bounds()), tight=tight, clip=clip)
     solver.SetConstraints(_cons if tight else cons_)
     solver.Solve(rosen)
     fx = solver.bestEnergy
@@ -47,7 +48,7 @@ def test_constrained(TheSolver, tight, clip):
     #print('{T:%s, C:%s} %s @ %s' % (tight, clip, fx, xk))
     assert almostEqual(fx, 1.999205, tol=5e-4) # minimum energy is found
     assert eval(_eqn) # constraint is satisfied
-    assert (not np.any(xk - np.clip(xk, *zip(*bounds)))) # bounds are satisfied
+    assert (not np.any(xk - np.clip(xk, *zip(*bounds())))) # bounds satisfied
 
 
 test_constrained(NelderMeadSimplexSolver, tight=True, clip=None) #ftol=1e-8?

@@ -19,7 +19,8 @@ def objective(x):
     x0,x1,x2 = x
     return 1.0 - 0.01*((x0 - 5)**2 + (x1 - 5)**2 + (x2 - 5)**2)
 
-bounds = [(0,10)]*3
+from mystic.bounds import Bounds
+bounds = Bounds(0,10,n=3)
 # with penalty='penalty' applied, solution is:
 xs = [5,5,5]
 ys = 1.0

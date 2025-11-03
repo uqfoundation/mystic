@@ -15,7 +15,7 @@ def sample(model, bounds, pts=None, **kwds):
 
     Inputs:
         model: a cached model function, of form y = model(x, axis=None)
-        bounds: list of tuples of (lower,upper), bounds on each 'x'
+        bounds: a mystic.bounds instance or a list of (lower,upper) tuples
         pts: int, number of points sampled by the sampler
 
     Additional Inputs:
@@ -426,7 +426,7 @@ class OUQModel(object): #NOTE: effectively, this is WrapModel
         """sample model within bounds, writing to an archive and returning data
 
     Inputs:
-        bounds: list of tuples of (lower,upper), bounds on each 'x'
+        bounds: a mystic.bounds instance or a list of (lower,upper) tuples
         pts: int, number of points sampled by the sampler
 
     Additional Inputs:

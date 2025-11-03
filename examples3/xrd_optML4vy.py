@@ -51,8 +51,8 @@ surrogate = InterpModel("surrogate", nx=nx, ny=ny, data=truth, smooth=0.0,
 # iterate until change in truth <= 1e-3 for 5 iterations
 N = 4
 import numpy as np
-import mystic._counter as it
-counter = it.Counter()
+from mystic import Counter
+counter = Counter()
 tracker = LoggingMonitor(1, filename='truth.txt', label='truth')
 from mystic.abstract_solver import AbstractSolver
 from mystic.termination import ChangeOverGeneration as COG

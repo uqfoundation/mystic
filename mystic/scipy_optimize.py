@@ -452,8 +452,8 @@ Args:
     cost (func): the function or method to be minimized: ``y = cost(x)``.
     x0 (ndarray): the initial guess parameter vector ``x``.
     args (tuple, default=()): extra arguments for cost.
-    bounds (list(tuple), default=None): list of pairs of bounds (min,max),
-        one for each parameter.
+    bounds (bounds, default=None): the bounds for each parameter, given as
+        a mystic.bounds instance or a list of ``(lower, upper)`` tuples.
     xtol (float, default=1e-4): acceptable absolute error in ``xopt`` for
         convergence.
     ftol (float, default=1e-4): acceptable absolute error in ``cost(xopt)``
@@ -515,7 +515,7 @@ Notes:
     if 'constraints' in kwds:
         solver.SetConstraints(kwds['constraints'])
     if bounds is not None:
-        minb,maxb = unpair(bounds)
+        minb,maxb = bounds.T if hasattr(bounds, 'T') else unpair(bounds)
         tight = kwds['tightrange'] if 'tightrange' in kwds else None
         clip = kwds['cliprange'] if 'cliprange' in kwds else None
         solver.SetStrictRanges(minb,maxb,tight=tight,clip=clip)
@@ -857,8 +857,8 @@ Args:
     cost (func): the function or method to be minimized: ``y = cost(x)``.
     x0 (ndarray): the initial guess parameter vector ``x``.
     args (tuple, default=()): extra arguments for cost.
-    bounds (list(tuple), default=None): list of pairs of bounds (min,max),
-        one for each parameter.
+    bounds (bounds, default=None): the bounds for each parameter, given as
+        a mystic.bounds instance or a list of ``(lower, upper)`` tuples.
     xtol (float, default=1e-4): acceptable relative error in ``xopt`` for
         convergence.
     ftol (float, default=1e-4): acceptable relative error in ``cost(xopt)``
@@ -930,7 +930,7 @@ Notes:
     if 'constraints' in kwds:
         solver.SetConstraints(kwds['constraints'])
     if bounds is not None:
-        minb,maxb = unpair(bounds)
+        minb,maxb = bounds.T if hasattr(bounds, 'T') else unpair(bounds)
         tight = kwds['tightrange'] if 'tightrange' in kwds else None
         clip = kwds['cliprange'] if 'cliprange' in kwds else None
         solver.SetStrictRanges(minb,maxb,tight=tight,clip=clip)

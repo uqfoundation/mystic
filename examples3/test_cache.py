@@ -16,14 +16,13 @@ from toys import function5
 objective = mc.cached(archive=a)(function5)
 
 # set some bounds
-xlb = (0,1,0,0,0)
-xub = (1,10,10,10,10)
-bounds = list(zip(xlb, xub))
+from mystic.bounds import Bounds
+bounds = Bounds([0,1,0,0,0],[1,10,10,10,10])
 
 # optimize, using a evaluation monitor
 import mystic as my
 mon = my.monitors.Monitor()
-my.solvers.fmin(objective, x0=xlb, bounds=bounds, evalmon=mon, full_output=True, disp=False)
+my.solvers.fmin(objective, x0=bounds.xlb, bounds=bounds, evalmon=mon, full_output=True, disp=False)
 
 # archived rv and cost should match evaluation monitor, regardless of size
 # (to look up the last entry, we need to use keys(), so we just check all keys)
@@ -42,7 +41,7 @@ os.remove('cache.db')
 create a limited-size customized directory archive that captures function input and output, and retains calling order
 '''
 # generate a global counter
-from mystic._counter import Counter
+from mystic import Counter
 counter = Counter(0)
 run = lambda : counter.count()
 
@@ -64,14 +63,13 @@ def objective(rv):
     return cost
 
 # set some bounds
-xlb = (0,1,0,0,0)
-xub = (1,10,10,10,10)
-bounds = list(zip(xlb, xub))
+from mystic.bounds import Bounds
+bounds = Bounds([0,1,0,0,0],[1,10,10,10,10])
 
 # optimize, using a evaluation monitor
 import mystic as my
 mon = my.monitors.Monitor()
-my.solvers.fmin(objective, x0=xlb, bounds=bounds, evalmon=mon, full_output=True, disp=False)
+my.solvers.fmin(objective, x0=bounds.xlb, bounds=bounds, evalmon=mon, full_output=True, disp=False)
 
 # read the archive
 a = mc.archive.read('cache')

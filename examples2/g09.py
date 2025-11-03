@@ -20,7 +20,8 @@ def objective(x):
     return (x0-10)**2 + 5*(x1-12)**2 + x2**4 + 3*(x3-11)**2 + \
            10*x4**6 + 7*x5**2 + x6**4 - 4*x5*x6 - 10*x5 - 8*x6
 
-bounds = [(-10.,10.)]*7
+from mystic.bounds import Bounds
+bounds = Bounds(-10.,10.,n=7)
 # with penalty='penalty' applied, solution is:
 xs = [2.330499, 1.951372, -0.4775414, 4.365726, -0.6244870, 1.038131, 1.594227]
 ys = 680.6300573
@@ -35,7 +36,7 @@ equations = """
 23.0*x0 + x1**2 + 6.0*x5**2 - 8.0*x6 - 196.0 <= 0.0
 4.0*x0**2 + x1**2 - 3.0*x0*x1 + 2.0*x2**2 + 5.0*x5 - 11.0*x6 <= 0.0
 """
-equations += symbolic_bounds(*zip(*bounds))
+equations += symbolic_bounds(*bounds.T)
 cf = generate_constraint(generate_solvers(simplify(equations)))
 pf = generate_penalty(generate_conditions(equations), k=1e12)
 

@@ -19,7 +19,8 @@ def objective(x):
     from numpy import exp, prod as product
     return exp(product(x))
 
-bounds = [(-2.3,2.3)]*2 + [(-3.2,3.2)]*3
+from mystic.bounds import Bounds
+bounds = Bounds([-2.3,-3.2],[2.3,3.2],n=(2,3))
 # with penalty='penalty' applied, solution is:
 xs = [-1.717143, 1.595709, 1.827247, -0.7636413, -0.763645]
 _xs = [-1.717143, 1.595709, 1.827247, 0.7636413, 0.763645]
