@@ -30,7 +30,8 @@ equations = """
 (x0 - 0)**2 + (x1 - 2)**2 - .75**2 == 0
 """
 
-bounds = [(None,None),(None,None)] #unnecessary
+from mystic.bounds import Bounds
+bounds = Bounds(None,None,n=2) #unnecessary
 
 from mystic.symbolic import generate_penalty, generate_conditions
 from mystic.solvers import diffev2

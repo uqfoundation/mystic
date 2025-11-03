@@ -54,8 +54,9 @@ Aeq = y
 Beq = array([0.])
 # set the bounds
 lb = zeros(nx)
-ub = 1 * ones(nx)
-_b = .1 * ones(nx) # good starting value if most solved xi should be zero
+ub = ones(nx)
+from mystic.bounds import Bounds
+bounds = Bounds(lb, ub)
 
 # build the constraints operator
 from mystic.symbolic import linear_symbolic, solve, simplify, \
@@ -80,9 +81,9 @@ mon = VerboseMonitor(10)
 
 # solve the dual for alpha
 from mystic.solvers import diffev
-alpha = diffev(objective, list(zip(lb,_b)), args=(Q,b), npop=nx*3, gtol=200,\
+alpha = diffev(objective, list(zip(lb,.1*ub)), args=(Q,b), npop=nx*3, gtol=200,\
                itermon=mon, \
-               ftol=1e-8, bounds=list(zip(lb,ub)), constraints=conserve, disp=1)
+               ftol=1e-8, bounds=bounds, constraints=conserve, disp=1)
 
 print('solved x: %s' % alpha)
 print("constraint A*x == 0: %s" % inner(Aeq, alpha))

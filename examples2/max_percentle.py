@@ -46,7 +46,8 @@ def constraint(x, p=95, v=C): # 95%(xTsx) - v <= 0
     x = np.atleast_2d(x)
     return percentile(p, [np.dot(np.dot(x,s[i]),x.T)[0,0] for i in range(0,M-1)]) - v
 
-bounds = [(0,1) for i in range(0,N)]
+from mystic.bounds import Bounds
+bounds = Bounds(0,1,n=N)
 
 from mystic.penalty import quadratic_inequality
 @quadratic_inequality(constraint, k=1e4)

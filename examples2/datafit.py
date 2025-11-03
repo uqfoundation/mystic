@@ -38,7 +38,8 @@ y = y0(coeffs, x) + 0.2 * normal(size=len(x))
 def objective(coeffs, x, y):
     return y0(coeffs, x) - y
 
-bounds = [(0, 10),(0, 10),(0, 10)]
+from mystic.bounds import Bounds
+bounds = Bounds(0, 10, n=3)
 args = (x,y)
 
 # 'solution' is:

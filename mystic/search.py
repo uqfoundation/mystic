@@ -209,7 +209,7 @@ class Searcher(object):
 
     Input:
       model - function z=f(x) to be used as the objective of the Searcher
-      bounds - tuple of floats (min,max), bounds on the search region
+      bounds - mystic.bounds instance on the search region
       stop - termination condition
       traj - klepto.archive to store sampled points
       disp - if True, be verbose

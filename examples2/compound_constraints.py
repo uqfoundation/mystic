@@ -22,7 +22,8 @@ from mystic.solvers import diffev
 from mystic.constraints import unique, discrete, integers, with_mean, and_, not_
 from mystic.math.measures import mean
 
-bounds = [(0,10)]*3
+from mystic.bounds import Bounds
+bounds = Bounds(0,10,n=3)
 
 # generate the constraints
 c = and_(integers()(lambda x:x), not_(lambda x:[1.]*len(x)), with_mean(1)(lambda x:x))

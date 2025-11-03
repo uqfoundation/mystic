@@ -1,4 +1,4 @@
-n!/usr/bin/env python
+#!/usr/bin/env python
 #
 # Author: Mike McKerns (mmckerns @caltech and @uqfoundation)
 # Copyright (c) 2022-2025 The Uncertainty Quantification Foundation.

@@ -28,7 +28,7 @@ except: # pragma: no cover
 __all__ = ['solvers','termination','strategy','munge','tools','support', \
            'penalty','coupler','symbolic','monitors','license','citation', \
            'constraints','model_plotter','log_reader','collapse_plotter', \
-           'log_converter']
+           'log_converter','bounds']
 
 # solvers
 import mystic.solvers as solvers
@@ -45,6 +45,7 @@ import mystic.symbolic as symbolic
 
 # monitors, function wrappers, and other tools
 import mystic.monitors as monitors
+import mystic.bounds as bounds
 import mystic.munge as munge
 import mystic.tools as tools
 

@@ -20,7 +20,8 @@ def objective(x):
     x0,x1,x2,x3 = x
     return 1.10471*x0**2*x1 + 0.04811*x2*x3*(14.0 + x1)
 
-bounds = [(0.125,10)] + [(0.1,10)]*3
+from mystic.bounds import Bounds
+bounds = Bounds([0.125,.1],[10,10],n=(1,3))
 # with penalty='penalty' applied, solution is:
 xs = [ 0.20572964, 7.09241428, 9.03662391, 0.20572964]
 ys = 2.21815086

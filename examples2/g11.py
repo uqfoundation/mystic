@@ -19,7 +19,8 @@ def objective(x):
     x0,x1 = x
     return x0**2 + (x1 - 1)**2
 
-bounds = [(-1,1)]*2
+from mystic.bounds import Bounds
+bounds = Bounds(-1,1,n=2)
 # with penalty='penalty' applied, solution is:
 xs, xs_ = [(0.5)**.5, 0.5], [-(0.5)**.5, 0.5]
 ys = 0.75

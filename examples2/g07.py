@@ -21,7 +21,8 @@ def objective(x):
            4*(x3-5)**2 + (x4-3)**2 + 2*(x5-1)**2 + 5*x6**2 + \
            7*(x7-11)**2 + 2*(x8-10)**2 + (x9-7)**2 + 45.0
 
-bounds = [(-10,10)]*10
+from mystic.bounds import Bounds
+bounds = Bounds(-10,10,n=10)
 # with penalty='penalty' applied, solution is:
 xs = [2.171996, 2.363683, 8.773926, 5.095984, 0.9906548,
       1.430574, 1.321644, 9.828726, 8.280092, 8.375927]

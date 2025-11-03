@@ -41,6 +41,8 @@ Beq = array([0.])
 # set the bounds
 lb = zeros(N)
 ub = zeros(N) + 0.5
+from mystic.bounds import Bounds
+bounds = Bounds(lb, ub)
 
 # build the constraints operator
 from mystic.symbolic import linear_symbolic, solve, \
@@ -60,7 +62,7 @@ mon = VerboseMonitor(10)
 from mystic.solvers import diffev
 alpha = diffev(objective, list(zip(lb,.1*ub)), args=(Q,b), npop=N*3, gtol=200, \
                itermon=mon, \
-               ftol=1e-5, bounds=list(zip(lb,ub)), constraints=conserve, disp=1)
+               ftol=1e-5, bounds=bounds, constraints=conserve, disp=1)
 
 print('solved x: %s' % alpha)
 print("constraint A*x == 0: %s" % inner(Aeq, alpha))

@@ -29,7 +29,8 @@ b = np.array([7,4])
 eqns = ms.linear_symbolic(G=A, h=b)
 cons = ms.generate_constraint(ms.generate_solvers(ms.simplify(eqns)))
 pens = ms.generate_penalty(ms.generate_conditions(eqns), k=1e3)
-bounds = [(0., None), (0., 4.)]
+from mystic.bounds import Bounds
+bounds = Bounds([0.,0.],[None,4.])
 
 # get the objective
 def objective(x):

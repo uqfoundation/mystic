@@ -155,7 +155,7 @@ class Surface(object): #FIXME: should be subclass of Interpolator (?)
         """sample data (x,z) using objective function z=f(x)
 
         Input:
-          bounds: tuple of floats (min,max), bounds on the search region
+          bounds: a mystic.bounds instance defining bounds on the search region
           stop: termination condition
           clear: if True, clear the archive of stored points
           verbose: if True, print a summary of search/sampling results

@@ -14,7 +14,8 @@ from mystic.termination import NormalizedChangeOverGeneration as NCOG
 from mystic.tools import listify as tolist
 from mystic.cache.archive import file_archive, read as get_db
 from mystic.models import rosen as cost
-bounds = [(0,5)]*4
+from mystic.bounds import Bounds
+bounds = Bounds(0,5,n=4)
 
 
 def test_reset(s):

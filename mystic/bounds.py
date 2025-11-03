@@ -78,6 +78,10 @@ class Bounds(object):
             self.xub = len(self.n) * (self.xub,)
             self.xlb = len(self.n) * (self.xlb,)
 
+    def __T(self):
+        "get tuple of lower and upper bounds"
+        return self.lower, self.upper
+
     def __len__(self):
         "get length of list of tuples of (lower, upper) bounds"
         n = (self.n,) if not hasattr(self.n, '__len__') else self.n
@@ -95,9 +99,17 @@ class Bounds(object):
         xub = (self.xub,) if not hasattr(self.xub, '__len__') else self.xub
         return list(flatten(i*[j] for i,j in zip(n,xub)))
 
+    def __getitem__(self, y):
+        """x.__getitem__(y) <==> x[y]"""
+        return self.__call__()[y]
+
+    def __iter__(self):
+        "iterate over tuples of (lower, upper) bounds"
+        return iter(zip(self.lower, self.upper))
+
     def __call__(self):
         "get list of tuples of (lower, upper) bounds"
-        return list(zip(self.lower, self.upper))
+        return list(self.__iter__())
 
     def __add__(self, other): #FIXME: create new Bounds instance
         "add the contents of self and the given other bounds"
@@ -111,12 +123,16 @@ class Bounds(object):
     def __set_upper(self, ub):
         return NotImplemented
 
+    def __set_T(self, bounds):
+        return NotImplemented
+
     def __none(self):
         return None
 
     def __repr__(self):
         return "%s(%s, %s, n=%s)" % (self.__class__.__name__, self.xlb, self.xub, self.n)
 
+    T = property(__T, __set_T)
     lower = property(__lower, __set_lower)
     upper = property(__upper, __set_upper)
     xlower = lower
@@ -181,6 +197,10 @@ class MeasureBounds(Bounds):
             self.xlb = len(self.wlb) * (self.xlb,)
             self.xub = len(self.wub) * (self.xub,)
 
+    def __T(self):
+        "get tuple of lower and upper bounds"
+        return self.lower, self.upper
+
     def __len__(self):
         "get length of list of tuples of (lower, upper) bounds"
         return 2 * super(MeasureBounds, self).__len__()
@@ -231,11 +251,15 @@ class MeasureBounds(Bounds):
     def __set_upper(self, ub):
         return NotImplemented
 
+    def __set_T(self, bounds):
+        return NotImplemented
+
     def __repr__(self):
         if self.wlb == 0 and self.wub == 1:
             return super(MeasureBounds, self).__repr__()
         return "%s(%s, %s, n=%s, wlb=%s, wub=%s)" % (self.__class__.__name__, self.xlb, self.xub, self.n, self.wlb, self.wub)
 
+    T = property(__T, __set_T)
     lower = property(__lower, __set_lower)
     upper = property(__upper, __set_upper)
     xlower = property(__xlower, __set_lower)

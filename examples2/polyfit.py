@@ -32,8 +32,9 @@ y = y0 + noise
 def objective(coeffs, x, y):
     return polyeval(coeffs, x) - y
 
-bounds  = [(None, None), (None, None)]
-bounds_ = [(None, None), (None, None), (None, None)]
+from mystic.bounds import Bounds
+bounds  = Bounds(None,None,n=2)
+bounds_ = Bounds(None,None,n=3)
 
 args = (x, y)
 

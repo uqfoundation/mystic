@@ -50,7 +50,7 @@ if __name__ == '__main__':
     # update 'inner-loop' optimization parameters
     from misc import param, npts, wlb, wub, is_cons, scons
     from ouq import ExpectedValue
-    from mystic.bounds import MeasureBounds
+    from mystic.bounds import Bounds, MeasureBounds
     from mystic.monitors import VerboseLoggingMonitor, Monitor, VerboseMonitor
     from mystic.termination import VTRChangeOverGeneration as VTRCOG
     from mystic.termination import Or, VTR, ChangeOverGeneration as COG
@@ -60,11 +60,11 @@ if __name__ == '__main__':
 
     # build inner-loop and outer-loop bounds
     bnd = MeasureBounds((0,1,0,0,0)[:nx],(1,10,10,10,10)[:nx], n=npts[:nx], wlb=wlb[:nx], wub=wub[:nx])
-    bounds = [(0,10),(0,10)] #NOTE: x[-2],x[-1]
+    bounds = Bounds(0,10,n=2) #NOTE: x[-2],x[-1]
 
     # get initial guess, a monitor, and a counter
-    import mystic._counter as it
-    counter = it.Counter()
+    from mystic import Counter
+    counter = Counter()
     import numpy as np
     in_bounds = lambda a,b: (b-a) * np.random.rand() + a
     from pathos.maps import Map

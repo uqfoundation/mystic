@@ -20,7 +20,8 @@
 def objective(x):
     return 0.0
 
-bounds = [(0,10)]*7
+from mystic.bounds import Bounds
+bounds = Bounds(0, 10, n=7)
 # with penalty='penalty' applied, solution is:
 xs = [1., 4., 6., 6., 6., 3., 1.]
 ys = 0.0

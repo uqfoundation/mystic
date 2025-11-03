@@ -262,7 +262,7 @@ Returns:
 Args:
     expected (float): target expected mean
     f (func): a function that takes a list and returns a number
-    bounds (tuple, default=None): ``(all lower bounds, all upper bounds)``
+    bounds (bounds, default=None): a bounds instance
     constraints (func, default=None): a function ``c' = constraints(c)``,
         where ``c`` is a product measure, and ``c'`` is a product measure
         where the encoded constaints are satisfied.
@@ -283,9 +283,9 @@ Notes:
     This function does not preserve the mean, variance, or range, as there
     is no initial list of samples to draw the mean, variance, and etc from.
 
-    *bounds* is tuple with ``length(bounds) == 2``, composed of all the lower
-    bounds, then all the upper bounds, for each positional value (i.e. bounds
-    for the weights should not be included).
+    *bounds* can also be given as a tuple with ``length(bounds) == 2``,
+    composed of all the lower bounds, then all the upper bounds, for each
+    positional value (i.e. bounds for the weights should not be included).
 """ #XXX: maybe more natural if f takes a positional value x, not a list x ?
     #XXX: maybe also natural c' = constraints(c) where c is a measure ?
     m = expected
@@ -309,7 +309,7 @@ Notes:
 Args:
     expected (float): target expected variance
     f (func): a function that takes a list and returns a number
-    bounds (tuple, default=None): ``(all lower bounds, all upper bounds)``
+    bounds (bounds, default=None): a bounds instance
     constraints (func, default=None): a function ``c' = constraints(c)``,
         where ``c`` is a product measure, and ``c'`` is a product measure
         where the encoded constaints are satisfied.
@@ -330,9 +330,9 @@ Notes:
     This function does not preserve the mean, variance, or range, as there
     is no initial list of samples to draw the mean, variance, and etc from.
 
-    *bounds* is tuple with ``length(bounds) == 2``, composed of all the lower
-    bounds, then all the upper bounds, for each positional value (i.e. bounds
-    for the weights should not be included).
+    *bounds* can also be given as a tuple with ``length(bounds) == 2``,
+    composed of all the lower bounds, then all the upper bounds, for each
+    positional value (i.e. bounds for the weights should not be included).
 """ #XXX: maybe more natural if f takes a positional value x, not a list x ?
     #XXX: maybe also natural c' = constraints(c) where c is a measure ?
     m = expected
@@ -356,7 +356,7 @@ Notes:
 Args:
     expected (tuple(float)): ``(expected mean, expected var)``
     f (func): a function that takes a list and returns a number
-    bounds (tuple, default=None): ``(all lower bounds, all upper bounds)``
+    bounds (bounds, default=None): a bounds instance
     constraints (func, default=None): a function ``c' = constraints(c)``,
         where ``c`` is a product measure, and ``c'`` is a product measure
         where the encoded constaints are satisfied.
@@ -381,9 +381,9 @@ Notes:
     This function does not preserve the mean, variance, or range, as there
     is no initial list of samples to draw the mean, variance, and etc from.
 
-    *bounds* is tuple with ``length(bounds) == 2``, composed of all the lower
-    bounds, then all the upper bounds, for each positional value (i.e. bounds
-    for the weights should not be included).
+    *bounds* can also be given as a tuple with ``length(bounds) == 2``,
+    composed of all the lower bounds, then all the upper bounds, for each
+    positional value (i.e. bounds for the weights should not be included).
 """ #XXX: maybe more natural if f takes a positional value x, not a list x ?
     #XXX: maybe also natural c' = constraints(c) where c is a measure ?
     m,v = expected
@@ -611,7 +611,7 @@ Returns:
 Args:
     expected (float): target expected mean
     f (func): a function that takes a list and returns a number
-    bounds (tuple, default=None): ``(all lower bounds, all upper bounds)``
+    bounds (bounds, default=None): a bounds instance
     constraints (func, default=None): a function ``c' = constraints(c)``,
         where ``c`` is a product measure, and ``c'`` is a product measure
         where the encoded constaints are satisfied.
@@ -632,9 +632,9 @@ Notes:
     This function does not preserve the mean, variance, or range, as there
     is no initial list of samples to draw the mean, variance, and etc from.
 
-    *bounds* is tuple with ``length(bounds) == 2``, composed of all the lower
-    bounds, then all the upper bounds, for each positional value (i.e. bounds
-    for the weights should not be included).
+    *bounds* can also be given as a tuple with ``length(bounds) == 2``,
+    composed of all the lower bounds, then all the upper bounds, for each
+    positional value (i.e. bounds for the weights should not be included).
 """
     #self.__center = m
     #self.__delta = D
@@ -655,7 +655,7 @@ Notes:
 Args:
     expected (float): target expected variance
     f (func): a function that takes a list and returns a number
-    bounds (tuple, default=None): ``(all lower bounds, all upper bounds)``
+    bounds (bounds, default=None): a bounds instance
     constraints (func, default=None): a function ``c' = constraints(c)``,
         where ``c`` is a product measure, and ``c'`` is a product measure
         where the encoded constaints are satisfied.
@@ -676,9 +676,9 @@ Notes:
     This function does not preserve the mean, variance, or range, as there
     is no initial list of samples to draw the mean, variance, and etc from.
 
-    *bounds* is tuple with ``length(bounds) == 2``, composed of all the lower
-    bounds, then all the upper bounds, for each positional value (i.e. bounds
-    for the weights should not be included).
+    *bounds* can also be given as a tuple with ``length(bounds) == 2``,
+    composed of all the lower bounds, then all the upper bounds, for each
+    positional value (i.e. bounds for the weights should not be included).
 """
     #self.__center = m
     #self.__delta = D
@@ -700,7 +700,7 @@ Notes:
 Args:
     expected (tuple(float)): ``(expected mean, expected var)``
     f (func): a function that takes a list and returns a number
-    bounds (tuple, default=None): ``(all lower bounds, all upper bounds)``
+    bounds (bounds, default=None): a bounds instance
     constraints (func, default=None): a function ``c' = constraints(c)``,
         where ``c`` is a product measure, and ``c'`` is a product measure
         where the encoded constaints are satisfied.
@@ -725,9 +725,9 @@ Notes:
     This function does not preserve the mean, variance, or range, as there
     is no initial list of samples to draw the mean, variance, and etc from.
 
-    *bounds* is tuple with ``length(bounds) == 2``, composed of all the lower
-    bounds, then all the upper bounds, for each positional value (i.e. bounds
-    for the weights should not be included).
+    *bounds* can also be given as a tuple with ``length(bounds) == 2``,
+    composed of all the lower bounds, then all the upper bounds, for each
+    positional value (i.e. bounds for the weights should not be included).
 """
     #self.__center = m
     #self.__delta = D
@@ -1249,7 +1249,7 @@ over the given *bounds*.
 Args:
     data (mystic.math.discrete.scenario): a dataset of observed points
     cutoff (float, default=0.0): maximum acceptable deviation from shortness
-    bounds (tuple, default=None): ``(all lower bounds, all upper bounds)``
+    bounds (bounds, default=None): a bounds instance
     constraints (func, default=None): a function ``x' = constraints(x)``,
         where ``x`` is a scenario that has been converted into a list of
         parameters (e.g. with ``scenario.flatten``), and ``x'`` is the list
@@ -1265,6 +1265,9 @@ Notes:
     - both ``scenario.positions`` and ``scenario.values`` may be adjusted.
     - if *with_self* is True, shortness will be measured not only from the
       scenario to the given *data*, but also between scenario datapoints.
+    - *bounds* can also be given as a tuple with ``length(bounds) == 2``,
+    composed of all the lower bounds, then all the upper bounds, for each
+    of the scenario weights, positions, and values.
 """
     # imposes: is_short(x, x'), is_short(x, z )
     # use additional 'constraints' kwds to impose: y >= m, norm(wi) = 1.0
@@ -1283,7 +1286,7 @@ optimization on ``w,x,y`` over the given *bounds*.
 Args:
     model (func): a model ``y' = F(x')`` that approximates reality ``y = G(x)``
     cutoff (float, default=0.0): acceptable model invalidity ``|y - F(x')|``
-    bounds (tuple, default=None): ``(all lower bounds, all upper bounds)``
+    bounds (bounds, default=None): a bounds instance
     constraints (func, default=None): a function ``x' = constraints(x)``,
         where ``x`` is a scenario that has been converted into a list of
         parameters (e.g. with ``scenario.flatten``), and ``x'`` is the list
@@ -1299,7 +1302,7 @@ Returns:
     None
 
 Notes:
-    *xtol* defines the n-dimensional base of a pilar of height *cutoff*,
+    - *xtol* defines the n-dimensional base of a pilar of height *cutoff*,
     centered at each point. The region inside the pilar defines the space
     where a "valid" model must intersect. If *xtol* is not specified, then
     the base of the pilar will be a dirac at ``x' = x``. This function
@@ -1307,6 +1310,9 @@ Notes:
     Here, *tol* is used to set the optimization termination for minimizing the
     ``sum(graphical_distances)``, while *cutoff* is used in defining the
     graphical distance between ``x,y`` and ``x',F(x')``.
+    - *bounds* can also be given as a tuple with ``length(bounds) == 2``,
+    composed of all the lower bounds, then all the upper bounds, for each
+    of the scenario weights, positions, and values.
 """
     # imposes is_feasible(R, Cv), where R = graphical_distance(model, pts)
     # use additional 'constraints' kwds to impose: y >= m, norm(wi) = 1.0
@@ -1610,7 +1616,7 @@ Args:
     guess (mystic.math.discrete.scenario, default=None): the synthetic points
     tol (float, default=0.0): maximum acceptable optimizer termination
         for ``sum(infeasibility)``.
-    bounds (tuple, default=None): ``(all lower bounds, all upper bounds)``
+    bounds (bounds, default=None): a bounds instance
     constraints (func, default=None): a function ``x' = constraints(x)``,
         where ``x`` is a scenario that has been converted into a list of
         parameters (e.g. with ``scenario.flatten``), and ``x'`` is the list
@@ -1627,6 +1633,10 @@ Notes:
     *guess* can be either a scenario providing initial guess at feasibility,
     or a tuple of the dimensions of the desired scenario, where initial
     values will be chosen at random.
+
+    *bounds* can also be given as a tuple with ``length(bounds) == 2``,
+    composed of all the lower bounds, then all the upper bounds, for each
+    of the scenario weights, positions, and values.
 """
   from numpy import sum, asarray
   from mystic.math.legacydata import dataset
@@ -1656,6 +1666,10 @@ Notes:
     lower_bounds += [None]*npts
     upper_bounds += [None]*npts
     bounds = lower_bounds, upper_bounds
+  else:
+    from mystic.bounds import Bounds
+    if isinstance(bounds, Bounds):
+        bounds = (bounds.lower, bounds.upper)
   bounds = asarray(bounds).T
 
   # plug in the 'constraints' function:  param' = constraints(param)
@@ -1750,7 +1764,7 @@ Args:
         between model and reality.
     tol (float, default=0.0): maximum acceptable optimizer termination
         for ``sum(graphical distances)``.
-    bounds (tuple, default=None): ``(all lower bounds, all upper bounds)``
+    bounds (bounds, default=None): a bounds instance
     constraints (func, default=None): a function ``x' = constraints(x)``,
         where ``x`` is a scenario that has been converted into a list of
         parameters (e.g. with ``scenario.flatten``), and ``x'`` is the list
@@ -1772,6 +1786,10 @@ Notes:
     *guess* can be either a scenario providing initial guess at validity,
     or a tuple of the dimensions of the desired scenario, where initial
     values will be chosen at random.
+
+    *bounds* can also be given as a tuple with ``length(bounds) == 2``,
+    composed of all the lower bounds, then all the upper bounds, for each
+    of the scenario weights, positions, and values.
 """
   #FIXME: there are a lot of undocumented kwds (see below)
   from numpy import sum as _sum, asarray
@@ -1800,6 +1818,10 @@ Notes:
     lower_bounds += [None]*npts
     upper_bounds += [None]*npts
     bounds = lower_bounds, upper_bounds
+  else:
+    from mystic.bounds import Bounds
+    if isinstance(bounds, Bounds):
+        bounds = (bounds.lower, bounds.upper)
   bounds = asarray(bounds).T
 
   # plug in the 'constraints' function:  param' = constraints(param)

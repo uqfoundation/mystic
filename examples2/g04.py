@@ -19,7 +19,8 @@ def objective(x):
     x0,x1,x2,x3,x4 = x #XXX: allow x != 5?
     return 5.3578547*x2**2 + 0.8356891*x0*x4 + 37.293239*x0 - 40792.141
 
-bounds = [(78,102),(33,45)] + [(27,45)]*3
+from mystic.bounds import Bounds
+bounds = Bounds([78,33,27],[102,45,45], n=(1,1,3))
 # with penalty='penalty' applied, solution is:
 xs = [78.0, 33.0, 29.9955776, 45.0, 36.7749999]
 ys = -30665.488305434
