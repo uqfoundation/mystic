@@ -819,8 +819,8 @@ Examples:
                 idx = filter(lambda i:-xp.size<=i<=xp.size-1, index[0])
                 try: mask[sorted(idx, key=abs)] = True
                 except IndexError: pass
-            xp = xtype(choose(mask, (x,xp)))
-            return f(xp, *args, **kwds)
+            xp = choose(mask, (x,xp)).reshape(xp.shape)
+            return f(xtype(xp), *args, **kwds)
         func.samples = _points
         func.index = _index
         return func
@@ -879,7 +879,7 @@ Examples:
                 idx = filter(lambda i:-xp.size<=i<=xp.size-1, index[0])
                 try: mask[sorted(idx, key=abs)] = True
                 except IndexError: pass
-            xp = choose(mask, (x,xp)).astype(_ints[0])
+            xp = choose(mask, (x,xp)).astype(_ints[0]).reshape(xp.shape)
             ###############
             return f(xtype(xp), *args, **kwds)
         func.index = _index
@@ -940,7 +940,7 @@ Examples:
                 idx = filter(lambda i:-xp.size<=i<=xp.size-1, index[0])
                 try: mask[sorted(idx, key=abs)] = True
                 except IndexError: pass
-            xp = choose(mask, (x,xp)).astype(float)
+            xp = choose(mask, (x,xp)).astype(float).reshape(xp.shape)
             return f(xtype(xp), *args, **kwds)
         func.index = _index
         func.digits = _digits
@@ -1001,7 +1001,7 @@ Examples:
                 idx = filter(lambda i:-y.size<=i<=y.size-1, index[0])
                 try: mask[sorted(idx, key=abs)] = True
                 except IndexError: pass
-            y = choose(mask, (fx,y))#.astype(float)
+            y = choose(mask, (fx,y)).reshape(y.shape)#.astype(float)
             return xtype(y)
         func.index = _index
         func.digits = _digits
@@ -1571,7 +1571,7 @@ Examples:
                 idx = filter(lambda i:-xp.size<=i<=xp.size-1, index[0])
                 try: mask[sorted(idx, key=abs)] = True
                 except IndexError: pass
-            xp = choose(mask, (x,xp))
+            xp = choose(mask, (x,xp)).reshape(xp.shape)
             return f(xtype(xp), *args, **kwds)
         func.index = _index
         func.period = _period

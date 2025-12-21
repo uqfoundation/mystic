@@ -20,7 +20,7 @@ from mystic.solvers import PowellDirectionalSolver, NelderMeadSimplexSolver, \
 almostEqual = my.math.almostEqual
 rosen = mm.rosen
 bounds = Bounds(0.0001, 0.0002, n=3)
-guess = [0.001,0.001,0.001]
+guess = [0.0001,0.0001,0.0001]
 
 # generate the constraints
 _eqn = 'x0 + x1 + x2 <= .0005'

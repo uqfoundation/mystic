@@ -166,7 +166,8 @@ Inputs:
     dist  --  a mystic.math.Distribution instance (or list of Distributions)
     clip  --  if True, clip at bounds, else resample [default = False]
 
-Notes: if mtol is None, defaults to mtol=0.1 (must be non-negative)
+Notes: if mtol is None, defaults to mtol=0.1
+Notes: if mtol is negative, use a deterministic search
 Notes: if clip is None, do not clip or resample (may exceed bounds)
     """ #NOTE: error cannot be multi-valued
     #XXX: should draw be exposed or fixed? should default to str?
@@ -186,8 +187,9 @@ Notes: if clip is None, do not clip or resample (may exceed bounds)
     data = np.asarray(data)
     error = np.asarray(error)
     #print(error)
-    if mtol is None: mtol = 10 #NOTE: default is 0.1
-    else: mtol = int(100 * mtol)
+    if mtol is None: mtol = 0.1
+    elif mtol < 0: mtol,draw = -mtol,'fmin'
+    mtol = int(100 * mtol)
     if not len(error): # randomly select points (all error is the same)
         return fillpts(lb,ub,npts,dist=dist)
     if error.min() < 0:
