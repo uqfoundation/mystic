@@ -203,7 +203,6 @@ Returns:
   # to prevent function evaluation if weight is "too small":
   # skip evaluation of f(x) if the corresponding weight <= tol
   #weights = normalize(weights, mass=1.0) #FIXME: below is atol, should be rtol?
-  from numpy import sum
   if not sum(abs(w) > tol for w in weights):
       yw = ((0.0,0.0),)
   else: #XXX: parallel map?
@@ -234,7 +233,6 @@ Returns:
     y = [f(x) for x in samples] #XXX: parallel map?
     return moment(y, weights, order) #XXX: tol?
   # skip evaluation of f(x) if the corresponding weight <= tol
-  from numpy import sum
   if not sum(abs(w) > tol for w in weights):
       yw = ((0.0,0.0),)
   else: #XXX: parallel map?
