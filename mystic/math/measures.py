@@ -203,7 +203,7 @@ Returns:
   # to prevent function evaluation if weight is "too small":
   # skip evaluation of f(x) if the corresponding weight <= tol
   #weights = normalize(weights, mass=1.0) #FIXME: below is atol, should be rtol?
-  if not sum(abs(w) > tol for w in weights):
+  if not sum([abs(w) > tol for w in weights]):
       yw = ((0.0,0.0),)
   else: #XXX: parallel map?
       yw = [(f(x),w) for (x,w) in zip(samples, weights) if abs(w) > tol]
@@ -233,7 +233,7 @@ Returns:
     y = [f(x) for x in samples] #XXX: parallel map?
     return moment(y, weights, order) #XXX: tol?
   # skip evaluation of f(x) if the corresponding weight <= tol
-  if not sum(abs(w) > tol for w in weights):
+  if not sum([abs(w) > tol for w in weights]):
       yw = ((0.0,0.0),)
   else: #XXX: parallel map?
       yw = [(f(x),w) for (x,w) in zip(samples, weights) if abs(w) > tol]
@@ -287,7 +287,7 @@ Returns:
     wts = 1.0
   else:
     # get weighted sum
-    ssum = sum(i*j for i,j in zip(samples, weights))
+    ssum = sum([i*j for i,j in zip(samples, weights)])
     # normalize by sum of the weights
     wts = float(sum(weights))
   if wts:

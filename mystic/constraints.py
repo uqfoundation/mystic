@@ -1230,7 +1230,7 @@ def bounded(seq, bounds, index=None, clip=True, nearest=True):
     bounds[0][isnan(bounds[0])] = -inf
     bounds[1][isnan(bounds[1])] = inf
     # find indicies of the elements that are out of bounds
-    at = where(sum((lo <= seq)&(seq <= hi) for (lo,hi) in bounds.T).astype(bool) == False)[-1]
+    at = where(sum([(lo <= seq)&(seq <= hi) for (lo,hi) in bounds.T]).astype(bool) == False)[-1]
     # find the intersection of out-of-bound and selected indicies
     at = at if index is None else intersect1d(at, index)
     if not len(at): return seq
@@ -1632,7 +1632,7 @@ def near_integers(x): # use as a penalty for int programming
 
 def has_unique(x): # use as a penalty for unique numbers
     """check for uniqueness of the members of x"""
-    return sum(x.count(xi) for xi in x)
+    return sum([x.count(xi) for xi in x])
    #return len(x) - len(set(x))
 
 
