@@ -122,7 +122,7 @@ Requirements
 ------------
 ``mystic`` requires:
 
-* ``python`` (or ``pypy``), **>=3.9**
+* ``python`` (or ``pypy``), **>=3.10**
 * ``setuptools``, **>=42**
 * ``cython``, **>=0.29.30**
 * ``numpy``, **>=1.0**
@@ -136,7 +136,7 @@ Optional requirements:
 * ``matplotlib``, **>=0.91**
 * ``scipy``, **>=0.6.0**
 * ``pathos``, **>=0.3.5**
-* ``pyina``, **>=0.3.1**
+* ``pyina``, **>=0.3.2**
 
 
 More Information
