@@ -346,7 +346,7 @@ Examples:
     else: # is a constraints solver
         try:
             constrained = guess.copy()
-        except:
+        except AttributeError:
             from copy import deepcopy
             constrained = deepcopy(guess)
         error = 0.0
