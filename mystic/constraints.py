@@ -1058,21 +1058,22 @@ class _Random(Random):
 randrange = _Random().randrange
 del _Random, Random
 
-def unique(seq, full=None):
+def unique(seq, full=None, index=None):
     """replace the duplicate values with unique values in 'full'
 
     If full is a type (int or float), then unique values of the given type
     are selected from range(min(seq),max(seq)). If full is a dict of
     {'min':min, 'max':max}, then unique floats are selected from
     range(min(seq),max(seq)). If full is a sequence (list or set), then
-    unique values are selected from the given sequence. 
+    unique values are selected from the given sequence.  If index tuple
+    provided, only impose uniqueness at the given indices.
 
     Examples:
       >>> unique([1,2,3,1,2,4], range(11))
       [1, 2, 3, 9, 8, 4]
 
-      >>> unique([1,2,3,1,2,9], range(11))
-      [1, 2, 3, 8, 5, 9]
+      >>> unique([1,2,3,1,2,9], range(11), index=range(4))
+      [1, 2, 3, 7, 2, 9]
 
       >>> try:
       ...     unique([1,2,3,1,2,13], range(11))
@@ -1100,22 +1101,27 @@ def unique(seq, full=None):
       ...     pass
       ...
     """ #FIXME: does not handle full is numpy.dtype (i.e. int64, float64)
+    from numbers import Integral
+    if isinstance(index, Integral): index = (index,)
+    index = [index]
     # check type if full not specified
     if full is None:
-        from numbers import Integral
         if all([isinstance(x, Integral) for x in seq]): full = int
         else: full = float
         ok = True
     else: ok = False
     # replace all duplicates with 'None'
     unique = set()
-    seq = [x if x not in unique and not unique.add(x) else None for x in seq]
-    lseq = len(seq)
+    if index[0] is None:
+        seq = [x if (x not in unique and not unique.add(x)) else None for i,x in enumerate(seq)]
+        lidx = len(seq)
+    else:
+        seq = [x if (i not in index[0]) or (x not in unique and not unique.add(x)) else None for i,x in enumerate(seq)]
+        lidx = len(index[0])
     # check all unique show up in 'full'
     if full in (int,float): # specified type, not range
-        from numbers import Integral
         ok = ok or full==float or all([isinstance(x, Integral) for x in unique])
-        msg = "not all items are of type='%s'" % full.__name__
+        msg = "not all indexed items are of type='%s'" % full.__name__
         _min = min(unique)
         _max = max(unique)
     elif isinstance(full, dict): # specified min/max for floats
@@ -1140,21 +1146,21 @@ def unique(seq, full=None):
     if not ok: raise ValueError(msg)
     # check if a unique sequence is possible to build
     if full is float:
-        if _min == _max and lseq > 1:
-            msg = "no unique len=%s sequence with %s <= x <= %s" % (lseq,_min,_max)
+        if _min == _max and lidx > 1:
+            msg = "no unique len=%s sequence with %s <= x <= %s" % (lidx,_min,_max)
             raise ValueError(msg)
         # replace the 'None' values in seq with 'new' values
         #XXX: HIGHLY UNLIKELY two numbers will be the same, but possible
         return [randrange(_min,_max,_int=float) if x is None else x for x in seq]
     # generate all possible values not found in 'unique'
     if full is int:
-        if max(lseq - (_max+1 - _min), 0):
-            msg = "no unique len=%s sequence with %s <= x <= %s" % (lseq,_min,_max)
+        if max(lidx - (_max+1 - _min), 0):
+            msg = "no unique len=%s sequence with %s <= x <= %s" % (lidx,_min,_max)
             raise ValueError(msg)
         new = list(set(range(_min,_max+1)) - unique)
     else:
-        if lseq > len(full):
-            msg = "no unique len=%s sequence in given set" % lseq
+        if lidx > len(full):
+            msg = "no unique len=%s sequence in given set" % lidx
             raise ValueError(msg)
         new = list(set(full) - unique)
     # ensure randomly ordered
@@ -1163,9 +1169,7 @@ def unique(seq, full=None):
     return [new.pop() if x is None else x for x in seq]
 
 
-#XXX: enable impose_unique on selected members of x? (see constraints.integers)
-
-def impose_unique(seq=None):
+def impose_unique(seq=None, index=None):
     """ensure all values are unique and found in the given set
 
     Examples:
@@ -1184,9 +1188,17 @@ def impose_unique(seq=None):
       ...     pass
       ...
 """
+    from numbers import Integral
+    if isinstance(index, Integral): index = (index,)
+    index = [index]
+
+    def _index(alist=None):
+        index[0] = alist
+
     def dec(f):
         def func(x,*args,**kwds):
-            return f(unique(x, seq),*args,**kwds)
+            return f(unique(x, seq, index[0]),*args,**kwds)
+        func.index = _index
         return func
     return dec
 
