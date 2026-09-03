@@ -804,20 +804,29 @@ Examples:
     return [i.tolist() for i in pairsT]
 
 
-def pairwise(x, indices=False):
+def pairwise(x, indices=False, lower=False, func=None):
     '''convert an array of positions to an array of pairwise distances
 
-    if indices=True, also return indices to relate input and output arrays'''
+    if indices=True, also return indices to relate input and output arrays
+    if lower=True, pair by lower-triangle indices, otherwise use upper-triangle
+    custom distances are produced by providing a (2-input,1-output) func'''
     import numpy as np
+    if func is None:
+        func = np.subtract
+    elif not isinstance(func, np.ufunc):
+        func = np.frompyfunc(func, 2, 1) # y_i = f(x_j, x_k) 
     x = np.asarray(x)
     shape = x.shape
     x = x.reshape(-1, x.shape[-1])
-    idx = np.triu_indices(x.shape[-1],k=1)  # get upper triangle indices
+    if lower:
+        idx = np.tril_indices(x.shape[-1],k=-1) # get lower triangle indices
+    else:
+        idx = np.triu_indices(x.shape[-1],k=1)  # get upper triangle indices
     z = np.zeros(x.shape[:-1] + (idx[0].shape[0],))
     for i in range(z.shape[-2]):
-        z[i] = np.subtract.outer(x[i],x[i])[idx]
+        z[i] = func.outer(x[i],x[i])[idx]
     z.shape = shape[:-1]+(z.shape[-1],)
-    return abs(z),list(zip(*idx)) if indices else abs(z)  #XXX: abs(z) or z?
+    return (abs(z),np.array(list(zip(*idx))).tolist()) if indices else abs(z)
 
 
 def _inverted(pairs): # assumes pairs is a list of tuples
