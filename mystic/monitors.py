@@ -640,7 +640,7 @@ sys.modules.pop('{base}', None);
         params = _globals['___params'] if '___params' in _globals else None
         cost = _globals['___cost'] if '___cost' in _globals else None
         del _globals
-    except: #XXX: should only catch the appropriate exceptions
+    except Exception: #XXX: should only catch the appropriate exceptions
         raise OSError("error reading '{path}'".format(path=path))
 
     finally:

@@ -557,7 +557,7 @@ Notes:
         else:
             try: # scalar ?
                 float(var)
-            except: # nope. var better be matrix of the right size (no check)
+            except (TypeError, ValueError): # nope. var better be matrix of the right size (no check)
                 pass
             else:
                 var = var * numpy.eye(self.nDim)
