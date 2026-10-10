@@ -23,13 +23,10 @@ matrix:
 
         - python: '3.14'
           env:
-            - CYTHON="true" # numpy source build
-            - DILL="master"
-            - KLEPTO="master"
 
         - python: '3.15t-dev'
           env:
-            - CYTHON="true" # numpy source build
+            - CYTHON="true" # cython source build
             - DILL="master"
             - KLEPTO="master"
 
@@ -56,7 +53,7 @@ before_install:
     - if [[ $MATPLOTLIB == "true" ]]; then pip install matplotlib; fi
     - if [[ $SYMPY == "true" ]]; then pip install sympy; fi
     - if [[ $SCIPY == "true" ]]; then pip install scipy; fi
-    - if [[ $CYTHON == "true" ]]; then pip install "cython<0.29.25"; fi #FIXME
+    - if [[ $CYTHON == "true" ]]; then pip install cython --no-binary cython --force-reinstall; fi
     - if [[ $DILL == "master" ]]; then pip install "https://github.com/uqfoundation/dill/archive/master.tar.gz"; fi
     - if [[ $KLEPTO == "master" ]]; then pip install "https://github.com/uqfoundation/klepto/archive/master.tar.gz"; fi
 
