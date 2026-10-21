@@ -114,7 +114,7 @@ All important class members are inherited from AbstractEnsembleSolver.
 
         # build a grid of starting points
         from mystic.math import samplepts
-        solution = samplepts(lower, upper, npts, self._dist)
+        solution = samplepts(lower, upper, npts, self._dist) #XXX: , offset)
         self._init_solution = solution
         #for i,j in enumerate(solution): #NOTE: loop enables partial reset
         #    if self._init_solution[i] is None: self._init_solution[i] = j
