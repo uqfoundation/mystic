@@ -78,7 +78,7 @@ Inputs:
  #return [list(i) for i in pts]
 
 
-def random_samples(lb, ub, npts=10000, dist=None, clip=False):
+def random_samples(lb, ub, npts=10000, dist=None, clip=False, offset=False):
   """
 generate npts samples from the given distribution between given lb & ub
 
@@ -88,13 +88,18 @@ Inputs:
     npts -- number of sample points [default = 10000]
     dist -- a mystic.tools.Distribution instance (or list of Distributions)
     clip -- if True, clip at bounds, else resample [default = False]
+    offset -- if True, place dist at box center, else zero [default = False]
 
+Notes: offset can also be specified using a list of len(lb)
 Notes: if clip is None, do not clip or resample (may exceed bounds)
 """
   if dist is None:
     return _random_samples(lb,ub, npts)
-  import numpy as np
-  pts = np.zeros((npts,len(lb)))
+  if offset is True:
+    pts = [.5 * abs(ubi-lbi) for ubi,lbi in zip(ub,lb)]
+  elif offset is False or offset is None:
+    import numpy as np
+    pts = np.zeros((npts,len(lb)))
   return _bounded_samples(lb, ub, pts, dist=dist, clip=clip)
 
 

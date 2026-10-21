@@ -67,7 +67,7 @@ Notes: if a mystic.math.Distribution is provided, use it to inject randomness
     return pts.tolist()
 
 
-def samplepts(lb, ub, npts, dist=None, clip=False):
+def samplepts(lb, ub, npts, dist=None, clip=False, offset=False):
     """
 takes lower and upper bounds (e.g. lb = [0,3], ub = [2,4])
 produces a list of sample points s = [[1,3],[1,4],[2,3],[2,4]]
@@ -78,11 +78,13 @@ Inputs:
     npts  --  number of sample points
     dist  --  a mystic.math.Distribution instance (or list of Distributions)
     clip  --  if True, clip at bounds, else resample [default = False]
+    offset -- if True, place dist at box center, else zero [default = False]
 
+Notes: offset can also be specified using a list of len(lb)
 Notes: if clip is None, do not clip or resample (may exceed bounds)
     """
     from mystic.math.samples import random_samples
-    q = random_samples(lb, ub, npts, dist, clip)
+    q = random_samples(lb, ub, npts, dist, clip, offset)
     return q.T.tolist()
    #q = [list(i) for i in q]
    #q = zip(*q)
