@@ -24,6 +24,9 @@ Main functions exported are::
     - getch: provides "press any key to quit"
     - random_seed: sets the seed for calls to 'random()'
     - random_state: build a localized random generator
+    - seeded: pass a fixed seed to the global random state in a function
+    - unseeded: unseed the global random state in a function
+    - pseudorandom: use a context-dependent seed for the global random state
     - wrap_nested: nest a function call within a function object
     - wrap_penalty: append a function call to a function object
     - wrap_function: bind an eval_monitor and an evaluation counter
@@ -365,6 +368,64 @@ for building RNGs that are different across multiple threads or processes.
     # set the random seed (or 'reset' with None)
     rng.seed(seed)
     return rng
+
+def _seeded(seed='!'):
+    """seed the global random state within a function's namespace
+
+Seeds the global random number generator (RNG) object in the random and
+numpy.random modules. If seed='!', do not reseed the RNG (using seed=None
+'removes' any seeding). If seed='*', use a seed that depends on the
+process id (PID). These options can be useful for building RNGs that are
+different across multiple threads or processes.
+    """
+    def dec(f):
+        from functools import wraps
+        @wraps(f)
+        def func(*args, **kwargs):
+            # capture the current global states
+            import random
+            import numpy as np
+            built_in_state = random.getstate()
+            np_state = np.random.get_state()
+
+            # seed the global states
+            from mystic import random_state
+            random_state(random, new=False, seed=seed)
+            random_state(np.random, new=False, seed=seed)
+
+            try:
+                # execute the function the seeded namespace
+                return f(*args, **kwargs)
+            finally:
+                # restore the original global states
+                random.setstate(built_in_state)
+                np.random.set_state(np_state)
+        return func
+    return dec
+
+def seeded(f):
+    """pass a fixed seed to the global random state in a function
+
+Seeds the global random number generator (RNG) object in the random and
+numpy.random modules using a fixed seed.
+    """
+    return _seeded(0)(f)
+
+def pseudorandom(f):
+    """use a context-dependent seed for the global random state
+
+Seeds the global random number generator (RNG) object in the random and
+numpy.random modules using a seed that depends on the process id (PID).
+    """
+    return _seeded('*')(f)
+
+def unseeded(f):
+    """unseed the global random state in a function
+
+Removes any seeding of the global random number generator (RNG) object in
+the random and numpy.random modules for the decorated function.
+    """
+    return _seeded(None)(f)
 
 def wrap_nested(outer_function, inner_function):
     """nest a function call within a function object
